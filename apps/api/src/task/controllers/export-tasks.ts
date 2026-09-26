@@ -1,13 +1,13 @@
-import { eq, inArray, or } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   labelTable,
   projectTable,
-  taskRelationTable,
   taskTable,
   userTable,
 } from "../../database/schema";
+import getTaskRelationsByProject from "../../task-relation/controllers/get-task-relations-by-project";
 
 async function exportTasks(projectId: string) {
   const project = await db.query.projectTable.findFirst({
@@ -78,27 +78,16 @@ async function exportTasks(projectId: string) {
     }
   }
 
-  // Every relation touching one of this project's tasks, like the Gantt
-  // endpoints (get-task-relations-by-project). A cross-project `related`
-  // link is still included on the in-project side, with the other task's id
-  // only (it won't resolve to an entry in this export's tasks array).
+  // Reuse the shared, workspace-scoped relation reader that powers the Gantt
+  // chart. It fetches every relation touching this project's tasks, drops any
+  // whose far end is not visible in this workspace (legacy cross-workspace
+  // rows), and filters server-side with a subquery so a large project does not
+  // overflow Postgres's bind-parameter limit. A same-workspace cross-project
+  // `related` link is still included on the in-project side, with the other
+  // task's id only (it won't resolve to an entry in this export's tasks array).
   const relationsData =
     taskIds.length > 0
-      ? await db
-          .select({
-            sourceTaskId: taskRelationTable.sourceTaskId,
-            targetTaskId: taskRelationTable.targetTaskId,
-            relationType: taskRelationTable.relationType,
-            dependencyType: taskRelationTable.dependencyType,
-            lagDays: taskRelationTable.lagDays,
-          })
-          .from(taskRelationTable)
-          .where(
-            or(
-              inArray(taskRelationTable.sourceTaskId, taskIds),
-              inArray(taskRelationTable.targetTaskId, taskIds),
-            ),
-          )
+      ? await getTaskRelationsByProject(projectId, project.workspaceId)
       : [];
 
   const taskRelationsMap = new Map<

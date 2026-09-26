@@ -261,7 +261,7 @@ const exportTasksRoute = createRoute({
   tags: ["Tasks"],
   summary: "Export tasks",
   description:
-    "Export a project's tasks, with their labels, as a JSON document.",
+    "Export a project's tasks, with their labels, Gantt scheduling fields, and relations, as a JSON document.",
   middleware: [workspaceAccess.fromProject("projectId")] as const,
   request: { params: projectIdParam },
   responses: {

@@ -8303,7 +8303,7 @@
           "Tasks"
         ],
         "summary": "Export tasks",
-        "description": "Export a project's tasks, with their labels, as a JSON document.",
+        "description": "Export a project's tasks, with their labels, Gantt scheduling fields, and relations, as a JSON document.",
         "parameters": [
           {
             "schema": {
