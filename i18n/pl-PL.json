@@ -842,7 +842,11 @@
 		"githubUser": "Użytkownik GitHub",
 		"moved": "przeniósł(ęła) zadanie z \"{{from}}\" do \"{{to}}\"",
 		"setDueDate": "ustawił(a) termin na {{date}}",
-		"unassigned": "usunął(ęła) przypisanie zadania"
+		"unassigned": "usunął(ęła) przypisanie zadania",
+		"relationCreated": "dodał zależność",
+		"relationUpdated": "zmienił zależność",
+		"relationDeleted": "usunął zależność",
+		"updatedPlan": "zaktualizował plan"
 	},
 	"settings": {
 		"account": "Konto",

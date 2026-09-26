@@ -1862,7 +1862,11 @@
 			"importedBy": "Imported by {{name}}"
 		},
 		"moved": "перемістив завдання з «{{from}}» до «{{to}}»",
-		"created": "створив це завдання"
+		"created": "створив це завдання",
+		"relationCreated": "added a dependency",
+		"relationUpdated": "updated a dependency",
+		"relationDeleted": "removed a dependency",
+		"updatedPlan": "updated the plan"
 	},
 	"tasks": {
 		"title": "Завдання",

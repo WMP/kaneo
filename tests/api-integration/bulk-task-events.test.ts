@@ -127,6 +127,7 @@ describe("bulk task event snapshots", () => {
           projectId: project.id,
           title: task.title,
         }),
+        { waitForHandlers: true },
       );
     }
     expect(await db.query.taskTable.findMany()).toEqual(

@@ -403,6 +403,38 @@ function renderActivityContent({
     }
   }
 
+  if (activity.type === "updated") {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t("activity:updatedPlan")}
+      </span>
+    );
+  }
+
+  if (activity.type === "relation_created") {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t("activity:relationCreated")}
+      </span>
+    );
+  }
+
+  if (activity.type === "relation_updated") {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t("activity:relationUpdated")}
+      </span>
+    );
+  }
+
+  if (activity.type === "relation_deleted") {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t("activity:relationDeleted")}
+      </span>
+    );
+  }
+
   return (
     <span className="text-sm text-muted-foreground">
       {content || toDisplayCase(activity.type)}

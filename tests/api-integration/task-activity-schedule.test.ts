@@ -134,10 +134,7 @@ describe("API integration: task schedule/plan activity", () => {
   });
 
   it("logs a 'relation_created' activity on the source task for POST /task-relation", async () => {
-    const { member, project, task } = await taskFixture();
-    const { columns } = await createProjectFixture({
-      workspaceId: member.workspace.id,
-    });
+    const { member, project, columns, task } = await taskFixture();
     const [otherTask] = await db
       .insert(schema.taskTable)
       .values({
@@ -185,10 +182,7 @@ describe("API integration: task schedule/plan activity", () => {
   });
 
   it("logs a 'relation_deleted' activity on the source task for DELETE /task-relation/{id}", async () => {
-    const { member, project, task } = await taskFixture();
-    const { columns } = await createProjectFixture({
-      workspaceId: member.workspace.id,
-    });
+    const { member, project, columns, task } = await taskFixture();
     const [otherTask] = await db
       .insert(schema.taskTable)
       .values({

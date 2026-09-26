@@ -63,6 +63,7 @@ async function bulkUpdateTasks({
       userId: taskTable.userId,
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
+      progress: taskTable.progress,
       workspaceId: projectTable.workspaceId,
     })
     .from(taskTable)
@@ -216,15 +217,24 @@ async function bulkUpdateTasks({
       // No dedicated "progress changed" event exists — a single-task
       // progress edit (see update-task.ts) only ever publishes this same
       // generic "task.updated" notice, so bulk stays consistent with it
-      // rather than inventing a new event type for one field.
+      // rather than inventing a new event type for one field. The `changes`
+      // diff lets the activity feed record the progress move, matching what
+      // a single-task edit already logs.
       for (const task of tasks) {
-        await publishEvent("task.updated", {
-          taskId: task.id,
-          projectId: task.projectId,
-          title: task.title,
-          status: task.status,
-          userId,
-        });
+        // waitForHandlers: see update-task.ts — the activity log write
+        // should land before this request returns, not race it.
+        await publishEvent(
+          "task.updated",
+          {
+            taskId: task.id,
+            projectId: task.projectId,
+            title: task.title,
+            status: task.status,
+            userId,
+            changes: buildScheduleChanges(task, { progress }),
+          },
+          { waitForHandlers: true },
+        );
       }
       break;
     }
