@@ -321,4 +321,223 @@ describe("registerTools", () => {
       method: "GET",
     });
   });
+
+  it("forwards progress and isMilestone on create_task", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ id: "task-1" }) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("create_task")?.handler({
+      projectId: "p1",
+      title: "T",
+      description: "",
+      priority: "medium",
+      status: "to-do",
+      progress: 40,
+      isMilestone: true,
+    });
+
+    const [, init] = client.json.mock.calls[0] as [string, { body?: string }];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      progress: 40,
+      isMilestone: true,
+    });
+  });
+
+  it("rejects an unknown field on create_task instead of silently dropping it", () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn() };
+
+    registerTools(server as never, { client: client as never });
+
+    const schema = tools.get("create_task")?.config.inputSchema;
+    expect(() =>
+      schema?.parse({
+        projectId: "p1",
+        title: "T",
+        description: "",
+        priority: "medium",
+        status: "to-do",
+        bogusField: "x",
+      }),
+    ).toThrow();
+  });
+
+  it("forwards progress, isMilestone, and constraintType/constraintDate on update_task", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({
+          title: "T",
+          description: "D",
+          status: "open",
+          priority: "medium",
+          projectId: "p1",
+          position: 1,
+        })
+        .mockResolvedValueOnce({ id: "task-1" }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("update_task")?.handler({
+      taskId: "task-1",
+      progress: 75,
+      isMilestone: true,
+      constraintType: "must_start_on",
+      constraintDate: "2026-01-01T00:00:00Z",
+    });
+
+    const putCall = client.json.mock.calls[1];
+    const putBody = JSON.parse(
+      String((putCall?.[1] as { body?: string })?.body ?? "{}"),
+    );
+    expect(putBody).toMatchObject({
+      progress: 75,
+      isMilestone: true,
+      constraintType: "must_start_on",
+      constraintDate: "2026-01-01T00:00:00Z",
+    });
+  });
+
+  it("rejects an unknown field on update_task instead of silently dropping it", () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn() };
+
+    registerTools(server as never, { client: client as never });
+
+    const schema = tools.get("update_task")?.config.inputSchema;
+    expect(() =>
+      schema?.parse({ taskId: "task-1", notARealField: 1 }),
+    ).toThrow();
+  });
+
+  it("forwards dependencyType and lagDays on create_task_relation", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi.fn().mockResolvedValue({ id: "rel-1" }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("create_task_relation")?.handler({
+      sourceTaskId: "task-1",
+      targetTaskId: "task-2",
+      relationType: "blocks",
+      dependencyType: "ss",
+      lagDays: 7,
+    });
+
+    expect(client.json).toHaveBeenCalledWith("/api/task-relation", {
+      method: "POST",
+      body: JSON.stringify({
+        sourceTaskId: "task-1",
+        targetTaskId: "task-2",
+        relationType: "blocks",
+        dependencyType: "ss",
+        lagDays: 7,
+      }),
+    });
+  });
+
+  it("rejects an unknown field on create_task_relation instead of silently dropping it", () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn() };
+
+    registerTools(server as never, { client: client as never });
+
+    const schema = tools.get("create_task_relation")?.config.inputSchema;
+    expect(() =>
+      schema?.parse({
+        sourceTaskId: "task-1",
+        targetTaskId: "task-2",
+        relationType: "blocks",
+        typoField: true,
+      }),
+    ).toThrow();
+  });
+
+  it("updates a task relation's dependencyType/lagDays", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ id: "rel-1" }) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("update_task_relation")?.handler({
+      id: "rel-1",
+      dependencyType: "ff",
+      lagDays: -2,
+    });
+
+    expect(client.json).toHaveBeenCalledWith("/api/task-relation/rel-1", {
+      method: "PATCH",
+      body: JSON.stringify({ dependencyType: "ff", lagDays: -2 }),
+    });
+  });
+
+  it("sets and clears a task baseline", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ id: "task-1" }) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("set_task_baseline")?.handler({ taskId: "task-1" });
+    expect(client.json).toHaveBeenCalledWith("/api/task/task-1/baseline", {
+      method: "POST",
+    });
+
+    await tools.get("clear_task_baseline")?.handler({ taskId: "task-1" });
+    expect(client.json).toHaveBeenCalledWith("/api/task/task-1/baseline", {
+      method: "DELETE",
+    });
+  });
+
+  it("reads and updates the workspace calendar", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({}) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("get_workspace_calendar")?.handler({ workspaceId: "ws1" });
+    expect(client.json).toHaveBeenCalledWith("/api/calendar/ws1", {
+      method: "GET",
+    });
+
+    await tools.get("update_workspace_working_days")?.handler({
+      workspaceId: "ws1",
+      workingDays: 62,
+    });
+    expect(client.json).toHaveBeenCalledWith("/api/calendar/ws1", {
+      method: "PUT",
+      body: JSON.stringify({ workingDays: 62 }),
+    });
+  });
+
+  it("adds and removes a workspace holiday", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({}) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("add_workspace_holiday")?.handler({
+      workspaceId: "ws1",
+      date: "2026-12-25",
+      name: "Christmas",
+    });
+    expect(client.json).toHaveBeenCalledWith("/api/calendar/ws1/holidays", {
+      method: "POST",
+      body: JSON.stringify({ date: "2026-12-25", name: "Christmas" }),
+    });
+
+    await tools.get("delete_workspace_holiday")?.handler({
+      workspaceId: "ws1",
+      holidayId: "hol-1",
+    });
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/calendar/ws1/holidays/hol-1",
+      { method: "DELETE" },
+    );
+  });
 });
