@@ -3719,6 +3719,158 @@
           "role"
         ]
       },
+      "WorkspaceActivityList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceActivity"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/WorkspaceActivityPagination"
+          }
+        },
+        "required": [
+          "data",
+          "pagination"
+        ]
+      },
+      "WorkspaceActivity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskNumber": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "The task's per-project short number, e.g. 42 in DEP-42."
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "projectSlug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "userName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Null when the user account no longer exists."
+          },
+          "userImage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "eventData": {
+            "description": "Type-specific payload, e.g. { oldStatus, newStatus } for status_changed. Null for plain comments."
+          },
+          "externalUserName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set when the activity was imported from another tool."
+          },
+          "externalUserAvatar": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "externalSource": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The tool it was imported from, e.g. planka, trello, jira."
+          },
+          "externalUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "taskNumber",
+          "taskTitle",
+          "projectId",
+          "projectName",
+          "projectSlug",
+          "type",
+          "createdAt",
+          "userId",
+          "userName",
+          "userImage",
+          "content",
+          "externalUserName",
+          "externalUserAvatar",
+          "externalSource",
+          "externalUrl"
+        ]
+      },
+      "WorkspaceActivityPagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "pageSize",
+          "totalPages"
+        ]
+      },
       "CustomFieldDefinition": {
         "type": "object",
         "properties": {
@@ -16507,6 +16659,119 @@
           },
           "403": {
             "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/{workspaceId}/activity": {
+      "get": {
+        "operationId": "getWorkspaceActivity",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Get workspace activity",
+        "description": "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, or a creation-date range; paginated.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity generated by this user."
+            },
+            "required": false,
+            "description": "Only activity generated by this user.",
+            "name": "userId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity of this type, e.g. status_changed."
+            },
+            "required": false,
+            "description": "Only activity of this type, e.g. status_changed.",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity created at or after this ISO timestamp."
+            },
+            "required": false,
+            "description": "Only activity created at or after this ISO timestamp.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity created at or before this ISO timestamp."
+            },
+            "required": false,
+            "description": "Only activity created at or before this ISO timestamp.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated workspace activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceActivityList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined, or invalid query",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace, or missing task:read permission",
             "content": {
               "text/plain": {
                 "schema": {
