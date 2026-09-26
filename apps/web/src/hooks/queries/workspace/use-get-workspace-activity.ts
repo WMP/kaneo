@@ -5,6 +5,7 @@ type UseGetWorkspaceActivityParams = {
   workspaceId: string | undefined;
   userId?: string;
   type?: string;
+  projectId?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -15,6 +16,7 @@ function useGetWorkspaceActivity({
   workspaceId,
   userId,
   type,
+  projectId,
   from,
   to,
   page,
@@ -26,6 +28,7 @@ function useGetWorkspaceActivity({
       workspaceId,
       userId,
       type,
+      projectId,
       from,
       to,
       page,
@@ -37,6 +40,7 @@ function useGetWorkspaceActivity({
             workspaceId,
             userId,
             type,
+            projectId,
             from,
             to,
             page,

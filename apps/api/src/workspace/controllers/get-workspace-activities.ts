@@ -24,6 +24,7 @@ function parseFilterDate(value: string, field: "from" | "to") {
 export type WorkspaceActivityFilters = {
   userId?: string;
   type?: string;
+  projectId?: string;
   from?: string;
   to?: string;
 };
@@ -47,6 +48,10 @@ export function buildWorkspaceActivityWhereClause(
 
   if (options.type) {
     conditions.push(eq(activityTable.type, options.type));
+  }
+
+  if (options.projectId) {
+    conditions.push(eq(projectTable.id, options.projectId));
   }
 
   if (options.from) {

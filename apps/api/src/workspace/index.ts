@@ -70,7 +70,7 @@ const getWorkspaceActivityRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Get workspace activity",
   description:
-    "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, or a creation-date range; paginated.",
+    "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ task: ["read"] }),
@@ -97,7 +97,7 @@ const getWorkspaceActivityExportRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Export workspace activity",
   description:
-    'Export activity across every task in the workspace as CSV or JSON, honoring the same filters and permission as GET /activity. Unpaginated, newest first, capped at 10,000 rows: narrow the filters if the "truncated" flag (or the X-Kaneo-Export-Truncated header on a CSV response) comes back true.',
+    'Export activity across every task in the workspace as CSV or JSON, honoring the same filters (user, activity type, project, date range) and permission as GET /activity. Unpaginated, newest first, capped at 10,000 rows: narrow the filters if the "truncated" flag (or the X-Kaneo-Export-Truncated header on a CSV response) comes back true.',
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ task: ["read"] }),

@@ -12,6 +12,7 @@ import { formatDateMedium, formatRelativeTime } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import {
   getApprovalStatusLabel,
+  getConstraintTypeLabel,
   getPriorityLabel,
   getStatusLabel,
 } from "@/lib/i18n/domain";
@@ -32,7 +33,10 @@ type ActivityItem = {
   id: string;
   createdAt: string;
   userId: string | null;
-  taskId: string;
+  // Null for workspace-level activity (e.g. calendar changes), which has no
+  // task. Comment activities (the only branch below that reads taskId)
+  // always have one — see the cast at that call site.
+  taskId: string | null;
   externalUserName?: string | null;
   externalUserAvatar?: string | null;
   externalSource?: string | null;
@@ -98,6 +102,89 @@ function toDisplayCase(value: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(" ");
+}
+
+// Mirrors apps/api/src/task/diff-schedule-fields.ts's SCHEDULE_FIELDS order,
+// so a schedule-change entry lists fields in the same order the user edited
+// them in (startDate/dueDate before progress before the constraint/baseline
+// fields) rather than however `Object.keys` happens to enumerate them.
+const SCHEDULE_FIELD_ORDER = [
+  "startDate",
+  "dueDate",
+  "progress",
+  "isMilestone",
+  "constraintType",
+  "constraintDate",
+  "baselineStartDate",
+  "baselineDueDate",
+] as const;
+
+const SCHEDULE_DATE_FIELDS = new Set<string>([
+  "startDate",
+  "dueDate",
+  "constraintDate",
+  "baselineStartDate",
+  "baselineDueDate",
+]);
+
+type ScheduleChangeEntry = { field: string; from: unknown; to: unknown };
+
+function getScheduleChangeEntries(
+  changes: Record<string, unknown>,
+): ScheduleChangeEntry[] {
+  const knownFields = new Set<string>(SCHEDULE_FIELD_ORDER);
+  const orderedFields = [
+    ...SCHEDULE_FIELD_ORDER,
+    ...Object.keys(changes)
+      .filter((field) => !knownFields.has(field))
+      .sort(),
+  ];
+
+  const entries: ScheduleChangeEntry[] = [];
+  for (const field of orderedFields) {
+    const change = changes[field];
+    if (!change || typeof change !== "object") continue;
+    const { from, to } = change as { from?: unknown; to?: unknown };
+    entries.push({ field, from, to });
+  }
+  return entries;
+}
+
+function getScheduleFieldLabel(
+  field: string,
+  t: (key: string, options?: Record<string, unknown>) => string,
+) {
+  return t(`activity:changes.fields.${field}`, {
+    defaultValue: toDisplayCase(field),
+  });
+}
+
+function formatScheduleChangeValue(
+  field: string,
+  value: unknown,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
+  if (value === null || value === undefined || value === "") {
+    return t("activity:changes.empty");
+  }
+
+  if (SCHEDULE_DATE_FIELDS.has(field)) {
+    return formatActivityDateText(String(value));
+  }
+
+  if (field === "progress" && typeof value === "number") {
+    return `${value}%`;
+  }
+
+  if (field === "isMilestone") {
+    return t(value ? "common:boolean.true" : "common:boolean.false");
+  }
+
+  if (field === "constraintType") {
+    return getConstraintTypeLabel(String(value));
+  }
+
+  return String(value);
 }
 
 function findUserByName(users: WorkspaceUser[] | undefined, name: string) {
@@ -435,10 +522,40 @@ function renderActivityContent({
   }
 
   if (activity.type === "updated") {
+    const changes =
+      eventData &&
+      typeof eventData.changes === "object" &&
+      eventData.changes !== null
+        ? (eventData.changes as Record<string, unknown>)
+        : null;
+
+    const entries = changes ? getScheduleChangeEntries(changes) : [];
+
+    if (entries.length === 0) {
+      return (
+        <span className="text-sm text-muted-foreground">
+          {t("activity:updatedPlan")}
+        </span>
+      );
+    }
+
     return (
-      <span className="text-sm text-muted-foreground">
-        {t("activity:updatedPlan")}
-      </span>
+      <>
+        <span className="text-sm text-muted-foreground">
+          {t("activity:updatedPlan")}
+        </span>
+        <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground/90">
+          {entries.map(({ field, from, to }) => (
+            <span key={field}>
+              {t("activity:changes.entry", {
+                field: getScheduleFieldLabel(field, t),
+                from: formatScheduleChangeValue(field, from, t),
+                to: formatScheduleChangeValue(field, to, t),
+              })}
+            </span>
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -517,7 +634,9 @@ function Activity({
         <TimelineContent className="min-w-0 flex-1">
           <CommentCard
             commentId={activity.id}
-            taskId={activity.taskId}
+            // Comment-type activity always has a taskId (only workspace-level
+            // activity, e.g. calendar changes, ever leaves it null).
+            taskId={activity.taskId as string}
             content={activity.content || ""}
             user={commentUser}
             createdAt={activity.createdAt}

@@ -5,6 +5,7 @@ export type ExportWorkspaceActivityParams = {
   workspaceId: string;
   userId?: string;
   type?: string;
+  projectId?: string;
   from?: string;
   to?: string;
   format: "csv" | "json";
@@ -33,6 +34,7 @@ async function exportWorkspaceActivity({
   workspaceId,
   userId,
   type,
+  projectId,
   from,
   to,
   format,
@@ -42,6 +44,7 @@ async function exportWorkspaceActivity({
     query: {
       ...(userId ? { userId } : {}),
       ...(type ? { type } : {}),
+      ...(projectId ? { projectId } : {}),
       ...(from ? { from } : {}),
       ...(to ? { to } : {}),
       format,

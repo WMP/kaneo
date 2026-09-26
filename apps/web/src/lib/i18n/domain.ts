@@ -35,6 +35,12 @@ export function getApprovalStatusLabel(approvalStatus: string) {
   });
 }
 
+export function getConstraintTypeLabel(constraintType: string) {
+  return i18n.t(`tasks:popover.constraint.type.${constraintType}`, {
+    defaultValue: toDisplayCase(constraintType),
+  });
+}
+
 function toDisplayCase(value: string) {
   return value
     .replace(/[-_]/g, " ")

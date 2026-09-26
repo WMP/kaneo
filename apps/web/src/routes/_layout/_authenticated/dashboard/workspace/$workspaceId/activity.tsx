@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/menu";
 import { Timeline } from "@/components/ui/timeline";
 import useExportWorkspaceActivity from "@/hooks/mutations/workspace/use-export-workspace-activity";
+import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useGetWorkspaceActivity from "@/hooks/queries/workspace/use-get-workspace-activity";
 import useGetWorkspaceUsers from "@/hooks/queries/workspace-users/use-get-workspace-users";
 import { toast } from "@/lib/toast";
@@ -31,6 +32,10 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
+// Kept in sync with the activity `type` values the API actually writes to
+// activityTable (see apps/api/src/activity/index.ts and the direct inserts
+// in apps/api/src/task/controllers/*.ts), not just the ones with a dedicated
+// icon or i18n string, so this filter never silently hides a real event kind.
 const ACTIVITY_TYPES = [
   "comment",
   "created",
@@ -42,6 +47,11 @@ const ACTIVITY_TYPES = [
   "due_date_changed",
   "title_changed",
   "description_changed",
+  "approval_changed",
+  "updated",
+  "relation_created",
+  "relation_updated",
+  "relation_deleted",
 ] as const;
 
 const PAGE_SIZE = 25;
@@ -58,19 +68,22 @@ function RouteComponent() {
   const { t } = useTranslation();
   const { workspaceId } = Route.useParams();
   const { data: workspaceUsers } = useGetWorkspaceUsers({ workspaceId });
+  const { data: projects } = useGetProjects({ workspaceId });
 
   const [userId, setUserId] = useState("");
   const [type, setType] = useState("");
+  const [projectId, setProjectId] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
 
-  const hasFilters = Boolean(userId || type || from || to);
+  const hasFilters = Boolean(userId || type || projectId || from || to);
 
   const { data, isLoading, isFetching, isError } = useGetWorkspaceActivity({
     workspaceId,
     userId: userId || undefined,
     type: type || undefined,
+    projectId: projectId || undefined,
     from: from ? toStartOfDayIso(from) : undefined,
     to: to ? toEndOfDayIso(to) : undefined,
     page,
@@ -89,6 +102,7 @@ function RouteComponent() {
         workspaceId,
         userId: userId || undefined,
         type: type || undefined,
+        projectId: projectId || undefined,
         from: from ? toStartOfDayIso(from) : undefined,
         to: to ? toEndOfDayIso(to) : undefined,
         format,
@@ -109,6 +123,7 @@ function RouteComponent() {
   function resetFilters() {
     setUserId("");
     setType("");
+    setProjectId("");
     setFrom("");
     setTo("");
     setPage(1);
@@ -167,6 +182,32 @@ function RouteComponent() {
                 {ACTIVITY_TYPES.map((activityType) => (
                   <option key={activityType} value={activityType}>
                     {t(`workspace:activityLog.types.${activityType}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label
+              className="flex flex-col gap-1.5 text-sm"
+              htmlFor="activity-filter-project"
+            >
+              <span className="font-medium text-foreground">
+                {t("workspace:activityLog.filters.project")}
+              </span>
+              <select
+                id="activity-filter-project"
+                value={projectId}
+                onChange={(event) =>
+                  updateFilter(setProjectId, event.target.value)
+                }
+                className="h-8.5 min-w-40 rounded-lg border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24 sm:h-7.5"
+              >
+                <option value="">
+                  {t("workspace:activityLog.filters.allProjects")}
+                </option>
+                {(projects ?? []).map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
                   </option>
                 ))}
               </select>

@@ -17,6 +17,9 @@ export const workspaceActivityQuery = z.object({
   type: z.string().optional().openapi({
     description: "Only activity of this type, e.g. status_changed.",
   }),
+  projectId: z.string().optional().openapi({
+    description: "Only activity on tasks belonging to this project.",
+  }),
   from: z.string().optional().openapi({
     description: "Only activity created at or after this ISO timestamp.",
   }),
@@ -30,6 +33,7 @@ export const workspaceActivityQuery = z.object({
 export const workspaceActivityExportQuery = z.object({
   userId: workspaceActivityQuery.shape.userId,
   type: workspaceActivityQuery.shape.type,
+  projectId: workspaceActivityQuery.shape.projectId,
   from: workspaceActivityQuery.shape.from,
   to: workspaceActivityQuery.shape.to,
   format: z.enum(["csv", "json"]).optional().openapi({

@@ -5,6 +5,7 @@ export type GetWorkspaceActivityParams = {
   workspaceId: string;
   userId?: string;
   type?: string;
+  projectId?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -15,6 +16,7 @@ async function getWorkspaceActivity({
   workspaceId,
   userId,
   type,
+  projectId,
   from,
   to,
   page,
@@ -25,6 +27,7 @@ async function getWorkspaceActivity({
     query: {
       ...(userId ? { userId } : {}),
       ...(type ? { type } : {}),
+      ...(projectId ? { projectId } : {}),
       ...(from ? { from } : {}),
       ...(to ? { to } : {}),
       ...(page ? { page: String(page) } : {}),

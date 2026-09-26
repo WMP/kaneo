@@ -16,7 +16,7 @@ export const workspaceMemberSchema = z
 export const workspaceMemberListSchema = z.array(workspaceMemberSchema);
 
 const activityTypeDescription =
-  "One of: comment, task, create, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed.";
+  "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted.";
 
 export const workspaceActivitySchema = z
   .object({

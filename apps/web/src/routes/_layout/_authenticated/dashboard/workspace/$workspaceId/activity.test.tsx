@@ -80,6 +80,11 @@ vi.mock("@/hooks/queries/workspace-users/use-get-workspace-users", () => ({
   default: (params: unknown) => useGetWorkspaceUsers(params),
 }));
 
+const useGetProjects = vi.fn();
+vi.mock("@/hooks/queries/project/use-get-projects", () => ({
+  default: (params: unknown) => useGetProjects(params),
+}));
+
 const exportWorkspaceActivity = vi.fn();
 const useExportWorkspaceActivity = vi.fn();
 vi.mock("@/hooks/mutations/workspace/use-export-workspace-activity", () => ({
@@ -116,6 +121,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   useGetWorkspaceUsers.mockReturnValue({
     data: [{ user: { id: "user-1", name: "Ada", email: "ada@example.com" } }],
+  });
+  useGetProjects.mockReturnValue({
+    data: [{ id: "project-1", name: "Demo project" }],
   });
   useExportWorkspaceActivity.mockReturnValue({
     mutateAsync: exportWorkspaceActivity,
@@ -258,6 +266,30 @@ describe("workspace activity view", () => {
         useGetWorkspaceActivity.mock.calls.length - 1
       ][0];
     expect(lastCall).toMatchObject({ userId: "user-1", page: 1 });
+  });
+
+  it("resets to page 1 and passes the chosen project through when the project filter changes", () => {
+    useGetWorkspaceActivity.mockReturnValue({
+      data: {
+        data: [activityRow()],
+        pagination: { total: 1, page: 1, pageSize: 25, totalPages: 1 },
+      },
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+    });
+
+    render(<Component />);
+
+    fireEvent.change(screen.getByLabelText("Project"), {
+      target: { value: "project-1" },
+    });
+
+    const lastCall =
+      useGetWorkspaceActivity.mock.calls[
+        useGetWorkspaceActivity.mock.calls.length - 1
+      ][0];
+    expect(lastCall).toMatchObject({ projectId: "project-1", page: 1 });
   });
 
   it("offers an Export control and exports the current filters as CSV", async () => {

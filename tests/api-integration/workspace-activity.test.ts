@@ -153,6 +153,56 @@ describe("API integration: workspace activity", () => {
     expect(payload.data[0].id).toBe("activity-1");
   });
 
+  it("filters by project", async () => {
+    const { member, project } = await fixture();
+
+    const { project: otherProject } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+      name: "Other project",
+    });
+    const [otherTask] = await db
+      .insert(schema.taskTable)
+      .values([
+        {
+          id: "activity-task-c",
+          projectId: otherProject.id,
+          title: "Third task",
+          number: 1,
+          status: "to-do",
+          priority: "medium",
+        },
+      ])
+      .returning();
+    await db.insert(schema.activityTable).values({
+      id: "activity-4",
+      taskId: otherTask.id,
+      type: "created",
+      userId: member.user.id,
+      content: null,
+      eventData: {},
+      createdAt: new Date("2024-04-01T00:00:00Z"),
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workspace/${member.workspace.id}/activity?projectId=${otherProject.id}`,
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.data.map((a: { id: string }) => a.id)).toEqual([
+      "activity-4",
+    ]);
+
+    const unfilteredResponse = await app.request(
+      `/api/workspace/${member.workspace.id}/activity?projectId=${project.id}`,
+    );
+    const unfilteredPayload = await unfilteredResponse.json();
+    expect(unfilteredPayload.pagination.total).toBe(3);
+  });
+
   it("filters by a created-at date range", async () => {
     const { member } = await fixture();
     mockAuthenticatedSession(member.user);
