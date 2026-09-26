@@ -21,6 +21,8 @@ function makeTask(id: string): Task {
     priority: null,
     startDate: null,
     dueDate: null,
+    approvalStatus: "none",
+    approvalNote: null,
     position: 0,
     createdAt: "2026-08-31T00:00:00.000Z",
     updatedAt: "2026-08-31T00:00:00.000Z",
@@ -87,6 +89,8 @@ describe("useDeleteTask", () => {
     const deletedTask = {
       ...makeTask("delete-me"),
       priority: "no-priority",
+      approvalStatus: "none",
+      approvalNote: null,
     };
     queryClient.setQueryData(["tasks", project.id], project);
     queryClient.setQueryData(["task", deletedTask.id], deletedTask);

@@ -1,10 +1,20 @@
-import { Calendar, CircleAlert, History, UserRound } from "lucide-react";
+import {
+  Calendar,
+  CircleAlert,
+  History,
+  ShieldQuestion,
+  UserRound,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetWorkspaceUsers from "@/hooks/queries/workspace-users/use-get-workspace-users";
 import { formatDateMedium, formatRelativeTime } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
-import { getPriorityLabel, getStatusLabel } from "@/lib/i18n/domain";
+import {
+  getApprovalStatusLabel,
+  getPriorityLabel,
+  getStatusLabel,
+} from "@/lib/i18n/domain";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   HoverCard,
@@ -55,6 +65,8 @@ function getActivityTypeIcon(type: string) {
       return <History className={iconClass} />;
     case "priority_changed":
       return <CircleAlert className={iconClass} />;
+    case "approval_changed":
+      return <ShieldQuestion className={iconClass} />;
     case "due_date_changed":
       return <Calendar className={iconClass} />;
     case "assignee_changed":
@@ -198,6 +210,25 @@ function renderActivityContent({
         })}
       </span>
     );
+  }
+
+  if (activity.type === "approval_changed") {
+    if (eventData) {
+      return (
+        <span className="text-sm text-muted-foreground">
+          {t("activity:changedApproval", {
+            from: getApprovalStatusLabel(
+              String(eventData.oldApprovalStatus ?? ""),
+            ),
+            to: getApprovalStatusLabel(
+              String(eventData.newApprovalStatus ?? ""),
+            ),
+          })}
+        </span>
+      );
+    }
+
+    return <span className="text-sm text-muted-foreground">{content}</span>;
   }
 
   if (activity.type === "status_changed") {

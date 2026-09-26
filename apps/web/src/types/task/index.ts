@@ -30,6 +30,11 @@ type Task = {
   priority: string | null;
   startDate: string | null;
   dueDate: string | null;
+  // One of: none, pending, approved, rejected. Optional for the same reason
+  // as assigneeImage above: some call sites build a partial Task from a
+  // narrower summary (e.g. a related-task lookup) that predates this field.
+  approvalStatus?: string;
+  approvalNote?: string | null;
   position: number | null;
   createdAt: string;
   updatedAt?: string;

@@ -26,6 +26,7 @@ import useGetProject from "@/hooks/queries/project/use-get-project";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useGetTask from "@/hooks/queries/task/use-get-task";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { getApprovalStatusIcon } from "@/lib/approval";
 import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
 import {
@@ -35,10 +36,15 @@ import {
 } from "@/lib/due-date-status";
 import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
-import { getPriorityLabel, getStatusDisplayLabel } from "@/lib/i18n/domain";
+import {
+  getApprovalStatusLabel,
+  getPriorityLabel,
+  getStatusDisplayLabel,
+} from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
+import TaskApprovalPopover from "./task-approval-popover";
 import TaskAssigneePopover from "./task-assignee-popover";
 import TaskDueDatePopover from "./task-due-date-popover";
 import TaskLabelsPopover from "./task-labels-popover";
@@ -324,6 +330,20 @@ export default function TaskPropertiesSidebar({
                   </Button>
                 </TaskDueDatePopover>
               )}
+              {task && (
+                <TaskApprovalPopover task={task}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-start h-7 px-1.5 gap-1.5"
+                  >
+                    {getApprovalStatusIcon(task.approvalStatus ?? "none")}
+                    <span className="text-xs font-semibold truncate">
+                      {getApprovalStatusLabel(task.approvalStatus ?? "none")}
+                    </span>
+                  </Button>
+                </TaskApprovalPopover>
+              )}
             </div>
           </div>
         )}
@@ -514,6 +534,20 @@ export default function TaskPropertiesSidebar({
                       )}
                     </Button>
                   </TaskDueDatePopover>
+                )}
+                {task && (
+                  <TaskApprovalPopover task={task}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start h-7 px-1.5 gap-1.5"
+                    >
+                      {getApprovalStatusIcon(task.approvalStatus ?? "none")}
+                      <span className="text-xs font-semibold truncate">
+                        {getApprovalStatusLabel(task.approvalStatus ?? "none")}
+                      </span>
+                    </Button>
+                  </TaskApprovalPopover>
                 )}
               </div>
             </div>
@@ -707,6 +741,20 @@ export default function TaskPropertiesSidebar({
                       )}
                     </Button>
                   </TaskDueDatePopover>
+                )}
+                {task && (
+                  <TaskApprovalPopover task={task}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start h-7 px-1.5 gap-1.5 w-full"
+                    >
+                      {getApprovalStatusIcon(task.approvalStatus ?? "none")}
+                      <span className="text-xs font-semibold truncate">
+                        {getApprovalStatusLabel(task.approvalStatus ?? "none")}
+                      </span>
+                    </Button>
+                  </TaskApprovalPopover>
                 )}
               </div>
             </div>

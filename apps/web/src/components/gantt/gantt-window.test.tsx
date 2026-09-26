@@ -38,6 +38,9 @@ vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
 vi.mock("@/hooks/mutations/task/use-update-task", () => ({
   useUpdateTask: () => ({ mutateAsync: m.update }),
 }));
+vi.mock("@/hooks/queries/task-relation/use-gantt-gate-warnings", () => ({
+  useGanttGateWarnings: () => new Map(),
+}));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: () => 1,

@@ -69,6 +69,13 @@ vi.mock("@/components/gantt/gantt-task-bar", () => ({
   ),
 }));
 
+// The route reads gate warnings directly (not just through GanttTaskBar) to
+// badge the task rail; stubbed here so these tests don't need a real
+// QueryClientProvider around every render.
+vi.mock("@/hooks/queries/task-relation/use-gantt-gate-warnings", () => ({
+  useGanttGateWarnings: () => new Map(),
+}));
+
 // Resolves against the real en-US bundle, so the assertions fail if the
 // jumpToToday key (or its interpolated siblings) stops matching what the
 // component actually requests.

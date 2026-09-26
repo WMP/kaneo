@@ -1,6 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { addDays, format, isSameMonth, isToday, isWeekend } from "date-fns";
-import { Calendar, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  TriangleAlert,
+} from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -21,10 +27,16 @@ import PageTitle from "@/components/page-title";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
+import { useGanttGateWarnings } from "@/hooks/queries/task-relation/use-gantt-gate-warnings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
-import { getStatusLabel } from "@/lib/i18n/domain";
+import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 
 type GanttSearchParams = {
@@ -152,6 +164,12 @@ function RouteComponent() {
       ),
     [parsedTasks, weekStartsOn, dayColumnWidthRem, requestedStart],
   );
+
+  const scheduledTaskIds = useMemo(
+    () => scheduledTasks.map((task) => task.id),
+    [scheduledTasks],
+  );
+  const gateWarningsByTaskId = useGanttGateWarnings(scheduledTaskIds);
 
   // Whether "today" actually falls inside the computed date range. A project
   // made up entirely of past or far-future tasks has no "today" column to
@@ -466,6 +484,40 @@ function RouteComponent() {
                                 <span className="truncate text-[10px] text-muted-foreground">
                                   {project?.slug}-{task.number}
                                 </span>
+                                {(gateWarningsByTaskId.get(task.id)?.length ??
+                                  0) > 0 && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-px text-[10px] font-medium text-destructive">
+                                        <TriangleAlert className="size-2.5" />
+                                        {t("tasks:gantt.gateWarningBadge")}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-64">
+                                      <p className="font-medium">
+                                        {t("tasks:gantt.gateWarningTitle")}
+                                      </p>
+                                      <ul className="mt-1 list-disc space-y-0.5 pl-3.5">
+                                        {gateWarningsByTaskId
+                                          .get(task.id)
+                                          ?.map((gate) => (
+                                            <li key={gate.taskId}>
+                                              {t(
+                                                "tasks:gantt.gateWarningItem",
+                                                {
+                                                  title: gate.title,
+                                                  status:
+                                                    getApprovalStatusLabel(
+                                                      gate.approvalStatus,
+                                                    ),
+                                                },
+                                              )}
+                                            </li>
+                                          ))}
+                                      </ul>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
                               </div>
                               <p className="w-full line-clamp-1 text-xs font-medium leading-tight text-foreground">
                                 {task.title}
@@ -504,6 +556,7 @@ function RouteComponent() {
                             timeline={timeline}
                             pixelsPerDay={pixelsPerDay}
                             isMobile={isMobile}
+                            gateWarnings={gateWarningsByTaskId.get(task.id)}
                             onOpenTask={() =>
                               navigate({
                                 to: ".",
