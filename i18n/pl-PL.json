@@ -2400,8 +2400,8 @@
 			"updateError": "Nie udało się zaktualizować zadań",
 			"updatePriorityError": "Nie udało się zaktualizować priorytetu",
 			"updateSuccess": "Zaktualizowano zadań: {{count}}",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Ustaw postęp",
+			"updateProgressError": "Nie udało się zaktualizować postępu"
 		},
 		"common": {
 			"loadingTask": "Ładowanie zadania...",
@@ -2732,10 +2732,10 @@
 				"label": "Ograniczenie",
 				"pickDate": "Wybierz datę ograniczenia",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Zakończ nie później niż",
+					"must_start_on": "Musi rozpocząć się",
+					"none": "Brak ograniczenia",
+					"start_no_earlier_than": "Rozpocznij nie wcześniej niż"
 				},
 				"updateError": "Nie udało się zaktualizować ograniczenia zadania",
 				"updateSuccess": "Zaktualizowano ograniczenie zadania"
@@ -2796,20 +2796,20 @@
 				"blocks": "blokuje",
 				"related": "powiązane z"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "W {{project}}",
+			"crossProjectStatusReadOnly": "Status jest zarządzany w projekcie tego zadania",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Wartość dodatnia opóźnia rozpoczęcie; ujemna (wyprzedzenie) pozwala na nakładanie.",
+				"lagLabel": "Zwłoka (dni)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Zapisz",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Typ zależności",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Zakończenie → Zakończenie",
+					"fs": "Zakończenie → Rozpoczęcie",
+					"sf": "Rozpoczęcie → Zakończenie",
+					"ss": "Rozpoczęcie → Rozpoczęcie"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2817,9 +2817,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Nie udało się zaktualizować zależności"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Ta zależność utworzyłaby zależność cykliczną"
 		},
 		"sort": {
 			"ascending": "Rosnąco",
