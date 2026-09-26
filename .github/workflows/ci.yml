@@ -81,6 +81,10 @@ jobs:
       - name: Check locale files against en-US
         run: pnpm i18n:check
 
+      - name: Report untranslated locale placeholders
+        run: pnpm i18n:untranslated
+        continue-on-error: true
+
   openapi:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 15
