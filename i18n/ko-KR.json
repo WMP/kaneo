@@ -320,7 +320,10 @@
 			},
 			"validation": {
 				"workspaceNameRequired": "워크스페이스 이름은 필수입니다"
-			}
+			},
+			"restrictedSubtitle": "이 인스턴스에서는 관리자만 워크스페이스를 만들 수 있습니다. 초대를 요청한 뒤 이 페이지를 새로고침하세요.",
+			"restrictedCheckInvitations": "초대 확인",
+			"restrictedTitle": "초대가 필요합니다"
 		},
 		"profileSetup": {
 			"pageTitle": "프로필 완성",
@@ -556,7 +559,9 @@
 			"labels": "라벨",
 			"labelsDescription": "작업 라벨과 태그를 표시합니다",
 			"priority": "우선순위",
-			"priorityDescription": "우선순위 표시기를 표시합니다"
+			"priorityDescription": "우선순위 표시기를 표시합니다",
+			"projectBackgrounds": "Project backgrounds",
+			"projectBackgroundsDescription": "Show project background images on boards"
 		},
 		"developerPage": {
 			"pageTitle": "개발자 설정",
@@ -704,7 +709,27 @@
 				"iconRequired": "아이콘은 필수입니다"
 			},
 			"importExportTasks": "가져오기/내보내기",
-			"importExportTasksDescription": "작업을 가져오고 내보냅니다."
+			"importExportTasksDescription": "작업을 가져오고 내보냅니다.",
+			"backgroundHint": "Choose an image shown behind this project's board.",
+			"backgroundLabel": "Board background",
+			"backgroundRemove": "Remove image",
+			"backgroundRemoveError": "Failed to remove project background",
+			"backgroundRemoveSuccess": "Project background removed",
+			"backgroundReplace": "Replace image",
+			"backgroundUpload": "Upload image",
+			"backgroundUploadError": "Failed to update project background",
+			"backgroundUploadSuccess": "Project background updated",
+			"moveModalConfirm": "프로젝트 이동",
+			"moveModalDescription": "프로젝트 \"{{name}}\"과(와) 모든 작업이 \"{{workspace}}\"(으)로 이동됩니다. 해당 워크스페이스의 멤버가 아닌 사람에게 할당된 작업은 할당이 해제되며, 이 프로젝트의 알림 구독도 삭제됩니다.",
+			"moveModalTitle": "프로젝트를 이동할까요?",
+			"moveProject": "워크스페이스로 이동",
+			"moveProjectAction": "이동",
+			"moveProjectDescription": "이 프로젝트를 모든 작업과 함께 다른 워크스페이스로 이동합니다.",
+			"moveProjectPlaceholder": "워크스페이스 선택",
+			"toastMoved": "프로젝트를 이동했습니다",
+			"toastMovedWithUnassigned": "프로젝트를 이동했습니다. {{taskCount}}개 작업의 할당이 해제되었습니다.",
+			"toastMoveError": "프로젝트를 이동하지 못했습니다",
+			"moveTargetsError": "이 프로젝트를 옮길 수 있는 워크스페이스를 확인하지 못했습니다. 페이지를 새로고침해 다시 시도하세요."
 		},
 		"projectIntegrations": {
 			"pageTitle": "프로젝트 연동",
@@ -723,7 +748,9 @@
 			"telegramSectionTitle": "Telegram 연동",
 			"telegramSectionSubtitle": "봇을 사용하여 프로젝트 작업 업데이트를 Telegram 채팅 또는 토픽으로 전송합니다.",
 			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration"
+			"mattermostSectionTitle": "Mattermost Integration",
+			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
+			"gitlabSectionTitle": "GitLab Integration"
 		},
 		"projectVisibility": {
 			"pageTitle": "프로젝트 공개 설정",
@@ -1141,7 +1168,9 @@
 				"pr_merged": "PR 병합됨",
 				"issue_opened": "이슈 열림",
 				"issue_closed": "이슈 닫힘"
-			}
+			},
+			"gitlabHeading": "GitLab",
+			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
 		},
 		"externalLinks": {
 			"resources": "리소스",
@@ -1149,7 +1178,15 @@
 			"branch": "브랜치",
 			"merged": "병합됨",
 			"draft": "초안",
-			"open": "열림"
+			"open": "열림",
+			"adding": "Adding...",
+			"addResource": "Add resource",
+			"cancel": "Cancel",
+			"empty": "No resources linked to this task.",
+			"titleOptional": "Title (optional)",
+			"url": "URL",
+			"remove": "Remove {{title}}",
+			"removeError": "Failed to remove the resource link."
 		},
 		"workspaceRoles": {
 			"pageTitle": "역할",
@@ -1446,8 +1483,17 @@
 				"date": "Date",
 				"dropdown": "Dropdown",
 				"number": "Number",
-				"text": "Text"
-			}
+				"text": "Text",
+				"multiselect": "Multi-Select"
+			},
+			"availableOptions": "Available options",
+			"clearDefault": "Clear",
+			"defaultValues": "{{count}} default(s)",
+			"moreOptions": "+{{hiddenCount}} more",
+			"multiple": "Multiple",
+			"options": "{{count}} option(s)",
+			"reorderError": "Failed to reorder fields",
+			"selectPlaceholder": "Select option(s)"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1557,6 +1603,142 @@
 			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
 			"workingDaysTitle": "Working days",
 			"loading": "Loading calendar…"
+		},
+		"security": "Security",
+		"securityPage": {
+			"confirmPassword": "Confirm new password",
+			"confirmPasswordPlaceholder": "Re-enter your new password",
+			"currentPassword": "Current password",
+			"currentPasswordPlaceholder": "Enter your current password",
+			"newPassword": "New password",
+			"newPasswordPlaceholder": "Enter a new password",
+			"noPassword": {
+				"description": "Your account signs in with a different method, so there is no password to change.",
+				"title": "Password change isn't available"
+			},
+			"pageTitle": "Security",
+			"sectionSubtitle": "Change the password you use to sign in.",
+			"sectionTitle": "Password",
+			"submit": "Update password",
+			"submitting": "Updating...",
+			"subtitle": "Manage your password and account security.",
+			"title": "Security",
+			"updateError": "Failed to update password.",
+			"updateSuccess": "Password updated.",
+			"validation": {
+				"confirmRequired": "Confirm your new password.",
+				"currentRequired": "Enter your current password.",
+				"mismatch": "Passwords do not match.",
+				"tooShort": "New password must be at least 8 characters.",
+				"sameAsCurrent": "New password must be different from your current password."
+			}
+		},
+		"gitlabIntegration": {
+			"actionsHint": "Verify access and connect",
+			"actionsTitle": "Actions",
+			"badgeConnected": "Connected",
+			"badgeNotConnected": "Not connected",
+			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
+			"baseUrlLabel": "GitLab URL",
+			"browse": "Browse",
+			"browseModalHint": "Projects your token is a member of",
+			"browseModalTitle": "Your projects",
+			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
+			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
+			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
+			"connect": "Connect",
+			"connectedActive": "Project connected and active",
+			"connectionStatus": "Connection status",
+			"currentToken": "stored",
+			"disconnect": "Disconnect",
+			"importDisabledHint": "Verify the project above to enable importing",
+			"importing": "Importing…",
+			"importIssues": "Import issues",
+			"importSectionHint": "Import open issues and merge requests from the project",
+			"importSectionTitle": "Import GitLab issues",
+			"loadingProjects": "Loading projects…",
+			"notConnectedHint": "No GitLab project connected",
+			"openInGitlab": "Open {{project}} in GitLab",
+			"project": "Project",
+			"projectHint": "Linked GitLab project",
+			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
+			"projectPathLabel": "Project path",
+			"retry": "Retry",
+			"searchProjects": "Search…",
+			"toast": {
+				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
+				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
+				"importError": "Failed to import issues",
+				"issuesImported": "Issues imported successfully",
+				"notGitlabInstance": "The URL does not point to a GitLab instance",
+				"projectNotFound": "Project not found or not accessible",
+				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
+				"removed": "GitLab integration removed",
+				"removeError": "Failed to remove GitLab integration",
+				"secretCopied": "Copied",
+				"settingsUpdateError": "Failed to update GitLab integration",
+				"tokenRequired": "Access token is required",
+				"tokenRequiredVerify": "Enter a token to verify",
+				"unableToCopySecret": "Unable to copy secret",
+				"updated": "GitLab integration saved",
+				"updateError": "Failed to save GitLab integration",
+				"verifyError": "Failed to verify GitLab access",
+				"verifyFirst": "Verify access failed. Check URL, token, and project path",
+				"verifyOk": "GitLab token can access this project",
+				"verifyWarning": "Check token permissions or project access"
+			},
+			"tokenHint": "Token with api scope and at least Developer on the project",
+			"tokenLabel": "Access token",
+			"tokenPlaceholder": "Paste token",
+			"tokenPlaceholderUpdate": "Paste new token to rotate",
+			"tokenTypeBearer": "OAuth2 token",
+			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
+			"tokenTypeLabel": "Token type",
+			"tokenTypePrivate": "Personal, project or group access token",
+			"update": "Update",
+			"validation": {
+				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
+				"baseUrlRequired": "GitLab base URL is required",
+				"pathInvalid": "Enter the full path, e.g. group/project",
+				"pathRequired": "Project path is required"
+			},
+			"verify": "Verify",
+			"webhookCopy": "Copy",
+			"webhookHide": "Hide",
+			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
+			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
+			"webhookShow": "Show",
+			"webhookTitle": "Webhook",
+			"loadProjectsError": "Failed to load projects",
+			"importPermissionHint": "Importing requires permission to create and update tasks."
+		},
+		"calendarFeeds": {
+			"title": "Calendar feeds",
+			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
+			"createTitle": "Create a calendar feed",
+			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
+			"labels": "Labels",
+			"selectLabels": "Search and select labels…",
+			"noLabels": "No labels found.",
+			"timeZoneHint": "All-day dates use {{timeZone}}.",
+			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
+			"create": "Create feed",
+			"creating": "Creating…",
+			"created": "Calendar feed created.",
+			"createError": "Could not create the calendar feed.",
+			"activeFeeds": "Active feeds",
+			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
+			"empty": "No calendar feeds yet.",
+			"feedUrl": "Calendar feed URL",
+			"copy": "Copy link",
+			"copied": "Calendar feed link copied.",
+			"copyError": "Could not copy the link. Select the URL and copy it manually.",
+			"revoke": "Revoke",
+			"revoked": "Calendar feed revoked.",
+			"revokeError": "Could not revoke the calendar feed.",
+			"loadError": "Could not load calendar feeds or labels. Please try again.",
+			"deletedLabel": "Deleted label",
+			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
 		}
 	},
 	"navigation": {
@@ -1743,9 +1925,7 @@
 		"created": "이 작업을 생성함",
 		"githubUser": "GitHub 사용자",
 		"comment": {
-			"github": "GitHub",
 			"viewGithubProfile": "GitHub 프로필 보기",
-			"commentedOnGithub": "GitHub에 댓글을 남김",
 			"cannotBeEmpty": "댓글은 비워둘 수 없습니다",
 			"mustBeLoggedInToEdit": "댓글을 편집하려면 로그인해야 합니다",
 			"updated": "댓글이 업데이트되었습니다",
@@ -1841,7 +2021,8 @@
 				}
 			},
 			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}"
+			"importedBy": "Imported by {{name}}",
+			"commentedOnForge": "{{forge}}에 댓글을 남김"
 		},
 		"relationCreated": "added a dependency",
 		"relationUpdated": "updated a dependency",
@@ -1983,6 +2164,13 @@
 				},
 				"mermaid": {
 					"renderFailed": "Mermaid 다이어그램을 렌더링할 수 없습니다"
+				},
+				"image": {
+					"large": "Large",
+					"medium": "Medium",
+					"reset": "Reset size",
+					"resizeHandle": "Resize image",
+					"small": "Small"
 				}
 			},
 			"customFieldUpdated": "Field updated",
@@ -2044,7 +2232,9 @@
 			"deleteDialogTitle": "작업을 삭제하시겠습니까?",
 			"deleteDialogDescription": "작업과 모든 데이터가 영구적으로 제거됩니다. 이 작업은 취소할 수 없습니다.",
 			"deleteAction": "작업 삭제",
-			"completeAria": "하위 작업을 완료로 표시"
+			"completeAria": "하위 작업을 완료로 표시",
+			"progress": "하위 작업 {{total}}개 중 {{completed}}개 완료",
+			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
 		},
 		"properties": {
 			"title": "속성",
@@ -2303,6 +2493,11 @@
 			"success": "작업이 삭제되었습니다",
 			"error": "작업 삭제에 실패했습니다"
 		},
+		"duplicate": {
+			"titleSuffix": "{{title}} (사본)",
+			"success": "작업이 복제되었습니다",
+			"error": "작업 복제에 실패했습니다"
+		},
 		"archive": {
 			"success": "작업 {{count}}개를 보관했습니다"
 		},
@@ -2346,6 +2541,7 @@
 			"copyLinkSuccess": "작업 링크가 복사되었습니다!"
 		},
 		"actions": {
+			"duplicate": "복제",
 			"archive": "보관",
 			"markAsPlanned": "계획됨으로 표시",
 			"delete": "삭제..."
@@ -2406,6 +2602,10 @@
 			"none": "No approval needed",
 			"pending": "Pending approval",
 			"rejected": "Rejected"
+		},
+		"checklistProgress": "체크리스트 항목 {{total}}개 중 {{completed}}개 완료",
+		"customFields": {
+			"ariaLabel": "Custom fields"
 		}
 	},
 	"invitations": {
@@ -2630,6 +2830,9 @@
 		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
 	},
 	"landing": {
+		"sponsors": {
+			"ciSponsor": "파트너"
+		},
 		"founder": {
 			"title": "Why Kaneo exists",
 			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",

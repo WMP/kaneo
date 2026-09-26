@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import db from "../../database";
 import { projectTable, taskTable, userTable } from "../../database/schema";
+import { taskIsCompleted } from "../../task/task-is-completed";
 
 type RelationRow = {
   id: string;
@@ -16,6 +17,7 @@ type TaskSummary = {
   id: string;
   title: string;
   status: string;
+  isCompleted: boolean;
   priority: string | null;
   number: number | null;
   projectId: string;
@@ -51,6 +53,7 @@ async function resolveRelationsWithTasks(
         id: taskTable.id,
         title: taskTable.title,
         status: taskTable.status,
+        isCompleted: taskIsCompleted,
         priority: taskTable.priority,
         number: taskTable.number,
         projectId: taskTable.projectId,

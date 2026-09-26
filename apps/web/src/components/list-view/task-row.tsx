@@ -1,7 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "@tanstack/react-router";
-import { format } from "date-fns";
 import {
   Calendar,
   CalendarClock,
@@ -11,6 +10,7 @@ import {
 } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TaskProgressBadges } from "@/components/task/task-progress-badges";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -37,6 +37,7 @@ import {
   isTaskCompleted,
 } from "@/lib/due-date-status";
 import { getExternalWebUrl, openExternalWebUrl } from "@/lib/external-url";
+import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
@@ -217,6 +218,7 @@ function TaskRow({ task, projectSlug }: TaskRowProps) {
                   {task.title}
                 </span>
                 <div className="flex items-center gap-1">
+                  <TaskProgressBadges task={task} />
                   {showLabels && <TaskLabels labels={task.labels ?? []} />}
 
                   {pullRequests.length === 1 && (
@@ -343,7 +345,7 @@ function TaskRow({ task, projectSlug }: TaskRowProps) {
                   "far-future" ||
                   getDueDateStatus(task.dueDate, taskIsCompleted) ===
                     "no-due-date") && <Calendar className="w-3 h-3" />}
-                <span>{format(new Date(task.dueDate), "MMM d")}</span>
+                <span>{formatDateShort(task.dueDate)}</span>
               </div>
             )}
 

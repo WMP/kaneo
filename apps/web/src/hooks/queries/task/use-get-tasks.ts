@@ -18,6 +18,7 @@ export function useGetTasks(projectId: string) {
   return useQuery({
     queryKey: ["tasks", projectId],
     queryFn: ({ signal }) => getTasks(projectId, signal),
+    refetchOnMount: true,
     refetchInterval: (query) =>
       isUnauthorizedError(query.state.error)
         ? false

@@ -110,6 +110,7 @@ import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-pr
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
+import { formatDate, formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
@@ -1823,7 +1824,7 @@ function RouteComponent() {
                   }}
                 />
                 <span className="text-xs text-muted-foreground">
-                  – {format(timeline.rangeEnd, "MMM d, yyyy")}
+                  – {formatDateMedium(timeline.rangeEnd)}
                 </span>
                 <Button
                   variant="outline"
@@ -1966,7 +1967,9 @@ function RouteComponent() {
                             )}
                           >
                             <div className="h-4 text-[10px] font-medium text-muted-foreground">
-                              {showMonth ? format(day, "MMM") : ""}
+                              {showMonth
+                                ? formatDate(day, { month: "short" })
+                                : ""}
                             </div>
                             <div
                               className={cn(
@@ -2156,8 +2159,8 @@ function RouteComponent() {
                                   {task.title}
                                 </p>
                                 <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
-                                  {format(task.scheduleStart, "MMM d, yyyy")} -{" "}
-                                  {format(task.scheduleEnd, "MMM d, yyyy")}
+                                  {formatDateMedium(task.scheduleStart)} -{" "}
+                                  {formatDateMedium(task.scheduleEnd)}
                                 </p>
                               </div>
                             ) : (
@@ -2318,8 +2321,8 @@ function RouteComponent() {
                                     </span>
                                   </div>
                                   <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
-                                    {format(task.scheduleStart, "MMM d, yyyy")}{" "}
-                                    - {format(task.scheduleEnd, "MMM d, yyyy")}
+                                    {formatDateMedium(task.scheduleStart)} -{" "}
+                                    {formatDateMedium(task.scheduleEnd)}
                                   </p>
                                   {selectedCustomFieldDefinition &&
                                     customFieldValueByTaskId.has(task.id) && (

@@ -1225,6 +1225,15 @@
 						"createWorkspace": {
 							"type": "string"
 						},
+						"restrictedTitle": {
+							"type": "string"
+						},
+						"restrictedSubtitle": {
+							"type": "string"
+						},
+						"restrictedCheckInvitations": {
+							"type": "string"
+						},
 						"workspaceCreatedTitle": {
 							"type": "string"
 						},
@@ -1266,6 +1275,9 @@
 						"descriptionPlaceholder",
 						"creating",
 						"createWorkspace",
+						"restrictedTitle",
+						"restrictedSubtitle",
+						"restrictedCheckInvitations",
 						"workspaceCreatedTitle",
 						"redirectingToWorkspace",
 						"toast",
@@ -2489,6 +2501,12 @@
 						},
 						"priorityDescription": {
 							"type": "string"
+						},
+						"projectBackgrounds": {
+							"type": "string"
+						},
+						"projectBackgroundsDescription": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -2530,7 +2548,9 @@
 						"labels",
 						"labelsDescription",
 						"priority",
-						"priorityDescription"
+						"priorityDescription",
+						"projectBackgrounds",
+						"projectBackgroundsDescription"
 					]
 				},
 				"developerPage": {
@@ -3875,6 +3895,33 @@
 						"descriptionPlaceholder": {
 							"type": "string"
 						},
+						"backgroundLabel": {
+							"type": "string"
+						},
+						"backgroundHint": {
+							"type": "string"
+						},
+						"backgroundUpload": {
+							"type": "string"
+						},
+						"backgroundReplace": {
+							"type": "string"
+						},
+						"backgroundRemove": {
+							"type": "string"
+						},
+						"backgroundUploadSuccess": {
+							"type": "string"
+						},
+						"backgroundUploadError": {
+							"type": "string"
+						},
+						"backgroundRemoveSuccess": {
+							"type": "string"
+						},
+						"backgroundRemoveError": {
+							"type": "string"
+						},
 						"dangerZone": {
 							"type": "string"
 						},
@@ -3937,6 +3984,39 @@
 						},
 						"importExportTasksDescription": {
 							"type": "string"
+						},
+						"moveProject": {
+							"type": "string"
+						},
+						"moveProjectDescription": {
+							"type": "string"
+						},
+						"moveProjectPlaceholder": {
+							"type": "string"
+						},
+						"moveTargetsError": {
+							"type": "string"
+						},
+						"moveProjectAction": {
+							"type": "string"
+						},
+						"moveModalTitle": {
+							"type": "string"
+						},
+						"moveModalDescription": {
+							"type": "string"
+						},
+						"moveModalConfirm": {
+							"type": "string"
+						},
+						"toastMoved": {
+							"type": "string"
+						},
+						"toastMovedWithUnassigned": {
+							"type": "string"
+						},
+						"toastMoveError": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -3958,6 +4038,15 @@
 						"descriptionLabel",
 						"descriptionHint",
 						"descriptionPlaceholder",
+						"backgroundLabel",
+						"backgroundHint",
+						"backgroundUpload",
+						"backgroundReplace",
+						"backgroundRemove",
+						"backgroundUploadSuccess",
+						"backgroundUploadError",
+						"backgroundRemoveSuccess",
+						"backgroundRemoveError",
 						"dangerZone",
 						"dangerZoneSubtitle",
 						"deleteProject",
@@ -3971,7 +4060,18 @@
 						"toastDeleteError",
 						"validation",
 						"importExportTasks",
-						"importExportTasksDescription"
+						"importExportTasksDescription",
+						"moveProject",
+						"moveProjectDescription",
+						"moveProjectPlaceholder",
+						"moveTargetsError",
+						"moveProjectAction",
+						"moveModalTitle",
+						"moveModalDescription",
+						"moveModalConfirm",
+						"toastMoved",
+						"toastMovedWithUnassigned",
+						"toastMoveError"
 					]
 				},
 				"projectIntegrations": {
@@ -4274,6 +4374,30 @@
 						"optionsPlaceholder": {
 							"type": "string"
 						},
+						"selectPlaceholder": {
+							"type": "string"
+						},
+						"defaultValues": {
+							"type": "string"
+						},
+						"defaultValues_zero": {
+							"type": "string"
+						},
+						"defaultValues_one": {
+							"type": "string"
+						},
+						"defaultValues_two": {
+							"type": "string"
+						},
+						"defaultValues_few": {
+							"type": "string"
+						},
+						"defaultValues_many": {
+							"type": "string"
+						},
+						"defaultValues_other": {
+							"type": "string"
+						},
 						"required": {
 							"type": "string"
 						},
@@ -4310,6 +4434,39 @@
 						"deleteError": {
 							"type": "string"
 						},
+						"reorderError": {
+							"type": "string"
+						},
+						"moreOptions": {
+							"type": "string"
+						},
+						"clearDefault": {
+							"type": "string"
+						},
+						"options": {
+							"type": "string"
+						},
+						"options_zero": {
+							"type": "string"
+						},
+						"options_one": {
+							"type": "string"
+						},
+						"options_two": {
+							"type": "string"
+						},
+						"options_few": {
+							"type": "string"
+						},
+						"options_many": {
+							"type": "string"
+						},
+						"options_other": {
+							"type": "string"
+						},
+						"availableOptions": {
+							"type": "string"
+						},
 						"types": {
 							"type": "object",
 							"additionalProperties": false,
@@ -4328,9 +4485,22 @@
 								},
 								"boolean": {
 									"type": "string"
+								},
+								"multiselect": {
+									"type": "string"
 								}
 							},
-							"required": ["text", "number", "date", "dropdown", "boolean"]
+							"required": [
+								"text",
+								"number",
+								"date",
+								"dropdown",
+								"boolean",
+								"multiselect"
+							]
+						},
+						"multiple": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -4339,6 +4509,7 @@
 						"noOptionsPlaceholder",
 						"defaultValuePlaceholder",
 						"optionsPlaceholder",
+						"selectPlaceholder",
 						"required",
 						"addButton",
 						"creating",
@@ -4351,7 +4522,12 @@
 						"deleting",
 						"deleteSuccess",
 						"deleteError",
-						"types"
+						"reorderError",
+						"moreOptions",
+						"clearDefault",
+						"availableOptions",
+						"types",
+						"multiple"
 					]
 				},
 				"githubIntegration": {
@@ -6088,6 +6264,30 @@
 						},
 						"open": {
 							"type": "string"
+						},
+						"addResource": {
+							"type": "string"
+						},
+						"url": {
+							"type": "string"
+						},
+						"titleOptional": {
+							"type": "string"
+						},
+						"cancel": {
+							"type": "string"
+						},
+						"adding": {
+							"type": "string"
+						},
+						"empty": {
+							"type": "string"
+						},
+						"remove": {
+							"type": "string"
+						},
+						"removeError": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -6096,7 +6296,241 @@
 						"branch",
 						"merged",
 						"draft",
-						"open"
+						"open",
+						"addResource",
+						"url",
+						"titleOptional",
+						"cancel",
+						"adding",
+						"empty",
+						"remove",
+						"removeError"
+					]
+				},
+				"security": {
+					"type": "string"
+				},
+				"securityPage": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"pageTitle": {
+							"type": "string"
+						},
+						"title": {
+							"type": "string"
+						},
+						"subtitle": {
+							"type": "string"
+						},
+						"sectionTitle": {
+							"type": "string"
+						},
+						"sectionSubtitle": {
+							"type": "string"
+						},
+						"currentPassword": {
+							"type": "string"
+						},
+						"newPassword": {
+							"type": "string"
+						},
+						"confirmPassword": {
+							"type": "string"
+						},
+						"currentPasswordPlaceholder": {
+							"type": "string"
+						},
+						"newPasswordPlaceholder": {
+							"type": "string"
+						},
+						"confirmPasswordPlaceholder": {
+							"type": "string"
+						},
+						"submit": {
+							"type": "string"
+						},
+						"submitting": {
+							"type": "string"
+						},
+						"updateSuccess": {
+							"type": "string"
+						},
+						"updateError": {
+							"type": "string"
+						},
+						"noPassword": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								}
+							},
+							"required": ["title", "description"]
+						},
+						"validation": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"currentRequired": {
+									"type": "string"
+								},
+								"tooShort": {
+									"type": "string"
+								},
+								"confirmRequired": {
+									"type": "string"
+								},
+								"mismatch": {
+									"type": "string"
+								},
+								"sameAsCurrent": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"currentRequired",
+								"tooShort",
+								"confirmRequired",
+								"mismatch",
+								"sameAsCurrent"
+							]
+						}
+					},
+					"required": [
+						"pageTitle",
+						"title",
+						"subtitle",
+						"sectionTitle",
+						"sectionSubtitle",
+						"currentPassword",
+						"newPassword",
+						"confirmPassword",
+						"currentPasswordPlaceholder",
+						"newPasswordPlaceholder",
+						"confirmPasswordPlaceholder",
+						"submit",
+						"submitting",
+						"updateSuccess",
+						"updateError",
+						"noPassword",
+						"validation"
+					]
+				},
+				"calendarFeeds": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"subtitle": {
+							"type": "string"
+						},
+						"createTitle": {
+							"type": "string"
+						},
+						"filterHint": {
+							"type": "string"
+						},
+						"labels": {
+							"type": "string"
+						},
+						"selectLabels": {
+							"type": "string"
+						},
+						"noLabels": {
+							"type": "string"
+						},
+						"timeZoneHint": {
+							"type": "string"
+						},
+						"accessHint": {
+							"type": "string"
+						},
+						"create": {
+							"type": "string"
+						},
+						"creating": {
+							"type": "string"
+						},
+						"created": {
+							"type": "string"
+						},
+						"createError": {
+							"type": "string"
+						},
+						"activeFeeds": {
+							"type": "string"
+						},
+						"subscribeHint": {
+							"type": "string"
+						},
+						"empty": {
+							"type": "string"
+						},
+						"feedUrl": {
+							"type": "string"
+						},
+						"copy": {
+							"type": "string"
+						},
+						"copied": {
+							"type": "string"
+						},
+						"copyError": {
+							"type": "string"
+						},
+						"revoke": {
+							"type": "string"
+						},
+						"revoked": {
+							"type": "string"
+						},
+						"revokeError": {
+							"type": "string"
+						},
+						"loadError": {
+							"type": "string"
+						},
+						"deletedLabel": {
+							"type": "string"
+						},
+						"permissionRequired": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"title",
+						"subtitle",
+						"createTitle",
+						"filterHint",
+						"labels",
+						"selectLabels",
+						"noLabels",
+						"timeZoneHint",
+						"accessHint",
+						"create",
+						"creating",
+						"created",
+						"createError",
+						"activeFeeds",
+						"subscribeHint",
+						"empty",
+						"feedUrl",
+						"copy",
+						"copied",
+						"copyError",
+						"revoke",
+						"revoked",
+						"revokeError",
+						"loadError",
+						"deletedLabel",
+						"permissionRequired"
 					]
 				}
 			},
@@ -6134,7 +6568,10 @@
 				"repositoryBrowser",
 				"tasksImportExport",
 				"workflowEditor",
-				"externalLinks"
+				"externalLinks",
+				"security",
+				"securityPage",
+				"calendarFeeds"
 			]
 		},
 		"navigation": {
@@ -7318,6 +7755,9 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"checklistProgress": {
+					"type": "string"
+				},
 				"title": {
 					"type": "string"
 				},
@@ -7823,6 +8263,34 @@
 										}
 									},
 									"required": ["renderFailed"]
+								},
+								"image": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"large": {
+											"type": "string"
+										},
+										"medium": {
+											"type": "string"
+										},
+										"reset": {
+											"type": "string"
+										},
+										"resizeHandle": {
+											"type": "string"
+										},
+										"small": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"large",
+										"medium",
+										"reset",
+										"resizeHandle",
+										"small"
+									]
 								}
 							},
 							"required": [
@@ -7841,7 +8309,8 @@
 								"slash",
 								"languages",
 								"embed",
-								"mermaid"
+								"mermaid",
+								"image"
 							]
 						}
 					},
@@ -8025,6 +8494,12 @@
 					"type": "object",
 					"additionalProperties": false,
 					"properties": {
+						"progress": {
+							"type": "string"
+						},
+						"noCompletionColumn": {
+							"type": "string"
+						},
 						"title": {
 							"type": "string"
 						},
@@ -8060,6 +8535,8 @@
 						}
 					},
 					"required": [
+						"progress",
+						"noCompletionColumn",
 						"title",
 						"inputPlaceholder",
 						"addAction",
@@ -8977,6 +9454,22 @@
 					},
 					"required": ["title", "description", "action", "success", "error"]
 				},
+				"duplicate": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"titleSuffix": {
+							"type": "string"
+						},
+						"success": {
+							"type": "string"
+						},
+						"error": {
+							"type": "string"
+						}
+					},
+					"required": ["titleSuffix", "success", "error"]
+				},
 				"archive": {
 					"type": "object",
 					"additionalProperties": false,
@@ -9156,6 +9649,9 @@
 					"type": "object",
 					"additionalProperties": false,
 					"properties": {
+						"duplicate": {
+							"type": "string"
+						},
 						"archive": {
 							"type": "string"
 						},
@@ -9166,7 +9662,7 @@
 							"type": "string"
 						}
 					},
-					"required": ["archive", "markAsPlanned", "delete"]
+					"required": ["duplicate", "archive", "markAsPlanned", "delete"]
 				},
 				"bulk": {
 					"type": "object",
@@ -9492,6 +9988,16 @@
 					},
 					"required": ["table"]
 				},
+				"customFields": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"ariaLabel": {
+							"type": "string"
+						}
+					},
+					"required": ["ariaLabel"]
+				},
 				"descriptionSearchLoading": {
 					"type": "string"
 				},
@@ -9509,6 +10015,7 @@
 				}
 			},
 			"required": [
+				"checklistProgress",
 				"title",
 				"status",
 				"priority",
@@ -9528,6 +10035,7 @@
 				"calendar",
 				"gantt",
 				"delete",
+				"duplicate",
 				"archive",
 				"listView",
 				"kanban",
@@ -9540,6 +10048,7 @@
 				"actions",
 				"bulk",
 				"editor",
+				"customFields",
 				"descriptionSearchLoading",
 				"descriptionSearchError",
 				"descriptionRetry",
@@ -10427,6 +10936,16 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"sponsors": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"ciSponsor": {
+							"type": "string"
+						}
+					},
+					"required": ["ciSponsor"]
+				},
 				"founder": {
 					"type": "object",
 					"additionalProperties": false,
@@ -11034,6 +11553,7 @@
 				}
 			},
 			"required": [
+				"sponsors",
 				"founder",
 				"hero",
 				"navigation",

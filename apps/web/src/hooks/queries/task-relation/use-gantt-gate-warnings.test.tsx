@@ -19,6 +19,7 @@ function relatedTask(
     id: "gate",
     title: "Client sign-off",
     status: "to-do",
+    isCompleted: false,
     priority: "medium",
     number: 1,
     projectId: "project-1",

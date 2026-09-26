@@ -19,6 +19,7 @@ import { auth } from "./auth";
 import { organizationRoutes } from "./auth-openapi";
 import billing from "./billing";
 import calendar from "./calendar";
+import calendarFeed, { publicCalendarFeed } from "./calendar-feed";
 import column from "./column";
 import comment from "./comment";
 import config from "./config";
@@ -34,6 +35,9 @@ import giteaIntegration, { handleGiteaWebhookRoute } from "./gitea-integration";
 import githubIntegration, {
   handleGithubWebhookRoute,
 } from "./github-integration";
+import gitlabIntegration, {
+  handleGitlabWebhookRoute,
+} from "./gitlab-integration";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import label from "./label";
@@ -77,6 +81,7 @@ import { migrateSessionColumn } from "./utils/migrate-session-column";
 import { migrateWorkspaceUserEmail } from "./utils/migrate-workspace-user-email";
 import { normalizeApiServerUrl } from "./utils/openapi-spec";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
+import { drainSignInEmails } from "./utils/sign-in-email-tasks";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
 import workflowRule from "./workflow-rule";
 import workspace from "./workspace";
@@ -367,11 +372,18 @@ export function createApp() {
       },
     );
 
+  api.route("/calendar-feed", publicCalendarFeed);
+
   api.post("/github-integration/webhook", handleGithubWebhookRoute);
 
   api.post(
     "/gitea-integration/webhook/:integrationId",
     handleGiteaWebhookRoute,
+  );
+
+  api.post(
+    "/gitlab-integration/webhook/:integrationId",
+    handleGitlabWebhookRoute,
   );
 
   const invitationPublicApi = api.get("/invitation/public/:id", async (c) => {
@@ -712,6 +724,7 @@ export function createApp() {
   const billingApi = api.route("/billing", billing);
   const calendarApi = api.route("/calendar", calendar);
   const projectApi = api.route("/project", project);
+  const calendarFeedApi = api.route("/calendar-feed", calendarFeed);
   const taskApi = api.route("/task", task);
   const columnApi = api.route("/column", column);
   const activityApi = api.route("/activity", activity);
@@ -729,6 +742,10 @@ export function createApp() {
     githubIntegration,
   );
   const giteaIntegrationApi = api.route("/gitea-integration", giteaIntegration);
+  const gitlabIntegrationApi = api.route(
+    "/gitlab-integration",
+    gitlabIntegration,
+  );
   const genericWebhookIntegrationApi = api.route(
     "/generic-webhook-integration",
     genericWebhookIntegration,
@@ -817,6 +834,7 @@ export function createApp() {
 
       const userId = c.get("userId");
 
+      let workspaceId: string | undefined;
       if (projectId) {
         const [project] = await db
           .select({ workspaceId: schema.projectTable.workspaceId })
@@ -829,6 +847,7 @@ export function createApp() {
         }
 
         await validateWorkspaceAccess(userId, project.workspaceId);
+        workspaceId = project.workspaceId;
       }
 
       const windowId = c.req.query("windowId");
@@ -837,8 +856,14 @@ export function createApp() {
 
       return {
         onOpen(_evt, ws) {
-          if (projectId) {
-            conn = addConnection(projectId, ws, userId, initiatorId);
+          if (projectId && workspaceId) {
+            conn = addConnection(
+              projectId,
+              ws,
+              userId,
+              initiatorId,
+              workspaceId,
+            );
           }
         },
         onMessage: handleWebSocketMessage,
@@ -868,12 +893,14 @@ export function createApp() {
     genericWebhookIntegrationApi,
     githubIntegrationApi,
     giteaIntegrationApi,
+    gitlabIntegrationApi,
     invitationApi,
     invitationPublicApi,
     labelApi,
     notificationApi,
     notificationPreferencesApi,
     projectApi,
+    calendarFeedApi,
     publicProjectApi,
     searchApi,
     mattermostIntegrationApi,
@@ -962,7 +989,13 @@ export async function startServer(
     shutdownScheduler();
     await shutdownWebSocketAdapter();
     server.close();
-    await drainPasswordResetDeliveries();
+    const [, signInEmailsDrained] = await Promise.all([
+      drainPasswordResetDeliveries(),
+      drainSignInEmails(),
+    ]);
+    if (!signInEmailsDrained) {
+      console.warn("Timed out waiting for pending sign-in emails");
+    }
     process.exit(0);
   };
 
@@ -990,6 +1023,7 @@ const {
   genericWebhookIntegrationApi,
   githubIntegrationApi,
   giteaIntegrationApi,
+  gitlabIntegrationApi,
   invitationApi,
   invitationPublicApi,
   labelApi,
@@ -997,6 +1031,7 @@ const {
   notificationApi,
   notificationPreferencesApi,
   projectApi,
+  calendarFeedApi,
   publicProjectApi,
   searchApi,
   slackIntegrationApi,
@@ -1026,6 +1061,7 @@ export type AppType =
   | typeof calendarApi
   | typeof configApi
   | typeof projectApi
+  | typeof calendarFeedApi
   | typeof taskApi
   | typeof columnApi
   | typeof activityApi
@@ -1037,6 +1073,7 @@ export type AppType =
   | typeof searchApi
   | typeof githubIntegrationApi
   | typeof giteaIntegrationApi
+  | typeof gitlabIntegrationApi
   | typeof genericWebhookIntegrationApi
   | typeof discordIntegrationApi
   | typeof mattermostIntegrationApi
