@@ -440,6 +440,9 @@ export default function TaskRelations({
                             // sighted user gets from the native `title`
                             // tooltip.
                             <span
+                              // `role="img"` so `aria-label` is a supported
+                              // attribute on this otherwise-generic span.
+                              role="img"
                               title={t(
                                 "tasks:relations.crossProjectStatusReadOnly",
                               )}
