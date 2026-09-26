@@ -68,10 +68,13 @@ const TYPE_LABEL_FAN_OFFSET_PX = 12;
 // Minimum clearance (px) kept between a type label's x position and the
 // source bar's own box (see typeLabelPoint in buildDependencyEdges). The
 // label itself (GanttDependencyOverlay) is centered on this point and about
-// 60px wide, so this has to clear roughly its own half-width — a smaller
-// margin would still let the box's FAR side reach back over the bar even
-// though the point itself is clear.
-const LABEL_CLEAR_MARGIN_PX = 100;
+// 60px wide, so this has to clear roughly its own half-width (~30px) plus a
+// small buffer — a smaller margin would still let the box's FAR side reach
+// back over the bar even though the point itself is clear. Kept close to that
+// half-width so the label reads as "beside this bar" rather than being flung
+// so far along the connector that it lands over the target bar (or, on a
+// short Month/Quarter dependency, past it entirely).
+const LABEL_CLEAR_MARGIN_PX = 40;
 
 function verticalCenter(box: TaskBarBox) {
   return box.top + box.height / 2;
