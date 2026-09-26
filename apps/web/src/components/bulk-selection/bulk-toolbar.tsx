@@ -3,6 +3,7 @@ import {
   ArrowDownToLine,
   CalendarIcon,
   Menu,
+  Percent,
   Trash2,
   X,
 } from "lucide-react";
@@ -80,6 +81,15 @@ function BulkToolbar() {
     ],
     [],
   );
+  // A fixed preset list (matching priorityOptions' own fixed enum above)
+  // rather than a free-form percent input — simple to pick from a command
+  // list, and 25%-wide steps are plenty granular for "set several tasks to
+  // roughly this far along" bulk use, unlike a single task's own exact-value
+  // popover (see task-progress-popover.tsx).
+  const progressOptions = useMemo(
+    () => [0, 25, 50, 75, 100].map((value) => ({ value, label: `${value}%` })),
+    [],
+  );
   const { project } = useProjectStore();
   const {
     bulkMoveToBacklog,
@@ -88,6 +98,7 @@ function BulkToolbar() {
     bulkChangeStatus,
     bulkAssign,
     bulkPriority,
+    bulkProgress,
     bulkAddLabel,
     bulkDueDate,
   } = useBulkOperations();
@@ -231,6 +242,23 @@ function BulkToolbar() {
     [bulkPriority, selectedTaskIds, selectedCount, clearSelection, t],
   );
 
+  const handleBulkProgress = useCallback(
+    async (progress: number) => {
+      try {
+        await bulkProgress({
+          taskIds: Array.from(selectedTaskIds),
+          progress,
+        });
+        toast.success(t("tasks:bulk.updateSuccess", { count: selectedCount }));
+        clearSelection();
+        setIsActionsOpen(false);
+      } catch (_error) {
+        toast.error(t("tasks:bulk.updateProgressError"));
+      }
+    },
+    [bulkProgress, selectedTaskIds, selectedCount, clearSelection, t],
+  );
+
   const handleBulkAddLabel = useCallback(
     async (labelId: string) => {
       try {
@@ -353,6 +381,20 @@ function BulkToolbar() {
         })),
       });
     }
+    if (canEdit) {
+      groups.push({
+        value: "progress",
+        label: t("tasks:bulk.setProgress"),
+        items: progressOptions.map((opt) => ({
+          value: `progress-${opt.value}`,
+          label: opt.label,
+          icon: <Percent className="h-4 w-4 text-muted-foreground" />,
+          onRun: () => {
+            void handleBulkProgress(opt.value);
+          },
+        })),
+      });
+    }
     if (canEditLabels) {
       groups.push({
         value: "label",
@@ -388,8 +430,10 @@ function BulkToolbar() {
     handleBulkChangeStatus,
     handleBulkAssign,
     handleBulkPriority,
+    handleBulkProgress,
     handleBulkAddLabel,
     priorityOptions,
+    progressOptions,
     t,
   ]);
 

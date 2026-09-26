@@ -97,6 +97,12 @@ vi.mock("@/hooks/mutations/task/use-bulk-update-task-schedule", () => ({
 vi.mock("@/hooks/mutations/task-relation/use-create-task-relation", () => ({
   default: () => ({ mutateAsync: vi.fn() }),
 }));
+vi.mock("@/hooks/mutations/task-relation/use-update-task-relation", () => ({
+  default: () => ({ mutateAsync: vi.fn() }),
+}));
+vi.mock("@/hooks/use-workspace-permission", () => ({
+  useWorkspacePermission: () => ({ canUpdateTasks: () => true }),
+}));
 vi.mock("@/hooks/queries/task-relation/use-get-project-task-relations", () => ({
   default: () => ({
     data: [
@@ -268,9 +274,7 @@ describe("Gantt dependency line anchored on a milestone", () => {
 
     // The two candidates are meaningfully far apart (Aug 10 vs. Sep 20, ~41
     // days), so a small inset/clamp difference can't make them collide.
-    expect(Math.abs(pointBasedRightPx - spanBasedRightPx)).toBeGreaterThan(
-      100,
-    );
+    expect(Math.abs(pointBasedRightPx - spanBasedRightPx)).toBeGreaterThan(100);
     // The actual rendered connector must land near the POINT-based edge...
     expect(Math.abs(sourceX - pointBasedRightPx)).toBeLessThan(10);
     // ...and nowhere near the buggy, span-based one.

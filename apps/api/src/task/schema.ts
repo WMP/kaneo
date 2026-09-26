@@ -57,6 +57,7 @@ export const bulkUpdateBody = z.object({
     "updateStatus",
     "updatePriority",
     "updateAssignee",
+    "updateProgress",
     "delete",
     "addLabel",
     "removeLabel",
@@ -65,7 +66,7 @@ export const bulkUpdateBody = z.object({
   ]),
   value: z.string().nullable().optional().openapi({
     description:
-      "The new value for the chosen operation. Unused by `delete` and `updateSchedule`; null clears an assignee or due date.",
+      "The new value for the chosen operation. Unused by `delete` and `updateSchedule`; null clears an assignee or due date. `updateProgress` takes a stringified whole percent from 0 to 100.",
   }),
   scheduleUpdates: z
     .array(

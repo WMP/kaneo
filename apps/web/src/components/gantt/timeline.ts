@@ -68,6 +68,21 @@ export function getBarEdgeInsetPx(): number {
 // keeps the box's left/right from ever inverting.
 export const MIN_BAR_CONTENT_PX = 6;
 
+// The smallest hover/pointer hit-area (px) a bar's own row-level wrapper is
+// allowed to end up at, independent of MIN_BAR_CONTENT_PX above. At Month/
+// Quarter, a single day-track can compress to just a few px — small enough
+// that a mouse has to land within that sliver to trigger hover (and drive
+// dependency-line highlighting) at all, and the dependency-line overlay
+// happens to route through the very same narrow gutter, which visually
+// reads as "the line is stealing my hover". This is deliberately larger than
+// MIN_BAR_CONTENT_PX (whose only job is keeping the bar's own paint/label
+// visible) so the interactive footprint stays comfortable well before the
+// rendered content does. It only widens the wrapper's own hit-testable box
+// (via a plain CSS min-width, the same way the visual content already
+// overflows its grid track below MIN_BAR_CONTENT_PX) — it never changes
+// what's actually drawn.
+export const MIN_BAR_HOVER_HIT_PX = 20;
+
 // Turns a grid track's raw pixel bounds (before inset) into the bar's actual
 // rendered/measured box: the usual inset on each side, shrunk (never
 // negative) so the box never ends up narrower than MIN_BAR_CONTENT_PX. Used

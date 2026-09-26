@@ -27,6 +27,7 @@ type BulkOperation =
   | "updateStatus"
   | "updatePriority"
   | "updateAssignee"
+  | "updateProgress"
   | "delete"
   | "addLabel"
   | "removeLabel"
@@ -182,6 +183,47 @@ async function bulkUpdateTasks({
           newPriority: value,
           title: task.title,
           type: "priority_changed",
+        });
+      }
+      break;
+    }
+
+    case "updateProgress": {
+      if (value === undefined || value === null || value.trim() === "") {
+        throw new HTTPException(400, {
+          message: "Progress value is required",
+        });
+      }
+      const progress = Number.parseInt(value, 10);
+      if (
+        !Number.isInteger(progress) ||
+        progress < 0 ||
+        progress > 100 ||
+        String(progress) !== value.trim()
+      ) {
+        throw new HTTPException(400, {
+          message: "Progress must be a whole percent from 0 to 100",
+        });
+      }
+
+      const result = await db
+        .update(taskTable)
+        .set({ progress })
+        .where(inArray(taskTable.id, foundIds));
+
+      updatedCount = result.rowCount ?? foundIds.length;
+
+      // No dedicated "progress changed" event exists — a single-task
+      // progress edit (see update-task.ts) only ever publishes this same
+      // generic "task.updated" notice, so bulk stays consistent with it
+      // rather than inventing a new event type for one field.
+      for (const task of tasks) {
+        await publishEvent("task.updated", {
+          taskId: task.id,
+          projectId: task.projectId,
+          title: task.title,
+          status: task.status,
+          userId,
         });
       }
       break;
