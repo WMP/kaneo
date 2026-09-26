@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { addDays, format, isToday } from "date-fns";
 import {
@@ -80,6 +81,7 @@ function RouteComponent() {
   const { workspaceId } = Route.useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useGetPortfolio({ workspaceId });
 
@@ -326,9 +328,13 @@ function RouteComponent() {
                     }}
                   >
                     {headerColumns.map((column) => {
-                      const columnDay = range.days[column.startIndex];
-                      const columnIsToday =
-                        columnDay !== undefined && isToday(columnDay);
+                      // Any day the column spans can be today, not just its
+                      // first — in Week/Month/Quarter a column covers many
+                      // days, so checking only range.days[startIndex] would
+                      // hide the marker whenever today falls mid-column.
+                      const columnIsToday = range.days
+                        .slice(column.startIndex, column.endIndex + 1)
+                        .some((day) => isToday(day));
                       return (
                         <div
                           key={column.startIndex}
@@ -337,8 +343,7 @@ function RouteComponent() {
                           }}
                           className={cn(
                             "border-r border-border/60 px-1 py-2 text-center text-[11px] font-medium text-muted-foreground",
-                            columnIsToday &&
-                              "bg-primary/10 text-primary-foreground/90",
+                            columnIsToday && "bg-primary/10 text-foreground",
                           )}
                         >
                           {column.label}
@@ -468,7 +473,15 @@ function RouteComponent() {
           taskId={selectedTask.taskId}
           projectId={selectedTask.projectId}
           workspaceId={workspaceId}
-          onClose={() => setSelectedTask(null)}
+          onClose={() => {
+            setSelectedTask(null);
+            // Task mutation hooks invalidate ["task"]/["tasks", projectId] but
+            // not the cross-project ["portfolio"] query, so refresh it when the
+            // sheet closes to reflect edits made from within this view.
+            queryClient.invalidateQueries({
+              queryKey: ["portfolio", workspaceId],
+            });
+          }}
         />
       )}
     </>

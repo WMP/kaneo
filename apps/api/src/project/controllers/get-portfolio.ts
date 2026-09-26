@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
 import db from "../../database";
 import { projectTable, taskTable } from "../../database/schema";
 
@@ -26,11 +26,11 @@ export type PortfolioProject = {
 // timeline too rather than cluttering it with closed-out work.
 const HIDDEN_TASK_STATUS = "archived";
 
-// One query for every project's tasks, scoped by workspaceId through a join
-// (the same shape getProjects' own statistics rollup uses), rather than the
-// per-project getTasks controller called once per project: a portfolio can
-// span many projects, and a route that fans out N paginated task-list calls
-// to build one screen would scale with project count instead of staying flat.
+// One query for every project's tasks (scoped by the already-resolved
+// projectIds), rather than the per-project getTasks controller called once
+// per project: a portfolio can span many projects, and a route that fans out
+// N paginated task-list calls to build one screen would scale with project
+// count instead of staying flat.
 async function getPortfolio(
   workspaceId: string,
   includeArchived = false,
@@ -65,7 +65,15 @@ async function getPortfolio(
       status: taskTable.status,
     })
     .from(taskTable)
-    .where(inArray(taskTable.projectId, projectIds))
+    .where(
+      and(
+        inArray(taskTable.projectId, projectIds),
+        // Drop archived tasks in the database rather than fetching every
+        // archived row only to discard it below — a long-lived board can
+        // accumulate far more archived work than open work.
+        ne(taskTable.status, HIDDEN_TASK_STATUS),
+      ),
+    )
     .orderBy(asc(taskTable.position), asc(taskTable.id));
 
   const tasksByProject = new Map<string, PortfolioTask[]>();

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -80,7 +81,12 @@ afterEach(() => {
 
 function show() {
   const Component = m.component;
-  return render(<Component />);
+  const queryClient = new QueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <Component />
+    </QueryClientProvider>,
+  );
 }
 
 describe("Portfolio route", () => {
