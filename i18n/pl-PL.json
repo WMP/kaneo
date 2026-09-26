@@ -397,6 +397,7 @@
 			"projects": "Projekty",
 			"members": "Członkowie",
 			"activity": "Aktywność",
+			"workload": "Obciążenie",
 			"invitations": "Zaproszenia",
 			"more": "Więcej",
 			"backToBoard": "Wróć do tablicy",
@@ -630,6 +631,25 @@
 				"error": "Nie udało się wyeksportować aktywności obszaru roboczego.",
 				"truncated": "Wyeksportowano tylko najnowsze pasujące rekordy. Zawęź filtry, aby wyeksportować wszystko."
 			}
+		},
+		"workload": {
+			"pageTitle": "Obciążenie",
+			"subtitle": "Zadania z datami, jeszcze nieukończone, na osobę przypisaną w kolejnych tygodniach. Ciemniejsze komórki oznaczają więcej równoległych zadań; wyróżnione przekraczają ustawiony próg.",
+			"previousWeeks": "Poprzednie tygodnie",
+			"nextWeeks": "Następne tygodnie",
+			"jumpToToday": "Dziś",
+			"overloadThresholdValue": "Wyróżniaj powyżej {{count}}",
+			"assigneeColumn": "Osoba przypisana",
+			"unassigned": "Nieprzypisane",
+			"loading": "Wczytywanie obciążenia...",
+			"error": "Nie udało się wczytać obciążenia",
+			"emptyTitle": "Brak zaplanowanych zadań",
+			"emptyDescription": "W tym zakresie nie ma zadań z datami. Spróbuj innego zakresu albo nadaj zadaniom datę rozpoczęcia lub termin, aby pojawiły się tutaj.",
+			"truncatedNotice": "Wynik jest niepełny: zawęź zakres dat, aby zobaczyć wszystkie zadania.",
+			"cellTooltip": "{{count}} aktywnych zadań w tygodniu od {{date}}",
+			"overloadedSrLabel": "Przeciążenie",
+			"legendLoad": "Mniej → więcej zadań",
+			"legendOverload": "Powyżej {{count}} równoległych zadań"
 		},
 		"create": {
 			"pageTitle": "Utwórz obszar roboczy",

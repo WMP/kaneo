@@ -1787,7 +1787,8 @@
 			"more": "Mehr",
 			"backToBoard": "Zurück zum Board",
 			"portfolio": "Portfolio",
-			"activity": "Activity"
+			"activity": "Activity",
+			"workload": "Workload"
 		},
 		"projectList": {
 			"viewProject": "Projekt ansehen",
@@ -2751,6 +2752,25 @@
 				"error": "Failed to export workspace activity.",
 				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
 			}
+		},
+		"workload": {
+			"assigneeColumn": "Assignee",
+			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
+			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
+			"emptyTitle": "Nothing scheduled",
+			"error": "Failed to load workload",
+			"jumpToToday": "Today",
+			"legendLoad": "Fewer → more tasks",
+			"legendOverload": "Above {{count}} concurrent tasks",
+			"loading": "Loading workload...",
+			"nextWeeks": "Next weeks",
+			"overloadedSrLabel": "Overloaded",
+			"overloadThresholdValue": "Highlight above {{count}}",
+			"pageTitle": "Workload",
+			"previousWeeks": "Previous weeks",
+			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
+			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
+			"unassigned": "Unassigned"
 		}
 	},
 	"team": {

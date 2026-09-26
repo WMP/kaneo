@@ -84,6 +84,7 @@ import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles"
 import { drainSignInEmails } from "./utils/sign-in-email-tasks";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
 import workflowRule from "./workflow-rule";
+import workload from "./workload";
 import workspace from "./workspace";
 import {
   addConnection,
@@ -768,6 +769,7 @@ export function createApp() {
   const workflowRuleApi = api.route("/workflow-rule", workflowRule);
   const invitationApi = api.route("/invitation", invitation);
   const workspaceApi = api.route("/workspace", workspace);
+  const workloadApi = api.route("/workload", workload);
   const customFieldApi = api.route("/custom-field", customField);
   const userApi = api.route("/user", user);
 
@@ -912,6 +914,7 @@ export function createApp() {
     userApi,
     workflowRuleApi,
     workspaceApi,
+    workloadApi,
     customFieldApi,
     oauthApi,
   };
@@ -1042,6 +1045,7 @@ const {
   userApi,
   workflowRuleApi,
   workspaceApi,
+  workloadApi,
   customFieldApi,
   oauthApi,
 } = createdApp;
@@ -1084,6 +1088,7 @@ export type AppType =
   | typeof workflowRuleApi
   | typeof invitationApi
   | typeof workspaceApi
+  | typeof workloadApi
   | typeof customFieldApi
   | typeof userApi
   | typeof publicProjectApi
