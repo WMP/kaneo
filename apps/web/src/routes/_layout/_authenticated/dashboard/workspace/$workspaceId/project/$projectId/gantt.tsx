@@ -1080,22 +1080,20 @@ function RouteComponent() {
   // this one shared scroll container automatically keeps them in lockstep —
   // there is nothing further to synchronize.
   //
-  // Dependency-line overlay + critical-path decision: a row that isn't
-  // currently mounted gets no entry in `virtualRowByTaskId` below, so
-  // `taskBoxes` (just past this point) treats it exactly like any other
-  // "no box" row the chart already handles today — out of the visible date
-  // window, or filtered out by search. buildDependencyEdges already drops
-  // any edge missing either endpoint's box, so a dependency line to a
-  // row that's scrolled out of the vertical viewport simply isn't drawn,
-  // the same "no box, no line" rule this file already relied on before this
-  // feature existed — rather than keeping every row's geometry live just to
-  // draw lines to rows nobody can see. The day-track background and the
-  // overlay's own SVG stay full-height (via `totalSize` below), so the
-  // chart's total scrollable area and critical-path bar outlining (which
-  // reads `criticalPath` directly, not `taskBoxes`) are unaffected by which
-  // rows happen to be mounted.
+  // Dependency-line overlay + critical-path decision: only the DOM rows are
+  // virtualized, NOT the line geometry. `taskBoxes` below reads each task's
+  // vertical position from `offsetByKey`, which carries EVERY row's offset
+  // whether or not it is currently mounted, so a dependency line between two
+  // far-apart tasks (e.g. row 5 → row 200) still anchors and draws correctly
+  // at any scroll position — a task only loses its box for the reasons that
+  // predate this feature (out of the visible date window, or filtered out by
+  // search). The day-track background and the overlay's own SVG stay
+  // full-height (via `totalSize` below), so the chart's total scrollable area
+  // and critical-path bar outlining (which reads `criticalPath` directly, not
+  // `taskBoxes`) are unaffected by which rows happen to be mounted.
   const {
     virtualItems: virtualRows,
+    offsetByKey: rowOffsetByTaskId,
     totalSize: rowsTotalHeightPx,
     measureRow,
   } = useGanttRowVirtualizer({
@@ -1103,12 +1101,6 @@ function RouteComponent() {
     scrollElementRef: scrollContainerRef,
     estimateSize: estimateRowHeightPx,
   });
-
-  const virtualRowByTaskId = useMemo(() => {
-    const map = new Map<string, { start: number; size: number }>();
-    for (const row of virtualRows) map.set(row.key, row);
-    return map;
-  }, [virtualRows]);
 
   // Re-measures every currently-mounted row's real height after each commit
   // (initial mount, or a scroll that swaps which rows are mounted) — runs
@@ -1167,7 +1159,7 @@ function RouteComponent() {
     const trackCount = timeline.days.length;
 
     for (const task of renderedTasks) {
-      const row = virtualRowByTaskId.get(task.id);
+      const row = rowOffsetByTaskId.get(task.id);
       if (!row) continue;
       // A milestone renders as a single diamond AT scheduleStart, never a
       // span (see GanttTaskBar/GanttExternalTaskBar) — including one that
@@ -1216,7 +1208,7 @@ function RouteComponent() {
     return boxes;
   }, [
     renderedTasks,
-    virtualRowByTaskId,
+    rowOffsetByTaskId,
     timeline,
     barsLeftPx,
     pixelsPerDay,
