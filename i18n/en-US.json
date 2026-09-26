@@ -2255,6 +2255,8 @@
 			"legendMilestone": "Milestone",
 			"legendBaseline": "Baseline",
 			"legendCriticalPath": "Critical path",
+			"legendDependencyType": "Type (click to change)",
+			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
 			"criticalPathToggle": "Critical path",
 			"criticalPathToggleAriaLabel": "Highlight the critical path",
 			"externalProjectBadge": "in {{projectName}}",

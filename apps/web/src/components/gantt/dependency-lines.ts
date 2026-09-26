@@ -39,6 +39,14 @@ export type DependencyEdgeGeometry = DependencyEdgeInput & {
   /** Where to draw a lag/lead label, or null when there's nothing to show
    * (a zero lag, or a "related" edge, which never carries one). */
   lagLabelPoint: { x: number; y: number } | null;
+  /** Where to draw the dependency-TYPE label (FS/SS/FF/SF, see
+   * GanttDependencyOverlay) — present for every "blocks" edge regardless of
+   * lag (null for "related", which never carries a meaningful type). Offset
+   * vertically from lagLabelPoint's own position when more than one
+   * "blocks" edge fans out from the same source task, so a single gate
+   * blocking many dependents stacks its labels in a readable list instead of
+   * on top of one another — see the fan-out index in buildDependencyEdges. */
+  typeLabelPoint: { x: number; y: number } | null;
 };
 
 type Point = { x: number; y: number };
@@ -52,6 +60,11 @@ type AnchorSide = "start" | "end";
 const EXIT_GAP = 14;
 // Corner rounding radius for the elbow's turns.
 const CORNER_RADIUS = 8;
+// Vertical spacing between two "blocks" edges' type labels when they fan out
+// from the same source task (see the fan-out index in buildDependencyEdges),
+// in the same pixel space the rest of this module's geometry is in — sized
+// to clear the ~9-10px label font used by GanttDependencyOverlay.
+const TYPE_LABEL_FAN_OFFSET_PX = 12;
 
 function verticalCenter(box: TaskBarBox) {
   return box.top + box.height / 2;
@@ -320,6 +333,12 @@ export function buildDependencyEdges(
   // zoom notch — sharing the one array instead keeps this O(boxes) overall.
   const allBoxes = [...taskBoxes.values()];
 
+  // How many "blocks" edges leaving a given source task have already been
+  // placed, in edge-array order — the fan-out index each further edge from
+  // that same source offsets its own type label by (see
+  // TYPE_LABEL_FAN_OFFSET_PX above and typeLabelPoint below).
+  const blocksFanIndexBySource = new Map<string, number>();
+
   for (const edge of edges) {
     const source = taskBoxes.get(edge.sourceTaskId);
     const target = taskBoxes.get(edge.targetTaskId);
@@ -344,8 +363,23 @@ export function buildDependencyEdges(
     // straight hop, the target point itself) — close enough to "near the
     // source end" to read as belonging to this edge without measuring the
     // whole path.
-    const lagLabelPoint =
-      lagDays !== 0 ? points[Math.min(1, points.length - 1)] : null;
+    const nearSourceCorner = points[Math.min(1, points.length - 1)];
+    const lagLabelPoint = lagDays !== 0 ? nearSourceCorner : null;
+
+    // See the fan-out index comment above: only "blocks" edges get a type
+    // label (a "related" edge's dependencyType is never meaningful — see the
+    // comment on `dependencyType` just above), and only they count toward
+    // the per-source fan-out index, so a "related" edge sharing a source
+    // with several "blocks" edges neither gets a label nor shifts theirs.
+    let typeLabelPoint: Point | null = null;
+    if (edge.relationType === "blocks") {
+      const fanIndex = blocksFanIndexBySource.get(edge.sourceTaskId) ?? 0;
+      blocksFanIndexBySource.set(edge.sourceTaskId, fanIndex + 1);
+      typeLabelPoint = {
+        x: nearSourceCorner.x,
+        y: nearSourceCorner.y + fanIndex * TYPE_LABEL_FAN_OFFSET_PX,
+      };
+    }
 
     geometry.push({
       ...edge,
@@ -353,6 +387,7 @@ export function buildDependencyEdges(
       sourcePoint,
       targetPoint,
       lagLabelPoint,
+      typeLabelPoint,
     });
   }
 

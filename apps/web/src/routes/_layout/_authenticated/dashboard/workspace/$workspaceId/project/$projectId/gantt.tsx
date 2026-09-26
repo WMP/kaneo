@@ -1451,6 +1451,20 @@ function RouteComponent() {
                           <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
                           {t("tasks:gantt.legendRelated")}
                         </span>
+                        {/* Points at the small FS/SS/FF/SF label on a
+                            blocking line itself (see GanttDependencyOverlay)
+                            rather than spelling out all four types here —
+                            there isn't room, and the label is already a
+                            clickable control that opens the full editor. */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t("tasks:gantt.legendDependencyTypeHint")}
+                        >
+                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-destructive">
+                            {t("tasks:relations.dependency.typesShort.fs")}
+                          </span>
+                          {t("tasks:gantt.legendDependencyType")}
+                        </span>
                       </>
                     )}
                     {hasCriticalHighlight && (

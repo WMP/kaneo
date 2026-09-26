@@ -469,6 +469,121 @@ describe("buildDependencyEdges", () => {
     expect(related.lagLabelPoint).toBeNull();
   });
 
+  it("carries a type label point for every 'blocks' edge regardless of lag, but never for 'related'", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["a", { left: 0, right: 100, top: 0, height: 40 }],
+      ["b", { left: 200, right: 300, top: 80, height: 40 }],
+    ]);
+
+    const [zeroLag] = buildDependencyEdges(
+      [
+        {
+          id: "e1",
+          sourceTaskId: "a",
+          targetTaskId: "b",
+          relationType: "blocks",
+          lagDays: 0,
+        },
+      ],
+      boxes,
+    );
+    expect(zeroLag.typeLabelPoint).not.toBeNull();
+
+    const [related] = buildDependencyEdges(
+      [
+        {
+          id: "e2",
+          sourceTaskId: "a",
+          targetTaskId: "b",
+          relationType: "related",
+        },
+      ],
+      boxes,
+    );
+    expect(related.typeLabelPoint).toBeNull();
+  });
+
+  it("fans out several 'blocks' edges leaving the same source task, offsetting each further one's type label vertically", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["gate", { left: 0, right: 100, top: 0, height: 40 }],
+      ["wave-1", { left: 200, right: 300, top: 80, height: 40 }],
+      ["wave-2", { left: 200, right: 300, top: 160, height: 40 }],
+      ["wave-3", { left: 200, right: 300, top: 240, height: 40 }],
+    ]);
+    const edges: DependencyEdgeInput[] = [
+      {
+        id: "e1",
+        sourceTaskId: "gate",
+        targetTaskId: "wave-1",
+        relationType: "blocks",
+      },
+      {
+        id: "e2",
+        sourceTaskId: "gate",
+        targetTaskId: "wave-2",
+        relationType: "blocks",
+      },
+      {
+        id: "e3",
+        sourceTaskId: "gate",
+        targetTaskId: "wave-3",
+        relationType: "blocks",
+      },
+    ];
+
+    const [first, second, third] = buildDependencyEdges(edges, boxes);
+    expect(first.typeLabelPoint).not.toBeNull();
+    expect(second.typeLabelPoint).not.toBeNull();
+    expect(third.typeLabelPoint).not.toBeNull();
+    const firstY = first.typeLabelPoint?.y ?? 0;
+    const secondY = second.typeLabelPoint?.y ?? 0;
+    const thirdY = third.typeLabelPoint?.y ?? 0;
+    // Each further edge from the same source is offset further down than the
+    // last, by the same fixed step, rather than all three stacking on the
+    // same y (illegible) or drifting by an unpredictable amount.
+    expect(secondY).toBeGreaterThan(firstY);
+    expect(thirdY).toBeGreaterThan(secondY);
+    expect(thirdY - secondY).toBe(secondY - firstY);
+  });
+
+  it("does not let an edge from an unrelated source share in another gate's fan-out offset", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["gate-a", { left: 0, right: 100, top: 0, height: 40 }],
+      ["gate-b", { left: 0, right: 100, top: 400, height: 40 }],
+      ["wave-a1", { left: 200, right: 300, top: 80, height: 40 }],
+      ["wave-a2", { left: 200, right: 300, top: 160, height: 40 }],
+      ["wave-b1", { left: 200, right: 300, top: 480, height: 40 }],
+    ]);
+    const edges: DependencyEdgeInput[] = [
+      {
+        id: "e1",
+        sourceTaskId: "gate-a",
+        targetTaskId: "wave-a1",
+        relationType: "blocks",
+      },
+      {
+        id: "e2",
+        sourceTaskId: "gate-a",
+        targetTaskId: "wave-a2",
+        relationType: "blocks",
+      },
+      {
+        id: "e3",
+        sourceTaskId: "gate-b",
+        targetTaskId: "wave-b1",
+        relationType: "blocks",
+      },
+    ];
+
+    const [, , fromGateB] = buildDependencyEdges(edges, boxes);
+    // gate-b's edge is on its OWN first fan-out index (0) despite being the
+    // third edge overall — computed here in isolation, the same way it would
+    // be if gate-a's edges didn't exist at all — proving the index is
+    // per-source, not a running count across the whole chart.
+    const [isolatedGateB] = buildDependencyEdges([edges[2]], boxes);
+    expect(fromGateB.typeLabelPoint).toEqual(isolatedGateB.typeLabelPoint);
+  });
+
   it("never routes to the left of the leftmost bar by more than the small exit gap, so the connector cannot bleed toward the task rail", () => {
     const source: TaskBarBox = { left: 500, right: 560, top: 0, height: 40 };
     const target: TaskBarBox = { left: 480, right: 540, top: 40, height: 40 };

@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import TaskRelationDependencyPopover from "@/components/task/task-relation-dependency-popover";
+import { cn } from "@/lib/cn";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
 import type { Point } from "./gantt-link-drag";
 
@@ -38,11 +41,14 @@ export function GanttDependencyOverlay({
   clipLeftPx,
   preview = null,
 }: GanttDependencyOverlayProps) {
+  const { t } = useTranslation();
   if (edges.length === 0 && !preview) return null;
 
   return (
+    // biome-ignore lint/a11y/noSvgWithoutTitle: not an icon/image svg — a plain positioning container mixing decorative <path> connectors with a real interactive foreignObject control per "blocks" edge (the type label, which carries its own accessible name via its button/title), so one <title> for the whole svg would misdescribe it either way
     <svg
-      aria-hidden="true"
+      // NOT aria-hidden, unlike a purely decorative overlay: the type label
+      // above is a real, focusable control, not just a picture of one.
       // Below the per-row sticky task rail (z-[11] in the gantt route) so a
       // curve that scrolls under the pinned rail is occluded by it rather
       // than painting on top — that relationship holds at any scrollLeft,
@@ -129,19 +135,59 @@ export function GanttDependencyOverlay({
               markerEnd={`url(#gantt-dependency-arrow-${isBlocking ? "blocks" : "related"})`}
               className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
             />
-            {edge.lagLabelPoint && edge.lagDays !== undefined && (
-              <text
-                x={edge.lagLabelPoint.x}
-                y={edge.lagLabelPoint.y - 4}
-                textAnchor="middle"
-                fontSize={9}
-                fontWeight={600}
-                fill="var(--destructive)"
-                fillOpacity={isDimmed ? DIMMED_OPACITY : 1}
-                className="select-none transition-[fill-opacity] duration-150 ease-out"
+            {/* Dependency-TYPE label (FS/SS/FF/SF, plus a "+Nd"/"-Nd" suffix
+                once there's a lag — see the summary composition already used
+                on a task's own relation list, task-relations.tsx): every
+                "blocks" edge gets one (typeLabelPoint is null for "related",
+                whose type is never meaningful), it fans out vertically by
+                edge index when several share a source (see
+                TYPE_LABEL_FAN_OFFSET_PX in dependency-lines.ts), and it's a
+                real control — reusing TaskRelationDependencyPopover, the
+                same editor a task's own relation list already opens — not
+                just a picture of the type, so the chart itself is a second
+                place (besides that list) to fix a wrongly-typed dependency. */}
+            {edge.typeLabelPoint && (
+              <foreignObject
+                x={edge.typeLabelPoint.x - 30}
+                y={edge.typeLabelPoint.y - 14}
+                width={60}
+                height={16}
+                style={{ overflow: "visible" }}
+                className={cn(
+                  "pointer-events-auto transition-opacity duration-150 ease-out",
+                  isDimmed && "opacity-[0.12]",
+                )}
               >
-                {edge.lagDays > 0 ? `+${edge.lagDays}d` : `${edge.lagDays}d`}
-              </text>
+                <TaskRelationDependencyPopover
+                  relationId={edge.id}
+                  taskId={edge.sourceTaskId}
+                  dependencyType={edge.dependencyType ?? "fs"}
+                  lagDays={edge.lagDays ?? 0}
+                >
+                  <button
+                    type="button"
+                    title={t(
+                      `tasks:relations.dependency.types.${edge.dependencyType ?? "fs"}`,
+                    )}
+                    className="block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-semibold text-destructive leading-4 shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    {t(
+                      `tasks:relations.dependency.typesShort.${edge.dependencyType ?? "fs"}`,
+                      {
+                        defaultValue: (
+                          edge.dependencyType ?? "fs"
+                        ).toUpperCase(),
+                      },
+                    )}
+                    {edge.lagDays !== undefined &&
+                      edge.lagDays !== 0 &&
+                      t("tasks:relations.dependency.lagSuffix", {
+                        days:
+                          edge.lagDays > 0 ? `+${edge.lagDays}` : edge.lagDays,
+                      })}
+                  </button>
+                </TaskRelationDependencyPopover>
+              </foreignObject>
             )}
           </g>
         );
