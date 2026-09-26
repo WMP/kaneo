@@ -31,6 +31,7 @@ export function useProjectWebSocket(projectId: string) {
     let retries = 0;
     let retryTimeout: ReturnType<typeof setTimeout> | null = null;
     let pingInterval: ReturnType<typeof setInterval> | null = null;
+    let hasConnected = false;
 
     function clearPing() {
       if (pingInterval !== null) {
@@ -49,6 +50,18 @@ export function useProjectWebSocket(projectId: string) {
       ws.onopen = () => {
         if (disposed || activeSocket !== ws) return;
         retries = 0; // Reset retries on successful connection
+        // A reconnection (not the first open) may have missed events while the
+        // socket was down, so refresh this project's task and relation caches to
+        // catch up. The initial connect needs no refresh — the queries fetch on
+        // mount — and this is what lets the realtime path, rather than a short
+        // poll, keep the board fresh after a dropped connection.
+        if (hasConnected) {
+          queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+          queryClient.invalidateQueries({
+            queryKey: ["task-relations", "project", projectId],
+          });
+        }
+        hasConnected = true;
         // Start keepalive pings to prevent Cloudflare idle timeout (100s)
         clearPing();
         pingInterval = setInterval(() => {
@@ -145,12 +158,43 @@ export function useProjectWebSocket(projectId: string) {
     }
     connect();
 
+    // A long outage (sleep, lost network) can exhaust the retry budget and leave
+    // the socket permanently closed, which would strand the board on the poll's
+    // safety-net interval. When the tab regains focus or the network returns,
+    // reconnect if the socket has dropped. A focus/online signal is a stronger
+    // cue that connectivity is back than the current backoff timer, so cancel a
+    // pending retry and reconnect now rather than waiting out the backoff (which
+    // can be up to ~16s away); clearing the timer keeps it from later firing a
+    // second, duplicate connect.
+    function resumeIfDropped() {
+      const live =
+        activeSocket !== null &&
+        (activeSocket.readyState === WebSocket.OPEN ||
+          activeSocket.readyState === WebSocket.CONNECTING);
+      if (disposed || live) return;
+      if (retryTimeout !== null) {
+        clearTimeout(retryTimeout);
+        retryTimeout = null;
+      }
+      retries = 0;
+      connect();
+    }
+    function handleVisibility() {
+      if (document.visibilityState === "visible") resumeIfDropped();
+    }
+    window.addEventListener("online", resumeIfDropped);
+    window.addEventListener("focus", resumeIfDropped);
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       disposed = true;
       clearPing();
       if (retryTimeout !== null) {
         clearTimeout(retryTimeout);
       }
+      window.removeEventListener("online", resumeIfDropped);
+      window.removeEventListener("focus", resumeIfDropped);
+      document.removeEventListener("visibilitychange", handleVisibility);
       activeSocket?.close();
     };
   }, [projectId, session?.user?.id, queryClient]);
