@@ -1,9 +1,10 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   labelTable,
   projectTable,
+  taskRelationTable,
   taskTable,
   userTable,
 } from "../../database/schema";
@@ -34,6 +35,12 @@ async function exportTasks(projectId: string) {
       userId: taskTable.userId,
       assigneeName: userTable.name,
       assigneeId: userTable.id,
+      progress: taskTable.progress,
+      isMilestone: taskTable.isMilestone,
+      baselineStartDate: taskTable.baselineStartDate,
+      baselineDueDate: taskTable.baselineDueDate,
+      constraintType: taskTable.constraintType,
+      constraintDate: taskTable.constraintDate,
     })
     .from(taskTable)
     .leftJoin(userTable, eq(taskTable.userId, userTable.id))
@@ -71,6 +78,65 @@ async function exportTasks(projectId: string) {
     }
   }
 
+  // Every relation touching one of this project's tasks, like the Gantt
+  // endpoints (get-task-relations-by-project). A cross-project `related`
+  // link is still included on the in-project side, with the other task's id
+  // only (it won't resolve to an entry in this export's tasks array).
+  const relationsData =
+    taskIds.length > 0
+      ? await db
+          .select({
+            sourceTaskId: taskRelationTable.sourceTaskId,
+            targetTaskId: taskRelationTable.targetTaskId,
+            relationType: taskRelationTable.relationType,
+            dependencyType: taskRelationTable.dependencyType,
+            lagDays: taskRelationTable.lagDays,
+          })
+          .from(taskRelationTable)
+          .where(
+            or(
+              inArray(taskRelationTable.sourceTaskId, taskIds),
+              inArray(taskRelationTable.targetTaskId, taskIds),
+            ),
+          )
+      : [];
+
+  const taskRelationsMap = new Map<
+    string,
+    Array<{
+      relationType: string;
+      dependencyType: string;
+      lagDays: number;
+      sourceTaskId: string;
+      targetTaskId: string;
+    }>
+  >();
+  const taskIdSet = new Set(taskIds);
+  for (const relation of relationsData) {
+    const entry = {
+      relationType: relation.relationType,
+      dependencyType: relation.dependencyType,
+      lagDays: relation.lagDays,
+      sourceTaskId: relation.sourceTaskId,
+      targetTaskId: relation.targetTaskId,
+    };
+    if (taskIdSet.has(relation.sourceTaskId)) {
+      if (!taskRelationsMap.has(relation.sourceTaskId)) {
+        taskRelationsMap.set(relation.sourceTaskId, []);
+      }
+      taskRelationsMap.get(relation.sourceTaskId)?.push(entry);
+    }
+    if (
+      relation.targetTaskId !== relation.sourceTaskId &&
+      taskIdSet.has(relation.targetTaskId)
+    ) {
+      if (!taskRelationsMap.has(relation.targetTaskId)) {
+        taskRelationsMap.set(relation.targetTaskId, []);
+      }
+      taskRelationsMap.get(relation.targetTaskId)?.push(entry);
+    }
+  }
+
   return {
     project: {
       name: project.name,
@@ -79,6 +145,7 @@ async function exportTasks(projectId: string) {
       exportedAt: new Date().toISOString(),
     },
     tasks: tasks.map((task) => ({
+      id: task.id,
       title: task.title,
       description: task.description || "",
       status: task.status,
@@ -86,7 +153,20 @@ async function exportTasks(projectId: string) {
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null,
       startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
       userId: task.userId || null,
+      progress: task.progress,
+      isMilestone: task.isMilestone,
+      baselineStartDate: task.baselineStartDate
+        ? new Date(task.baselineStartDate).toISOString()
+        : null,
+      baselineDueDate: task.baselineDueDate
+        ? new Date(task.baselineDueDate).toISOString()
+        : null,
+      constraintType: task.constraintType,
+      constraintDate: task.constraintDate
+        ? new Date(task.constraintDate).toISOString()
+        : null,
       labels: taskLabelsMap.get(task.id) || [],
+      relations: taskRelationsMap.get(task.id) || [],
     })),
   };
 }

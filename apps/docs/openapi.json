@@ -1107,6 +1107,10 @@
       "ExportedTask": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Used to match this task against relations' sourceTaskId/targetTaskId within this export."
+          },
           "title": {
             "type": "string"
           },
@@ -1139,15 +1143,61 @@
               "null"
             ]
           },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent complete, 0-100."
+          },
+          "isMilestone": {
+            "type": "boolean",
+            "description": "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar."
+          },
+          "baselineStartDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Snapshotted startDate from when the baseline was last set; null if no baseline."
+          },
+          "baselineDueDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Snapshotted dueDate from when the baseline was last set; null if no baseline."
+          },
+          "constraintType": {
+            "type": "string",
+            "description": "The Gantt scheduling constraint: none, start_no_earlier_than (SNET), finish_no_later_than (FNLT), or must_start_on (MSO)."
+          },
+          "constraintDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Null unless constraintType is not none."
+          },
           "labels": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExportedTaskLabel"
             },
             "description": "Label names and colors, without their ids."
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedTaskRelation"
+            },
+            "description": "Every relation with this task as either end. Match sourceTaskId/targetTaskId against tasks[].id to tell which side this task is on; the other id may belong to a task outside this project and so outside this export."
           }
         },
         "required": [
+          "id",
           "title",
           "description",
           "status",
@@ -1155,7 +1205,14 @@
           "dueDate",
           "startDate",
           "userId",
-          "labels"
+          "progress",
+          "isMilestone",
+          "baselineStartDate",
+          "baselineDueDate",
+          "constraintType",
+          "constraintDate",
+          "labels",
+          "relations"
         ]
       },
       "ExportedTaskLabel": {
@@ -1171,6 +1228,35 @@
         "required": [
           "name",
           "color"
+        ]
+      },
+      "ExportedTaskRelation": {
+        "type": "object",
+        "properties": {
+          "relationType": {
+            "type": "string",
+            "description": "One of: blocks, related, subtask."
+          },
+          "dependencyType": {
+            "type": "string",
+            "description": "One of: fs, ss, ff, sf. Only meaningful for a 'blocks' relation."
+          },
+          "lagDays": {
+            "type": "integer"
+          },
+          "sourceTaskId": {
+            "type": "string"
+          },
+          "targetTaskId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "relationType",
+          "dependencyType",
+          "lagDays",
+          "sourceTaskId",
+          "targetTaskId"
         ]
       },
       "TaskImportResult": {
