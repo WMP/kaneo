@@ -3,13 +3,15 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { buildScheduleChanges } from "../diff-schedule-fields";
 
 // Baseline (plan vs actual) is intentionally minimal: a snapshot of the
 // task's current startDate/dueDate, taken on demand rather than tracked
 // automatically. Reusing "task.updated" (already broadcast to the project
 // and invalidated on the web client) is enough for the Gantt underlay to
-// refresh; a dedicated activity/notification entry would be noise for what
-// is essentially bookmarking two dates.
+// refresh and, via its `changes` diff, for the activity feed to record that
+// a baseline was set or cleared — a dedicated event type would be noise for
+// what is essentially bookmarking two dates.
 async function setTaskBaseline({
   id,
   currentUserId,
@@ -42,13 +44,20 @@ async function setTaskBaseline({
     });
   }
 
-  await publishEvent("task.updated", {
-    taskId: updatedTask.id,
-    projectId: updatedTask.projectId,
-    title: updatedTask.title,
-    status: updatedTask.status,
-    userId: currentUserId,
-  });
+  // waitForHandlers: see update-task.ts — the activity log write should
+  // land before this request returns, not race it.
+  await publishEvent(
+    "task.updated",
+    {
+      taskId: updatedTask.id,
+      projectId: updatedTask.projectId,
+      title: updatedTask.title,
+      status: updatedTask.status,
+      userId: currentUserId,
+      changes: buildScheduleChanges(existingTask, updatedTask),
+    },
+    { waitForHandlers: true },
+  );
 
   return updatedTask;
 }
@@ -85,13 +94,20 @@ async function clearTaskBaseline({
     });
   }
 
-  await publishEvent("task.updated", {
-    taskId: updatedTask.id,
-    projectId: updatedTask.projectId,
-    title: updatedTask.title,
-    status: updatedTask.status,
-    userId: currentUserId,
-  });
+  // waitForHandlers: see update-task.ts — the activity log write should
+  // land before this request returns, not race it.
+  await publishEvent(
+    "task.updated",
+    {
+      taskId: updatedTask.id,
+      projectId: updatedTask.projectId,
+      title: updatedTask.title,
+      status: updatedTask.status,
+      userId: currentUserId,
+      changes: buildScheduleChanges(existingTask, updatedTask),
+    },
+    { waitForHandlers: true },
+  );
 
   return updatedTask;
 }

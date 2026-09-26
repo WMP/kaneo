@@ -51,12 +51,19 @@ async function deleteTaskRelation(
     .limit(1);
 
   if (sourceTask) {
-    await publishEvent("task-relation.deleted", {
-      ...relation,
-      taskId: relation.sourceTaskId,
-      projectId: sourceTask.projectId,
-      userId,
-    });
+    // waitForHandlers: the activity module logs this deletion off the
+    // event, and that write should be visible by the time this request
+    // returns rather than racing the response.
+    await publishEvent(
+      "task-relation.deleted",
+      {
+        ...relation,
+        taskId: relation.sourceTaskId,
+        projectId: sourceTask.projectId,
+        userId,
+      },
+      { waitForHandlers: true },
+    );
   }
 
   // A relation can link tasks across two projects in the same workspace.
@@ -76,12 +83,20 @@ async function deleteTaskRelation(
     .limit(1);
 
   if (targetTask && targetTask.projectId !== sourceTask?.projectId) {
-    await publishEvent("task-relation.deleted", {
-      ...relation,
-      taskId: relation.sourceTaskId,
-      projectId: targetTask.projectId,
-      userId,
-    });
+    // Same relation, same (source) taskId — published again only so the
+    // target project's own WS subscribers refresh. Marked so the activity
+    // module (which logs by taskId) doesn't record this deletion twice.
+    await publishEvent(
+      "task-relation.deleted",
+      {
+        ...relation,
+        taskId: relation.sourceTaskId,
+        projectId: targetTask.projectId,
+        userId,
+        secondaryNotification: true,
+      },
+      { waitForHandlers: true },
+    );
   }
 
   return relation;
