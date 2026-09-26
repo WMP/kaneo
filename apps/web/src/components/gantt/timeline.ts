@@ -103,6 +103,29 @@ export const GANTT_UNIT_WINDOW_DAYS: Record<GanttUnit, number> = {
   quarter: 1096, // ~12 quarters
 };
 
+// First-open default for the timeline-granularity control (see the Gantt
+// route): what unit would show a project spanning this many days without
+// opening either cramped (a multi-year plan in Day view, effectively empty)
+// or needlessly zoomed out (a two-week sprint in Quarter view). Reuses the
+// same GANTT_UNIT_WINDOW_DAYS approximations that already size each unit's
+// visible window, so "fits in Day's window" and "opens showing the whole
+// plan in Day view" are the same threshold. A caller-persisted unit
+// preference always wins over this — see isGanttUnit/ganttTimelineUnit in
+// the user-preferences store — this is purely the one-time fallback for a
+// viewer who has never chosen a unit.
+export function pickDefaultGanttUnit(spanDays: number | null): GanttUnit {
+  if (spanDays === null || spanDays <= GANTT_UNIT_WINDOW_DAYS.day) {
+    return "day";
+  }
+  if (spanDays <= GANTT_UNIT_WINDOW_DAYS.week) {
+    return "week";
+  }
+  if (spanDays <= GANTT_UNIT_WINDOW_DAYS.month) {
+    return "month";
+  }
+  return "quarter";
+}
+
 const minimumDate = parseISO("0001-01-01");
 const maximumDate = parseISO("9999-12-31");
 

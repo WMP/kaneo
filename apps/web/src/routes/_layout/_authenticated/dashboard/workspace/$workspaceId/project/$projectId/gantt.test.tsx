@@ -60,19 +60,25 @@ vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => false,
 }));
 
+// A plain mutable object (like routeParams above) rather than a per-test
+// mock return value, so an individual test can flip
+// ganttTimelineUnit/ganttTimelineUnitTouched before rendering.
+const preferencesState = {
+  weekStartsOn: 0,
+  ganttTimelineUnit: "day",
+  ganttTimelineUnitTouched: false,
+  setGanttTimelineUnit: () => {},
+};
+
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: (
     selector: (state: {
       weekStartsOn: number;
       ganttTimelineUnit: string;
+      ganttTimelineUnitTouched: boolean;
       setGanttTimelineUnit: (unit: string) => void;
     }) => unknown,
-  ) =>
-    selector({
-      weekStartsOn: 0,
-      ganttTimelineUnit: "day",
-      setGanttTimelineUnit: () => {},
-    }),
+  ) => selector(preferencesState),
 }));
 
 vi.mock("@/components/common/project-layout", () => ({
@@ -172,6 +178,8 @@ afterEach(() => {
   scrollIntoView.mockClear();
   useGetTasks.mockReset();
   routeParams.projectId = "project-1";
+  preferencesState.ganttTimelineUnit = "day";
+  preferencesState.ganttTimelineUnitTouched = false;
 });
 
 describe("Gantt jump-to-today", () => {
@@ -348,5 +356,71 @@ describe("Gantt jump-to-today", () => {
     // component is correct.
     const container = screen.getByTestId("gantt-scroll-container");
     expect(container.style.scrollPaddingLeft).toBe("20rem");
+  });
+});
+
+describe("Gantt default timeline unit", () => {
+  it("defaults to a coarser unit for a multi-year plan when the viewer has never picked one", () => {
+    mockProjectWithTask(
+      makeTask({
+        id: "long-haul",
+        title: "Multi-year migration",
+        startDate: "2024-01-01",
+        dueDate: "2027-12-31",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(screen.getByRole("button", { name: "Quarter" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Day" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("still opens in Day view for a short-lived project when untouched", () => {
+    mockProjectWithTask(
+      makeTask({
+        id: "short-task",
+        title: "Quick fix",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(screen.getByRole("button", { name: "Day" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("honors a persisted unit preference over the computed default once the viewer has touched it", () => {
+    preferencesState.ganttTimelineUnit = "day";
+    preferencesState.ganttTimelineUnitTouched = true;
+    mockProjectWithTask(
+      makeTask({
+        id: "long-haul",
+        title: "Multi-year migration",
+        startDate: "2024-01-01",
+        dueDate: "2027-12-31",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(screen.getByRole("button", { name: "Day" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Quarter" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 });

@@ -54,6 +54,12 @@ vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 const preferencesState = vi.hoisted(() => ({
   weekStartsOn: 1 as const,
   ganttTimelineUnit: "day" as const,
+  // Marked touched so the fixture's explicit "day" wins outright — these
+  // tests exercise Day-granularity window bounding/pagination specifically,
+  // several with a deliberately centuries-long task span that would
+  // otherwise pick a coarser unit by default (see pickDefaultGanttUnit in
+  // timeline.ts).
+  ganttTimelineUnitTouched: true,
   setGanttTimelineUnit: vi.fn(),
 }));
 vi.mock("@/store/user-preferences", () => ({

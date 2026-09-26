@@ -1,5 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { addDays, format, isSameMonth, isToday } from "date-fns";
+import {
+  addDays,
+  differenceInCalendarDays,
+  format,
+  isSameMonth,
+  isToday,
+} from "date-fns";
 import {
   Calendar,
   ChevronDown,
@@ -61,6 +67,7 @@ import {
   getBarEdgeInsetPx,
   getBarGridColumns,
   parseTaskDate,
+  pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
 import {
   isZoomWheelGesture,
@@ -175,9 +182,44 @@ function RouteComponent() {
   // preference, not per-project state, matching how the rest of this store's
   // display preferences behave.
   const ganttUnit = useUserPreferencesStore((state) => state.ganttTimelineUnit);
+  const hasTouchedGanttUnit = useUserPreferencesStore(
+    (state) => state.ganttTimelineUnitTouched,
+  );
   const setGanttUnit = useUserPreferencesStore(
     (state) => state.setGanttTimelineUnit,
   );
+  // This project's own overall date span (own tasks only, not rolled-up
+  // summary spans — computed directly from `project` rather than reusing the
+  // `allTasks`/rollup pipeline below, so it's available this early without
+  // reordering either). Used only to pick a first-open default unit (see
+  // effectiveGanttUnit below); a project with nothing dated yet gets null,
+  // which pickDefaultGanttUnit treats as "day".
+  const projectDateSpanDays = useMemo(() => {
+    const tasks = [
+      ...(project?.columns.flatMap((column) => column.tasks) ?? []),
+      ...(project?.plannedTasks ?? []),
+    ];
+    let start: Date | null = null;
+    let end: Date | null = null;
+    for (const task of tasks) {
+      const schedule = deriveTaskSchedule(task.startDate, task.dueDate);
+      if (!schedule) continue;
+      if (!start || schedule.start < start) start = schedule.start;
+      if (!end || schedule.end > end) end = schedule.end;
+    }
+    if (!start || !end) return null;
+    return differenceInCalendarDays(end, start) + 1;
+  }, [project]);
+  // The unit actually rendered: the viewer's persisted choice once they've
+  // ever touched the segmented control (see ganttTimelineUnitTouched),
+  // otherwise a per-project default computed fresh from this project's own
+  // date span every time (see pickDefaultGanttUnit) — deliberately NOT
+  // persisted itself, since a different project opened next should get ITS
+  // own fitting default rather than inheriting whatever the previous
+  // project's span happened to compute.
+  const effectiveGanttUnit = hasTouchedGanttUnit
+    ? ganttUnit
+    : pickDefaultGanttUnit(projectDateSpanDays);
   // Persisted the same way as ganttTimelineUnit above (localStorage, via this
   // same store) — a per-viewer display preference, not per-project state.
   const showCriticalPath = useUserPreferencesStore(
@@ -201,8 +243,8 @@ function RouteComponent() {
 
   // Wider day columns on small screens so dragging and reading dates is easier.
   const baseDayColumnWidthRem = isMobile
-    ? UNIT_BASE_DAY_COLUMN_WIDTH_REM[ganttUnit].mobile
-    : UNIT_BASE_DAY_COLUMN_WIDTH_REM[ganttUnit].desktop;
+    ? UNIT_BASE_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].mobile
+    : UNIT_BASE_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].desktop;
   // Mouse-wheel zoom scales the base width by this factor (see the wheel
   // listener below); 1 is the default, unzoomed scale. Zoom stays a *within*
   // -unit fine adjustment — switching units (the segmented control below) is
@@ -212,11 +254,11 @@ function RouteComponent() {
   const dayColumnWidthRem = baseDayColumnWidthRem * zoom;
   const handleUnitChange = useCallback(
     (unit: GanttUnit) => {
-      if (unit === ganttUnit) return;
+      if (unit === effectiveGanttUnit) return;
       setGanttUnit(unit);
       setZoom(1);
     },
-    [ganttUnit, setGanttUnit],
+    [effectiveGanttUnit, setGanttUnit],
   );
   const taskColumnWidthRem = isMobile ? 12 : 14;
   const showTaskRail = !isMobile || isTaskRailOpen;
@@ -720,14 +762,14 @@ function RouteComponent() {
         weekStartsOn,
         requestedStart,
         undefined,
-        ganttUnit,
+        effectiveGanttUnit,
         externalRelatedTasks,
       ),
     [
       parsedTasks,
       weekStartsOn,
       requestedStart,
-      ganttUnit,
+      effectiveGanttUnit,
       externalRelatedTasks,
     ],
   );
@@ -752,8 +794,10 @@ function RouteComponent() {
   // doesn't need to know about this at all.
   const headerColumns = useMemo(
     () =>
-      range ? buildGanttHeaderColumns(range.days, ganttUnit, weekStartsOn) : [],
-    [range, ganttUnit, weekStartsOn],
+      range
+        ? buildGanttHeaderColumns(range.days, effectiveGanttUnit, weekStartsOn)
+        : [],
+    [range, effectiveGanttUnit, weekStartsOn],
   );
 
   // Which day indices sit at the END of a header column (always every index
@@ -1454,11 +1498,11 @@ function RouteComponent() {
                 <button
                   key={unit}
                   type="button"
-                  aria-pressed={ganttUnit === unit}
+                  aria-pressed={effectiveGanttUnit === unit}
                   onClick={() => handleUnitChange(unit)}
                   className={cn(
                     "min-h-9 touch-manipulation rounded-sm px-2.5 py-1 text-xs font-medium transition-colors sm:min-h-0",
-                    ganttUnit === unit
+                    effectiveGanttUnit === unit
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
@@ -1606,7 +1650,7 @@ function RouteComponent() {
                     minWidth: `${timeline.timelineMinWidthRem}rem`,
                   }}
                 >
-                  {ganttUnit === "day"
+                  {effectiveGanttUnit === "day"
                     ? timeline.days.map((day, index) => {
                         const showMonth =
                           index === 0 ||
@@ -1716,7 +1760,7 @@ function RouteComponent() {
                         // bitmask, or a holiday) is only meaningful at Day
                         // granularity — at Week/Month/Quarter it would render
                         // as a sliver a fraction of a pixel wide.
-                        ganttUnit === "day" &&
+                        effectiveGanttUnit === "day" &&
                           !workingDayPredicate(day) &&
                           // Theme-adaptive tint (see the header row above): a
                           // foreground tint stays visible on both dark and
