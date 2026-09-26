@@ -1591,7 +1591,8 @@
 			"members": "सदस्य",
 			"invitations": "निमंत्रण",
 			"more": "और",
-			"backToBoard": "बोर्ड पर वापस जाएँ"
+			"backToBoard": "बोर्ड पर वापस जाएँ",
+			"portfolio": "Portfolio"
 		},
 		"projectList": {
 			"viewProject": "प्रोजेक्ट देखें",
@@ -2777,5 +2778,21 @@
 			"startLink": "Start and verify the services",
 			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
 		}
+	},
+	"portfolio": {
+		"gantt": {
+			"milestoneAriaLabel": "{{title}}: milestone, open task",
+			"taskAriaLabel": "{{title}}: open task"
+		},
+		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
+		"loadErrorTitle": "Couldn't load the portfolio",
+		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
+		"noProjectsTitle": "No projects yet",
+		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
+		"noScheduledTasksTitle": "Nothing scheduled yet",
+		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
+		"railHeader": "Project",
+		"title": "Portfolio Timeline",
+		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
 	}
 }

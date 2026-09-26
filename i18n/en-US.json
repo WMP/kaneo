@@ -1588,6 +1588,7 @@
 		"sidebar": {
 			"overview": "Overview",
 			"projects": "Projects",
+			"portfolio": "Portfolio",
 			"members": "Members",
 			"invitations": "Invitations",
 			"more": "More",
@@ -2474,6 +2475,22 @@
 			"submit": "Create workspace",
 			"success": "Workspace created successfully",
 			"error": "Failed to create workspace"
+		}
+	},
+	"portfolio": {
+		"title": "Portfolio Timeline",
+		"railHeader": "Project",
+		"toggleProjectAriaLabel": "{{name}}: expand or collapse",
+		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
+		"noProjectsTitle": "No projects yet",
+		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
+		"noScheduledTasksTitle": "Nothing scheduled yet",
+		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
+		"loadErrorTitle": "Couldn't load the portfolio",
+		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
+		"gantt": {
+			"milestoneAriaLabel": "{{title}}: milestone, open task",
+			"taskAriaLabel": "{{title}}: open task"
 		}
 	},
 	"team": {
