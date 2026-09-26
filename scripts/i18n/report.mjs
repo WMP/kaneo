@@ -1,12 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {
+  collectUntranslatedKeys,
   defaultLocale,
   flattenLocale,
   formatKeyList,
-  getValueAtKey,
   loadLocales,
-  PLURAL_CATEGORIES,
   pruneLocale,
   repoRoot,
   writeJson,
@@ -39,23 +38,6 @@ const unused = new Set(
   ),
 );
 
-function referenceFallback(key) {
-  for (const category of PLURAL_CATEGORIES) {
-    const suffix = `_${category}`;
-    if (!key.endsWith(suffix)) {
-      continue;
-    }
-    const base = key.slice(0, -suffix.length);
-    for (const candidate of [`${base}_other`, base, `${base}_one`]) {
-      const value = getValueAtKey(reference.data, candidate);
-      if (value !== undefined) {
-        return value;
-      }
-    }
-  }
-  return undefined;
-}
-
 // A value byte-identical to en-US has not been translated yet. Keys added by
 // `i18n:check --fix` land here, which is the only place they surface.
 const untranslated = new Map();
@@ -64,20 +46,11 @@ for (const locale of locales) {
     continue;
   }
 
-  // Locale-specific plural forms (_few, _many, …) are absent from en-US, so
-  // they are compared against the wording their family falls back to.
-  const candidates = new Set([...localeKeys, ...flattenLocale(locale.data)]);
-
-  const pending = [...candidates].filter((key) => {
-    const target = getValueAtKey(locale.data, key);
-    if (typeof target !== "string") {
-      return false;
-    }
-
-    const source = getValueAtKey(reference.data, key) ?? referenceFallback(key);
-    return typeof source === "string" && source === target;
-  });
-
+  const pending = collectUntranslatedKeys(
+    locale.data,
+    reference.data,
+    localeKeys,
+  );
   if (pending.length > 0) {
     untranslated.set(locale.locale, pending);
   }
