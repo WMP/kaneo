@@ -46,6 +46,12 @@ type UserPreferencesStore = {
 
   weekStartsOn: WeekStartDay;
   setWeekStartsOn: (weekStartsOn: WeekStartDay) => void;
+
+  // Keyed by projectId: custom fields belong to one project, so the choice
+  // of which one to show on the Gantt task rail can't be a single global
+  // value the way weekStartsOn is.
+  ganttCustomFieldByProject: Record<string, string | null>;
+  setGanttCustomField: (projectId: string, fieldId: string | null) => void;
 };
 
 export const useUserPreferencesStore = create<UserPreferencesStore>()(
@@ -123,6 +129,15 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
 
       weekStartsOn: 0,
       setWeekStartsOn: (weekStartsOn) => set({ weekStartsOn }),
+
+      ganttCustomFieldByProject: {},
+      setGanttCustomField: (projectId, fieldId) =>
+        set((state) => ({
+          ganttCustomFieldByProject: {
+            ...state.ganttCustomFieldByProject,
+            [projectId]: fieldId,
+          },
+        })),
     }),
     {
       name: "user-preferences",

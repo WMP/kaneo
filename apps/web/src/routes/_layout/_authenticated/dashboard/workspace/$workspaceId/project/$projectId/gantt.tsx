@@ -21,6 +21,15 @@ import PageTitle from "@/components/page-title";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useGetCustomFieldValuesByProject from "@/hooks/queries/custom-field/use-get-custom-field-values-by-project";
+import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
@@ -47,6 +56,36 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { data: project } = useGetTasks(projectId);
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
+  const ganttCustomFieldByProject = useUserPreferencesStore(
+    (state) => state.ganttCustomFieldByProject,
+  );
+  const setGanttCustomField = useUserPreferencesStore(
+    (state) => state.setGanttCustomField,
+  );
+  const { data: customFieldDefinitions = [] } =
+    useGetCustomFieldsByProject(projectId);
+  const { data: customFieldValues = [] } =
+    useGetCustomFieldValuesByProject(projectId);
+  const selectedCustomFieldId = ganttCustomFieldByProject?.[projectId] ?? "";
+  const selectedCustomFieldDefinition = customFieldDefinitions.find(
+    (field) => field.id === selectedCustomFieldId,
+  );
+  // One lookup built once per render of the values query, rather than
+  // filtering the whole project's values per task row.
+  const customFieldValueByTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!selectedCustomFieldId) return map;
+    for (const entry of customFieldValues) {
+      if (
+        entry.fieldId === selectedCustomFieldId &&
+        entry.value !== null &&
+        entry.value !== ""
+      ) {
+        map.set(entry.taskId, entry.value);
+      }
+    }
+    return map;
+  }, [customFieldValues, selectedCustomFieldId]);
   const [searchQuery, setSearchQuery] = useState("");
   const [windowStart, setWindowStart] = useState<{
     projectId: string;
@@ -252,6 +291,38 @@ function RouteComponent() {
                 className="h-9 min-h-11 touch-manipulation sm:h-8 sm:min-h-0 [&_[data-slot=input]]:pl-8 [&_[data-slot=input]]:text-xs"
               />
             </div>
+
+            {customFieldDefinitions.length > 0 && (
+              <Select
+                value={selectedCustomFieldId}
+                onValueChange={(value) =>
+                  setGanttCustomField(projectId, String(value ?? "") || null)
+                }
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="h-9 w-full max-w-[11rem] sm:h-8"
+                  aria-label={t("tasks:gantt.customFieldLabel")}
+                >
+                  <SelectValue
+                    placeholder={t("tasks:gantt.customFieldPlaceholder")}
+                  >
+                    {selectedCustomFieldDefinition?.name ??
+                      t("tasks:gantt.customFieldNone")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">
+                    {t("tasks:gantt.customFieldNone")}
+                  </SelectItem>
+                  {customFieldDefinitions.map((field) => (
+                    <SelectItem key={field.id} value={field.id}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             {timeline && (
               <div className="flex flex-wrap items-center gap-2">
@@ -477,6 +548,13 @@ function RouteComponent() {
                                   ? ` • ${task.assigneeName}`
                                   : ""}
                               </p>
+                              {selectedCustomFieldDefinition &&
+                                customFieldValueByTaskId.has(task.id) && (
+                                  <span className="mt-0.5 max-w-full truncate rounded-full bg-secondary px-1.5 py-px text-[10px] font-medium text-secondary-foreground">
+                                    {selectedCustomFieldDefinition.name}:{" "}
+                                    {customFieldValueByTaskId.get(task.id)}
+                                  </span>
+                                )}
                             </button>
                             {(task.scheduleEnd < timeline.rangeStart ||
                               task.scheduleStart > timeline.rangeEnd) && (

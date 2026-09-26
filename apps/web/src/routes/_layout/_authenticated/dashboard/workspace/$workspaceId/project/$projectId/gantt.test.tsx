@@ -5,6 +5,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type Task from "@/types/task";
 import { Route } from "./gantt";
 
+type CustomFieldDefinitionRow = {
+  id: string;
+  projectId: string;
+  name: string;
+  type: string;
+  required: boolean;
+  defaultValue: string | null;
+  options: string[] | null;
+  position: number;
+};
+
+type CustomFieldValueRow = {
+  id: string;
+  taskId: string;
+  fieldId: string;
+  value: string | null;
+  fieldName: string;
+  fieldPosition: number;
+  fieldType: string;
+  fieldOptions: unknown;
+};
+
 // jsdom does not implement either of these; the component relies on both to
 // center the timeline on "today".
 vi.stubGlobal(
@@ -41,14 +63,42 @@ vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
   useGetTasks: (projectId: string) => useGetTasks(projectId),
 }));
 
+const useGetCustomFieldsByProject = vi.fn((_projectId: string) => ({
+  data: [] as CustomFieldDefinitionRow[],
+}));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-custom-fields-by-project",
+  () => ({
+    default: (projectId: string) => useGetCustomFieldsByProject(projectId),
+  }),
+);
+
+const useGetCustomFieldValuesByProject = vi.fn((_projectId: string) => ({
+  data: [] as CustomFieldValueRow[],
+}));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-custom-field-values-by-project",
+  () => ({
+    default: (projectId: string) => useGetCustomFieldValuesByProject(projectId),
+  }),
+);
+
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => false,
 }));
 
+const setGanttCustomField = vi.fn();
+// Mutable like routeParams above: a test can set this before render() (or
+// before rerender()) to simulate a persisted Gantt custom field choice.
+const preferencesState = {
+  weekStartsOn: 0,
+  ganttCustomFieldByProject: {} as Record<string, string | null>,
+  setGanttCustomField,
+};
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: (
-    selector: (state: { weekStartsOn: number }) => unknown,
-  ) => selector({ weekStartsOn: 0 }),
+    selector: (state: typeof preferencesState) => unknown,
+  ) => selector(preferencesState),
 }));
 
 vi.mock("@/components/common/project-layout", () => ({
@@ -143,6 +193,12 @@ afterEach(() => {
   vi.useRealTimers();
   scrollIntoView.mockClear();
   useGetTasks.mockReset();
+  useGetCustomFieldsByProject.mockClear();
+  useGetCustomFieldsByProject.mockReturnValue({ data: [] });
+  useGetCustomFieldValuesByProject.mockClear();
+  useGetCustomFieldValuesByProject.mockReturnValue({ data: [] });
+  setGanttCustomField.mockClear();
+  preferencesState.ganttCustomFieldByProject = {};
   routeParams.projectId = "project-1";
 });
 
@@ -320,5 +376,138 @@ describe("Gantt jump-to-today", () => {
     // component is correct.
     const container = screen.getByTestId("gantt-scroll-container");
     expect(container.style.scrollPaddingLeft).toBe("20rem");
+  });
+});
+
+describe("Gantt custom field column", () => {
+  it("does not render a custom field picker when the project has none", () => {
+    mockProjectWithTask(
+      makeTask({
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(
+      screen.queryByLabelText("Custom field column"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the picker but no badge until a field is selected", () => {
+    useGetCustomFieldsByProject.mockReturnValue({
+      data: [
+        {
+          id: "field-1",
+          projectId: "project-1",
+          name: "Client approval",
+          type: "text",
+          required: false,
+          defaultValue: null,
+          options: null,
+          position: 0,
+        },
+      ],
+    });
+    useGetCustomFieldValuesByProject.mockReturnValue({
+      data: [
+        {
+          id: "value-1",
+          taskId: "current-task",
+          fieldId: "field-1",
+          value: "Approved",
+          fieldName: "Client approval",
+          fieldPosition: 0,
+          fieldType: "text",
+          fieldOptions: null,
+        },
+      ],
+    });
+    mockProjectWithTask(
+      makeTask({
+        id: "current-task",
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(screen.getByLabelText("Custom field column")).toBeInTheDocument();
+    expect(screen.queryByText(/Client approval: Approved/)).toBeNull();
+  });
+
+  it("renders the chosen field's value as a badge on the task rail, and skips tasks without a value", () => {
+    useGetCustomFieldsByProject.mockReturnValue({
+      data: [
+        {
+          id: "field-1",
+          projectId: "project-1",
+          name: "Client approval",
+          type: "text",
+          required: false,
+          defaultValue: null,
+          options: null,
+          position: 0,
+        },
+      ],
+    });
+    useGetCustomFieldValuesByProject.mockReturnValue({
+      data: [
+        {
+          id: "value-1",
+          taskId: "current-task",
+          fieldId: "field-1",
+          value: "Approved",
+          fieldName: "Client approval",
+          fieldPosition: 0,
+          fieldType: "text",
+          fieldOptions: null,
+        },
+      ],
+    });
+    // Simulate the choice already having been persisted to the store, since
+    // driving the underlying base-ui Select popover isn't exercised here.
+    preferencesState.ganttCustomFieldByProject = { "project-1": "field-1" };
+    useGetTasks.mockReturnValue({
+      data: {
+        id: "project-1",
+        name: "Roadmap",
+        slug: "RM",
+        columns: [
+          {
+            id: "col-1",
+            name: "In Progress",
+            tasks: [
+              makeTask({
+                id: "current-task",
+                title: "Ongoing work",
+                startDate: "2026-08-28",
+                dueDate: "2026-09-02",
+              }),
+              makeTask({
+                id: "unvalued-task",
+                title: "No approval yet",
+                startDate: "2026-08-28",
+                dueDate: "2026-09-02",
+              }),
+            ],
+          },
+        ],
+        plannedTasks: [],
+        archivedTasks: [],
+      },
+    });
+
+    render(<GanttRoute />);
+
+    expect(screen.getByText("Client approval: Approved")).toBeInTheDocument();
+    // The mocked GanttTaskBar also renders the title in its own node, so two
+    // matches (task rail + bar) are expected here.
+    expect(screen.getAllByText("No approval yet").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Client approval: $/)).toBeNull();
   });
 });

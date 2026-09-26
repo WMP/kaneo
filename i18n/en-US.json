@@ -2153,7 +2153,10 @@
 			"previousPeriod": "Previous period",
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates"
+			"showTaskDates": "Show task dates",
+			"customFieldLabel": "Custom field column",
+			"customFieldPlaceholder": "Show a custom field",
+			"customFieldNone": "None"
 		},
 		"delete": {
 			"title": "Delete Task?",
