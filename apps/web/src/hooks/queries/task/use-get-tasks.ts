@@ -12,7 +12,7 @@ import { isUnauthorizedError } from "@/lib/http-error";
 // that was backgrounded through such a gap the moment the user returns to it.
 // Both back off while the session is unauthorized so an expired cookie does not
 // spin on 401s.
-const SAFETY_NET_REFETCH_INTERVAL_MS = 5 * 60 * 1000;
+export const SAFETY_NET_REFETCH_INTERVAL_MS = 5 * 60 * 1000;
 
 export function useGetTasks(projectId: string) {
   return useQuery({
