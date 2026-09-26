@@ -53,6 +53,14 @@ type UserPreferencesStore = {
   setWeekStartsOn: (weekStartsOn: WeekStartDay) => void;
 
   ganttTimelineUnit: GanttUnit;
+  // Whether the viewer has ever explicitly picked a unit (via the segmented
+  // control) versus this still being the untouched "day" default. The Gantt
+  // route reads this to decide whether ganttTimelineUnit should win outright
+  // (touched) or whether it should instead compute a per-project default
+  // from that project's own date span (see pickDefaultGanttUnit in
+  // timeline.ts) — a global "day" default would otherwise open a
+  // multi-year plan looking empty on every viewer's very first visit.
+  ganttTimelineUnitTouched: boolean;
   setGanttTimelineUnit: (unit: GanttUnit) => void;
 
   ganttShowCriticalPath: boolean;
@@ -136,7 +144,9 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       setWeekStartsOn: (weekStartsOn) => set({ weekStartsOn }),
 
       ganttTimelineUnit: "day",
-      setGanttTimelineUnit: (ganttTimelineUnit) => set({ ganttTimelineUnit }),
+      ganttTimelineUnitTouched: false,
+      setGanttTimelineUnit: (ganttTimelineUnit) =>
+        set({ ganttTimelineUnit, ganttTimelineUnitTouched: true }),
 
       ganttShowCriticalPath: false,
       setGanttShowCriticalPath: (ganttShowCriticalPath) =>
@@ -151,6 +161,24 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
         }
         if (state && !isGanttUnit(state.ganttTimelineUnit)) {
           state.setGanttTimelineUnit("day");
+        }
+        // Pre-existing installations persisted ganttTimelineUnit with no
+        // "touched" flag at all (it didn't exist yet). The only way it could
+        // already be something other than the hardcoded "day" default is an
+        // explicit past pick via the segmented control (setGanttTimelineUnit
+        // was never called any other way), so back-fill touched=true for
+        // those rather than letting the untouched per-project default (see
+        // pickDefaultGanttUnit in timeline.ts) silently override a unit the
+        // viewer chose before this feature existed.
+        if (
+          state &&
+          state.ganttTimelineUnit !== "day" &&
+          !state.ganttTimelineUnitTouched
+        ) {
+          // Re-setting the same unit is a plain, already-reactive way to
+          // flip ganttTimelineUnitTouched to true (see setGanttTimelineUnit
+          // above) without reaching into the store's internals directly.
+          state.setGanttTimelineUnit(state.ganttTimelineUnit);
         }
       },
     },

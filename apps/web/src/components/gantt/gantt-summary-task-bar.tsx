@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import type { GanttBarEmphasis } from "./timeline";
-import { getBarGridColumns } from "./timeline";
+import { getBarGridColumns, MIN_BAR_HOVER_HIT_PX } from "./timeline";
 
 type GanttSummaryTaskBarProps = {
   title: string;
@@ -61,7 +61,13 @@ export function GanttSummaryTaskBar({
     >
       {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; the actual interactive control is the button nested below */}
       <div
-        style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
+        style={{
+          gridColumn: `${lineStart} / ${lineEnd}`,
+          // See MIN_BAR_HOVER_HIT_PX: guarantees a comfortable hover/pointer
+          // footprint at Month/Quarter regardless of how narrow this row's
+          // own date-range track compresses to.
+          minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
+        }}
         onMouseEnter={() => onHoverChange?.(true)}
         onMouseLeave={() => onHoverChange?.(false)}
         onFocus={() => onHoverChange?.(true)}

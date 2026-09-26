@@ -7650,6 +7650,7 @@
                       "updateStatus",
                       "updatePriority",
                       "updateAssignee",
+                      "updateProgress",
                       "delete",
                       "addLabel",
                       "removeLabel",
@@ -7662,7 +7663,7 @@
                       "string",
                       "null"
                     ],
-                    "description": "The new value for the chosen operation. Unused by `delete` and `updateSchedule`; null clears an assignee or due date."
+                    "description": "The new value for the chosen operation. Unused by `delete` and `updateSchedule`; null clears an assignee or due date. `updateProgress` takes a stringified whole percent from 0 to 100."
                   },
                   "scheduleUpdates": {
                     "type": "array",

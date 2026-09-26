@@ -10,6 +10,7 @@ type BulkTaskOperation =
   | "updateStatus"
   | "updatePriority"
   | "updateAssignee"
+  | "updateProgress"
   | "delete"
   | "addLabel"
   | "removeLabel"
@@ -20,6 +21,7 @@ const BULK_OPERATIONS: readonly BulkTaskOperation[] = [
   "updateStatus",
   "updatePriority",
   "updateAssignee",
+  "updateProgress",
   "delete",
   "addLabel",
   "removeLabel",

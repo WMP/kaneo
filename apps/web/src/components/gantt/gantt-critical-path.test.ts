@@ -156,5 +156,37 @@ describe("computeCriticalPath", () => {
 
     expect(result.criticalTaskIds).toEqual(new Set(["a"]));
     expect(result.criticalEdgeIds.size).toBe(0);
+    expect(result.droppedEdgeCount).toBe(1);
+  });
+
+  describe("droppedEdgeCount", () => {
+    it("is 0 when every edge's endpoints are both in the participating task set", () => {
+      const tasks = [task("a", 0, 2), task("b", 2, 5)];
+      const edges = [blocks("e1", "a", "b")];
+
+      expect(computeCriticalPath(tasks, edges).droppedEdgeCount).toBe(0);
+    });
+
+    it("counts an edge into a cross-project/dateless task, one per out-of-scope endpoint", () => {
+      // "a" is in scope; "missing-1"/"missing-2" are not (a cross-project or
+      // dateless task never makes it into the task list the caller passes).
+      const tasks = [task("a", 0, 2)];
+      const edges = [
+        blocks("e1", "a", "missing-1"),
+        blocks("e2", "missing-2", "a"),
+      ];
+
+      expect(computeCriticalPath(tasks, edges).droppedEdgeCount).toBe(2);
+    });
+
+    it("counts a self-edge as dropped even when the task itself is in scope", () => {
+      const tasks = [task("a", 0, 2)];
+      const edges = [blocks("e1", "a", "a")];
+
+      const result = computeCriticalPath(tasks, edges);
+
+      expect(result.droppedEdgeCount).toBe(1);
+      expect(result.criticalEdgeIds.size).toBe(0);
+    });
   });
 });

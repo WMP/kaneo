@@ -20,6 +20,7 @@ import {
   getBarGridColumns,
   MIN_BAR_CONTENT_PX,
   parseTaskDate,
+  pickDefaultGanttUnit,
 } from "./timeline";
 
 const span = (start: string, end = start) => ({
@@ -188,7 +189,11 @@ describe("buildGanttRange extraBoundsTasks (external related tasks)", () => {
       externalTasks,
     );
     expect(range).not.toBeNull();
-    expect(range?.days.some((day) => day.getTime() === parseISO("2026-09-14").getTime())).toBe(true);
+    expect(
+      range?.days.some(
+        (day) => day.getTime() === parseISO("2026-09-14").getTime(),
+      ),
+    ).toBe(true);
   });
 
   it("still returns null when both the own tasks and the bounds tasks are empty", () => {
@@ -557,5 +562,33 @@ describe("computeProgressFillPercent", () => {
       11,
     );
     expect(over).toBe(100);
+  });
+});
+
+describe("pickDefaultGanttUnit", () => {
+  it("defaults to Day when there's no dated span at all (nothing scheduled yet)", () => {
+    expect(pickDefaultGanttUnit(null)).toBe("day");
+  });
+
+  it("picks Day for a project spanning within Day's own window", () => {
+    expect(pickDefaultGanttUnit(1)).toBe("day");
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.day)).toBe("day");
+  });
+
+  it("picks Week just past Day's window, up to Week's own window", () => {
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.day + 1)).toBe("week");
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.week)).toBe("week");
+  });
+
+  it("picks Month just past Week's window, up to Month's own window", () => {
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.week + 1)).toBe("month");
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.month)).toBe("month");
+  });
+
+  it("picks Quarter for a multi-year plan past Month's window", () => {
+    expect(pickDefaultGanttUnit(GANTT_UNIT_WINDOW_DAYS.month + 1)).toBe(
+      "quarter",
+    );
+    expect(pickDefaultGanttUnit(5000)).toBe("quarter");
   });
 });

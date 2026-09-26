@@ -13,6 +13,7 @@ function edge(overrides: Partial<DependencyEdgeGeometry> = {}) {
     sourcePoint: { x: 0, y: 0 },
     targetPoint: { x: 10, y: 10 },
     lagLabelPoint: null,
+    typeLabelPoint: null,
     ...overrides,
   };
 }

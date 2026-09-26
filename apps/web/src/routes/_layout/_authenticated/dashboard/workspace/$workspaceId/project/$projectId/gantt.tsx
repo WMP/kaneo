@@ -1,6 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { addDays, format, isSameMonth, isToday } from "date-fns";
 import {
+  addDays,
+  differenceInCalendarDays,
+  format,
+  isSameMonth,
+  isToday,
+} from "date-fns";
+import {
+  AlertTriangle,
   Calendar,
   ChevronDown,
   ChevronLeft,
@@ -60,7 +67,9 @@ import {
   type GanttUnit,
   getBarEdgeInsetPx,
   getBarGridColumns,
+  MIN_BAR_HOVER_HIT_PX,
   parseTaskDate,
+  pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
 import {
   isZoomWheelGesture,
@@ -70,6 +79,7 @@ import {
 } from "@/components/gantt/zoom";
 import PageTitle from "@/components/page-title";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBulkUpdateTaskSchedule } from "@/hooks/mutations/task/use-bulk-update-task-schedule";
@@ -79,6 +89,8 @@ import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
+import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
+import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { getStatusLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
@@ -175,9 +187,44 @@ function RouteComponent() {
   // preference, not per-project state, matching how the rest of this store's
   // display preferences behave.
   const ganttUnit = useUserPreferencesStore((state) => state.ganttTimelineUnit);
+  const hasTouchedGanttUnit = useUserPreferencesStore(
+    (state) => state.ganttTimelineUnitTouched,
+  );
   const setGanttUnit = useUserPreferencesStore(
     (state) => state.setGanttTimelineUnit,
   );
+  // This project's own overall date span (own tasks only, not rolled-up
+  // summary spans — computed directly from `project` rather than reusing the
+  // `allTasks`/rollup pipeline below, so it's available this early without
+  // reordering either). Used only to pick a first-open default unit (see
+  // effectiveGanttUnit below); a project with nothing dated yet gets null,
+  // which pickDefaultGanttUnit treats as "day".
+  const projectDateSpanDays = useMemo(() => {
+    const tasks = [
+      ...(project?.columns.flatMap((column) => column.tasks) ?? []),
+      ...(project?.plannedTasks ?? []),
+    ];
+    let start: Date | null = null;
+    let end: Date | null = null;
+    for (const task of tasks) {
+      const schedule = deriveTaskSchedule(task.startDate, task.dueDate);
+      if (!schedule) continue;
+      if (!start || schedule.start < start) start = schedule.start;
+      if (!end || schedule.end > end) end = schedule.end;
+    }
+    if (!start || !end) return null;
+    return differenceInCalendarDays(end, start) + 1;
+  }, [project]);
+  // The unit actually rendered: the viewer's persisted choice once they've
+  // ever touched the segmented control (see ganttTimelineUnitTouched),
+  // otherwise a per-project default computed fresh from this project's own
+  // date span every time (see pickDefaultGanttUnit) — deliberately NOT
+  // persisted itself, since a different project opened next should get ITS
+  // own fitting default rather than inheriting whatever the previous
+  // project's span happened to compute.
+  const effectiveGanttUnit = hasTouchedGanttUnit
+    ? ganttUnit
+    : pickDefaultGanttUnit(projectDateSpanDays);
   // Persisted the same way as ganttTimelineUnit above (localStorage, via this
   // same store) — a per-viewer display preference, not per-project state.
   const showCriticalPath = useUserPreferencesStore(
@@ -201,8 +248,8 @@ function RouteComponent() {
 
   // Wider day columns on small screens so dragging and reading dates is easier.
   const baseDayColumnWidthRem = isMobile
-    ? UNIT_BASE_DAY_COLUMN_WIDTH_REM[ganttUnit].mobile
-    : UNIT_BASE_DAY_COLUMN_WIDTH_REM[ganttUnit].desktop;
+    ? UNIT_BASE_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].mobile
+    : UNIT_BASE_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].desktop;
   // Mouse-wheel zoom scales the base width by this factor (see the wheel
   // listener below); 1 is the default, unzoomed scale. Zoom stays a *within*
   // -unit fine adjustment — switching units (the segmented control below) is
@@ -212,11 +259,17 @@ function RouteComponent() {
   const dayColumnWidthRem = baseDayColumnWidthRem * zoom;
   const handleUnitChange = useCallback(
     (unit: GanttUnit) => {
-      if (unit === ganttUnit) return;
+      // Bail out only when the click is a true no-op: the unit already renders
+      // AND the viewer has already locked in a preference. When the shown unit
+      // is still just the untouched per-project default, clicking it must
+      // persist that pick (flipping ganttTimelineUnitTouched via
+      // setGanttTimelineUnit) so the same unit follows the viewer to other
+      // projects instead of each one recomputing its own default.
+      if (unit === effectiveGanttUnit && hasTouchedGanttUnit) return;
       setGanttUnit(unit);
       setZoom(1);
     },
-    [ganttUnit, setGanttUnit],
+    [effectiveGanttUnit, hasTouchedGanttUnit, setGanttUnit],
   );
   const taskColumnWidthRem = isMobile ? 12 : 14;
   const showTaskRail = !isMobile || isTaskRailOpen;
@@ -720,14 +773,14 @@ function RouteComponent() {
         weekStartsOn,
         requestedStart,
         undefined,
-        ganttUnit,
+        effectiveGanttUnit,
         externalRelatedTasks,
       ),
     [
       parsedTasks,
       weekStartsOn,
       requestedStart,
-      ganttUnit,
+      effectiveGanttUnit,
       externalRelatedTasks,
     ],
   );
@@ -752,8 +805,10 @@ function RouteComponent() {
   // doesn't need to know about this at all.
   const headerColumns = useMemo(
     () =>
-      range ? buildGanttHeaderColumns(range.days, ganttUnit, weekStartsOn) : [],
-    [range, ganttUnit, weekStartsOn],
+      range
+        ? buildGanttHeaderColumns(range.days, effectiveGanttUnit, weekStartsOn)
+        : [],
+    [range, effectiveGanttUnit, weekStartsOn],
   );
 
   // Which day indices sit at the END of a header column (always every index
@@ -892,9 +947,19 @@ function RouteComponent() {
         barsLeftPx + (lineEnd - 1) * pixelsPerDay,
         barEdgeInsetPx,
       );
+      // Widened, symmetrically, to at least MIN_BAR_HOVER_HIT_PX — the same
+      // floor GanttTaskBar's own outer wrapper enforces via CSS min-width
+      // (see gantt-task-bar.tsx). Without this, a dependency line would
+      // anchor to (and a "blocks" edge's type label clear of) the narrower
+      // MIN_BAR_CONTENT_PX-only box computeInsetBarBox returns on its own,
+      // which at Month/Quarter can end up visibly narrower than the bar's
+      // real, hoverable rendered width — exactly the mismatch that let a
+      // type label land back on top of a bar's own hover area.
+      const hoverWidth = box.right - box.left;
+      const hoverGrow = Math.max(0, MIN_BAR_HOVER_HIT_PX - hoverWidth) / 2;
       boxes.set(task.id, {
-        left: box.left,
-        right: box.right,
+        left: box.left - hoverGrow,
+        right: box.right + hoverGrow,
         top: row.top,
         height: row.height,
       });
@@ -1407,6 +1472,20 @@ function RouteComponent() {
                           <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
                           {t("tasks:gantt.legendRelated")}
                         </span>
+                        {/* Points at the small FS/SS/FF/SF label on a
+                            blocking line itself (see GanttDependencyOverlay)
+                            rather than spelling out all four types here —
+                            there isn't room, and the label is already a
+                            clickable control that opens the full editor. */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t("tasks:gantt.legendDependencyTypeHint")}
+                        >
+                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-destructive">
+                            {t("tasks:relations.dependency.typesShort.fs")}
+                          </span>
+                          {t("tasks:gantt.legendDependencyType")}
+                        </span>
                       </>
                     )}
                     {hasCriticalHighlight && (
@@ -1446,6 +1525,28 @@ function RouteComponent() {
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
 
+            {/* Cross-project/dateless dependencies never participate in the
+                critical-path network (computeCriticalPath has no row or
+                duration to reason about for them — see its own inScopeEdges
+                comment), so a task genuinely made critical by one of them
+                would otherwise silently read as "not critical" here. Shown
+                only while the toggle is actually on (droppedEdgeCount isn't
+                computed at all otherwise) and only when there's something to
+                warn about. */}
+            {showCriticalPath &&
+              criticalPath &&
+              criticalPath.droppedEdgeCount > 0 && (
+                <span
+                  className="flex shrink-0 items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 py-1 text-[11px] font-medium text-warning-foreground"
+                  title={t("tasks:gantt.criticalPathDroppedEdgesHint")}
+                >
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  {t("tasks:gantt.criticalPathDroppedEdges", {
+                    count: criticalPath.droppedEdgeCount,
+                  })}
+                </span>
+              )}
+
             <fieldset className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
               <legend className="sr-only">
                 {t("tasks:gantt.unitControlAriaLabel")}
@@ -1454,11 +1555,11 @@ function RouteComponent() {
                 <button
                   key={unit}
                   type="button"
-                  aria-pressed={ganttUnit === unit}
+                  aria-pressed={effectiveGanttUnit === unit}
                   onClick={() => handleUnitChange(unit)}
                   className={cn(
                     "min-h-9 touch-manipulation rounded-sm px-2.5 py-1 text-xs font-medium transition-colors sm:min-h-0",
-                    ganttUnit === unit
+                    effectiveGanttUnit === unit
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
@@ -1589,7 +1690,14 @@ function RouteComponent() {
                 {showTaskRail ? (
                   <div
                     data-gantt-rail=""
-                    className="sticky left-0 z-30 shrink-0 border-r border-border bg-background px-2 py-2.5 sm:w-80 sm:px-4 sm:py-3"
+                    // select-none: this rail column is excluded from the
+                    // chart's own drag-to-pan (see isPannableTarget) so its
+                    // own vertical scroll can work natively instead, but a
+                    // plain text column with no pan of its own otherwise
+                    // means a click-drag here just selects text — annoying
+                    // and useless when someone's actually trying to drag-
+                    // scroll the row list.
+                    className="sticky left-0 z-30 shrink-0 select-none border-r border-border bg-background px-2 py-2.5 sm:w-80 sm:px-4 sm:py-3"
                     style={{
                       width: isMobile ? `${taskColumnWidthRem}rem` : undefined,
                     }}
@@ -1606,7 +1714,7 @@ function RouteComponent() {
                     minWidth: `${timeline.timelineMinWidthRem}rem`,
                   }}
                 >
-                  {ganttUnit === "day"
+                  {effectiveGanttUnit === "day"
                     ? timeline.days.map((day, index) => {
                         const showMonth =
                           index === 0 ||
@@ -1626,7 +1734,7 @@ function RouteComponent() {
                               // ~4%-alpha `bg-muted` token which is invisible on
                               // dark. Kept in sync with the track layer below.
                               !workingDayPredicate(day) &&
-                                "bg-foreground/[0.06]",
+                                "bg-foreground/[0.1]",
                             )}
                           >
                             <div className="h-4 text-[10px] font-medium text-muted-foreground">
@@ -1716,12 +1824,12 @@ function RouteComponent() {
                         // bitmask, or a holiday) is only meaningful at Day
                         // granularity — at Week/Month/Quarter it would render
                         // as a sliver a fraction of a pixel wide.
-                        ganttUnit === "day" &&
+                        effectiveGanttUnit === "day" &&
                           !workingDayPredicate(day) &&
                           // Theme-adaptive tint (see the header row above): a
                           // foreground tint stays visible on both dark and
                           // light, where the ~4%-alpha `bg-muted` token did not.
-                          "bg-foreground/[0.06]",
+                          "bg-foreground/[0.1]",
                       )}
                     />
                   ))}
@@ -1768,7 +1876,11 @@ function RouteComponent() {
                         {showTaskRail ? (
                           <div
                             data-gantt-rail=""
-                            className="sticky left-0 z-[11] h-full border-r border-border bg-background"
+                            // select-none: see the matching header-cell
+                            // comment above — a click-drag meant to scroll
+                            // the row list otherwise just selects every
+                            // task title it passes over.
+                            className="sticky left-0 z-[11] h-full select-none border-r border-border bg-background"
                           >
                             {task.isExternal ? (
                               <div className="flex min-h-[44px] w-full min-w-0 flex-col items-start justify-center gap-0.5 px-2 py-2 text-left opacity-80 sm:min-h-0 sm:px-3 sm:py-1.5">
@@ -1850,16 +1962,73 @@ function RouteComponent() {
                                     <span className="truncate text-[10px] text-muted-foreground">
                                       {project?.slug}-{task.number}
                                     </span>
+                                    {/* Overdue marker: reuses the same
+                                        overdue/complete rules the board and
+                                        list views already apply (a finished
+                                        task, per its own column's isFinal,
+                                        can never read as overdue) rather than
+                                        a Gantt-only definition of "late". */}
+                                    {getDueDateStatus(
+                                      task.dueDate,
+                                      isTaskCompleted(
+                                        task.status,
+                                        project?.columns,
+                                      ),
+                                    ) === "overdue" && (
+                                      <span
+                                        role="img"
+                                        aria-label={t(
+                                          "tasks:gantt.overdueMarkerAriaLabel",
+                                          { title: task.title },
+                                        )}
+                                        title={t(
+                                          "tasks:gantt.overdueMarkerAriaLabel",
+                                          { title: task.title },
+                                        )}
+                                        className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-px text-[10px] font-medium text-destructive"
+                                      >
+                                        {t("tasks:gantt.overdueLabel")}
+                                      </span>
+                                    )}
                                   </div>
-                                  <p className="w-full line-clamp-1 text-xs font-medium leading-tight text-foreground">
-                                    {task.title}
-                                  </p>
+                                  <div className="flex w-full min-w-0 items-center gap-1.5">
+                                    <p className="line-clamp-1 min-w-0 flex-1 text-xs font-medium leading-tight text-foreground">
+                                      {task.title}
+                                    </p>
+                                    {/* Owner avatar: initials over the
+                                        assignee's own image (see
+                                        task-assignee-popover.tsx and the
+                                        list/board views' identical pattern),
+                                        a plain "?" placeholder when
+                                        unassigned — small enough (size-5) to
+                                        sit beside the title without crowding
+                                        it on a narrow rail. */}
+                                    <span
+                                      title={task.assigneeName ?? undefined}
+                                    >
+                                      {task.assigneeId ? (
+                                        <Avatar className="size-5 shrink-0 border border-border/40">
+                                          <AvatarImage
+                                            src={task.assigneeImage ?? ""}
+                                            alt={task.assigneeName ?? ""}
+                                          />
+                                          <AvatarFallback className="text-[9px] font-medium">
+                                            {getInitials(task.assigneeName)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      ) : (
+                                        <span
+                                          className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border/40 bg-muted text-[9px] font-medium text-muted-foreground"
+                                          title={t("tasks:assignee.unassigned")}
+                                        >
+                                          ?
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
                                   <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
                                     {format(task.scheduleStart, "MMM d, yyyy")}{" "}
                                     - {format(task.scheduleEnd, "MMM d, yyyy")}
-                                    {task.assigneeName
-                                      ? ` • ${task.assigneeName}`
-                                      : ""}
                                   </p>
                                 </button>
                               </div>
