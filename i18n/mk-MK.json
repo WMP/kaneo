@@ -2049,7 +2049,21 @@
 		"relationUpdated": "ажурираше зависност",
 		"relationDeleted": "отстрани зависност",
 		"updatedPlan": "го ажурираше планот",
-		"changedApproval": "го смени статусот на одобрување од {{from}} во {{to}}"
+		"changedApproval": "го смени статусот на одобрување од {{from}} во {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Датум на почеток",
+				"dueDate": "Краен рок",
+				"progress": "Напредок",
+				"isMilestone": "Пресвртница",
+				"constraintType": "Тип на ограничување",
+				"constraintDate": "Датум на ограничување",
+				"baselineStartDate": "Датум на почеток (базна линија)",
+				"baselineDueDate": "Краен рок (базна линија)"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Задачи",
@@ -2728,7 +2742,9 @@
 				"from": "Од",
 				"to": "До",
 				"type": "Тип",
-				"user": "Корисник"
+				"user": "Корисник",
+				"project": "Проект",
+				"allProjects": "Сите проекти"
 			},
 			"pageTitle": "Активност",
 			"pagination": "Страница {{current}} од {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Насловот е сменет",
 				"unassigned": "Раздолжено",
 				"moved": "Преместено",
-				"description_changed": "Описот е сменет"
+				"description_changed": "Описот е сменет",
+				"approval_changed": "Промена на одобрување",
+				"updated": "Планот е ажуриран",
+				"relation_created": "Додадена зависност",
+				"relation_updated": "Ажурирана зависност",
+				"relation_deleted": "Отстранета зависност",
+				"calendar_updated": "Променети работни денови",
+				"holiday_added": "Додаден празник",
+				"holiday_removed": "Отстранет празник"
 			},
 			"emptyFilteredTitle": "Нема совпаѓачка активност",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Претходни недели",
 			"subtitle": "Задачи со датум, недовршени, по задолжено лице низ претстојните недели. Погустите ќелии значат повеќе истовремена работа; означените се над вашиот праг.",
 			"truncatedNotice": "Прикажан е делумен резултат: стеснете го опсегот на датуми за да ги видите сите задачи.",
-			"unassigned": "Нераспределено"
+			"unassigned": "Нераспределено",
+			"fromLabel": "Од",
+			"toLabel": "До",
+			"quickThisYear": "Оваа година",
+			"viewModeAriaLabel": "Режим на приказ",
+			"viewModeWeekly": "Неделски детали",
+			"viewModeSummary": "Резиме на периодот",
+			"openPersonTasksAriaLabel": "Преглед на задачите на {{name}} за овој период",
+			"summaryTotalColumn": "Вкупно оптоварување",
+			"summaryTotalTooltip": "Збир на бројот на активни задачи за секоја недела во периодот; задача што опфаќа повеќе недели се брои во секоја од нив.",
+			"summaryOverloadColumn": "Недели над прагот",
+			"summaryOverloadTooltip": "Број на недели во периодот каде бројот го надминал {{count}}.",
+			"drillThrough": {
+				"title": "Задачи на {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Нема соодветни задачи во овој период.",
+				"error": "Неуспешно вчитување на задачите.",
+				"dueOn": " · Рок {{date}}"
+			}
 		}
 	},
 	"team": {

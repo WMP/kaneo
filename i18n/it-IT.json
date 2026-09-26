@@ -2056,7 +2056,21 @@
 		"relationUpdated": "ha aggiornato una dipendenza",
 		"relationDeleted": "ha rimosso una dipendenza",
 		"updatedPlan": "ha aggiornato il piano",
-		"changedApproval": "ha cambiato lo stato di approvazione da {{from}} a {{to}}"
+		"changedApproval": "ha cambiato lo stato di approvazione da {{from}} a {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Data di inizio",
+				"dueDate": "Data di scadenza",
+				"progress": "Avanzamento",
+				"isMilestone": "Milestone",
+				"constraintType": "Tipo di vincolo",
+				"constraintDate": "Data del vincolo",
+				"baselineStartDate": "Data di inizio di riferimento",
+				"baselineDueDate": "Data di scadenza di riferimento"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Attività",
@@ -2739,7 +2753,9 @@
 				"from": "Da",
 				"to": "A",
 				"type": "Tipo",
-				"user": "Utente"
+				"user": "Utente",
+				"project": "Progetto",
+				"allProjects": "Tutti i progetti"
 			},
 			"pageTitle": "Attività",
 			"pagination": "Pagina {{current}} di {{total}}",
@@ -2753,7 +2769,15 @@
 				"title_changed": "Titolo modificato",
 				"unassigned": "Non assegnata",
 				"moved": "Spostata",
-				"description_changed": "Descrizione modificata"
+				"description_changed": "Descrizione modificata",
+				"approval_changed": "Approvazione modificata",
+				"updated": "Piano aggiornato",
+				"relation_created": "Dipendenza aggiunta",
+				"relation_updated": "Dipendenza aggiornata",
+				"relation_deleted": "Dipendenza rimossa",
+				"calendar_updated": "Giorni lavorativi modificati",
+				"holiday_added": "Festività aggiunta",
+				"holiday_removed": "Festività rimossa"
 			},
 			"emptyFilteredTitle": "Nessuna attività corrispondente",
 			"export": {
@@ -2781,7 +2805,25 @@
 			"previousWeeks": "Settimane precedenti",
 			"subtitle": "Attività datate e non completate per assegnatario nelle prossime settimane. Celle più dense indicano più lavoro simultaneo; quelle evidenziate superano la tua soglia.",
 			"truncatedNotice": "Viene mostrato un risultato parziale: restringi l'intervallo di date per vedere tutte le attività.",
-			"unassigned": "Non assegnato"
+			"unassigned": "Non assegnato",
+			"fromLabel": "Da",
+			"toLabel": "A",
+			"quickThisYear": "Quest'anno",
+			"viewModeAriaLabel": "Modalità di visualizzazione",
+			"viewModeWeekly": "Dettaglio settimanale",
+			"viewModeSummary": "Riepilogo del periodo",
+			"openPersonTasksAriaLabel": "Visualizza le attività di {{name}} per questo periodo",
+			"summaryTotalColumn": "Carico totale",
+			"summaryTotalTooltip": "Somma del numero di attività attive di ogni settimana nel periodo; un'attività che copre più settimane viene conteggiata in ciascuna di esse.",
+			"summaryOverloadColumn": "Settimane oltre la soglia",
+			"summaryOverloadTooltip": "Numero di settimane nel periodo in cui il conteggio ha superato {{count}}.",
+			"drillThrough": {
+				"title": "Attività di {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Nessuna attività corrispondente in questo periodo.",
+				"error": "Impossibile caricare le attività.",
+				"dueOn": " · Scadenza {{date}}"
+			}
 		}
 	},
 	"team": {

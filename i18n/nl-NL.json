@@ -2049,7 +2049,21 @@
 		"relationUpdated": "heeft een afhankelijkheid bijgewerkt",
 		"relationDeleted": "heeft een afhankelijkheid verwijderd",
 		"updatedPlan": "heeft het plan bijgewerkt",
-		"changedApproval": "heeft de goedkeuringsstatus gewijzigd van {{from}} naar {{to}}"
+		"changedApproval": "heeft de goedkeuringsstatus gewijzigd van {{from}} naar {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Startdatum",
+				"dueDate": "Vervaldatum",
+				"progress": "Voortgang",
+				"isMilestone": "Mijlpaal",
+				"constraintType": "Type beperking",
+				"constraintDate": "Beperkingsdatum",
+				"baselineStartDate": "Basisstartdatum",
+				"baselineDueDate": "Basisvervaldatum"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Taken",
@@ -2728,7 +2742,9 @@
 				"from": "Van",
 				"to": "Tot",
 				"type": "Type",
-				"user": "Gebruiker"
+				"user": "Gebruiker",
+				"project": "Project",
+				"allProjects": "Alle projecten"
 			},
 			"pageTitle": "Activiteit",
 			"pagination": "Pagina {{current}} van {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Titel gewijzigd",
 				"unassigned": "Niet toegewezen",
 				"moved": "Verplaatst",
-				"description_changed": "Beschrijving gewijzigd"
+				"description_changed": "Beschrijving gewijzigd",
+				"approval_changed": "Goedkeuring gewijzigd",
+				"updated": "Plan bijgewerkt",
+				"relation_created": "Afhankelijkheid toegevoegd",
+				"relation_updated": "Afhankelijkheid bijgewerkt",
+				"relation_deleted": "Afhankelijkheid verwijderd",
+				"calendar_updated": "Werkdagen gewijzigd",
+				"holiday_added": "Feestdag toegevoegd",
+				"holiday_removed": "Feestdag verwijderd"
 			},
 			"emptyFilteredTitle": "Geen overeenkomende activiteit",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Vorige weken",
 			"subtitle": "Taken met een datum die nog niet klaar zijn, per toegewezene over de komende weken. Dichtere cellen betekenen meer gelijktijdig werk; de gemarkeerde cellen liggen boven je drempel.",
 			"truncatedNotice": "Er wordt een gedeeltelijk resultaat getoond: verklein de datumperiode om alle taken te zien.",
-			"unassigned": "Niet toegewezen"
+			"unassigned": "Niet toegewezen",
+			"fromLabel": "Van",
+			"toLabel": "Tot",
+			"quickThisYear": "Dit jaar",
+			"viewModeAriaLabel": "Weergavemodus",
+			"viewModeWeekly": "Wekelijks detail",
+			"viewModeSummary": "Periodeoverzicht",
+			"openPersonTasksAriaLabel": "Bekijk taken van {{name}} voor deze periode",
+			"summaryTotalColumn": "Totale belasting",
+			"summaryTotalTooltip": "Som van het aantal actieve taken per week in de periode; een taak die meerdere weken beslaat, wordt in elke week meegeteld.",
+			"summaryOverloadColumn": "Weken boven de drempel",
+			"summaryOverloadTooltip": "Aantal weken in de periode waarin het aantal {{count}} overschreed.",
+			"drillThrough": {
+				"title": "Taken van {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Geen overeenkomende taken in deze periode.",
+				"error": "Taken laden is mislukt.",
+				"dueOn": " · Vervalt op {{date}}"
+			}
 		}
 	},
 	"team": {

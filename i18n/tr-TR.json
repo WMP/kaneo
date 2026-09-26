@@ -2049,7 +2049,21 @@
 		"relationUpdated": "bir bağımlılığı güncelledi",
 		"relationDeleted": "bir bağımlılığı kaldırdı",
 		"updatedPlan": "planı güncelledi",
-		"changedApproval": "onay durumunu {{from}} durumundan {{to}} durumuna değiştirdi"
+		"changedApproval": "onay durumunu {{from}} durumundan {{to}} durumuna değiştirdi",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Başlangıç tarihi",
+				"dueDate": "Bitiş tarihi",
+				"progress": "İlerleme",
+				"isMilestone": "Kilometre taşı",
+				"constraintType": "Kısıtlama türü",
+				"constraintDate": "Kısıtlama tarihi",
+				"baselineStartDate": "Referans başlangıç tarihi",
+				"baselineDueDate": "Referans bitiş tarihi"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Görevler",
@@ -2728,7 +2742,9 @@
 				"from": "Başlangıç",
 				"to": "Bitiş",
 				"type": "Tür",
-				"user": "Kullanıcı"
+				"user": "Kullanıcı",
+				"project": "Proje",
+				"allProjects": "Tüm projeler"
 			},
 			"pageTitle": "Etkinlik",
 			"pagination": "Sayfa {{current}} / {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Başlık değişti",
 				"unassigned": "Atanmadı",
 				"moved": "Taşındı",
-				"description_changed": "Açıklama değişti"
+				"description_changed": "Açıklama değişti",
+				"approval_changed": "Onay değişti",
+				"updated": "Plan güncellendi",
+				"relation_created": "Bağımlılık eklendi",
+				"relation_updated": "Bağımlılık güncellendi",
+				"relation_deleted": "Bağımlılık kaldırıldı",
+				"calendar_updated": "Çalışma günleri değişti",
+				"holiday_added": "Tatil günü eklendi",
+				"holiday_removed": "Tatil günü kaldırıldı"
 			},
 			"emptyFilteredTitle": "Eşleşen etkinlik yok",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Önceki haftalar",
 			"subtitle": "Önümüzdeki haftalarda atanan kişi başına tarihli, tamamlanmamış görevler. Daha yoğun hücreler daha fazla eşzamanlı iş anlamına gelir; vurgulananlar eşiğinizin üzerindedir.",
 			"truncatedNotice": "Kısmi bir sonuç gösteriliyor: tüm görevleri görmek için tarih aralığını daraltın.",
-			"unassigned": "Atanmadı"
+			"unassigned": "Atanmadı",
+			"fromLabel": "Başlangıç",
+			"toLabel": "Bitiş",
+			"quickThisYear": "Bu yıl",
+			"viewModeAriaLabel": "Görünüm modu",
+			"viewModeWeekly": "Haftalık detay",
+			"viewModeSummary": "Aralık özeti",
+			"openPersonTasksAriaLabel": "{{name}} kişisinin bu aralıktaki görevlerini görüntüle",
+			"summaryTotalColumn": "Toplam yük",
+			"summaryTotalTooltip": "Aralıktaki her haftanın aktif görev sayısının toplamı; birden fazla haftaya yayılan bir görev, dokunduğu her haftada sayılır.",
+			"summaryOverloadColumn": "Eşik üzerindeki haftalar",
+			"summaryOverloadTooltip": "Aralıkta sayının {{count}} değerini aştığı hafta sayısı.",
+			"drillThrough": {
+				"title": "{{name}} kişisinin görevleri",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Bu aralıkta eşleşen görev yok.",
+				"error": "Görevler yüklenemedi.",
+				"dueOn": " · Bitiş {{date}}"
+			}
 		}
 	},
 	"team": {

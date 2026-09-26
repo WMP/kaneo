@@ -2056,7 +2056,21 @@
 		"relationUpdated": "a mis à jour une dépendance",
 		"relationDeleted": "a supprimé une dépendance",
 		"updatedPlan": "a mis à jour le planning",
-		"changedApproval": "a changé le statut d'approbation de {{from}} à {{to}}"
+		"changedApproval": "a changé le statut d'approbation de {{from}} à {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Date de début",
+				"dueDate": "Date d'échéance",
+				"progress": "Progression",
+				"isMilestone": "Jalon",
+				"constraintType": "Type de contrainte",
+				"constraintDate": "Date de contrainte",
+				"baselineStartDate": "Date de début de référence",
+				"baselineDueDate": "Date d'échéance de référence"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Tâches",
@@ -2739,7 +2753,9 @@
 				"from": "Du",
 				"to": "Au",
 				"type": "Type",
-				"user": "Utilisateur"
+				"user": "Utilisateur",
+				"project": "Projet",
+				"allProjects": "Tous les projets"
 			},
 			"pageTitle": "Activité",
 			"pagination": "Page {{current}} sur {{total}}",
@@ -2753,7 +2769,15 @@
 				"title_changed": "Titre modifié",
 				"unassigned": "Non assignée",
 				"moved": "Déplacée",
-				"description_changed": "Description modifiée"
+				"description_changed": "Description modifiée",
+				"approval_changed": "Approbation modifiée",
+				"updated": "Plan mis à jour",
+				"relation_created": "Dépendance ajoutée",
+				"relation_updated": "Dépendance mise à jour",
+				"relation_deleted": "Dépendance supprimée",
+				"calendar_updated": "Jours ouvrés modifiés",
+				"holiday_added": "Jour férié ajouté",
+				"holiday_removed": "Jour férié supprimé"
 			},
 			"emptyFilteredTitle": "Aucune activité correspondante",
 			"export": {
@@ -2781,7 +2805,25 @@
 			"previousWeeks": "Semaines précédentes",
 			"subtitle": "Tâches datées et non terminées par responsable sur les semaines à venir. Les cellules plus denses signifient plus de travail simultané ; celles en surbrillance dépassent votre seuil.",
 			"truncatedNotice": "Résultat partiel affiché : restreignez la période pour voir toutes les tâches.",
-			"unassigned": "Non assigné"
+			"unassigned": "Non assigné",
+			"fromLabel": "De",
+			"toLabel": "À",
+			"quickThisYear": "Cette année",
+			"viewModeAriaLabel": "Mode d'affichage",
+			"viewModeWeekly": "Détail hebdomadaire",
+			"viewModeSummary": "Résumé de la période",
+			"openPersonTasksAriaLabel": "Voir les tâches de {{name}} pour cette période",
+			"summaryTotalColumn": "Charge totale",
+			"summaryTotalTooltip": "Somme du nombre de tâches actives de chaque semaine sur la période ; une tâche s'étendant sur plusieurs semaines est comptée dans chacune d'elles.",
+			"summaryOverloadColumn": "Semaines au-dessus du seuil",
+			"summaryOverloadTooltip": "Nombre de semaines de la période où le nombre a dépassé {{count}}.",
+			"drillThrough": {
+				"title": "Tâches de {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Aucune tâche correspondante dans cette période.",
+				"error": "Échec du chargement des tâches.",
+				"dueOn": " · Échéance {{date}}"
+			}
 		}
 	},
 	"team": {

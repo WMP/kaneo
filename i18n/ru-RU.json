@@ -2071,7 +2071,21 @@
 		"relationUpdated": "обновил(а) зависимость",
 		"relationDeleted": "удалил(а) зависимость",
 		"updatedPlan": "обновил(а) план",
-		"changedApproval": "изменил(а) статус утверждения с {{from}} на {{to}}"
+		"changedApproval": "изменил(а) статус утверждения с {{from}} на {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Дата начала",
+				"dueDate": "Срок выполнения",
+				"progress": "Прогресс",
+				"isMilestone": "Веха",
+				"constraintType": "Тип ограничения",
+				"constraintDate": "Дата ограничения",
+				"baselineStartDate": "Базовая дата начала",
+				"baselineDueDate": "Базовый срок выполнения"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Задачи",
@@ -2806,7 +2820,9 @@
 				"from": "С",
 				"to": "По",
 				"type": "Тип",
-				"user": "Пользователь"
+				"user": "Пользователь",
+				"project": "Проект",
+				"allProjects": "Все проекты"
 			},
 			"pageTitle": "Активность",
 			"pagination": "Страница {{current}} из {{total}}",
@@ -2820,7 +2836,15 @@
 				"title_changed": "Заголовок изменён",
 				"unassigned": "Без исполнителя",
 				"moved": "Перемещено",
-				"description_changed": "Описание изменено"
+				"description_changed": "Описание изменено",
+				"approval_changed": "Изменение согласования",
+				"updated": "План обновлён",
+				"relation_created": "Добавлена зависимость",
+				"relation_updated": "Зависимость обновлена",
+				"relation_deleted": "Зависимость удалена",
+				"calendar_updated": "Изменены рабочие дни",
+				"holiday_added": "Добавлен выходной день",
+				"holiday_removed": "Удалён выходной день"
 			},
 			"emptyFilteredTitle": "Нет подходящей активности",
 			"export": {
@@ -2848,7 +2872,25 @@
 			"previousWeeks": "Предыдущие недели",
 			"subtitle": "Задачи с датами, ещё не завершённые, по исполнителям на ближайшие недели. Более плотные ячейки означают больше одновременной работы; выделенные ячейки превышают ваш порог.",
 			"truncatedNotice": "Показан неполный результат: сузьте диапазон дат, чтобы увидеть все задачи.",
-			"unassigned": "Без исполнителя"
+			"unassigned": "Без исполнителя",
+			"fromLabel": "От",
+			"toLabel": "До",
+			"quickThisYear": "Этот год",
+			"viewModeAriaLabel": "Режим просмотра",
+			"viewModeWeekly": "Подробно по неделям",
+			"viewModeSummary": "Сводка за период",
+			"openPersonTasksAriaLabel": "Просмотр задач {{name}} за этот период",
+			"summaryTotalColumn": "Общая загрузка",
+			"summaryTotalTooltip": "Сумма количества активных задач за каждую неделю в этом периоде; задача, охватывающая несколько недель, учитывается в каждой из них.",
+			"summaryOverloadColumn": "Недели с превышением порога",
+			"summaryOverloadTooltip": "Количество недель в периоде, в которых количество задач превысило {{count}}.",
+			"drillThrough": {
+				"title": "Задачи {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Нет подходящих задач в этом периоде.",
+				"error": "Не удалось загрузить задачи.",
+				"dueOn": " · Срок {{date}}"
+			}
 		}
 	},
 	"team": {

@@ -2049,7 +2049,21 @@
 		"relationUpdated": "एक निर्भरता अपडेट की",
 		"relationDeleted": "एक निर्भरता हटाई",
 		"updatedPlan": "योजना अपडेट की",
-		"changedApproval": "अनुमोदन स्थिति {{from}} से {{to}} में बदली"
+		"changedApproval": "अनुमोदन स्थिति {{from}} से {{to}} में बदली",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "प्रारंभ तिथि",
+				"dueDate": "नियत तिथि",
+				"progress": "प्रगति",
+				"isMilestone": "माइलस्टोन",
+				"constraintType": "बाधा प्रकार",
+				"constraintDate": "बाधा तिथि",
+				"baselineStartDate": "आधार रेखा प्रारंभ तिथि",
+				"baselineDueDate": "आधार रेखा नियत तिथि"
+			}
+		}
 	},
 	"tasks": {
 		"title": "कार्य",
@@ -2728,7 +2742,9 @@
 				"from": "से",
 				"to": "तक",
 				"type": "प्रकार",
-				"user": "उपयोगकर्ता"
+				"user": "उपयोगकर्ता",
+				"project": "प्रोजेक्ट",
+				"allProjects": "सभी प्रोजेक्ट"
 			},
 			"pageTitle": "गतिविधि",
 			"pagination": "पृष्ठ {{current}} / {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "शीर्षक बदला",
 				"unassigned": "अनअसाइन किया गया",
 				"moved": "स्थानांतरित",
-				"description_changed": "विवरण बदला"
+				"description_changed": "विवरण बदला",
+				"approval_changed": "स्वीकृति बदली गई",
+				"updated": "योजना अपडेट की गई",
+				"relation_created": "निर्भरता जोड़ी गई",
+				"relation_updated": "निर्भरता अपडेट की गई",
+				"relation_deleted": "निर्भरता हटाई गई",
+				"calendar_updated": "कार्य दिवस बदले गए",
+				"holiday_added": "अवकाश जोड़ा गया",
+				"holiday_removed": "अवकाश हटाया गया"
 			},
 			"emptyFilteredTitle": "कोई मेल खाती गतिविधि नहीं",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "पिछले सप्ताह",
 			"subtitle": "आगामी सप्ताहों में प्रति असाइनी तिथि-युक्त, अधूरे कार्य। सघन सेल का मतलब है अधिक समवर्ती कार्य; हाइलाइट किए गए आपकी सीमा से ऊपर हैं।",
 			"truncatedNotice": "आंशिक परिणाम दिखाया जा रहा है: सभी कार्य देखने के लिए तिथि सीमा को संकीर्ण करें।",
-			"unassigned": "असाइन नहीं किया गया"
+			"unassigned": "असाइन नहीं किया गया",
+			"fromLabel": "से",
+			"toLabel": "तक",
+			"quickThisYear": "इस वर्ष",
+			"viewModeAriaLabel": "दृश्य मोड",
+			"viewModeWeekly": "साप्ताहिक विवरण",
+			"viewModeSummary": "श्रेणी सारांश",
+			"openPersonTasksAriaLabel": "इस श्रेणी के लिए {{name}} के कार्य देखें",
+			"summaryTotalColumn": "कुल लोड",
+			"summaryTotalTooltip": "श्रेणी में प्रत्येक सप्ताह की सक्रिय कार्य संख्या का योग; कई सप्ताहों तक चलने वाला कार्य हर उस सप्ताह में गिना जाता है जिसे वह छूता है।",
+			"summaryOverloadColumn": "सीमा से अधिक सप्ताह",
+			"summaryOverloadTooltip": "श्रेणी में उन सप्ताहों की संख्या जहाँ गिनती {{count}} से अधिक हो गई।",
+			"drillThrough": {
+				"title": "{{name}} के कार्य",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "इस श्रेणी में कोई मेल खाता कार्य नहीं है।",
+				"error": "कार्य लोड करने में विफल रहा।",
+				"dueOn": " · नियत तिथि {{date}}"
+			}
 		}
 	},
 	"team": {

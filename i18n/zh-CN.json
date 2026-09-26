@@ -2042,7 +2042,21 @@
 		"relationUpdated": "更新了依赖关系",
 		"relationDeleted": "删除了依赖关系",
 		"updatedPlan": "更新了计划",
-		"changedApproval": "将审批状态从{{from}}更改为{{to}}"
+		"changedApproval": "将审批状态从{{from}}更改为{{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "开始日期",
+				"dueDate": "截止日期",
+				"progress": "进度",
+				"isMilestone": "里程碑",
+				"constraintType": "约束类型",
+				"constraintDate": "约束日期",
+				"baselineStartDate": "基线开始日期",
+				"baselineDueDate": "基线截止日期"
+			}
+		}
 	},
 	"tasks": {
 		"title": "任务",
@@ -2717,7 +2731,9 @@
 				"from": "开始日期",
 				"to": "结束日期",
 				"type": "类型",
-				"user": "用户"
+				"user": "用户",
+				"project": "项目",
+				"allProjects": "所有项目"
 			},
 			"pageTitle": "活动",
 			"pagination": "第{{current}}页,共{{total}}页",
@@ -2731,7 +2747,15 @@
 				"title_changed": "标题已更改",
 				"unassigned": "未分配",
 				"moved": "已移动",
-				"description_changed": "描述已更改"
+				"description_changed": "描述已更改",
+				"approval_changed": "审批已变更",
+				"updated": "计划已更新",
+				"relation_created": "已添加依赖关系",
+				"relation_updated": "已更新依赖关系",
+				"relation_deleted": "已移除依赖关系",
+				"calendar_updated": "工作日已更改",
+				"holiday_added": "已添加假期",
+				"holiday_removed": "已移除假期"
 			},
 			"emptyFilteredTitle": "没有匹配的活动",
 			"export": {
@@ -2759,7 +2783,25 @@
 			"previousWeeks": "上几周",
 			"subtitle": "未来几周内每位负责人有日期且未完成的任务。单元格颜色越深表示并行工作越多;高亮显示的单元格已超过你设置的阈值。",
 			"truncatedNotice": "当前仅显示部分结果:请缩小日期范围以查看全部任务。",
-			"unassigned": "未分配"
+			"unassigned": "未分配",
+			"fromLabel": "开始",
+			"toLabel": "结束",
+			"quickThisYear": "今年",
+			"viewModeAriaLabel": "视图模式",
+			"viewModeWeekly": "每周详情",
+			"viewModeSummary": "范围汇总",
+			"openPersonTasksAriaLabel": "查看{{name}}在此范围内的任务",
+			"summaryTotalColumn": "总负荷",
+			"summaryTotalTooltip": "该范围内每周活动任务数的总和；跨越多周的任务会在其涉及的每一周中都被计数。",
+			"summaryOverloadColumn": "超出阈值的周数",
+			"summaryOverloadTooltip": "该范围内数量超过{{count}}的周数。",
+			"drillThrough": {
+				"title": "{{name}}的任务",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "此范围内没有匹配的任务。",
+				"error": "加载任务失败。",
+				"dueOn": " · 截止 {{date}}"
+			}
 		}
 	},
 	"team": {

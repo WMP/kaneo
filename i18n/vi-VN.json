@@ -2042,7 +2042,21 @@
 		"relationUpdated": "đã cập nhật một phụ thuộc",
 		"relationDeleted": "đã xóa một phụ thuộc",
 		"updatedPlan": "đã cập nhật kế hoạch",
-		"changedApproval": "đã thay đổi trạng thái phê duyệt từ {{from}} sang {{to}}"
+		"changedApproval": "đã thay đổi trạng thái phê duyệt từ {{from}} sang {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Ngày bắt đầu",
+				"dueDate": "Ngày đến hạn",
+				"progress": "Tiến độ",
+				"isMilestone": "Cột mốc",
+				"constraintType": "Loại ràng buộc",
+				"constraintDate": "Ngày ràng buộc",
+				"baselineStartDate": "Ngày bắt đầu cơ sở",
+				"baselineDueDate": "Ngày đến hạn cơ sở"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Nhiệm vụ",
@@ -2717,7 +2731,9 @@
 				"from": "Từ",
 				"to": "Đến",
 				"type": "Loại",
-				"user": "Người dùng"
+				"user": "Người dùng",
+				"project": "Dự án",
+				"allProjects": "Tất cả dự án"
 			},
 			"pageTitle": "Hoạt động",
 			"pagination": "Trang {{current}} / {{total}}",
@@ -2731,7 +2747,15 @@
 				"title_changed": "Tiêu đề đã thay đổi",
 				"unassigned": "Chưa được giao",
 				"moved": "Đã di chuyển",
-				"description_changed": "Mô tả đã thay đổi"
+				"description_changed": "Mô tả đã thay đổi",
+				"approval_changed": "Đã thay đổi phê duyệt",
+				"updated": "Đã cập nhật kế hoạch",
+				"relation_created": "Đã thêm phụ thuộc",
+				"relation_updated": "Đã cập nhật phụ thuộc",
+				"relation_deleted": "Đã xóa phụ thuộc",
+				"calendar_updated": "Đã thay đổi ngày làm việc",
+				"holiday_added": "Đã thêm ngày nghỉ",
+				"holiday_removed": "Đã xóa ngày nghỉ"
 			},
 			"emptyFilteredTitle": "Không có hoạt động phù hợp",
 			"export": {
@@ -2759,7 +2783,25 @@
 			"previousWeeks": "Các tuần trước",
 			"subtitle": "Các công việc có ngày, chưa hoàn thành theo từng người được giao trong các tuần sắp tới. Ô càng dày đặc nghĩa là càng nhiều công việc đồng thời; các ô được đánh dấu nổi bật là vượt ngưỡng của bạn.",
 			"truncatedNotice": "Đang hiển thị kết quả một phần: hãy thu hẹp khoảng thời gian để xem tất cả công việc.",
-			"unassigned": "Chưa được giao"
+			"unassigned": "Chưa được giao",
+			"fromLabel": "Từ",
+			"toLabel": "Đến",
+			"quickThisYear": "Năm nay",
+			"viewModeAriaLabel": "Chế độ xem",
+			"viewModeWeekly": "Chi tiết theo tuần",
+			"viewModeSummary": "Tóm tắt khoảng thời gian",
+			"openPersonTasksAriaLabel": "Xem công việc của {{name}} trong khoảng thời gian này",
+			"summaryTotalColumn": "Tổng tải",
+			"summaryTotalTooltip": "Tổng số công việc đang hoạt động của mỗi tuần trong khoảng thời gian; một công việc kéo dài nhiều tuần sẽ được tính vào mỗi tuần mà nó có mặt.",
+			"summaryOverloadColumn": "Số tuần vượt ngưỡng",
+			"summaryOverloadTooltip": "Số tuần trong khoảng thời gian có số lượng vượt quá {{count}}.",
+			"drillThrough": {
+				"title": "Công việc của {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Không có công việc phù hợp trong khoảng thời gian này.",
+				"error": "Không thể tải công việc.",
+				"dueOn": " · Đến hạn {{date}}"
+			}
 		}
 	},
 	"team": {

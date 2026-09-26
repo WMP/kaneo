@@ -2049,7 +2049,21 @@
 		"relationUpdated": "ενημέρωσε μια εξάρτηση",
 		"relationDeleted": "αφαίρεσε μια εξάρτηση",
 		"updatedPlan": "ενημέρωσε το πλάνο",
-		"changedApproval": "άλλαξε την κατάσταση έγκρισης από {{from}} σε {{to}}"
+		"changedApproval": "άλλαξε την κατάσταση έγκρισης από {{from}} σε {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Ημερομηνία έναρξης",
+				"dueDate": "Προθεσμία",
+				"progress": "Πρόοδος",
+				"isMilestone": "Ορόσημο",
+				"constraintType": "Τύπος περιορισμού",
+				"constraintDate": "Ημερομηνία περιορισμού",
+				"baselineStartDate": "Ημερομηνία έναρξης (γραμμή βάσης)",
+				"baselineDueDate": "Προθεσμία (γραμμή βάσης)"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Εργασίες",
@@ -2728,7 +2742,9 @@
 				"from": "Από",
 				"to": "Έως",
 				"type": "Τύπος",
-				"user": "Χρήστης"
+				"user": "Χρήστης",
+				"project": "Έργο",
+				"allProjects": "Όλα τα έργα"
 			},
 			"pageTitle": "Δραστηριότητα",
 			"pagination": "Σελίδα {{current}} από {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Ο τίτλος άλλαξε",
 				"unassigned": "Χωρίς ανάθεση",
 				"moved": "Μετακινήθηκε",
-				"description_changed": "Η περιγραφή άλλαξε"
+				"description_changed": "Η περιγραφή άλλαξε",
+				"approval_changed": "Αλλαγή έγκρισης",
+				"updated": "Ενημέρωση πλάνου",
+				"relation_created": "Προστέθηκε εξάρτηση",
+				"relation_updated": "Ενημερώθηκε εξάρτηση",
+				"relation_deleted": "Αφαιρέθηκε εξάρτηση",
+				"calendar_updated": "Άλλαξαν οι εργάσιμες ημέρες",
+				"holiday_added": "Προστέθηκε αργία",
+				"holiday_removed": "Αφαιρέθηκε αργία"
 			},
 			"emptyFilteredTitle": "Καμία αντίστοιχη δραστηριότητα",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Προηγούμενες εβδομάδες",
 			"subtitle": "Εργασίες με ημερομηνία που δεν έχουν ολοκληρωθεί ανά υπεύθυνο στις επόμενες εβδομάδες. Πιο πυκνά κελιά σημαίνουν περισσότερη ταυτόχρονη εργασία· τα επισημασμένα είναι πάνω από το όριό σας.",
 			"truncatedNotice": "Εμφανίζεται μερικό αποτέλεσμα: περιορίστε το εύρος ημερομηνιών για να δείτε όλες τις εργασίες.",
-			"unassigned": "Χωρίς ανάθεση"
+			"unassigned": "Χωρίς ανάθεση",
+			"fromLabel": "Από",
+			"toLabel": "Έως",
+			"quickThisYear": "Φέτος",
+			"viewModeAriaLabel": "Λειτουργία προβολής",
+			"viewModeWeekly": "Εβδομαδιαία λεπτομέρεια",
+			"viewModeSummary": "Σύνοψη εύρους",
+			"openPersonTasksAriaLabel": "Προβολή εργασιών του {{name}} για αυτό το εύρος",
+			"summaryTotalColumn": "Συνολικός φόρτος",
+			"summaryTotalTooltip": "Άθροισμα του αριθμού ενεργών εργασιών κάθε εβδομάδας στο εύρος· μια εργασία που εκτείνεται σε πολλές εβδομάδες προσμετράται σε καθεμία που αγγίζει.",
+			"summaryOverloadColumn": "Εβδομάδες πάνω από το όριο",
+			"summaryOverloadTooltip": "Αριθμός εβδομάδων στο εύρος όπου ο αριθμός ξεπέρασε {{count}}.",
+			"drillThrough": {
+				"title": "Εργασίες του {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Δεν υπάρχουν αντίστοιχες εργασίες σε αυτό το εύρος.",
+				"error": "Αποτυχία φόρτωσης εργασιών.",
+				"dueOn": " · Προθεσμία {{date}}"
+			}
 		}
 	},
 	"team": {

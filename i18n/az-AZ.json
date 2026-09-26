@@ -2049,7 +2049,21 @@
 		"relationUpdated": "asılılığı yenilədi",
 		"relationDeleted": "asılılığı sildi",
 		"updatedPlan": "planı yenilədi",
-		"changedApproval": "təsdiq statusunu {{from}}-dan {{to}}-a dəyişdi"
+		"changedApproval": "təsdiq statusunu {{from}}-dan {{to}}-a dəyişdi",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Başlama tarixi",
+				"dueDate": "Son tarix",
+				"progress": "İrəliləyiş",
+				"isMilestone": "Mərhələ",
+				"constraintType": "Məhdudiyyət növü",
+				"constraintDate": "Məhdudiyyət tarixi",
+				"baselineStartDate": "Əsas başlama tarixi",
+				"baselineDueDate": "Əsas son tarix"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Tapşırıqlar",
@@ -2728,7 +2742,9 @@
 				"from": "Başlanğıc",
 				"to": "Son",
 				"type": "Növ",
-				"user": "İstifadəçi"
+				"user": "İstifadəçi",
+				"project": "Layihə",
+				"allProjects": "Bütün layihələr"
 			},
 			"pageTitle": "Fəaliyyət",
 			"pagination": "Səhifə {{current}} / {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Başlıq dəyişdi",
 				"unassigned": "Təyin edilməyib",
 				"moved": "Köçürüldü",
-				"description_changed": "Təsvir dəyişdi"
+				"description_changed": "Təsvir dəyişdi",
+				"approval_changed": "Təsdiq dəyişdi",
+				"updated": "Plan yeniləndi",
+				"relation_created": "Asılılıq əlavə edildi",
+				"relation_updated": "Asılılıq yeniləndi",
+				"relation_deleted": "Asılılıq silindi",
+				"calendar_updated": "İş günləri dəyişdi",
+				"holiday_added": "Bayram günü əlavə edildi",
+				"holiday_removed": "Bayram günü silindi"
 			},
 			"emptyFilteredTitle": "Uyğun fəaliyyət yoxdur",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Əvvəlki həftələr",
 			"subtitle": "Gələcək həftələr üzrə hər təyin edilən şəxs üçün tarixli, tamamlanmamış tapşırıqlar. Daha sıx xanalar daha çox paralel işi bildirir; vurğulananlar sizin həddinizdən yuxarıdır.",
 			"truncatedNotice": "Qismən nəticə göstərilir: bütün tapşırıqları görmək üçün tarix aralığını daraldın.",
-			"unassigned": "Təyin edilməyib"
+			"unassigned": "Təyin edilməyib",
+			"fromLabel": "Başlanğıc",
+			"toLabel": "Son",
+			"quickThisYear": "Bu il",
+			"viewModeAriaLabel": "Görünüş rejimi",
+			"viewModeWeekly": "Həftəlik təfərrüat",
+			"viewModeSummary": "Aralıq xülasəsi",
+			"openPersonTasksAriaLabel": "{{name}} üçün bu aralıqdakı tapşırıqlara bax",
+			"summaryTotalColumn": "Ümumi yük",
+			"summaryTotalTooltip": "Aralıqdakı hər həftənin aktiv tapşırıq sayının cəmi; bir neçə həftəyə yayılan tapşırıq toxunduğu hər həftədə sayılır.",
+			"summaryOverloadColumn": "Həddi aşan həftələr",
+			"summaryOverloadTooltip": "Aralıqda sayın {{count}} həddini aşdığı həftələrin sayı.",
+			"drillThrough": {
+				"title": "{{name}} üçün tapşırıqlar",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Bu aralıqda uyğun tapşırıq yoxdur.",
+				"error": "Tapşırıqlar yüklənə bilmədi.",
+				"dueOn": " · Son tarix {{date}}"
+			}
 		}
 	},
 	"team": {

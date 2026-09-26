@@ -2063,7 +2063,21 @@
 		"relationUpdated": "оновив(-ла) залежність",
 		"relationDeleted": "видалив(-ла) залежність",
 		"updatedPlan": "оновив(-ла) план",
-		"changedApproval": "змінив(-ла) статус затвердження з {{from}} на {{to}}"
+		"changedApproval": "змінив(-ла) статус затвердження з {{from}} на {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Дата початку",
+				"dueDate": "Термін виконання",
+				"progress": "Прогрес",
+				"isMilestone": "Віха",
+				"constraintType": "Тип обмеження",
+				"constraintDate": "Дата обмеження",
+				"baselineStartDate": "Базова дата початку",
+				"baselineDueDate": "Базовий термін виконання"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Завдання",
@@ -2750,7 +2764,9 @@
 				"from": "Від",
 				"to": "До",
 				"type": "Тип",
-				"user": "Користувач"
+				"user": "Користувач",
+				"project": "Проєкт",
+				"allProjects": "Усі проєкти"
 			},
 			"pageTitle": "Активність",
 			"pagination": "Сторінка {{current}} з {{total}}",
@@ -2764,7 +2780,15 @@
 				"title_changed": "Заголовок змінено",
 				"unassigned": "Без виконавця",
 				"moved": "Переміщено",
-				"description_changed": "Опис змінено"
+				"description_changed": "Опис змінено",
+				"approval_changed": "Зміна погодження",
+				"updated": "План оновлено",
+				"relation_created": "Додано залежність",
+				"relation_updated": "Залежність оновлено",
+				"relation_deleted": "Залежність видалено",
+				"calendar_updated": "Змінено робочі дні",
+				"holiday_added": "Додано вихідний день",
+				"holiday_removed": "Видалено вихідний день"
 			},
 			"emptyFilteredTitle": "Немає відповідної активності",
 			"export": {
@@ -2792,7 +2816,25 @@
 			"previousWeeks": "Попередні тижні",
 			"subtitle": "Завдання з датами, які ще не виконано, за виконавцями на найближчі тижні. Щільніші клітинки означають більше одночасної роботи; виділені клітинки перевищують ваш поріг.",
 			"truncatedNotice": "Показано неповний результат: звузьте діапазон дат, щоб побачити всі завдання.",
-			"unassigned": "Без виконавця"
+			"unassigned": "Без виконавця",
+			"fromLabel": "Від",
+			"toLabel": "До",
+			"quickThisYear": "Цей рік",
+			"viewModeAriaLabel": "Режим перегляду",
+			"viewModeWeekly": "Детально за тижнями",
+			"viewModeSummary": "Підсумок за період",
+			"openPersonTasksAriaLabel": "Перегляд завдань {{name}} за цей період",
+			"summaryTotalColumn": "Загальне навантаження",
+			"summaryTotalTooltip": "Сума кількості активних завдань за кожен тиждень у цьому періоді; завдання, що охоплює кілька тижнів, враховується в кожному з них.",
+			"summaryOverloadColumn": "Тижні з перевищенням порогу",
+			"summaryOverloadTooltip": "Кількість тижнів у періоді, у яких кількість завдань перевищила {{count}}.",
+			"drillThrough": {
+				"title": "Завдання {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Немає відповідних завдань у цьому періоді.",
+				"error": "Не вдалося завантажити завдання.",
+				"dueOn": " · Термін {{date}}"
+			}
 		}
 	},
 	"team": {

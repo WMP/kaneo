@@ -2042,7 +2042,21 @@
 		"relationUpdated": "依存関係を更新しました",
 		"relationDeleted": "依存関係を削除しました",
 		"updatedPlan": "計画を更新しました",
-		"changedApproval": "承認ステータスを{{from}}から{{to}}に変更しました"
+		"changedApproval": "承認ステータスを{{from}}から{{to}}に変更しました",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "開始日",
+				"dueDate": "期限",
+				"progress": "進捗",
+				"isMilestone": "マイルストーン",
+				"constraintType": "制約タイプ",
+				"constraintDate": "制約日",
+				"baselineStartDate": "ベースライン開始日",
+				"baselineDueDate": "ベースライン期限"
+			}
+		}
 	},
 	"tasks": {
 		"title": "タスク",
@@ -2717,7 +2731,9 @@
 				"from": "開始日",
 				"to": "終了日",
 				"type": "種類",
-				"user": "ユーザー"
+				"user": "ユーザー",
+				"project": "プロジェクト",
+				"allProjects": "すべてのプロジェクト"
 			},
 			"pageTitle": "アクティビティ",
 			"pagination": "{{current}} / {{total}} ページ",
@@ -2731,7 +2747,15 @@
 				"title_changed": "タイトル変更",
 				"unassigned": "担当者なし",
 				"moved": "移動",
-				"description_changed": "説明変更"
+				"description_changed": "説明変更",
+				"approval_changed": "承認の変更",
+				"updated": "計画の更新",
+				"relation_created": "依存関係の追加",
+				"relation_updated": "依存関係の更新",
+				"relation_deleted": "依存関係の削除",
+				"calendar_updated": "稼働日の変更",
+				"holiday_added": "休日の追加",
+				"holiday_removed": "休日の削除"
 			},
 			"emptyFilteredTitle": "一致するアクティビティがありません",
 			"export": {
@@ -2759,7 +2783,25 @@
 			"previousWeeks": "前の週",
 			"subtitle": "今後数週間における担当者ごとの、日付が設定された未完了タスクです。セルの密度が高いほど同時進行の作業が多いことを示し、強調表示されたセルはしきい値を超えています。",
 			"truncatedNotice": "一部の結果のみ表示しています。すべてのタスクを表示するには日付範囲を絞り込んでください。",
-			"unassigned": "担当者なし"
+			"unassigned": "担当者なし",
+			"fromLabel": "開始",
+			"toLabel": "終了",
+			"quickThisYear": "今年",
+			"viewModeAriaLabel": "表示モード",
+			"viewModeWeekly": "週次詳細",
+			"viewModeSummary": "期間サマリー",
+			"openPersonTasksAriaLabel": "この期間の{{name}}のタスクを表示",
+			"summaryTotalColumn": "合計負荷",
+			"summaryTotalTooltip": "範囲内の各週のアクティブなタスク数の合計。複数週にまたがるタスクは、関係する各週でカウントされます。",
+			"summaryOverloadColumn": "しきい値超過週数",
+			"summaryOverloadTooltip": "範囲内で件数が{{count}}を超えた週の数。",
+			"drillThrough": {
+				"title": "{{name}}のタスク",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "この範囲に一致するタスクはありません。",
+				"error": "タスクの読み込みに失敗しました。",
+				"dueOn": " · 期限 {{date}}"
+			}
 		}
 	},
 	"team": {

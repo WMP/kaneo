@@ -2042,7 +2042,21 @@
 		"relationUpdated": "memperbarui dependensi",
 		"relationDeleted": "menghapus dependensi",
 		"updatedPlan": "memperbarui rencana",
-		"changedApproval": "mengubah status persetujuan dari {{from}} menjadi {{to}}"
+		"changedApproval": "mengubah status persetujuan dari {{from}} menjadi {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Tanggal mulai",
+				"dueDate": "Tanggal jatuh tempo",
+				"progress": "Progres",
+				"isMilestone": "Tonggak",
+				"constraintType": "Jenis batasan",
+				"constraintDate": "Tanggal batasan",
+				"baselineStartDate": "Tanggal mulai baseline",
+				"baselineDueDate": "Tanggal jatuh tempo baseline"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Tugas",
@@ -2717,7 +2731,9 @@
 				"from": "Dari",
 				"to": "Sampai",
 				"type": "Jenis",
-				"user": "Pengguna"
+				"user": "Pengguna",
+				"project": "Proyek",
+				"allProjects": "Semua proyek"
 			},
 			"pageTitle": "Aktivitas",
 			"pagination": "Halaman {{current}} dari {{total}}",
@@ -2731,7 +2747,15 @@
 				"title_changed": "Judul diubah",
 				"unassigned": "Belum ditugaskan",
 				"moved": "Dipindahkan",
-				"description_changed": "Deskripsi diubah"
+				"description_changed": "Deskripsi diubah",
+				"approval_changed": "Persetujuan diubah",
+				"updated": "Rencana diperbarui",
+				"relation_created": "Dependensi ditambahkan",
+				"relation_updated": "Dependensi diperbarui",
+				"relation_deleted": "Dependensi dihapus",
+				"calendar_updated": "Hari kerja diubah",
+				"holiday_added": "Hari libur ditambahkan",
+				"holiday_removed": "Hari libur dihapus"
 			},
 			"emptyFilteredTitle": "Tidak ada aktivitas yang cocok",
 			"export": {
@@ -2759,7 +2783,25 @@
 			"previousWeeks": "Minggu sebelumnya",
 			"subtitle": "Tugas bertanggal dan belum selesai per penerima tugas selama minggu-minggu mendatang. Sel yang lebih padat berarti lebih banyak pekerjaan bersamaan; yang disorot berada di atas ambang batas Anda.",
 			"truncatedNotice": "Menampilkan hasil sebagian: persempit rentang tanggal untuk melihat semua tugas.",
-			"unassigned": "Belum ditugaskan"
+			"unassigned": "Belum ditugaskan",
+			"fromLabel": "Dari",
+			"toLabel": "Sampai",
+			"quickThisYear": "Tahun ini",
+			"viewModeAriaLabel": "Mode tampilan",
+			"viewModeWeekly": "Detail mingguan",
+			"viewModeSummary": "Ringkasan rentang",
+			"openPersonTasksAriaLabel": "Lihat tugas {{name}} untuk rentang ini",
+			"summaryTotalColumn": "Total beban",
+			"summaryTotalTooltip": "Jumlah hitungan tugas aktif setiap minggu dalam rentang ini; tugas yang mencakup beberapa minggu dihitung di setiap minggu yang dilaluinya.",
+			"summaryOverloadColumn": "Minggu di atas ambang batas",
+			"summaryOverloadTooltip": "Jumlah minggu dalam rentang ini yang jumlahnya melebihi {{count}}.",
+			"drillThrough": {
+				"title": "Tugas {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Tidak ada tugas yang cocok dalam rentang ini.",
+				"error": "Gagal memuat tugas.",
+				"dueOn": " · Jatuh tempo {{date}}"
+			}
 		}
 	},
 	"team": {

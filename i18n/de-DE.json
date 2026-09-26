@@ -2049,7 +2049,21 @@
 		"relationUpdated": "hat eine Abhängigkeit aktualisiert",
 		"relationDeleted": "hat eine Abhängigkeit entfernt",
 		"updatedPlan": "hat den Plan aktualisiert",
-		"changedApproval": "hat den Freigabestatus von {{from}} zu {{to}} geändert"
+		"changedApproval": "hat den Freigabestatus von {{from}} zu {{to}} geändert",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Startdatum",
+				"dueDate": "Fälligkeitsdatum",
+				"progress": "Fortschritt",
+				"isMilestone": "Meilenstein",
+				"constraintType": "Einschränkungstyp",
+				"constraintDate": "Einschränkungsdatum",
+				"baselineStartDate": "Basis-Startdatum",
+				"baselineDueDate": "Basis-Fälligkeitsdatum"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Aufgaben",
@@ -2728,7 +2742,9 @@
 				"from": "Von",
 				"to": "Bis",
 				"type": "Typ",
-				"user": "Benutzer"
+				"user": "Benutzer",
+				"project": "Projekt",
+				"allProjects": "Alle Projekte"
 			},
 			"pageTitle": "Aktivität",
 			"pagination": "Seite {{current}} von {{total}}",
@@ -2742,7 +2758,15 @@
 				"title_changed": "Titel geändert",
 				"unassigned": "Nicht zugewiesen",
 				"moved": "Verschoben",
-				"description_changed": "Beschreibung geändert"
+				"description_changed": "Beschreibung geändert",
+				"approval_changed": "Genehmigung geändert",
+				"updated": "Plan aktualisiert",
+				"relation_created": "Abhängigkeit hinzugefügt",
+				"relation_updated": "Abhängigkeit aktualisiert",
+				"relation_deleted": "Abhängigkeit entfernt",
+				"calendar_updated": "Arbeitstage geändert",
+				"holiday_added": "Feiertag hinzugefügt",
+				"holiday_removed": "Feiertag entfernt"
 			},
 			"emptyFilteredTitle": "Keine passende Aktivität",
 			"export": {
@@ -2770,7 +2794,25 @@
 			"previousWeeks": "Vorherige Wochen",
 			"subtitle": "Terminierte, unerledigte Aufgaben pro Zuständigem für die kommenden Wochen. Dichter belegte Zellen bedeuten mehr gleichzeitige Arbeit; hervorgehobene Zellen liegen über Ihrem Schwellenwert.",
 			"truncatedNotice": "Es wird ein Teilergebnis angezeigt: Grenzen Sie den Zeitraum ein, um alle Aufgaben zu sehen.",
-			"unassigned": "Nicht zugewiesen"
+			"unassigned": "Nicht zugewiesen",
+			"fromLabel": "Von",
+			"toLabel": "Bis",
+			"quickThisYear": "Dieses Jahr",
+			"viewModeAriaLabel": "Ansichtsmodus",
+			"viewModeWeekly": "Wöchentliche Details",
+			"viewModeSummary": "Zusammenfassung des Zeitraums",
+			"openPersonTasksAriaLabel": "Aufgaben von {{name}} für diesen Zeitraum anzeigen",
+			"summaryTotalColumn": "Gesamtauslastung",
+			"summaryTotalTooltip": "Summe der aktiven Aufgaben pro Woche über den gesamten Zeitraum; eine Aufgabe, die sich über mehrere Wochen erstreckt, wird in jeder betroffenen Woche gezählt.",
+			"summaryOverloadColumn": "Wochen über dem Schwellenwert",
+			"summaryOverloadTooltip": "Anzahl der Wochen im Zeitraum, in denen die Zahl {{count}} überschritten wurde.",
+			"drillThrough": {
+				"title": "Aufgaben von {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Keine passenden Aufgaben in diesem Zeitraum.",
+				"error": "Aufgaben konnten nicht geladen werden.",
+				"dueOn": " · Fällig am {{date}}"
+			}
 		}
 	},
 	"team": {

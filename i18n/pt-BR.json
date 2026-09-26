@@ -2056,7 +2056,21 @@
 		"relationUpdated": "atualizou uma dependência",
 		"relationDeleted": "removeu uma dependência",
 		"updatedPlan": "atualizou o plano",
-		"changedApproval": "alterou o status de aprovação de {{from}} para {{to}}"
+		"changedApproval": "alterou o status de aprovação de {{from}} para {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Data de início",
+				"dueDate": "Data de vencimento",
+				"progress": "Progresso",
+				"isMilestone": "Marco",
+				"constraintType": "Tipo de restrição",
+				"constraintDate": "Data de restrição",
+				"baselineStartDate": "Data de início da linha de base",
+				"baselineDueDate": "Data de vencimento da linha de base"
+			}
+		}
 	},
 	"tasks": {
 		"title": "Tarefas",
@@ -2739,7 +2753,9 @@
 				"from": "De",
 				"to": "Até",
 				"type": "Tipo",
-				"user": "Usuário"
+				"user": "Usuário",
+				"project": "Projeto",
+				"allProjects": "Todos os projetos"
 			},
 			"pageTitle": "Atividade",
 			"pagination": "Página {{current}} de {{total}}",
@@ -2753,7 +2769,15 @@
 				"title_changed": "Título alterado",
 				"unassigned": "Não atribuído",
 				"moved": "Movido",
-				"description_changed": "Descrição alterada"
+				"description_changed": "Descrição alterada",
+				"approval_changed": "Aprovação alterada",
+				"updated": "Plano atualizado",
+				"relation_created": "Dependência adicionada",
+				"relation_updated": "Dependência atualizada",
+				"relation_deleted": "Dependência removida",
+				"calendar_updated": "Dias úteis alterados",
+				"holiday_added": "Feriado adicionado",
+				"holiday_removed": "Feriado removido"
 			},
 			"emptyFilteredTitle": "Nenhuma atividade correspondente",
 			"export": {
@@ -2781,7 +2805,25 @@
 			"previousWeeks": "Semanas anteriores",
 			"subtitle": "Tarefas com data e não concluídas por responsável ao longo das próximas semanas. Células mais densas indicam mais trabalho simultâneo; as destacadas estão acima do seu limite.",
 			"truncatedNotice": "Exibindo um resultado parcial: restrinja o intervalo de datas para ver todas as tarefas.",
-			"unassigned": "Não atribuído"
+			"unassigned": "Não atribuído",
+			"fromLabel": "De",
+			"toLabel": "Até",
+			"quickThisYear": "Este ano",
+			"viewModeAriaLabel": "Modo de exibição",
+			"viewModeWeekly": "Detalhe semanal",
+			"viewModeSummary": "Resumo do período",
+			"openPersonTasksAriaLabel": "Ver as tarefas de {{name}} para este período",
+			"summaryTotalColumn": "Carga total",
+			"summaryTotalTooltip": "Soma da contagem de tarefas ativas de cada semana no período; uma tarefa que abrange várias semanas é contada em cada semana que ela toca.",
+			"summaryOverloadColumn": "Semanas acima do limite",
+			"summaryOverloadTooltip": "Número de semanas no período em que a contagem excedeu {{count}}.",
+			"drillThrough": {
+				"title": "Tarefas de {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Nenhuma tarefa correspondente neste período.",
+				"error": "Falha ao carregar as tarefas.",
+				"dueOn": " · Vencimento em {{date}}"
+			}
 		}
 	},
 	"team": {
