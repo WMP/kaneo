@@ -56,7 +56,11 @@ describe("useGetTasks", () => {
     // Not the old ~30s blanket poll: WS invalidation covers realtime updates,
     // this is only a safety net for a missed event or an exhausted reconnect.
     expect(resolvedInterval).toBe(5 * 60 * 1000);
-    expect(options.refetchOnWindowFocus).toBe(true);
+
+    const focus = options.refetchOnWindowFocus;
+    const resolvedFocus =
+      typeof focus === "function" ? focus(query as never) : focus;
+    expect(resolvedFocus).toBe(true);
   });
 
   it("stops the safety-net poll once the query is unauthorized", async () => {
@@ -76,5 +80,10 @@ describe("useGetTasks", () => {
       typeof interval === "function" ? interval(query as never) : interval;
 
     expect(resolvedInterval).toBe(false);
+
+    const focus = options.refetchOnWindowFocus;
+    const resolvedFocus =
+      typeof focus === "function" ? focus(query as never) : focus;
+    expect(resolvedFocus).toBe(false);
   });
 });
