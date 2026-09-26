@@ -24,7 +24,7 @@
 			"!**/out",
 			"!**/.cache",
 			"!**/coverage",
-			"!**/.claude",
+			"!.claude",
 			"!**/.pi",
 			"!**/.pi-subagents",
 			"!**/openapi.json"
