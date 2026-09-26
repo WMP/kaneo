@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { anchoredToastManager } from "@/components/ui/toast";
 import useCreateHoliday from "@/hooks/mutations/calendar/use-create-holiday";
 import useDeleteHoliday from "@/hooks/mutations/calendar/use-delete-holiday";
 import useUpdateWorkingDays from "@/hooks/mutations/calendar/use-update-working-days";
@@ -150,6 +151,13 @@ function RouteComponent() {
   const [newHolidayDate, setNewHolidayDate] = useState("");
   const [newHolidayName, setNewHolidayName] = useState("");
   const [holidayError, setHolidayError] = useState("");
+  // The regular (fixed, bottom-right) toast can land right on top of this
+  // same "Add holiday" button, which sits at the end of its own row — a
+  // plain toast confirming the very click that just happened, covering the
+  // control that triggered it. Anchoring this one success toast to the
+  // button itself (see handleAddHoliday) keeps it next to the action
+  // instead.
+  const addHolidayButtonRef = useRef<HTMLButtonElement>(null);
 
   // Ownership transfer is owner-only. Eligible recipients are any current
   // member who isn't the owner themselves.
@@ -348,7 +356,17 @@ function RouteComponent() {
         date: newHolidayDate,
         name: trimmedName,
       });
-      toast.success(t("settings:workspaceCalendar.toastHolidayCreated"));
+      // Anchored to the button itself (see addHolidayButtonRef above)
+      // rather than the app's usual fixed bottom-right toast() helper, so it
+      // never covers the very button someone just clicked.
+      anchoredToastManager.add({
+        title: t("settings:workspaceCalendar.toastHolidayCreated"),
+        type: "success",
+        positionerProps: {
+          anchor: addHolidayButtonRef.current,
+          side: "top",
+        },
+      });
       setNewHolidayDate("");
       setNewHolidayName("");
       setHolidayError("");
@@ -609,6 +627,7 @@ function RouteComponent() {
                   />
                 </div>
                 <Button
+                  ref={addHolidayButtonRef}
                   type="button"
                   size="sm"
                   disabled={createHoliday.isPending}
