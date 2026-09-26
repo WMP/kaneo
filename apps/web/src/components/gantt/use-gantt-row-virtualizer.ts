@@ -1,5 +1,12 @@
 import type { RefObject } from "react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 export type GanttVirtualRow = {
   /** The row's stable identity (a task id) — matches whatever `keys` held at
@@ -32,10 +39,23 @@ export type UseGanttRowVirtualizerOptions = {
   overscanPx?: number;
 };
 
+export type GanttRowOffset = {
+  /** Pixel offset from the top of the full (virtual) row list. */
+  start: number;
+  /** The row's current height (measured, or the estimate until then). */
+  size: number;
+};
+
 export type UseGanttRowVirtualizerResult = {
   /** Only the rows currently in (or near) the viewport — mount exactly
    * these, nothing else. */
   virtualItems: GanttVirtualRow[];
+  /** The offset+size of EVERY row by key, whether or not it is currently
+   * mounted. Line/overlay geometry (e.g. Gantt dependency lines between two
+   * far-apart tasks) must read this, not `virtualItems`, so a line still
+   * anchors correctly when one endpoint is scrolled out of the mounted
+   * window. */
+  offsetByKey: Map<string, GanttRowOffset>;
   /** Total pixel height of the full row list (measured rows + estimated
    * rows) — give the scroll-content container this height explicitly so
    * scrolling and the full-height dependency-line overlay behave exactly as
@@ -87,6 +107,18 @@ export function useGanttRowVirtualizer({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportPx, setViewportPx] = useState(0);
 
+  // `keys.length` is a dependency (not just the stable `scrollElementRef`)
+  // because the scroll container is mounted conditionally by the caller — it
+  // only renders once there are rows to show (see gantt.tsx: the chart mounts
+  // iff `renderedTasks` is non-empty, and the usual async data load means the
+  // FIRST commit has no container at all). `scrollElementRef.current` is
+  // therefore null on the effect's first run, and with only `[scrollElementRef]`
+  // in the deps the effect would never re-run once the container finally
+  // appeared, leaving scroll/resize unobserved and the window frozen at its
+  // unmeasured fallback. The row count crosses 0↔positive exactly when the
+  // container mounts/unmounts, so re-running on it re-reads the now-present
+  // element and (re)attaches the listeners.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keys.length is listed to re-attach when the conditionally-rendered scroll container mounts/remounts; the body reads scrollElementRef.current, not keys.
   useLayoutEffect(() => {
     const element = scrollElementRef.current;
     if (!element) return;
@@ -105,7 +137,7 @@ export function useGanttRowVirtualizer({
       resizeObserver.disconnect();
       element.removeEventListener("scroll", updateScroll);
     };
-  }, [scrollElementRef]);
+  }, [scrollElementRef, keys.length]);
 
   // Every row's offset + size, in key order. O(n) in the row count, which is
   // the same order of work the previous (non-virtualized) DOM-measurement
@@ -115,15 +147,18 @@ export function useGanttRowVirtualizer({
   // biome-ignore lint/correctness/useExhaustiveDependencies: measureVersion forces a re-read of sizeCacheRef (a plain ref) after measureRow mutates it; the body itself doesn't reference the state value.
   const offsets = useMemo(() => {
     const list: { start: number; size: number }[] = new Array(keys.length);
+    const byKey = new Map<string, GanttRowOffset>();
     let cumulative = 0;
     for (let index = 0; index < keys.length; index++) {
       const key = keys[index];
       if (key === undefined) continue;
       const size = sizeCacheRef.current.get(key) ?? estimateSize(key);
-      list[index] = { start: cumulative, size };
+      const entry = { start: cumulative, size };
+      list[index] = entry;
+      byKey.set(key, entry);
       cumulative += size;
     }
-    return { list, totalSize: cumulative };
+    return { list, byKey, totalSize: cumulative };
   }, [keys, estimateSize, measureVersion]);
 
   const effectiveViewportPx =
@@ -145,6 +180,21 @@ export function useGanttRowVirtualizer({
     return items;
   }, [offsets, rangeStart, rangeEnd, keys]);
 
+  // Drop cached sizes for keys that are no longer rendered at all (task
+  // deleted, or filtered out for good) — a key windowed out of view stays in
+  // `keys` and so keeps its height, but one that leaves `keys` entirely would
+  // otherwise leak an entry for the component's whole lifetime. Deleting a
+  // no-longer-referenced entry doesn't affect any current offset, so it needs
+  // no re-render.
+  useEffect(() => {
+    const cache = sizeCacheRef.current;
+    if (cache.size <= keys.length) return;
+    const valid = new Set(keys);
+    for (const key of cache.keys()) {
+      if (!valid.has(key)) cache.delete(key);
+    }
+  }, [keys]);
+
   const measureRow = useCallback((key: string, size: number) => {
     if (!(size > 0)) return;
     const previous = sizeCacheRef.current.get(key);
@@ -155,5 +205,10 @@ export function useGanttRowVirtualizer({
     setMeasureVersion((version) => version + 1);
   }, []);
 
-  return { virtualItems, totalSize: offsets.totalSize, measureRow };
+  return {
+    virtualItems,
+    offsetByKey: offsets.byKey,
+    totalSize: offsets.totalSize,
+    measureRow,
+  };
 }
