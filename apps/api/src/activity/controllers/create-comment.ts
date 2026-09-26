@@ -39,6 +39,11 @@ async function createComment(
     });
   }
 
+  // taskId is a required parameter here (comments are always task-scoped),
+  // so narrow it back from the column's now-nullable type (see
+  // activityTable.workspaceId in schema.ts).
+  const savedActivity = { ...activity, taskId };
+
   const [user] = await db
     .select({ name: userTable.name })
     .from(userTable)
@@ -57,7 +62,7 @@ async function createComment(
 
   if (task) {
     await publishEvent("comment.created", {
-      ...activity,
+      ...savedActivity,
       comment: `**${user?.name}** commented:\n> ${content}`,
       projectId: task.projectId,
     });
@@ -100,7 +105,7 @@ async function createComment(
     });
   }
 
-  return activity;
+  return savedActivity;
 }
 
 export default createComment;

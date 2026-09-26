@@ -149,9 +149,9 @@ export const workspaceTable = pgTable("workspace", {
   logo: text("logo"),
   metadata: text("metadata"),
   description: text("description"),
-  // Days of activity history to keep; null (the default) means keep
-  // forever. Not currently enforced by any automatic deletion — see
-  // `apps/api/src/workspace/controllers/get-workspace-activity-retention.ts`.
+  // Days of activity history to keep; null or non-positive means keep
+  // forever. Enforced daily by the "activity-retention" cron job — see
+  // `apps/api/src/scheduler/activity-retention.ts`.
   activityRetentionDays: integer("activity_retention_days"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull(),
   // Bitmask of the workspace's working weekdays: bit i (i = 0..6, 0 = Sunday,
@@ -645,12 +645,21 @@ export const activityTable = pgTable(
     id: text("id")
       .$defaultFn(() => createId())
       .primaryKey(),
-    taskId: text("task_id")
-      .notNull()
-      .references(() => taskTable.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-      }),
+    // Null for workspace-level activity (e.g. calendar/holiday changes),
+    // which has no task to attach to. Task-scoped activity always sets this
+    // and resolves its workspace via task -> project -> workspace instead of
+    // `workspaceId` below.
+    taskId: text("task_id").references(() => taskTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    // Set only for workspace-level activity (taskId null); task-scoped
+    // activity leaves this null. See the check constraint below: exactly one
+    // of taskId/workspaceId must be set.
+    workspaceId: text("workspace_id").references(() => workspaceTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
     type: text("type").notNull(),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
@@ -671,10 +680,15 @@ export const activityTable = pgTable(
   (table) => [
     index("activity_task_id_idx").on(table.taskId),
     index("activity_userId_idx").on(table.userId),
+    index("activity_workspaceId_idx").on(table.workspaceId),
     unique("activity_task_external_source_external_url_unique").on(
       table.taskId,
       table.externalSource,
       table.externalUrl,
+    ),
+    check(
+      "activity_task_or_workspace",
+      sql`(${table.taskId} IS NOT NULL) OR (${table.workspaceId} IS NOT NULL)`,
     ),
   ],
 );

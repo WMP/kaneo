@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/node";
 import { Cron } from "croner";
+import { enforceActivityRetention } from "./activity-retention";
 import { checkDueDateReminders } from "./due-date-reminders";
 import { checkProjectWebhookReminders } from "./project-webhook-reminders";
 import { reconcileWorkspaceSeats } from "./seat-reconciliation";
@@ -66,8 +67,17 @@ export function initializeScheduler(): void {
   jobs.push(
     new Cron("23 * * * *", withCheckIn("trial-reminders", checkTrialReminders)),
   );
+  // Retention is day-granularity (activityRetentionDays), so once a day is
+  // enough; ACTIVITY_RETENTION_ENABLED=false disables it without touching
+  // the schedule (see scheduler/activity-retention.ts).
+  jobs.push(
+    new Cron(
+      "42 3 * * *",
+      withCheckIn("activity-retention", enforceActivityRetention),
+    ),
+  );
   console.log(
-    "⏰ Scheduler started (reminders every 5 minutes, seat reconciliation and trial reminders hourly)",
+    "⏰ Scheduler started (reminders every 5 minutes, seat reconciliation and trial reminders hourly, activity retention daily)",
   );
 }
 

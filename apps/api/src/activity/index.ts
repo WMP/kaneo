@@ -11,6 +11,7 @@ import { requireWorkspacePermission } from "../utils/require-workspace-permissio
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import createActivity from "./controllers/create-activity";
 import createComment from "./controllers/create-comment";
+import createWorkspaceActivity from "./controllers/create-workspace-activity";
 import deleteComment from "./controllers/delete-comment";
 import getActivities from "./controllers/get-activities";
 import updateComment from "./controllers/update-comment";
@@ -393,5 +394,72 @@ subscribeToEvent<TaskRelationEventData>(
     });
   },
 );
+
+// Workspace-level activity: calendar/working-calendar changes have no task
+// to attach to, so they're recorded against the workspace instead (see
+// activityTable.workspaceId and create-workspace-activity.ts).
+subscribeToEvent<{
+  workspaceId: string;
+  userId: string;
+  holidayId: string;
+  date: string;
+  name: string;
+  type: string;
+}>("workspace.calendar.holiday_added", async (data) => {
+  if (!data.workspaceId || !data.userId) return;
+  await createWorkspaceActivity(
+    data.workspaceId,
+    data.type,
+    data.userId,
+    null,
+    {
+      holidayId: data.holidayId,
+      date: data.date,
+      name: data.name,
+    },
+  );
+});
+
+subscribeToEvent<{
+  workspaceId: string;
+  userId: string;
+  holidayId: string;
+  date: string;
+  name: string;
+  type: string;
+}>("workspace.calendar.holiday_removed", async (data) => {
+  if (!data.workspaceId || !data.userId) return;
+  await createWorkspaceActivity(
+    data.workspaceId,
+    data.type,
+    data.userId,
+    null,
+    {
+      holidayId: data.holidayId,
+      date: data.date,
+      name: data.name,
+    },
+  );
+});
+
+subscribeToEvent<{
+  workspaceId: string;
+  userId: string;
+  oldWorkingDays: number;
+  newWorkingDays: number;
+  type: string;
+}>("workspace.calendar.working_days_updated", async (data) => {
+  if (!data.workspaceId || !data.userId) return;
+  await createWorkspaceActivity(
+    data.workspaceId,
+    data.type,
+    data.userId,
+    null,
+    {
+      oldWorkingDays: data.oldWorkingDays,
+      newWorkingDays: data.newWorkingDays,
+    },
+  );
+});
 
 export default activity;

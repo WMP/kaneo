@@ -80,6 +80,7 @@ export const workspaceTableRelations = relations(
     invitations: many(invitationTable),
     notificationWorkspaceRules: many(userNotificationWorkspaceRuleTable),
     holidays: many(workspaceHolidayTable),
+    activities: many(activityTable),
   }),
 );
 
@@ -187,6 +188,10 @@ export const activityTableRelations = relations(activityTable, ({ one }) => ({
   task: one(taskTable, {
     fields: [activityTable.taskId],
     references: [taskTable.id],
+  }),
+  workspace: one(workspaceTable, {
+    fields: [activityTable.workspaceId],
+    references: [workspaceTable.id],
   }),
   user: one(userTable, {
     fields: [activityTable.userId],

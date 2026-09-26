@@ -18,7 +18,10 @@ async function createActivity(
       eventData: eventData ?? null,
     })
     .returning();
-  return activity;
+  // taskId is a required parameter here (this is always task-scoped
+  // activity), so the row's taskId is never null — narrow it back from the
+  // column's now-nullable type (see activityTable.workspaceId in schema.ts).
+  return activity ? { ...activity, taskId } : activity;
 }
 
 export default createActivity;

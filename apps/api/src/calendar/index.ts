@@ -136,16 +136,25 @@ const calendar = apiRouter()
   .openapi(updateWorkingDaysRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     const { workingDays } = c.req.valid("json");
-    return c.json(await updateWorkingDays(workspaceId, workingDays), 200);
+    return c.json(
+      await updateWorkingDays(workspaceId, workingDays, c.get("userId")),
+      200,
+    );
   })
   .openapi(createHolidayRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     const { date, name } = c.req.valid("json");
-    return c.json(await createHoliday(workspaceId, date, name), 200);
+    return c.json(
+      await createHoliday(workspaceId, date, name, c.get("userId")),
+      200,
+    );
   })
   .openapi(deleteHolidayRoute, async (c) => {
     const { workspaceId, holidayId } = c.req.valid("param");
-    return c.json(await deleteHoliday(workspaceId, holidayId), 200);
+    return c.json(
+      await deleteHoliday(workspaceId, holidayId, c.get("userId")),
+      200,
+    );
   });
 
 export default calendar;

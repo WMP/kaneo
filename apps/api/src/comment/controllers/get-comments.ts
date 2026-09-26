@@ -28,7 +28,10 @@ async function getComments(taskId: string) {
 
   return comments.map((c) => ({
     id: c.id,
-    taskId: c.taskId,
+    // Every row here is filtered to this exact taskId, so it's always
+    // task-scoped — narrow it back from the column's now-nullable type (see
+    // activityTable.workspaceId in schema.ts).
+    taskId,
     userId: c.userId,
     content: c.content as string,
     createdAt: c.createdAt,

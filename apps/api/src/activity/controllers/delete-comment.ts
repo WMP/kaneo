@@ -45,25 +45,32 @@ async function deleteComment(userId: string, id: string) {
     });
   }
 
+  // Comments are always task-scoped (the `type: "comment"` filter above
+  // guarantees a task_id — only workspace-level activity, e.g. calendar
+  // changes, ever leaves it null; see activityTable.workspaceId in
+  // schema.ts), so narrowing it back to `string` here is safe.
+  const commentTaskId = deletedComment.taskId as string;
+
   const [task] = await db
     .select({ projectId: taskTable.projectId })
     .from(taskTable)
-    .where(eq(taskTable.id, deletedComment.taskId))
+    .where(eq(taskTable.id, commentTaskId))
     .limit(1);
 
   if (task) {
     await publishEvent("comment.deleted", {
       ...deletedComment,
+      taskId: commentTaskId,
       projectId: task.projectId,
       userId,
     });
   }
 
   deleteOrphanedAssets(existing.content, null, {
-    taskId: existing.taskId,
+    taskId: commentTaskId,
   }).catch(() => {});
 
-  return deletedComment;
+  return { ...deletedComment, taskId: commentTaskId };
 }
 
 export default deleteComment;

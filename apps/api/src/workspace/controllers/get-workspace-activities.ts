@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -40,7 +40,16 @@ export function buildWorkspaceActivityWhereClause(
   workspaceId: string,
   options: WorkspaceActivityFilters = {},
 ) {
-  const conditions = [eq(projectTable.workspaceId, workspaceId)];
+  // Task-scoped activity matches via its project's workspace (the join
+  // below); workspace-level activity (e.g. calendar changes, no task) sets
+  // activityTable.workspaceId directly instead, since there's no project row
+  // to join through.
+  const conditions = [
+    or(
+      eq(projectTable.workspaceId, workspaceId),
+      eq(activityTable.workspaceId, workspaceId),
+    ),
+  ];
 
   if (options.userId) {
     conditions.push(eq(activityTable.userId, options.userId));
@@ -97,8 +106,8 @@ async function getWorkspaceActivities(
   const countQuery = db
     .select({ count: sql<number>`count(*)` })
     .from(activityTable)
-    .innerJoin(taskTable, eq(activityTable.taskId, taskTable.id))
-    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .leftJoin(taskTable, eq(activityTable.taskId, taskTable.id))
+    .leftJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(whereClause);
 
   const rowsQuery = db
@@ -123,8 +132,8 @@ async function getWorkspaceActivities(
       externalUrl: activityTable.externalUrl,
     })
     .from(activityTable)
-    .innerJoin(taskTable, eq(activityTable.taskId, taskTable.id))
-    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .leftJoin(taskTable, eq(activityTable.taskId, taskTable.id))
+    .leftJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .leftJoin(userTable, eq(activityTable.userId, userTable.id))
     .where(whereClause)
     .orderBy(desc(activityTable.createdAt), desc(activityTable.id))

@@ -240,4 +240,111 @@ describe("API integration: calendar", () => {
     });
     expect(persisted).toBeUndefined();
   });
+
+  it("logs a workspace-level activity row when a holiday is added", async () => {
+    const member = await createWorkspaceMember({ role: "admin" });
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/calendar/${member.workspace.id}/holidays`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ date: "2026-07-04", name: "Independence Day" }),
+      },
+    );
+    expect(response.status).toBe(200);
+
+    const rows = await db.query.activityTable.findMany({
+      where: eq(schema.activityTable.workspaceId, member.workspace.id),
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      taskId: null,
+      workspaceId: member.workspace.id,
+      type: "holiday_added",
+      userId: member.user.id,
+    });
+    expect(rows[0].eventData).toMatchObject({ name: "Independence Day" });
+  });
+
+  it("logs a workspace-level activity row when a holiday is removed", async () => {
+    const member = await createWorkspaceMember({ role: "admin" });
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const createResponse = await app.request(
+      `/api/calendar/${member.workspace.id}/holidays`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ date: "2026-07-04", name: "Independence Day" }),
+      },
+    );
+    const holiday = await createResponse.json();
+
+    const deleteResponse = await app.request(
+      `/api/calendar/${member.workspace.id}/holidays/${holiday.id}`,
+      { method: "DELETE" },
+    );
+    expect(deleteResponse.status).toBe(200);
+
+    const rows = await db.query.activityTable.findMany({
+      where: eq(schema.activityTable.workspaceId, member.workspace.id),
+    });
+    const removed = rows.find((row) => row.type === "holiday_removed");
+    expect(removed).toMatchObject({
+      taskId: null,
+      workspaceId: member.workspace.id,
+      type: "holiday_removed",
+      userId: member.user.id,
+    });
+  });
+
+  it("logs a workspace-level activity row when working days change", async () => {
+    const member = await createWorkspaceMember({ role: "admin" });
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(`/api/calendar/${member.workspace.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ workingDays: 124 }),
+    });
+    expect(response.status).toBe(200);
+
+    const rows = await db.query.activityTable.findMany({
+      where: eq(schema.activityTable.workspaceId, member.workspace.id),
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      taskId: null,
+      workspaceId: member.workspace.id,
+      type: "calendar_updated",
+      userId: member.user.id,
+    });
+    expect(rows[0].eventData).toMatchObject({
+      oldWorkingDays: 62,
+      newWorkingDays: 124,
+    });
+  });
+
+  it("does not log activity when working days are set to their current value", async () => {
+    const member = await createWorkspaceMember({ role: "admin" });
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(`/api/calendar/${member.workspace.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ workingDays: 62 }),
+    });
+    expect(response.status).toBe(200);
+
+    const rows = await db.query.activityTable.findMany({
+      where: eq(schema.activityTable.workspaceId, member.workspace.id),
+    });
+    expect(rows).toHaveLength(0);
+  });
 });

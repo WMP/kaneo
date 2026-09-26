@@ -45,8 +45,8 @@ async function exportWorkspaceActivities(
       externalUrl: activityTable.externalUrl,
     })
     .from(activityTable)
-    .innerJoin(taskTable, eq(activityTable.taskId, taskTable.id))
-    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .leftJoin(taskTable, eq(activityTable.taskId, taskTable.id))
+    .leftJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .leftJoin(userTable, eq(activityTable.userId, userTable.id))
     .where(whereClause)
     .orderBy(desc(activityTable.createdAt), desc(activityTable.id))

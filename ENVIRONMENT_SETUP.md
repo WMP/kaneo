@@ -102,6 +102,10 @@ Hosted multi-tenant instances should enable the cloud abuse gates. Self-hosted i
 - `KANEO_TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, on the **web container**. The production web image bakes the literal placeholder `KANEO_TURNSTILE_SITE_KEY` into the bundle; `apps/web/env.sh` swaps it for the runtime value when the container starts.
 - `VITE_TURNSTILE_SITE_KEY` - Local dev only. Set in `apps/web/.env` when running `pnpm dev`; Vite reads this at build/dev time. Not used in the production image.
 
+#### Background jobs
+
+- `ACTIVITY_RETENTION_ENABLED` - Set to `false` to disable the daily job that deletes activity older than each workspace's `activityRetentionDays` setting (Workspace Settings → General). Runs once a day (single-instance safe; uses a DB lease so it's also safe with multiple API instances). Leave unset (default: enabled) unless you need to pause it, e.g. while investigating a support issue.
+
 #### Sentry (error monitoring)
 
 All Sentry integration is opt-in; leave these unset for zero telemetry.

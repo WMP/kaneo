@@ -21,14 +21,17 @@ const activityTypeDescription =
 export const workspaceActivitySchema = z
   .object({
     id: z.string(),
-    taskId: z.string(),
+    taskId: z.string().nullable().openapi({
+      description:
+        "Null for workspace-level activity (e.g. calendar changes), which has no task.",
+    }),
     taskNumber: z.number().nullable().openapi({
       description: "The task's per-project short number, e.g. 42 in DEP-42.",
     }),
-    taskTitle: z.string(),
-    projectId: z.string(),
-    projectName: z.string(),
-    projectSlug: z.string(),
+    taskTitle: z.string().nullable(),
+    projectId: z.string().nullable(),
+    projectName: z.string().nullable(),
+    projectSlug: z.string().nullable(),
     type: z.string().openapi({ description: activityTypeDescription }),
     createdAt: responseTimestamp,
     userId: z.string().nullable(),

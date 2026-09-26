@@ -52,6 +52,9 @@ const ACTIVITY_TYPES = [
   "relation_created",
   "relation_updated",
   "relation_deleted",
+  "calendar_updated",
+  "holiday_added",
+  "holiday_removed",
 ] as const;
 
 const PAGE_SIZE = 25;
@@ -312,20 +315,24 @@ function RouteComponent() {
             <Timeline>
               {activities.map((activity, index) => (
                 <div key={activity.id} className="mb-1">
-                  <Link
-                    to="/dashboard/workspace/$workspaceId/project/$projectId/board"
-                    params={{ workspaceId, projectId: activity.projectId }}
-                    search={{ taskId: activity.taskId }}
-                    className="ms-8 mb-1 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    <span className="shrink-0 font-mono">
-                      {activity.projectSlug}-{activity.taskNumber}
-                    </span>
-                    <span className="truncate">{activity.taskTitle}</span>
-                    <span className="shrink-0 text-muted-foreground/70">
-                      · {activity.projectName}
-                    </span>
-                  </Link>
+                  {/* Workspace-level activity (e.g. calendar changes) has no
+                      task or project to link to. */}
+                  {activity.taskId && activity.projectId ? (
+                    <Link
+                      to="/dashboard/workspace/$workspaceId/project/$projectId/board"
+                      params={{ workspaceId, projectId: activity.projectId }}
+                      search={{ taskId: activity.taskId }}
+                      className="ms-8 mb-1 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <span className="shrink-0 font-mono">
+                        {activity.projectSlug}-{activity.taskNumber}
+                      </span>
+                      <span className="truncate">{activity.taskTitle}</span>
+                      <span className="shrink-0 text-muted-foreground/70">
+                        · {activity.projectName}
+                      </span>
+                    </Link>
+                  ) : null}
                   <Activity
                     activity={activity}
                     step={activities.length - index}
