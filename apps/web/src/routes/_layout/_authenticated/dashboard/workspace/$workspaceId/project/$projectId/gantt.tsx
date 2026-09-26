@@ -1567,14 +1567,17 @@ function RouteComponent() {
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
 
-            {/* Cross-project/dateless dependencies never participate in the
-                critical-path network (computeCriticalPath has no row or
-                duration to reason about for them — see its own inScopeEdges
-                comment), so a task genuinely made critical by one of them
-                would otherwise silently read as "not critical" here. Shown
-                only while the toggle is actually on (droppedEdgeCount isn't
-                computed at all otherwise) and only when there's something to
-                warn about. */}
+            {/* A dependency reaching a task with no resolved schedule still
+                never participates in the critical-path network
+                (computeCriticalPath has no row or duration to reason about
+                for it — see its own inScopeEdges comment): own-project and
+                cross-project alike, as long as it has dates, is fed in (see
+                crossProjectCriticalPathTasks above), but a genuinely
+                dateless far end still isn't, so a task it would otherwise
+                have made critical can silently read as "not critical" here.
+                Shown only while the toggle is actually on (droppedEdgeCount
+                isn't computed at all otherwise) and only when there's
+                something to warn about. */}
             {showCriticalPath &&
               criticalPath &&
               criticalPath.droppedEdgeCount > 0 && (
