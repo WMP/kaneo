@@ -1,10 +1,19 @@
+// Neutralize CSV formula injection: a field a spreadsheet would evaluate as a
+// formula (starts with =, +, -, @, or a tab/carriage-return control char) is
+// prefixed with a single quote so Excel/LibreOffice treat it as literal text
+// rather than executing it when the export is opened.
+function neutralizeFormula(value: string) {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
 // RFC 4180 field escaping: quote a field when it contains the delimiter, a
 // quote, or a line break, doubling any quotes inside it.
 function escapeCsvField(value: string) {
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  const safe = neutralizeFormula(value);
+  if (/[",\n\r]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 function toCell(value: unknown): string {

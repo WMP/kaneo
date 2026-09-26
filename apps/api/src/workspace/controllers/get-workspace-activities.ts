@@ -64,6 +64,20 @@ export function buildWorkspaceActivityWhereClause(
   return and(...conditions);
 }
 
+// Collapse runs of blank lines in non-comment activity content so system
+// events render compactly; comments keep their author's exact formatting.
+// Shared so the listing and the export normalize identically.
+export function normalizeActivityContent<
+  T extends { content: string | null; type: string },
+>(rows: T[]) {
+  for (const row of rows) {
+    if (row.content && row.type !== "comment") {
+      row.content = row.content.replace(/\n+/g, "\n");
+    }
+  }
+  return rows;
+}
+
 async function getWorkspaceActivities(
   workspaceId: string,
   options: GetWorkspaceActivitiesOptions = {},
@@ -117,11 +131,7 @@ async function getWorkspaceActivities(
 
   const total = Number(countRow?.count ?? 0);
 
-  for (const row of rows) {
-    if (row.content && row.type !== "comment") {
-      row.content = row.content.replace(/\n+/g, "\n");
-    }
-  }
+  normalizeActivityContent(rows);
 
   return {
     data: rows,

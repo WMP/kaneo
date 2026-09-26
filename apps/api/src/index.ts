@@ -203,6 +203,10 @@ export function createApp() {
     "*",
     cors({
       credentials: true,
+      // Let the browser expose download metadata to cross-origin (VITE_API_URL)
+      // web clients: the export filename and the truncation flag are otherwise
+      // unreadable from JS, so the truncation warning silently never fires.
+      exposeHeaders: ["Content-Disposition", "X-Kaneo-Export-Truncated"],
       origin: (origin) => {
         // Reflecting an arbitrary origin alongside credentials lets any site
         // read authenticated responses, so it stays a development convenience.
