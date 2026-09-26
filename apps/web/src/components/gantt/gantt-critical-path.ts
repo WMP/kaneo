@@ -7,11 +7,19 @@
 // slack each task's own fixed span currently has, so the UI can highlight
 // the chain that has none. Only "blocks" edges constrain scheduling (mirrors
 // gantt-dependency-cascade.ts) — callers must filter out "related"/"subtask"
-// edges before calling this, and must only pass this project's own tasks
-// that actually have a schedule: a cross-project task has no row to
-// highlight here, and a dateless task has no duration to reason about, so
-// neither participates (an edge touching either is simply dropped, the same
-// "no box, no data" rule the rest of the Gantt already applies).
+// edges before calling this, and must only pass tasks that actually have a
+// resolved schedule. That includes this project's own scheduled tasks AND
+// any cross-project task at the far end of one of those "blocks" edges,
+// as long as IT also has a resolved schedule — the Gantt already fetches
+// that far-end task (with its own dates and project) via the project
+// task-relations query, and renders it as a read-only external row, so
+// there's a real box for a critical cross-project link to land on. This
+// module itself has no notion of "project" at all: a task is either in the
+// caller's task list (and so can anchor/constrain the network) or it isn't.
+// A task with NO resolved schedule — own or cross-project — still has no
+// duration to reason about, so it's left out, exactly the same "no box, no
+// data" rule the rest of the Gantt already applies (an edge touching it is
+// simply dropped — see CriticalPathResult.droppedEdgeCount below).
 //
 // MODEL — forward pass (earliest start/finish) then backward pass (latest
 // start/finish), exactly like a textbook CPM, with one adaptation for a
@@ -79,12 +87,14 @@ export type CriticalPathResult = {
   criticalTaskIds: ReadonlySet<string>;
   criticalEdgeIds: ReadonlySet<string>;
   /** How many "blocks" edges were dropped because at least one endpoint
-   * isn't in the participating task set (a cross-project or dateless task —
-   * see the inScopeEdges comment below), plus any self-edge. Surfaced so the
-   * Gantt route can warn that the critical path may be understated rather
-   * than silently ignoring those edges — a task blocked by (or blocking)
-   * another project's own schedule never gets a chance to come out
-   * critical here. */
+   * isn't in the participating task set — most commonly a task (own or
+   * cross-project) with no resolved schedule, see the inScopeEdges comment
+   * below — plus any self-edge. Surfaced so the Gantt route can warn that
+   * the critical path may be understated rather than silently ignoring
+   * those edges — a task blocked by (or blocking) another project's task
+   * that has no dates of its own never gets a chance to come out critical
+   * here. A cross-project task that DOES have dates is expected to be in
+   * the caller's task list already and so isn't counted here at all. */
   droppedEdgeCount: number;
 };
 
@@ -158,11 +168,15 @@ export function computeCriticalPath(
   }
 
   // Only edges wholly inside the participating task set constrain the
-  // network — an edge into a cross-project or dateless task has no
-  // duration/anchor to reason about, so it's dropped here exactly like
-  // gantt-dependency-cascade.ts drops out-of-scope edges. A self-edge can't
-  // be expressed through the UI (cycle detection also rejects it), but it's
-  // guarded here too rather than looping.
+  // network — an edge into a task the caller left out of `tasks` (most
+  // commonly a dateless task, own or cross-project) has no duration/anchor
+  // to reason about, so it's dropped here exactly like
+  // gantt-dependency-cascade.ts drops out-of-scope edges. A cross-project
+  // task WITH a resolved schedule is expected to already be IN `tasks` (see
+  // the SCOPE comment at the top of this file), so its edges are in scope
+  // like any other. A self-edge can't be expressed through the UI (cycle
+  // detection also rejects it), but it's guarded here too rather than
+  // looping.
   const inScopeEdges = edges.filter(
     (edge) =>
       edge.sourceTaskId !== edge.targetTaskId &&
