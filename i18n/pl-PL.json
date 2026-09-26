@@ -612,7 +612,9 @@
 				"assignee_changed": "Zmiana przypisania",
 				"unassigned": "Cofnięto przypisanie",
 				"due_date_changed": "Zmiana terminu",
-				"title_changed": "Zmiana tytułu"
+				"title_changed": "Zmiana tytułu",
+				"moved": "Przeniesiono",
+				"description_changed": "Zmiana opisu"
 			},
 			"pagination": "Strona {{current}} z {{total}}",
 			"emptyTitle": "Brak aktywności",

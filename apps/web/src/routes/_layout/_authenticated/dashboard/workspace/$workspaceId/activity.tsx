@@ -20,12 +20,14 @@ export const Route = createFileRoute(
 const ACTIVITY_TYPES = [
   "comment",
   "created",
+  "moved",
   "status_changed",
   "priority_changed",
   "assignee_changed",
   "unassigned",
   "due_date_changed",
   "title_changed",
+  "description_changed",
 ] as const;
 
 const PAGE_SIZE = 25;

@@ -1,4 +1,5 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   activityTable,
@@ -6,6 +7,19 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+
+// `from`/`to` arrive as free-form strings, so an unparseable value would
+// otherwise reach Drizzle and throw when it serializes an Invalid Date to
+// ISO, surfacing as a 500. Reject it as a 400 instead.
+function parseFilterDate(value: string, field: "from" | "to") {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new HTTPException(400, {
+      message: `Invalid "${field}" timestamp`,
+    });
+  }
+  return date;
+}
 
 export type GetWorkspaceActivitiesOptions = {
   userId?: string;
@@ -31,11 +45,15 @@ async function getWorkspaceActivities(
   }
 
   if (options.from) {
-    conditions.push(gte(activityTable.createdAt, new Date(options.from)));
+    conditions.push(
+      gte(activityTable.createdAt, parseFilterDate(options.from, "from")),
+    );
   }
 
   if (options.to) {
-    conditions.push(lte(activityTable.createdAt, new Date(options.to)));
+    conditions.push(
+      lte(activityTable.createdAt, parseFilterDate(options.to, "to")),
+    );
   }
 
   const whereClause = and(...conditions);
@@ -45,16 +63,14 @@ async function getWorkspaceActivities(
     options.limit && options.limit > 0 ? Math.min(options.limit, 100) : 50;
   const offset = (page - 1) * pageSize;
 
-  const [countRow] = await db
+  const countQuery = db
     .select({ count: sql<number>`count(*)` })
     .from(activityTable)
     .innerJoin(taskTable, eq(activityTable.taskId, taskTable.id))
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(whereClause);
 
-  const total = Number(countRow?.count ?? 0);
-
-  const rows = await db
+  const rowsQuery = db
     .select({
       id: activityTable.id,
       taskId: activityTable.taskId,
@@ -83,6 +99,11 @@ async function getWorkspaceActivities(
     .orderBy(desc(activityTable.createdAt), desc(activityTable.id))
     .limit(pageSize)
     .offset(offset);
+
+  // The count and the page are independent queries, so run them concurrently.
+  const [[countRow], rows] = await Promise.all([countQuery, rowsQuery]);
+
+  const total = Number(countRow?.count ?? 0);
 
   for (const row of rows) {
     if (row.content && row.type !== "comment") {
