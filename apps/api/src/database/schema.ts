@@ -427,6 +427,10 @@ export const taskTable = pgTable(
     priority: text("priority").default("low").notNull(),
     startDate: timestamp("start_date", { mode: "date" }),
     dueDate: timestamp("due_date", { mode: "date" }),
+    // Client-approval gate for a task (e.g. sign-off before a migration
+    // cutover). Allowed values: "none" | "pending" | "approved" | "rejected".
+    approvalStatus: text("approval_status").notNull().default("none"),
+    approvalNote: text("approval_note"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
