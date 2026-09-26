@@ -262,11 +262,17 @@ function RouteComponent() {
   const dayColumnWidthRem = baseDayColumnWidthRem * zoom;
   const handleUnitChange = useCallback(
     (unit: GanttUnit) => {
-      if (unit === effectiveGanttUnit) return;
+      // Bail out only when the click is a true no-op: the unit already renders
+      // AND the viewer has already locked in a preference. When the shown unit
+      // is still just the untouched per-project default, clicking it must
+      // persist that pick (flipping ganttTimelineUnitTouched via
+      // setGanttTimelineUnit) so the same unit follows the viewer to other
+      // projects instead of each one recomputing its own default.
+      if (unit === effectiveGanttUnit && hasTouchedGanttUnit) return;
       setGanttUnit(unit);
       setZoom(1);
     },
-    [effectiveGanttUnit, setGanttUnit],
+    [effectiveGanttUnit, hasTouchedGanttUnit, setGanttUnit],
   );
   const taskColumnWidthRem = isMobile ? 12 : 14;
   const showTaskRail = !isMobile || isTaskRailOpen;
