@@ -159,6 +159,87 @@ describe("computeCriticalPath", () => {
     expect(result.droppedEdgeCount).toBe(1);
   });
 
+  describe("cross-project participation", () => {
+    // These exercise the exact scenario the Gantt route wires up: a
+    // cross-project "blocks" edge whose far-end task DOES have a resolved
+    // schedule, so the caller includes it in `tasks` alongside this
+    // project's own tasks (see gantt.tsx's crossProjectCriticalPathTasks).
+    // The module itself has no notion of "project" — these tests just
+    // confirm that including such a task produces the same tight-chain
+    // behavior as an all-own-project network, since that's the whole point
+    // of the fix: a cross-project task must be able to constrain (or be
+    // constrained by) the network exactly like an own task once it's dated.
+
+    it("marks a cross-project edge critical when it's the tight link in the chain", () => {
+      // "gate" lives in another project (a security gate before the wave);
+      // it FS,0-blocks "wave-1" in THIS project — the gap between them is
+      // zero, so the cross-project link itself is tight/critical, and both
+      // its endpoints are critical.
+      const tasks = [
+        task("gate", 0, 3), // cross-project far end, has its own dates
+        task("wave-1", 3, 9), // this project's own task
+      ];
+      const edges = [blocks("gate-blocks-wave-1", "gate", "wave-1")];
+
+      const result = computeCriticalPath(tasks, edges);
+
+      expect(result.criticalTaskIds).toEqual(new Set(["gate", "wave-1"]));
+      expect(result.criticalEdgeIds).toEqual(new Set(["gate-blocks-wave-1"]));
+      expect(result.droppedEdgeCount).toBe(0);
+    });
+
+    it("marks only the branch that crosses a project boundary critical in a diamond", () => {
+      // "approval" (own project) forks into "cutover" (ANOTHER project, the
+      // 4-day long branch) and "prep" (own project, a 1-day branch that
+      // finishes early), both FS into "go-live" (own project) — go-live's
+      // own dates are tight against the cross-project branch, so "cutover"
+      // and the edges touching it come out critical while "prep" carries
+      // slack, mirroring the same-project diamond test above but with the
+      // critical branch itself crossing a project boundary.
+      const tasks = [
+        task("approval", 0, 2),
+        task("cutover", 2, 6), // cross-project
+        task("prep", 2, 3), // own project, slack branch
+        task("go-live", 6, 8),
+      ];
+      const edges = [
+        blocks("approval-cutover", "approval", "cutover"),
+        blocks("approval-prep", "approval", "prep"),
+        blocks("cutover-go-live", "cutover", "go-live"),
+        blocks("prep-go-live", "prep", "go-live"),
+      ];
+
+      const result = computeCriticalPath(tasks, edges);
+
+      expect(result.criticalTaskIds).toEqual(
+        new Set(["approval", "cutover", "go-live"]),
+      );
+      expect(result.criticalTaskIds.has("prep")).toBe(false);
+      expect(result.criticalEdgeIds).toEqual(
+        new Set(["approval-cutover", "cutover-go-live"]),
+      );
+      expect(result.criticalEdgeIds.has("approval-prep")).toBe(false);
+      expect(result.criticalEdgeIds.has("prep-go-live")).toBe(false);
+    });
+
+    it("still drops a cross-project edge whose far end has no resolved schedule", () => {
+      // "client-signoff" is a dateless cross-project task — the caller
+      // never includes a dateless task in `tasks` (own or cross-project),
+      // so this edge is dropped exactly like any other out-of-scope edge,
+      // and the in-scope own task's own criticality is unaffected.
+      const tasks = [task("wave-1", 3, 9)];
+      const edges = [
+        blocks("signoff-blocks-wave-1", "client-signoff", "wave-1"),
+      ];
+
+      const result = computeCriticalPath(tasks, edges);
+
+      expect(result.criticalTaskIds).toEqual(new Set(["wave-1"]));
+      expect(result.criticalEdgeIds.size).toBe(0);
+      expect(result.droppedEdgeCount).toBe(1);
+    });
+  });
+
   describe("droppedEdgeCount", () => {
     it("is 0 when every edge's endpoints are both in the participating task set", () => {
       const tasks = [task("a", 0, 2), task("b", 2, 5)];

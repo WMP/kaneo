@@ -30,7 +30,10 @@ import type {
   TaskBarBox,
 } from "@/components/gantt/dependency-lines";
 import { buildDependencyEdges } from "@/components/gantt/dependency-lines";
-import type { CriticalPathEdgeInput } from "@/components/gantt/gantt-critical-path";
+import type {
+  CriticalPathEdgeInput,
+  CriticalPathTaskInput,
+} from "@/components/gantt/gantt-critical-path";
 import { computeCriticalPath } from "@/components/gantt/gantt-critical-path";
 import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
@@ -611,6 +614,42 @@ function RouteComponent() {
     return pinned;
   }, [allTasks]);
 
+  // The cross-project far end of every "blocks" relation (a client approval
+  // before a cutover, a security gate before a wave) that has a resolved
+  // schedule — fed into computeCriticalPath below alongside this project's
+  // own tasks so a cross-project dependency can anchor/constrain the
+  // network exactly like an own one (see gantt-critical-path.ts's SCOPE
+  // comment). Narrower than externalRelatedTasks above (which also pulls in
+  // "related" tasks, purely informational and never part of the CPM
+  // network): folding a "related"-only task into the critical-path input
+  // would wrongly mark it trivially critical (no in-scope edge touches it
+  // at all, see computeCriticalPath's "lone task" case), so only a "blocks"
+  // far end qualifies. A dateless far end still can't be reasoned about
+  // here and is left out, same as any own task with no dates — the edge
+  // into it is then dropped by computeCriticalPath itself
+  // (droppedEdgeCount).
+  const crossProjectCriticalPathTasks = useMemo<CriticalPathTaskInput[]>(() => {
+    const external = new Map<string, CriticalPathTaskInput>();
+    for (const relation of taskRelations ?? []) {
+      if (relation.relationType !== "blocks") continue;
+      for (const candidate of [relation.sourceTask, relation.targetTask]) {
+        if (!candidate || candidate.projectId === projectId) continue;
+        if (external.has(candidate.id)) continue;
+        const schedule = deriveTaskSchedule(
+          candidate.startDate,
+          candidate.dueDate,
+        );
+        if (!schedule) continue;
+        external.set(candidate.id, {
+          id: candidate.id,
+          scheduleStart: schedule.start,
+          scheduleEnd: schedule.end,
+        });
+      }
+    }
+    return [...external.values()];
+  }, [taskRelations, projectId]);
+
   // Same "blocks" edges as blocksEdges above, but keeping each relation's own
   // id (computeCriticalPath needs one to identify which edges came out
   // critical) — kept as a separate memo rather than folding the id into
@@ -638,20 +677,29 @@ function RouteComponent() {
 
   // Only computed while the toggle is on — this project can have a lot of
   // "blocks" edges, and there's no reason to run the CPM passes on every
-  // relations refetch when nobody's looking at the result. Depends only on
-  // each own task's OWN schedule (ownScheduleByTaskId, same scope the
-  // dependency cascade above uses — cross-project and dateless tasks never
-  // participate) and the edges themselves, never on zoom/pan/unit state, so
-  // toggling zoom doesn't recompute it.
+  // relations refetch when nobody's looking at the result. Feeds in BOTH
+  // this project's own scheduled tasks (ownScheduleByTaskId, same scope the
+  // dependency cascade above uses) AND every dated cross-project "blocks"
+  // far end (crossProjectCriticalPathTasks) — a dateless task, own or
+  // cross-project, still never participates. Never depends on zoom/pan/unit
+  // state, so toggling zoom doesn't recompute it.
   const criticalPath = useMemo(() => {
     if (!showCriticalPath) return null;
-    const tasksInput = [...ownScheduleByTaskId].map(([id, schedule]) => ({
-      id,
-      scheduleStart: schedule.start,
-      scheduleEnd: schedule.end,
-    }));
+    const tasksInput: CriticalPathTaskInput[] = [
+      ...[...ownScheduleByTaskId].map(([id, schedule]) => ({
+        id,
+        scheduleStart: schedule.start,
+        scheduleEnd: schedule.end,
+      })),
+      ...crossProjectCriticalPathTasks,
+    ];
     return computeCriticalPath(tasksInput, criticalPathEdges);
-  }, [showCriticalPath, ownScheduleByTaskId, criticalPathEdges]);
+  }, [
+    showCriticalPath,
+    ownScheduleByTaskId,
+    crossProjectCriticalPathTasks,
+    criticalPathEdges,
+  ]);
 
   const bulkUpdateSchedule = useBulkUpdateTaskSchedule();
 
@@ -2065,6 +2113,7 @@ function RouteComponent() {
                               task={task}
                               timeline={timeline}
                               emphasis={emphasisFor(task.id)}
+                              isCritical={isCriticalFor(task.id)}
                               onHoverChange={(hovering) =>
                                 handleBarHoverChange(task.id, hovering)
                               }

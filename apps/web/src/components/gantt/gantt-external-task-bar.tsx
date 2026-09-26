@@ -23,6 +23,12 @@ type GanttExternalTaskBarProps = {
     gridTemplateColumns: string;
   };
   emphasis?: GanttBarEmphasis;
+  /** Whether this cross-project task sits on the currently-highlighted
+   * critical path (see gantt-critical-path.ts and GanttTaskBar's own
+   * isCritical prop) — a dated cross-project "blocks" dependency
+   * participates in the same CPM network as an own task, so it can come out
+   * critical too. */
+  isCritical?: boolean;
   /** Notified on hover/focus, same as GanttTaskBar, so hovering an external
    * bar highlights its dependency lines too. */
   onHoverChange?: (hovering: boolean) => void;
@@ -36,6 +42,7 @@ export function GanttExternalTaskBar({
   task,
   timeline,
   emphasis = "normal",
+  isCritical = false,
   onHoverChange,
 }: GanttExternalTaskBarProps) {
   const { t } = useTranslation();
@@ -84,6 +91,10 @@ export function GanttExternalTaskBar({
               "size-4 shrink-0 fill-muted-foreground/20 text-muted-foreground/70",
               emphasis === "highlighted" && "ring-2 ring-primary/30",
               emphasis === "dimmed" && "opacity-35",
+              // Critical-path accent (see GanttTaskBar's own isCritical prop
+              // for why this is `outline`, not a color swap).
+              isCritical &&
+                "outline outline-2 outline-offset-2 outline-warning",
             )}
           />
         </div>
@@ -113,6 +124,9 @@ export function GanttExternalTaskBar({
           emphasis === "highlighted" &&
             "border-primary/50 ring-2 ring-primary/30",
           emphasis === "dimmed" && "opacity-35",
+          // Critical-path accent (see GanttTaskBar's own isCritical prop for
+          // why this is `outline`, not a color swap).
+          isCritical && "outline outline-2 outline-offset-2 outline-warning",
         )}
         title={title}
       >
