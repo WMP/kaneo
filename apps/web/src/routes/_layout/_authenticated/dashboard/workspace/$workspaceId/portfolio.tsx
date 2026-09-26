@@ -10,10 +10,23 @@ import {
   LayoutDashboard,
   Loader2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import WorkspaceLayout from "@/components/common/workspace-layout";
 import {
+  buildDependencyEdges,
+  type TaskBarBox,
+} from "@/components/gantt/dependency-lines";
+import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
+import {
+  buildPortfolioDependencyEdges,
   buildPortfolioRows,
   flattenPortfolioSchedule,
 } from "@/components/gantt/gantt-portfolio";
@@ -23,8 +36,13 @@ import {
   buildGanttGridMetrics,
   buildGanttHeaderColumns,
   buildGanttRange,
+  computeInsetBarBox,
   GANTT_UNITS,
   type GanttUnit,
+  getBarEdgeInsetPx,
+  getBarGridColumns,
+  getRootFontSizePx,
+  MIN_BAR_HOVER_HIT_PX,
   parseTaskDate,
   pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
@@ -84,6 +102,7 @@ function RouteComponent() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useGetPortfolio({ workspaceId });
+  const projects = useMemo(() => data?.projects ?? [], [data]);
 
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
   const ganttUnit = useUserPreferencesStore((state) => state.ganttTimelineUnit);
@@ -103,8 +122,18 @@ function RouteComponent() {
     projectId: string;
   } | null>(null);
 
-  const rows = useMemo(() => buildPortfolioRows(data ?? []), [data]);
+  const rows = useMemo(() => buildPortfolioRows(projects), [projects]);
   const flatSchedule = useMemo(() => flattenPortfolioSchedule(rows), [rows]);
+
+  // Cross-project dependency lines (see dependency-lines.ts/
+  // gantt-dependency-overlay.tsx, the same overlay the per-project Gantt
+  // uses): the portfolio endpoint only ever returns "blocks" relations whose
+  // two tasks sit in different projects, so every one of these connects two
+  // different rows below.
+  const dependencyEdges = useMemo(
+    () => buildPortfolioDependencyEdges(data?.dependencies ?? []),
+    [data],
+  );
 
   // First-open default unit, same reasoning as the per-project Gantt: pick
   // whichever unit would show the whole portfolio's span without opening
@@ -176,6 +205,89 @@ function RouteComponent() {
           }
         : null,
     [range, gridMetrics],
+  );
+
+  // Pixel geometry for the dependency-line overlay -- mirrors the per-project
+  // Gantt's own taskBoxes derivation (see gantt.tsx), but measures each
+  // task row's vertical position straight from the DOM (via
+  // taskRowElementsRef) instead of a row virtualizer's offsets, since this
+  // view renders every row unvirtualized. A task whose row isn't mounted
+  // (its project is collapsed, or the task falls outside the visible date
+  // window) simply has no box here, and buildDependencyEdges below skips any
+  // edge missing either endpoint's box -- same "no box, no line" rule the
+  // per-project Gantt already relies on.
+  const rowsContainerRef = useRef<HTMLDivElement>(null);
+  const taskRowElementsRef = useRef(new Map<string, HTMLDivElement>());
+  const [taskBoxes, setTaskBoxes] = useState<Map<string, TaskBarBox>>(
+    () => new Map(),
+  );
+
+  const measureTaskBoxes = useCallback(() => {
+    if (!timeline) {
+      setTaskBoxes(new Map());
+      return;
+    }
+    const trackCount = timeline.days.length;
+    const pixelsPerDay = dayColumnWidthRem * getRootFontSizePx();
+    const railWidthPx = railWidthRem * getRootFontSizePx();
+    const edgeInsetPx = getBarEdgeInsetPx();
+    const boxes = new Map<string, TaskBarBox>();
+
+    for (const row of rows) {
+      if (collapsedProjectIds.has(row.id)) continue;
+      for (const task of row.tasks) {
+        const element = taskRowElementsRef.current.get(task.id);
+        if (!element) continue;
+        const { barInView, lineStart, lineEnd } = task.isMilestone
+          ? getBarGridColumns(
+              task.scheduleStart,
+              task.scheduleStart,
+              timeline.rangeStart,
+              trackCount,
+            )
+          : getBarGridColumns(
+              task.scheduleStart,
+              task.scheduleEnd,
+              timeline.rangeStart,
+              trackCount,
+            );
+        if (!barInView) continue;
+        const box = computeInsetBarBox(
+          railWidthPx + (lineStart - 1) * pixelsPerDay,
+          railWidthPx + (lineEnd - 1) * pixelsPerDay,
+          edgeInsetPx,
+        );
+        const hoverWidth = box.right - box.left;
+        const hoverGrow = Math.max(0, MIN_BAR_HOVER_HIT_PX - hoverWidth) / 2;
+        boxes.set(task.id, {
+          left: box.left - hoverGrow,
+          right: box.right + hoverGrow,
+          top: element.offsetTop,
+          height: element.offsetHeight,
+        });
+      }
+    }
+    setTaskBoxes(boxes);
+  }, [rows, collapsedProjectIds, timeline, dayColumnWidthRem, railWidthRem]);
+
+  useLayoutEffect(() => {
+    measureTaskBoxes();
+  }, [measureTaskBoxes]);
+
+  // Catches a row resizing (e.g. text wrapping differently) without the
+  // mounted row set itself changing, same reasoning as the per-project
+  // Gantt's own row ResizeObserver.
+  useEffect(() => {
+    const container = rowsContainerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => measureTaskBoxes());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [measureTaskBoxes]);
+
+  const dependencyEdgeGeometry = useMemo(
+    () => buildDependencyEdges(dependencyEdges, taskBoxes),
+    [dependencyEdges, taskBoxes],
   );
 
   const toggleProject = (projectId: string) => {
@@ -353,115 +465,135 @@ function RouteComponent() {
                   </div>
                 </div>
 
-                {rows.map((row) => {
-                  const collapsed = collapsedProjectIds.has(row.id);
-                  const Icon =
-                    icons[row.icon as keyof typeof icons] ?? icons.Layout;
-                  return (
-                    <div key={row.id} className="border-b border-border/60">
-                      <div className="flex items-stretch">
-                        <div
-                          className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r border-border bg-muted/40 px-2 py-2"
-                          style={{ width: `${railWidthRem}rem` }}
-                        >
-                          <button
-                            type="button"
-                            aria-label={t("portfolio:toggleProjectAriaLabel", {
-                              name: row.name,
-                            })}
-                            aria-expanded={!collapsed}
-                            onClick={() => toggleProject(row.id)}
-                            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                <div ref={rowsContainerRef} className="relative">
+                  <GanttDependencyOverlay
+                    edges={dependencyEdgeGeometry}
+                    hoveredTaskId={null}
+                    clipLeftPx={railWidthRem * getRootFontSizePx()}
+                  />
+                  {rows.map((row) => {
+                    const collapsed = collapsedProjectIds.has(row.id);
+                    const Icon =
+                      icons[row.icon as keyof typeof icons] ?? icons.Layout;
+                    return (
+                      <div key={row.id} className="border-b border-border/60">
+                        <div className="flex items-stretch">
+                          <div
+                            className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r border-border bg-muted/40 px-2 py-2"
+                            style={{ width: `${railWidthRem}rem` }}
                           >
-                            <ChevronDown
-                              className={cn(
-                                "size-3.5 transition-transform",
-                                collapsed && "-rotate-90",
+                            <button
+                              type="button"
+                              aria-label={t(
+                                "portfolio:toggleProjectAriaLabel",
+                                {
+                                  name: row.name,
+                                },
                               )}
-                            />
-                          </button>
-                          <Icon className="size-3.5 shrink-0 text-muted-foreground" />
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-                            {row.name}
-                          </span>
-                          <button
-                            type="button"
-                            aria-label={t(
-                              "portfolio:openProjectGanttAriaLabel",
-                              { name: row.name },
-                            )}
-                            title={t("portfolio:openProjectGanttAriaLabel", {
-                              name: row.name,
-                            })}
-                            onClick={() =>
-                              navigate({
-                                to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
-                                params: { workspaceId, projectId: row.id },
-                              })
-                            }
-                            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <ArrowUpRight className="size-3.5" />
-                          </button>
-                        </div>
-                        <div
-                          className="relative grid min-h-[36px] items-center"
-                          style={{
-                            gridTemplateColumns: timeline.gridTemplateColumns,
-                          }}
-                        >
-                          {row.summarySpan && (
-                            <GanttSummaryTaskBar
-                              title={row.name}
-                              scheduleStart={row.summarySpan.start}
-                              scheduleEnd={row.summarySpan.end}
-                              timeline={timeline}
-                              progress={row.summaryProgress}
-                              onOpenTask={() =>
+                              aria-expanded={!collapsed}
+                              onClick={() => toggleProject(row.id)}
+                              className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "size-3.5 transition-transform",
+                                  collapsed && "-rotate-90",
+                                )}
+                              />
+                            </button>
+                            <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                              {row.name}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={t(
+                                "portfolio:openProjectGanttAriaLabel",
+                                { name: row.name },
+                              )}
+                              title={t("portfolio:openProjectGanttAriaLabel", {
+                                name: row.name,
+                              })}
+                              onClick={() =>
                                 navigate({
                                   to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
                                   params: { workspaceId, projectId: row.id },
                                 })
                               }
-                            />
-                          )}
-                        </div>
-                      </div>
-
-                      {!collapsed &&
-                        row.tasks.map((task) => (
-                          <div key={task.id} className="flex items-stretch">
-                            <div
-                              className="sticky left-0 z-10 shrink-0 border-r border-border bg-background px-2 py-2 pl-9"
-                              style={{ width: `${railWidthRem}rem` }}
+                              className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
-                              <span className="block truncate text-xs text-foreground">
-                                {task.title}
-                              </span>
-                            </div>
-                            <div
-                              className="relative grid min-h-[36px] items-center"
-                              style={{
-                                gridTemplateColumns:
-                                  timeline.gridTemplateColumns,
-                              }}
-                            >
-                              <GanttPortfolioTaskBar
-                                task={task}
+                              <ArrowUpRight className="size-3.5" />
+                            </button>
+                          </div>
+                          <div
+                            className="relative grid min-h-[36px] items-center"
+                            style={{
+                              gridTemplateColumns: timeline.gridTemplateColumns,
+                            }}
+                          >
+                            {row.summarySpan && (
+                              <GanttSummaryTaskBar
+                                title={row.name}
+                                scheduleStart={row.summarySpan.start}
+                                scheduleEnd={row.summarySpan.end}
                                 timeline={timeline}
+                                progress={row.summaryProgress}
                                 onOpenTask={() =>
-                                  setSelectedTask({
-                                    taskId: task.id,
-                                    projectId: row.id,
+                                  navigate({
+                                    to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
+                                    params: { workspaceId, projectId: row.id },
                                   })
                                 }
                               />
-                            </div>
+                            )}
                           </div>
-                        ))}
-                    </div>
-                  );
-                })}
+                        </div>
+
+                        {!collapsed &&
+                          row.tasks.map((task) => (
+                            <div key={task.id} className="flex items-stretch">
+                              <div
+                                className="sticky left-0 z-10 shrink-0 border-r border-border bg-background px-2 py-2 pl-9"
+                                style={{ width: `${railWidthRem}rem` }}
+                              >
+                                <span className="block truncate text-xs text-foreground">
+                                  {task.title}
+                                </span>
+                              </div>
+                              <div
+                                ref={(element) => {
+                                  if (element) {
+                                    taskRowElementsRef.current.set(
+                                      task.id,
+                                      element,
+                                    );
+                                  } else {
+                                    taskRowElementsRef.current.delete(task.id);
+                                  }
+                                }}
+                                className="relative grid min-h-[36px] items-center"
+                                style={{
+                                  gridTemplateColumns:
+                                    timeline.gridTemplateColumns,
+                                }}
+                              >
+                                <GanttPortfolioTaskBar
+                                  task={task}
+                                  timeline={timeline}
+                                  onOpenTask={() =>
+                                    setSelectedTask({
+                                      taskId: task.id,
+                                      projectId: row.id,
+                                    })
+                                  }
+                                />
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

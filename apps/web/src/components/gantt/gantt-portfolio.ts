@@ -5,6 +5,7 @@
 // rather than re-deriving either. Kept free of React and the DOM, like the
 // rest of this folder's pure modules, so it's unit-testable directly.
 
+import type { DependencyEdgeInput } from "./dependency-lines";
 import {
   computeParentSummaryProgress,
   computeParentSummarySpans,
@@ -163,4 +164,31 @@ export function countScheduledTasks(
   let total = 0;
   for (const row of rows) total += row.tasks.length;
   return total;
+}
+
+export type PortfolioDependencyInput = {
+  id: string;
+  sourceTaskId: string;
+  targetTaskId: string;
+  dependencyType: string;
+  lagDays: number;
+};
+
+/** Turns the portfolio endpoint's cross-project `blocks` relations into the
+ * same edge shape the per-project Gantt's dependency-line overlay draws
+ * (see dependency-lines.ts/gantt-dependency-overlay.tsx) -- every one of
+ * these is already a "blocks" edge (the endpoint only returns relations with
+ * portfolio-relevant scheduling semantics), so relationType is fixed rather
+ * than carried over the wire. */
+export function buildPortfolioDependencyEdges(
+  dependencies: readonly PortfolioDependencyInput[],
+): DependencyEdgeInput[] {
+  return dependencies.map((dependency) => ({
+    id: dependency.id,
+    sourceTaskId: dependency.sourceTaskId,
+    targetTaskId: dependency.targetTaskId,
+    relationType: "blocks",
+    dependencyType: dependency.dependencyType as "fs" | "ss" | "ff" | "sf",
+    lagDays: dependency.lagDays,
+  }));
 }

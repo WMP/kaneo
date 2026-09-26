@@ -115,7 +115,7 @@ const getPortfolioRoute = createRoute({
   tags: ["Projects"],
   summary: "Get workspace portfolio",
   description:
-    "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+    "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
   middleware: [
     workspaceAccess.fromQuery(),
     requireWorkspacePermission({ project: ["read"], task: ["read"] }),

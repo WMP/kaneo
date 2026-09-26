@@ -1,6 +1,11 @@
 import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import db from "../../database";
-import { projectTable, taskTable } from "../../database/schema";
+import {
+  projectTable,
+  taskRelationTable,
+  taskTable,
+} from "../../database/schema";
 
 export type PortfolioTask = {
   id: string;
@@ -21,6 +26,21 @@ export type PortfolioProject = {
   tasks: PortfolioTask[];
 };
 
+export type PortfolioDependency = {
+  id: string;
+  sourceTaskId: string;
+  sourceProjectId: string;
+  targetTaskId: string;
+  targetProjectId: string;
+  dependencyType: string;
+  lagDays: number;
+};
+
+export type Portfolio = {
+  projects: PortfolioProject[];
+  dependencies: PortfolioDependency[];
+};
+
 // Archived tasks are hidden everywhere else in the app by default (the board,
 // the per-project Gantt's own task list), so they're left out of the shared
 // timeline too rather than cluttering it with closed-out work.
@@ -34,7 +54,7 @@ const HIDDEN_TASK_STATUS = "archived";
 async function getPortfolio(
   workspaceId: string,
   includeArchived = false,
-): Promise<PortfolioProject[]> {
+): Promise<Portfolio> {
   const projects = await db.query.projectTable.findMany({
     where: includeArchived
       ? eq(projectTable.workspaceId, workspaceId)
@@ -49,7 +69,7 @@ async function getPortfolio(
     ],
   });
 
-  if (projects.length === 0) return [];
+  if (projects.length === 0) return { projects: [], dependencies: [] };
 
   const projectIds = projects.map((project) => project.id);
 
@@ -93,14 +113,52 @@ async function getPortfolio(
     else tasksByProject.set(task.projectId, [entry]);
   }
 
-  return projects.map((project) => ({
-    id: project.id,
-    workspaceId: project.workspaceId,
-    name: project.name,
-    slug: project.slug,
-    icon: project.icon,
-    tasks: tasksByProject.get(project.id) ?? [],
-  }));
+  // Cross-project "blocks" relations only: a "related"/"subtask" relation
+  // never carries a meaningful dependencyType/lagDays (see task-relation/
+  // response.ts) and a same-project relation is already drawable from that
+  // project's own Gantt, so neither belongs on the shared portfolio axis.
+  // One query joining the relation to both its endpoint tasks (rather than
+  // the per-project getTaskRelationsByProject's task-set-scoped OR, called
+  // once per project) keeps this flat regardless of project count.
+  const targetTaskTable = alias(taskTable, "portfolio_target_task");
+  const dependencyRows = await db
+    .select({
+      id: taskRelationTable.id,
+      sourceTaskId: taskRelationTable.sourceTaskId,
+      sourceProjectId: taskTable.projectId,
+      targetTaskId: taskRelationTable.targetTaskId,
+      targetProjectId: targetTaskTable.projectId,
+      dependencyType: taskRelationTable.dependencyType,
+      lagDays: taskRelationTable.lagDays,
+    })
+    .from(taskRelationTable)
+    .innerJoin(taskTable, eq(taskRelationTable.sourceTaskId, taskTable.id))
+    .innerJoin(
+      targetTaskTable,
+      eq(taskRelationTable.targetTaskId, targetTaskTable.id),
+    )
+    .where(
+      and(
+        eq(taskRelationTable.relationType, "blocks"),
+        inArray(taskTable.projectId, projectIds),
+        inArray(targetTaskTable.projectId, projectIds),
+        ne(taskTable.projectId, targetTaskTable.projectId),
+        ne(taskTable.status, HIDDEN_TASK_STATUS),
+        ne(targetTaskTable.status, HIDDEN_TASK_STATUS),
+      ),
+    );
+
+  return {
+    projects: projects.map((project) => ({
+      id: project.id,
+      workspaceId: project.workspaceId,
+      name: project.name,
+      slug: project.slug,
+      icon: project.icon,
+      tasks: tasksByProject.get(project.id) ?? [],
+    })),
+    dependencies: dependencyRows,
+  };
 }
 
 export default getPortfolio;

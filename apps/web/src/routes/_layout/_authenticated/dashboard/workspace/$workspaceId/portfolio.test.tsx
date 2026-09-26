@@ -11,7 +11,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
   component: (() => null) as ComponentType,
   navigate: vi.fn(),
-  portfolio: [] as Record<string, unknown>[],
+  portfolio: {
+    projects: [] as Record<string, unknown>[],
+    dependencies: [] as Record<string, unknown>[],
+  },
   preferencesState: {
     weekStartsOn: 1 as const,
     ganttTimelineUnit: "day" as const,
@@ -51,6 +54,13 @@ vi.mock("@/hooks/queries/project/use-get-portfolio", () => ({
   default: () => ({ data: m.portfolio, isLoading: false, isError: false }),
 }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+// The "blocks" dependency-line label (TaskRelationDependencyPopover, from
+// GanttDependencyOverlay) reads workspace permission via a route param this
+// mocked router doesn't provide -- mocked out directly, same as the
+// per-project Gantt's own dependency-line tests.
+vi.mock("@/hooks/use-workspace-permission", () => ({
+  useWorkspacePermission: () => ({ canUpdateTasks: () => true }),
+}));
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: (
     selector: (state: typeof m.preferencesState) => unknown,
@@ -70,12 +80,23 @@ await import(
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2026, 0, 15));
+  // The route measures each task row's box (for the cross-project
+  // dependency-line overlay) via a ResizeObserver, which jsdom doesn't
+  // implement -- same stub the per-project Gantt's own dependency-line
+  // tests use.
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
 });
 
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
-  m.portfolio = [];
+  m.portfolio = { projects: [], dependencies: [] };
   m.navigate.mockClear();
 });
 
@@ -91,31 +112,34 @@ function show() {
 
 describe("Portfolio route", () => {
   it("shows the empty state when the workspace has no projects", () => {
-    m.portfolio = [];
+    m.portfolio = { projects: [], dependencies: [] };
     show();
     expect(screen.getByText("portfolio:noProjectsTitle")).toBeInTheDocument();
   });
 
   it("shows the no-scheduled-tasks state when projects have nothing dated", () => {
-    m.portfolio = [
-      {
-        id: "project-1",
-        name: "Alpha",
-        slug: "alpha",
-        icon: null,
-        tasks: [
-          {
-            id: "task-1",
-            title: "Backlog item",
-            startDate: null,
-            dueDate: null,
-            progress: 0,
-            isMilestone: false,
-            status: "to-do",
-          },
-        ],
-      },
-    ];
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Backlog item",
+              startDate: null,
+              dueDate: null,
+              progress: 0,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
     show();
     expect(
       screen.getByText("portfolio:noScheduledTasksTitle"),
@@ -123,42 +147,45 @@ describe("Portfolio route", () => {
   });
 
   it("renders every project's scheduled tasks on the shared timeline and opens a task on click", () => {
-    m.portfolio = [
-      {
-        id: "project-1",
-        name: "Alpha",
-        slug: "alpha",
-        icon: null,
-        tasks: [
-          {
-            id: "task-1",
-            title: "Migrate schema",
-            startDate: "2026-01-10",
-            dueDate: "2026-01-14",
-            progress: 40,
-            isMilestone: false,
-            status: "to-do",
-          },
-        ],
-      },
-      {
-        id: "project-2",
-        name: "Beta",
-        slug: "beta",
-        icon: null,
-        tasks: [
-          {
-            id: "task-2",
-            title: "Ship v1",
-            startDate: "2026-01-16",
-            dueDate: "2026-01-16",
-            progress: 0,
-            isMilestone: true,
-            status: "to-do",
-          },
-        ],
-      },
-    ];
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Migrate schema",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+        {
+          id: "project-2",
+          name: "Beta",
+          slug: "beta",
+          icon: null,
+          tasks: [
+            {
+              id: "task-2",
+              title: "Ship v1",
+              startDate: "2026-01-16",
+              dueDate: "2026-01-16",
+              progress: 0,
+              isMilestone: true,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
     show();
 
     expect(screen.getByText("Alpha")).toBeInTheDocument();
@@ -177,26 +204,86 @@ describe("Portfolio route", () => {
     );
   });
 
+  it("draws a cross-project dependency line between two projects' task bars", () => {
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Client sign-off",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+        {
+          id: "project-2",
+          name: "Beta",
+          slug: "beta",
+          icon: null,
+          tasks: [
+            {
+              id: "task-2",
+              title: "Cutover",
+              startDate: "2026-01-16",
+              dueDate: "2026-01-16",
+              progress: 0,
+              isMilestone: true,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [
+        {
+          id: "relation-1",
+          sourceTaskId: "task-1",
+          sourceProjectId: "project-1",
+          targetTaskId: "task-2",
+          targetProjectId: "project-2",
+          dependencyType: "fs",
+          lagDays: 0,
+        },
+      ],
+    };
+    const { container } = show();
+
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.getByText("Beta")).toBeInTheDocument();
+    expect(container.querySelector("svg path")).not.toBeNull();
+  });
+
   it("collapses a project's rows without removing the group header", () => {
-    m.portfolio = [
-      {
-        id: "project-1",
-        name: "Alpha",
-        slug: "alpha",
-        icon: null,
-        tasks: [
-          {
-            id: "task-1",
-            title: "Migrate schema",
-            startDate: "2026-01-10",
-            dueDate: "2026-01-14",
-            progress: 40,
-            isMilestone: false,
-            status: "to-do",
-          },
-        ],
-      },
-    ];
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Migrate schema",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
     show();
 
     expect(screen.getAllByText("Migrate schema").length).toBeGreaterThan(0);

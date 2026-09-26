@@ -40,6 +40,19 @@ export const GANTT_UNITS: readonly GanttUnit[] = [
 // each declaring its own identical union.
 export type GanttBarEmphasis = "normal" | "highlighted" | "dimmed";
 
+// The root element's font size in px, used to convert a `rem` measurement
+// (a bar's edge inset, a caller's day-column width) into the pixels the
+// dependency-line overlay's geometry is computed in. Falls back to the
+// default 16px outside a browser (SSR/tests) or if the computed value is
+// somehow unreadable.
+export function getRootFontSizePx(): number {
+  if (typeof document === "undefined") return 16;
+  const rootFontSizePx = Number.parseFloat(
+    getComputedStyle(document.documentElement).fontSize,
+  );
+  return Number.isFinite(rootFontSizePx) ? rootFontSizePx : 16;
+}
+
 // Bars render with `mx-1` (0.25rem — see gantt-task-bar.tsx /
 // gantt-external-task-bar.tsx), so the visible edge sits inset from the
 // grid-column boundary a box's left/right are otherwise measured against;
@@ -49,11 +62,7 @@ export type GanttBarEmphasis = "normal" | "highlighted" | "dimmed";
 // — otherwise it drifts out of alignment under a non-default browser/OS
 // font-size setting.
 export function getBarEdgeInsetPx(): number {
-  if (typeof document === "undefined") return 4;
-  const rootFontSizePx = Number.parseFloat(
-    getComputedStyle(document.documentElement).fontSize,
-  );
-  return (Number.isFinite(rootFontSizePx) ? rootFontSizePx : 16) * 0.25;
+  return getRootFontSizePx() * 0.25;
 }
 
 // The smallest on-screen width (px) a bar's box is allowed to end up at,

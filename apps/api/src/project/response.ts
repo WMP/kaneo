@@ -91,7 +91,43 @@ export const portfolioProjectSchema = z
   })
   .openapi("PortfolioProject");
 
-export const portfolioSchema = z.array(portfolioProjectSchema);
+export const portfolioDependencySchema = z
+  .object({
+    id: z
+      .string()
+      .openapi({ description: "The underlying task relation's id." }),
+    sourceTaskId: z.string(),
+    sourceProjectId: z.string(),
+    targetTaskId: z.string(),
+    targetProjectId: z.string(),
+    dependencyType: z.string().openapi({
+      description:
+        "The scheduling dependency type (Finish-to-Start, Start-to-Start, " +
+        "Finish-to-Finish, or Start-to-Finish), same meaning as on a project's " +
+        "own task relations.",
+    }),
+    lagDays: z.number().openapi({
+      description:
+        "Lag (positive) or lead (negative) in days applied to the dependency.",
+    }),
+  })
+  .openapi("PortfolioDependency");
+
+export const portfolioSchema = z
+  .object({
+    projects: z.array(portfolioProjectSchema),
+    dependencies: z.array(portfolioDependencySchema).openapi({
+      description:
+        "Cross-project scheduling dependencies -- `blocks` relations whose " +
+        "source and target tasks sit in two different projects returned above " +
+        "(e.g. a client approval gating a cutover in another project). Only " +
+        "`blocks` relations carry portfolio-relevant scheduling semantics, so " +
+        "same-project and non-blocking (`related`/`subtask`) relations are left " +
+        "out; fetch a project's own Gantt for those. Lets the portfolio " +
+        "timeline draw a line between the two projects' rows.",
+    }),
+  })
+  .openapi("Portfolio");
 
 export const projectBackgroundUploadSchema = z
   .object({

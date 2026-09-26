@@ -401,7 +401,7 @@
           "relatedPageSize",
           "relatedTotalPages"
         ],
-        "description": "Always paginated: 50 tasks by default, at most 100 per page. Continue through totalPages to retrieve all tasks. For each task page, follow relatedPage through relatedTotalPages to retrieve all labels, external links and columns (100 related rows per kind per request, plus up to 100 columns needed to represent the tasks)."
+        "description": "Always paginated: 50 tasks by default, at most 500 per page. Continue through totalPages to retrieve all tasks. For each task page, follow relatedPage through relatedTotalPages to retrieve all labels, external links and columns (100 related rows per kind per request, plus up to 100 columns needed to represent the tasks)."
       },
       "Board": {
         "type": "object",
@@ -880,6 +880,28 @@
           "dueDate"
         ]
       },
+      "Portfolio": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioProject"
+            }
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioDependency"
+            },
+            "description": "Cross-project scheduling dependencies -- `blocks` relations whose source and target tasks sit in two different projects returned above (e.g. a client approval gating a cutover in another project). Only `blocks` relations carry portfolio-relevant scheduling semantics, so same-project and non-blocking (`related`/`subtask`) relations are left out; fetch a project's own Gantt for those. Lets the portfolio timeline draw a line between the two projects' rows."
+          }
+        },
+        "required": [
+          "projects",
+          "dependencies"
+        ]
+      },
       "PortfolioProject": {
         "type": "object",
         "properties": {
@@ -964,6 +986,44 @@
           "progress",
           "isMilestone",
           "status"
+        ]
+      },
+      "PortfolioDependency": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The underlying task relation's id."
+          },
+          "sourceTaskId": {
+            "type": "string"
+          },
+          "sourceProjectId": {
+            "type": "string"
+          },
+          "targetTaskId": {
+            "type": "string"
+          },
+          "targetProjectId": {
+            "type": "string"
+          },
+          "dependencyType": {
+            "type": "string",
+            "description": "The scheduling dependency type (Finish-to-Start, Start-to-Start, Finish-to-Finish, or Start-to-Finish), same meaning as on a project's own task relations."
+          },
+          "lagDays": {
+            "type": "number",
+            "description": "Lag (positive) or lead (negative) in days applied to the dependency."
+          }
+        },
+        "required": [
+          "id",
+          "sourceTaskId",
+          "sourceProjectId",
+          "targetTaskId",
+          "targetProjectId",
+          "dependencyType",
+          "lagDays"
         ]
       },
       "ProjectBackgroundUpload": {
@@ -1417,6 +1477,16 @@
             "format": "date-time",
             "description": "Null unless constraintType is not none."
           },
+          "approvalStatus": {
+            "type": "string",
+            "description": "Client-approval gate: one of none, pending, approved, rejected."
+          },
+          "approvalNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -1447,6 +1517,8 @@
           "baselineDueDate",
           "constraintType",
           "constraintDate",
+          "approvalStatus",
+          "approvalNote",
           "labels",
           "relations"
         ]
@@ -1641,7 +1713,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed."
+            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted."
           },
           "createdAt": {
             "type": "string",
@@ -4110,7 +4182,11 @@
             "type": "string"
           },
           "taskId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Null for workspace-level activity (e.g. calendar changes), which has no task."
           },
           "taskNumber": {
             "type": [
@@ -4120,20 +4196,32 @@
             "description": "The task's per-project short number, e.g. 42 in DEP-42."
           },
           "taskTitle": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "projectId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "projectName": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "projectSlug": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "type": {
             "type": "string",
-            "description": "One of: comment, task, create, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed."
+            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted."
           },
           "createdAt": {
             "type": "string",
@@ -4354,6 +4442,85 @@
           "name",
           "image",
           "counts"
+        ]
+      },
+      "WorkspaceWorkloadTasks": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkloadTask"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True when the number of matching tasks hit the safety cap and results are incomplete. Narrow the date range to see everything."
+          }
+        },
+        "required": [
+          "tasks",
+          "truncated"
+        ]
+      },
+      "WorkloadTask": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "The slug of the column the task sits in."
+          },
+          "priority": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "taskNumber": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Per-project counter shown as {projectSlug}-{taskNumber}."
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "projectSlug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "startDate",
+          "dueDate",
+          "taskNumber",
+          "projectId",
+          "projectName",
+          "projectSlug"
         ]
       },
       "CustomFieldDefinition": {
@@ -7981,7 +8148,7 @@
           "Projects"
         ],
         "summary": "Get workspace portfolio",
-        "description": "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+        "description": "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
         "parameters": [
           {
             "schema": {
@@ -8008,10 +8175,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PortfolioProject"
-                  }
+                  "$ref": "#/components/schemas/Portfolio"
                 }
               }
             }
@@ -9192,7 +9356,7 @@
           "Tasks"
         ],
         "summary": "List tasks",
-        "description": "Get a project's board: its columns, each with the tasks in it, plus the archived and planned buckets. Responses always contain at most 100 tasks (50 by default). Continue through pagination.totalPages for the whole board, and for each task page follow relatedPage through pagination.relatedTotalPages for all labels, links and column metadata. Filters and sorting apply before pagination. Descriptions larger than 64 KiB are omitted with descriptionDeferred=true; read the task detail or description pages for full text.",
+        "description": "Get a project's board: its columns, each with the tasks in it, plus the archived and planned buckets. Responses always contain at most 500 tasks (50 by default). Continue through pagination.totalPages for the whole board, and for each task page follow relatedPage through pagination.relatedTotalPages for all labels, links and column metadata. Filters and sorting apply before pagination. Descriptions larger than 64 KiB are omitted with descriptionDeferred=true; read the task detail or description pages for full text.",
         "parameters": [
           {
             "schema": {
@@ -17954,7 +18118,7 @@
           "Workspaces"
         ],
         "summary": "Get workspace activity",
-        "description": "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, or a creation-date range; paginated.",
+        "description": "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated.",
         "parameters": [
           {
             "schema": {
@@ -17982,6 +18146,16 @@
             "required": false,
             "description": "Only activity of this type, e.g. status_changed.",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity on tasks belonging to this project."
+            },
+            "required": false,
+            "description": "Only activity on tasks belonging to this project.",
+            "name": "projectId",
             "in": "query"
           },
           {
@@ -18067,7 +18241,7 @@
           "Workspaces"
         ],
         "summary": "Export workspace activity",
-        "description": "Export activity across every task in the workspace as CSV or JSON, honoring the same filters and permission as GET /activity. Unpaginated, newest first, capped at 10,000 rows: narrow the filters if the \"truncated\" flag (or the X-Kaneo-Export-Truncated header on a CSV response) comes back true.",
+        "description": "Export activity across every task in the workspace as CSV or JSON, honoring the same filters (user, activity type, project, date range) and permission as GET /activity. Unpaginated, newest first, capped at 10,000 rows: narrow the filters if the \"truncated\" flag (or the X-Kaneo-Export-Truncated header on a CSV response) comes back true.",
         "parameters": [
           {
             "schema": {
@@ -18095,6 +18269,16 @@
             "required": false,
             "description": "Only activity of this type, e.g. status_changed.",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only activity on tasks belonging to this project."
+            },
+            "required": false,
+            "description": "Only activity on tasks belonging to this project.",
+            "name": "projectId",
             "in": "query"
           },
           {
@@ -18374,6 +18558,94 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceWorkload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined, or the date range is invalid",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workload/{workspaceId}/tasks": {
+      "get": {
+        "operationId": "getWorkspaceWorkloadTasks",
+        "tags": [
+          "Workload"
+        ],
+        "summary": "Get a workload assignee's matching tasks",
+        "description": "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Inclusive start date (YYYY-MM-DD)."
+            },
+            "required": true,
+            "description": "Inclusive start date (YYYY-MM-DD).",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week."
+            },
+            "required": true,
+            "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A workspace member's user id, or the literal \"unassigned\" for tasks with no assignee."
+            },
+            "required": true,
+            "description": "A workspace member's user id, or the literal \"unassigned\" for tasks with no assignee.",
+            "name": "assigneeId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching tasks for one assignee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceWorkloadTasks"
                 }
               }
             }
