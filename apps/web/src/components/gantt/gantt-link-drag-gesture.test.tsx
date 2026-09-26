@@ -205,9 +205,18 @@ afterEach(() => {
 // 25-26, offsets 15-16) lands on grid lines 16/18: [602.6, 631.7]. Points
 // below are chosen well inside each box, and in the gap between them for
 // "empty space".
+//
+// Vertically, rows are stacked by the row virtualizer (useGanttRowVirtualizer
+// in gantt.tsx), not read from jsdom's always-zero offsetTop: task-a (the
+// earlier-starting, and so first, row) gets box y-range [0, 44), task-b (the
+// second row) [44, 88) — both at the un-measured ROW_HEIGHT_PX estimate,
+// since neither task has a baseline and offsetHeight is stubbed to 44 above
+// anyway. TASK_A_Y/TASK_B_Y pick a point inside each row's own range.
 const TASK_A_X = 520;
 const TASK_B_X = 615;
 const EMPTY_SPACE_X = 570;
+const TASK_A_Y = 20;
+const TASK_B_Y = 60;
 
 function getLinkHandle(taskTitle: string) {
   return screen.getByRole("button", {
@@ -224,12 +233,12 @@ describe("Gantt link-drag (drag to create a dependency)", () => {
       button: 0,
       pointerId: 10,
       clientX: TASK_A_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
     fireEvent.pointerMove(window, {
       pointerId: 10,
       clientX: TASK_B_X,
-      clientY: 40,
+      clientY: TASK_B_Y,
     });
     // A dashed preview line is visible mid-drag.
     expect(
@@ -239,7 +248,7 @@ describe("Gantt link-drag (drag to create a dependency)", () => {
     fireEvent.pointerUp(window, {
       pointerId: 10,
       clientX: TASK_B_X,
-      clientY: 40,
+      clientY: TASK_B_Y,
     });
 
     expect(createRelation.mutateAsync).toHaveBeenCalledTimes(1);
@@ -264,12 +273,12 @@ describe("Gantt link-drag (drag to create a dependency)", () => {
       button: 0,
       pointerId: 11,
       clientX: TASK_A_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
     fireEvent.pointerUp(window, {
       pointerId: 11,
       clientX: EMPTY_SPACE_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
 
     expect(createRelation.mutateAsync).not.toHaveBeenCalled();
@@ -283,12 +292,12 @@ describe("Gantt link-drag (drag to create a dependency)", () => {
       button: 0,
       pointerId: 12,
       clientX: TASK_A_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
     fireEvent.pointerUp(window, {
       pointerId: 12,
       clientX: TASK_A_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
 
     expect(createRelation.mutateAsync).not.toHaveBeenCalled();
@@ -304,13 +313,13 @@ describe("Gantt link-drag (drag to create a dependency)", () => {
       button: 0,
       pointerId: 13,
       clientX: TASK_A_X,
-      clientY: 40,
+      clientY: TASK_A_Y,
     });
     fireEvent.pointerMove(container, {
       pointerId: 13,
       pointerType: "mouse",
       clientX: TASK_B_X,
-      clientY: 40,
+      clientY: TASK_B_Y,
     });
 
     // Neither the bar's own drag-to-move nor the chart's drag-to-pan engaged.

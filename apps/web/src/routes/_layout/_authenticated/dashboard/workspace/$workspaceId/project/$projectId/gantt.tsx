@@ -74,6 +74,7 @@ import {
   parseTaskDate,
   pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
+import { useGanttRowVirtualizer } from "@/components/gantt/use-gantt-row-virtualizer";
 import {
   isZoomWheelGesture,
   nextGanttZoom,
@@ -153,6 +154,19 @@ const UNIT_BASE_DAY_COLUMN_WIDTH_REM: Record<
   month: { desktop: 0.185, mobile: 0.22 },
   quarter: { desktop: 0.076, mobile: 0.09 },
 };
+
+// Estimated row heights fed to the row virtualizer below, before a row has
+// actually rendered and been measured. Deliberately not a guess: the bar
+// cell of every row unconditionally enforces `min-h-11` (44px), or `min-h-14`
+// (56px) once a baseline underlay renders alongside it (see the row's own
+// className further down) — both regardless of screen size, since the rail
+// cell's own responsive min-heights (mobile touch targets) never exceed
+// that. Getting this right means the vast majority of rows render at their
+// final height on first paint, with `measureRow` only correcting the rare
+// row whose content genuinely grows it (e.g. the "show task dates" link on
+// an out-of-window task).
+const ROW_HEIGHT_PX = 44;
+const ROW_HEIGHT_WITH_BASELINE_PX = 56;
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt",
@@ -307,14 +321,16 @@ function RouteComponent() {
   const pendingScrollLeftRef = useRef<number | null>(null);
   const todayCellRef = useRef<HTMLDivElement>(null);
   const rowsContainerRef = useRef<HTMLDivElement>(null);
+  // Only ever holds the currently-mounted (windowed) rows' elements — see
+  // the row virtualizer wiring below, which measures exactly these.
   const rowElementsRef = useRef(new Map<string, HTMLDivElement>());
-  // Each row's rendered top offset and height, relative to `rowsContainerRef`
-  // — measured rather than assumed, because a row's height depends on its
-  // task-rail content (title wrapping, the "show task dates" link for
-  // out-of-window tasks), which isn't uniform across rows.
-  const [rowLayout, setRowLayout] = useState<
-    Map<string, { top: number; height: number }>
-  >(new Map());
+  // Observes each currently-mounted row individually (rather than
+  // `rowsContainerRef` itself), since that container's height is now driven
+  // explicitly by the virtualizer's own total — see the row virtualizer
+  // wiring below — so it no longer changes size just because a child row's
+  // real content grows past its estimate the way it did before
+  // virtualization.
+  const rowResizeObserverRef = useRef<ResizeObserver | null>(null);
   const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
   // The in-progress "drag to create a dependency" gesture (see
   // handleLinkDragStart below): which task the drag started from, the
@@ -965,6 +981,105 @@ function RouteComponent() {
     collapsedParentIds,
   ]);
 
+  // Row ids in render order, and a lookup back to the row itself — both feed
+  // the row virtualizer below (it works in plain keys, not task objects) and
+  // the render loop (which maps a virtual row back to its task).
+  const renderedTaskIds = useMemo(
+    () => renderedTasks.map((task) => task.id),
+    [renderedTasks],
+  );
+  const renderedTaskById = useMemo(() => {
+    const map = new Map<string, GanttRowTask>();
+    for (const task of renderedTasks) map.set(task.id, task);
+    return map;
+  }, [renderedTasks]);
+
+  const estimateRowHeightPx = useCallback(
+    (taskId: string) => {
+      const task = renderedTaskById.get(taskId);
+      if (
+        task &&
+        !task.isExternal &&
+        !task.isSummary &&
+        (task.baselineStartDate || task.baselineDueDate)
+      ) {
+        return ROW_HEIGHT_WITH_BASELINE_PX;
+      }
+      return ROW_HEIGHT_PX;
+    },
+    [renderedTaskById],
+  );
+
+  // Virtualizes the VERTICAL rows only — the CSS-grid timeline day/week/
+  // month/quarter COLUMNS underneath (see `timeline.gridTemplateColumns`
+  // above) are untouched, exactly per the feature's scope. The task rail and
+  // the timeline bars are two grid columns of the SAME row element (see the
+  // row markup below), never two separately scrolling panes, so windowing
+  // this one shared scroll container automatically keeps them in lockstep —
+  // there is nothing further to synchronize.
+  //
+  // Dependency-line overlay + critical-path decision: a row that isn't
+  // currently mounted gets no entry in `virtualRowByTaskId` below, so
+  // `taskBoxes` (just past this point) treats it exactly like any other
+  // "no box" row the chart already handles today — out of the visible date
+  // window, or filtered out by search. buildDependencyEdges already drops
+  // any edge missing either endpoint's box, so a dependency line to a
+  // row that's scrolled out of the vertical viewport simply isn't drawn,
+  // the same "no box, no line" rule this file already relied on before this
+  // feature existed — rather than keeping every row's geometry live just to
+  // draw lines to rows nobody can see. The day-track background and the
+  // overlay's own SVG stay full-height (via `totalSize` below), so the
+  // chart's total scrollable area and critical-path bar outlining (which
+  // reads `criticalPath` directly, not `taskBoxes`) are unaffected by which
+  // rows happen to be mounted.
+  const {
+    virtualItems: virtualRows,
+    totalSize: rowsTotalHeightPx,
+    measureRow,
+  } = useGanttRowVirtualizer({
+    keys: renderedTaskIds,
+    scrollElementRef: scrollContainerRef,
+    estimateSize: estimateRowHeightPx,
+  });
+
+  const virtualRowByTaskId = useMemo(() => {
+    const map = new Map<string, { start: number; size: number }>();
+    for (const row of virtualRows) map.set(row.key, row);
+    return map;
+  }, [virtualRows]);
+
+  // Re-measures every currently-mounted row's real height after each commit
+  // (initial mount, or a scroll that swaps which rows are mounted) — runs
+  // before paint, so a row whose actual height differs from
+  // `estimateRowHeightPx`'s guess is corrected before the user ever sees the
+  // stale offset.
+  const measureMountedRows = useCallback(() => {
+    for (const [taskId, element] of rowElementsRef.current) {
+      measureRow(taskId, element.offsetHeight);
+    }
+  }, [measureRow]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: virtualRows is listed to force a re-measure whenever the mounted row set changes; the body itself only reads rowElementsRef (a plain ref), not virtualRows directly.
+  useLayoutEffect(() => {
+    measureMountedRows();
+  }, [measureMountedRows, virtualRows]);
+
+  // Catches a row's height changing WITHOUT the mounted row set itself
+  // changing (e.g. the assignee's name arriving after the row already
+  // mounted) — the layout effect above only re-measures when `virtualRows`
+  // changes, so this is what corrects a resize that happens in between.
+  useEffect(() => {
+    const observer = new ResizeObserver(() => measureMountedRows());
+    rowResizeObserverRef.current = observer;
+    for (const element of rowElementsRef.current.values()) {
+      observer.observe(element);
+    }
+    return () => {
+      observer.disconnect();
+      rowResizeObserverRef.current = null;
+    };
+  }, [measureMountedRows]);
+
   // A hovered bar can unmount without ever firing its own onMouseLeave/onBlur
   // — most commonly a search change filtering its task out of
   // `renderedTasks` — which would otherwise leave `hoveredTaskId` (and every
@@ -990,7 +1105,7 @@ function RouteComponent() {
     const trackCount = timeline.days.length;
 
     for (const task of renderedTasks) {
-      const row = rowLayout.get(task.id);
+      const row = virtualRowByTaskId.get(task.id);
       if (!row) continue;
       // A milestone renders as a single diamond AT scheduleStart, never a
       // span (see GanttTaskBar/GanttExternalTaskBar) — including one that
@@ -1032,14 +1147,14 @@ function RouteComponent() {
       boxes.set(task.id, {
         left: box.left - hoverGrow,
         right: box.right + hoverGrow,
-        top: row.top,
-        height: row.height,
+        top: row.start,
+        height: row.size,
       });
     }
     return boxes;
   }, [
     renderedTasks,
-    rowLayout,
+    virtualRowByTaskId,
     timeline,
     barsLeftPx,
     pixelsPerDay,
@@ -1392,8 +1507,9 @@ function RouteComponent() {
   // (mobile Hide/Show, or crossing the mobile breakpoint) changes the
   // track's left offset without changing its size — so showTaskRail and
   // isMobile are listed here purely to force a re-measure of offsetLeft on
-  // those transitions, the same way measureRows lists its own layout inputs
-  // below. Depending on `range` rather than the full `timeline` means this
+  // those transitions, the same way measureMountedRows' own effect below
+  // lists its layout inputs. Depending on `range` rather than the full
+  // `timeline` means this
   // effect (and the observer it (re)creates) doesn't tear down and rebuild
   // on every zoom step — the day *count* only changes with `range`, and the
   // observer it sets up here keeps reporting live `clientWidth` changes
@@ -1417,60 +1533,6 @@ function RouteComponent() {
     observer.observe(element);
     return () => observer.disconnect();
   }, [range, showTaskRail, isMobile]);
-
-  const measureRows = useCallback(() => {
-    const next = new Map<string, { top: number; height: number }>();
-    for (const [taskId, element] of rowElementsRef.current) {
-      next.set(taskId, {
-        top: element.offsetTop,
-        height: element.offsetHeight,
-      });
-    }
-    setRowLayout((current) => {
-      // A `Map` is a new reference every measurement, which would otherwise
-      // force a render on every effect run (including ones triggered by
-      // unrelated re-renders, e.g. `project` data getting a fresh reference
-      // from the query cache). Bailing out on unchanged content keeps this
-      // from re-rendering — or re-triggering ResizeObserver-driven effects —
-      // when nothing actually moved.
-      if (current.size === next.size) {
-        let unchanged = true;
-        for (const [taskId, box] of next) {
-          const previous = current.get(taskId);
-          if (
-            !previous ||
-            previous.top !== box.top ||
-            previous.height !== box.height
-          ) {
-            unchanged = false;
-            break;
-          }
-        }
-        if (unchanged) return current;
-      }
-      return next;
-    });
-  }, []);
-
-  // Row heights depend on task-rail content, not a fixed rhythm, so they're
-  // measured directly rather than derived from an index. Re-measure whenever
-  // the visible rows themselves could have changed (search, timeline window,
-  // rail layout) and via ResizeObserver for organic content changes (font
-  // load, text wrapping) the dependency list above wouldn't catch. `range`
-  // rather than `timeline`, since row height doesn't depend on the zoomed
-  // day-column width, only on which window/rows are showing.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: measureRows reads rowElementsRef (a plain ref, not a reactive value), so these are listed to force a re-measure whenever they could change row layout, not because the effect body reads them directly.
-  useLayoutEffect(() => {
-    measureRows();
-  }, [measureRows, renderedTasks, range, showTaskRail, isMobile]);
-
-  useEffect(() => {
-    const element = rowsContainerRef.current;
-    if (!element) return;
-    const observer = new ResizeObserver(measureRows);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [measureRows]);
 
   // Center the view on today the first time it becomes available, so opening
   // the Gantt chart on a long-running project doesn't drop you at the start
@@ -1912,7 +1974,15 @@ function RouteComponent() {
 
                 <div
                   ref={rowsContainerRef}
-                  className="relative z-10 flex flex-col"
+                  className="relative z-10"
+                  // Explicit height (the running total of every row's
+                  // measured-or-estimated size — see useGanttRowVirtualizer)
+                  // rather than letting flex/flow sizing follow whichever
+                  // rows happen to be mounted: virtualization only windows
+                  // WHICH rows render, never how tall the scrollable area or
+                  // the dependency-line overlay below (which is `h-full` of
+                  // this container) reads as a whole.
+                  style={{ height: rowsTotalHeightPx }}
                 >
                   <GanttDependencyOverlay
                     edges={dependencyEdgeGeometry}
@@ -1928,19 +1998,40 @@ function RouteComponent() {
                         : null
                     }
                   />
-                  {renderedTasks.map((task) => {
+                  {virtualRows.map((virtualRow) => {
+                    const task = renderedTaskById.get(virtualRow.key);
+                    if (!task) return null;
                     return (
                       <div
                         key={task.id}
                         ref={(element) => {
                           if (element) {
                             rowElementsRef.current.set(task.id, element);
+                            // Optional-chained on the method too, not just the
+                            // observer instance: a couple of existing Gantt
+                            // tests stub ResizeObserver with only
+                            // observe/disconnect (no unobserve), and calling
+                            // through an absent method must stay a no-op
+                            // there rather than throwing.
+                            rowResizeObserverRef.current?.observe?.(element);
                           } else {
+                            const previous = rowElementsRef.current.get(
+                              task.id,
+                            );
+                            if (previous) {
+                              rowResizeObserverRef.current?.unobserve?.(
+                                previous,
+                              );
+                            }
                             rowElementsRef.current.delete(task.id);
                           }
                         }}
                         className="grid items-stretch border-b border-border/70"
                         style={{
+                          position: "absolute",
+                          top: virtualRow.start,
+                          left: 0,
+                          right: 0,
                           gridTemplateColumns: showTaskRail
                             ? isMobile
                               ? `${taskColumnWidthRem}rem max-content`
