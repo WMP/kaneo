@@ -301,4 +301,91 @@ subscribeToEvent<{
   });
 });
 
+// Catch-all for plan/schedule edits that don't have their own dedicated
+// event: a Gantt drag or resize, the auto-reschedule cascade, a progress or
+// milestone edit, a constraint change, and setting/clearing a baseline all
+// publish this. `changes` (see diff-schedule-fields.ts) is only present,
+// and only ever non-empty, when one of those fields actually differs, so a
+// plain title/description/priority edit through the same endpoint is
+// dropped rather than logged as a content-free "updated".
+subscribeToEvent<{
+  taskId: string;
+  userId?: string;
+  changes?: Record<string, { from: unknown; to: unknown }>;
+}>("task.updated", async (data) => {
+  if (!data.taskId || !data.userId || !data.changes) {
+    return;
+  }
+  if (Object.keys(data.changes).length === 0) {
+    return;
+  }
+  await createActivity(data.taskId, "updated", data.userId, null, {
+    changes: data.changes,
+  });
+});
+
+// task-relation.created/.updated/.deleted are already published for
+// realtime/WS purposes (see task-relation/controllers/*.ts). When a relation
+// links tasks in two different projects, the same event is published a
+// second time with the other project's id so its own subscribers refresh —
+// `secondaryNotification` marks that duplicate so it isn't logged twice
+// against the same (source) task.
+type TaskRelationEventData = {
+  id: string;
+  taskId: string;
+  userId?: string;
+  sourceTaskId: string;
+  targetTaskId: string;
+  relationType: string;
+  dependencyType?: string;
+  lagDays?: number;
+  secondaryNotification?: boolean;
+};
+
+subscribeToEvent<TaskRelationEventData>(
+  "task-relation.created",
+  async (data) => {
+    if (!data.taskId || !data.userId || !data.id) return;
+    if (data.secondaryNotification) return;
+    await createActivity(data.taskId, "relation_created", data.userId, null, {
+      relationId: data.id,
+      relationType: data.relationType,
+      sourceTaskId: data.sourceTaskId,
+      targetTaskId: data.targetTaskId,
+      dependencyType: data.dependencyType,
+      lagDays: data.lagDays,
+    });
+  },
+);
+
+subscribeToEvent<TaskRelationEventData>(
+  "task-relation.updated",
+  async (data) => {
+    if (!data.taskId || !data.userId || !data.id) return;
+    if (data.secondaryNotification) return;
+    await createActivity(data.taskId, "relation_updated", data.userId, null, {
+      relationId: data.id,
+      relationType: data.relationType,
+      sourceTaskId: data.sourceTaskId,
+      targetTaskId: data.targetTaskId,
+      dependencyType: data.dependencyType,
+      lagDays: data.lagDays,
+    });
+  },
+);
+
+subscribeToEvent<TaskRelationEventData>(
+  "task-relation.deleted",
+  async (data) => {
+    if (!data.taskId || !data.userId || !data.id) return;
+    if (data.secondaryNotification) return;
+    await createActivity(data.taskId, "relation_deleted", data.userId, null, {
+      relationId: data.id,
+      relationType: data.relationType,
+      sourceTaskId: data.sourceTaskId,
+      targetTaskId: data.targetTaskId,
+    });
+  },
+);
+
 export default activity;

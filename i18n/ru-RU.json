@@ -1870,7 +1870,11 @@
 			"importedBy": "Imported by {{name}}"
 		},
 		"moved": "переместил задачу из «{{from}}» в «{{to}}»",
-		"created": "создал эту задачу"
+		"created": "создал эту задачу",
+		"relationCreated": "added a dependency",
+		"relationUpdated": "updated a dependency",
+		"relationDeleted": "removed a dependency",
+		"updatedPlan": "updated the plan"
 	},
 	"tasks": {
 		"title": "Задачи",

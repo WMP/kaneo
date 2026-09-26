@@ -146,6 +146,7 @@ describe("task relation tenant boundaries", () => {
         sourceTaskId: own.task.id,
         targetTaskId: target.id,
       }),
+      { waitForHandlers: true },
     );
   });
 
@@ -186,6 +187,7 @@ describe("task relation tenant boundaries", () => {
         sourceTaskId: own.task.id,
         targetTaskId: target.id,
       }),
+      { waitForHandlers: true },
     );
     // The target task's project must ALSO be notified, since it renders its
     // own project-scoped task-relations cache.
@@ -196,6 +198,7 @@ describe("task relation tenant boundaries", () => {
         sourceTaskId: own.task.id,
         targetTaskId: target.id,
       }),
+      { waitForHandlers: true },
     );
     expect(
       m.publish.mock.calls.filter(([type]) => type === "task-relation.created")
@@ -212,6 +215,7 @@ describe("task relation tenant boundaries", () => {
         sourceTaskId: own.task.id,
         targetTaskId: target.id,
       }),
+      { waitForHandlers: true },
     );
     expect(m.publish).toHaveBeenCalledWith(
       "task-relation.deleted",
@@ -220,6 +224,7 @@ describe("task relation tenant boundaries", () => {
         sourceTaskId: own.task.id,
         targetTaskId: target.id,
       }),
+      { waitForHandlers: true },
     );
     expect(
       m.publish.mock.calls.filter(([type]) => type === "task-relation.deleted")

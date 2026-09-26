@@ -17,6 +17,7 @@ import {
   validateAndParseDate,
   validateDateRange,
 } from "../../utils/validate-dates";
+import { buildScheduleChanges } from "../diff-schedule-fields";
 import {
   assertValidPriority,
   assertValidTaskStatus,
@@ -60,7 +61,9 @@ async function bulkUpdateTasks({
       priority: taskTable.priority,
       projectId: taskTable.projectId,
       userId: taskTable.userId,
+      startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
+      progress: taskTable.progress,
       workspaceId: projectTable.workspaceId,
     })
     .from(taskTable)
@@ -214,15 +217,24 @@ async function bulkUpdateTasks({
       // No dedicated "progress changed" event exists — a single-task
       // progress edit (see update-task.ts) only ever publishes this same
       // generic "task.updated" notice, so bulk stays consistent with it
-      // rather than inventing a new event type for one field.
+      // rather than inventing a new event type for one field. The `changes`
+      // diff lets the activity feed record the progress move, matching what
+      // a single-task edit already logs.
       for (const task of tasks) {
-        await publishEvent("task.updated", {
-          taskId: task.id,
-          projectId: task.projectId,
-          title: task.title,
-          status: task.status,
-          userId,
-        });
+        // waitForHandlers: see update-task.ts — the activity log write
+        // should land before this request returns, not race it.
+        await publishEvent(
+          "task.updated",
+          {
+            taskId: task.id,
+            projectId: task.projectId,
+            title: task.title,
+            status: task.status,
+            userId,
+            changes: buildScheduleChanges(task, { progress }),
+          },
+          { waitForHandlers: true },
+        );
       }
       break;
     }
@@ -486,16 +498,30 @@ async function bulkUpdateTasks({
       // publishes on commit (see update-task.ts) — a generic "something
       // about this task changed" event, not the dedicated
       // `task.due_date_changed` one, so an auto-cascaded reschedule reads
-      // in realtime/WS the same way a manual one already does rather than
-      // gaining its own distinct activity-feed entry.
+      // in realtime/WS the same way a manual one already does. The `changes`
+      // diff still lets the activity feed show what moved, whether it was
+      // dragged directly or nudged by the auto-reschedule cascade.
       for (const task of scheduledTasks) {
-        await publishEvent("task.updated", {
-          taskId: task.id,
-          projectId: task.projectId,
-          title: task.title,
-          status: task.status,
-          userId,
-        });
+        const parsed = parsedByTaskId.get(task.id);
+        // waitForHandlers: see update-task.ts — the activity log write
+        // should land before this request returns, not race it.
+        await publishEvent(
+          "task.updated",
+          {
+            taskId: task.id,
+            projectId: task.projectId,
+            title: task.title,
+            status: task.status,
+            userId,
+            changes: parsed
+              ? buildScheduleChanges(task, {
+                  startDate: parsed.startDate,
+                  dueDate: parsed.dueDate,
+                })
+              : {},
+          },
+          { waitForHandlers: true },
+        );
       }
       break;
     }

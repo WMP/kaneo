@@ -1848,7 +1848,11 @@
 			},
 			"importedFrom": "Imported from {{source}}",
 			"importedBy": "Imported by {{name}}"
-		}
+		},
+		"relationCreated": "added a dependency",
+		"relationUpdated": "updated a dependency",
+		"relationDeleted": "removed a dependency",
+		"updatedPlan": "updated the plan"
 	},
 	"tasks": {
 		"title": "Задачи",

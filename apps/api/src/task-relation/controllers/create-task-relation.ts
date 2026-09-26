@@ -139,24 +139,39 @@ async function createTaskRelation({
     });
   }
 
-  await publishEvent("task-relation.created", {
-    ...relation,
-    taskId: sourceTaskId,
-    projectId: sourceTask.projectId,
-    userId,
-  });
+  // waitForHandlers: the activity module logs this creation off the event,
+  // and that write should be visible by the time this request returns
+  // rather than racing the response.
+  await publishEvent(
+    "task-relation.created",
+    {
+      ...relation,
+      taskId: sourceTaskId,
+      projectId: sourceTask.projectId,
+      userId,
+    },
+    { waitForHandlers: true },
+  );
 
   // A relation can link tasks across two projects in the same workspace.
   // Notify the target project's subscribers too, so their Gantt/dependency
   // views (which read the target project's task-relations cache) refresh
   // without a manual reload.
   if (targetTask.projectId !== sourceTask.projectId) {
-    await publishEvent("task-relation.created", {
-      ...relation,
-      taskId: sourceTaskId,
-      projectId: targetTask.projectId,
-      userId,
-    });
+    // Same relation, same (source) taskId — published again only so the
+    // target project's own WS subscribers refresh. Marked so the activity
+    // module (which logs by taskId) doesn't record this creation twice.
+    await publishEvent(
+      "task-relation.created",
+      {
+        ...relation,
+        taskId: sourceTaskId,
+        projectId: targetTask.projectId,
+        userId,
+        secondaryNotification: true,
+      },
+      { waitForHandlers: true },
+    );
   }
 
   return relation;

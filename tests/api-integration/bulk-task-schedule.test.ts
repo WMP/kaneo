@@ -90,6 +90,7 @@ describe("bulk updateSchedule (Gantt dependency cascade persistence)", () => {
           projectId: project.id,
           userId: user.id,
         }),
+        { waitForHandlers: true },
       );
     }
     // The dedicated due-date activity event is deliberately NOT used for a

@@ -9,6 +9,7 @@ import {
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
 import { boardDescription, descriptionDeferred } from "../description-pages";
+import { buildScheduleChanges } from "../diff-schedule-fields";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { assertTaskPosition } from "./next-task-position";
 
@@ -38,6 +39,12 @@ async function updateTask(
         description === undefined ? sql<null>`null` : taskTable.description,
       status: taskTable.status,
       projectId: taskTable.projectId,
+      startDate: taskTable.startDate,
+      dueDate: taskTable.dueDate,
+      progress: taskTable.progress,
+      isMilestone: taskTable.isMilestone,
+      constraintType: taskTable.constraintType,
+      constraintDate: taskTable.constraintDate,
     })
     .from(taskTable)
     .where(eq(taskTable.id, id))
@@ -122,13 +129,23 @@ async function updateTask(
     });
   }
 
-  await publishEvent("task.updated", {
-    taskId: updatedTask.id,
-    projectId: updatedTask.projectId,
-    title: updatedTask.title,
-    status: updatedTask.status,
-    userId: currentUserId,
-  });
+  // waitForHandlers: the activity module logs a "changes" diff off this
+  // event, and that write should be visible by the time this request
+  // returns rather than racing the response (audit history is not
+  // best-effort — see update-task-title.ts's atomic insert for the same
+  // rule applied a different way).
+  await publishEvent(
+    "task.updated",
+    {
+      taskId: updatedTask.id,
+      projectId: updatedTask.projectId,
+      title: updatedTask.title,
+      status: updatedTask.status,
+      userId: currentUserId,
+      changes: buildScheduleChanges(existingTask, updatedTask),
+    },
+    { waitForHandlers: true },
+  );
 
   if (description !== undefined && existingTask.description !== description) {
     deleteOrphanedAssets(existingTask.description, description, {
