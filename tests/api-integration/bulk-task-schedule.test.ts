@@ -66,8 +66,7 @@ describe("bulk updateSchedule (Gantt dependency cascade persistence)", () => {
     expect(result).toEqual({ success: true, updatedCount: 2 });
 
     const stored = await db.query.taskTable.findMany({
-      where: (task, { inArray }) =>
-        inArray(task.id, [taskA.id, taskB.id]),
+      where: (task, { inArray }) => inArray(task.id, [taskA.id, taskB.id]),
     });
     const byId = new Map(stored.map((task) => [task.id, task]));
     expect(byId.get(taskA.id)?.startDate?.toISOString()).toBe(
@@ -91,6 +90,7 @@ describe("bulk updateSchedule (Gantt dependency cascade persistence)", () => {
           projectId: project.id,
           userId: user.id,
         }),
+        { waitForHandlers: true },
       );
     }
     // The dedicated due-date activity event is deliberately NOT used for a
