@@ -672,16 +672,16 @@
 				"confirm": "Μεταβίβαση ιδιοκτησίας"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Διατήρηση δραστηριότητας",
+				"subtitle": "Ορίστε για πόσο διάστημα διατηρείται το ιστορικό δραστηριότητας του χώρου εργασίας. Αυτό απλώς αποθηκεύει τη ρύθμιση — δεν διαγράφεται τίποτα αυτόματα ακόμα.",
+				"label": "Διατήρηση δραστηριότητας για",
+				"unit": "ημέρες",
+				"keepForever": "Διατήρηση για πάντα",
+				"placeholder": "π.χ. 90",
+				"saveButton": "Αποθήκευση",
+				"toastUpdated": "Η ρύθμιση διατήρησης δραστηριότητας ενημερώθηκε",
+				"toastUpdateError": "Αποτυχία ενημέρωσης της ρύθμισης διατήρησης δραστηριότητας",
+				"notEnforcedNotice": "Αυτή η ρύθμιση δεν επιβάλλεται ακόμα: καμία δραστηριότητα δεν διαγράφεται αυτόματα. Η αυτόματη διαγραφή είναι προγραμματισμένη μελλοντική βελτίωση."
 			}
 		},
 		"projectGeneral": {
@@ -1589,35 +1589,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Προσθήκη αργίας",
+			"dateLabel": "Ημερομηνία",
+			"dateRequired": "Η ημερομηνία είναι υποχρεωτική",
+			"day_0": "Κυριακή",
+			"day_1": "Δευτέρα",
+			"day_2": "Τρίτη",
+			"day_3": "Τετάρτη",
+			"day_4": "Πέμπτη",
+			"day_5": "Παρασκευή",
+			"day_6": "Σάββατο",
+			"deleteHoliday": "Διαγραφή αργίας",
+			"empty": "Δεν υπάρχουν αργίες ακόμα.",
+			"holidayNameRequired": "Το όνομα της αργίας είναι υποχρεωτικό",
+			"holidaysSubtitle": "Ημερομηνίες κατά τις οποίες ο χώρος εργασίας δεν λειτουργεί, επιπλέον των μη εργάσιμων ημερών.",
+			"holidaysTitle": "Αργίες",
+			"nameLabel": "Όνομα",
+			"namePlaceholder": "π.χ. Πρωτοχρονιά",
+			"subtitle": "Ορίστε τις ημέρες της εβδομάδας που εργάζεται αυτός ο χώρος εργασίας και προσθέστε αργίες. Το διάγραμμα Gantt σκιάζει τις μη εργάσιμες ημέρες και ο αυτόματος καταρράκτης επαναπρογραμματισμού τις παραλείπει.",
+			"title": "Ημερολόγιο εργασίας",
+			"toastHolidayCreated": "Η αργία προστέθηκε",
+			"toastHolidayCreateError": "Αποτυχία προσθήκης αργίας",
+			"toastHolidayDeleted": "Η αργία αφαιρέθηκε",
+			"toastHolidayDeleteError": "Αποτυχία αφαίρεσης αργίας",
+			"toastHolidayDuplicateError": "Υπάρχει ήδη αργία σε αυτή την ημερομηνία",
+			"toastWorkingDaysUpdated": "Οι εργάσιμες ημέρες ενημερώθηκαν",
+			"toastWorkingDaysUpdateError": "Αποτυχία ενημέρωσης εργάσιμων ημερών",
+			"workingDaysSubtitle": "Ενεργοποιήστε/απενεργοποιήστε τις ημέρες που αυτός ο χώρος εργασίας είναι ανοιχτός για εργασία.",
+			"workingDaysTitle": "Εργάσιμες ημέρες",
+			"loading": "Φόρτωση ημερολογίου…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1786,9 +1786,9 @@
 			"invitations": "Προσκλήσεις",
 			"more": "Περισσότερα",
 			"backToBoard": "Επιστροφή στον πίνακα",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "Χαρτοφυλάκιο",
+			"activity": "Δραστηριότητα",
+			"workload": "Φόρτος εργασίας"
 		},
 		"projectList": {
 			"viewProject": "Προβολή έργου",
@@ -2045,11 +2045,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "σχολίασε στο {{forge}}"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "πρόσθεσε μια εξάρτηση",
+		"relationUpdated": "ενημέρωσε μια εξάρτηση",
+		"relationDeleted": "αφαίρεσε μια εξάρτηση",
+		"updatedPlan": "ενημέρωσε το πλάνο",
+		"changedApproval": "άλλαξε την κατάσταση έγκρισης από {{from}} σε {{to}}"
 	},
 	"tasks": {
 		"title": "Εργασίες",
@@ -2217,20 +2217,20 @@
 				"related": "σχετίζεται με",
 				"blocked_by": "μπλοκάρεται από"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "Στο {{project}}",
+			"crossProjectStatusReadOnly": "Η κατάσταση διαχειρίζεται στο δικό του έργο αυτής της εργασίας",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Θετική τιμή καθυστερεί την έναρξη· αρνητική (lead) επιτρέπει επικάλυψη.",
+				"lagLabel": "Καθυστέρηση (ημέρες)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Αποθήκευση",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Τύπος εξάρτησης",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Ολοκλήρωση → Ολοκλήρωση",
+					"fs": "Ολοκλήρωση → Έναρξη",
+					"sf": "Έναρξη → Ολοκλήρωση",
+					"ss": "Έναρξη → Έναρξη"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2238,9 +2238,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Αποτυχία ενημέρωσης εξάρτησης"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Αυτή η εξάρτηση θα δημιουργούσε κυκλική εξάρτηση"
 		},
 		"subtasks": {
 			"title": "Υποεργασίες",
@@ -2265,11 +2265,11 @@
 			"start": "Έναρξη",
 			"startDate": "Ημερομηνία έναρξης",
 			"noDate": "Χωρίς ημερομηνία",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Γραμμή βάσης",
+			"milestone": "Ορόσημο",
+			"progress": "Πρόοδος",
+			"constraint": "Περιορισμός",
+			"approval": "Έγκριση"
 		},
 		"move": {
 			"title": "Μετακίνηση εργασίας",
@@ -2326,47 +2326,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Απαλοιφή γραμμής βάσης",
+				"clearError": "Αποτυχία απαλοιφής γραμμής βάσης",
+				"clearSuccess": "Η γραμμή βάσης απαλείφθηκε",
+				"label": "Γραμμή βάσης",
+				"none": "Δεν έχει οριστεί γραμμή βάσης",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Ορισμός γραμμής βάσης",
+				"setError": "Αποτυχία ορισμού γραμμής βάσης",
+				"setSuccess": "Η γραμμή βάσης ορίστηκε από τις τρέχουσες ημερομηνίες"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Επισημάνετε αυτήν την εργασία ως ορόσημο μίας ημερομηνίας στο διάγραμμα Gantt",
+				"label": "Ορόσημο",
+				"updateError": "Αποτυχία ενημέρωσης ορόσημου εργασίας",
+				"updateSuccess": "Το ορόσημο της εργασίας ενημερώθηκε"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "Πρόοδος",
+				"percentLabel": "Ποσοστό ολοκλήρωσης",
+				"updateError": "Αποτυχία ενημέρωσης προόδου εργασίας",
+				"updateSuccess": "Η πρόοδος της εργασίας ενημερώθηκε",
+				"exactLabel": "Ακριβές ποσοστό ολοκλήρωσης"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Τρέχουσα: {{date}}",
+				"label": "Περιορισμός",
+				"pickDate": "Επιλέξτε ημερομηνία περιορισμού",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Ολοκλήρωση όχι αργότερα από",
+					"must_start_on": "Πρέπει να ξεκινήσει στις",
+					"none": "Κανένας περιορισμός",
+					"start_no_earlier_than": "Έναρξη όχι νωρίτερα από"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Αποτυχία ενημέρωσης περιορισμού εργασίας",
+				"updateSuccess": "Ο περιορισμός εργασίας ενημερώθηκε"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Σημείωση",
+				"notePlaceholder": "Προσθέστε μια σημείωση για τον πελάτη...",
+				"saveNote": "Αποθήκευση σημείωσης",
+				"updateError": "Αποτυχία ενημέρωσης κατάστασης έγκρισης"
 			}
 		},
 		"backlog": {
@@ -2454,47 +2454,47 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "Αποκλεισμός",
+			"legendRelated": "Σχετικό",
+			"externalProjectBadge": "στο {{projectName}}",
+			"externalTaskTitle": "{{title}} — σχετική εργασία στο {{projectName}} (μόνο για ανάγνωση εδώ)",
+			"legendBaseline": "Γραμμή βάσης",
+			"legendMilestone": "Ορόσημο",
+			"milestoneAriaLabel": "{{title}}: ορόσημο, άνοιγμα εργασίας",
+			"progressLabel": "{{progress}}% ολοκληρωμένο",
+			"unitControlAriaLabel": "Ανάλυση χρονοδιαγράμματος",
+			"unitDay": "Ημέρα",
+			"unitMonth": "Μήνας",
+			"unitQuarter": "Τρίμηνο",
+			"unitWeek": "Εβδομάδα",
+			"collapseSubtasks": "Σύμπτυξη υποεργασιών",
+			"expandSubtasks": "Ανάπτυξη υποεργασιών",
+			"summaryAriaLabel": "{{title}}: σύνοψη υποεργασιών, άνοιγμα εργασίας",
+			"linkHandleAriaLabel": "{{title}}: σύρετε για δημιουργία εξάρτησης",
+			"dependentsRescheduleError": "Αποτυχία επαναπρογραμματισμού εξαρτημένων εργασιών",
+			"criticalPathToggle": "Κρίσιμη διαδρομή",
+			"criticalPathToggleAriaLabel": "Επισήμανση κρίσιμης διαδρομής",
+			"legendCriticalPath": "Κρίσιμη διαδρομή",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: παραβίαση περιορισμού — {{type}}, {{date}}",
+			"dependentsRescheduled_one": "Επαναπρογραμματίστηκε {{count}} εξαρτημένη εργασία",
+			"dependentsRescheduled_other": "Επαναπρογραμματίστηκαν {{count}} εξαρτημένες εργασίες",
+			"baselineSlipEarlyAriaLabel": "{{title}}: ολοκλήρωση {{days}}d νωρίτερα από τη γραμμή βάσης",
+			"baselineSlipLateAriaLabel": "{{title}}: ολοκλήρωση {{days}}d αργότερα από τη γραμμή βάσης",
+			"legendDependencyType": "Τύπος (κλικ για αλλαγή)",
+			"legendDependencyTypeHint": "Κάθε γραμμή αποκλεισμού δείχνει τον τύπο εξάρτησής της (FS/SS/FF/SF) και το lag/lead — κάντε κλικ για να αλλάξετε τον τύπο ή το lag.",
+			"criticalPathDroppedEdges_one": "{{count}} εξάρτηση χωρίς ημερομηνία παραλείφθηκε",
+			"criticalPathDroppedEdges_other": "{{count}} εξαρτήσεις χωρίς ημερομηνία παραλείφθηκαν",
+			"criticalPathDroppedEdgesHint": "Αυτές οι εξαρτήσεις καταλήγουν σε μια εργασία χωρίς ημερομηνίες, οπότε δεν μπορούν να ελεγχθούν για την κρίσιμη διαδρομή — μια εργασία που θα καθιστούσαν κρίσιμη ενδέχεται να μην επισημανθεί.",
+			"overdueLabel": "Εκπρόθεσμο",
+			"overdueMarkerAriaLabel": "{{title}}: εκπρόθεσμο",
+			"customFieldLabel": "Στήλη προσαρμοσμένου πεδίου",
+			"customFieldNone": "Κανένα",
+			"approvalBadgeAriaLabel": "Έγκριση: {{status}}",
+			"gateWarningAriaLabel": "{{count}} μη εγκεκριμένη πύλη μπλοκάρει αυτή την εργασία",
+			"gateWarningBadge": "Πύλη",
+			"gateWarningItem": "Το «{{title}}» είναι {{status}}",
+			"gateWarningTitle": "Μπλοκαρισμένο από μη εγκεκριμένη πύλη"
 		},
 		"delete": {
 			"title": "Διαγραφή εργασίας;",
@@ -2588,8 +2588,8 @@
 			"searchActions": "Αναζήτηση ενεργειών...",
 			"noActionsFound": "Δεν βρέθηκαν ενέργειες.",
 			"changeStatus": "Αλλαγή κατάστασης",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Ορισμός Προόδου",
+			"updateProgressError": "Αποτυχία ενημέρωσης προόδου"
 		},
 		"editor": {
 			"table": {
@@ -2621,11 +2621,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Εγκρίθηκε",
+			"label": "Έγκριση",
+			"none": "Δεν απαιτείται έγκριση",
+			"pending": "Εκκρεμεί έγκριση",
+			"rejected": "Απορρίφθηκε"
 		},
 		"checklistProgress": "Ολοκληρώθηκαν {{completed}} από {{total}} στοιχεία λίστας ελέγχου",
 		"customFields": {
@@ -2717,60 +2717,60 @@
 			"error": "Αποτυχία δημιουργίας χώρου εργασίας"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Επιστροφή στον Πίνακα Ελέγχου",
+			"emptyDescription": "Οι αλλαγές σε κάθε εργασία αυτού του χώρου εργασίας θα εμφανίζονται εδώ.",
+			"emptyFilteredDescription": "Καμία δραστηριότητα δεν αντιστοιχεί σε αυτά τα φίλτρα. Δοκιμάστε να διευρύνετε το εύρος ημερομηνιών ή να καθαρίσετε ένα φίλτρο.",
+			"emptyTitle": "Δεν υπάρχει δραστηριότητα ακόμα",
+			"error": "Αποτυχία φόρτωσης δραστηριότητας χώρου εργασίας.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "Όλοι οι τύποι",
+				"allUsers": "Όλοι οι χρήστες",
+				"from": "Από",
+				"to": "Έως",
+				"type": "Τύπος",
+				"user": "Χρήστης"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Δραστηριότητα",
+			"pagination": "Σελίδα {{current}} από {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Ο υπεύθυνος άλλαξε",
+				"comment": "Σχόλιο",
+				"created": "Δημιουργήθηκε",
+				"due_date_changed": "Η ημερομηνία λήξης άλλαξε",
+				"priority_changed": "Η προτεραιότητα άλλαξε",
+				"status_changed": "Η κατάσταση άλλαξε",
+				"title_changed": "Ο τίτλος άλλαξε",
+				"unassigned": "Χωρίς ανάθεση",
+				"moved": "Μετακινήθηκε",
+				"description_changed": "Η περιγραφή άλλαξε"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Καμία αντίστοιχη δραστηριότητα",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Εξαγωγή",
+				"csv": "Εξαγωγή ως CSV",
+				"json": "Εξαγωγή ως JSON",
+				"error": "Αποτυχία εξαγωγής δραστηριότητας χώρου εργασίας.",
+				"truncated": "Εξήχθησαν μόνο οι πιο πρόσφατες αντίστοιχες εγγραφές. Περιορίστε τα φίλτρα για να εξαγάγετε τα πάντα."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Υπεύθυνος",
+			"cellTooltip": "{{count}} ενεργές εργασίες για την εβδομάδα {{date}}",
+			"emptyDescription": "Καμία ενεργή εργασία με ημερομηνία δεν εμπίπτει σε αυτό το εύρος. Δοκιμάστε διαφορετικό εύρος ή δώστε στις εργασίες ημερομηνία έναρξης ή λήξης για να τις δείτε εδώ.",
+			"emptyTitle": "Τίποτα προγραμματισμένο",
+			"error": "Αποτυχία φόρτωσης φόρτου εργασίας",
+			"jumpToToday": "Σήμερα",
+			"legendLoad": "Λιγότερες → περισσότερες εργασίες",
+			"legendOverload": "Πάνω από {{count}} ταυτόχρονες εργασίες",
+			"loading": "Φόρτωση φόρτου εργασίας...",
+			"nextWeeks": "Επόμενες εβδομάδες",
+			"overloadedSrLabel": "Υπερφορτωμένο",
+			"overloadThresholdValue": "Επισήμανση πάνω από {{count}}",
+			"pageTitle": "Φόρτος εργασίας",
+			"previousWeeks": "Προηγούμενες εβδομάδες",
+			"subtitle": "Εργασίες με ημερομηνία που δεν έχουν ολοκληρωθεί ανά υπεύθυνο στις επόμενες εβδομάδες. Πιο πυκνά κελιά σημαίνουν περισσότερη ταυτόχρονη εργασία· τα επισημασμένα είναι πάνω από το όριό σας.",
+			"truncatedNotice": "Εμφανίζεται μερικό αποτέλεσμα: περιορίστε το εύρος ημερομηνιών για να δείτε όλες τις εργασίες.",
+			"unassigned": "Χωρίς ανάθεση"
 		}
 	},
 	"team": {
@@ -3080,18 +3080,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: ορόσημο, άνοιγμα εργασίας",
+			"taskAriaLabel": "{{title}}: άνοιγμα εργασίας"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "Κάτι πήγε στραβά κατά τη φόρτωση των έργων και εργασιών αυτού του χώρου εργασίας. Δοκιμάστε ξανά σε λίγο.",
+		"loadErrorTitle": "Δεν ήταν δυνατή η φόρτωση του χαρτοφυλακίου",
+		"noProjectsSubtitle": "Δημιουργήστε ένα έργο σε αυτόν τον χώρο εργασίας για να το δείτε στο χρονοδιάγραμμα χαρτοφυλακίου.",
+		"noProjectsTitle": "Δεν υπάρχουν έργα ακόμα",
+		"noScheduledTasksSubtitle": "Προσθέστε ημερομηνία έναρξης, λήξης ή και τις δύο σε εργασίες στα έργα σας για να τις τοποθετήσετε σε αυτό το χρονοδιάγραμμα.",
+		"noScheduledTasksTitle": "Τίποτα προγραμματισμένο ακόμα",
+		"openProjectGanttAriaLabel": "{{name}}: άνοιγμα πλήρους χρονοδιαγράμματος",
+		"railHeader": "Έργο",
+		"title": "Χρονοδιάγραμμα Χαρτοφυλακίου",
+		"toggleProjectAriaLabel": "{{name}}: ανάπτυξη ή σύμπτυξη"
 	}
 }

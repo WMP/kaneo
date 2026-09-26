@@ -672,16 +672,16 @@
 				"confirm": "Chuyển quyền sở hữu"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Lưu giữ hoạt động",
+				"subtitle": "Đặt thời gian lưu giữ lịch sử hoạt động của không gian làm việc. Thao tác này chỉ lưu cài đặt — chưa có gì bị xóa tự động.",
+				"label": "Giữ hoạt động trong",
+				"unit": "ngày",
+				"keepForever": "Giữ vĩnh viễn",
+				"placeholder": "vd. 90",
+				"saveButton": "Lưu",
+				"toastUpdated": "Đã cập nhật cài đặt lưu giữ hoạt động",
+				"toastUpdateError": "Không thể cập nhật cài đặt lưu giữ hoạt động",
+				"notEnforcedNotice": "Cài đặt này chưa được áp dụng: không có hoạt động nào bị xóa tự động. Việc dọn dẹp tự động là bước tiếp theo đã được lên kế hoạch."
 			}
 		},
 		"workspaceRoles": {
@@ -1586,35 +1586,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Thêm ngày nghỉ lễ",
+			"dateLabel": "Ngày",
+			"dateRequired": "Ngày là bắt buộc",
+			"day_0": "Chủ nhật",
+			"day_1": "Thứ Hai",
+			"day_2": "Thứ Ba",
+			"day_3": "Thứ Tư",
+			"day_4": "Thứ Năm",
+			"day_5": "Thứ Sáu",
+			"day_6": "Thứ Bảy",
+			"deleteHoliday": "Xóa ngày nghỉ lễ",
+			"empty": "Chưa có ngày nghỉ lễ nào.",
+			"holidayNameRequired": "Tên ngày nghỉ lễ là bắt buộc",
+			"holidaysSubtitle": "Những ngày không gian làm việc không hoạt động, ngoài các ngày trong tuần không làm việc.",
+			"holidaysTitle": "Ngày nghỉ lễ",
+			"nameLabel": "Tên",
+			"namePlaceholder": "vd. Ngày đầu năm mới",
+			"subtitle": "Đặt những ngày trong tuần mà không gian làm việc này hoạt động, và thêm ngày nghỉ lễ. Biểu đồ Gantt sẽ tô bóng các ngày không làm việc và chuỗi lên lịch lại tự động sẽ bỏ qua chúng.",
+			"title": "Lịch làm việc",
+			"toastHolidayCreated": "Đã thêm ngày nghỉ lễ",
+			"toastHolidayCreateError": "Không thể thêm ngày nghỉ lễ",
+			"toastHolidayDeleted": "Đã xóa ngày nghỉ lễ",
+			"toastHolidayDeleteError": "Không thể xóa ngày nghỉ lễ",
+			"toastHolidayDuplicateError": "Đã tồn tại ngày nghỉ lễ vào ngày này",
+			"toastWorkingDaysUpdated": "Đã cập nhật ngày làm việc",
+			"toastWorkingDaysUpdateError": "Không thể cập nhật ngày làm việc",
+			"workingDaysSubtitle": "Bật/tắt các ngày trong tuần mà không gian làm việc này mở cửa làm việc.",
+			"workingDaysTitle": "Ngày làm việc",
+			"loading": "Đang tải lịch…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1783,9 +1783,9 @@
 			"invitations": "Lời mời",
 			"more": "Thêm",
 			"backToBoard": "Quay lại bảng",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "Danh mục",
+			"activity": "Hoạt động",
+			"workload": "Khối lượng công việc"
 		},
 		"projectList": {
 			"viewProject": "Xem dự án",
@@ -2038,11 +2038,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "đã bình luận trên {{forge}}"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "đã thêm một phụ thuộc",
+		"relationUpdated": "đã cập nhật một phụ thuộc",
+		"relationDeleted": "đã xóa một phụ thuộc",
+		"updatedPlan": "đã cập nhật kế hoạch",
+		"changedApproval": "đã thay đổi trạng thái phê duyệt từ {{from}} sang {{to}}"
 	},
 	"tasks": {
 		"title": "Nhiệm vụ",
@@ -2210,20 +2210,20 @@
 				"blocked_by": "bị chặn bởi",
 				"related": "liên quan đến"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "Trong {{project}}",
+			"crossProjectStatusReadOnly": "Trạng thái được quản lý trong dự án gốc của công việc này",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Giá trị dương làm chậm thời điểm bắt đầu; giá trị âm (lead) cho phép chồng lấn.",
+				"lagLabel": "Độ trễ (ngày)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Lưu",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Loại phụ thuộc",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Kết thúc → Kết thúc",
+					"fs": "Kết thúc → Bắt đầu",
+					"sf": "Bắt đầu → Kết thúc",
+					"ss": "Bắt đầu → Bắt đầu"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2231,9 +2231,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Không thể cập nhật phụ thuộc"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Phụ thuộc này sẽ tạo ra một phụ thuộc vòng tròn"
 		},
 		"subtasks": {
 			"title": "Công việc con",
@@ -2258,11 +2258,11 @@
 			"start": "Bắt đầu",
 			"startDate": "Ngày bắt đầu",
 			"noDate": "Không có ngày",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Đường cơ sở",
+			"milestone": "Cột mốc",
+			"progress": "Tiến độ",
+			"constraint": "Ràng buộc",
+			"approval": "Phê duyệt"
 		},
 		"move": {
 			"title": "Di chuyển công việc",
@@ -2319,47 +2319,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Xóa đường cơ sở",
+				"clearError": "Không thể xóa đường cơ sở",
+				"clearSuccess": "Đã xóa đường cơ sở",
+				"label": "Đường cơ sở",
+				"none": "Chưa đặt đường cơ sở",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Đặt đường cơ sở",
+				"setError": "Không thể đặt đường cơ sở",
+				"setSuccess": "Đã đặt đường cơ sở từ các ngày hiện tại"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Đánh dấu công việc này là một cột mốc một ngày trên biểu đồ Gantt",
+				"label": "Cột mốc",
+				"updateError": "Không thể cập nhật cột mốc công việc",
+				"updateSuccess": "Đã cập nhật cột mốc công việc"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "Tiến độ",
+				"percentLabel": "Phần trăm hoàn thành",
+				"updateError": "Không thể cập nhật tiến độ công việc",
+				"updateSuccess": "Đã cập nhật tiến độ công việc",
+				"exactLabel": "Phần trăm hoàn thành chính xác"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Hiện tại: {{date}}",
+				"label": "Ràng buộc",
+				"pickDate": "Chọn ngày ràng buộc",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Không kết thúc muộn hơn",
+					"must_start_on": "Phải bắt đầu vào",
+					"none": "Không có ràng buộc",
+					"start_no_earlier_than": "Không bắt đầu sớm hơn"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Không thể cập nhật ràng buộc công việc",
+				"updateSuccess": "Đã cập nhật ràng buộc công việc"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Ghi chú",
+				"notePlaceholder": "Thêm ghi chú cho khách hàng...",
+				"saveNote": "Lưu ghi chú",
+				"updateError": "Không thể cập nhật trạng thái phê duyệt"
 			}
 		},
 		"backlog": {
@@ -2447,45 +2447,45 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "Chặn",
+			"legendRelated": "Liên quan",
+			"externalProjectBadge": "trong {{projectName}}",
+			"externalTaskTitle": "{{title}} — công việc liên quan trong {{projectName}} (chỉ đọc tại đây)",
+			"legendBaseline": "Đường cơ sở",
+			"legendMilestone": "Cột mốc",
+			"milestoneAriaLabel": "{{title}}: cột mốc, mở công việc",
+			"progressLabel": "{{progress}}% hoàn thành",
+			"unitControlAriaLabel": "Độ chi tiết của dòng thời gian",
+			"unitDay": "Ngày",
+			"unitMonth": "Tháng",
+			"unitQuarter": "Quý",
+			"unitWeek": "Tuần",
+			"collapseSubtasks": "Thu gọn công việc con",
+			"expandSubtasks": "Mở rộng công việc con",
+			"summaryAriaLabel": "{{title}}: tóm tắt các công việc con, mở công việc",
+			"linkHandleAriaLabel": "{{title}}: kéo để tạo phụ thuộc",
+			"dependentsRescheduleError": "Không thể lên lịch lại các công việc phụ thuộc",
+			"criticalPathToggle": "Đường găng",
+			"criticalPathToggleAriaLabel": "Làm nổi bật đường găng",
+			"legendCriticalPath": "Đường găng",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: vi phạm ràng buộc — {{type}}, {{date}}",
+			"dependentsRescheduled_other": "Đã lên lịch lại {{count}} công việc phụ thuộc",
+			"baselineSlipEarlyAriaLabel": "{{title}}: kết thúc sớm hơn {{days}}d so với đường cơ sở",
+			"baselineSlipLateAriaLabel": "{{title}}: kết thúc muộn hơn {{days}}d so với đường cơ sở",
+			"legendDependencyType": "Loại (nhấp để thay đổi)",
+			"legendDependencyTypeHint": "Mỗi đường chặn hiển thị loại phụ thuộc (FS/SS/FF/SF) và độ trễ/lead của nó — nhấp vào để thay đổi loại hoặc độ trễ.",
+			"criticalPathDroppedEdges_other": "{{count}} phụ thuộc không có ngày bị bỏ qua",
+			"criticalPathDroppedEdgesHint": "Các phụ thuộc này dẫn đến một công việc không có ngày, vì vậy không thể kiểm tra cho đường găng — một công việc lẽ ra sẽ trở nên găng có thể không được làm nổi bật.",
+			"overdueLabel": "Quá hạn",
+			"overdueMarkerAriaLabel": "{{title}}: quá hạn",
+			"customFieldLabel": "Cột trường tùy chỉnh",
+			"customFieldNone": "Không có",
+			"approvalBadgeAriaLabel": "Phê duyệt: {{status}}",
+			"gateWarningAriaLabel": "{{count}} cổng chưa được phê duyệt đang chặn công việc này",
+			"gateWarningBadge": "Cổng",
+			"gateWarningItem": "\"{{title}}\" đang ở trạng thái {{status}}",
+			"gateWarningTitle": "Bị chặn bởi một cổng chưa được phê duyệt"
 		},
 		"delete": {
 			"title": "Xóa công việc?",
@@ -2578,8 +2578,8 @@
 			"searchActions": "Tìm hành động...",
 			"noActionsFound": "Không tìm thấy hành động nào.",
 			"changeStatus": "Đổi trạng thái",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Đặt Tiến Độ",
+			"updateProgressError": "Không thể cập nhật tiến độ"
 		},
 		"editor": {
 			"table": {
@@ -2611,11 +2611,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Đã phê duyệt",
+			"label": "Phê duyệt",
+			"none": "Không cần phê duyệt",
+			"pending": "Đang chờ phê duyệt",
+			"rejected": "Đã từ chối"
 		},
 		"checklistProgress": "Đã hoàn thành {{completed}} trên {{total}} mục trong danh sách kiểm tra",
 		"customFields": {
@@ -2706,60 +2706,60 @@
 			"error": "Không thể tạo không gian làm việc"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Quay lại Bảng điều khiển",
+			"emptyDescription": "Các thay đổi trên mọi công việc trong không gian làm việc này sẽ hiển thị tại đây.",
+			"emptyFilteredDescription": "Không có hoạt động nào khớp với các bộ lọc này. Hãy thử mở rộng khoảng thời gian hoặc xóa một bộ lọc.",
+			"emptyTitle": "Chưa có hoạt động nào",
+			"error": "Không thể tải hoạt động của không gian làm việc.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "Tất cả loại",
+				"allUsers": "Tất cả người dùng",
+				"from": "Từ",
+				"to": "Đến",
+				"type": "Loại",
+				"user": "Người dùng"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Hoạt động",
+			"pagination": "Trang {{current}} / {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Người được giao đã thay đổi",
+				"comment": "Bình luận",
+				"created": "Đã tạo",
+				"due_date_changed": "Ngày đến hạn đã thay đổi",
+				"priority_changed": "Mức độ ưu tiên đã thay đổi",
+				"status_changed": "Trạng thái đã thay đổi",
+				"title_changed": "Tiêu đề đã thay đổi",
+				"unassigned": "Chưa được giao",
+				"moved": "Đã di chuyển",
+				"description_changed": "Mô tả đã thay đổi"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Không có hoạt động phù hợp",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Xuất",
+				"csv": "Xuất dưới dạng CSV",
+				"json": "Xuất dưới dạng JSON",
+				"error": "Không thể xuất hoạt động của không gian làm việc.",
+				"truncated": "Chỉ những bản ghi phù hợp gần đây nhất mới được xuất. Hãy thu hẹp bộ lọc để xuất tất cả."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Người được giao",
+			"cellTooltip": "{{count}} công việc đang hoạt động cho tuần của {{date}}",
+			"emptyDescription": "Không có công việc đang hoạt động, có ngày nào nằm trong khoảng này. Hãy thử một khoảng khác, hoặc thêm ngày bắt đầu hoặc ngày đến hạn cho công việc để xem chúng tại đây.",
+			"emptyTitle": "Không có gì được lên lịch",
+			"error": "Không thể tải khối lượng công việc",
+			"jumpToToday": "Hôm nay",
+			"legendLoad": "Ít → nhiều công việc",
+			"legendOverload": "Trên {{count}} công việc đồng thời",
+			"loading": "Đang tải khối lượng công việc...",
+			"nextWeeks": "Các tuần tiếp theo",
+			"overloadedSrLabel": "Quá tải",
+			"overloadThresholdValue": "Đánh dấu trên {{count}}",
+			"pageTitle": "Khối lượng công việc",
+			"previousWeeks": "Các tuần trước",
+			"subtitle": "Các công việc có ngày, chưa hoàn thành theo từng người được giao trong các tuần sắp tới. Ô càng dày đặc nghĩa là càng nhiều công việc đồng thời; các ô được đánh dấu nổi bật là vượt ngưỡng của bạn.",
+			"truncatedNotice": "Đang hiển thị kết quả một phần: hãy thu hẹp khoảng thời gian để xem tất cả công việc.",
+			"unassigned": "Chưa được giao"
 		}
 	},
 	"team": {
@@ -3069,18 +3069,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: cột mốc, mở công việc",
+			"taskAriaLabel": "{{title}}: mở công việc"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "Đã xảy ra sự cố khi tải các dự án và công việc của không gian làm việc này. Hãy thử lại sau.",
+		"loadErrorTitle": "Không thể tải danh mục",
+		"noProjectsSubtitle": "Tạo một dự án trong không gian làm việc này để xem nó trên dòng thời gian danh mục.",
+		"noProjectsTitle": "Chưa có dự án nào",
+		"noScheduledTasksSubtitle": "Thêm ngày bắt đầu, ngày đến hạn, hoặc cả hai cho các công việc trong dự án của bạn để đặt chúng lên dòng thời gian này.",
+		"noScheduledTasksTitle": "Chưa có gì được lên lịch",
+		"openProjectGanttAriaLabel": "{{name}}: mở toàn bộ dòng thời gian",
+		"railHeader": "Dự án",
+		"title": "Dòng thời gian danh mục",
+		"toggleProjectAriaLabel": "{{name}}: mở rộng hoặc thu gọn"
 	}
 }

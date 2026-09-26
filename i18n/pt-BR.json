@@ -672,16 +672,16 @@
 				"confirm": "Transferir propriedade"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Retenção de atividades",
+				"subtitle": "Defina por quanto tempo o histórico de atividades do workspace é mantido. Isso apenas salva a configuração — nada é excluído automaticamente ainda.",
+				"label": "Manter atividade por",
+				"unit": "dias",
+				"keepForever": "Manter para sempre",
+				"placeholder": "ex.: 90",
+				"saveButton": "Salvar",
+				"toastUpdated": "Configuração de retenção de atividades atualizada",
+				"toastUpdateError": "Falha ao atualizar a configuração de retenção de atividades",
+				"notEnforcedNotice": "Esta configuração ainda não é aplicada: nenhuma atividade é excluída automaticamente. A remoção automática é uma melhoria planejada."
 			}
 		},
 		"workspaceRoles": {
@@ -1592,35 +1592,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Adicionar feriado",
+			"dateLabel": "Data",
+			"dateRequired": "A data é obrigatória",
+			"day_0": "Domingo",
+			"day_1": "Segunda-feira",
+			"day_2": "Terça-feira",
+			"day_3": "Quarta-feira",
+			"day_4": "Quinta-feira",
+			"day_5": "Sexta-feira",
+			"day_6": "Sábado",
+			"deleteHoliday": "Excluir feriado",
+			"empty": "Ainda não há feriados.",
+			"holidayNameRequired": "O nome do feriado é obrigatório",
+			"holidaysSubtitle": "Datas em que o workspace não trabalha, além dos dias da semana não úteis.",
+			"holidaysTitle": "Feriados",
+			"nameLabel": "Nome",
+			"namePlaceholder": "ex.: Ano Novo",
+			"subtitle": "Defina em quais dias da semana este workspace trabalha e adicione feriados. O Gantt sombreia os dias não úteis e a cascata de reagendamento automático os ignora.",
+			"title": "Calendário de trabalho",
+			"toastHolidayCreated": "Feriado adicionado",
+			"toastHolidayCreateError": "Falha ao adicionar feriado",
+			"toastHolidayDeleted": "Feriado removido",
+			"toastHolidayDeleteError": "Falha ao remover feriado",
+			"toastHolidayDuplicateError": "Já existe um feriado nesta data",
+			"toastWorkingDaysUpdated": "Dias úteis atualizados",
+			"toastWorkingDaysUpdateError": "Falha ao atualizar os dias úteis",
+			"workingDaysSubtitle": "Ative ou desative os dias da semana em que este workspace está disponível para trabalho.",
+			"workingDaysTitle": "Dias úteis",
+			"loading": "Carregando calendário…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1789,9 +1789,9 @@
 			"invitations": "Convites",
 			"more": "Mais",
 			"backToBoard": "Voltar ao quadro",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "Portfólio",
+			"activity": "Atividade",
+			"workload": "Carga de trabalho"
 		},
 		"projectList": {
 			"viewProject": "Ver projeto",
@@ -2052,11 +2052,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "comentou no {{forge}}"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "adicionou uma dependência",
+		"relationUpdated": "atualizou uma dependência",
+		"relationDeleted": "removeu uma dependência",
+		"updatedPlan": "atualizou o plano",
+		"changedApproval": "alterou o status de aprovação de {{from}} para {{to}}"
 	},
 	"tasks": {
 		"title": "Tarefas",
@@ -2224,20 +2224,20 @@
 				"blocked_by": "bloqueado por",
 				"related": "relaciona-se a"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "Em {{project}}",
+			"crossProjectStatusReadOnly": "O status é gerenciado no próprio projeto desta tarefa",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Um valor positivo atrasa o início; negativo (antecipação) permite sobreposição.",
+				"lagLabel": "Atraso (dias)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Salvar",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Tipo de dependência",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Término → Término",
+					"fs": "Término → Início",
+					"sf": "Início → Término",
+					"ss": "Início → Início"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2245,9 +2245,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Falha ao atualizar a dependência"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Esta dependência criaria uma dependência circular"
 		},
 		"subtasks": {
 			"title": "Subtarefas",
@@ -2272,11 +2272,11 @@
 			"start": "Início",
 			"startDate": "Data de início",
 			"noDate": "Sem data",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Linha de base",
+			"milestone": "Marco",
+			"progress": "Progresso",
+			"constraint": "Restrição",
+			"approval": "Aprovação"
 		},
 		"move": {
 			"title": "Mover tarefa",
@@ -2333,47 +2333,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Limpar linha de base",
+				"clearError": "Falha ao limpar a linha de base",
+				"clearSuccess": "Linha de base removida",
+				"label": "Linha de base",
+				"none": "Nenhuma linha de base definida",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Definir linha de base",
+				"setError": "Falha ao definir a linha de base",
+				"setSuccess": "Linha de base definida a partir das datas atuais"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Marcar esta tarefa como um marco de data única no gráfico de Gantt",
+				"label": "Marco",
+				"updateError": "Falha ao atualizar o marco da tarefa",
+				"updateSuccess": "Marco da tarefa atualizado"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "Progresso",
+				"percentLabel": "Percentual concluído",
+				"updateError": "Falha ao atualizar o progresso da tarefa",
+				"updateSuccess": "Progresso da tarefa atualizado",
+				"exactLabel": "Percentual exato concluído"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Atual: {{date}}",
+				"label": "Restrição",
+				"pickDate": "Escolha uma data de restrição",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Terminar não depois de",
+					"must_start_on": "Deve iniciar em",
+					"none": "Sem restrição",
+					"start_no_earlier_than": "Iniciar não antes de"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Falha ao atualizar a restrição da tarefa",
+				"updateSuccess": "Restrição da tarefa atualizada"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Nota",
+				"notePlaceholder": "Adicione uma nota para o cliente...",
+				"saveNote": "Salvar nota",
+				"updateError": "Falha ao atualizar o status de aprovação"
 			}
 		},
 		"backlog": {
@@ -2461,49 +2461,49 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "Bloqueando",
+			"legendRelated": "Relacionado",
+			"externalProjectBadge": "em {{projectName}}",
+			"externalTaskTitle": "{{title}} — tarefa relacionada em {{projectName}} (somente leitura aqui)",
+			"legendBaseline": "Linha de base",
+			"legendMilestone": "Marco",
+			"milestoneAriaLabel": "{{title}}: marco, abrir tarefa",
+			"progressLabel": "{{progress}}% concluído",
+			"unitControlAriaLabel": "Granularidade da linha do tempo",
+			"unitDay": "Dia",
+			"unitMonth": "Mês",
+			"unitQuarter": "Trimestre",
+			"unitWeek": "Semana",
+			"collapseSubtasks": "Recolher subtarefas",
+			"expandSubtasks": "Expandir subtarefas",
+			"summaryAriaLabel": "{{title}}: resumo das subtarefas, abrir tarefa",
+			"linkHandleAriaLabel": "{{title}}: arraste para criar uma dependência",
+			"dependentsRescheduleError": "Falha ao reagendar as tarefas dependentes",
+			"criticalPathToggle": "Caminho crítico",
+			"criticalPathToggleAriaLabel": "Destacar o caminho crítico",
+			"legendCriticalPath": "Caminho crítico",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
+			"constraintViolationAriaLabel": "{{title}}: restrição violada — {{type}}, {{date}}",
 			"dependentsRescheduled_many": "Rescheduled {{count}} dependent tasks",
-			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
+			"dependentsRescheduled_one": "{{count}} tarefa dependente reagendada",
+			"dependentsRescheduled_other": "{{count}} tarefas dependentes reagendadas",
+			"baselineSlipEarlyAriaLabel": "{{title}}: terminando {{days}}d antes da linha de base",
+			"baselineSlipLateAriaLabel": "{{title}}: terminando {{days}}d depois da linha de base",
+			"legendDependencyType": "Tipo (clique para alterar)",
+			"legendDependencyTypeHint": "Cada linha de bloqueio mostra seu tipo de dependência (FS/SS/FF/SF) e atraso/antecipação — clique nela para alterar o tipo ou o atraso.",
 			"criticalPathDroppedEdges_many": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"criticalPathDroppedEdges_one": "{{count}} dependência sem data ignorada",
+			"criticalPathDroppedEdges_other": "{{count}} dependências sem data ignoradas",
+			"criticalPathDroppedEdgesHint": "Essas dependências levam a uma tarefa sem datas, então não podem ser verificadas para o caminho crítico — uma tarefa que elas tornariam crítica pode não ser destacada.",
+			"overdueLabel": "Atrasado",
+			"overdueMarkerAriaLabel": "{{title}}: atrasado",
+			"customFieldLabel": "Coluna de campo personalizado",
+			"customFieldNone": "Nenhum",
+			"approvalBadgeAriaLabel": "Aprovação: {{status}}",
+			"gateWarningAriaLabel": "{{count}} portão não aprovado bloqueando esta tarefa",
+			"gateWarningBadge": "Portão",
+			"gateWarningItem": "\"{{title}}\" está {{status}}",
+			"gateWarningTitle": "Bloqueado por um portão não aprovado"
 		},
 		"delete": {
 			"title": "Excluir tarefa?",
@@ -2598,8 +2598,8 @@
 			"searchActions": "Buscar ações...",
 			"noActionsFound": "Nenhuma ação encontrada.",
 			"changeStatus": "Mudar status",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Definir progresso",
+			"updateProgressError": "Falha ao atualizar o progresso"
 		},
 		"editor": {
 			"table": {
@@ -2631,11 +2631,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Aprovado",
+			"label": "Aprovação",
+			"none": "Nenhuma aprovação necessária",
+			"pending": "Aprovação pendente",
+			"rejected": "Rejeitado"
 		},
 		"checklistProgress": "{{completed}} de {{total}} itens da lista concluídos",
 		"customFields": {
@@ -2728,60 +2728,60 @@
 			"error": "Falha ao criar espaço de trabalho"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Voltar ao painel",
+			"emptyDescription": "As alterações em todas as tarefas deste workspace aparecerão aqui.",
+			"emptyFilteredDescription": "Nenhuma atividade corresponde a esses filtros. Tente ampliar o intervalo de datas ou limpar um filtro.",
+			"emptyTitle": "Ainda não há atividade",
+			"error": "Falha ao carregar a atividade do workspace.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "Todos os tipos",
+				"allUsers": "Todos os usuários",
+				"from": "De",
+				"to": "Até",
+				"type": "Tipo",
+				"user": "Usuário"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Atividade",
+			"pagination": "Página {{current}} de {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Responsável alterado",
+				"comment": "Comentário",
+				"created": "Criado",
+				"due_date_changed": "Data de vencimento alterada",
+				"priority_changed": "Prioridade alterada",
+				"status_changed": "Status alterado",
+				"title_changed": "Título alterado",
+				"unassigned": "Não atribuído",
+				"moved": "Movido",
+				"description_changed": "Descrição alterada"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Nenhuma atividade correspondente",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Exportar",
+				"csv": "Exportar como CSV",
+				"json": "Exportar como JSON",
+				"error": "Falha ao exportar a atividade do workspace.",
+				"truncated": "Somente os registros correspondentes mais recentes foram exportados. Restrinja os filtros para exportar tudo."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Responsável",
+			"cellTooltip": "{{count}} tarefas ativas na semana de {{date}}",
+			"emptyDescription": "Nenhuma tarefa ativa com data está neste intervalo. Tente um intervalo diferente ou defina uma data de início ou vencimento nas tarefas para vê-las aqui.",
+			"emptyTitle": "Nada agendado",
+			"error": "Falha ao carregar a carga de trabalho",
+			"jumpToToday": "Hoje",
+			"legendLoad": "Menos → mais tarefas",
+			"legendOverload": "Acima de {{count}} tarefas simultâneas",
+			"loading": "Carregando carga de trabalho...",
+			"nextWeeks": "Próximas semanas",
+			"overloadedSrLabel": "Sobrecarregado",
+			"overloadThresholdValue": "Destacar acima de {{count}}",
+			"pageTitle": "Carga de trabalho",
+			"previousWeeks": "Semanas anteriores",
+			"subtitle": "Tarefas com data e não concluídas por responsável ao longo das próximas semanas. Células mais densas indicam mais trabalho simultâneo; as destacadas estão acima do seu limite.",
+			"truncatedNotice": "Exibindo um resultado parcial: restrinja o intervalo de datas para ver todas as tarefas.",
+			"unassigned": "Não atribuído"
 		}
 	},
 	"team": {
@@ -3091,18 +3091,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: marco, abrir tarefa",
+			"taskAriaLabel": "{{title}}: abrir tarefa"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "Algo deu errado ao carregar os projetos e tarefas deste workspace. Tente novamente em instantes.",
+		"loadErrorTitle": "Não foi possível carregar o portfólio",
+		"noProjectsSubtitle": "Crie um projeto neste workspace para vê-lo na linha do tempo do portfólio.",
+		"noProjectsTitle": "Ainda não há projetos",
+		"noScheduledTasksSubtitle": "Adicione uma data de início, uma data de vencimento ou ambas às tarefas de seus projetos para posicioná-las nesta linha do tempo.",
+		"noScheduledTasksTitle": "Ainda não há nada agendado",
+		"openProjectGanttAriaLabel": "{{name}}: abrir linha do tempo completa",
+		"railHeader": "Projeto",
+		"title": "Linha do tempo do portfólio",
+		"toggleProjectAriaLabel": "{{name}}: expandir ou recolher"
 	}
 }

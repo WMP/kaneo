@@ -672,16 +672,16 @@
 				"confirm": "转移所有权"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "活动保留期限",
+				"subtitle": "设置工作区活动历史记录的保留时长。此设置目前仅保存配置——尚不会自动删除任何内容。",
+				"label": "保留时长",
+				"unit": "天",
+				"keepForever": "永久保留",
+				"placeholder": "例如:90",
+				"saveButton": "保存",
+				"toastUpdated": "活动保留设置已更新",
+				"toastUpdateError": "活动保留设置更新失败",
+				"notEnforcedNotice": "此设置目前尚未生效:不会自动删除任何活动记录。自动清理功能将在后续版本中提供。"
 			}
 		},
 		"workspaceRoles": {
@@ -1586,35 +1586,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "添加节假日",
+			"dateLabel": "日期",
+			"dateRequired": "请填写日期",
+			"day_0": "星期日",
+			"day_1": "星期一",
+			"day_2": "星期二",
+			"day_3": "星期三",
+			"day_4": "星期四",
+			"day_5": "星期五",
+			"day_6": "星期六",
+			"deleteHoliday": "删除节假日",
+			"empty": "暂无节假日。",
+			"holidayNameRequired": "请填写节假日名称",
+			"holidaysSubtitle": "除工作日之外,工作区不工作的具体日期。",
+			"holidaysTitle": "节假日",
+			"nameLabel": "名称",
+			"namePlaceholder": "例如:元旦",
+			"subtitle": "设置此工作区的工作日,并添加节假日。甘特图会为非工作日添加底纹,自动重新排期的连锁计算也会跳过这些日期。",
+			"title": "工作日历",
+			"toastHolidayCreated": "节假日已添加",
+			"toastHolidayCreateError": "节假日添加失败",
+			"toastHolidayDeleted": "节假日已删除",
+			"toastHolidayDeleteError": "节假日删除失败",
+			"toastHolidayDuplicateError": "该日期已存在节假日",
+			"toastWorkingDaysUpdated": "工作日已更新",
+			"toastWorkingDaysUpdateError": "工作日更新失败",
+			"workingDaysSubtitle": "切换此工作区可工作的星期。",
+			"workingDaysTitle": "工作日",
+			"loading": "正在加载日历…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1783,9 +1783,9 @@
 			"invitations": "邀请",
 			"more": "更多",
 			"backToBoard": "返回看板",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "项目组合",
+			"activity": "活动",
+			"workload": "工作量"
 		},
 		"projectList": {
 			"viewProject": "查看项目",
@@ -2038,11 +2038,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "在 {{forge}} 上评论"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "添加了依赖关系",
+		"relationUpdated": "更新了依赖关系",
+		"relationDeleted": "删除了依赖关系",
+		"updatedPlan": "更新了计划",
+		"changedApproval": "将审批状态从{{from}}更改为{{to}}"
 	},
 	"tasks": {
 		"title": "任务",
@@ -2210,20 +2210,20 @@
 				"blocked_by": "被阻塞",
 				"related": "关联"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "在{{project}}中",
+			"crossProjectStatusReadOnly": "状态由该任务所属的项目管理",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
-				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"lagHint": "正值会推迟开始时间;负值(提前量)则允许任务重叠。",
+				"lagLabel": "延迟(天数)",
+				"lagSuffix": " {{days}}天",
+				"save": "保存",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "依赖类型",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "完成 → 完成",
+					"fs": "完成 → 开始",
+					"sf": "开始 → 完成",
+					"ss": "开始 → 开始"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2231,9 +2231,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "依赖关系更新失败"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "该依赖关系会造成循环依赖"
 		},
 		"subtasks": {
 			"title": "子任务",
@@ -2258,11 +2258,11 @@
 			"start": "开始",
 			"startDate": "开始日期",
 			"noDate": "无日期",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "基线",
+			"milestone": "里程碑",
+			"progress": "进度",
+			"constraint": "约束",
+			"approval": "审批"
 		},
 		"move": {
 			"title": "移动任务",
@@ -2319,47 +2319,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "清除基线",
+				"clearError": "基线清除失败",
+				"clearSuccess": "基线已清除",
+				"label": "基线",
+				"none": "未设置基线",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "设置基线",
+				"setError": "基线设置失败",
+				"setSuccess": "已根据当前日期设置基线"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "将此任务标记为甘特图中的单日期里程碑",
+				"label": "里程碑",
+				"updateError": "任务里程碑更新失败",
+				"updateSuccess": "任务里程碑已更新"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "进度",
+				"percentLabel": "完成百分比",
+				"updateError": "任务进度更新失败",
+				"updateSuccess": "任务进度已更新",
+				"exactLabel": "精确完成百分比"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "当前:{{date}}",
+				"label": "约束",
+				"pickDate": "选择约束日期",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "不晚于此日期完成",
+					"must_start_on": "必须在此日期开始",
+					"none": "无约束",
+					"start_no_earlier_than": "不早于此日期开始"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "任务约束更新失败",
+				"updateSuccess": "任务约束已更新"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "备注",
+				"notePlaceholder": "为客户添加备注…",
+				"saveNote": "保存备注",
+				"updateError": "审批状态更新失败"
 			}
 		},
 		"backlog": {
@@ -2460,45 +2460,45 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "阻塞",
+			"legendRelated": "相关",
+			"externalProjectBadge": "在{{projectName}}中",
+			"externalTaskTitle": "{{title}} — {{projectName}}中的相关任务(此处为只读)",
+			"legendBaseline": "基线",
+			"legendMilestone": "里程碑",
+			"milestoneAriaLabel": "{{title}}:里程碑,打开任务",
+			"progressLabel": "已完成{{progress}}%",
+			"unitControlAriaLabel": "时间轴粒度",
+			"unitDay": "天",
+			"unitMonth": "月",
+			"unitQuarter": "季度",
+			"unitWeek": "周",
+			"collapseSubtasks": "折叠子任务",
+			"expandSubtasks": "展开子任务",
+			"summaryAriaLabel": "{{title}}:子任务摘要,打开任务",
+			"linkHandleAriaLabel": "{{title}}:拖动以创建依赖关系",
+			"dependentsRescheduleError": "依赖任务重新排期失败",
+			"criticalPathToggle": "关键路径",
+			"criticalPathToggleAriaLabel": "高亮显示关键路径",
+			"legendCriticalPath": "关键路径",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}:违反约束 — {{type}},{{date}}",
+			"dependentsRescheduled_other": "已重新排期{{count}}个依赖任务",
+			"baselineSlipEarlyAriaLabel": "{{title}}:完成时间比基线早{{days}}天",
+			"baselineSlipLateAriaLabel": "{{title}}:完成时间比基线晚{{days}}天",
+			"legendDependencyType": "类型(点击更改)",
+			"legendDependencyTypeHint": "每条阻塞连线都会显示其依赖类型(FS/SS/FF/SF)以及延迟/提前量——点击即可更改类型或延迟。",
+			"criticalPathDroppedEdges_other": "已跳过{{count}}个无日期的依赖关系",
+			"criticalPathDroppedEdgesHint": "这些依赖关系连接到没有日期的任务,因此无法纳入关键路径的判定——原本应被判定为关键任务的任务可能不会被高亮显示。",
+			"overdueLabel": "已逾期",
+			"overdueMarkerAriaLabel": "{{title}}:已逾期",
+			"customFieldLabel": "自定义字段列",
+			"customFieldNone": "无",
+			"approvalBadgeAriaLabel": "审批:{{status}}",
+			"gateWarningAriaLabel": "有{{count}}个未审批的关卡正在阻塞此任务",
+			"gateWarningBadge": "关卡",
+			"gateWarningItem": "\"{{title}}\"为{{status}}",
+			"gateWarningTitle": "被未审批的关卡阻塞"
 		},
 		"delete": {
 			"title": "删除任务？",
@@ -2591,8 +2591,8 @@
 			"searchActions": "搜索操作…",
 			"noActionsFound": "未找到操作。",
 			"changeStatus": "更改状态",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "设置进度",
+			"updateProgressError": "进度更新失败"
 		},
 		"editor": {
 			"table": {
@@ -2611,11 +2611,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "已批准",
+			"label": "审批",
+			"none": "无需审批",
+			"pending": "待审批",
+			"rejected": "已拒绝"
 		},
 		"checklistProgress": "已完成 {{completed}}/{{total}} 个清单项",
 		"customFields": {
@@ -2706,60 +2706,60 @@
 			"error": "工作区创建失败"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "返回仪表盘",
+			"emptyDescription": "此工作区中所有任务的更改都会显示在这里。",
+			"emptyFilteredDescription": "没有符合这些筛选条件的活动。请尝试扩大日期范围或清除筛选条件。",
+			"emptyTitle": "暂无活动",
+			"error": "加载工作区活动失败。",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "所有类型",
+				"allUsers": "所有用户",
+				"from": "开始日期",
+				"to": "结束日期",
+				"type": "类型",
+				"user": "用户"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "活动",
+			"pagination": "第{{current}}页,共{{total}}页",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "负责人已更改",
+				"comment": "评论",
+				"created": "已创建",
+				"due_date_changed": "截止日期已更改",
+				"priority_changed": "优先级已更改",
+				"status_changed": "状态已更改",
+				"title_changed": "标题已更改",
+				"unassigned": "未分配",
+				"moved": "已移动",
+				"description_changed": "描述已更改"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "没有匹配的活动",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "导出",
+				"csv": "导出为CSV",
+				"json": "导出为JSON",
+				"error": "导出工作区活动失败。",
+				"truncated": "仅导出了最近的匹配记录。请缩小筛选范围以导出全部内容。"
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "负责人",
+			"cellTooltip": "{{count}}个进行中任务({{date}}所在周)",
+			"emptyDescription": "该范围内没有带日期的进行中任务。请尝试其他范围,或为任务设置开始日期或截止日期以在此处显示。",
+			"emptyTitle": "暂无排期",
+			"error": "加载工作量失败",
+			"jumpToToday": "今天",
+			"legendLoad": "较少 → 较多",
+			"legendOverload": "并行任务超过{{count}}个",
+			"loading": "正在加载工作量...",
+			"nextWeeks": "下几周",
+			"overloadedSrLabel": "超负荷",
+			"overloadThresholdValue": "超过{{count}}项时高亮显示",
+			"pageTitle": "工作量",
+			"previousWeeks": "上几周",
+			"subtitle": "未来几周内每位负责人有日期且未完成的任务。单元格颜色越深表示并行工作越多;高亮显示的单元格已超过你设置的阈值。",
+			"truncatedNotice": "当前仅显示部分结果:请缩小日期范围以查看全部任务。",
+			"unassigned": "未分配"
 		}
 	},
 	"team": {
@@ -3069,18 +3069,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}:里程碑,打开任务",
+			"taskAriaLabel": "{{title}}:打开任务"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "加载此工作区的项目和任务时出现问题。请稍后重试。",
+		"loadErrorTitle": "无法加载项目组合",
+		"noProjectsSubtitle": "在此工作区中创建项目后,即可在项目组合时间线中查看。",
+		"noProjectsTitle": "暂无项目",
+		"noScheduledTasksSubtitle": "为各项目中的任务设置开始日期、截止日期或两者,即可将其显示在此时间线上。",
+		"noScheduledTasksTitle": "暂无排期",
+		"openProjectGanttAriaLabel": "{{name}}:打开完整时间线",
+		"railHeader": "项目",
+		"title": "项目组合时间线",
+		"toggleProjectAriaLabel": "{{name}}:展开或折叠"
 	}
 }

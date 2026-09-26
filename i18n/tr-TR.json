@@ -672,16 +672,16 @@
 				"confirm": "Sahipliği devret"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Etkinlik saklama",
+				"subtitle": "Çalışma alanı etkinlik geçmişinin ne kadar süre saklanacağını ayarlayın. Bu yalnızca ayarı kaydeder — henüz hiçbir şey otomatik olarak silinmez.",
+				"label": "Etkinliği şu süre boyunca sakla",
+				"unit": "gün",
+				"keepForever": "Süresiz sakla",
+				"placeholder": "ör. 90",
+				"saveButton": "Kaydet",
+				"toastUpdated": "Etkinlik saklama ayarı güncellendi",
+				"toastUpdateError": "Etkinlik saklama ayarı güncellenemedi",
+				"notEnforcedNotice": "Bu ayar henüz uygulanmıyor: hiçbir etkinlik otomatik olarak silinmez. Otomatik temizleme planlanan bir sonraki adımdır."
 			}
 		},
 		"projectGeneral": {
@@ -1589,35 +1589,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Tatil ekle",
+			"dateLabel": "Tarih",
+			"dateRequired": "Tarih zorunludur",
+			"day_0": "Pazar",
+			"day_1": "Pazartesi",
+			"day_2": "Salı",
+			"day_3": "Çarşamba",
+			"day_4": "Perşembe",
+			"day_5": "Cuma",
+			"day_6": "Cumartesi",
+			"deleteHoliday": "Tatili sil",
+			"empty": "Henüz tatil yok.",
+			"holidayNameRequired": "Tatil adı zorunludur",
+			"holidaysSubtitle": "Çalışılmayan hafta içi günlerine ek olarak çalışma alanının çalışmadığı tarihler.",
+			"holidaysTitle": "Tatiller",
+			"nameLabel": "Ad",
+			"namePlaceholder": "ör. Yılbaşı",
+			"subtitle": "Bu çalışma alanının hangi hafta içi günlerinde çalıştığını ayarlayın ve tatil günleri ekleyin. Gantt şeması çalışılmayan günleri gölgeler ve otomatik yeniden zamanlama zinciri bu günleri atlar.",
+			"title": "Çalışma takvimi",
+			"toastHolidayCreated": "Tatil eklendi",
+			"toastHolidayCreateError": "Tatil eklenemedi",
+			"toastHolidayDeleted": "Tatil kaldırıldı",
+			"toastHolidayDeleteError": "Tatil kaldırılamadı",
+			"toastHolidayDuplicateError": "Bu tarihte zaten bir tatil var",
+			"toastWorkingDaysUpdated": "Çalışma günleri güncellendi",
+			"toastWorkingDaysUpdateError": "Çalışma günleri güncellenemedi",
+			"workingDaysSubtitle": "Bu çalışma alanının çalışmaya açık olduğu hafta içi günlerini değiştirin.",
+			"workingDaysTitle": "Çalışma günleri",
+			"loading": "Takvim yükleniyor…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1786,9 +1786,9 @@
 			"invitations": "Davetler",
 			"more": "Daha fazla",
 			"backToBoard": "Panoya dön",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "Portföy",
+			"activity": "Etkinlik",
+			"workload": "İş yükü"
 		},
 		"projectList": {
 			"viewProject": "Projeyi Görüntüle",
@@ -2045,11 +2045,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "{{forge}}'da yorum yaptı"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "bir bağımlılık ekledi",
+		"relationUpdated": "bir bağımlılığı güncelledi",
+		"relationDeleted": "bir bağımlılığı kaldırdı",
+		"updatedPlan": "planı güncelledi",
+		"changedApproval": "onay durumunu {{from}} durumundan {{to}} durumuna değiştirdi"
 	},
 	"tasks": {
 		"title": "Görevler",
@@ -2217,20 +2217,20 @@
 				"blocked_by": "engellenen",
 				"related": "ilişkilidir"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "{{project}} içinde",
+			"crossProjectStatusReadOnly": "Durum, bu görevin kendi projesinde yönetilir",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Pozitif değer başlangıcı geciktirir; negatif değer (öncü) çakışmaya izin verir.",
+				"lagLabel": "Gecikme (gün)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Kaydet",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Bağımlılık türü",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Bitiş → Bitiş",
+					"fs": "Bitiş → Başlangıç",
+					"sf": "Başlangıç → Bitiş",
+					"ss": "Başlangıç → Başlangıç"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2238,9 +2238,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Bağımlılık güncellenemedi"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Bu bağımlılık döngüsel bir bağımlılık oluşturur"
 		},
 		"subtasks": {
 			"title": "Alt talepler",
@@ -2265,11 +2265,11 @@
 			"start": "Başlat",
 			"startDate": "Başlangıç tarihi",
 			"noDate": "Tarih yok",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Taban çizgisi",
+			"milestone": "Kilometre taşı",
+			"progress": "İlerleme",
+			"constraint": "Kısıtlama",
+			"approval": "Onay"
 		},
 		"move": {
 			"title": "Talebi taşı",
@@ -2326,47 +2326,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Taban çizgisini temizle",
+				"clearError": "Taban çizgisi temizlenemedi",
+				"clearSuccess": "Taban çizgisi temizlendi",
+				"label": "Taban çizgisi",
+				"none": "Taban çizgisi ayarlanmadı",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Taban çizgisini ayarla",
+				"setError": "Taban çizgisi ayarlanamadı",
+				"setSuccess": "Taban çizgisi mevcut tarihlerden ayarlandı"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Bu görevi Gantt şemasında tek tarihli bir kilometre taşı olarak işaretle",
+				"label": "Kilometre taşı",
+				"updateError": "Görev kilometre taşı güncellenemedi",
+				"updateSuccess": "Görev kilometre taşı güncellendi"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "İlerleme",
+				"percentLabel": "Tamamlanma yüzdesi",
+				"updateError": "Görev ilerlemesi güncellenemedi",
+				"updateSuccess": "Görev ilerlemesi güncellendi",
+				"exactLabel": "Tam tamamlanma yüzdesi"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Mevcut: {{date}}",
+				"label": "Kısıtlama",
+				"pickDate": "Bir kısıtlama tarihi seçin",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "En geç şu tarihte bitir",
+					"must_start_on": "Şu tarihte başlamalı",
+					"none": "Kısıtlama yok",
+					"start_no_earlier_than": "En erken şu tarihte başla"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Görev kısıtlaması güncellenemedi",
+				"updateSuccess": "Görev kısıtlaması güncellendi"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Not",
+				"notePlaceholder": "Müşteri için bir not ekleyin...",
+				"saveNote": "Notu kaydet",
+				"updateError": "Onay durumu güncellenemedi"
 			}
 		},
 		"backlog": {
@@ -2454,47 +2454,47 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "Engelleyici",
+			"legendRelated": "İlgili",
+			"externalProjectBadge": "{{projectName}} içinde",
+			"externalTaskTitle": "{{title}} — {{projectName}} içinde ilgili görev (burada salt okunur)",
+			"legendBaseline": "Taban çizgisi",
+			"legendMilestone": "Kilometre taşı",
+			"milestoneAriaLabel": "{{title}}: kilometre taşı, görevi aç",
+			"progressLabel": "%{{progress}} tamamlandı",
+			"unitControlAriaLabel": "Zaman çizelgesi ayrıntı düzeyi",
+			"unitDay": "Gün",
+			"unitMonth": "Ay",
+			"unitQuarter": "Çeyrek",
+			"unitWeek": "Hafta",
+			"collapseSubtasks": "Alt görevleri daralt",
+			"expandSubtasks": "Alt görevleri genişlet",
+			"summaryAriaLabel": "{{title}}: alt görevlerin özeti, görevi aç",
+			"linkHandleAriaLabel": "{{title}}: bağımlılık oluşturmak için sürükleyin",
+			"dependentsRescheduleError": "Bağımlı görevler yeniden zamanlanamadı",
+			"criticalPathToggle": "Kritik yol",
+			"criticalPathToggleAriaLabel": "Kritik yolu vurgula",
+			"legendCriticalPath": "Kritik yol",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: kısıtlama ihlal edildi — {{type}}, {{date}}",
+			"dependentsRescheduled_one": "{{count}} bağımlı görev yeniden zamanlandı",
+			"dependentsRescheduled_other": "{{count}} bağımlı görev yeniden zamanlandı",
+			"baselineSlipEarlyAriaLabel": "{{title}}: taban çizgisinden {{days}}d daha erken bitiyor",
+			"baselineSlipLateAriaLabel": "{{title}}: taban çizgisinden {{days}}d daha geç bitiyor",
+			"legendDependencyType": "Tür (değiştirmek için tıklayın)",
+			"legendDependencyTypeHint": "Her engelleyici çizgi, bağımlılık türünü (FS/SS/FF/SF) ve gecikme/öncüyü gösterir — türü veya gecikmeyi değiştirmek için tıklayın.",
+			"criticalPathDroppedEdges_one": "{{count}} tarihsiz bağımlılık atlandı",
+			"criticalPathDroppedEdges_other": "{{count}} tarihsiz bağımlılık atlandı",
+			"criticalPathDroppedEdgesHint": "Bu bağımlılıklar tarihi olmayan bir göreve ulaşıyor, bu nedenle kritik yol için kontrol edilemezler — aksi takdirde kritik hale getirecekleri bir görev vurgulanmayabilir.",
+			"overdueLabel": "Gecikmiş",
+			"overdueMarkerAriaLabel": "{{title}}: gecikmiş",
+			"customFieldLabel": "Özel alan sütunu",
+			"customFieldNone": "Yok",
+			"approvalBadgeAriaLabel": "Onay: {{status}}",
+			"gateWarningAriaLabel": "Bu görevi engelleyen {{count}} onaylanmamış geçit",
+			"gateWarningBadge": "Geçit",
+			"gateWarningItem": "\"{{title}}\" {{status}} durumunda",
+			"gateWarningTitle": "Onaylanmamış bir geçit tarafından engellendi"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",
@@ -2588,8 +2588,8 @@
 			"searchActions": "İşlem ara...",
 			"noActionsFound": "İşlem bulunamadı.",
 			"changeStatus": "Durumu Değiştir",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "İlerlemeyi Ayarla",
+			"updateProgressError": "İlerleme güncellenemedi"
 		},
 		"editor": {
 			"table": {
@@ -2621,11 +2621,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Onaylandı",
+			"label": "Onay",
+			"none": "Onay gerekmiyor",
+			"pending": "Onay bekliyor",
+			"rejected": "Reddedildi"
 		},
 		"checklistProgress": "{{total}} kontrol listesi öğesinin {{completed}} tanesi tamamlandı",
 		"customFields": {
@@ -2717,60 +2717,60 @@
 			"error": "Çalışma alanı oluşturulamadı"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Panoya Dön",
+			"emptyDescription": "Bu çalışma alanındaki tüm görevlerdeki değişiklikler burada görünecektir.",
+			"emptyFilteredDescription": "Bu filtrelerle eşleşen etkinlik yok. Tarih aralığını genişletmeyi veya bir filtreyi temizlemeyi deneyin.",
+			"emptyTitle": "Henüz etkinlik yok",
+			"error": "Çalışma alanı etkinliği yüklenemedi.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "Tüm türler",
+				"allUsers": "Tüm kullanıcılar",
+				"from": "Başlangıç",
+				"to": "Bitiş",
+				"type": "Tür",
+				"user": "Kullanıcı"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Etkinlik",
+			"pagination": "Sayfa {{current}} / {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Atanan kişi değişti",
+				"comment": "Yorum",
+				"created": "Oluşturuldu",
+				"due_date_changed": "Bitiş tarihi değişti",
+				"priority_changed": "Öncelik değişti",
+				"status_changed": "Durum değişti",
+				"title_changed": "Başlık değişti",
+				"unassigned": "Atanmadı",
+				"moved": "Taşındı",
+				"description_changed": "Açıklama değişti"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Eşleşen etkinlik yok",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Dışa Aktar",
+				"csv": "CSV olarak dışa aktar",
+				"json": "JSON olarak dışa aktar",
+				"error": "Çalışma alanı etkinliği dışa aktarılamadı.",
+				"truncated": "Yalnızca en son eşleşen kayıtlar dışa aktarıldı. Her şeyi dışa aktarmak için filtreleri daraltın."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Atanan Kişi",
+			"cellTooltip": "{{date}} haftası için {{count}} aktif görev",
+			"emptyDescription": "Bu aralığa giren tarihli, aktif görev yok. Farklı bir aralık deneyin veya görevleri burada görmek için bir başlangıç ya da bitiş tarihi verin.",
+			"emptyTitle": "Zamanlanmış bir şey yok",
+			"error": "İş yükü yüklenemedi",
+			"jumpToToday": "Bugün",
+			"legendLoad": "Az → çok görev",
+			"legendOverload": "{{count}} eşzamanlı görevin üzerinde",
+			"loading": "İş yükü yükleniyor...",
+			"nextWeeks": "Sonraki haftalar",
+			"overloadedSrLabel": "Aşırı yüklü",
+			"overloadThresholdValue": "{{count}} üzerini vurgula",
+			"pageTitle": "İş yükü",
+			"previousWeeks": "Önceki haftalar",
+			"subtitle": "Önümüzdeki haftalarda atanan kişi başına tarihli, tamamlanmamış görevler. Daha yoğun hücreler daha fazla eşzamanlı iş anlamına gelir; vurgulananlar eşiğinizin üzerindedir.",
+			"truncatedNotice": "Kısmi bir sonuç gösteriliyor: tüm görevleri görmek için tarih aralığını daraltın.",
+			"unassigned": "Atanmadı"
 		}
 	},
 	"team": {
@@ -3080,18 +3080,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: kilometre taşı, görevi aç",
+			"taskAriaLabel": "{{title}}: görevi aç"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "Bu çalışma alanının projeleri ve görevleri yüklenirken bir sorun oluştu. Bir süre sonra tekrar deneyin.",
+		"loadErrorTitle": "Portföy yüklenemedi",
+		"noProjectsSubtitle": "Portföy zaman çizelgesinde görmek için bu çalışma alanında bir proje oluşturun.",
+		"noProjectsTitle": "Henüz proje yok",
+		"noScheduledTasksSubtitle": "Projelerinizdeki görevleri bu zaman çizelgesine yerleştirmek için bir başlangıç tarihi, bitiş tarihi veya her ikisini ekleyin.",
+		"noScheduledTasksTitle": "Henüz zamanlanmış bir şey yok",
+		"openProjectGanttAriaLabel": "{{name}}: tam zaman çizelgesini aç",
+		"railHeader": "Proje",
+		"title": "Portföy Zaman Çizelgesi",
+		"toggleProjectAriaLabel": "{{name}}: genişlet veya daralt"
 	}
 }

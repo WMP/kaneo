@@ -672,16 +672,16 @@
 				"confirm": "स्वामित्व स्थानांतरित करें"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "गतिविधि प्रतिधारण",
+				"subtitle": "वर्कस्पेस की गतिविधि का इतिहास कितने समय तक रखा जाए यह सेट करें। यह केवल सेटिंग को सहेजता है — अभी तक कुछ भी स्वचालित रूप से हटाया नहीं जाता।",
+				"label": "गतिविधि रखें",
+				"unit": "दिन",
+				"keepForever": "हमेशा के लिए रखें",
+				"placeholder": "उदा. 90",
+				"saveButton": "सहेजें",
+				"toastUpdated": "गतिविधि प्रतिधारण सेटिंग अपडेट की गई",
+				"toastUpdateError": "गतिविधि प्रतिधारण सेटिंग अपडेट करने में विफल",
+				"notEnforcedNotice": "यह सेटिंग अभी लागू नहीं होती: कोई भी गतिविधि स्वचालित रूप से नहीं हटाई जाती। स्वचालित छंटाई एक नियोजित भविष्य की सुविधा है।"
 			}
 		},
 		"workspaceRoles": {
@@ -1589,35 +1589,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "छुट्टी जोड़ें",
+			"dateLabel": "तिथि",
+			"dateRequired": "तिथि आवश्यक है",
+			"day_0": "रविवार",
+			"day_1": "सोमवार",
+			"day_2": "मंगलवार",
+			"day_3": "बुधवार",
+			"day_4": "गुरुवार",
+			"day_5": "शुक्रवार",
+			"day_6": "शनिवार",
+			"deleteHoliday": "छुट्टी हटाएं",
+			"empty": "अभी तक कोई छुट्टी नहीं है।",
+			"holidayNameRequired": "छुट्टी का नाम आवश्यक है",
+			"holidaysSubtitle": "वे तिथियां जिन पर वर्कस्पेस काम नहीं करता, गैर-कार्य दिवसों के अतिरिक्त।",
+			"holidaysTitle": "छुट्टियां",
+			"nameLabel": "नाम",
+			"namePlaceholder": "उदा. नव वर्ष दिवस",
+			"subtitle": "यह वर्कस्पेस किन कार्यदिवसों पर काम करता है यह सेट करें, और छुट्टियां जोड़ें। गैंट चार्ट गैर-कार्य दिवसों को छायांकित करता है और ऑटो-रीशेड्यूल कैस्केड उन्हें छोड़ देता है।",
+			"title": "कार्य कैलेंडर",
+			"toastHolidayCreated": "छुट्टी जोड़ी गई",
+			"toastHolidayCreateError": "छुट्टी जोड़ने में विफल",
+			"toastHolidayDeleted": "छुट्टी हटाई गई",
+			"toastHolidayDeleteError": "छुट्टी हटाने में विफल",
+			"toastHolidayDuplicateError": "इस तिथि पर पहले से ही एक छुट्टी मौजूद है",
+			"toastWorkingDaysUpdated": "कार्य दिवस अपडेट किए गए",
+			"toastWorkingDaysUpdateError": "कार्य दिवस अपडेट करने में विफल",
+			"workingDaysSubtitle": "इस वर्कस्पेस के काम के लिए खुले रहने वाले कार्यदिवसों को टॉगल करें।",
+			"workingDaysTitle": "कार्य दिवस",
+			"loading": "कैलेंडर लोड हो रहा है…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1786,9 +1786,9 @@
 			"invitations": "निमंत्रण",
 			"more": "और",
 			"backToBoard": "बोर्ड पर वापस जाएँ",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "पोर्टफोलियो",
+			"activity": "गतिविधि",
+			"workload": "कार्यभार"
 		},
 		"projectList": {
 			"viewProject": "प्रोजेक्ट देखें",
@@ -2045,11 +2045,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "{{forge}} पर टिप्पणी की"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "एक निर्भरता जोड़ी",
+		"relationUpdated": "एक निर्भरता अपडेट की",
+		"relationDeleted": "एक निर्भरता हटाई",
+		"updatedPlan": "योजना अपडेट की",
+		"changedApproval": "अनुमोदन स्थिति {{from}} से {{to}} में बदली"
 	},
 	"tasks": {
 		"title": "कार्य",
@@ -2217,20 +2217,20 @@
 				"blocked_by": "ब्लॉक किया गया",
 				"related": "संबंधित है"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "{{project}} में",
+			"crossProjectStatusReadOnly": "स्थिति इस कार्य के अपने प्रोजेक्ट में प्रबंधित की जाती है",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "धनात्मक मान आरंभ में देरी करता है; ऋणात्मक (लीड) ओवरलैप की अनुमति देता है।",
+				"lagLabel": "लैग (दिन)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "सहेजें",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "निर्भरता प्रकार",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "समाप्ति → समाप्ति",
+					"fs": "समाप्ति → आरंभ",
+					"sf": "आरंभ → समाप्ति",
+					"ss": "आरंभ → आरंभ"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2238,9 +2238,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "निर्भरता अपडेट करने में विफल"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "यह निर्भरता एक चक्रीय निर्भरता बना देगी"
 		},
 		"subtasks": {
 			"title": "उप-कार्य",
@@ -2265,11 +2265,11 @@
 			"start": "शुरू",
 			"startDate": "शुरू की तारीख",
 			"noDate": "कोई तारीख नहीं",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "बेसलाइन",
+			"milestone": "माइलस्टोन",
+			"progress": "प्रगति",
+			"constraint": "बाधा",
+			"approval": "अनुमोदन"
 		},
 		"move": {
 			"title": "कार्य ले जाएँ",
@@ -2326,47 +2326,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "बेसलाइन साफ़ करें",
+				"clearError": "बेसलाइन साफ़ करने में विफल",
+				"clearSuccess": "बेसलाइन साफ़ की गई",
+				"label": "बेसलाइन",
+				"none": "कोई बेसलाइन सेट नहीं है",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "बेसलाइन सेट करें",
+				"setError": "बेसलाइन सेट करने में विफल",
+				"setSuccess": "बेसलाइन वर्तमान तिथियों से सेट की गई"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "इस कार्य को गैंट चार्ट पर एकल-तिथि माइलस्टोन के रूप में चिह्नित करें",
+				"label": "माइलस्टोन",
+				"updateError": "कार्य माइलस्टोन अपडेट करने में विफल",
+				"updateSuccess": "कार्य माइलस्टोन अपडेट किया गया"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "प्रगति",
+				"percentLabel": "प्रतिशत पूर्ण",
+				"updateError": "कार्य प्रगति अपडेट करने में विफल",
+				"updateSuccess": "कार्य प्रगति अपडेट की गई",
+				"exactLabel": "सटीक प्रतिशत पूर्ण"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "वर्तमान: {{date}}",
+				"label": "बाधा",
+				"pickDate": "एक बाधा तिथि चुनें",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "इससे बाद में समाप्त न करें",
+					"must_start_on": "इस तिथि पर ही शुरू होना चाहिए",
+					"none": "कोई बाधा नहीं",
+					"start_no_earlier_than": "इससे पहले शुरू न करें"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "कार्य बाधा अपडेट करने में विफल",
+				"updateSuccess": "कार्य बाधा अपडेट की गई"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "टिप्पणी",
+				"notePlaceholder": "क्लाइंट के लिए एक टिप्पणी जोड़ें...",
+				"saveNote": "टिप्पणी सहेजें",
+				"updateError": "अनुमोदन स्थिति अपडेट करने में विफल"
 			}
 		},
 		"backlog": {
@@ -2454,47 +2454,47 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "अवरोधक",
+			"legendRelated": "संबंधित",
+			"externalProjectBadge": "{{projectName}} में",
+			"externalTaskTitle": "{{title}} — {{projectName}} में संबंधित कार्य (यहां केवल पढ़ने योग्य)",
+			"legendBaseline": "बेसलाइन",
+			"legendMilestone": "माइलस्टोन",
+			"milestoneAriaLabel": "{{title}}: माइलस्टोन, कार्य खोलें",
+			"progressLabel": "{{progress}}% पूर्ण",
+			"unitControlAriaLabel": "टाइमलाइन विवरण स्तर",
+			"unitDay": "दिन",
+			"unitMonth": "माह",
+			"unitQuarter": "तिमाही",
+			"unitWeek": "सप्ताह",
+			"collapseSubtasks": "उप-कार्य संक्षिप्त करें",
+			"expandSubtasks": "उप-कार्य विस्तृत करें",
+			"summaryAriaLabel": "{{title}}: उप-कार्यों का सारांश, कार्य खोलें",
+			"linkHandleAriaLabel": "{{title}}: निर्भरता बनाने के लिए खींचें",
+			"dependentsRescheduleError": "निर्भर कार्यों का समय पुनर्निर्धारित करने में विफल",
+			"criticalPathToggle": "क्रिटिकल पथ",
+			"criticalPathToggleAriaLabel": "क्रिटिकल पथ को हाइलाइट करें",
+			"legendCriticalPath": "क्रिटिकल पथ",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: बाधा का उल्लंघन — {{type}}, {{date}}",
+			"dependentsRescheduled_one": "{{count}} निर्भर कार्य का समय पुनर्निर्धारित किया गया",
+			"dependentsRescheduled_other": "{{count}} निर्भर कार्यों का समय पुनर्निर्धारित किया गया",
+			"baselineSlipEarlyAriaLabel": "{{title}}: बेसलाइन से {{days}}d पहले समाप्त हो रहा है",
+			"baselineSlipLateAriaLabel": "{{title}}: बेसलाइन से {{days}}d बाद समाप्त हो रहा है",
+			"legendDependencyType": "प्रकार (बदलने के लिए क्लिक करें)",
+			"legendDependencyTypeHint": "हर अवरोधक रेखा अपना निर्भरता प्रकार (FS/SS/FF/SF) और लैग/लीड दिखाती है — प्रकार या लैग बदलने के लिए उस पर क्लिक करें।",
+			"criticalPathDroppedEdges_one": "{{count}} बिना तिथि वाली निर्भरता छोड़ी गई",
+			"criticalPathDroppedEdges_other": "{{count}} बिना तिथि वाली निर्भरताएं छोड़ी गईं",
+			"criticalPathDroppedEdgesHint": "ये निर्भरताएं बिना तिथि वाले कार्य तक पहुंचती हैं, इसलिए इन्हें क्रिटिकल पथ के लिए जांचा नहीं जा सकता — जिस कार्य को ये अन्यथा क्रिटिकल बनातीं, वह हाइलाइट नहीं हो सकता।",
+			"overdueLabel": "समय-सीमा पार",
+			"overdueMarkerAriaLabel": "{{title}}: समय-सीमा पार",
+			"customFieldLabel": "कस्टम फ़ील्ड कॉलम",
+			"customFieldNone": "कोई नहीं",
+			"approvalBadgeAriaLabel": "अनुमोदन: {{status}}",
+			"gateWarningAriaLabel": "{{count}} अस्वीकृत गेट इस कार्य को अवरुद्ध कर रहा है",
+			"gateWarningBadge": "गेट",
+			"gateWarningItem": "\"{{title}}\" {{status}} है",
+			"gateWarningTitle": "एक अस्वीकृत गेट द्वारा अवरुद्ध"
 		},
 		"delete": {
 			"title": "कार्य हटाएँ?",
@@ -2588,8 +2588,8 @@
 			"searchActions": "कार्रवाइयाँ खोजें...",
 			"noActionsFound": "कोई कार्रवाई नहीं मिली।",
 			"changeStatus": "स्थिति बदलें",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "प्रगति सेट करें",
+			"updateProgressError": "प्रगति अपडेट करने में विफल"
 		},
 		"editor": {
 			"table": {
@@ -2621,11 +2621,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "अनुमोदित",
+			"label": "अनुमोदन",
+			"none": "कोई अनुमोदन आवश्यक नहीं",
+			"pending": "अनुमोदन लंबित",
+			"rejected": "अस्वीकृत"
 		},
 		"checklistProgress": "चेकलिस्ट के {{total}} में से {{completed}} आइटम पूरे हुए",
 		"customFields": {
@@ -2717,60 +2717,60 @@
 			"error": "वर्कस्पेस बनाने में विफल"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "डैशबोर्ड पर वापस जाएं",
+			"emptyDescription": "इस वर्कस्पेस के हर कार्य में होने वाले बदलाव यहां दिखाई देंगे।",
+			"emptyFilteredDescription": "इन फ़िल्टरों से कोई गतिविधि मेल नहीं खाती। तिथि सीमा को व्यापक बनाएं या कोई फ़िल्टर हटाएं।",
+			"emptyTitle": "अभी तक कोई गतिविधि नहीं",
+			"error": "वर्कस्पेस गतिविधि लोड करने में विफल।",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "सभी प्रकार",
+				"allUsers": "सभी उपयोगकर्ता",
+				"from": "से",
+				"to": "तक",
+				"type": "प्रकार",
+				"user": "उपयोगकर्ता"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "गतिविधि",
+			"pagination": "पृष्ठ {{current}} / {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "असाइनी बदला",
+				"comment": "टिप्पणी",
+				"created": "बनाया गया",
+				"due_date_changed": "नियत तिथि बदली",
+				"priority_changed": "प्राथमिकता बदली",
+				"status_changed": "स्थिति बदली",
+				"title_changed": "शीर्षक बदला",
+				"unassigned": "अनअसाइन किया गया",
+				"moved": "स्थानांतरित",
+				"description_changed": "विवरण बदला"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "कोई मेल खाती गतिविधि नहीं",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "निर्यात",
+				"csv": "CSV के रूप में निर्यात करें",
+				"json": "JSON के रूप में निर्यात करें",
+				"error": "वर्कस्पेस गतिविधि निर्यात करने में विफल।",
+				"truncated": "केवल सबसे हाल की मेल खाती रिकॉर्ड्स निर्यात की गईं। सब कुछ निर्यात करने के लिए फ़िल्टर संकीर्ण करें।"
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "असाइनी",
+			"cellTooltip": "{{date}} के सप्ताह के लिए {{count}} सक्रिय कार्य",
+			"emptyDescription": "इस सीमा में कोई तिथि-युक्त, सक्रिय कार्य नहीं आता। कोई भिन्न सीमा आज़माएं, या कार्यों को यहां देखने के लिए आरंभ या नियत तिथि दें।",
+			"emptyTitle": "कुछ भी शेड्यूल नहीं",
+			"error": "कार्यभार लोड करने में विफल",
+			"jumpToToday": "आज",
+			"legendLoad": "कम → अधिक कार्य",
+			"legendOverload": "{{count}} से अधिक समवर्ती कार्य",
+			"loading": "कार्यभार लोड हो रहा है...",
+			"nextWeeks": "अगले सप्ताह",
+			"overloadedSrLabel": "अधिभारित",
+			"overloadThresholdValue": "{{count}} से ऊपर हाइलाइट करें",
+			"pageTitle": "कार्यभार",
+			"previousWeeks": "पिछले सप्ताह",
+			"subtitle": "आगामी सप्ताहों में प्रति असाइनी तिथि-युक्त, अधूरे कार्य। सघन सेल का मतलब है अधिक समवर्ती कार्य; हाइलाइट किए गए आपकी सीमा से ऊपर हैं।",
+			"truncatedNotice": "आंशिक परिणाम दिखाया जा रहा है: सभी कार्य देखने के लिए तिथि सीमा को संकीर्ण करें।",
+			"unassigned": "असाइन नहीं किया गया"
 		}
 	},
 	"team": {
@@ -3080,18 +3080,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: माइलस्टोन, कार्य खोलें",
+			"taskAriaLabel": "{{title}}: कार्य खोलें"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "इस वर्कस्पेस के प्रोजेक्ट्स और कार्यों को लोड करने में कुछ गड़बड़ हुई। कुछ देर में फिर से प्रयास करें।",
+		"loadErrorTitle": "पोर्टफोलियो लोड नहीं हो सका",
+		"noProjectsSubtitle": "पोर्टफोलियो टाइमलाइन पर देखने के लिए इस वर्कस्पेस में एक प्रोजेक्ट बनाएं।",
+		"noProjectsTitle": "अभी तक कोई प्रोजेक्ट नहीं",
+		"noScheduledTasksSubtitle": "इस टाइमलाइन पर रखने के लिए अपने प्रोजेक्ट्स के कार्यों में आरंभ तिथि, नियत तिथि, या दोनों जोड़ें।",
+		"noScheduledTasksTitle": "अभी तक कुछ भी शेड्यूल नहीं",
+		"openProjectGanttAriaLabel": "{{name}}: पूर्ण टाइमलाइन खोलें",
+		"railHeader": "प्रोजेक्ट",
+		"title": "पोर्टफोलियो टाइमलाइन",
+		"toggleProjectAriaLabel": "{{name}}: विस्तृत करें या संक्षिप्त करें"
 	}
 }

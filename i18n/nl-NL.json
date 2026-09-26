@@ -569,16 +569,16 @@
 				"confirm": "Eigendom overdragen"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Bewaartermijn van activiteiten",
+				"subtitle": "Stel in hoe lang de activiteitengeschiedenis van de werkruimte wordt bewaard. Dit slaat alleen de instelling op — er wordt nog niets automatisch verwijderd.",
+				"label": "Activiteit bewaren voor",
+				"unit": "dagen",
+				"keepForever": "Voor altijd bewaren",
+				"placeholder": "bijv. 90",
+				"saveButton": "Opslaan",
+				"toastUpdated": "Instelling voor bewaartermijn van activiteiten bijgewerkt",
+				"toastUpdateError": "Bijwerken van de instelling voor bewaartermijn van activiteiten is mislukt",
+				"notEnforcedNotice": "Deze instelling wordt nog niet gehandhaafd: er wordt geen activiteit automatisch verwijderd. Automatisch opschonen is een geplande vervolgstap."
 			}
 		},
 		"projectGeneral": {
@@ -1589,35 +1589,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Feestdag toevoegen",
+			"dateLabel": "Datum",
+			"dateRequired": "Datum is verplicht",
+			"day_0": "Zondag",
+			"day_1": "Maandag",
+			"day_2": "Dinsdag",
+			"day_3": "Woensdag",
+			"day_4": "Donderdag",
+			"day_5": "Vrijdag",
+			"day_6": "Zaterdag",
+			"deleteHoliday": "Feestdag verwijderen",
+			"empty": "Nog geen feestdagen.",
+			"holidayNameRequired": "Naam van de feestdag is verplicht",
+			"holidaysSubtitle": "Data waarop de werkruimte niet werkt, naast de niet-werkdagen.",
+			"holidaysTitle": "Feestdagen",
+			"nameLabel": "Naam",
+			"namePlaceholder": "bijv. Nieuwjaarsdag",
+			"subtitle": "Stel in op welke weekdagen deze werkruimte werkt en voeg feestdagen toe. De Gantt-weergave arceert niet-werkdagen en de automatische herplanningscascade slaat ze over.",
+			"title": "Werkkalender",
+			"toastHolidayCreated": "Feestdag toegevoegd",
+			"toastHolidayCreateError": "Toevoegen van feestdag is mislukt",
+			"toastHolidayDeleted": "Feestdag verwijderd",
+			"toastHolidayDeleteError": "Verwijderen van feestdag is mislukt",
+			"toastHolidayDuplicateError": "Er bestaat al een feestdag op deze datum",
+			"toastWorkingDaysUpdated": "Werkdagen bijgewerkt",
+			"toastWorkingDaysUpdateError": "Bijwerken van werkdagen is mislukt",
+			"workingDaysSubtitle": "Schakel de weekdagen in of uit waarop deze werkruimte open is voor werk.",
+			"workingDaysTitle": "Werkdagen",
+			"loading": "Kalender laden…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1787,8 +1787,8 @@
 			"more": "Meer",
 			"backToBoard": "Terug naar bord",
 			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"activity": "Activiteit",
+			"workload": "Werklast"
 		},
 		"projectList": {
 			"viewProject": "Project bekijken",
@@ -2045,11 +2045,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "heeft gereageerd op {{forge}}"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "heeft een afhankelijkheid toegevoegd",
+		"relationUpdated": "heeft een afhankelijkheid bijgewerkt",
+		"relationDeleted": "heeft een afhankelijkheid verwijderd",
+		"updatedPlan": "heeft het plan bijgewerkt",
+		"changedApproval": "heeft de goedkeuringsstatus gewijzigd van {{from}} naar {{to}}"
 	},
 	"tasks": {
 		"title": "Taken",
@@ -2218,18 +2218,18 @@
 				"blocked_by": "geblokkeerd door"
 			},
 			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"crossProjectStatusReadOnly": "Status wordt beheerd in het eigen project van deze taak",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Een positieve waarde vertraagt de start; negatief (voorsprong) staat overlap toe.",
+				"lagLabel": "Vertraging (dagen)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Opslaan",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Type afhankelijkheid",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
+					"ff": "Einde → Einde",
+					"fs": "Einde → Start",
+					"sf": "Start → Einde",
 					"ss": "Start → Start"
 				},
 				"typesShort": {
@@ -2238,9 +2238,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Bijwerken van afhankelijkheid is mislukt"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Deze afhankelijkheid zou een circulaire afhankelijkheid creëren"
 		},
 		"subtasks": {
 			"title": "Subtaken",
@@ -2265,11 +2265,11 @@
 			"start": "Start",
 			"startDate": "Startdatum",
 			"noDate": "Geen datum",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Basislijn",
+			"milestone": "Mijlpaal",
+			"progress": "Voortgang",
+			"constraint": "Beperking",
+			"approval": "Goedkeuring"
 		},
 		"popover": {
 			"assignee": {
@@ -2315,47 +2315,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Basislijn wissen",
+				"clearError": "Wissen van basislijn is mislukt",
+				"clearSuccess": "Basislijn gewist",
+				"label": "Basislijn",
+				"none": "Geen basislijn ingesteld",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Basislijn instellen",
+				"setError": "Instellen van basislijn is mislukt",
+				"setSuccess": "Basislijn ingesteld op basis van de huidige datums"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Markeer deze taak als een mijlpaal met één datum in de Gantt-grafiek",
+				"label": "Mijlpaal",
+				"updateError": "Bijwerken van de mijlpaal van de taak is mislukt",
+				"updateSuccess": "Mijlpaal van de taak bijgewerkt"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "Voortgang",
+				"percentLabel": "Percentage voltooid",
+				"updateError": "Bijwerken van de voortgang van de taak is mislukt",
+				"updateSuccess": "Voortgang van de taak bijgewerkt",
+				"exactLabel": "Exact percentage voltooid"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Huidig: {{date}}",
+				"label": "Beperking",
+				"pickDate": "Kies een beperkingsdatum",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Niet later eindigen dan",
+					"must_start_on": "Moet starten op",
+					"none": "Geen beperking",
+					"start_no_earlier_than": "Niet eerder starten dan"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Bijwerken van de beperking van de taak is mislukt",
+				"updateSuccess": "Beperking van de taak bijgewerkt"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Notitie",
+				"notePlaceholder": "Voeg een notitie toe voor de klant...",
+				"saveNote": "Notitie opslaan",
+				"updateError": "Bijwerken van de goedkeuringsstatus is mislukt"
 			}
 		},
 		"backlog": {
@@ -2443,47 +2443,47 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
+			"legendBlocking": "Blokkerend",
+			"legendRelated": "Gerelateerd",
 			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
+			"externalTaskTitle": "{{title}} — gerelateerde taak in {{projectName}} (hier alleen-lezen)",
+			"legendBaseline": "Basislijn",
+			"legendMilestone": "Mijlpaal",
+			"milestoneAriaLabel": "{{title}}: mijlpaal, taak openen",
+			"progressLabel": "{{progress}}% voltooid",
+			"unitControlAriaLabel": "Tijdlijngranulariteit",
+			"unitDay": "Dag",
+			"unitMonth": "Maand",
+			"unitQuarter": "Kwartaal",
 			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"collapseSubtasks": "Subtaken samenvouwen",
+			"expandSubtasks": "Subtaken uitvouwen",
+			"summaryAriaLabel": "{{title}}: overzicht van subtaken, taak openen",
+			"linkHandleAriaLabel": "{{title}}: sleep om een afhankelijkheid te maken",
+			"dependentsRescheduleError": "Opnieuw plannen van afhankelijke taken is mislukt",
+			"criticalPathToggle": "Kritiek pad",
+			"criticalPathToggleAriaLabel": "Markeer het kritieke pad",
+			"legendCriticalPath": "Kritiek pad",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"constraintViolationAriaLabel": "{{title}}: beperking overtreden — {{type}}, {{date}}",
+			"dependentsRescheduled_one": "{{count}} afhankelijke taak opnieuw ingepland",
+			"dependentsRescheduled_other": "{{count}} afhankelijke taken opnieuw ingepland",
+			"baselineSlipEarlyAriaLabel": "{{title}}: eindigt {{days}}d eerder dan de basislijn",
+			"baselineSlipLateAriaLabel": "{{title}}: eindigt {{days}}d later dan de basislijn",
+			"legendDependencyType": "Type (klik om te wijzigen)",
+			"legendDependencyTypeHint": "Elke blokkerende lijn toont het type afhankelijkheid (FS/SS/FF/SF) en vertraging/voorsprong — klik erop om het type of de vertraging te wijzigen.",
+			"criticalPathDroppedEdges_one": "{{count}} afhankelijkheid zonder datum overgeslagen",
+			"criticalPathDroppedEdges_other": "{{count}} afhankelijkheden zonder datum overgeslagen",
+			"criticalPathDroppedEdgesHint": "Deze afhankelijkheden verwijzen naar een taak zonder datums, dus ze kunnen niet worden gecontroleerd voor het kritieke pad — een taak die daardoor kritiek zou worden, wordt mogelijk niet gemarkeerd.",
+			"overdueLabel": "Te laat",
+			"overdueMarkerAriaLabel": "{{title}}: te laat",
+			"customFieldLabel": "Kolom voor aangepast veld",
+			"customFieldNone": "Geen",
+			"approvalBadgeAriaLabel": "Goedkeuring: {{status}}",
+			"gateWarningAriaLabel": "{{count}} niet-goedgekeurde gate blokkeert deze taak",
 			"gateWarningBadge": "Gate",
 			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"gateWarningTitle": "Geblokkeerd door een niet-goedgekeurde gate"
 		},
 		"delete": {
 			"title": "Taak verwijderen?",
@@ -2577,8 +2577,8 @@
 			"searchActions": "Acties zoeken...",
 			"noActionsFound": "Geen acties gevonden.",
 			"changeStatus": "Status wijzigen",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Voortgang instellen",
+			"updateProgressError": "Bijwerken van voortgang is mislukt"
 		},
 		"move": {
 			"title": "Taak verplaatsen",
@@ -2621,11 +2621,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Goedgekeurd",
+			"label": "Goedkeuring",
+			"none": "Geen goedkeuring nodig",
+			"pending": "Goedkeuring in behandeling",
+			"rejected": "Afgewezen"
 		},
 		"checklistProgress": "{{completed}} van {{total}} checklistitems voltooid",
 		"customFields": {
@@ -2717,60 +2717,60 @@
 			"error": "Aanmaken werkruimte mislukt"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Terug naar dashboard",
+			"emptyDescription": "Wijzigingen in alle taken in deze werkruimte verschijnen hier.",
+			"emptyFilteredDescription": "Geen activiteit komt overeen met deze filters. Probeer de datumperiode te verruimen of een filter te wissen.",
+			"emptyTitle": "Nog geen activiteit",
+			"error": "Laden van werkruimteactiviteit is mislukt.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
+				"allTypes": "Alle typen",
+				"allUsers": "Alle gebruikers",
+				"from": "Van",
+				"to": "Tot",
 				"type": "Type",
-				"user": "User"
+				"user": "Gebruiker"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Activiteit",
+			"pagination": "Pagina {{current}} van {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Toegewezene gewijzigd",
+				"comment": "Opmerking",
+				"created": "Aangemaakt",
+				"due_date_changed": "Vervaldatum gewijzigd",
+				"priority_changed": "Prioriteit gewijzigd",
+				"status_changed": "Status gewijzigd",
+				"title_changed": "Titel gewijzigd",
+				"unassigned": "Niet toegewezen",
+				"moved": "Verplaatst",
+				"description_changed": "Beschrijving gewijzigd"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Geen overeenkomende activiteit",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Exporteren",
+				"csv": "Exporteren als CSV",
+				"json": "Exporteren als JSON",
+				"error": "Exporteren van werkruimteactiviteit is mislukt.",
+				"truncated": "Alleen de meest recente overeenkomende records zijn geëxporteerd. Verfijn de filters om alles te exporteren."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Toegewezene",
+			"cellTooltip": "{{count}} actieve taken in de week van {{date}}",
+			"emptyDescription": "Er vallen geen actieve taken met datum binnen dit bereik. Probeer een ander bereik, of geef taken een start- of vervaldatum om ze hier te zien.",
+			"emptyTitle": "Niets gepland",
+			"error": "Laden van werklast is mislukt",
+			"jumpToToday": "Vandaag",
+			"legendLoad": "Minder → meer taken",
+			"legendOverload": "Boven {{count}} gelijktijdige taken",
+			"loading": "Werklast laden...",
+			"nextWeeks": "Volgende weken",
+			"overloadedSrLabel": "Overbelast",
+			"overloadThresholdValue": "Markeren boven {{count}}",
+			"pageTitle": "Werklast",
+			"previousWeeks": "Vorige weken",
+			"subtitle": "Taken met een datum die nog niet klaar zijn, per toegewezene over de komende weken. Dichtere cellen betekenen meer gelijktijdig werk; de gemarkeerde cellen liggen boven je drempel.",
+			"truncatedNotice": "Er wordt een gedeeltelijk resultaat getoond: verklein de datumperiode om alle taken te zien.",
+			"unassigned": "Niet toegewezen"
 		}
 	},
 	"team": {
@@ -3080,18 +3080,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: mijlpaal, taak openen",
+			"taskAriaLabel": "{{title}}: taak openen"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
+		"loadError": "Er is iets misgegaan bij het laden van de projecten en taken van deze werkruimte. Probeer het straks opnieuw.",
+		"loadErrorTitle": "Kan het portfolio niet laden",
+		"noProjectsSubtitle": "Maak een project in deze werkruimte aan om het op de portfoliotijdlijn te zien.",
+		"noProjectsTitle": "Nog geen projecten",
+		"noScheduledTasksSubtitle": "Voeg een startdatum, vervaldatum of beide toe aan taken in je projecten om ze op deze tijdlijn te plaatsen.",
+		"noScheduledTasksTitle": "Nog niets gepland",
+		"openProjectGanttAriaLabel": "{{name}}: volledige tijdlijn openen",
 		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"title": "Portfoliotijdlijn",
+		"toggleProjectAriaLabel": "{{name}}: uitvouwen of samenvouwen"
 	}
 }

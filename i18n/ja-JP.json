@@ -672,16 +672,16 @@
 				"confirm": "所有権を譲渡"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "アクティビティの保持期間",
+				"subtitle": "ワークスペースのアクティビティ履歴を保持する期間を設定します。これは設定を保存するだけで、まだ自動的に削除されるものはありません。",
+				"label": "保持期間",
+				"unit": "日",
+				"keepForever": "永久に保持",
+				"placeholder": "例: 90",
+				"saveButton": "保存",
+				"toastUpdated": "アクティビティ保持設定を更新しました",
+				"toastUpdateError": "アクティビティ保持設定の更新に失敗しました",
+				"notEnforcedNotice": "この設定はまだ適用されていません。アクティビティが自動的に削除されることはありません。自動削除機能は今後追加予定です。"
 			}
 		},
 		"workspaceRoles": {
@@ -1586,35 +1586,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "休日を追加",
+			"dateLabel": "日付",
+			"dateRequired": "日付は必須です",
+			"day_0": "日曜日",
+			"day_1": "月曜日",
+			"day_2": "火曜日",
+			"day_3": "水曜日",
+			"day_4": "木曜日",
+			"day_5": "金曜日",
+			"day_6": "土曜日",
+			"deleteHoliday": "休日を削除",
+			"empty": "休日はまだありません。",
+			"holidayNameRequired": "休日名は必須です",
+			"holidaysSubtitle": "非稼働の曜日に加えて、ワークスペースが稼働しない日付です。",
+			"holidaysTitle": "休日",
+			"nameLabel": "名前",
+			"namePlaceholder": "例: 元日",
+			"subtitle": "このワークスペースが稼働する曜日を設定し、休日を追加します。ガントチャートでは非稼働日が網掛け表示され、自動再スケジュールの連鎖処理でもスキップされます。",
+			"title": "稼働カレンダー",
+			"toastHolidayCreated": "休日を追加しました",
+			"toastHolidayCreateError": "休日の追加に失敗しました",
+			"toastHolidayDeleted": "休日を削除しました",
+			"toastHolidayDeleteError": "休日の削除に失敗しました",
+			"toastHolidayDuplicateError": "この日付にはすでに休日が登録されています",
+			"toastWorkingDaysUpdated": "稼働日を更新しました",
+			"toastWorkingDaysUpdateError": "稼働日の更新に失敗しました",
+			"workingDaysSubtitle": "このワークスペースが稼働する曜日を切り替えます。",
+			"workingDaysTitle": "稼働日",
+			"loading": "カレンダーを読み込み中…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1783,9 +1783,9 @@
 			"invitations": "招待",
 			"more": "その他",
 			"backToBoard": "ボードに戻る",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "ポートフォリオ",
+			"activity": "アクティビティ",
+			"workload": "ワークロード"
 		},
 		"projectList": {
 			"viewProject": "プロジェクトを表示",
@@ -2038,11 +2038,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "{{forge}} でコメント"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "依存関係を追加しました",
+		"relationUpdated": "依存関係を更新しました",
+		"relationDeleted": "依存関係を削除しました",
+		"updatedPlan": "計画を更新しました",
+		"changedApproval": "承認ステータスを{{from}}から{{to}}に変更しました"
 	},
 	"tasks": {
 		"title": "タスク",
@@ -2210,20 +2210,20 @@
 				"blocked_by": "ブロックされている",
 				"related": "関連"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "{{project}}内",
+			"crossProjectStatusReadOnly": "ステータスはこのタスク本来のプロジェクトで管理されています",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
-				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"lagHint": "正の値は開始を遅らせ、負の値(リード)は重複を許可します。",
+				"lagLabel": "ラグ(日)",
+				"lagSuffix": " {{days}}日",
+				"save": "保存",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "依存関係の種類",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "終了 → 終了",
+					"fs": "終了 → 開始",
+					"sf": "開始 → 終了",
+					"ss": "開始 → 開始"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2231,9 +2231,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "依存関係の更新に失敗しました"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "この依存関係は循環依存を発生させます"
 		},
 		"subtasks": {
 			"title": "サブタスク",
@@ -2258,11 +2258,11 @@
 			"start": "開始",
 			"startDate": "開始日",
 			"noDate": "日付なし",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "ベースライン",
+			"milestone": "マイルストーン",
+			"progress": "進捗",
+			"constraint": "制約",
+			"approval": "承認"
 		},
 		"move": {
 			"title": "タスクを移動",
@@ -2319,47 +2319,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "ベースラインを解除",
+				"clearError": "ベースラインの解除に失敗しました",
+				"clearSuccess": "ベースラインを解除しました",
+				"label": "ベースライン",
+				"none": "ベースライン未設定",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "ベースラインを設定",
+				"setError": "ベースラインの設定に失敗しました",
+				"setSuccess": "現在の日付からベースラインを設定しました"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "このタスクをガントチャート上の単一日付のマイルストーンとしてマークします",
+				"label": "マイルストーン",
+				"updateError": "タスクのマイルストーンの更新に失敗しました",
+				"updateSuccess": "タスクのマイルストーンを更新しました"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "進捗",
+				"percentLabel": "完了率",
+				"updateError": "タスクの進捗の更新に失敗しました",
+				"updateSuccess": "タスクの進捗を更新しました",
+				"exactLabel": "正確な完了率"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "現在: {{date}}",
+				"label": "制約",
+				"pickDate": "制約日を選択",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "これより後に終了しない",
+					"must_start_on": "この日に開始する必要がある",
+					"none": "制約なし",
+					"start_no_earlier_than": "これより前に開始しない"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "タスクの制約の更新に失敗しました",
+				"updateSuccess": "タスクの制約を更新しました"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "メモ",
+				"notePlaceholder": "クライアント向けのメモを追加...",
+				"saveNote": "メモを保存",
+				"updateError": "承認ステータスの更新に失敗しました"
 			}
 		},
 		"backlog": {
@@ -2460,45 +2460,45 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "ブロック中",
+			"legendRelated": "関連",
+			"externalProjectBadge": "{{projectName}}内",
+			"externalTaskTitle": "{{title}} — {{projectName}}内の関連タスク(ここでは読み取り専用)",
+			"legendBaseline": "ベースライン",
+			"legendMilestone": "マイルストーン",
+			"milestoneAriaLabel": "{{title}}: マイルストーン、タスクを開く",
+			"progressLabel": "{{progress}}% 完了",
+			"unitControlAriaLabel": "タイムラインの粒度",
+			"unitDay": "日",
+			"unitMonth": "月",
+			"unitQuarter": "四半期",
+			"unitWeek": "週",
+			"collapseSubtasks": "サブタスクを折りたたむ",
+			"expandSubtasks": "サブタスクを展開",
+			"summaryAriaLabel": "{{title}}: サブタスクの概要、タスクを開く",
+			"linkHandleAriaLabel": "{{title}}: ドラッグして依存関係を作成",
+			"dependentsRescheduleError": "依存タスクの再スケジュールに失敗しました",
+			"criticalPathToggle": "クリティカルパス",
+			"criticalPathToggleAriaLabel": "クリティカルパスを強調表示",
+			"legendCriticalPath": "クリティカルパス",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: 制約違反 — {{type}}、{{date}}",
+			"dependentsRescheduled_other": "依存タスクを{{count}}件再スケジュールしました",
+			"baselineSlipEarlyAriaLabel": "{{title}}: ベースラインより{{days}}日早く終了",
+			"baselineSlipLateAriaLabel": "{{title}}: ベースラインより{{days}}日遅れて終了",
+			"legendDependencyType": "種類(クリックして変更)",
+			"legendDependencyTypeHint": "すべてのブロック線には依存関係の種類(FS/SS/FF/SF)とラグ/リードが表示されます。クリックすると種類やラグを変更できます。",
+			"criticalPathDroppedEdges_other": "日付未設定の依存関係を{{count}}件スキップしました",
+			"criticalPathDroppedEdgesHint": "これらの依存関係は日付が設定されていないタスクに接続しているため、クリティカルパスの判定対象外です。本来クリティカルになるはずのタスクが強調表示されない場合があります。",
+			"overdueLabel": "期限超過",
+			"overdueMarkerAriaLabel": "{{title}}: 期限超過",
+			"customFieldLabel": "カスタムフィールド列",
+			"customFieldNone": "なし",
+			"approvalBadgeAriaLabel": "承認: {{status}}",
+			"gateWarningAriaLabel": "未承認のゲートが{{count}}件このタスクをブロックしています",
+			"gateWarningBadge": "ゲート",
+			"gateWarningItem": "「{{title}}」は{{status}}です",
+			"gateWarningTitle": "未承認のゲートによってブロックされています"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",
@@ -2586,8 +2586,8 @@
 			"searchActions": "操作を検索...",
 			"noActionsFound": "操作が見つかりません。",
 			"changeStatus": "ステータスを変更",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "進捗を設定",
+			"updateProgressError": "進捗の更新に失敗しました"
 		},
 		"editor": {
 			"table": {
@@ -2606,11 +2606,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "承認済み",
+			"label": "承認",
+			"none": "承認不要",
+			"pending": "承認待ち",
+			"rejected": "却下"
 		},
 		"duplicate": {
 			"error": "Failed to duplicate task",
@@ -2706,60 +2706,60 @@
 			"error": "ワークスペースの作成に失敗しました"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "ダッシュボードに戻る",
+			"emptyDescription": "このワークスペース内のすべてのタスクの変更がここに表示されます。",
+			"emptyFilteredDescription": "これらのフィルターに一致するアクティビティはありません。日付範囲を広げるか、フィルターを解除してみてください。",
+			"emptyTitle": "アクティビティはまだありません",
+			"error": "ワークスペースのアクティビティの読み込みに失敗しました。",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "すべての種類",
+				"allUsers": "すべてのユーザー",
+				"from": "開始日",
+				"to": "終了日",
+				"type": "種類",
+				"user": "ユーザー"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "アクティビティ",
+			"pagination": "{{current}} / {{total}} ページ",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "担当者変更",
+				"comment": "コメント",
+				"created": "作成",
+				"due_date_changed": "期限変更",
+				"priority_changed": "優先度変更",
+				"status_changed": "ステータス変更",
+				"title_changed": "タイトル変更",
+				"unassigned": "担当者なし",
+				"moved": "移動",
+				"description_changed": "説明変更"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "一致するアクティビティがありません",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "エクスポート",
+				"csv": "CSVとしてエクスポート",
+				"json": "JSONとしてエクスポート",
+				"error": "ワークスペースのアクティビティのエクスポートに失敗しました。",
+				"truncated": "最新の一致するレコードのみがエクスポートされました。すべてをエクスポートするにはフィルターを絞り込んでください。"
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "担当者",
+			"cellTooltip": "{{count}}件の進行中タスク({{date}}の週)",
+			"emptyDescription": "この期間には日付が設定された進行中のタスクがありません。別の期間を試すか、タスクに開始日または期限を設定するとここに表示されます。",
+			"emptyTitle": "予定されているものはありません",
+			"error": "ワークロードの読み込みに失敗しました",
+			"jumpToToday": "今日",
+			"legendLoad": "少ない → 多い",
+			"legendOverload": "同時進行タスクが{{count}}件を超える",
+			"loading": "ワークロードを読み込み中...",
+			"nextWeeks": "次の週",
+			"overloadedSrLabel": "過負荷",
+			"overloadThresholdValue": "{{count}}件を超えたら強調表示",
+			"pageTitle": "ワークロード",
+			"previousWeeks": "前の週",
+			"subtitle": "今後数週間における担当者ごとの、日付が設定された未完了タスクです。セルの密度が高いほど同時進行の作業が多いことを示し、強調表示されたセルはしきい値を超えています。",
+			"truncatedNotice": "一部の結果のみ表示しています。すべてのタスクを表示するには日付範囲を絞り込んでください。",
+			"unassigned": "担当者なし"
 		}
 	},
 	"team": {
@@ -3069,18 +3069,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: マイルストーン、タスクを開く",
+			"taskAriaLabel": "{{title}}: タスクを開く"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "このワークスペースのプロジェクトとタスクの読み込み中に問題が発生しました。しばらくしてから再度お試しください。",
+		"loadErrorTitle": "ポートフォリオを読み込めませんでした",
+		"noProjectsSubtitle": "このワークスペースでプロジェクトを作成すると、ポートフォリオタイムラインに表示されます。",
+		"noProjectsTitle": "プロジェクトはまだありません",
+		"noScheduledTasksSubtitle": "プロジェクト内のタスクに開始日または期限(あるいは両方)を設定すると、このタイムラインに表示されます。",
+		"noScheduledTasksTitle": "まだ予定されているものはありません",
+		"openProjectGanttAriaLabel": "{{name}}: 完全なタイムラインを開く",
+		"railHeader": "プロジェクト",
+		"title": "ポートフォリオタイムライン",
+		"toggleProjectAriaLabel": "{{name}}: 展開または折りたたみ"
 	}
 }

@@ -672,16 +672,16 @@
 				"confirm": "Transfer kepemilikan"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "Retensi aktivitas",
+				"subtitle": "Atur berapa lama riwayat aktivitas ruang kerja disimpan. Ini hanya menyimpan pengaturan — belum ada yang dihapus secara otomatis.",
+				"label": "Simpan aktivitas selama",
+				"unit": "hari",
+				"keepForever": "Simpan selamanya",
+				"placeholder": "mis. 90",
+				"saveButton": "Simpan",
+				"toastUpdated": "Pengaturan retensi aktivitas diperbarui",
+				"toastUpdateError": "Gagal memperbarui pengaturan retensi aktivitas",
+				"notEnforcedNotice": "Pengaturan ini belum diberlakukan: tidak ada aktivitas yang dihapus secara otomatis. Pembersihan otomatis adalah tindak lanjut yang direncanakan."
 			}
 		},
 		"projectGeneral": {
@@ -1586,35 +1586,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "Tambah hari libur",
+			"dateLabel": "Tanggal",
+			"dateRequired": "Tanggal wajib diisi",
+			"day_0": "Minggu",
+			"day_1": "Senin",
+			"day_2": "Selasa",
+			"day_3": "Rabu",
+			"day_4": "Kamis",
+			"day_5": "Jumat",
+			"day_6": "Sabtu",
+			"deleteHoliday": "Hapus hari libur",
+			"empty": "Belum ada hari libur.",
+			"holidayNameRequired": "Nama hari libur wajib diisi",
+			"holidaysSubtitle": "Tanggal saat ruang kerja tidak bekerja, selain hari kerja yang non-aktif.",
+			"holidaysTitle": "Hari Libur",
+			"nameLabel": "Nama",
+			"namePlaceholder": "mis. Hari Tahun Baru",
+			"subtitle": "Atur hari kerja mana yang berlaku untuk ruang kerja ini, dan tambahkan hari libur. Gantt akan menandai hari non-kerja dengan bayangan, dan rantai penjadwalan ulang otomatis akan melewatinya.",
+			"title": "Kalender kerja",
+			"toastHolidayCreated": "Hari libur ditambahkan",
+			"toastHolidayCreateError": "Gagal menambahkan hari libur",
+			"toastHolidayDeleted": "Hari libur dihapus",
+			"toastHolidayDeleteError": "Gagal menghapus hari libur",
+			"toastHolidayDuplicateError": "Hari libur sudah ada pada tanggal ini",
+			"toastWorkingDaysUpdated": "Hari kerja diperbarui",
+			"toastWorkingDaysUpdateError": "Gagal memperbarui hari kerja",
+			"workingDaysSubtitle": "Aktifkan/nonaktifkan hari kerja saat ruang kerja ini terbuka untuk bekerja.",
+			"workingDaysTitle": "Hari kerja",
+			"loading": "Memuat kalender…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1783,9 +1783,9 @@
 			"invitations": "Undangan",
 			"more": "Lainnya",
 			"backToBoard": "Kembali ke papan",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "Portofolio",
+			"activity": "Aktivitas",
+			"workload": "Beban kerja"
 		},
 		"projectList": {
 			"viewProject": "Lihat Proyek",
@@ -2038,11 +2038,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "berkomentar di {{forge}}"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "menambahkan dependensi",
+		"relationUpdated": "memperbarui dependensi",
+		"relationDeleted": "menghapus dependensi",
+		"updatedPlan": "memperbarui rencana",
+		"changedApproval": "mengubah status persetujuan dari {{from}} menjadi {{to}}"
 	},
 	"tasks": {
 		"title": "Tugas",
@@ -2210,20 +2210,20 @@
 				"blocked_by": "diblokir oleh",
 				"related": "terkait dengan"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "Di {{project}}",
+			"crossProjectStatusReadOnly": "Status dikelola di proyek asal tugas ini",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
+				"lagHint": "Nilai positif menunda mulai; negatif (lead) memungkinkan tumpang tindih.",
+				"lagLabel": "Jeda (hari)",
 				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"save": "Simpan",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "Jenis dependensi",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "Selesai → Selesai",
+					"fs": "Selesai → Mulai",
+					"sf": "Mulai → Selesai",
+					"ss": "Mulai → Mulai"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2231,9 +2231,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "Gagal memperbarui dependensi"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "Dependensi ini akan membuat dependensi sirkular"
 		},
 		"subtasks": {
 			"title": "Subtugas",
@@ -2258,11 +2258,11 @@
 			"start": "Mulai",
 			"startDate": "Tanggal mulai",
 			"noDate": "Tanpa tanggal",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "Garis dasar",
+			"milestone": "Tonggak",
+			"progress": "Progres",
+			"constraint": "Batasan",
+			"approval": "Persetujuan"
 		},
 		"move": {
 			"title": "Pindahkan tugas",
@@ -2319,47 +2319,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "Hapus garis dasar",
+				"clearError": "Gagal menghapus garis dasar",
+				"clearSuccess": "Garis dasar dihapus",
+				"label": "Garis dasar",
+				"none": "Belum ada garis dasar yang diatur",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "Atur garis dasar",
+				"setError": "Gagal mengatur garis dasar",
+				"setSuccess": "Garis dasar diatur dari tanggal saat ini"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "Tandai tugas ini sebagai tonggak bertanggal tunggal pada bagan Gantt",
+				"label": "Tonggak",
+				"updateError": "Gagal memperbarui tonggak tugas",
+				"updateSuccess": "Tonggak tugas diperbarui"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "Progres",
+				"percentLabel": "Persentase selesai",
+				"updateError": "Gagal memperbarui progres tugas",
+				"updateSuccess": "Progres tugas diperbarui",
+				"exactLabel": "Persentase selesai yang tepat"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "Saat ini: {{date}}",
+				"label": "Batasan",
+				"pickDate": "Pilih tanggal batasan",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "Selesai tidak lebih lambat dari",
+					"must_start_on": "Harus mulai pada",
+					"none": "Tidak ada batasan",
+					"start_no_earlier_than": "Mulai tidak lebih awal dari"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "Gagal memperbarui batasan tugas",
+				"updateSuccess": "Batasan tugas diperbarui"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "Catatan",
+				"notePlaceholder": "Tambahkan catatan untuk klien...",
+				"saveNote": "Simpan catatan",
+				"updateError": "Gagal memperbarui status persetujuan"
 			}
 		},
 		"backlog": {
@@ -2447,45 +2447,45 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "Memblokir",
+			"legendRelated": "Terkait",
+			"externalProjectBadge": "di {{projectName}}",
+			"externalTaskTitle": "{{title}} — tugas terkait di {{projectName}} (hanya baca di sini)",
+			"legendBaseline": "Garis dasar",
+			"legendMilestone": "Tonggak",
+			"milestoneAriaLabel": "{{title}}: tonggak, buka tugas",
+			"progressLabel": "{{progress}}% selesai",
+			"unitControlAriaLabel": "Granularitas linimasa",
+			"unitDay": "Hari",
+			"unitMonth": "Bulan",
+			"unitQuarter": "Kuartal",
+			"unitWeek": "Minggu",
+			"collapseSubtasks": "Ciutkan subtugas",
+			"expandSubtasks": "Perluas subtugas",
+			"summaryAriaLabel": "{{title}}: ringkasan subtugas, buka tugas",
+			"linkHandleAriaLabel": "{{title}}: seret untuk membuat dependensi",
+			"dependentsRescheduleError": "Gagal menjadwalkan ulang tugas dependen",
+			"criticalPathToggle": "Jalur kritis",
+			"criticalPathToggleAriaLabel": "Sorot jalur kritis",
+			"legendCriticalPath": "Jalur kritis",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: batasan dilanggar — {{type}}, {{date}}",
+			"dependentsRescheduled_other": "{{count}} tugas dependen dijadwalkan ulang",
+			"baselineSlipEarlyAriaLabel": "{{title}}: selesai {{days}}d lebih cepat dari garis dasar",
+			"baselineSlipLateAriaLabel": "{{title}}: selesai {{days}}d lebih lambat dari garis dasar",
+			"legendDependencyType": "Jenis (klik untuk mengubah)",
+			"legendDependencyTypeHint": "Setiap garis pemblokir menampilkan jenis dependensinya (FS/SS/FF/SF) dan jeda/lead — klik untuk mengubah jenis atau jeda.",
+			"criticalPathDroppedEdges_other": "{{count}} dependensi tanpa tanggal dilewati",
+			"criticalPathDroppedEdgesHint": "Dependensi ini mengarah ke tugas tanpa tanggal, sehingga tidak dapat diperiksa untuk jalur kritis — tugas yang seharusnya menjadi kritis mungkin tidak akan disorot.",
+			"overdueLabel": "Terlambat",
+			"overdueMarkerAriaLabel": "{{title}}: terlambat",
+			"customFieldLabel": "Kolom bidang khusus",
+			"customFieldNone": "Tidak ada",
+			"approvalBadgeAriaLabel": "Persetujuan: {{status}}",
+			"gateWarningAriaLabel": "{{count}} gerbang yang belum disetujui memblokir tugas ini",
+			"gateWarningBadge": "Gerbang",
+			"gateWarningItem": "\"{{title}}\" berstatus {{status}}",
+			"gateWarningTitle": "Diblokir oleh gerbang yang belum disetujui"
 		},
 		"delete": {
 			"title": "Hapus Tugas?",
@@ -2578,8 +2578,8 @@
 			"searchActions": "Cari aksi...",
 			"noActionsFound": "Tidak ada aksi ditemukan.",
 			"changeStatus": "Ubah Status",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "Atur Progres",
+			"updateProgressError": "Gagal memperbarui progres"
 		},
 		"editor": {
 			"table": {
@@ -2611,11 +2611,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "Disetujui",
+			"label": "Persetujuan",
+			"none": "Tidak perlu persetujuan",
+			"pending": "Menunggu persetujuan",
+			"rejected": "Ditolak"
 		},
 		"checklistProgress": "{{completed}} dari {{total}} item daftar periksa selesai",
 		"customFields": {
@@ -2706,60 +2706,60 @@
 			"error": "Gagal membuat ruang kerja"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "Kembali ke Dasbor",
+			"emptyDescription": "Perubahan pada setiap tugas di ruang kerja ini akan muncul di sini.",
+			"emptyFilteredDescription": "Tidak ada aktivitas yang cocok dengan filter ini. Coba perluas rentang tanggal atau hapus filter.",
+			"emptyTitle": "Belum ada aktivitas",
+			"error": "Gagal memuat aktivitas ruang kerja.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "Semua jenis",
+				"allUsers": "Semua pengguna",
+				"from": "Dari",
+				"to": "Sampai",
+				"type": "Jenis",
+				"user": "Pengguna"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "Aktivitas",
+			"pagination": "Halaman {{current}} dari {{total}}",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "Penerima tugas diubah",
+				"comment": "Komentar",
+				"created": "Dibuat",
+				"due_date_changed": "Tanggal jatuh tempo diubah",
+				"priority_changed": "Prioritas diubah",
+				"status_changed": "Status diubah",
+				"title_changed": "Judul diubah",
+				"unassigned": "Belum ditugaskan",
+				"moved": "Dipindahkan",
+				"description_changed": "Deskripsi diubah"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "Tidak ada aktivitas yang cocok",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "Ekspor",
+				"csv": "Ekspor sebagai CSV",
+				"json": "Ekspor sebagai JSON",
+				"error": "Gagal mengekspor aktivitas ruang kerja.",
+				"truncated": "Hanya catatan yang cocok terbaru yang diekspor. Persempit filter untuk mengekspor semuanya."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "Penerima Tugas",
+			"cellTooltip": "{{count}} tugas aktif untuk minggu {{date}}",
+			"emptyDescription": "Tidak ada tugas aktif bertanggal dalam rentang ini. Coba rentang lain, atau beri tugas tanggal mulai atau jatuh tempo untuk melihatnya di sini.",
+			"emptyTitle": "Tidak ada yang dijadwalkan",
+			"error": "Gagal memuat beban kerja",
+			"jumpToToday": "Hari ini",
+			"legendLoad": "Sedikit → banyak tugas",
+			"legendOverload": "Di atas {{count}} tugas bersamaan",
+			"loading": "Memuat beban kerja...",
+			"nextWeeks": "Minggu berikutnya",
+			"overloadedSrLabel": "Kelebihan beban",
+			"overloadThresholdValue": "Sorot di atas {{count}}",
+			"pageTitle": "Beban Kerja",
+			"previousWeeks": "Minggu sebelumnya",
+			"subtitle": "Tugas bertanggal dan belum selesai per penerima tugas selama minggu-minggu mendatang. Sel yang lebih padat berarti lebih banyak pekerjaan bersamaan; yang disorot berada di atas ambang batas Anda.",
+			"truncatedNotice": "Menampilkan hasil sebagian: persempit rentang tanggal untuk melihat semua tugas.",
+			"unassigned": "Belum ditugaskan"
 		}
 	},
 	"team": {
@@ -3069,18 +3069,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: tonggak, buka tugas",
+			"taskAriaLabel": "{{title}}: buka tugas"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "Terjadi kesalahan saat memuat proyek dan tugas ruang kerja ini. Coba lagi sebentar.",
+		"loadErrorTitle": "Portofolio tidak dapat dimuat",
+		"noProjectsSubtitle": "Buat proyek di ruang kerja ini untuk melihatnya di linimasa portofolio.",
+		"noProjectsTitle": "Belum ada proyek",
+		"noScheduledTasksSubtitle": "Tambahkan tanggal mulai, tanggal jatuh tempo, atau keduanya pada tugas di seluruh proyek Anda untuk menempatkannya di linimasa ini.",
+		"noScheduledTasksTitle": "Belum ada yang dijadwalkan",
+		"openProjectGanttAriaLabel": "{{name}}: buka linimasa lengkap",
+		"railHeader": "Proyek",
+		"title": "Linimasa Portofolio",
+		"toggleProjectAriaLabel": "{{name}}: perluas atau ciutkan"
 	}
 }

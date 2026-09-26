@@ -672,16 +672,16 @@
 				"confirm": "소유권 이전"
 			},
 			"activityRetention": {
-				"title": "Activity retention",
-				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
-				"label": "Keep activity for",
-				"unit": "days",
-				"keepForever": "Keep forever",
-				"placeholder": "e.g. 90",
-				"saveButton": "Save",
-				"toastUpdated": "Activity retention setting updated",
-				"toastUpdateError": "Failed to update activity retention setting",
-				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
+				"title": "활동 보관 기간",
+				"subtitle": "워크스페이스 활동 기록을 보관할 기간을 설정합니다. 이 설정은 저장될 뿐이며, 아직 자동으로 삭제되는 항목은 없습니다.",
+				"label": "보관 기간",
+				"unit": "일",
+				"keepForever": "영구 보관",
+				"placeholder": "예: 90",
+				"saveButton": "저장",
+				"toastUpdated": "활동 보관 설정이 업데이트되었습니다",
+				"toastUpdateError": "활동 보관 설정 업데이트에 실패했습니다",
+				"notEnforcedNotice": "이 설정은 아직 적용되지 않습니다. 활동이 자동으로 삭제되지 않습니다. 자동 삭제 기능은 추후 추가될 예정입니다."
 			}
 		},
 		"projectGeneral": {
@@ -1586,35 +1586,35 @@
 			"you": "(you)"
 		},
 		"workspaceCalendar": {
-			"addHoliday": "Add holiday",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"day_0": "Sunday",
-			"day_1": "Monday",
-			"day_2": "Tuesday",
-			"day_3": "Wednesday",
-			"day_4": "Thursday",
-			"day_5": "Friday",
-			"day_6": "Saturday",
-			"deleteHoliday": "Delete holiday",
-			"empty": "No holidays yet.",
-			"holidayNameRequired": "Holiday name is required",
-			"holidaysSubtitle": "Dates the workspace doesn't work on, in addition to non-working weekdays.",
-			"holidaysTitle": "Holidays",
-			"nameLabel": "Name",
-			"namePlaceholder": "e.g. New Year's Day",
-			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
-			"title": "Working calendar",
-			"toastHolidayCreated": "Holiday added",
-			"toastHolidayCreateError": "Failed to add holiday",
-			"toastHolidayDeleted": "Holiday removed",
-			"toastHolidayDeleteError": "Failed to remove holiday",
-			"toastHolidayDuplicateError": "A holiday already exists on this date",
-			"toastWorkingDaysUpdated": "Working days updated",
-			"toastWorkingDaysUpdateError": "Failed to update working days",
-			"workingDaysSubtitle": "Toggle the weekdays this workspace is open for work.",
-			"workingDaysTitle": "Working days",
-			"loading": "Loading calendar…"
+			"addHoliday": "휴일 추가",
+			"dateLabel": "날짜",
+			"dateRequired": "날짜는 필수입니다",
+			"day_0": "일요일",
+			"day_1": "월요일",
+			"day_2": "화요일",
+			"day_3": "수요일",
+			"day_4": "목요일",
+			"day_5": "금요일",
+			"day_6": "토요일",
+			"deleteHoliday": "휴일 삭제",
+			"empty": "아직 휴일이 없습니다.",
+			"holidayNameRequired": "휴일 이름은 필수입니다",
+			"holidaysSubtitle": "비근무 요일 외에 워크스페이스가 근무하지 않는 날짜입니다.",
+			"holidaysTitle": "휴일",
+			"nameLabel": "이름",
+			"namePlaceholder": "예: 신정",
+			"subtitle": "이 워크스페이스가 근무하는 요일을 설정하고 휴일을 추가하세요. 간트 차트에서는 비근무일이 음영으로 표시되며, 자동 일정 재조정 연쇄 처리에서도 제외됩니다.",
+			"title": "근무 캘린더",
+			"toastHolidayCreated": "휴일이 추가되었습니다",
+			"toastHolidayCreateError": "휴일 추가에 실패했습니다",
+			"toastHolidayDeleted": "휴일이 삭제되었습니다",
+			"toastHolidayDeleteError": "휴일 삭제에 실패했습니다",
+			"toastHolidayDuplicateError": "이 날짜에는 이미 휴일이 등록되어 있습니다",
+			"toastWorkingDaysUpdated": "근무일이 업데이트되었습니다",
+			"toastWorkingDaysUpdateError": "근무일 업데이트에 실패했습니다",
+			"workingDaysSubtitle": "이 워크스페이스가 근무하는 요일을 전환하세요.",
+			"workingDaysTitle": "근무일",
+			"loading": "캘린더를 불러오는 중…"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -1783,9 +1783,9 @@
 			"invitations": "초대",
 			"more": "더 보기",
 			"backToBoard": "보드로 돌아가기",
-			"portfolio": "Portfolio",
-			"activity": "Activity",
-			"workload": "Workload"
+			"portfolio": "포트폴리오",
+			"activity": "활동",
+			"workload": "업무량"
 		},
 		"projectList": {
 			"viewProject": "프로젝트 보기",
@@ -2038,11 +2038,11 @@
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "{{forge}}에 댓글을 남김"
 		},
-		"relationCreated": "added a dependency",
-		"relationUpdated": "updated a dependency",
-		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"relationCreated": "종속 관계를 추가했습니다",
+		"relationUpdated": "종속 관계를 업데이트했습니다",
+		"relationDeleted": "종속 관계를 삭제했습니다",
+		"updatedPlan": "계획을 업데이트했습니다",
+		"changedApproval": "승인 상태를 {{from}}에서 {{to}}(으)로 변경했습니다"
 	},
 	"tasks": {
 		"title": "작업",
@@ -2210,20 +2210,20 @@
 				"related": "관련됨",
 				"blocked_by": "차단됨"
 			},
-			"tasksInOtherProject": "In {{project}}",
-			"crossProjectStatusReadOnly": "Status is managed in this task's own project",
+			"tasksInOtherProject": "{{project}} 내",
+			"crossProjectStatusReadOnly": "상태는 이 작업의 원래 프로젝트에서 관리됩니다",
 			"dependency": {
-				"lagHint": "Positive delays the start; negative (lead) allows overlap.",
-				"lagLabel": "Lag (days)",
-				"lagSuffix": " {{days}}d",
-				"save": "Save",
+				"lagHint": "양수 값은 시작을 지연시키고, 음수 값(선행)은 겹침을 허용합니다.",
+				"lagLabel": "지연(일)",
+				"lagSuffix": " {{days}}일",
+				"save": "저장",
 				"summary": "{{type}}{{lag}}",
-				"typeLabel": "Dependency type",
+				"typeLabel": "종속 관계 유형",
 				"types": {
-					"ff": "Finish → Finish",
-					"fs": "Finish → Start",
-					"sf": "Start → Finish",
-					"ss": "Start → Start"
+					"ff": "종료 → 종료",
+					"fs": "종료 → 시작",
+					"sf": "시작 → 종료",
+					"ss": "시작 → 시작"
 				},
 				"typesShort": {
 					"ff": "FF",
@@ -2231,9 +2231,9 @@
 					"sf": "SF",
 					"ss": "SS"
 				},
-				"updateError": "Failed to update dependency"
+				"updateError": "종속 관계 업데이트에 실패했습니다"
 			},
-			"circularDependencyError": "This dependency would create a circular dependency"
+			"circularDependencyError": "이 종속 관계는 순환 종속을 발생시킵니다"
 		},
 		"subtasks": {
 			"title": "하위 작업",
@@ -2258,11 +2258,11 @@
 			"start": "시작",
 			"startDate": "시작일",
 			"noDate": "날짜 없음",
-			"baseline": "Baseline",
-			"milestone": "Milestone",
-			"progress": "Progress",
-			"constraint": "Constraint",
-			"approval": "Approval"
+			"baseline": "기준선",
+			"milestone": "마일스톤",
+			"progress": "진행률",
+			"constraint": "제약 조건",
+			"approval": "승인"
 		},
 		"move": {
 			"title": "작업 이동",
@@ -2319,47 +2319,47 @@
 				}
 			},
 			"baseline": {
-				"clear": "Clear baseline",
-				"clearError": "Failed to clear baseline",
-				"clearSuccess": "Baseline cleared",
-				"label": "Baseline",
-				"none": "No baseline set",
+				"clear": "기준선 지우기",
+				"clearError": "기준선 지우기에 실패했습니다",
+				"clearSuccess": "기준선이 지워졌습니다",
+				"label": "기준선",
+				"none": "설정된 기준선 없음",
 				"range": "{{start}} – {{end}}",
-				"set": "Set baseline",
-				"setError": "Failed to set baseline",
-				"setSuccess": "Baseline set from current dates"
+				"set": "기준선 설정",
+				"setError": "기준선 설정에 실패했습니다",
+				"setSuccess": "현재 날짜를 기준으로 기준선을 설정했습니다"
 			},
 			"milestone": {
-				"description": "Mark this task as a single-date milestone on the Gantt chart",
-				"label": "Milestone",
-				"updateError": "Failed to update task milestone",
-				"updateSuccess": "Task milestone updated"
+				"description": "이 작업을 간트 차트에서 단일 날짜 마일스톤으로 표시합니다",
+				"label": "마일스톤",
+				"updateError": "작업 마일스톤 업데이트에 실패했습니다",
+				"updateSuccess": "작업 마일스톤이 업데이트되었습니다"
 			},
 			"progress": {
-				"label": "Progress",
-				"percentLabel": "Percent complete",
-				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated",
-				"exactLabel": "Exact percent complete"
+				"label": "진행률",
+				"percentLabel": "완료율",
+				"updateError": "작업 진행률 업데이트에 실패했습니다",
+				"updateSuccess": "작업 진행률이 업데이트되었습니다",
+				"exactLabel": "정확한 완료율"
 			},
 			"constraint": {
-				"currentDate": "{{date}}",
-				"label": "Constraint",
-				"pickDate": "Pick a constraint date",
+				"currentDate": "현재: {{date}}",
+				"label": "제약 조건",
+				"pickDate": "제약 날짜 선택",
 				"type": {
-					"finish_no_later_than": "Finish no later than",
-					"must_start_on": "Must start on",
-					"none": "No constraint",
-					"start_no_earlier_than": "Start no earlier than"
+					"finish_no_later_than": "이 날짜보다 늦게 종료하지 않음",
+					"must_start_on": "반드시 이 날짜에 시작",
+					"none": "제약 없음",
+					"start_no_earlier_than": "이 날짜보다 일찍 시작하지 않음"
 				},
-				"updateError": "Failed to update task constraint",
-				"updateSuccess": "Task constraint updated"
+				"updateError": "작업 제약 조건 업데이트에 실패했습니다",
+				"updateSuccess": "작업 제약 조건이 업데이트되었습니다"
 			},
 			"approval": {
-				"note": "Note",
-				"notePlaceholder": "Add a note for the client...",
-				"saveNote": "Save note",
-				"updateError": "Failed to update approval status"
+				"note": "메모",
+				"notePlaceholder": "고객을 위한 메모를 추가하세요...",
+				"saveNote": "메모 저장",
+				"updateError": "승인 상태 업데이트에 실패했습니다"
 			}
 		},
 		"backlog": {
@@ -2460,45 +2460,45 @@
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
 			"showTaskDates": "Show task dates",
-			"legendBlocking": "Blocking",
-			"legendRelated": "Related",
-			"externalProjectBadge": "in {{projectName}}",
-			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
-			"legendBaseline": "Baseline",
-			"legendMilestone": "Milestone",
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"progressLabel": "{{progress}}% complete",
-			"unitControlAriaLabel": "Timeline granularity",
-			"unitDay": "Day",
-			"unitMonth": "Month",
-			"unitQuarter": "Quarter",
-			"unitWeek": "Week",
-			"collapseSubtasks": "Collapse subtasks",
-			"expandSubtasks": "Expand subtasks",
-			"summaryAriaLabel": "{{title}}: summary of subtasks, open task",
-			"linkHandleAriaLabel": "{{title}}: drag to create a dependency",
-			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
-			"criticalPathToggle": "Critical path",
-			"criticalPathToggleAriaLabel": "Highlight the critical path",
-			"legendCriticalPath": "Critical path",
+			"legendBlocking": "차단 중",
+			"legendRelated": "관련",
+			"externalProjectBadge": "{{projectName}} 내",
+			"externalTaskTitle": "{{title}} — {{projectName}}의 관련 작업(여기서는 읽기 전용)",
+			"legendBaseline": "기준선",
+			"legendMilestone": "마일스톤",
+			"milestoneAriaLabel": "{{title}}: 마일스톤, 작업 열기",
+			"progressLabel": "{{progress}}% 완료",
+			"unitControlAriaLabel": "타임라인 단위",
+			"unitDay": "일",
+			"unitMonth": "월",
+			"unitQuarter": "분기",
+			"unitWeek": "주",
+			"collapseSubtasks": "하위 작업 접기",
+			"expandSubtasks": "하위 작업 펼치기",
+			"summaryAriaLabel": "{{title}}: 하위 작업 요약, 작업 열기",
+			"linkHandleAriaLabel": "{{title}}: 드래그하여 종속 관계 생성",
+			"dependentsRescheduleError": "종속 작업 일정 재조정에 실패했습니다",
+			"criticalPathToggle": "크리티컬 패스",
+			"criticalPathToggleAriaLabel": "크리티컬 패스 강조 표시",
+			"legendCriticalPath": "크리티컬 패스",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
-			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
-			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
-			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue",
-			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None",
-			"approvalBadgeAriaLabel": "Approval: {{status}}",
-			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
-			"gateWarningBadge": "Gate",
-			"gateWarningItem": "\"{{title}}\" is {{status}}",
-			"gateWarningTitle": "Blocked by an unapproved gate"
+			"constraintViolationAriaLabel": "{{title}}: 제약 조건 위반 — {{type}}, {{date}}",
+			"dependentsRescheduled_other": "종속 작업 {{count}}건의 일정을 재조정했습니다",
+			"baselineSlipEarlyAriaLabel": "{{title}}: 기준선보다 {{days}}일 빠르게 종료",
+			"baselineSlipLateAriaLabel": "{{title}}: 기준선보다 {{days}}일 늦게 종료",
+			"legendDependencyType": "유형(클릭하여 변경)",
+			"legendDependencyTypeHint": "모든 차단 선에는 종속 관계 유형(FS/SS/FF/SF)과 지연/선행 정보가 표시됩니다. 클릭하면 유형이나 지연을 변경할 수 있습니다.",
+			"criticalPathDroppedEdges_other": "날짜가 없는 종속 관계 {{count}}건을 건너뛰었습니다",
+			"criticalPathDroppedEdgesHint": "이 종속 관계는 날짜가 설정되지 않은 작업으로 연결되어 있어 크리티컬 패스 판정에서 제외됩니다. 원래 크리티컬로 표시되었어야 할 작업이 강조되지 않을 수 있습니다.",
+			"overdueLabel": "기한 초과",
+			"overdueMarkerAriaLabel": "{{title}}: 기한 초과",
+			"customFieldLabel": "사용자 지정 필드 열",
+			"customFieldNone": "없음",
+			"approvalBadgeAriaLabel": "승인: {{status}}",
+			"gateWarningAriaLabel": "승인되지 않은 게이트 {{count}}건이 이 작업을 차단하고 있습니다",
+			"gateWarningBadge": "게이트",
+			"gateWarningItem": "\"{{title}}\"은(는) {{status}} 상태입니다",
+			"gateWarningTitle": "승인되지 않은 게이트로 인해 차단됨"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",
@@ -2591,8 +2591,8 @@
 			"searchActions": "작업 검색...",
 			"noActionsFound": "작업을 찾을 수 없습니다.",
 			"changeStatus": "상태 변경",
-			"setProgress": "Set Progress",
-			"updateProgressError": "Failed to update progress"
+			"setProgress": "진행률 설정",
+			"updateProgressError": "진행률 업데이트에 실패했습니다"
 		},
 		"editor": {
 			"table": {
@@ -2611,11 +2611,11 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"approval": {
-			"approved": "Approved",
-			"label": "Approval",
-			"none": "No approval needed",
-			"pending": "Pending approval",
-			"rejected": "Rejected"
+			"approved": "승인됨",
+			"label": "승인",
+			"none": "승인 불필요",
+			"pending": "승인 대기 중",
+			"rejected": "거부됨"
 		},
 		"checklistProgress": "체크리스트 항목 {{total}}개 중 {{completed}}개 완료",
 		"customFields": {
@@ -2706,60 +2706,60 @@
 			"error": "워크스페이스 생성에 실패했습니다"
 		},
 		"activityLog": {
-			"backToDashboard": "Back to Dashboard",
-			"emptyDescription": "Changes across every task in this workspace will show up here.",
-			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"emptyTitle": "No activity yet",
-			"error": "Failed to load workspace activity.",
+			"backToDashboard": "대시보드로 돌아가기",
+			"emptyDescription": "이 워크스페이스의 모든 작업에 대한 변경 사항이 여기에 표시됩니다.",
+			"emptyFilteredDescription": "이 필터와 일치하는 활동이 없습니다. 날짜 범위를 넓히거나 필터를 해제해 보세요.",
+			"emptyTitle": "아직 활동이 없습니다",
+			"error": "워크스페이스 활동을 불러오지 못했습니다.",
 			"filters": {
-				"allTypes": "All types",
-				"allUsers": "All users",
-				"from": "From",
-				"to": "To",
-				"type": "Type",
-				"user": "User"
+				"allTypes": "모든 유형",
+				"allUsers": "모든 사용자",
+				"from": "시작일",
+				"to": "종료일",
+				"type": "유형",
+				"user": "사용자"
 			},
-			"pageTitle": "Activity",
-			"pagination": "Page {{current}} of {{total}}",
+			"pageTitle": "활동",
+			"pagination": "{{current}} / {{total}} 페이지",
 			"types": {
-				"assignee_changed": "Assignee changed",
-				"comment": "Comment",
-				"created": "Created",
-				"due_date_changed": "Due date changed",
-				"priority_changed": "Priority changed",
-				"status_changed": "Status changed",
-				"title_changed": "Title changed",
-				"unassigned": "Unassigned",
-				"moved": "Moved",
-				"description_changed": "Description changed"
+				"assignee_changed": "담당자 변경됨",
+				"comment": "댓글",
+				"created": "생성됨",
+				"due_date_changed": "마감일 변경됨",
+				"priority_changed": "우선순위 변경됨",
+				"status_changed": "상태 변경됨",
+				"title_changed": "제목 변경됨",
+				"unassigned": "담당자 없음",
+				"moved": "이동됨",
+				"description_changed": "설명 변경됨"
 			},
-			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredTitle": "일치하는 활동이 없습니다",
 			"export": {
-				"label": "Export",
-				"csv": "Export as CSV",
-				"json": "Export as JSON",
-				"error": "Failed to export workspace activity.",
-				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+				"label": "내보내기",
+				"csv": "CSV로 내보내기",
+				"json": "JSON으로 내보내기",
+				"error": "워크스페이스 활동 내보내기에 실패했습니다.",
+				"truncated": "가장 최근의 일치하는 레코드만 내보냈습니다. 모든 항목을 내보내려면 필터를 좁혀 보세요."
 			}
 		},
 		"workload": {
-			"assigneeColumn": "Assignee",
-			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
-			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
-			"emptyTitle": "Nothing scheduled",
-			"error": "Failed to load workload",
-			"jumpToToday": "Today",
-			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks",
-			"loading": "Loading workload...",
-			"nextWeeks": "Next weeks",
-			"overloadedSrLabel": "Overloaded",
-			"overloadThresholdValue": "Highlight above {{count}}",
-			"pageTitle": "Workload",
-			"previousWeeks": "Previous weeks",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
-			"unassigned": "Unassigned"
+			"assigneeColumn": "담당자",
+			"cellTooltip": "{{count}}건의 진행 중인 작업({{date}} 주)",
+			"emptyDescription": "이 범위에 날짜가 지정된 진행 중인 작업이 없습니다. 다른 범위를 시도하거나 작업에 시작일 또는 마감일을 지정하면 여기에 표시됩니다.",
+			"emptyTitle": "예정된 항목이 없습니다",
+			"error": "업무량을 불러오지 못했습니다",
+			"jumpToToday": "오늘",
+			"legendLoad": "적음 → 많음",
+			"legendOverload": "동시 진행 작업이 {{count}}건 초과",
+			"loading": "업무량을 불러오는 중...",
+			"nextWeeks": "다음 주",
+			"overloadedSrLabel": "과부하",
+			"overloadThresholdValue": "{{count}}건 초과 시 강조 표시",
+			"pageTitle": "업무량",
+			"previousWeeks": "이전 주",
+			"subtitle": "앞으로 몇 주간 담당자별 날짜가 지정된 미완료 작업입니다. 셀이 진할수록 동시 진행 작업이 많다는 의미이며, 강조 표시된 셀은 설정한 임계값을 초과한 것입니다.",
+			"truncatedNotice": "일부 결과만 표시하고 있습니다. 모든 작업을 보려면 날짜 범위를 좁혀 보세요.",
+			"unassigned": "담당자 없음"
 		}
 	},
 	"team": {
@@ -3069,18 +3069,18 @@
 	},
 	"portfolio": {
 		"gantt": {
-			"milestoneAriaLabel": "{{title}}: milestone, open task",
-			"taskAriaLabel": "{{title}}: open task"
+			"milestoneAriaLabel": "{{title}}: 마일스톤, 작업 열기",
+			"taskAriaLabel": "{{title}}: 작업 열기"
 		},
-		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
-		"loadErrorTitle": "Couldn't load the portfolio",
-		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
-		"noProjectsTitle": "No projects yet",
-		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
-		"noScheduledTasksTitle": "Nothing scheduled yet",
-		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
-		"railHeader": "Project",
-		"title": "Portfolio Timeline",
-		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
+		"loadError": "이 워크스페이스의 프로젝트와 작업을 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+		"loadErrorTitle": "포트폴리오를 불러올 수 없습니다",
+		"noProjectsSubtitle": "이 워크스페이스에서 프로젝트를 생성하면 포트폴리오 타임라인에 표시됩니다.",
+		"noProjectsTitle": "아직 프로젝트가 없습니다",
+		"noScheduledTasksSubtitle": "프로젝트의 작업에 시작일이나 마감일(또는 둘 다)을 설정하면 이 타임라인에 표시됩니다.",
+		"noScheduledTasksTitle": "아직 예정된 항목이 없습니다",
+		"openProjectGanttAriaLabel": "{{name}}: 전체 타임라인 열기",
+		"railHeader": "프로젝트",
+		"title": "포트폴리오 타임라인",
+		"toggleProjectAriaLabel": "{{name}}: 펼치기 또는 접기"
 	}
 }
