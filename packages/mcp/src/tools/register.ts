@@ -27,6 +27,19 @@ const hexColorSchema = z
     /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/,
     "Expected a hex color like #FF6600",
   );
+const progressSchema = z.number().int().min(0).max(100);
+// The four standard project-management dependency types (Finish-to-Start,
+// Start-to-Start, Finish-to-Finish, Start-to-Finish) — see
+// apps/api/src/task-relation/schema.ts.
+const dependencyTypeSchema = z.enum(["fs", "ss", "ff", "sf"]);
+const lagDaysSchema = z.number().int().min(-3650).max(3650);
+// See VALID_TASK_CONSTRAINT_TYPES in apps/api/src/task/schema.ts.
+const constraintTypeSchema = z.enum([
+  "none",
+  "start_no_earlier_than",
+  "finish_no_later_than",
+  "must_start_on",
+]);
 
 function run(fn: () => Promise<unknown>): Promise<CallToolResult> {
   return fn()
@@ -241,19 +254,25 @@ export function registerTools(
     "create_task",
     {
       description: "Create a task in a project.",
-      inputSchema: z.object({
-        projectId: nonEmptyString,
-        title: nonEmptyString,
-        description: z.string(),
-        priority: prioritySchema,
-        status: nonEmptyString,
-        startDate: optionalIsoDateTimeSchema,
-        dueDate: optionalIsoDateTimeSchema,
-        userId: optionalNonEmptyString,
-      }),
+      inputSchema: z
+        .object({
+          projectId: nonEmptyString,
+          title: nonEmptyString,
+          description: z.string(),
+          priority: prioritySchema,
+          status: nonEmptyString,
+          startDate: optionalIsoDateTimeSchema,
+          dueDate: optionalIsoDateTimeSchema,
+          userId: optionalNonEmptyString,
+          progress: progressSchema
+            .optional()
+            .describe("Percent complete, 0-100. Defaults to 0."),
+          isMilestone: z.boolean().optional().describe("Defaults to false."),
+        })
+        .strict(),
     },
     async (args) => {
-      const body: Record<string, string | undefined> = {
+      const body: Record<string, string | number | boolean | undefined> = {
         title: args.title,
         description: args.description,
         priority: args.priority,
@@ -268,6 +287,12 @@ export function registerTools(
       if (args.userId !== undefined) {
         body.userId = args.userId;
       }
+      if (args.progress !== undefined) {
+        body.progress = args.progress;
+      }
+      if (args.isMilestone !== undefined) {
+        body.isMilestone = args.isMilestone;
+      }
       return run(() =>
         client.json(`/api/task/${encodeURIComponent(args.projectId)}`, {
           method: "POST",
@@ -277,24 +302,40 @@ export function registerTools(
     },
   );
 
-  const updateTaskSchema = z.object({
-    taskId: nonEmptyString,
-    title: optionalNonEmptyString,
-    description: z.string().nullable().optional(),
-    status: optionalNonEmptyString,
-    priority: prioritySchema.optional(),
-    projectId: optionalNonEmptyString,
-    position: z.number().optional(),
-    startDate: nullableOptionalIsoDateTimeSchema,
-    dueDate: nullableOptionalIsoDateTimeSchema,
-    userId: nullableOptionalNonEmptyString,
-  });
+  const updateTaskSchema = z
+    .object({
+      taskId: nonEmptyString,
+      title: optionalNonEmptyString,
+      description: z.string().nullable().optional(),
+      status: optionalNonEmptyString,
+      priority: prioritySchema.optional(),
+      projectId: optionalNonEmptyString,
+      position: z.number().optional(),
+      startDate: nullableOptionalIsoDateTimeSchema,
+      dueDate: nullableOptionalIsoDateTimeSchema,
+      userId: nullableOptionalNonEmptyString,
+      progress: progressSchema.optional(),
+      isMilestone: z.boolean().optional(),
+      constraintType: constraintTypeSchema
+        .optional()
+        .describe(
+          "One of: none, start_no_earlier_than, finish_no_later_than, must_start_on.",
+        ),
+      constraintDate: z
+        .string()
+        .nullable()
+        .optional()
+        .describe(
+          'Required when constraintType is set to anything other than "none" (enforced by the API).',
+        ),
+    })
+    .strict();
 
   server.registerTool(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update).",
+        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, and constraintType/constraintDate. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored.",
       inputSchema: updateTaskSchema,
     },
     async (args) => {
@@ -497,12 +538,24 @@ export function registerTools(
     "create_task_relation",
     {
       description:
-        "Create a relation between two tasks. relationType: 'subtask' (sourceTaskId is the parent, targetTaskId the child), 'blocks' (sourceTaskId blocks targetTaskId), or 'related' (bidirectional).",
-      inputSchema: z.object({
-        sourceTaskId: nonEmptyString,
-        targetTaskId: nonEmptyString,
-        relationType: z.enum(["subtask", "blocks", "related"]),
-      }),
+        "Create a relation between two tasks. relationType: 'subtask' (sourceTaskId is the parent, targetTaskId the child), 'blocks' (sourceTaskId blocks targetTaskId), or 'related' (bidirectional). dependencyType/lagDays are only meaningful for 'blocks' (a 'related'/'subtask' relation is stored with fs/0 regardless of what is sent).",
+      inputSchema: z
+        .object({
+          sourceTaskId: nonEmptyString,
+          targetTaskId: nonEmptyString,
+          relationType: z.enum(["subtask", "blocks", "related"]),
+          dependencyType: dependencyTypeSchema
+            .optional()
+            .describe(
+              "Finish-to-Start/Start-to-Start/Finish-to-Finish/Start-to-Finish. Defaults to fs.",
+            ),
+          lagDays: lagDaysSchema
+            .optional()
+            .describe(
+              "Lag (positive) or lead (negative) in days. Defaults to 0.",
+            ),
+        })
+        .strict(),
     },
     async (args) =>
       run(() =>
@@ -512,6 +565,10 @@ export function registerTools(
             sourceTaskId: args.sourceTaskId,
             targetTaskId: args.targetTaskId,
             relationType: args.relationType,
+            ...(args.dependencyType !== undefined
+              ? { dependencyType: args.dependencyType }
+              : {}),
+            ...(args.lagDays !== undefined ? { lagDays: args.lagDays } : {}),
           }),
         }),
       ),
@@ -528,6 +585,33 @@ export function registerTools(
       run(() =>
         client.json(`/api/task-relation/${encodeURIComponent(args.taskId)}`, {
           method: "GET",
+        }),
+      ),
+  );
+
+  server.registerTool(
+    "update_task_relation",
+    {
+      description:
+        "Change a 'blocks' relation's dependency type and/or lag. Rejected for a 'related'/'subtask' relation, which has no dependency type/lag to edit.",
+      inputSchema: z
+        .object({
+          id: nonEmptyString,
+          dependencyType: dependencyTypeSchema.optional(),
+          lagDays: lagDaysSchema.optional(),
+        })
+        .strict(),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/task-relation/${encodeURIComponent(args.id)}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            ...(args.dependencyType !== undefined
+              ? { dependencyType: args.dependencyType }
+              : {}),
+            ...(args.lagDays !== undefined ? { lagDays: args.lagDays } : {}),
+          }),
         }),
       ),
   );
@@ -693,6 +777,35 @@ export function registerTools(
   );
 
   server.registerTool(
+    "set_task_baseline",
+    {
+      description:
+        "Snapshot the task's current startDate/dueDate as its baseline, for plan-vs-actual comparison on the Gantt chart.",
+      inputSchema: z.object({ taskId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/task/${encodeURIComponent(args.taskId)}/baseline`, {
+          method: "POST",
+        }),
+      ),
+  );
+
+  server.registerTool(
+    "clear_task_baseline",
+    {
+      description: "Remove the task's stored baseline dates, if any.",
+      inputSchema: z.object({ taskId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/task/${encodeURIComponent(args.taskId)}/baseline`, {
+          method: "DELETE",
+        }),
+      ),
+  );
+
+  server.registerTool(
     "list_task_time_entries",
     {
       description: "List the time entries logged against a task.",
@@ -784,5 +897,84 @@ export function registerTools(
       inputSchema: z.object({}),
     },
     async () => run(() => client.json("/api/notification")),
+  );
+
+  server.registerTool(
+    "get_workspace_calendar",
+    {
+      description:
+        "Get the workspace's working-days bitmask and holidays, sorted by date.",
+      inputSchema: z.object({ workspaceId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/calendar/${encodeURIComponent(args.workspaceId)}`, {
+          method: "GET",
+        }),
+      ),
+  );
+
+  server.registerTool(
+    "update_workspace_working_days",
+    {
+      description:
+        "Set the workspace's working-weekday bitmask (bit i, i = 0..6, 0 = Sunday; 62 = Mon-Fri).",
+      inputSchema: z
+        .object({
+          workspaceId: nonEmptyString,
+          workingDays: z.number().int().min(0).max(127),
+        })
+        .strict(),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/calendar/${encodeURIComponent(args.workspaceId)}`, {
+          method: "PUT",
+          body: JSON.stringify({ workingDays: args.workingDays }),
+        }),
+      ),
+  );
+
+  server.registerTool(
+    "add_workspace_holiday",
+    {
+      description:
+        "Add a non-working date to the workspace calendar. The date is normalized to UTC midnight.",
+      inputSchema: z
+        .object({
+          workspaceId: nonEmptyString,
+          date: nonEmptyString.describe("ISO date (or date-time) string."),
+          name: z.string().trim().min(1).max(120),
+        })
+        .strict(),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/calendar/${encodeURIComponent(args.workspaceId)}/holidays`,
+          {
+            method: "POST",
+            body: JSON.stringify({ date: args.date, name: args.name }),
+          },
+        ),
+      ),
+  );
+
+  server.registerTool(
+    "delete_workspace_holiday",
+    {
+      description: "Remove a holiday from the workspace calendar.",
+      inputSchema: z.object({
+        workspaceId: nonEmptyString,
+        holidayId: nonEmptyString,
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/calendar/${encodeURIComponent(args.workspaceId)}/holidays/${encodeURIComponent(args.holidayId)}`,
+          { method: "DELETE" },
+        ),
+      ),
   );
 }
