@@ -2284,7 +2284,9 @@
 			"criticalPathDroppedEdges_other": "{{count}} undated deps skipped",
 			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
 			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue"
+			"overdueMarkerAriaLabel": "{{title}}: overdue",
+			"customFieldLabel": "Custom field column",
+			"customFieldNone": "None"
 		},
 		"delete": {
 			"title": "Excluir tarefa?",

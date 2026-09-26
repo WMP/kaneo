@@ -84,6 +84,18 @@ vi.mock("@/hooks/queries/task-relation/use-get-project-task-relations", () => ({
 vi.mock("@/hooks/queries/calendar/use-get-calendar", () => ({
   default: () => ({ data: undefined }),
 }));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-custom-fields-by-project",
+  () => ({
+    default: () => ({ data: [] }),
+  }),
+);
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-custom-field-values-by-project",
+  () => ({
+    default: () => ({ data: [] }),
+  }),
+);
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: (

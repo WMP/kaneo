@@ -2368,7 +2368,9 @@
 			"criticalPathDroppedEdges_other": "{{count}} pominiętej zależności bez dat",
 			"criticalPathDroppedEdgesHint": "Te zależności prowadzą do zadania bez dat, więc nie można ich uwzględnić w ścieżce krytycznej — zadanie, które mogłyby uczynić krytycznym, może nie zostać podświetlone.",
 			"overdueLabel": "Zaległe",
-			"overdueMarkerAriaLabel": "{{title}}: zaległe"
+			"overdueMarkerAriaLabel": "{{title}}: zaległe",
+			"customFieldLabel": "Kolumna pola niestandardowego",
+			"customFieldNone": "Brak"
 		},
 		"kanban": {
 			"addTask": "Dodaj zadanie"

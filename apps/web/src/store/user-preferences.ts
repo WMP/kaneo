@@ -65,6 +65,12 @@ type UserPreferencesStore = {
 
   ganttShowCriticalPath: boolean;
   setGanttShowCriticalPath: (show: boolean) => void;
+
+  // Keyed by projectId: custom fields belong to one project, so the choice
+  // of which one to show on the Gantt task rail can't be a single global
+  // value the way weekStartsOn is.
+  ganttCustomFieldByProject: Record<string, string | null>;
+  setGanttCustomField: (projectId: string, fieldId: string | null) => void;
 };
 
 export const useUserPreferencesStore = create<UserPreferencesStore>()(
@@ -151,6 +157,15 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       ganttShowCriticalPath: false,
       setGanttShowCriticalPath: (ganttShowCriticalPath) =>
         set({ ganttShowCriticalPath }),
+
+      ganttCustomFieldByProject: {},
+      setGanttCustomField: (projectId, fieldId) =>
+        set((state) => ({
+          ganttCustomFieldByProject: {
+            ...state.ganttCustomFieldByProject,
+            [projectId]: fieldId,
+          },
+        })),
     }),
     {
       name: "user-preferences",

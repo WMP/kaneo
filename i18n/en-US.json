@@ -2288,7 +2288,9 @@
 			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
 			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
 			"overdueLabel": "Overdue",
-			"overdueMarkerAriaLabel": "{{title}}: overdue"
+			"overdueMarkerAriaLabel": "{{title}}: overdue",
+			"customFieldLabel": "Custom field column",
+			"customFieldNone": "None"
 		},
 		"delete": {
 			"title": "Delete Task?",

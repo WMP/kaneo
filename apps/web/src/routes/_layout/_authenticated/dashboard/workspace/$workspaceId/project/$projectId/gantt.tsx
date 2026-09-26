@@ -86,9 +86,18 @@ import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBulkUpdateTaskSchedule } from "@/hooks/mutations/task/use-bulk-update-task-schedule";
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useGetCalendar from "@/hooks/queries/calendar/use-get-calendar";
+import useGetCustomFieldValuesByProject from "@/hooks/queries/custom-field/use-get-custom-field-values-by-project";
+import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -250,6 +259,45 @@ function RouteComponent() {
   const setShowCriticalPath = useUserPreferencesStore(
     (state) => state.setGanttShowCriticalPath,
   );
+  const ganttCustomFieldByProject = useUserPreferencesStore(
+    (state) => state.ganttCustomFieldByProject,
+  );
+  const setGanttCustomField = useUserPreferencesStore(
+    (state) => state.setGanttCustomField,
+  );
+  const { data: customFieldDefinitions = [] } =
+    useGetCustomFieldsByProject(projectId);
+  const storedCustomFieldId = ganttCustomFieldByProject?.[projectId] ?? "";
+  const selectedCustomFieldDefinition = customFieldDefinitions.find(
+    (field) => field.id === storedCustomFieldId,
+  );
+  // Ignore a stored field id whose definition no longer exists (e.g. the field
+  // was deleted): otherwise the Select would carry a value matching no item and
+  // we would fetch the whole project's values for a field we never display.
+  const selectedCustomFieldId = selectedCustomFieldDefinition
+    ? storedCustomFieldId
+    : "";
+  // Only the values for the selected field are ever displayed, so avoid
+  // fetching the whole project's custom field values until one is chosen.
+  const { data: customFieldValues = [] } = useGetCustomFieldValuesByProject(
+    selectedCustomFieldId ? projectId : "",
+  );
+  // One lookup built once per render of the values query, rather than
+  // filtering the whole project's values per task row.
+  const customFieldValueByTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!selectedCustomFieldId) return map;
+    for (const entry of customFieldValues) {
+      if (
+        entry.fieldId === selectedCustomFieldId &&
+        entry.value !== null &&
+        entry.value !== ""
+      ) {
+        map.set(entry.taskId, entry.value);
+      }
+    }
+    return map;
+  }, [customFieldValues, selectedCustomFieldId]);
   const [searchQuery, setSearchQuery] = useState("");
   const [windowStart, setWindowStart] = useState<{
     projectId: string;
@@ -1706,6 +1754,36 @@ function RouteComponent() {
               ))}
             </fieldset>
 
+            {customFieldDefinitions.length > 0 && (
+              <Select
+                value={selectedCustomFieldId}
+                onValueChange={(value) =>
+                  setGanttCustomField(projectId, value || null)
+                }
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="h-9 w-full max-w-[11rem] sm:h-8"
+                  aria-label={t("tasks:gantt.customFieldLabel")}
+                >
+                  <SelectValue>
+                    {selectedCustomFieldDefinition?.name ??
+                      t("tasks:gantt.customFieldNone")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">
+                    {t("tasks:gantt.customFieldNone")}
+                  </SelectItem>
+                  {customFieldDefinitions.map((field) => (
+                    <SelectItem key={field.id} value={field.id}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
             {timeline && (
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -2196,6 +2274,13 @@ function RouteComponent() {
                                     {format(task.scheduleStart, "MMM d, yyyy")}{" "}
                                     - {format(task.scheduleEnd, "MMM d, yyyy")}
                                   </p>
+                                  {selectedCustomFieldDefinition &&
+                                    customFieldValueByTaskId.has(task.id) && (
+                                      <span className="mt-0.5 max-w-full truncate rounded-full bg-secondary px-1.5 py-px text-[10px] font-medium text-secondary-foreground">
+                                        {selectedCustomFieldDefinition.name}:{" "}
+                                        {customFieldValueByTaskId.get(task.id)}
+                                      </span>
+                                    )}
                                 </button>
                               </div>
                             )}
