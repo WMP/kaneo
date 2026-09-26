@@ -1741,7 +1741,8 @@
 			"members": "成员",
 			"invitations": "邀请",
 			"more": "更多",
-			"backToBoard": "返回看板"
+			"backToBoard": "返回看板",
+			"activity": "Activity"
 		},
 		"projectList": {
 			"viewProject": "查看项目",
@@ -2535,6 +2536,34 @@
 			"submit": "创建工作区",
 			"success": "工作区创建成功",
 			"error": "工作区创建失败"
+		},
+		"activityLog": {
+			"backToDashboard": "Back to Dashboard",
+			"emptyDescription": "Changes across every task in this workspace will show up here.",
+			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
+			"emptyTitle": "No activity yet",
+			"error": "Failed to load workspace activity.",
+			"filters": {
+				"allTypes": "All types",
+				"allUsers": "All users",
+				"from": "From",
+				"to": "To",
+				"type": "Type",
+				"user": "User"
+			},
+			"pageTitle": "Activity",
+			"pagination": "Page {{current}} of {{total}}",
+			"types": {
+				"assignee_changed": "Assignee changed",
+				"comment": "Comment",
+				"created": "Created",
+				"due_date_changed": "Due date changed",
+				"priority_changed": "Priority changed",
+				"status_changed": "Status changed",
+				"title_changed": "Title changed",
+				"unassigned": "Unassigned"
+			},
+			"emptyFilteredTitle": "No matching activity"
 		}
 	},
 	"team": {

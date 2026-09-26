@@ -396,6 +396,7 @@
 			"overview": "Przegląd",
 			"projects": "Projekty",
 			"members": "Członkowie",
+			"activity": "Aktywność",
 			"invitations": "Zaproszenia",
 			"more": "Więcej",
 			"backToBoard": "Wróć do tablicy"
@@ -591,6 +592,34 @@
 			"suggestionFeature": "Funkcja",
 			"suggestionInProgress": "W trakcie",
 			"suggestionCompleted": "Ukończone"
+		},
+		"activityLog": {
+			"pageTitle": "Aktywność",
+			"backToDashboard": "Wróć do panelu",
+			"filters": {
+				"user": "Użytkownik",
+				"allUsers": "Wszyscy użytkownicy",
+				"type": "Typ",
+				"allTypes": "Wszystkie typy",
+				"from": "Od",
+				"to": "Do"
+			},
+			"types": {
+				"comment": "Komentarz",
+				"created": "Utworzono",
+				"status_changed": "Zmiana statusu",
+				"priority_changed": "Zmiana priorytetu",
+				"assignee_changed": "Zmiana przypisania",
+				"unassigned": "Cofnięto przypisanie",
+				"due_date_changed": "Zmiana terminu",
+				"title_changed": "Zmiana tytułu"
+			},
+			"pagination": "Strona {{current}} z {{total}}",
+			"emptyTitle": "Brak aktywności",
+			"emptyDescription": "Zmiany we wszystkich zadaniach tego obszaru roboczego pojawią się tutaj.",
+			"emptyFilteredTitle": "Brak pasującej aktywności",
+			"emptyFilteredDescription": "Żadna aktywność nie pasuje do tych filtrów. Spróbuj poszerzyć zakres dat lub wyczyścić filtr.",
+			"error": "Nie udało się wczytać aktywności obszaru roboczego."
 		},
 		"create": {
 			"pageTitle": "Utwórz obszar roboczy",

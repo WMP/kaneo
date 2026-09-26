@@ -1742,6 +1742,7 @@
 			"overview": "Overview",
 			"projects": "Projects",
 			"members": "Members",
+			"activity": "Activity",
 			"invitations": "Invitations",
 			"more": "More",
 			"backToBoard": "Back to board"
@@ -2530,6 +2531,34 @@
 			"suggestionFeature": "Feature",
 			"suggestionInProgress": "In progress",
 			"suggestionCompleted": "Completed"
+		},
+		"activityLog": {
+			"pageTitle": "Activity",
+			"backToDashboard": "Back to Dashboard",
+			"filters": {
+				"user": "User",
+				"allUsers": "All users",
+				"type": "Type",
+				"allTypes": "All types",
+				"from": "From",
+				"to": "To"
+			},
+			"types": {
+				"comment": "Comment",
+				"created": "Created",
+				"status_changed": "Status changed",
+				"priority_changed": "Priority changed",
+				"assignee_changed": "Assignee changed",
+				"unassigned": "Unassigned",
+				"due_date_changed": "Due date changed",
+				"title_changed": "Title changed"
+			},
+			"pagination": "Page {{current}} of {{total}}",
+			"emptyTitle": "No activity yet",
+			"emptyDescription": "Changes across every task in this workspace will show up here.",
+			"emptyFilteredTitle": "No matching activity",
+			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
+			"error": "Failed to load workspace activity."
 		},
 		"create": {
 			"pageTitle": "Create Workspace",
