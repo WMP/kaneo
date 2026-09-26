@@ -622,7 +622,14 @@
 			"emptyDescription": "Zmiany we wszystkich zadaniach tego obszaru roboczego pojawią się tutaj.",
 			"emptyFilteredTitle": "Brak pasującej aktywności",
 			"emptyFilteredDescription": "Żadna aktywność nie pasuje do tych filtrów. Spróbuj poszerzyć zakres dat lub wyczyścić filtr.",
-			"error": "Nie udało się wczytać aktywności obszaru roboczego."
+			"error": "Nie udało się wczytać aktywności obszaru roboczego.",
+			"export": {
+				"label": "Eksportuj",
+				"csv": "Eksportuj jako CSV",
+				"json": "Eksportuj jako JSON",
+				"error": "Nie udało się wyeksportować aktywności obszaru roboczego.",
+				"truncated": "Wyeksportowano tylko najnowsze pasujące rekordy. Zawęź filtry, aby wyeksportować wszystko."
+			}
 		},
 		"create": {
 			"pageTitle": "Utwórz obszar roboczy",
@@ -1700,7 +1707,19 @@
 				"nameShort": "Nazwa obszaru roboczego musi mieć co najmniej 2 znaki"
 			},
 			"workspaceInfoSubtitle": "Skonfiguruj szczegóły i preferencje obszaru roboczego.",
-			"workspaceInfoTitle": "Informacje o obszarze roboczym"
+			"workspaceInfoTitle": "Informacje o obszarze roboczym",
+			"activityRetention": {
+				"title": "Przechowywanie aktywności",
+				"subtitle": "Ustaw, jak długo przechowywana jest historia aktywności obszaru roboczego. To ustawienie na razie tylko się zapisuje — nic nie jest jeszcze usuwane automatycznie.",
+				"label": "Przechowuj aktywność przez",
+				"unit": "dni",
+				"keepForever": "Przechowuj zawsze",
+				"placeholder": "np. 90",
+				"saveButton": "Zapisz",
+				"toastUpdated": "Zaktualizowano ustawienie przechowywania aktywności",
+				"toastUpdateError": "Nie udało się zaktualizować ustawienia przechowywania aktywności",
+				"notEnforcedNotice": "To ustawienie nie jest jeszcze egzekwowane: żadna aktywność nie jest usuwana automatycznie. Automatyczne czyszczenie to planowany kolejny krok."
+			}
 		},
 		"workspaceLabels": {
 			"cardDescription": "Zarządzaj etykietami, które można przypisywać do zadań.",

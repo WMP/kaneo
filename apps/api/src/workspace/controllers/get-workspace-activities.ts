@@ -21,18 +21,23 @@ function parseFilterDate(value: string, field: "from" | "to") {
   return date;
 }
 
-export type GetWorkspaceActivitiesOptions = {
+export type WorkspaceActivityFilters = {
   userId?: string;
   type?: string;
   from?: string;
   to?: string;
+};
+
+export type GetWorkspaceActivitiesOptions = WorkspaceActivityFilters & {
   page?: number;
   limit?: number;
 };
 
-async function getWorkspaceActivities(
+// Shared by the paginated listing and the export endpoint, so the two
+// surfaces can never drift on what counts as "matching activity".
+export function buildWorkspaceActivityWhereClause(
   workspaceId: string,
-  options: GetWorkspaceActivitiesOptions = {},
+  options: WorkspaceActivityFilters = {},
 ) {
   const conditions = [eq(projectTable.workspaceId, workspaceId)];
 
@@ -56,7 +61,14 @@ async function getWorkspaceActivities(
     );
   }
 
-  const whereClause = and(...conditions);
+  return and(...conditions);
+}
+
+async function getWorkspaceActivities(
+  workspaceId: string,
+  options: GetWorkspaceActivitiesOptions = {},
+) {
+  const whereClause = buildWorkspaceActivityWhereClause(workspaceId, options);
 
   const page = options.page && options.page > 0 ? options.page : 1;
   const pageSize =

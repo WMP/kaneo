@@ -2959,6 +2959,54 @@
 								"transferring",
 								"confirm"
 							]
+						},
+						"activityRetention": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"subtitle": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"unit": {
+									"type": "string"
+								},
+								"keepForever": {
+									"type": "string"
+								},
+								"placeholder": {
+									"type": "string"
+								},
+								"saveButton": {
+									"type": "string"
+								},
+								"toastUpdated": {
+									"type": "string"
+								},
+								"toastUpdateError": {
+									"type": "string"
+								},
+								"notEnforcedNotice": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"title",
+								"subtitle",
+								"label",
+								"unit",
+								"keepForever",
+								"placeholder",
+								"saveButton",
+								"toastUpdated",
+								"toastUpdateError",
+								"notEnforcedNotice"
+							]
 						}
 					},
 					"required": [
@@ -2985,7 +3033,8 @@
 						"toastDeleted",
 						"toastDeleteError",
 						"validation",
-						"transferOwnership"
+						"transferOwnership",
+						"activityRetention"
 					]
 				},
 				"workspaceRoles": {
@@ -4099,6 +4148,12 @@
 						"giteaSectionSubtitle": {
 							"type": "string"
 						},
+						"gitlabSectionTitle": {
+							"type": "string"
+						},
+						"gitlabSectionSubtitle": {
+							"type": "string"
+						},
 						"discordSectionTitle": {
 							"type": "string"
 						},
@@ -4138,6 +4193,8 @@
 						"githubSectionSubtitle",
 						"giteaSectionTitle",
 						"giteaSectionSubtitle",
+						"gitlabSectionTitle",
+						"gitlabSectionSubtitle",
 						"discordSectionTitle",
 						"discordSectionSubtitle",
 						"genericWebhookSectionTitle",
@@ -5104,6 +5161,324 @@
 						"browseNeedsCredentials",
 						"loadingRepos",
 						"retry"
+					]
+				},
+				"gitlabIntegration": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"validation": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"baseUrlRequired": {
+									"type": "string"
+								},
+								"baseUrlInvalid": {
+									"type": "string"
+								},
+								"pathRequired": {
+									"type": "string"
+								},
+								"pathInvalid": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"baseUrlRequired",
+								"baseUrlInvalid",
+								"pathRequired",
+								"pathInvalid"
+							]
+						},
+						"toast": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"verifyOk": {
+									"type": "string"
+								},
+								"verifyWarning": {
+									"type": "string"
+								},
+								"projectNotFound": {
+									"type": "string"
+								},
+								"redirected": {
+									"type": "string"
+								},
+								"notGitlabInstance": {
+									"type": "string"
+								},
+								"verifyError": {
+									"type": "string"
+								},
+								"tokenRequired": {
+									"type": "string"
+								},
+								"tokenRequiredVerify": {
+									"type": "string"
+								},
+								"verifyFirst": {
+									"type": "string"
+								},
+								"updated": {
+									"type": "string"
+								},
+								"updateError": {
+									"type": "string"
+								},
+								"removed": {
+									"type": "string"
+								},
+								"removeError": {
+									"type": "string"
+								},
+								"issuesImported": {
+									"type": "string"
+								},
+								"importError": {
+									"type": "string"
+								},
+								"commentOnEnabled": {
+									"type": "string"
+								},
+								"commentOnDisabled": {
+									"type": "string"
+								},
+								"settingsUpdateError": {
+									"type": "string"
+								},
+								"secretCopied": {
+									"type": "string"
+								},
+								"unableToCopySecret": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"verifyOk",
+								"verifyWarning",
+								"projectNotFound",
+								"redirected",
+								"notGitlabInstance",
+								"verifyError",
+								"tokenRequired",
+								"tokenRequiredVerify",
+								"verifyFirst",
+								"updated",
+								"updateError",
+								"removed",
+								"removeError",
+								"issuesImported",
+								"importError",
+								"commentOnEnabled",
+								"commentOnDisabled",
+								"settingsUpdateError",
+								"secretCopied",
+								"unableToCopySecret"
+							]
+						},
+						"webhookShow": {
+							"type": "string"
+						},
+						"webhookHide": {
+							"type": "string"
+						},
+						"webhookCopy": {
+							"type": "string"
+						},
+						"connectionStatus": {
+							"type": "string"
+						},
+						"connectedActive": {
+							"type": "string"
+						},
+						"notConnectedHint": {
+							"type": "string"
+						},
+						"badgeConnected": {
+							"type": "string"
+						},
+						"badgeNotConnected": {
+							"type": "string"
+						},
+						"project": {
+							"type": "string"
+						},
+						"projectHint": {
+							"type": "string"
+						},
+						"commentTaskLinkTitle": {
+							"type": "string"
+						},
+						"commentTaskLinkHint": {
+							"type": "string"
+						},
+						"webhookTitle": {
+							"type": "string"
+						},
+						"webhookHint": {
+							"type": "string"
+						},
+						"webhookSecretLabel": {
+							"type": "string"
+						},
+						"baseUrlLabel": {
+							"type": "string"
+						},
+						"baseUrlHint": {
+							"type": "string"
+						},
+						"tokenTypeLabel": {
+							"type": "string"
+						},
+						"tokenTypeHint": {
+							"type": "string"
+						},
+						"tokenTypePrivate": {
+							"type": "string"
+						},
+						"tokenTypeBearer": {
+							"type": "string"
+						},
+						"tokenLabel": {
+							"type": "string"
+						},
+						"tokenHint": {
+							"type": "string"
+						},
+						"tokenPlaceholder": {
+							"type": "string"
+						},
+						"tokenPlaceholderUpdate": {
+							"type": "string"
+						},
+						"currentToken": {
+							"type": "string"
+						},
+						"projectPathLabel": {
+							"type": "string"
+						},
+						"projectPathHint": {
+							"type": "string"
+						},
+						"actionsTitle": {
+							"type": "string"
+						},
+						"actionsHint": {
+							"type": "string"
+						},
+						"browse": {
+							"type": "string"
+						},
+						"verify": {
+							"type": "string"
+						},
+						"update": {
+							"type": "string"
+						},
+						"connect": {
+							"type": "string"
+						},
+						"disconnect": {
+							"type": "string"
+						},
+						"importSectionTitle": {
+							"type": "string"
+						},
+						"importSectionHint": {
+							"type": "string"
+						},
+						"importing": {
+							"type": "string"
+						},
+						"importIssues": {
+							"type": "string"
+						},
+						"importDisabledHint": {
+							"type": "string"
+						},
+						"browseModalTitle": {
+							"type": "string"
+						},
+						"browseModalHint": {
+							"type": "string"
+						},
+						"searchProjects": {
+							"type": "string"
+						},
+						"browseNeedsCredentials": {
+							"type": "string"
+						},
+						"loadingProjects": {
+							"type": "string"
+						},
+						"loadProjectsError": {
+							"type": "string"
+						},
+						"openInGitlab": {
+							"type": "string"
+						},
+						"retry": {
+							"type": "string"
+						},
+						"importPermissionHint": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"validation",
+						"toast",
+						"webhookShow",
+						"webhookHide",
+						"webhookCopy",
+						"connectionStatus",
+						"connectedActive",
+						"notConnectedHint",
+						"badgeConnected",
+						"badgeNotConnected",
+						"project",
+						"projectHint",
+						"commentTaskLinkTitle",
+						"commentTaskLinkHint",
+						"webhookTitle",
+						"webhookHint",
+						"webhookSecretLabel",
+						"baseUrlLabel",
+						"baseUrlHint",
+						"tokenTypeLabel",
+						"tokenTypeHint",
+						"tokenTypePrivate",
+						"tokenTypeBearer",
+						"tokenLabel",
+						"tokenHint",
+						"tokenPlaceholder",
+						"tokenPlaceholderUpdate",
+						"currentToken",
+						"projectPathLabel",
+						"projectPathHint",
+						"actionsTitle",
+						"actionsHint",
+						"browse",
+						"verify",
+						"update",
+						"connect",
+						"disconnect",
+						"importSectionTitle",
+						"importSectionHint",
+						"importing",
+						"importIssues",
+						"importDisabledHint",
+						"browseModalTitle",
+						"browseModalHint",
+						"searchProjects",
+						"browseNeedsCredentials",
+						"loadingProjects",
+						"loadProjectsError",
+						"openInGitlab",
+						"retry",
+						"importPermissionHint"
 					]
 				},
 				"slackIntegration": {
@@ -6192,6 +6567,12 @@
 						"giteaHint": {
 							"type": "string"
 						},
+						"gitlabHeading": {
+							"type": "string"
+						},
+						"gitlabHint": {
+							"type": "string"
+						},
 						"selectColumnPlaceholder": {
 							"type": "string"
 						},
@@ -6237,6 +6618,8 @@
 						"githubHint",
 						"giteaHeading",
 						"giteaHint",
+						"gitlabHeading",
+						"gitlabHint",
 						"selectColumnPlaceholder",
 						"toastUpdated",
 						"toastError",
@@ -6560,6 +6943,7 @@
 				"customFields",
 				"githubIntegration",
 				"giteaIntegration",
+				"gitlabIntegration",
 				"slackIntegration",
 				"discordIntegration",
 				"mattermostIntegration",
@@ -6675,6 +7059,9 @@
 						"members": {
 							"type": "string"
 						},
+						"activity": {
+							"type": "string"
+						},
 						"invitations": {
 							"type": "string"
 						},
@@ -6689,6 +7076,7 @@
 						"overview",
 						"projects",
 						"members",
+						"activity",
 						"invitations",
 						"more",
 						"backToBoard"
@@ -7332,13 +7720,10 @@
 					"type": "object",
 					"additionalProperties": false,
 					"properties": {
-						"github": {
-							"type": "string"
-						},
 						"viewGithubProfile": {
 							"type": "string"
 						},
-						"commentedOnGithub": {
+						"commentedOnForge": {
 							"type": "string"
 						},
 						"cannotBeEmpty": {
@@ -7714,9 +8099,8 @@
 						}
 					},
 					"required": [
-						"github",
 						"viewGithubProfile",
-						"commentedOnGithub",
+						"commentedOnForge",
 						"cannotBeEmpty",
 						"mustBeLoggedInToEdit",
 						"updated",
@@ -10342,6 +10726,144 @@
 						"suggestionCompleted"
 					]
 				},
+				"activityLog": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"pageTitle": {
+							"type": "string"
+						},
+						"backToDashboard": {
+							"type": "string"
+						},
+						"filters": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"user": {
+									"type": "string"
+								},
+								"allUsers": {
+									"type": "string"
+								},
+								"type": {
+									"type": "string"
+								},
+								"allTypes": {
+									"type": "string"
+								},
+								"from": {
+									"type": "string"
+								},
+								"to": {
+									"type": "string"
+								}
+							},
+							"required": ["user", "allUsers", "type", "allTypes", "from", "to"]
+						},
+						"types": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"comment": {
+									"type": "string"
+								},
+								"created": {
+									"type": "string"
+								},
+								"moved": {
+									"type": "string"
+								},
+								"status_changed": {
+									"type": "string"
+								},
+								"priority_changed": {
+									"type": "string"
+								},
+								"assignee_changed": {
+									"type": "string"
+								},
+								"unassigned": {
+									"type": "string"
+								},
+								"due_date_changed": {
+									"type": "string"
+								},
+								"title_changed": {
+									"type": "string"
+								},
+								"description_changed": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"comment",
+								"created",
+								"moved",
+								"status_changed",
+								"priority_changed",
+								"assignee_changed",
+								"unassigned",
+								"due_date_changed",
+								"title_changed",
+								"description_changed"
+							]
+						},
+						"pagination": {
+							"type": "string"
+						},
+						"emptyTitle": {
+							"type": "string"
+						},
+						"emptyDescription": {
+							"type": "string"
+						},
+						"emptyFilteredTitle": {
+							"type": "string"
+						},
+						"emptyFilteredDescription": {
+							"type": "string"
+						},
+						"error": {
+							"type": "string"
+						},
+						"export": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"csv": {
+									"type": "string"
+								},
+								"json": {
+									"type": "string"
+								},
+								"error": {
+									"type": "string"
+								},
+								"truncated": {
+									"type": "string"
+								}
+							},
+							"required": ["label", "csv", "json", "error", "truncated"]
+						}
+					},
+					"required": [
+						"pageTitle",
+						"backToDashboard",
+						"filters",
+						"types",
+						"pagination",
+						"emptyTitle",
+						"emptyDescription",
+						"emptyFilteredTitle",
+						"emptyFilteredDescription",
+						"error",
+						"export"
+					]
+				},
 				"create": {
 					"type": "object",
 					"additionalProperties": false,
@@ -10399,7 +10921,7 @@
 					]
 				}
 			},
-			"required": ["projects", "search", "create"]
+			"required": ["projects", "search", "activityLog", "create"]
 		},
 		"team": {
 			"type": "object",

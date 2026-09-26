@@ -65,3 +65,22 @@ export const workspaceActivityListSchema = z
       .openapi("WorkspaceActivityPagination"),
   })
   .openapi("WorkspaceActivityList");
+
+export const workspaceActivityExportSchema = z
+  .object({
+    data: z.array(workspaceActivitySchema),
+    truncated: z.boolean().openapi({
+      description:
+        "True when more matching activity exists than the export row cap; narrow the filters to export the rest.",
+    }),
+  })
+  .openapi("WorkspaceActivityExport");
+
+export const workspaceActivityRetentionSchema = z
+  .object({
+    activityRetentionDays: z.number().int().positive().nullable().openapi({
+      description:
+        "Days of activity history to keep, or null when retention is disabled (keep forever, the default).",
+    }),
+  })
+  .openapi("WorkspaceActivityRetention");

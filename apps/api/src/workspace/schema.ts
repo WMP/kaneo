@@ -26,3 +26,20 @@ export const workspaceActivityQuery = z.object({
   page: pagingNumber(1, 1_000_000).optional(),
   limit: pagingNumber(1, 100).optional(),
 });
+
+export const workspaceActivityExportQuery = z.object({
+  userId: workspaceActivityQuery.shape.userId,
+  type: workspaceActivityQuery.shape.type,
+  from: workspaceActivityQuery.shape.from,
+  to: workspaceActivityQuery.shape.to,
+  format: z.enum(["csv", "json"]).optional().openapi({
+    description: 'Export format. Defaults to "csv".',
+  }),
+});
+
+export const updateWorkspaceActivityRetentionBody = z.object({
+  activityRetentionDays: z.number().int().min(0).max(3650).nullable().openapi({
+    description:
+      "Days of activity history to keep. 0 or null disables retention (keep forever), which is the default. This setting is not currently enforced by any automatic deletion; it is stored for a future opt-in pruning job.",
+  }),
+});
