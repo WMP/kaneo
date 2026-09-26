@@ -7,6 +7,7 @@ import {
   isToday,
 } from "date-fns";
 import {
+  AlertTriangle,
   Calendar,
   ChevronDown,
   ChevronLeft,
@@ -1514,6 +1515,28 @@ function RouteComponent() {
               <RouteIcon className="size-3.5" />
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
+
+            {/* Cross-project/dateless dependencies never participate in the
+                critical-path network (computeCriticalPath has no row or
+                duration to reason about for them — see its own inScopeEdges
+                comment), so a task genuinely made critical by one of them
+                would otherwise silently read as "not critical" here. Shown
+                only while the toggle is actually on (droppedEdgeCount isn't
+                computed at all otherwise) and only when there's something to
+                warn about. */}
+            {showCriticalPath &&
+              criticalPath &&
+              criticalPath.droppedEdgeCount > 0 && (
+                <span
+                  className="flex shrink-0 items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 py-1 text-[11px] font-medium text-warning-foreground"
+                  title={t("tasks:gantt.criticalPathDroppedEdgesHint")}
+                >
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  {t("tasks:gantt.criticalPathDroppedEdges", {
+                    count: criticalPath.droppedEdgeCount,
+                  })}
+                </span>
+              )}
 
             <fieldset className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
               <legend className="sr-only">
