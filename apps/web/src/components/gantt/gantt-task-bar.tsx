@@ -16,6 +16,7 @@ import {
   getBarEdgeInsetPx,
   getBarGridColumns,
   MIN_BAR_CONTENT_PX,
+  MIN_BAR_HOVER_HIT_PX,
 } from "./timeline";
 
 const CLICK_MOVE_THRESHOLD_PX = 4;
@@ -641,7 +642,15 @@ export function GanttTaskBar({
             bubbles up to this ancestor regardless of which child is
             hovered/focused. */}
         <div
-          style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
+          style={{
+            gridColumn: `${lineStart} / ${lineEnd}`,
+            // Guarantees a comfortable hover/pointer footprint at Month/
+            // Quarter even when this cell's own grid track compresses to a
+            // few px — see MIN_BAR_HOVER_HIT_PX. The visible bar inside
+            // still renders at its own (possibly narrower) computed width;
+            // this only widens the ancestor box hover/focus is tracked on.
+            minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
+          }}
           className="group relative"
         >
           {violationBadge}
@@ -738,9 +747,20 @@ export function GanttTaskBar({
               // pointer-events-auto in its own class list) — this handle,
               // living outside that div, needs its own or it renders
               // visible but is entirely unclickable.
-              "pointer-events-auto absolute z-30 size-4 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
+              //
+              // pointer-events stays "none" while idle (opacity-0, same
+              // condition below) rather than always "auto": this handle sits
+              // right at the bar's own finish edge — the same place its
+              // resize-due handle lives — and a transparent, always-hit-
+              // testable circle there would intercept clicks meant for that
+              // resize handle even while invisible. It only needs pointer
+              // events once it's actually shown (hover/focus-within), so
+              // both toggle on the same triggers. Keyboard Tab still reaches
+              // the button regardless — pointer-events only gates pointer
+              // input, not focusability.
+              "pointer-events-none absolute z-30 size-4 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
               "flex items-center justify-center",
-              "group-hover:opacity-100 group-focus-within:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+              "group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 hover:pointer-events-auto hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             )}
           >
             <Link2Icon className="size-2.5" aria-hidden="true" />

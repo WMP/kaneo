@@ -66,6 +66,7 @@ import {
   type GanttUnit,
   getBarEdgeInsetPx,
   getBarGridColumns,
+  MIN_BAR_HOVER_HIT_PX,
   parseTaskDate,
   pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
@@ -936,9 +937,19 @@ function RouteComponent() {
         barsLeftPx + (lineEnd - 1) * pixelsPerDay,
         barEdgeInsetPx,
       );
+      // Widened, symmetrically, to at least MIN_BAR_HOVER_HIT_PX — the same
+      // floor GanttTaskBar's own outer wrapper enforces via CSS min-width
+      // (see gantt-task-bar.tsx). Without this, a dependency line would
+      // anchor to (and a "blocks" edge's type label clear of) the narrower
+      // MIN_BAR_CONTENT_PX-only box computeInsetBarBox returns on its own,
+      // which at Month/Quarter can end up visibly narrower than the bar's
+      // real, hoverable rendered width — exactly the mismatch that let a
+      // type label land back on top of a bar's own hover area.
+      const hoverWidth = box.right - box.left;
+      const hoverGrow = Math.max(0, MIN_BAR_HOVER_HIT_PX - hoverWidth) / 2;
       boxes.set(task.id, {
-        left: box.left,
-        right: box.right,
+        left: box.left - hoverGrow,
+        right: box.right + hoverGrow,
         top: row.top,
         height: row.height,
       });

@@ -503,6 +503,58 @@ describe("buildDependencyEdges", () => {
     expect(related.typeLabelPoint).toBeNull();
   });
 
+  it("keeps a type label clear of the source bar's own box even when the raw corner point would fall on top of it", () => {
+    // A tight lag between closely-scheduled tasks — the realistic shape at
+    // Month/Quarter zoom, where many days compress into a couple of pixels
+    // — puts the target's box (and so the elbow's own near-source corner)
+    // almost flush against the source's. Without clearing, the label would
+    // land back on top of the (narrow, MIN_BAR_HOVER_HIT_PX-clamped) source
+    // bar itself, both misreading as belonging to it and stealing its hover.
+    const boxes = new Map<string, TaskBarBox>([
+      ["gate", { left: 0, right: 20, top: 0, height: 40 }],
+      ["wave", { left: 24, right: 44, top: 80, height: 40 }],
+    ]);
+    const [edge] = buildDependencyEdges(
+      [
+        {
+          id: "e1",
+          sourceTaskId: "gate",
+          targetTaskId: "wave",
+          relationType: "blocks",
+        },
+      ],
+      boxes,
+    );
+
+    expect(edge.typeLabelPoint).not.toBeNull();
+    expect(edge.typeLabelPoint?.x).toBeGreaterThan(20);
+  });
+
+  it("clears the label on the correct side for a dependency type that exits the source's START edge", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["gate", { left: 100, right: 120, top: 0, height: 40 }],
+      ["wave", { left: 10, right: 30, top: 80, height: 40 }],
+    ]);
+    const [edge] = buildDependencyEdges(
+      [
+        {
+          id: "e1",
+          sourceTaskId: "gate",
+          targetTaskId: "wave",
+          relationType: "blocks",
+          // "ss"/"sf" anchor the source at its START edge, exiting to the
+          // left — clearing must push the label further LEFT of that edge,
+          // not right (which is what the default "fs" case above checks).
+          dependencyType: "ss",
+        },
+      ],
+      boxes,
+    );
+
+    expect(edge.typeLabelPoint).not.toBeNull();
+    expect(edge.typeLabelPoint?.x).toBeLessThan(100);
+  });
+
   it("fans out several 'blocks' edges leaving the same source task, offsetting each further one's type label vertically", () => {
     const boxes = new Map<string, TaskBarBox>([
       ["gate", { left: 0, right: 100, top: 0, height: 40 }],

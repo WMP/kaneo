@@ -2,7 +2,7 @@ import { Diamond } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import type { GanttBarEmphasis } from "./timeline";
-import { getBarGridColumns } from "./timeline";
+import { getBarGridColumns, MIN_BAR_HOVER_HIT_PX } from "./timeline";
 
 export type ExternalGanttTask = {
   id: string;
@@ -99,7 +99,13 @@ export function GanttExternalTaskBar({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; there is nothing to activate here since the task isn't editable from this board. */}
       <div
         data-gantt-external-bar=""
-        style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
+        style={{
+          gridColumn: `${lineStart} / ${lineEnd}`,
+          // See MIN_BAR_HOVER_HIT_PX: guarantees a comfortable hover/pointer
+          // footprint at Month/Quarter regardless of how narrow this row's
+          // own date-range track compresses to.
+          minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
+        }}
         onMouseEnter={() => onHoverChange?.(true)}
         onMouseLeave={() => onHoverChange?.(false)}
         className={cn(
