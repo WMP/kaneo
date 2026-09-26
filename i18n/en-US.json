@@ -1742,6 +1742,7 @@
 			"overview": "Overview",
 			"projects": "Projects",
 			"members": "Members",
+			"workload": "Workload",
 			"invitations": "Invitations",
 			"more": "More",
 			"backToBoard": "Back to board"
@@ -2530,6 +2531,25 @@
 			"suggestionFeature": "Feature",
 			"suggestionInProgress": "In progress",
 			"suggestionCompleted": "Completed"
+		},
+		"workload": {
+			"pageTitle": "Workload",
+			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
+			"previousWeeks": "Previous weeks",
+			"nextWeeks": "Next weeks",
+			"jumpToToday": "Today",
+			"overloadThresholdValue": "Highlight above {{count}}",
+			"assigneeColumn": "Assignee",
+			"unassigned": "Unassigned",
+			"loading": "Loading workload...",
+			"error": "Failed to load workload",
+			"emptyTitle": "Nothing scheduled",
+			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
+			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
+			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
+			"overloadedSrLabel": "Overloaded",
+			"legendLoad": "Fewer → more tasks",
+			"legendOverload": "Above {{count}} concurrent tasks"
 		},
 		"create": {
 			"pageTitle": "Create Workspace",

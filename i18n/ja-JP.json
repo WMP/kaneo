@@ -1741,7 +1741,8 @@
 			"members": "メンバー",
 			"invitations": "招待",
 			"more": "その他",
-			"backToBoard": "ボードに戻る"
+			"backToBoard": "ボードに戻る",
+			"workload": "Workload"
 		},
 		"projectList": {
 			"viewProject": "プロジェクトを表示",
@@ -2535,6 +2536,25 @@
 			"submit": "ワークスペースを作成",
 			"success": "ワークスペースを作成しました",
 			"error": "ワークスペースの作成に失敗しました"
+		},
+		"workload": {
+			"assigneeColumn": "Assignee",
+			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
+			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
+			"emptyTitle": "Nothing scheduled",
+			"error": "Failed to load workload",
+			"jumpToToday": "Today",
+			"legendLoad": "Fewer → more tasks",
+			"legendOverload": "Above {{count}} concurrent tasks",
+			"loading": "Loading workload...",
+			"nextWeeks": "Next weeks",
+			"overloadedSrLabel": "Overloaded",
+			"overloadThresholdValue": "Highlight above {{count}}",
+			"pageTitle": "Workload",
+			"previousWeeks": "Previous weeks",
+			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
+			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
+			"unassigned": "Unassigned"
 		}
 	},
 	"team": {

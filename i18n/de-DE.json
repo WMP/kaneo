@@ -1744,7 +1744,8 @@
 			"members": "Mitglieder",
 			"invitations": "Einladungen",
 			"more": "Mehr",
-			"backToBoard": "Zurück zum Board"
+			"backToBoard": "Zurück zum Board",
+			"workload": "Workload"
 		},
 		"projectList": {
 			"viewProject": "Projekt ansehen",
@@ -2544,6 +2545,25 @@
 			"submit": "Workspace erstellen",
 			"success": "Workspace erfolgreich erstellt",
 			"error": "Workspace konnte nicht erstellt werden"
+		},
+		"workload": {
+			"assigneeColumn": "Assignee",
+			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
+			"emptyDescription": "No dated, active tasks fall in this range. Try a different range, or give tasks a start or due date to see them here.",
+			"emptyTitle": "Nothing scheduled",
+			"error": "Failed to load workload",
+			"jumpToToday": "Today",
+			"legendLoad": "Fewer → more tasks",
+			"legendOverload": "Above {{count}} concurrent tasks",
+			"loading": "Loading workload...",
+			"nextWeeks": "Next weeks",
+			"overloadedSrLabel": "Overloaded",
+			"overloadThresholdValue": "Highlight above {{count}}",
+			"pageTitle": "Workload",
+			"previousWeeks": "Previous weeks",
+			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
+			"truncatedNotice": "Showing a partial result: narrow the date range to see every task.",
+			"unassigned": "Unassigned"
 		}
 	},
 	"team": {

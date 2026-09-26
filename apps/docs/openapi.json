@@ -3719,6 +3719,89 @@
           "role"
         ]
       },
+      "WorkspaceWorkload": {
+        "type": "object",
+        "properties": {
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkloadBucket"
+            }
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkloadAssignee"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True when the number of matching tasks hit the safety cap and results are incomplete. Narrow the date range to see everything."
+          }
+        },
+        "required": [
+          "buckets",
+          "assignees",
+          "truncated"
+        ]
+      },
+      "WorkloadBucket": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Exclusive end of the bucket's 7-day window."
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "WorkloadAssignee": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The assignee, or null for the unassigned row."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The assignee's display name, or null for the unassigned row; the caller supplies its own label for it."
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Dated, not-done tasks active in each bucket, aligned by index with `buckets`. A task with a start and due date spanning several buckets is counted in every one it touches."
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "image",
+          "counts"
+        ]
+      },
       "CustomFieldDefinition": {
         "type": "object",
         "properties": {
@@ -16494,6 +16577,83 @@
           },
           "400": {
             "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workload/{workspaceId}": {
+      "get": {
+        "operationId": "getWorkspaceWorkload",
+        "tags": [
+          "Workload"
+        ],
+        "summary": "Get workspace workload",
+        "description": "Aggregate a workspace's dated, not-done tasks by assignee over weekly buckets across a date range, for spotting who is overloaded. A task with neither a start nor a due date is excluded; one with only a start or only a due date counts as a single day on that date. Unassigned tasks are grouped into their own row.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Inclusive start date (YYYY-MM-DD)."
+            },
+            "required": true,
+            "description": "Inclusive start date (YYYY-MM-DD).",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week."
+            },
+            "required": true,
+            "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week.",
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-assignee weekly workload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceWorkload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined, or the date range is invalid",
             "content": {
               "text/plain": {
                 "schema": {
