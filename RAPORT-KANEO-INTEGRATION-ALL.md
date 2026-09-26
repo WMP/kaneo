@@ -65,7 +65,11 @@ przez API i bazę.
 
 ---
 
-## 3. Tabela zbiorcza — 16 zarzutów z poprzedniego raportu
+## 3. Tabela zbiorcza — 21 zarzutów z poprzedniego raportu
+
+Pozycje 1–16 to główne zarzuty z tabeli poprzedniego raportu. Pozycje 17–21 to
+usterki użyteczności wykresu, które poprzednio opisałem w części „co bym
+zmienił”. Sprawdziłem wszystkie.
 
 | # | Zarzut | Werdykt |
 |---|---|---|
@@ -75,7 +79,7 @@ przez API i bazę.
 | 4 | Eksport bez postępu, kamieni, planu bazowego, ograniczeń i relacji | **naprawione częściowo** |
 | 5 | Ścieżka krytyczna pomijała zależności międzyprojektowe | **naprawione** |
 | 6 | MCP nie ustawiał żadnego z nowych pól | **naprawione** |
-| 7 | 87 ze 122 komunikatów nowych funkcji po angielsku | **naprawione po polsku**, pozostałe 18 języków bez zmian |
+| 7 | 87 ze 122 komunikatów nowych funkcji po angielsku | **naprawione po polsku poza dwiema grupami** (relacje, pola własne), pozostałe 18 języków bez zmian |
 | 8 | Brak wirtualizacji — 1200 wierszy naraz w DOM | **naprawione** |
 | 9 | Pełne pobieranie listy zadań co ~25 s | **naprawione** |
 | 10 | Brak masowej zmiany postępu | **naprawione** |
@@ -85,8 +89,14 @@ przez API i bazę.
 | 14 | Plan bazowy nie pokazywał liczby dni poślizgu | **naprawione** |
 | 15 | Etykiety opóźnień zlewały się w węzłach rozgałęzienia | **naprawione** (stos, przy dużym rozgałęzieniu ciasny) |
 | 16 | Brak znacznika „po terminie” | **naprawione** (chip „Overdue”) |
+| 17 | Podświetlanie po najechaniu nie działało w widoku Kwartał | **naprawione** |
+| 18 | Słupek zbiorczy podzadań bez wskaźnika postępu | **naprawione** |
+| 19 | Uchwyt zależności zasłaniał uchwyt zmiany długości | **naprawione częściowo** |
+| 20 | Przeciąganie kolumny nazw zaznaczało tekst | **naprawione częściowo** |
+| 21 | Cieniowanie dni wolnych zbyt słabe w trybie ciemnym | **naprawione wg kodu** (niepotwierdzone pomiarem) |
 
-Bilans: **13 zamkniętych, 3 zamknięte częściowo**.
+Bilans: **15 zamkniętych, 5 zamkniętych częściowo, 1 potwierdzony tylko
+w kodzie** (pozycja 21 — nie zmierzyłem kontrastu na ekranie, punkt 9.8).
 
 Do tego doszły dwie funkcje, o które prosiłem w kategorii „miłe w posiadaniu”:
 **bramki zgód klientów** (z zastrzeżeniami — punkt 6.3) oraz **pola własne
@@ -247,26 +257,37 @@ zaległości po powrocie do karty.
 ![Projekt z 1200 zadaniami po wprowadzeniu wirtualizacji](raport-zrzuty-2/09-skala-1200-wirtualizacja.png)
 *Ten sam test skali co poprzednio. W DOM jest kilkanaście wierszy zamiast 1201.*
 
-### 4.6. Tłumaczenia — po polsku zrobione
+### 4.6. Tłumaczenia — po polsku prawie zrobione
 
-| Grupa komunikatów | Kluczy | Po angielsku |
+Poprzednio 87 ze 122 komunikatów nowych funkcji było po angielsku. Teraz
+policzyłem to odtwarzalnie: wziąłem klucze, które ta gałąź dodaje względem
+`main`, zawęziłem do obszaru planowania i sprawdziłem, ile z nich ma
+w `i18n/pl-PL.json` wartość identyczną z angielską.
+
+| Grupa komunikatów | Nowych kluczy | Po angielsku w pl |
 |---|---|---|
-| Gantt i pola zadania | 99 | 6 |
+| Gantt: słupki, plan bazowy, ograniczenia | 59 | 6 |
+| Dziennik i retencja | 45 | 1 |
 | Kalendarz roboczy | 29 | 0 |
-| Portfel | 13 | 1 |
 | Obłożenie zasobów | 18 | 0 |
-| Dziennik obszaru roboczego | 10 | 0 |
-| Bramki zgód | 12 | 0 |
-| **Razem** | **181** | **7** |
+| Portfel | 13 | 1 |
+| Bramki zgód | 10 | 0 |
+| Relacje i typy zależności | 18 | **18** |
+| Pola własne, duplikat, operacje zbiorcze | 16 | **16** |
+| **Razem** | **208** | **42** |
 
-Z tych 7 dwa to czyste wzorce interpolacji (`{{start}} – {{end}}`), więc realnych
-braków jest **5**: etykieta „Portfolio” w pasku bocznym i cztery nazwy typów
-ograniczeń dat („Start no earlier than” itd.). Poprzednio było 87 ze 122.
+Sześć z tych 42 to wartości, które mają zostać bez zmian: skróty FS/SS/FF/SF
+i wzorce formatowania (`{{start}} – {{end}}`). Realnych braków jest **36**,
+i one nie rozkładają się równomiernie — **dwie grupy są nietknięte w całości**:
+relacje (punkt 6.5) oraz pola własne z duplikowaniem zadania. Wszystko, co
+dotyczy samego wykresu, kalendarza, dziennika, portfela, obłożenia i bramek
+zgód, jest po polsku.
 
 Doszedł też raport CI `pnpm i18n:untranslated` — nieblokujący, wykrywa wartości
 identyczne z angielskimi. To dokładnie ta kontrola procesu, o którą prosiłem:
 poprzednio kontrola sprawdzała tylko obecność klucza, więc angielski tekst
-w polskim pliku przechodził.
+w polskim pliku przechodził. Gdyby ten raport blokował scalanie, obie luki
+wyżej nie weszłyby na gałąź.
 
 ### 4.7. Typ zależności wprost na wykresie
 
@@ -278,7 +299,8 @@ Teraz każda linia ma podpis typu i opóźnienia („FS”, „SS +15d”, „FF
 „SS +25d”), a w legendzie jest chip **„Type (click to change)”**. Sprawdziłem
 to kliknięciem: etykieta jest przyciskiem, a kliknięcie otwiera wprost na
 wykresie okno z wyborem typu (Finish → Start, Start → Start, …), polem
-„Lag (days)” i przyciskiem zapisu.
+„Lag (days)” i przyciskiem zapisu. Zastrzeżenie: to okno jest po angielsku
+także wtedy, gdy cały interfejs jest po polsku — opisuję to w punkcie 6.5.
 
 ![Gantt z podpisami typów zależności i inicjałami właścicieli](raport-zrzuty-2/08-gantt-angielski.png)
 *Ten jeden zrzut zamyka trzy dawne zarzuty naraz: typ zależności przy linii,
@@ -314,7 +336,61 @@ czerwony znacznik **„Overdue”** w liście zadań.
 *Osiem zależności wychodzących z jednego kamienia milowego — każda etykieta
 czytelna. Po lewej widać znaczniki „Overdue” i wiersz międzyprojektowy AZURE-6.*
 
-### 4.10. Drobne, o które prosiłem
+### 4.10. Podświetlanie działa w widoku Kwartał — i słupki da się trafić
+
+Poprzednio to był dla mnie najbardziej dokuczliwy drobiazg. W widoku Dzień
+najechanie kursorem przygaszało niepowiązane słupki, ale w widoku **Kwartał** —
+czyli tym jedynym, w którym widzę cały roczny plan — słupek miał 3,6 px
+szerokości i nie dało się go trafić. Podświetlanie istniało, tylko nie działało
+tam, gdzie było potrzebne.
+
+Teraz słupek ma gwarantowaną szerokość trafienia **20 px**
+(`MIN_BAR_HOVER_HIT_PX` w `timeline.ts` — obszar trafienia, nie rysunek), więc
+w Kwartale najechanie działa. Zmierzyłem efekt w DOM po najechaniu na „Azure:
+tożsamość (Entra ID) i model uprawnień”:
+
+| Element | Stan po najechaniu |
+|---|---|
+| linie niepowiązane | 97 linii przygaszonych do `stroke-opacity 0.12` |
+| linie dotyczące zadania | 3 linie pogrubione do `stroke-width 2.5` |
+| słupki powiązane | 2 z obwódką `ring-primary` |
+| pozostałe słupki | `opacity-35` |
+
+![Widok Kwartał przed najechaniem](raport-zrzuty-2/14-kwartal-przed-najechaniem.png)
+*Przed najechaniem: wszystkie linie jednakowo czerwone, plątanina.*
+
+![Widok Kwartał po najechaniu](raport-zrzuty-2/15-kwartal-po-najechaniu.png)
+*Po najechaniu na „Azure: tożsamość (Entra ID)”: zostają trzy linie, które
+dotyczą tego zadania. W skali całego roku to jest różnica między „widzę wykres”
+a „rozumiem wykres”.*
+
+### 4.11. Słupek zbiorczy podzadań pokazuje postęp
+
+Poprzednio zwinięta fala pokazywała belkę z zaczepami i żadnej liczby — PM
+patrzył na rodzica i nie wiedział, czy fala jest w 10 %, czy w 90 %.
+
+Teraz słupek zbiorczy ma wypełnienie postępu. Sprawdziłem na „Fala 5: replikacja
+Windows (145 VM)”: dwa podzadania po 45 %, wypełnienie rodzica `width: 45%`.
+Zastrzeżenie do tego pomiaru: przy dwóch dzieciach o równym postępie nie da się
+odróżnić średniej prostej od średniej ważonej czasem trwania. Potwierdziłem, że
+wartość jest liczona i wyświetlana — nie potwierdziłem, według jakiej wagi.
+
+### 4.12. Kaskada nadal liczy się poprawnie
+
+Sprawdziłem, czy nowe funkcje nie zepsuły tego, co działało. Przesunąłem zadanie
+w łańcuchu OVH o 5 dni i porównałem stan bazy przed i po:
+
+- następniki przesunięte dokładnie o **+5 dni**,
+- długość zadania 14-dniowego **zachowana**,
+- opóźnienie `SS +10d` **zachowane**,
+- żadnych przesunięć poza łańcuchem.
+
+Przy włączonej ścieżce krytycznej podświetliło się **15 słupków**, w tym
+1 wiersz z innego projektu. Licznik pominiętych krawędzi
+(`droppedEdgeCount`) wyniósł 0, więc ostrzeżenie o niepełnym grafie słusznie
+się nie pojawiło.
+
+### 4.13. Drobne, o które prosiłem
 
 - **Właściciel zadania widoczny na wykresie** — nazwisko przypisanej osoby jest
   teraz atrybutem słupka.
@@ -398,26 +474,63 @@ kasowałoby stare wpisy. Dokumentacja punktu końcowego mówi to wprost
 co jest uczciwe, ale dla zespołu bezpieczeństwa „retencja skonfigurowana” i
 „retencja działa” to dwie różne rzeczy.
 
+### 5.5. Uchwyt zmiany długości — trafialny, ale nie na środku krawędzi
+
+Poprzednio ikona tworzenia zależności leżała na tej samej krawędzi słupka co
+uchwyt zmiany długości i przechwytywała kliknięcie. Zamiast wydłużyć zadanie,
+PM zaczynał rysować relację.
+
+Teraz da się wydłużyć zadanie, ale trzeba wiedzieć gdzie celować. Test na
+„Fala 1: inwentaryzacja i ocena (341 VM)”:
+
+| Punkt chwytu | Wynik |
+|---|---|
+| dokładnie środek krawędzi | trafia w kropkę relacji, zaczyna się rysowanie zależności |
+| **17 px powyżej/poniżej środka** | zmiana długości działa, data końca 30 lis 2026 → 2 gru 2026 |
+
+Czyli poprawka polega na zmniejszeniu kropki, a nie na rozdzieleniu obu
+gestów. Dla kogoś, kto zna to miejsce — wystarczy. Dla kogoś, kto siada do
+narzędzia pierwszy raz — nadal jest to pułapka. Właściwe rozwiązanie to osobna
+strefa: uchwyt długości na krawędzi, kropka relacji poza obrysem słupka.
+
+### 5.6. Kolumna nazw — koniec zaznaczania tekstu, ale przewijania nadal nie ma
+
+Poprzednio przeciągnięcie po kolumnie z nazwami zadań zaznaczało tekst zamiast
+przesunąć widok. Zaznaczanie zniknęło (w kodzie doszło `select-none`), więc
+ekran nie robi się już niebieski. Ale **przeciąganie kolumny nazw nadal nie
+przewija osi czasu** — trzeba przejść kursorem na obszar wykresu. To pół
+poprawki: usunięto skutek uboczny, nie dodano oczekiwanego zachowania.
+
 ---
 
 ## 6. Czego nie naprawiono i co doszło nowego
 
-### 6.1. Tłumaczenia tylko po polsku
+### 6.1. Tłumaczenia — polski dużo lepszy, reszta nietknięta
 
-Naprawiono **wyłącznie polski**. Pozostałe 18 języków ma w tym samym zestawie
-179 kluczy po ~155–160 komunikatów angielskich — czyli w liczbach bezwzględnych
-**więcej niż przed zmianą**, bo doszły klucze nowych widoków.
+Naprawiono **wyłącznie polski**. Ten sam pomiar co w punkcie 4.6, rozszerzony
+na pozostałe języki:
 
-| Język | Po angielsku / wszystkie |
-|---|---|
-| polski | **7 / 179** |
-| niemiecki | 156 / 179 |
-| francuski | 159 / 179 |
-| niderlandzki | 160 / 179 |
-| chiński | 154 / 179 |
+| Język | Obszar planowania (208 kluczy) | Wszystkie nowe klucze (390) |
+|---|---|---|
+| polski | **42** po angielsku | 199 |
+| francuski | 195 | 360 |
+| niemiecki | 202 | 342 |
+| niderlandzki | 202 | 368 |
+| chiński | 200 | 365 |
 
-Dla wdrożenia w jednej firmie w Polsce to nie jest problem. Dla produktu
-sprzedawanego w 19 językach — jest.
+Czyli pozostałe języki dostały po **6–13 przetłumaczonych kluczy z 208**.
+W liczbach bezwzględnych mają teraz **więcej** komunikatów angielskich niż przed
+zmianą, bo doszły klucze nowych widoków.
+
+Osobna sprawa: gałąź dodaje 390 kluczy, z czego 182 to funkcje spoza mojego
+zakresu, które przyszły przy okazji (integracja GitLab, subskrypcje kalendarza,
+strona bezpieczeństwa konta, tła projektów). Tam polski ma 157 komunikatów
+angielskich. Nie testowałem tych funkcji i nie liczę tego do oceny wykresu, ale
+dla wdrożenia produkcyjnego to widoczny dług.
+
+Dla wdrożenia w jednej firmie w Polsce większość tego jest nieszkodliwa — poza
+oknem, które PM otwiera przy każdej zmianie typu zależności (punkt 6.5). Dla
+produktu sprzedawanego w 19 językach — jest to problem.
 
 ### 6.2. MCP nie zna bramek zgód — i znowu milczy
 
@@ -473,6 +586,29 @@ w produkcie, bo dziś zachowanie jest ciche.
 Lista zadań jest pobierana stronami po 100. Przy 1200 pozycjach to nadal 12
 kolejnych żądań przy każdym wejściu. Wirtualizacja rozwiązała problem
 renderowania, nie problem pobierania.
+
+### 6.5. Nowa luka: okno typu zależności jest po angielsku w polskim interfejsie
+
+To usterka, która powstała razem z funkcją chwaloną w punkcie 4.7. Etykieta
+typu przy linii jest po polsku, legenda mówi „Typ (kliknij, aby zmienić)”, ale
+okno, które się po tym kliknięciu otwiera, **jest w całości po angielsku**:
+„Dependency type”, „Finish → Start”, „Lag (days)”, „Positive delays the start;
+negative (lead) allows overlap.”, „Save”.
+
+![Angielskie okno typu zależności w polskim interfejsie](raport-zrzuty-2/16-okno-typu-zaleznosci-po-angielsku.png)
+*Cały ekran po polsku, jedno okno po angielsku. To nie jest kwestia kodu —
+komponent używa kluczy `t(...)`, tylko `i18n/pl-PL.json` ma w bloku
+`tasks.relations.dependency` wklejone wartości angielskie.*
+
+Sprawdziłem plik tłumaczeń: cały blok `tasks.relations.dependency` w
+`i18n/pl-PL.json` zawiera wartości identyczne z `en-US` — 9 komunikatów do
+przetłumaczenia (`typeLabel`, `lagLabel`, `lagHint`, `save`, `updateError`
+i cztery nazwy typów), plus 6 wartości, które słusznie zostają bez zmian
+(skróty FS/SS/FF/SF i dwa wzorce formatowania).
+
+Naprawa to jedna edycja pliku JSON, bez zmiany kodu. Wymieniam to osobno, bo
+dotyczy okna, w którym PM pracuje najczęściej ze wszystkich nowych elementów
+wykresu.
 
 ---
 
@@ -571,6 +707,12 @@ audyt jest wymaganiem krytycznym:
 6. **Egzekwowania retencji w czasie** — ustawienie zapisuje się, ale nie czekałem,
    czy cokolwiek kasuje (kod pokazuje, że nie).
 7. **Integracji** (GitHub, GitLab, Slack) i powiadomień e-mail — poza zakresem.
+8. **Kontrastu cieniowania dni wolnych w trybie ciemnym.** Wiem z porównania
+   kodu, że klasa zmieniła się z `bg-foreground/[0.06]` na
+   `bg-foreground/[0.1]` — czyli cieniowanie jest o dwie trzecie mocniejsze —
+   ale **nie zmierzyłem kontrastu na ekranie**, więc nie twierdzę, że zarzut
+   jest zamknięty. To jedyna pozycja w tabeli z punktu 3 oparta wyłącznie na
+   kodzie.
 
 ---
 
@@ -609,12 +751,17 @@ Czego bym wymagał przed podpisaniem decyzji wdrożeniowej:
    roboczego** (to drugie wymaga zmiany schematu — `activity.task_id` musi
    dopuszczać brak zadania).
 5. **Widok obłożenia w skali całego roku**, nie tylko ośmiu tygodni od dziś.
+6. **Przetłumaczenie bloku `tasks.relations.dependency` na polski** — dziewięć
+   komunikatów w jednym pliku JSON, bez zmiany kodu. Okno typu zależności jest
+   dziś jedynym miejscem w ścieżce pracy PM-a, które wypada z języka.
 
-Punkty 1 i 3 są tanie i zmieniają ocenę istotnie. Punkt 2 to praca porównywalna
-z tą, która już została wykonana na portfelu. Punkt 4 wymaga migracji schematu.
+Punkty 1, 3 i 6 są tanie i zmieniają ocenę istotnie. Punkt 2 to praca
+porównywalna z tą, która już została wykonana na portfelu. Punkt 4 wymaga
+migracji schematu.
 
 Osobno, poza moim projektem: **tłumaczenia dla 18 pozostałych języków** są nadal
-nietknięte i to jest teraz największy dług tej gałęzi.
+nietknięte — w obszarze planowania przetłumaczono im po 7 ze 152 nowych kluczy.
+To jest teraz największy dług tej gałęzi.
 
 ---
 
