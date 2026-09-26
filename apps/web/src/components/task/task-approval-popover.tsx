@@ -27,6 +27,14 @@ const approvalStatusOptions = [
   "rejected",
 ] as const;
 
+type ApprovalOption = (typeof approvalStatusOptions)[number];
+
+function toApprovalOption(value: string | null | undefined): ApprovalOption {
+  return approvalStatusOptions.includes(value as ApprovalOption)
+    ? (value as ApprovalOption)
+    : "none";
+}
+
 export default function TaskApprovalPopover({
   task,
   children,
@@ -34,12 +42,23 @@ export default function TaskApprovalPopover({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState(task.approvalNote ?? "");
+  // Track the selected status locally so "Save note" persists the status the
+  // user just chose rather than a possibly-stale `task.approvalStatus` prop
+  // (the query has not necessarily refetched between a status click and a note
+  // save). The dedicated approval endpoint requires a status, so a note-only
+  // save must resend one; resending the stale prop value would silently revert
+  // a just-made status change.
+  const [status, setStatus] = useState<ApprovalOption>(
+    toApprovalOption(task.approvalStatus),
+  );
   const { mutateAsync: updateApproval, isPending } = useUpdateTaskApproval();
   const { canUpdateTasks } = useWorkspacePermission();
   const canEdit = canUpdateTasks();
 
   const handleStatusChange = useCallback(
-    async (approvalStatus: (typeof approvalStatusOptions)[number]) => {
+    async (approvalStatus: ApprovalOption) => {
+      const previousStatus = status;
+      setStatus(approvalStatus);
       try {
         await updateApproval({
           taskId: task.id,
@@ -48,6 +67,7 @@ export default function TaskApprovalPopover({
           approvalNote: note.trim() ? note : null,
         });
       } catch (error) {
+        setStatus(previousStatus);
         toast.error(
           error instanceof Error
             ? error.message
@@ -55,7 +75,7 @@ export default function TaskApprovalPopover({
         );
       }
     },
-    [note, t, task.id, task.projectId, updateApproval],
+    [note, status, t, task.id, task.projectId, updateApproval],
   );
 
   const handleSaveNote = useCallback(async () => {
@@ -63,9 +83,7 @@ export default function TaskApprovalPopover({
       await updateApproval({
         taskId: task.id,
         projectId: task.projectId,
-        approvalStatus:
-          (task.approvalStatus as (typeof approvalStatusOptions)[number]) ??
-          "none",
+        approvalStatus: status,
         approvalNote: note.trim() ? note : null,
       });
       setOpen(false);
@@ -76,7 +94,7 @@ export default function TaskApprovalPopover({
           : t("tasks:popover.approval.updateError"),
       );
     }
-  }, [note, t, task.approvalStatus, task.id, task.projectId, updateApproval]);
+  }, [note, status, t, task.id, task.projectId, updateApproval]);
 
   // Read-only role: render the trigger child as a plain element so the user
   // still sees the current approval status but can't open the popover.
@@ -88,6 +106,7 @@ export default function TaskApprovalPopover({
       onOpenChange={(nextOpen) => {
         if (nextOpen) {
           setNote(task.approvalNote ?? "");
+          setStatus(toApprovalOption(task.approvalStatus));
         }
         setOpen(nextOpen);
       }}
@@ -95,19 +114,18 @@ export default function TaskApprovalPopover({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="start">
         <div>
-          {approvalStatusOptions.map((status) => (
+          {approvalStatusOptions.map((option) => (
             <Button
-              key={status}
+              key={option}
               variant="ghost"
               size="sm"
+              disabled={isPending}
               className="w-full justify-start gap-2 h-8 px-2 rounded-none first:rounded-t-md"
-              onClick={() => handleStatusChange(status)}
+              onClick={() => handleStatusChange(option)}
             >
-              {getApprovalStatusIcon(status)}
-              <span className="text-sm">{getApprovalStatusLabel(status)}</span>
-              {(task.approvalStatus ?? "none") === status && (
-                <Check className="ml-auto h-4 w-4" />
-              )}
+              {getApprovalStatusIcon(option)}
+              <span className="text-sm">{getApprovalStatusLabel(option)}</span>
+              {status === option && <Check className="ml-auto h-4 w-4" />}
             </Button>
           ))}
         </div>

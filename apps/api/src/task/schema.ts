@@ -122,7 +122,7 @@ export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
 export const updateApprovalBody = z.object({
   approvalStatus,
   approvalNote: z.string().nullable().optional().openapi({
-    description: "Null or omitted clears the note.",
+    description: "Null clears the note; omit to preserve the existing note.",
   }),
 });
 export const updateTitleBody = z.object({ title: z.string() });

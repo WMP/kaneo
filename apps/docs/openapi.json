@@ -8231,7 +8231,7 @@
                       "string",
                       "null"
                     ],
-                    "description": "Null or omitted clears the note."
+                    "description": "Null clears the note; omit to preserve the existing note."
                   }
                 },
                 "required": [
@@ -8253,7 +8253,7 @@
             }
           },
           "400": {
-            "description": "Invalid approval status, or unknown task",
+            "description": "Invalid approval status",
             "content": {
               "text/plain": {
                 "schema": {
@@ -8267,6 +8267,16 @@
           },
           "403": {
             "description": "No workspace access, or missing task:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
             "content": {
               "text/plain": {
                 "schema": {

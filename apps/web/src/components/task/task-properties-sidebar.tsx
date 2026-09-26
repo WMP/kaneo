@@ -44,6 +44,7 @@ import {
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
+import type Task from "@/types/task";
 import TaskApprovalPopover from "./task-approval-popover";
 import TaskAssigneePopover from "./task-assignee-popover";
 import TaskDueDatePopover from "./task-due-date-popover";
@@ -52,6 +53,29 @@ import TaskMovePopover from "./task-move-popover";
 import TaskPriorityPopover from "./task-priority-popover";
 import TaskStartDatePopover from "./task-start-date-popover";
 import TaskStatusPopover from "./task-status-popover";
+
+function ApprovalControl({
+  task,
+  className,
+}: {
+  task: Task;
+  className?: string;
+}) {
+  return (
+    <TaskApprovalPopover task={task}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn("justify-start h-7 px-1.5 gap-1.5", className)}
+      >
+        {getApprovalStatusIcon(task.approvalStatus ?? "none")}
+        <span className="text-xs font-semibold truncate">
+          {getApprovalStatusLabel(task.approvalStatus ?? "none")}
+        </span>
+      </Button>
+    </TaskApprovalPopover>
+  );
+}
 
 function slugify(text: string | undefined): string {
   if (!text) return "";
@@ -330,20 +354,7 @@ export default function TaskPropertiesSidebar({
                   </Button>
                 </TaskDueDatePopover>
               )}
-              {task && (
-                <TaskApprovalPopover task={task}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start h-7 px-1.5 gap-1.5"
-                  >
-                    {getApprovalStatusIcon(task.approvalStatus ?? "none")}
-                    <span className="text-xs font-semibold truncate">
-                      {getApprovalStatusLabel(task.approvalStatus ?? "none")}
-                    </span>
-                  </Button>
-                </TaskApprovalPopover>
-              )}
+              {task && <ApprovalControl task={task} />}
             </div>
           </div>
         )}
@@ -535,20 +546,7 @@ export default function TaskPropertiesSidebar({
                     </Button>
                   </TaskDueDatePopover>
                 )}
-                {task && (
-                  <TaskApprovalPopover task={task}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start h-7 px-1.5 gap-1.5"
-                    >
-                      {getApprovalStatusIcon(task.approvalStatus ?? "none")}
-                      <span className="text-xs font-semibold truncate">
-                        {getApprovalStatusLabel(task.approvalStatus ?? "none")}
-                      </span>
-                    </Button>
-                  </TaskApprovalPopover>
-                )}
+                {task && <ApprovalControl task={task} />}
               </div>
             </div>
 
@@ -742,20 +740,7 @@ export default function TaskPropertiesSidebar({
                     </Button>
                   </TaskDueDatePopover>
                 )}
-                {task && (
-                  <TaskApprovalPopover task={task}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start h-7 px-1.5 gap-1.5 w-full"
-                    >
-                      {getApprovalStatusIcon(task.approvalStatus ?? "none")}
-                      <span className="text-xs font-semibold truncate">
-                        {getApprovalStatusLabel(task.approvalStatus ?? "none")}
-                      </span>
-                    </Button>
-                  </TaskApprovalPopover>
-                )}
+                {task && <ApprovalControl task={task} className="w-full" />}
               </div>
             </div>
           </>

@@ -9,22 +9,25 @@ vi.mock("@/fetchers/task-relation/get-task-relations", () => ({
   default: vi.fn(),
 }));
 
-type RelationFixture = {
-  id: string;
-  sourceTaskId: string;
-  targetTaskId: string;
-  relationType: string;
-  sourceTask: {
-    id: string;
-    title: string;
-    approvalStatus: string;
-  } | null;
-  targetTask: {
-    id: string;
-    title: string;
-    approvalStatus: string;
-  } | null;
-};
+type RelationFixture = Awaited<ReturnType<typeof getTaskRelations>>[number];
+type RelatedTaskFixture = RelationFixture["sourceTask"];
+
+function relatedTask(
+  overrides: Partial<NonNullable<RelatedTaskFixture>>,
+): NonNullable<RelatedTaskFixture> {
+  return {
+    id: "gate",
+    title: "Client sign-off",
+    status: "to-do",
+    priority: "medium",
+    number: 1,
+    projectId: "project-1",
+    userId: null,
+    assigneeName: null,
+    approvalStatus: "pending",
+    ...overrides,
+  };
+}
 
 function relation(overrides: Partial<RelationFixture>): RelationFixture {
   return {
@@ -32,12 +35,13 @@ function relation(overrides: Partial<RelationFixture>): RelationFixture {
     sourceTaskId: "gate",
     targetTaskId: "blocked",
     relationType: "blocks",
-    sourceTask: {
-      id: "gate",
-      title: "Client sign-off",
-      approvalStatus: "pending",
-    },
-    targetTask: { id: "blocked", title: "Cutover", approvalStatus: "none" },
+    createdAt: "2026-01-01T00:00:00.000Z",
+    sourceTask: relatedTask({}),
+    targetTask: relatedTask({
+      id: "blocked",
+      title: "Cutover",
+      approvalStatus: "none",
+    }),
     ...overrides,
   };
 }
@@ -81,11 +85,7 @@ describe("useGanttGateWarnings", () => {
       taskId === "blocked"
         ? [
             relation({
-              sourceTask: {
-                id: "gate",
-                title: "Client sign-off",
-                approvalStatus: "rejected",
-              },
+              sourceTask: relatedTask({ approvalStatus: "rejected" }),
             }),
           ]
         : [],
@@ -107,11 +107,7 @@ describe("useGanttGateWarnings", () => {
       taskId === "blocked"
         ? [
             relation({
-              sourceTask: {
-                id: "gate",
-                title: "Client sign-off",
-                approvalStatus: "approved",
-              },
+              sourceTask: relatedTask({ approvalStatus: "approved" }),
             }),
           ]
         : [],
@@ -145,11 +141,7 @@ describe("useGanttGateWarnings", () => {
         ? [
             relation({
               relationType: "related",
-              sourceTask: {
-                id: "gate",
-                title: "Client sign-off",
-                approvalStatus: "pending",
-              },
+              sourceTask: relatedTask({ approvalStatus: "pending" }),
             }),
           ]
         : [],

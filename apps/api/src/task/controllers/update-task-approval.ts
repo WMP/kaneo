@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { activityTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { boardDescription, descriptionDeferred } from "../description-pages";
 
 async function updateTaskApproval({
   id,
@@ -38,7 +39,11 @@ async function updateTaskApproval({
       .update(taskTable)
       .set({ approvalStatus, approvalNote: nextApprovalNote })
       .where(eq(taskTable.id, id))
-      .returning();
+      .returning({
+        ...getTableColumns(taskTable),
+        description: boardDescription,
+        descriptionDeferred,
+      });
 
     if (!task) {
       throw new HTTPException(500, {

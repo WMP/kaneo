@@ -382,7 +382,7 @@ export function GanttTaskBar({
                   count: gateWarnings.length,
                 })}
               >
-                <TriangleAlert className="size-2.5 text-destructive-foreground" />
+                <TriangleAlert className="size-2.5 text-white" />
               </span>
             </TooltipTrigger>
             <TooltipContent className="max-w-64">
