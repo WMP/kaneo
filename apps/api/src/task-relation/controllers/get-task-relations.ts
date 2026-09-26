@@ -41,6 +41,7 @@ async function getTaskRelations(taskId: string, workspaceId: string) {
       projectId: string;
       userId: string | null;
       assigneeName: string | null;
+      approvalStatus: string;
     }
   >();
 
@@ -55,6 +56,7 @@ async function getTaskRelations(taskId: string, workspaceId: string) {
         projectId: taskTable.projectId,
         userId: taskTable.userId,
         assigneeName: userTable.name,
+        approvalStatus: taskTable.approvalStatus,
       })
       .from(taskTable)
       .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))

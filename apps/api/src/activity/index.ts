@@ -256,6 +256,12 @@ subscribeToEvent<{
   });
 });
 
+// Unlike the other task.*_changed events above, the approval-gate's activity
+// row is written transactionally alongside the column update in
+// update-task-approval.ts and update-task.ts, not from this event: it is a
+// compliance-relevant audit trail (client sign-off before a cutover), so it
+// cannot be best-effort the way a fire-and-forget subscriber would make it.
+
 subscribeToEvent<{
   taskId: string;
   userId: string;

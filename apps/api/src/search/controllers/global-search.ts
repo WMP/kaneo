@@ -73,6 +73,8 @@ function getActivitySearchContent(
       return `changed status from ${toDisplayCase(String(data.oldStatus ?? ""))} to ${toDisplayCase(String(data.newStatus ?? ""))}`;
     case "priority_changed":
       return `changed priority from ${toDisplayCase(String(data.oldPriority ?? ""))} to ${toDisplayCase(String(data.newPriority ?? ""))}`;
+    case "approval_changed":
+      return `changed approval status from ${toDisplayCase(String(data.oldApprovalStatus ?? ""))} to ${toDisplayCase(String(data.newApprovalStatus ?? ""))}`;
     case "unassigned":
       return "unassigned the task";
     case "assignee_changed":

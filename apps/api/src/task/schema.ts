@@ -15,6 +15,15 @@ export const projectIdParam = z.object({ projectId: z.string() });
 
 const priority = z.enum(VALID_PRIORITIES);
 
+// Client-approval gate for a task. Mirrors the taskTable.approvalStatus
+// column comment in database/schema.ts.
+export const approvalStatus = z.enum([
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 // Required object of optional filters: a RouteParameter cannot itself be optional.
 export const listTasksQuery = z.object({
   status: z.string().optional(),
@@ -75,6 +84,12 @@ export const updateTaskBody = z.object({
   projectId: z.string(),
   position: z.number().int().min(0).max(MAX_TASK_POSITION),
   userId: z.string().optional(),
+  approvalStatus: approvalStatus.optional().openapi({
+    description: "Omit to preserve the existing approval status.",
+  }),
+  approvalNote: z.string().nullable().optional().openapi({
+    description: "Omit to preserve the existing approval note.",
+  }),
 });
 
 export const moveTaskBody = z.object({
@@ -104,6 +119,12 @@ export const updateAssigneeBody = z.object({
   userId: z.string().nullable().openapi({ description: "Null unassigns." }),
 });
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
+export const updateApprovalBody = z.object({
+  approvalStatus,
+  approvalNote: z.string().nullable().optional().openapi({
+    description: "Null or omitted clears the note.",
+  }),
+});
 export const updateTitleBody = z.object({ title: z.string() });
 export const updateDescriptionBody = z.object({ description: z.string() });
 

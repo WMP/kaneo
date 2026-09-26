@@ -1,7 +1,7 @@
 import { responseTimestamp, z } from "../openapi";
 
 const activityTypeDescription =
-  "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed.";
+  "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed.";
 
 export const activitySchema = z
   .object({

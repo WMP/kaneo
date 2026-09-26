@@ -145,6 +145,16 @@
             ],
             "format": "date-time"
           },
+          "approvalStatus": {
+            "type": "string",
+            "description": "Client-approval gate: one of none, pending, approved, rejected."
+          },
+          "approvalNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "position": {
             "type": [
               "number",
@@ -204,6 +214,8 @@
           "priority",
           "startDate",
           "dueDate",
+          "approvalStatus",
+          "approvalNote",
           "position",
           "createdAt",
           "userId",
@@ -848,6 +860,16 @@
             ],
             "format": "date-time"
           },
+          "approvalStatus": {
+            "type": "string",
+            "description": "Client-approval gate: one of none, pending, approved, rejected."
+          },
+          "approvalNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -883,6 +905,8 @@
           "priority",
           "startDate",
           "dueDate",
+          "approvalStatus",
+          "approvalNote",
           "createdAt"
         ]
       },
@@ -1193,7 +1217,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed."
+            "description": "One of: comment, task, create, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed."
           },
           "createdAt": {
             "type": "string",
@@ -2961,6 +2985,10 @@
               "string",
               "null"
             ]
+          },
+          "approvalStatus": {
+            "type": "string",
+            "description": "Client-approval gate: one of none, pending, approved, rejected. Used to warn when a `blocks` relation's source task is not yet approved."
           }
         },
         "required": [
@@ -2971,7 +2999,8 @@
           "number",
           "projectId",
           "userId",
-          "assigneeName"
+          "assigneeName",
+          "approvalStatus"
         ]
       },
       "TaskRelation": {
@@ -7479,6 +7508,23 @@
                   },
                   "userId": {
                     "type": "string"
+                  },
+                  "approvalStatus": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "pending",
+                      "approved",
+                      "rejected"
+                    ],
+                    "description": "Omit to preserve the existing approval status."
+                  },
+                  "approvalNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Omit to preserve the existing approval note."
                   }
                 },
                 "required": [
@@ -8122,6 +8168,92 @@
           },
           "400": {
             "description": "Invalid date, or unknown task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing task:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/task/approval/{id}": {
+      "put": {
+        "operationId": "updateTaskApproval",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Update task approval status",
+        "description": "Set a task's client-approval gate (none, pending, approved, rejected) and an optional note.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "approvalStatus": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "pending",
+                      "approved",
+                      "rejected"
+                    ]
+                  },
+                  "approvalNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Null or omitted clears the note."
+                  }
+                },
+                "required": [
+                  "approvalStatus"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid approval status, or unknown task",
             "content": {
               "text/plain": {
                 "schema": {
