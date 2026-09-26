@@ -401,7 +401,7 @@
           "relatedPageSize",
           "relatedTotalPages"
         ],
-        "description": "Always paginated: 50 tasks by default, at most 100 per page. Continue through totalPages to retrieve all tasks. For each task page, follow relatedPage through relatedTotalPages to retrieve all labels, external links and columns (100 related rows per kind per request, plus up to 100 columns needed to represent the tasks)."
+        "description": "Always paginated: 50 tasks by default, at most 500 per page. Continue through totalPages to retrieve all tasks. For each task page, follow relatedPage through relatedTotalPages to retrieve all labels, external links and columns (100 related rows per kind per request, plus up to 100 columns needed to represent the tasks)."
       },
       "Board": {
         "type": "object",
@@ -1417,6 +1417,16 @@
             "format": "date-time",
             "description": "Null unless constraintType is not none."
           },
+          "approvalStatus": {
+            "type": "string",
+            "description": "Client-approval gate: one of none, pending, approved, rejected."
+          },
+          "approvalNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -1447,6 +1457,8 @@
           "baselineDueDate",
           "constraintType",
           "constraintDate",
+          "approvalStatus",
+          "approvalNote",
           "labels",
           "relations"
         ]
@@ -9192,7 +9204,7 @@
           "Tasks"
         ],
         "summary": "List tasks",
-        "description": "Get a project's board: its columns, each with the tasks in it, plus the archived and planned buckets. Responses always contain at most 100 tasks (50 by default). Continue through pagination.totalPages for the whole board, and for each task page follow relatedPage through pagination.relatedTotalPages for all labels, links and column metadata. Filters and sorting apply before pagination. Descriptions larger than 64 KiB are omitted with descriptionDeferred=true; read the task detail or description pages for full text.",
+        "description": "Get a project's board: its columns, each with the tasks in it, plus the archived and planned buckets. Responses always contain at most 500 tasks (50 by default). Continue through pagination.totalPages for the whole board, and for each task page follow relatedPage through pagination.relatedTotalPages for all labels, links and column metadata. Filters and sorting apply before pagination. Descriptions larger than 64 KiB are omitted with descriptionDeferred=true; read the task detail or description pages for full text.",
         "parameters": [
           {
             "schema": {

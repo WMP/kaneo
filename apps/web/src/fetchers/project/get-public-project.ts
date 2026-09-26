@@ -1,6 +1,9 @@
 import { client } from "@kaneo/libs";
 import type { InferRequestType } from "hono/client";
-import { loadBoardPages } from "@/fetchers/task/load-board-pages";
+import {
+  BOARD_PAGE_LIMIT,
+  loadBoardPages,
+} from "@/fetchers/task/load-board-pages";
 import { HttpError } from "@/lib/http-error";
 export type GetPublicProjectRequest = InferRequestType<
   (typeof client)["public-project"][":id"]["$get"]
@@ -15,7 +18,7 @@ async function getPublicProject(
         param: { id },
         query: {
           page: String(page),
-          limit: "100",
+          limit: String(BOARD_PAGE_LIMIT),
           ...(relatedPage ? { relatedPage: String(relatedPage) } : {}),
         },
       },

@@ -1,6 +1,6 @@
 import { client } from "@kaneo/libs";
 import { HttpError } from "@/lib/http-error";
-import { loadBoardPages } from "./load-board-pages";
+import { BOARD_PAGE_LIMIT, loadBoardPages } from "./load-board-pages";
 
 async function getTasks(projectId: string, signal?: AbortSignal) {
   return loadBoardPages(async (page, relatedPage) => {
@@ -9,7 +9,7 @@ async function getTasks(projectId: string, signal?: AbortSignal) {
         param: { projectId },
         query: {
           page: String(page),
-          limit: "100",
+          limit: String(BOARD_PAGE_LIMIT),
           ...(relatedPage ? { relatedPage: String(relatedPage) } : {}),
         },
       },

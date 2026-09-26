@@ -55,7 +55,7 @@ describe("authenticated and public board fetchers", () => {
       request.mockImplementation(
         async ({ query }: { query: { page: string } }) => {
           const page = Number(query.page);
-          const pagination = { page, pageSize: 100, total: 201, totalPages: 3 };
+          const pagination = { page, pageSize: 500, total: 201, totalPages: 3 };
           return Response.json(
             visibility === "private"
               ? { data: data(page), pagination }
@@ -81,7 +81,7 @@ describe("authenticated and public board fetchers", () => {
               visibility === "private"
                 ? { projectId: "project" }
                 : { id: "project" },
-            query: { page: String(index + 1), limit: "100" },
+            query: { page: String(index + 1), limit: "500" },
           },
           { init: { signal: controller.signal } },
         ]);
@@ -100,7 +100,7 @@ describe("authenticated and public board fetchers", () => {
           });
           const pagination = {
             page: 1,
-            pageSize: 100,
+            pageSize: 500,
             total: 1,
             totalPages: 1,
             relatedTotalPages: 2,
@@ -120,7 +120,7 @@ describe("authenticated and public board fetchers", () => {
       expect(request.mock.calls[1][0].query).toMatchObject({
         page: "1",
         relatedPage: "2",
-        limit: "100",
+        limit: "500",
       });
     },
   );
@@ -129,7 +129,7 @@ describe("authenticated and public board fetchers", () => {
       .mockResolvedValueOnce(
         Response.json({
           ...data(1),
-          pagination: { page: 1, pageSize: 100, total: 101, totalPages: 2 },
+          pagination: { page: 1, pageSize: 500, total: 101, totalPages: 2 },
         }),
       )
       .mockResolvedValueOnce(

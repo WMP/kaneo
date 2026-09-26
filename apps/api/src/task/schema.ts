@@ -9,6 +9,14 @@ const pagingNumber = (min: number, max: number) =>
     .transform(Number)
     .pipe(z.number().int().min(min).max(max));
 
+// Shared with the controller's own clamp (see getTasksPage in
+// controllers/get-tasks.ts) so the two never drift apart. Raised from the
+// original 100 so a large project's task list (e.g. a 1000+ task Gantt
+// chart) can load in a handful of page requests instead of dozens, while
+// still bounding a single request's cost under boundedTaskRead's statement
+// timeout.
+export const MAX_TASK_LIST_LIMIT = 500;
+
 export const taskParam = z.object({ id: z.string() });
 
 export const projectIdParam = z.object({ projectId: z.string() });
@@ -51,7 +59,7 @@ export const listTasksQuery = z.object({
   // Number("abc") is NaN, which used to reach the limit/offset clause unchecked.
   page: pagingNumber(1, 1_000_000).optional(),
   relatedPage: pagingNumber(1, 1_000_000).optional(),
-  limit: pagingNumber(1, 100).optional(),
+  limit: pagingNumber(1, MAX_TASK_LIST_LIMIT).optional(),
   sortBy: z
     .enum(["createdAt", "priority", "dueDate", "position", "title", "number"])
     .optional(),
