@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildTaskHierarchy,
+  computeParentSummaryProgress,
   computeParentSummarySpans,
   computeSummarySpan,
   flattenGanttRows,
@@ -127,6 +128,88 @@ describe("computeParentSummarySpans", () => {
     const spans = computeParentSummarySpans(hierarchy, new Map());
 
     expect(spans.has("parent")).toBe(false);
+  });
+});
+
+describe("computeParentSummaryProgress", () => {
+  it("weights each child's progress by its own span length in days", () => {
+    const hierarchy = buildTaskHierarchy(
+      ["parent", "child-a", "child-b"],
+      [
+        { sourceTaskId: "parent", targetTaskId: "child-a" },
+        { sourceTaskId: "parent", targetTaskId: "child-b" },
+      ],
+    );
+    // child-a: 10 days at 100% progress. child-b: 1 day (same start/end) at
+    // 0% progress. A naive unweighted average would read 50%; weighted by
+    // duration it should read overwhelmingly toward child-a's 100%.
+    const ownSpanByTaskId = new Map<string, ScheduleSpan>([
+      [
+        "child-a",
+        { start: new Date("2026-02-01"), end: new Date("2026-02-10") },
+      ],
+      [
+        "child-b",
+        { start: new Date("2026-02-11"), end: new Date("2026-02-11") },
+      ],
+    ]);
+    const progressByTaskId = new Map<string, number>([
+      ["child-a", 100],
+      ["child-b", 0],
+    ]);
+
+    const progress = computeParentSummaryProgress(
+      hierarchy,
+      ownSpanByTaskId,
+      progressByTaskId,
+    );
+
+    // 10 days * 100 + 1 day * 0, over 11 total weighted days.
+    expect(progress.get("parent")).toBeCloseTo((10 * 100) / 11, 5);
+  });
+
+  it("gives a parent no rollup progress when none of its children have both a schedule and a progress value", () => {
+    const hierarchy = buildTaskHierarchy(
+      ["parent", "child"],
+      [{ sourceTaskId: "parent", targetTaskId: "child" }],
+    );
+
+    const progress = computeParentSummaryProgress(
+      hierarchy,
+      new Map(),
+      new Map(),
+    );
+
+    expect(progress.has("parent")).toBe(false);
+  });
+
+  it("ignores a child that has a schedule but no progress entry", () => {
+    const hierarchy = buildTaskHierarchy(
+      ["parent", "child-a", "child-no-progress"],
+      [
+        { sourceTaskId: "parent", targetTaskId: "child-a" },
+        { sourceTaskId: "parent", targetTaskId: "child-no-progress" },
+      ],
+    );
+    const ownSpanByTaskId = new Map<string, ScheduleSpan>([
+      [
+        "child-a",
+        { start: new Date("2026-02-01"), end: new Date("2026-02-01") },
+      ],
+      [
+        "child-no-progress",
+        { start: new Date("2026-02-05"), end: new Date("2026-02-05") },
+      ],
+    ]);
+    const progressByTaskId = new Map<string, number>([["child-a", 40]]);
+
+    const progress = computeParentSummaryProgress(
+      hierarchy,
+      ownSpanByTaskId,
+      progressByTaskId,
+    );
+
+    expect(progress.get("parent")).toBe(40);
   });
 });
 

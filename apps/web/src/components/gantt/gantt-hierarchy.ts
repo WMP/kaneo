@@ -113,6 +113,43 @@ export function computeParentSummarySpans(
   return spans;
 }
 
+/** Duration-weighted average of a parent's children's own progress, keyed by
+ * parent task id — computed only from children that have both a derivable
+ * schedule (same restriction as computeParentSummarySpans) and a progress
+ * value. A child's weight is its own span length in days (inclusive of both
+ * endpoints, floored at one day so a milestone child still counts once
+ * rather than vanishing from the average), not an equal share per child, so
+ * a long-running child moves the rollup more than a one-day one. Returns no
+ * entry for a parent with no such children, same as computeParentSummarySpans
+ * returning no span. */
+export function computeParentSummaryProgress(
+  hierarchy: GanttHierarchy,
+  ownSpanByTaskId: ReadonlyMap<string, ScheduleSpan>,
+  progressByTaskId: ReadonlyMap<string, number>,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const [parentId, childIds] of hierarchy.childrenByParentId) {
+    let totalWeight = 0;
+    let weightedSum = 0;
+    for (const childId of childIds) {
+      const span = ownSpanByTaskId.get(childId);
+      const progress = progressByTaskId.get(childId);
+      if (!span || progress === undefined) continue;
+      const durationDays = Math.max(
+        Math.round((span.end.getTime() - span.start.getTime()) / 86_400_000) +
+          1,
+        1,
+      );
+      totalWeight += durationDays;
+      weightedSum += durationDays * progress;
+    }
+    if (totalWeight > 0) {
+      result.set(parentId, weightedSum / totalWeight);
+    }
+  }
+  return result;
+}
+
 export type GanttRowLike = {
   id: string;
   scheduleStart: Date;

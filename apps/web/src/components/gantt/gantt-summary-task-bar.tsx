@@ -12,6 +12,10 @@ type GanttSummaryTaskBarProps = {
     rangeStart: Date;
     gridTemplateColumns: string;
   };
+  /** Duration-weighted average of this row's children's own progress (see
+   * computeParentSummaryProgress in gantt-hierarchy.ts), 0-100, or null when
+   * there's nothing to roll up. */
+  progress?: number | null;
   emphasis?: GanttBarEmphasis;
   /** Whether this task sits on the currently-highlighted critical path (see
    * gantt-critical-path.ts and GanttTaskBar's own isCritical prop). */
@@ -33,6 +37,7 @@ export function GanttSummaryTaskBar({
   scheduleStart,
   scheduleEnd,
   timeline,
+  progress = null,
   emphasis = "normal",
   isCritical = false,
   onHoverChange,
@@ -78,12 +83,27 @@ export function GanttSummaryTaskBar({
           <span
             aria-hidden="true"
             className={cn(
-              "absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-sm bg-foreground/70 dark:bg-foreground/60",
-              emphasis === "highlighted" &&
-                "bg-primary ring-2 ring-primary/40",
+              "absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-sm bg-foreground/30 dark:bg-foreground/25",
+              emphasis === "highlighted" && "ring-2 ring-primary/40",
               emphasis === "dimmed" && "opacity-35",
             )}
-          />
+          >
+            {/* Rollup progress fill: a duration-weighted average of this
+                row's children's own progress (see computeParentSummaryProgress
+                in gantt-hierarchy.ts), rendered the same way GanttTaskBar
+                renders an ordinary bar's own progress fill. Falls back to a
+                flat band (the emphasis-driven bg above) when there's nothing
+                to roll up. */}
+            {progress !== null && (
+              <span
+                className={cn(
+                  "block h-full bg-foreground/70 dark:bg-foreground/60",
+                  emphasis === "highlighted" && "bg-primary",
+                )}
+                style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+              />
+            )}
+          </span>
           <span
             aria-hidden="true"
             className={cn(

@@ -32,6 +32,7 @@ import type { ExternalGanttTask } from "@/components/gantt/gantt-external-task-b
 import { GanttExternalTaskBar } from "@/components/gantt/gantt-external-task-bar";
 import {
   buildTaskHierarchy,
+  computeParentSummaryProgress,
   computeParentSummarySpans,
   flattenGanttRows,
   type ScheduleSpan,
@@ -96,6 +97,10 @@ type OwnScheduledTask = Task & {
   // parent (isSummary, scheduleStart/scheduleEnd already overridden to the
   // rolled-up span) or a one-level child (parentTaskId set), never both.
   isSummary: boolean;
+  // Duration-weighted average of this summary parent's children's own
+  // progress (see computeParentSummaryProgress); null for a non-summary row,
+  // and also for a summary row whose children have no derivable schedule.
+  summaryProgress: number | null;
   parentTaskId: string | null;
 };
 
@@ -374,6 +379,28 @@ function RouteComponent() {
     [taskHierarchy, ownScheduleByTaskId],
   );
 
+  // Every own task's own progress — read by the rollup below the same way
+  // ownScheduleByTaskId is, so a summary parent's progress bar reflects its
+  // children's progress rather than a value of its own (a summary parent has
+  // no progress control in the UI; see task-progress-popover.tsx).
+  const progressByTaskId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const task of allTasks) {
+      map.set(task.id, task.progress);
+    }
+    return map;
+  }, [allTasks]);
+
+  const summaryProgressByParentId = useMemo(
+    () =>
+      computeParentSummaryProgress(
+        taskHierarchy,
+        ownScheduleByTaskId,
+        progressByTaskId,
+      ),
+    [taskHierarchy, ownScheduleByTaskId, progressByTaskId],
+  );
+
   const parsedTasks = useMemo<OwnScheduledTask[]>(() => {
     return allTasks
       .map((task) => {
@@ -391,12 +418,17 @@ function RouteComponent() {
           : (ownScheduleByTaskId.get(task.id) ?? null);
         if (!schedule) return null;
 
+        const summaryProgress = isSummary
+          ? (summaryProgressByParentId.get(task.id) ?? null)
+          : null;
+
         return {
           ...task,
           scheduleStart: schedule.start,
           scheduleEnd: schedule.end,
           isExternal: false as const,
           isSummary,
+          summaryProgress,
           parentTaskId,
         };
       })
@@ -405,7 +437,13 @@ function RouteComponent() {
         (left, right) =>
           left.scheduleStart.getTime() - right.scheduleStart.getTime(),
       );
-  }, [allTasks, taskHierarchy, summarySpanByParentId, ownScheduleByTaskId]);
+  }, [
+    allTasks,
+    taskHierarchy,
+    summarySpanByParentId,
+    summaryProgressByParentId,
+    ownScheduleByTaskId,
+  ]);
 
   const scheduledTasks = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -1873,6 +1911,7 @@ function RouteComponent() {
                               title={task.title}
                               scheduleStart={task.scheduleStart}
                               scheduleEnd={task.scheduleEnd}
+                              progress={task.summaryProgress}
                               timeline={timeline}
                               emphasis={emphasisFor(task.id)}
                               isCritical={isCriticalFor(task.id)}
