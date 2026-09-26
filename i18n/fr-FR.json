@@ -1594,7 +1594,8 @@
 			"members": "Membres",
 			"invitations": "Invitations",
 			"more": "Plus",
-			"backToBoard": "Retour au tableau"
+			"backToBoard": "Retour au tableau",
+			"portfolio": "Portfolio"
 		},
 		"projectList": {
 			"viewProject": "Voir le projet",
@@ -2792,5 +2793,21 @@
 			"startLink": "Start and verify the services",
 			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
 		}
+	},
+	"portfolio": {
+		"gantt": {
+			"milestoneAriaLabel": "{{title}}: milestone, open task",
+			"taskAriaLabel": "{{title}}: open task"
+		},
+		"loadError": "Something went wrong loading this workspace's projects and tasks. Try again in a moment.",
+		"loadErrorTitle": "Couldn't load the portfolio",
+		"noProjectsSubtitle": "Create a project in this workspace to see it on the portfolio timeline.",
+		"noProjectsTitle": "No projects yet",
+		"noScheduledTasksSubtitle": "Add a start date, due date, or both to tasks across your projects to place them on this timeline.",
+		"noScheduledTasksTitle": "Nothing scheduled yet",
+		"openProjectGanttAriaLabel": "{{name}}: open full timeline",
+		"railHeader": "Project",
+		"title": "Portfolio Timeline",
+		"toggleProjectAriaLabel": "{{name}}: expand or collapse"
 	}
 }

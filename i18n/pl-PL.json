@@ -395,7 +395,8 @@
 			"members": "Członkowie",
 			"invitations": "Zaproszenia",
 			"more": "Więcej",
-			"backToBoard": "Wróć do tablicy"
+			"backToBoard": "Wróć do tablicy",
+			"portfolio": "Portfolio"
 		},
 		"projectList": {
 			"viewProject": "Zobacz projekt",
@@ -2803,5 +2804,21 @@
 			"startLink": "Start and verify the services",
 			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
 		}
+	},
+	"portfolio": {
+		"gantt": {
+			"milestoneAriaLabel": "{{title}}: kamień milowy, otwórz zadanie",
+			"taskAriaLabel": "{{title}}: otwórz zadanie"
+		},
+		"loadError": "Nie udało się wczytać projektów i zadań tego obszaru roboczego. Spróbuj ponownie za chwilę.",
+		"loadErrorTitle": "Nie udało się wczytać portfolio",
+		"noProjectsSubtitle": "Utwórz projekt w tym obszarze roboczym, aby zobaczyć go na osi czasu portfolio.",
+		"noProjectsTitle": "Brak projektów",
+		"noScheduledTasksSubtitle": "Dodaj datę rozpoczęcia, termin lub oba te elementy do zadań w swoich projektach, aby umieścić je na tej osi czasu.",
+		"noScheduledTasksTitle": "Nic jeszcze nie zaplanowano",
+		"openProjectGanttAriaLabel": "{{name}}: otwórz pełną oś czasu",
+		"railHeader": "Projekt",
+		"title": "Oś czasu portfolio",
+		"toggleProjectAriaLabel": "{{name}}: rozwiń lub zwiń"
 	}
 }

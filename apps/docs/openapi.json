@@ -814,6 +814,92 @@
           "lastTaskNumber"
         ]
       },
+      "PortfolioProject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioTask"
+            },
+            "description": "This project's tasks with scheduling data, for a shared cross-project timeline. Archived tasks are excluded."
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "slug",
+          "icon",
+          "tasks"
+        ]
+      },
+      "PortfolioTask": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent complete, 0-100."
+          },
+          "isMilestone": {
+            "type": "boolean",
+            "description": "Renders as a diamond marker on the timeline at its date instead of a spanning bar."
+          },
+          "status": {
+            "type": "string",
+            "description": "The slug of the column the task sits in."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "startDate",
+          "dueDate",
+          "progress",
+          "isMilestone",
+          "status"
+        ]
+      },
       "TaskDescriptionMatches": {
         "type": "object",
         "properties": {
@@ -6952,6 +7038,74 @@
           },
           "403": {
             "description": "No workspace access, or missing project:create permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/portfolio": {
+      "get": {
+        "operationId": "getPortfolio",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get workspace portfolio",
+        "description": "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Pass \"true\" to include archived projects in the list."
+            },
+            "required": false,
+            "description": "Pass \"true\" to include archived projects in the list.",
+            "name": "includeArchived",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace's projects and their tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortfolioProject"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:read/task:read permission",
             "content": {
               "text/plain": {
                 "schema": {

@@ -15,12 +15,13 @@ import { workspaceAccess } from "../utils/workspace-access-middleware";
 import archiveProjectCtrl from "./controllers/archive-project";
 import createProjectCtrl from "./controllers/create-project";
 import deleteProjectCtrl from "./controllers/delete-project";
+import getPortfolioCtrl from "./controllers/get-portfolio";
 import getProjectCtrl from "./controllers/get-project";
 import getProjectsCtrl from "./controllers/get-projects";
 import reorderProjectsCtrl from "./controllers/reorder-projects";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
-import { projectListSchema, projectSchema } from "./response";
+import { portfolioSchema, projectListSchema, projectSchema } from "./response";
 import {
   createProjectBody,
   listProjectsQuery,
@@ -44,6 +45,31 @@ const listProjectsRoute = createRoute({
     200: jsonResponse("List of projects", projectListSchema),
     400: errorResponse("Workspace ID could not be determined"),
     403: errorResponse("No access to the workspace"),
+  },
+});
+
+const getPortfolioRoute = createRoute({
+  method: "get",
+  operationId: "getPortfolio",
+  path: "/portfolio",
+  tags: ["Projects"],
+  summary: "Get workspace portfolio",
+  description:
+    "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+  middleware: [
+    workspaceAccess.fromQuery(),
+    requireWorkspacePermission({ project: ["read"], task: ["read"] }),
+  ] as const,
+  request: { query: listProjectsQuery },
+  responses: {
+    200: jsonResponse(
+      "The workspace's projects and their tasks",
+      portfolioSchema,
+    ),
+    400: errorResponse("Workspace ID could not be determined"),
+    403: errorResponse(
+      "No workspace access, or missing project:read/task:read permission",
+    ),
   },
 });
 
@@ -231,6 +257,15 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       includeArchived === "true",
     );
     return c.json(projects, 200);
+  })
+  .openapi(getPortfolioRoute, async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const { includeArchived } = c.req.valid("query");
+    const portfolio = await getPortfolioCtrl(
+      workspaceId,
+      includeArchived === "true",
+    );
+    return c.json(portfolio, 200);
   })
   .openapi(createProjectRoute, async (c) => {
     const { name, icon, slug } = c.req.valid("json");

@@ -55,3 +55,38 @@ export const projectListItemSchema = projectSchema
   .openapi("ProjectListItem");
 
 export const projectListSchema = z.array(projectListItemSchema);
+
+export const portfolioTaskSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    startDate: nullableResponseTimestamp,
+    dueDate: nullableResponseTimestamp,
+    progress: z.number().int().min(0).max(100).openapi({
+      description: "Percent complete, 0-100.",
+    }),
+    isMilestone: z.boolean().openapi({
+      description:
+        "Renders as a diamond marker on the timeline at its date instead of a spanning bar.",
+    }),
+    status: z.string().openapi({
+      description: "The slug of the column the task sits in.",
+    }),
+  })
+  .openapi("PortfolioTask");
+
+export const portfolioProjectSchema = z
+  .object({
+    id: z.string(),
+    workspaceId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    icon: z.string().nullable(),
+    tasks: z.array(portfolioTaskSchema).openapi({
+      description:
+        "This project's tasks with scheduling data, for a shared cross-project timeline. Archived tasks are excluded.",
+    }),
+  })
+  .openapi("PortfolioProject");
+
+export const portfolioSchema = z.array(portfolioProjectSchema);
