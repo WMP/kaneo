@@ -1658,7 +1658,14 @@ function RouteComponent() {
                 {showTaskRail ? (
                   <div
                     data-gantt-rail=""
-                    className="sticky left-0 z-30 shrink-0 border-r border-border bg-background px-2 py-2.5 sm:w-80 sm:px-4 sm:py-3"
+                    // select-none: this rail column is excluded from the
+                    // chart's own drag-to-pan (see isPannableTarget) so its
+                    // own vertical scroll can work natively instead, but a
+                    // plain text column with no pan of its own otherwise
+                    // means a click-drag here just selects text — annoying
+                    // and useless when someone's actually trying to drag-
+                    // scroll the row list.
+                    className="sticky left-0 z-30 shrink-0 select-none border-r border-border bg-background px-2 py-2.5 sm:w-80 sm:px-4 sm:py-3"
                     style={{
                       width: isMobile ? `${taskColumnWidthRem}rem` : undefined,
                     }}
@@ -1837,7 +1844,11 @@ function RouteComponent() {
                         {showTaskRail ? (
                           <div
                             data-gantt-rail=""
-                            className="sticky left-0 z-[11] h-full border-r border-border bg-background"
+                            // select-none: see the matching header-cell
+                            // comment above — a click-drag meant to scroll
+                            // the row list otherwise just selects every
+                            // task title it passes over.
+                            className="sticky left-0 z-[11] h-full select-none border-r border-border bg-background"
                           >
                             {task.isExternal ? (
                               <div className="flex min-h-[44px] w-full min-w-0 flex-col items-start justify-center gap-0.5 px-2 py-2 text-left opacity-80 sm:min-h-0 sm:px-3 sm:py-1.5">
