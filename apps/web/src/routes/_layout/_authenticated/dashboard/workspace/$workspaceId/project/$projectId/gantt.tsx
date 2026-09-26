@@ -625,7 +625,7 @@ function RouteComponent() {
   // schedule — fed into computeCriticalPath below alongside this project's
   // own tasks so a cross-project dependency can anchor/constrain the
   // network exactly like an own one (see gantt-critical-path.ts's SCOPE
-  // comment). Narrower than externalRelatedTasks above (which also pulls in
+  // comment). Narrower than externalRelatedTasks below (which also pulls in
   // "related" tasks, purely informational and never part of the CPM
   // network): folding a "related"-only task into the critical-path input
   // would wrongly mark it trivially critical (no in-scope edge touches it
@@ -638,9 +638,33 @@ function RouteComponent() {
     const external = new Map<string, CriticalPathTaskInput>();
     for (const relation of taskRelations ?? []) {
       if (relation.relationType !== "blocks") continue;
-      for (const candidate of [relation.sourceTask, relation.targetTask]) {
+      // A blocks relation from this query always has at least one own
+      // endpoint, so each cross-project far end is paired with its
+      // counterpart on the other end of the SAME edge. The far end only
+      // belongs in the CPM input when that counterpart is ALSO dated: only
+      // then is the connecting edge in scope (computeCriticalPath keeps an
+      // edge only when BOTH endpoints are in `tasks`). Including a far end
+      // whose counterpart is dateless would drop that edge yet still feed the
+      // far end in with no in-scope edge touching it, leaving it a lone task
+      // that comes out trivially critical (see computeCriticalPath's "lone
+      // task" case) — a spurious amber outline on a cross-project row that has
+      // no real critical link here, exactly the mis-marking the "related"-only
+      // exclusion above already guards against.
+      for (const [candidate, counterpart] of [
+        [relation.sourceTask, relation.targetTask],
+        [relation.targetTask, relation.sourceTask],
+      ]) {
         if (!candidate || candidate.projectId === projectId) continue;
         if (external.has(candidate.id)) continue;
+        if (!counterpart) continue;
+        // The counterpart is this relation's own endpoint. It must actually be
+        // a participating CPM task — present in ownScheduleByTaskId — for the
+        // connecting edge to be in scope. Checking only that it is dated would
+        // still admit a far end whose counterpart is dated but absent from the
+        // loaded own tasks (e.g. archived/soft-deleted), whose edge
+        // computeCriticalPath then drops, leaving the far end lone and
+        // spuriously trivially critical.
+        if (!ownScheduleByTaskId.has(counterpart.id)) continue;
         const schedule = deriveTaskSchedule(
           candidate.startDate,
           candidate.dueDate,
@@ -654,7 +678,7 @@ function RouteComponent() {
       }
     }
     return [...external.values()];
-  }, [taskRelations, projectId]);
+  }, [taskRelations, projectId, ownScheduleByTaskId]);
 
   // Same "blocks" edges as blocksEdges above, but keeping each relation's own
   // id (computeCriticalPath needs one to identify which edges came out
