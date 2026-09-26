@@ -1,4 +1,14 @@
-import { and, eq, inArray, isNotNull, not, or, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  ne,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { projectTable, taskTable, userTable } from "../../database/schema";
@@ -41,9 +51,14 @@ async function getWorkspaceWorkload({
   // A task overlaps the requested range when its span (startDate..dueDate,
   // or a single point when only one of them is set) touches
   // [overallStart, overallEnd).
+  // `least`/`greatest` ignore NULLs, so a task with only one date collapses to
+  // a point, and one whose due date is stored before its start date is still
+  // normalized to [earlier, later] — matching how `bucketizeWorkload` swaps
+  // reversed spans. Using coalesce here instead would drop such tasks even
+  // though they overlap the range.
   const rangeOverlap = sql`
-    coalesce(${taskTable.startDate}, ${taskTable.dueDate}) < ${overallEnd}
-    and coalesce(${taskTable.dueDate}, ${taskTable.startDate}) >= ${overallStart}
+    least(${taskTable.startDate}, ${taskTable.dueDate}) < ${overallEnd}
+    and greatest(${taskTable.startDate}, ${taskTable.dueDate}) >= ${overallStart}
   `;
 
   const matchedTasks = await db
@@ -57,11 +72,22 @@ async function getWorkspaceWorkload({
     .where(
       and(
         eq(projectTable.workspaceId, workspaceId),
+        // Archived projects are hidden from the active project list, so their
+        // tasks must not inflate workload counts either.
+        isNull(projectTable.archivedAt),
         or(isNotNull(taskTable.startDate), isNotNull(taskTable.dueDate)),
         not(taskIsCompleted),
+        // `taskIsCompleted` only recognizes final columns; the virtual
+        // "archived" status has no column, so exclude it explicitly the way
+        // the schedulers do.
+        ne(taskTable.status, "archived"),
         rangeOverlap,
       ),
     )
+    // Deterministic order so that, when the safety cap truncates the result,
+    // the same tasks are kept across identical requests instead of an
+    // arbitrary DB-dependent subset.
+    .orderBy(taskTable.dueDate, taskTable.startDate, taskTable.id)
     .limit(MAX_MATCHED_TASKS + 1);
 
   const truncated = matchedTasks.length > MAX_MATCHED_TASKS;
