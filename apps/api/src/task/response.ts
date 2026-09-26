@@ -260,6 +260,10 @@ export const taskExportSchema = z
             format: "date-time",
             description: "Null unless constraintType is not none.",
           }),
+          approvalStatus: z
+            .string()
+            .openapi({ description: approvalStatusDescription }),
+          approvalNote: z.string().nullable(),
           labels: z
             .array(
               z

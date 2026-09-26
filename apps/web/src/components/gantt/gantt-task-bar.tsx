@@ -632,6 +632,32 @@ export function GanttTaskBar({
                 <Diamond className="size-full fill-primary/30" />
               </button>
               {violationBadge}
+              {/* Approval-status badge: every approval gate is a milestone
+                  (see the gate-warning comment on this component's props),
+                  so without this the gate's status never shows anywhere on
+                  the chart — the normal-bar branch below only runs for
+                  non-milestone tasks. Same icon/color mapping and aria-label
+                  as that branch (see getApprovalStatusIcon), just anchored to
+                  the opposite corner of the diamond from the constraint
+                  violation badge so the two never overlap. */}
+              {task.approvalStatus && task.approvalStatus !== "none" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      role="img"
+                      className="pointer-events-auto absolute -bottom-2.5 -right-2.5 z-20 flex size-4 items-center justify-center rounded-full border border-background bg-background shadow-sm"
+                      aria-label={t("tasks:gantt.approvalBadgeAriaLabel", {
+                        status: getApprovalStatusLabel(task.approvalStatus),
+                      })}
+                    >
+                      {getApprovalStatusIcon(task.approvalStatus)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {getApprovalStatusLabel(task.approvalStatus)}
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
         </div>

@@ -179,4 +179,66 @@ describe("GanttTaskBar approval badge and gate warning", () => {
       screen.getByLabelText(/tasks:gantt.approvalBadgeAriaLabel/),
     ).toBeInTheDocument();
   });
+
+  // Approval gates are always milestones, so the badge must render on the
+  // diamond branch too (finding 6.3) — not only on the normal bar branch
+  // exercised above.
+  describe("on a milestone bar", () => {
+    it("shows no approval badge when the milestone has no gate", () => {
+      render(
+        <GanttTaskBar
+          task={makeScheduledTask({
+            isMilestone: true,
+            approvalStatus: "none",
+          })}
+          timeline={timeline}
+          pixelsPerDay={40}
+          onOpenTask={vi.fn()}
+        />,
+      );
+
+      expect(
+        screen.queryByLabelText(/tasks:gantt.approvalBadgeAriaLabel/),
+      ).not.toBeInTheDocument();
+    });
+
+    it.each(["pending", "approved", "rejected"] as const)(
+      "shows the approval badge for a %s milestone gate",
+      (approvalStatus) => {
+        render(
+          <GanttTaskBar
+            task={makeScheduledTask({ isMilestone: true, approvalStatus })}
+            timeline={timeline}
+            pixelsPerDay={40}
+            onOpenTask={vi.fn()}
+          />,
+        );
+
+        expect(
+          screen.getByLabelText(/tasks:gantt.approvalBadgeAriaLabel/),
+        ).toBeInTheDocument();
+      },
+    );
+
+    it("still renders the milestone diamond alongside the approval badge", () => {
+      render(
+        <GanttTaskBar
+          task={makeScheduledTask({
+            isMilestone: true,
+            approvalStatus: "approved",
+          })}
+          timeline={timeline}
+          pixelsPerDay={40}
+          onOpenTask={vi.fn()}
+        />,
+      );
+
+      expect(
+        screen.getByLabelText(/tasks:gantt.milestoneAriaLabel/),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/tasks:gantt.approvalBadgeAriaLabel/),
+      ).toBeInTheDocument();
+    });
+  });
 });

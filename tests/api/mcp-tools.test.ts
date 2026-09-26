@@ -50,6 +50,18 @@ function lastRequest() {
   };
 }
 
+function requestAt(index: number) {
+  const [input, init] = apiFetch.mock.calls.at(index) as [
+    RequestInfo | URL,
+    RequestInit | undefined,
+  ];
+  return {
+    url: String(input),
+    method: init?.method ?? "GET",
+    body: init?.body ? JSON.parse(String(init.body)) : undefined,
+  };
+}
+
 describe("MCP tool catalog", () => {
   it("resolves workspace members", async () => {
     await call("list_workspace_members", { workspaceId: "ws 1" });
@@ -290,6 +302,126 @@ describe("MCP tool catalog", () => {
         constraintDate: "2026-01-01T00:00:00Z",
       },
     });
+  });
+
+  it("persists approvalStatus/approvalNote on update_task through the approval endpoint", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+        approvalStatus: "none",
+        approvalNote: null,
+      }),
+    );
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        id: "t1",
+        approvalStatus: "approved",
+        approvalNote: "Signed off by client",
+      }),
+    );
+
+    const result = await call("update_task", {
+      taskId: "t1",
+      approvalStatus: "approved",
+      approvalNote: "Signed off by client",
+    });
+
+    // No other fields were patched, so only the GET and the dedicated
+    // approval endpoint should be hit — not a full PUT /api/task/:id.
+    expect(apiFetch).toHaveBeenCalledTimes(2);
+    expect(requestAt(0)).toMatchObject({
+      url: "http://api.test/api/task/t1",
+      method: "GET",
+    });
+    expect(requestAt(1)).toMatchObject({
+      url: "http://api.test/api/task/approval/t1",
+      method: "PUT",
+      body: {
+        approvalStatus: "approved",
+        approvalNote: "Signed off by client",
+      },
+    });
+    expect(result.isError).toBe(false);
+  });
+
+  it("defaults approvalStatus to the existing value when only approvalNote is set on update_task", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+        approvalStatus: "pending",
+        approvalNote: null,
+      }),
+    );
+    apiFetch.mockResolvedValueOnce(
+      Response.json({ id: "t1", approvalStatus: "pending" }),
+    );
+
+    await call("update_task", {
+      taskId: "t1",
+      approvalNote: "waiting on legal",
+    });
+
+    expect(requestAt(-1)).toMatchObject({
+      url: "http://api.test/api/task/approval/t1",
+      method: "PUT",
+      body: { approvalStatus: "pending", approvalNote: "waiting on legal" },
+    });
+  });
+
+  it("also performs the full update before setting approval when other fields are provided", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+        approvalStatus: "none",
+      }),
+    );
+    apiFetch.mockResolvedValueOnce(
+      Response.json({ id: "t1", status: "done", approvalStatus: "none" }),
+    );
+    apiFetch.mockResolvedValueOnce(
+      Response.json({ id: "t1", approvalStatus: "approved" }),
+    );
+
+    await call("update_task", {
+      taskId: "t1",
+      status: "done",
+      approvalStatus: "approved",
+    });
+
+    expect(apiFetch).toHaveBeenCalledTimes(3);
+    expect(requestAt(1)).toMatchObject({
+      url: "http://api.test/api/task/t1",
+      method: "PUT",
+    });
+    expect(requestAt(2)).toMatchObject({
+      url: "http://api.test/api/task/approval/t1",
+      method: "PUT",
+    });
+  });
+
+  it("rejects an invalid approvalStatus on update_task instead of silently accepting it", async () => {
+    const result = await call("update_task", {
+      taskId: "t1",
+      approvalStatus: "definitely-not-a-status",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(apiFetch).not.toHaveBeenCalled();
   });
 
   it("omits progress/isMilestone/constraintType on update_task when not provided, leaving them untouched", async () => {

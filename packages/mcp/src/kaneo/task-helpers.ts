@@ -15,6 +15,17 @@ export const CONSTRAINT_TYPES = [
 
 export type TaskConstraintType = (typeof CONSTRAINT_TYPES)[number];
 
+// Client-approval gate for a task. Mirrors the taskTable.approvalStatus
+// column comment in apps/api/src/database/schema.ts.
+export const APPROVAL_STATUSES = [
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+] as const;
+
+export type TaskApprovalStatus = (typeof APPROVAL_STATUSES)[number];
+
 export type TaskUpdatePatch = {
   title?: string;
   description?: string | null;

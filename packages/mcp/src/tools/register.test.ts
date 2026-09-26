@@ -578,6 +578,125 @@ describe("registerTools", () => {
     });
   });
 
+  it("persists approvalStatus/approvalNote on update_task via the approval endpoint", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({
+          title: "T",
+          description: "D",
+          status: "open",
+          priority: "medium",
+          projectId: "p1",
+          position: 1,
+          approvalStatus: "none",
+          approvalNote: null,
+        })
+        .mockResolvedValueOnce({
+          id: "task-1",
+          approvalStatus: "approved",
+          approvalNote: "Signed off by client",
+        }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    const result = await tools.get("update_task")?.handler({
+      taskId: "task-1",
+      approvalStatus: "approved",
+      approvalNote: "Signed off by client",
+    });
+
+    // Only the approval endpoint should be hit: no other fields were patched.
+    expect(client.json).toHaveBeenCalledTimes(2);
+    expect(client.json).toHaveBeenNthCalledWith(1, "/api/task/task-1", {
+      method: "GET",
+    });
+    const approvalCall = client.json.mock.calls[1];
+    expect(approvalCall?.[0]).toBe("/api/task/approval/task-1");
+    expect((approvalCall?.[1] as { method?: string })?.method).toBe("PUT");
+    const approvalBody = JSON.parse(
+      String((approvalCall?.[1] as { body?: string })?.body ?? "{}"),
+    );
+    expect(approvalBody).toEqual({
+      approvalStatus: "approved",
+      approvalNote: "Signed off by client",
+    });
+    expect(result?.isError).toBe(false);
+  });
+
+  it("defaults approvalStatus to the existing value when only approvalNote is set on update_task", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({
+          title: "T",
+          description: "D",
+          status: "open",
+          priority: "medium",
+          projectId: "p1",
+          position: 1,
+          approvalStatus: "pending",
+          approvalNote: null,
+        })
+        .mockResolvedValueOnce({ id: "task-1", approvalStatus: "pending" }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("update_task")?.handler({
+      taskId: "task-1",
+      approvalNote: "waiting on legal",
+    });
+
+    const approvalCall = client.json.mock.calls[1];
+    expect(approvalCall?.[0]).toBe("/api/task/approval/task-1");
+    const approvalBody = JSON.parse(
+      String((approvalCall?.[1] as { body?: string })?.body ?? "{}"),
+    );
+    expect(approvalBody).toEqual({
+      approvalStatus: "pending",
+      approvalNote: "waiting on legal",
+    });
+  });
+
+  it("also updates other fields before setting approval on update_task", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({
+          title: "T",
+          description: "D",
+          status: "open",
+          priority: "medium",
+          projectId: "p1",
+          position: 1,
+          approvalStatus: "none",
+        })
+        .mockResolvedValueOnce({
+          id: "task-1",
+          status: "done",
+          approvalStatus: "none",
+        })
+        .mockResolvedValueOnce({ id: "task-1", approvalStatus: "approved" }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("update_task")?.handler({
+      taskId: "task-1",
+      status: "done",
+      approvalStatus: "approved",
+    });
+
+    expect(client.json).toHaveBeenCalledTimes(3);
+    expect(client.json.mock.calls[1]?.[0]).toBe("/api/task/task-1");
+    expect(client.json.mock.calls[2]?.[0]).toBe("/api/task/approval/task-1");
+  });
+
   it("rejects an unknown field on update_task instead of silently dropping it", () => {
     const { server, tools } = createServerMock();
     const client = { json: vi.fn() };
