@@ -2140,7 +2140,9 @@
 			"previousPeriod": "Vorheriger Zeitraum",
 			"nextPeriod": "Nächster Zeitraum",
 			"periodStart": "Startdatum der Zeitleiste",
-			"showTaskDates": "Aufgabendaten anzeigen"
+			"showTaskDates": "Aufgabendaten anzeigen",
+			"customFieldLabel": "Custom field column",
+			"customFieldNone": "None"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",

@@ -64,11 +64,20 @@ function RouteComponent() {
   );
   const { data: customFieldDefinitions = [] } =
     useGetCustomFieldsByProject(projectId);
-  const { data: customFieldValues = [] } =
-    useGetCustomFieldValuesByProject(projectId);
-  const selectedCustomFieldId = ganttCustomFieldByProject?.[projectId] ?? "";
+  const storedCustomFieldId = ganttCustomFieldByProject?.[projectId] ?? "";
   const selectedCustomFieldDefinition = customFieldDefinitions.find(
-    (field) => field.id === selectedCustomFieldId,
+    (field) => field.id === storedCustomFieldId,
+  );
+  // Ignore a stored field id whose definition no longer exists (e.g. the field
+  // was deleted): otherwise the Select would carry a value matching no item and
+  // we would fetch the whole project's values for a field we never display.
+  const selectedCustomFieldId = selectedCustomFieldDefinition
+    ? storedCustomFieldId
+    : "";
+  // Only the values for the selected field are ever displayed, so avoid
+  // fetching the whole project's custom field values until one is chosen.
+  const { data: customFieldValues = [] } = useGetCustomFieldValuesByProject(
+    selectedCustomFieldId ? projectId : "",
   );
   // One lookup built once per render of the values query, rather than
   // filtering the whole project's values per task row.
@@ -296,7 +305,7 @@ function RouteComponent() {
               <Select
                 value={selectedCustomFieldId}
                 onValueChange={(value) =>
-                  setGanttCustomField(projectId, String(value ?? "") || null)
+                  setGanttCustomField(projectId, value || null)
                 }
               >
                 <SelectTrigger
@@ -304,9 +313,7 @@ function RouteComponent() {
                   className="h-9 w-full max-w-[11rem] sm:h-8"
                   aria-label={t("tasks:gantt.customFieldLabel")}
                 >
-                  <SelectValue
-                    placeholder={t("tasks:gantt.customFieldPlaceholder")}
-                  >
+                  <SelectValue>
                     {selectedCustomFieldDefinition?.name ??
                       t("tasks:gantt.customFieldNone")}
                   </SelectValue>
