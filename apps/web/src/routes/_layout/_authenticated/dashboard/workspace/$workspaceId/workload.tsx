@@ -42,6 +42,15 @@ function dayKey(date: Date) {
   return format(date, DATE_FORMAT);
 }
 
+// Bucket boundaries are date-only values the API anchors at UTC midnight.
+// Render them from their calendar date so week labels don't slip a day for
+// viewers in negative-offset time zones (where `new Date(...Z)` lands on the
+// previous day).
+function bucketDay(value: string | Date) {
+  const iso = typeof value === "string" ? value : value.toISOString();
+  return new Date(`${iso.slice(0, 10)}T00:00:00`);
+}
+
 // One neutral, monotone ramp for magnitude (how loaded, relative to the
 // threshold), separate from the reserved warning color used for overload.
 function magnitudeClassName(count: number, threshold: number) {
@@ -197,12 +206,12 @@ function WorkloadComponent() {
                       <TableHead
                         key={bucket.start}
                         className="text-center"
-                        title={`${format(new Date(bucket.start), "MMM d")} – ${format(
-                          addDays(new Date(bucket.end), -1),
+                        title={`${format(bucketDay(bucket.start), "MMM d")} – ${format(
+                          addDays(bucketDay(bucket.end), -1),
                           "MMM d",
                         )}`}
                       >
-                        {format(new Date(bucket.start), "MMM d")}
+                        {format(bucketDay(bucket.start), "MMM d")}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -259,7 +268,7 @@ function WorkloadComponent() {
                                 ? t("workspace:workload.cellTooltip", {
                                     count,
                                     date: format(
-                                      new Date(bucket.start),
+                                      bucketDay(bucket.start),
                                       "MMM d",
                                     ),
                                   })
