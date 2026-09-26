@@ -501,16 +501,23 @@ export function registerMcpTools(
       }
       const q = qs.toString();
       return run(async () => {
-        const board = await client.json(
-          `/api/task/tasks/${encodeURIComponent(projectId)}${q ? `?${q}` : ""}`,
-          { method: "GET" },
-        );
         // One bulk query for the whole project's custom-field values, grouped
-        // by taskId below, instead of a request per task on the page.
-        const values = await client.json(
-          `/api/custom-field/project/${encodeURIComponent(projectId)}/values`,
-          { method: "GET" },
-        );
+        // by taskId below, instead of a request per task on the page. It runs
+        // in parallel with the board fetch, and a failure there (e.g. a role
+        // without task:read, or a transient error) degrades to no custom
+        // fields rather than failing the whole board read.
+        const [board, values] = await Promise.all([
+          client.json(
+            `/api/task/tasks/${encodeURIComponent(projectId)}${q ? `?${q}` : ""}`,
+            { method: "GET" },
+          ),
+          client
+            .json(
+              `/api/custom-field/project/${encodeURIComponent(projectId)}/values`,
+              { method: "GET" },
+            )
+            .catch(() => []),
+        ]);
         return attachCustomFieldsToBoard(
           board,
           groupCustomFieldValuesByTask(values),
@@ -527,14 +534,20 @@ export function registerMcpTools(
     },
     async (args) =>
       run(async () => {
-        const task = (await client.json(
-          `/api/task/${encodeURIComponent(args.taskId)}`,
-          { method: "GET" },
-        )) as Record<string, unknown>;
-        const values = await client.json(
-          `/api/custom-field/task/${encodeURIComponent(args.taskId)}`,
-          { method: "GET" },
-        );
+        // Fetch the task and its custom-field values in parallel. A failure of
+        // the custom-field request (e.g. a role without task:read, or a
+        // transient error) degrades to no custom fields rather than failing the
+        // whole task read.
+        const [task, values] = await Promise.all([
+          client.json(`/api/task/${encodeURIComponent(args.taskId)}`, {
+            method: "GET",
+          }) as Promise<Record<string, unknown>>,
+          client
+            .json(`/api/custom-field/task/${encodeURIComponent(args.taskId)}`, {
+              method: "GET",
+            })
+            .catch(() => []),
+        ]);
         return withCustomFields(
           task,
           Array.isArray(values) ? values.map(toTaskCustomFieldValue) : [],
