@@ -7,6 +7,7 @@
     "dev": "turbo dev",
     "i18n:check": "node ./scripts/i18n/check.mjs",
     "i18n:check:fix": "node ./scripts/i18n/check.mjs --fix",
+    "i18n:untranslated": "node ./scripts/i18n/untranslated.mjs",
     "openapi:check": "node ./scripts/openapi/check.mjs",
     "openapi:check:fix": "node ./scripts/openapi/check.mjs --fix",
     "i18n:report": "node ./scripts/i18n/report.mjs",

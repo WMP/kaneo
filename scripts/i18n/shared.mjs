@@ -114,6 +114,50 @@ export function setValueAtKey(localeData, translationKey, value) {
 
 export const PLURAL_CATEGORIES = ["zero", "one", "two", "few", "many", "other"];
 
+// The wording a locale-specific plural form (_few, _many, …) is compared
+// against: such categories have no en-US counterpart, so they fall back to the
+// _other / base / _one form of the same family.
+export function referenceFallback(referenceData, key) {
+  for (const category of PLURAL_CATEGORIES) {
+    const suffix = `_${category}`;
+    if (!key.endsWith(suffix)) {
+      continue;
+    }
+    const base = key.slice(0, -suffix.length);
+    for (const candidate of [`${base}_other`, base, `${base}_one`]) {
+      const value = getValueAtKey(referenceData, candidate);
+      if (value !== undefined) {
+        return value;
+      }
+    }
+  }
+  return undefined;
+}
+
+// The keys of one locale whose value is still byte-identical to en-US, i.e.
+// not yet translated. Shared by the i18n report and the untranslated report so
+// the two never disagree (including on locale-specific plural forms). Callers
+// that loop over many locales can pass the reference's flattened key set once
+// to avoid re-walking en-US for every locale.
+export function collectUntranslatedKeys(
+  localeData,
+  referenceData,
+  referenceKeys = flattenLocale(referenceData),
+) {
+  const candidates = new Set([...referenceKeys, ...flattenLocale(localeData)]);
+
+  return [...candidates].filter((key) => {
+    const target = getValueAtKey(localeData, key);
+    if (typeof target !== "string") {
+      return false;
+    }
+    const source =
+      getValueAtKey(referenceData, key) ??
+      referenceFallback(referenceData, key);
+    return typeof source === "string" && source === target;
+  });
+}
+
 // A locale supplies the plural categories its own language needs, so _few and
 // _many have no en-US counterpart. Pruning purely against the reference key set
 // would delete them.
