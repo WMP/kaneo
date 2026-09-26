@@ -2370,7 +2370,9 @@
 			"actions": "Əməliyyatlar",
 			"searchActions": "Əməliyyatları axtar...",
 			"noActionsFound": "Əməliyyat tapılmadı.",
-			"changeStatus": "Vəziyyəti dəyiş"
+			"changeStatus": "Vəziyyəti dəyiş",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

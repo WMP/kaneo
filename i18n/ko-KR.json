@@ -2360,7 +2360,9 @@
 			"actions": "작업",
 			"searchActions": "작업 검색...",
 			"noActionsFound": "작업을 찾을 수 없습니다.",
-			"changeStatus": "상태 변경"
+			"changeStatus": "상태 변경",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

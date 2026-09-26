@@ -2357,7 +2357,9 @@
 			"actions": "İşlemler",
 			"searchActions": "İşlem ara...",
 			"noActionsFound": "İşlem bulunamadı.",
-			"changeStatus": "Durumu Değiştir"
+			"changeStatus": "Durumu Değiştir",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

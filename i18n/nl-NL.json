@@ -2346,7 +2346,9 @@
 			"actions": "Acties",
 			"searchActions": "Acties zoeken...",
 			"noActionsFound": "Geen acties gevonden.",
-			"changeStatus": "Status wijzigen"
+			"changeStatus": "Status wijzigen",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"move": {
 			"title": "Taak verplaatsen",

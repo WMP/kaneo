@@ -92,4 +92,83 @@ describe("bulk task event snapshots", () => {
       );
     }
   });
+
+  it("bulk-sets progress on every task and publishes the same generic notice a single-task edit would", async () => {
+    const { user, workspace } = await createWorkspaceMember();
+    const { project } = await createProjectFixture({
+      workspaceId: workspace.id,
+    });
+    const tasks = await db
+      .insert(schema.taskTable)
+      .values([
+        {
+          projectId: project.id,
+          title: "Started",
+          progress: 10,
+          number: 1,
+        },
+        { projectId: project.id, title: "Fresh", progress: 0, number: 2 },
+      ])
+      .returning();
+
+    const result = await bulkUpdateTasks({
+      taskIds: tasks.map((task) => task.id),
+      operation: "updateProgress",
+      value: "75",
+      userId: user.id,
+    });
+
+    expect(result).toEqual({ success: true, updatedCount: 2 });
+    for (const task of tasks) {
+      expect(publish).toHaveBeenCalledWith(
+        "task.updated",
+        expect.objectContaining({
+          taskId: task.id,
+          projectId: project.id,
+          title: task.title,
+        }),
+      );
+    }
+    expect(await db.query.taskTable.findMany()).toEqual(
+      expect.arrayContaining(
+        tasks.map((task) =>
+          expect.objectContaining({ id: task.id, progress: 75 }),
+        ),
+      ),
+    );
+  });
+
+  it("rejects an out-of-range or non-integer progress value without touching any task", async () => {
+    const { user, workspace } = await createWorkspaceMember();
+    const { project } = await createProjectFixture({
+      workspaceId: workspace.id,
+    });
+    const tasks = await db
+      .insert(schema.taskTable)
+      .values([{ projectId: project.id, title: "A", progress: 20, number: 1 }])
+      .returning();
+
+    await expect(
+      bulkUpdateTasks({
+        taskIds: tasks.map((task) => task.id),
+        operation: "updateProgress",
+        value: "150",
+        userId: user.id,
+      }),
+    ).rejects.toThrow();
+
+    await expect(
+      bulkUpdateTasks({
+        taskIds: tasks.map((task) => task.id),
+        operation: "updateProgress",
+        value: "not-a-number",
+        userId: user.id,
+      }),
+    ).rejects.toThrow();
+
+    const [unchanged] = await db.query.taskTable.findMany({
+      where: (fields, { eq }) => eq(fields.id, tasks[0].id),
+    });
+    expect(unchanged?.progress).toBe(20);
+  });
 });

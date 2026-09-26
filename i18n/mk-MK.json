@@ -2357,7 +2357,9 @@
 			"actions": "Акции",
 			"searchActions": "Пребарај акции...",
 			"noActionsFound": "Не се пронајдени акции.",
-			"changeStatus": "Промени статус"
+			"changeStatus": "Промени статус",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

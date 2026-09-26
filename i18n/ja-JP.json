@@ -2360,7 +2360,9 @@
 			"actions": "操作",
 			"searchActions": "操作を検索...",
 			"noActionsFound": "操作が見つかりません。",
-			"changeStatus": "ステータスを変更"
+			"changeStatus": "ステータスを変更",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

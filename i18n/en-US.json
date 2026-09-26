@@ -2362,6 +2362,8 @@
 			"assignError": "Failed to assign tasks",
 			"setPriority": "Set Priority",
 			"updatePriorityError": "Failed to update priority",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress",
 			"addLabel": "Add Label",
 			"addLabelSuccess": "Label added to {{count}} tasks",
 			"addLabelError": "Failed to add label",

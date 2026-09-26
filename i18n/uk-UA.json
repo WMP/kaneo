@@ -2377,7 +2377,9 @@
 			"actions": "Дії",
 			"searchActions": "Пошук дій...",
 			"noActionsFound": "Дій не знайдено.",
-			"changeStatus": "Змінити статус"
+			"changeStatus": "Змінити статус",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

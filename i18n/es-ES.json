@@ -2356,7 +2356,9 @@
 			"actions": "Actiones",
 			"searchActions": "Buscar acciones...",
 			"noActionsFound": "No se han encontrado acciones.",
-			"changeStatus": "Cambiar estado"
+			"changeStatus": "Cambiar estado",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"move": {
 			"title": "Mover tarea",

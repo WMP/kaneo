@@ -2347,7 +2347,9 @@
 			"actions": "Hành động",
 			"searchActions": "Tìm hành động...",
 			"noActionsFound": "Không tìm thấy hành động nào.",
-			"changeStatus": "Đổi trạng thái"
+			"changeStatus": "Đổi trạng thái",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

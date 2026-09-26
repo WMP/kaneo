@@ -2360,7 +2360,9 @@
 			"actions": "操作",
 			"searchActions": "搜索操作…",
 			"noActionsFound": "未找到操作。",
-			"changeStatus": "更改状态"
+			"changeStatus": "更改状态",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

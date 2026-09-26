@@ -2367,7 +2367,9 @@
 			"actions": "Ações",
 			"searchActions": "Buscar ações...",
 			"noActionsFound": "Nenhuma ação encontrada.",
-			"changeStatus": "Mudar status"
+			"changeStatus": "Mudar status",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

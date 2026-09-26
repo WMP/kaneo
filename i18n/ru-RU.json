@@ -2433,7 +2433,9 @@
 			"archiveSuccess": "{{count}} задач архивировано",
 			"updateSuccess": "{{count}} задач обновлено",
 			"assignSuccess": "{{count}} задач назначено",
-			"addLabelSuccess": "Метка добавлена к {{count}} задачам"
+			"addLabelSuccess": "Метка добавлена к {{count}} задачам",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

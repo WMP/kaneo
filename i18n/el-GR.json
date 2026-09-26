@@ -2357,7 +2357,9 @@
 			"actions": "Ενέργειες",
 			"searchActions": "Αναζήτηση ενεργειών...",
 			"noActionsFound": "Δεν βρέθηκαν ενέργειες.",
-			"changeStatus": "Αλλαγή κατάστασης"
+			"changeStatus": "Αλλαγή κατάστασης",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

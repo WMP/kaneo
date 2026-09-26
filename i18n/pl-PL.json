@@ -2141,7 +2141,9 @@
 			"updateDueDateError": "Nie udało się zaktualizować terminu",
 			"updateError": "Nie udało się zaktualizować zadań",
 			"updatePriorityError": "Nie udało się zaktualizować priorytetu",
-			"updateSuccess": "Zaktualizowano zadań: {{count}}"
+			"updateSuccess": "Zaktualizowano zadań: {{count}}",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"common": {
 			"loadingTask": "Ładowanie zadania...",

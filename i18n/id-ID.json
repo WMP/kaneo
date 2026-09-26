@@ -2347,7 +2347,9 @@
 			"actions": "Aksi",
 			"searchActions": "Cari aksi...",
 			"noActionsFound": "Tidak ada aksi ditemukan.",
-			"changeStatus": "Ubah Status"
+			"changeStatus": "Ubah Status",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

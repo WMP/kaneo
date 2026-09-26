@@ -2357,7 +2357,9 @@
 			"actions": "कार्रवाइयाँ",
 			"searchActions": "कार्रवाइयाँ खोजें...",
 			"noActionsFound": "कोई कार्रवाई नहीं मिली।",
-			"changeStatus": "स्थिति बदलें"
+			"changeStatus": "स्थिति बदलें",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {
