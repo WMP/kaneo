@@ -321,4 +321,76 @@ describe("registerTools", () => {
       method: "GET",
     });
   });
+
+  it("lists a project's custom field definitions", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue([]) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools
+      .get("list_project_custom_fields")
+      ?.handler({ projectId: "project 1" });
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/custom-field/project/project%201",
+      { method: "GET" },
+    );
+  });
+
+  it("gets a task's custom field values", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue([]) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("get_task_custom_fields")?.handler({ taskId: "task-1" });
+
+    expect(client.json).toHaveBeenCalledWith("/api/custom-field/task/task-1", {
+      method: "GET",
+    });
+  });
+
+  it("sets a task's custom field value", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi.fn().mockResolvedValue({ id: "value-1" }),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    const result = await tools.get("set_task_custom_field_value")?.handler({
+      taskId: "task-1",
+      fieldId: "field-1",
+      value: "Approved",
+    });
+
+    expect(client.json).toHaveBeenCalledWith("/api/custom-field/value", {
+      method: "PUT",
+      body: JSON.stringify({
+        taskId: "task-1",
+        fieldId: "field-1",
+        value: "Approved",
+      }),
+    });
+    expect(result?.isError).toBe(false);
+  });
+
+  it("rejects unknown fields on set_task_custom_field_value", () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn() };
+
+    registerTools(server as never, { client: client as never });
+
+    const schema = tools.get("set_task_custom_field_value")?.config.inputSchema;
+    expect(schema).toBeDefined();
+    expect(() =>
+      schema?.parse({
+        taskId: "task-1",
+        fieldId: "field-1",
+        value: "Approved",
+        extra: "nope",
+      }),
+    ).toThrow();
+  });
 });

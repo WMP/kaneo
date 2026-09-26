@@ -206,4 +206,72 @@ describe("MCP tool catalog", () => {
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("Task not found");
   });
+
+  it("lists a project's custom field definitions", async () => {
+    await call("list_project_custom_fields", { projectId: "p1" });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/custom-field/project/p1",
+      method: "GET",
+    });
+  });
+
+  it("gets a task's custom field values", async () => {
+    await call("get_task_custom_fields", { taskId: "t1" });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/custom-field/task/t1",
+      method: "GET",
+    });
+  });
+
+  it("sets a task's custom field value", async () => {
+    await call("set_task_custom_field_value", {
+      taskId: "t1",
+      fieldId: "f1",
+      value: "Approved",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/custom-field/value",
+      method: "PUT",
+      body: { taskId: "t1", fieldId: "f1", value: "Approved" },
+    });
+  });
+
+  it("allows clearing a custom field value with an empty string", async () => {
+    await call("set_task_custom_field_value", {
+      taskId: "t1",
+      fieldId: "f1",
+      value: "",
+    });
+
+    expect(lastRequest().body).toEqual({
+      taskId: "t1",
+      fieldId: "f1",
+      value: "",
+    });
+  });
+
+  it("rejects unknown fields on set_task_custom_field_value", async () => {
+    const result = await call("set_task_custom_field_value", {
+      taskId: "t1",
+      fieldId: "f1",
+      value: "Approved",
+      extra: "nope",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects unknown fields on list_project_custom_fields", async () => {
+    const result = await call("list_project_custom_fields", {
+      projectId: "p1",
+      workspaceId: "w1",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
 });

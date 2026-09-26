@@ -785,4 +785,60 @@ export function registerTools(
     },
     async () => run(() => client.json("/api/notification")),
   );
+
+  server.registerTool(
+    "list_project_custom_fields",
+    {
+      description:
+        "List a project's custom field definitions (name, type, required, default value, and dropdown options).",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/custom-field/project/${encodeURIComponent(args.projectId)}`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  server.registerTool(
+    "get_task_custom_fields",
+    {
+      description:
+        "List a task's custom field values, each alongside its field's name, type and dropdown options.",
+      inputSchema: z.strictObject({ taskId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/custom-field/task/${encodeURIComponent(args.taskId)}`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  server.registerTool(
+    "set_task_custom_field_value",
+    {
+      description:
+        "Create or update a task's value for one of its project's custom fields. Pass an empty string to clear it (rejected if the field is required). Values are validated server-side against the field's type (number/boolean/dropdown option).",
+      inputSchema: z.strictObject({
+        taskId: nonEmptyString,
+        fieldId: nonEmptyString,
+        value: z.string(),
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json("/api/custom-field/value", {
+          method: "PUT",
+          body: JSON.stringify({
+            taskId: args.taskId,
+            fieldId: args.fieldId,
+            value: args.value,
+          }),
+        }),
+      ),
+  );
 }
