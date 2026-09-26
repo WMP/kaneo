@@ -2095,6 +2095,7 @@
 			"progress": {
 				"label": "Progress",
 				"percentLabel": "Percent complete",
+				"exactLabel": "Exact percent complete",
 				"updateSuccess": "Task progress updated",
 				"updateError": "Failed to update task progress"
 			},

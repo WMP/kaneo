@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -16,6 +17,10 @@ type TaskProgressPopoverProps = {
   children: React.ReactNode;
 };
 
+function clampProgress(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
 export default function TaskProgressPopover({
   task,
   children,
@@ -23,14 +28,27 @@ export default function TaskProgressPopover({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [localProgress, setLocalProgress] = useState(task.progress ?? 0);
+  // The exact-number field's own text, kept separate from `localProgress` so
+  // an in-progress edit (e.g. a momentarily empty field while retyping) isn't
+  // clobbered every render — it's resynced from localProgress only when the
+  // slider (or the popover reopening) is the thing that changed it.
+  const [progressInput, setProgressInput] = useState(
+    String(task.progress ?? 0),
+  );
   const { mutateAsync: updateTask } = useUpdateTask();
   const { canUpdateTasks } = useWorkspacePermission();
   const canEdit = canUpdateTasks();
 
+  useEffect(() => {
+    setProgressInput(String(localProgress));
+  }, [localProgress]);
+
   const handleCommit = async (value: number) => {
-    if (value === (task.progress ?? 0)) return;
+    const clamped = clampProgress(value);
+    if (clamped === (task.progress ?? 0)) return;
     try {
-      await updateTask({ ...task, progress: value });
+      await updateTask({ ...task, progress: clamped });
+      toast.success(t("tasks:popover.progress.updateSuccess"));
     } catch (error) {
       setLocalProgress(task.progress ?? 0);
       toast.error(
@@ -39,6 +57,17 @@ export default function TaskProgressPopover({
           : t("tasks:popover.progress.updateError"),
       );
     }
+  };
+
+  const handleInputCommit = () => {
+    const parsed = Number.parseInt(progressInput, 10);
+    // An unparseable or empty field reverts to the last known-good value
+    // instead of silently persisting 0 — the number input has no min/max
+    // enforcement of its own the way the slider's step does.
+    const nextValue = Number.isNaN(parsed) ? localProgress : parsed;
+    const clamped = clampProgress(nextValue);
+    setLocalProgress(clamped);
+    handleCommit(clamped);
   };
 
   if (!canEdit) return <>{children}</>;
@@ -54,13 +83,32 @@ export default function TaskProgressPopover({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-56 p-3" align="start">
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-muted-foreground">
               {t("tasks:popover.progress.percentLabel")}
             </span>
-            <span className="text-sm font-semibold tabular-nums">
-              {localProgress}%
-            </span>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                size="sm"
+                className="w-16 text-right tabular-nums"
+                value={progressInput}
+                aria-label={t("tasks:popover.progress.exactLabel")}
+                onChange={(e) => setProgressInput(e.target.value)}
+                onBlur={handleInputCommit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleInputCommit();
+                  }
+                }}
+              />
+              <span className="text-sm font-semibold text-muted-foreground">
+                %
+              </span>
+            </div>
           </div>
           <Slider
             value={localProgress}

@@ -2131,7 +2131,8 @@
 				"label": "Progress",
 				"percentLabel": "Percent complete",
 				"updateError": "Failed to update task progress",
-				"updateSuccess": "Task progress updated"
+				"updateSuccess": "Task progress updated",
+				"exactLabel": "Exact percent complete"
 			},
 			"constraint": {
 				"currentDate": "{{date}}",
