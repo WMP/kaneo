@@ -205,6 +205,10 @@ export const taskExportSchema = z
     tasks: z.array(
       z
         .object({
+          id: z.string().openapi({
+            description:
+              "Used to match this task against relations' sourceTaskId/targetTaskId within this export.",
+          }),
           title: z.string(),
           description: z.string(),
           status: z.string(),
@@ -212,6 +216,30 @@ export const taskExportSchema = z
           dueDate: z.string().nullable().openapi({ format: "date-time" }),
           startDate: z.string().nullable().openapi({ format: "date-time" }),
           userId: z.string().nullable(),
+          progress: z.number().int().min(0).max(100).openapi({
+            description: "Percent complete, 0-100.",
+          }),
+          isMilestone: z.boolean().openapi({
+            description:
+              "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar.",
+          }),
+          baselineStartDate: z.string().nullable().openapi({
+            format: "date-time",
+            description:
+              "Snapshotted startDate from when the baseline was last set; null if no baseline.",
+          }),
+          baselineDueDate: z.string().nullable().openapi({
+            format: "date-time",
+            description:
+              "Snapshotted dueDate from when the baseline was last set; null if no baseline.",
+          }),
+          constraintType: z.string().openapi({
+            description: constraintTypeResponseDescription,
+          }),
+          constraintDate: z.string().nullable().openapi({
+            format: "date-time",
+            description: "Null unless constraintType is not none.",
+          }),
           labels: z
             .array(
               z
@@ -220,6 +248,27 @@ export const taskExportSchema = z
             )
             .openapi({
               description: "Label names and colors, without their ids.",
+            }),
+          relations: z
+            .array(
+              z
+                .object({
+                  relationType: z.string().openapi({
+                    description: "One of: blocks, related, subtask.",
+                  }),
+                  dependencyType: z.string().openapi({
+                    description:
+                      "One of: fs, ss, ff, sf. Only meaningful for a 'blocks' relation.",
+                  }),
+                  lagDays: z.number().int(),
+                  sourceTaskId: z.string(),
+                  targetTaskId: z.string(),
+                })
+                .openapi("ExportedTaskRelation"),
+            )
+            .openapi({
+              description:
+                "Every relation with this task as either end. Match sourceTaskId/targetTaskId against tasks[].id to tell which side this task is on; the other id may belong to a task outside this project and so outside this export.",
             }),
         })
         .openapi("ExportedTask"),
