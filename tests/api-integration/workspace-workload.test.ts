@@ -242,4 +242,186 @@ describe("API integration: workspace workload", () => {
     // The unassigned row always sorts last.
     expect(payload.assignees.at(-1)?.userId).toBeNull();
   });
+
+  it("still shows a workspace member with zero matching tasks in the range", async () => {
+    const member = await createWorkspaceMember({ userName: "Alice" });
+    const carol = await addWorkspaceMember(member.workspace.id, "Carol");
+    const { project, columns } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+
+    // Only Alice has a matching task; Carol has none in this range.
+    await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-02T00:00:00.000Z"),
+      number: 1,
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workload/${member.workspace.id}?from=2024-01-01&to=2024-01-07`,
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      buckets: { start: string; end: string }[];
+      assignees: {
+        userId: string | null;
+        name: string | null;
+        counts: number[];
+      }[];
+    };
+
+    expect(payload.buckets).toHaveLength(1);
+
+    // Carol is a workspace member and must still get a row, zero-filled,
+    // instead of disappearing because she has no matching tasks.
+    const carolRow = payload.assignees.find((row) => row.userId === carol.id);
+    expect(carolRow).toMatchObject({ name: "Carol", counts: [0] });
+
+    const aliceRow = payload.assignees.find(
+      (row) => row.userId === member.user.id,
+    );
+    expect(aliceRow).toMatchObject({ name: "Alice", counts: [1] });
+  });
+});
+
+describe("API integration: workspace workload tasks (drill-through)", () => {
+  beforeEach(async () => {
+    await resetTestDatabase();
+  });
+
+  it("rejects a user outside the workspace", async () => {
+    const member = await createWorkspaceMember();
+    const outsiderId = `user-${randomUUID()}`;
+    const [outsider] = await db
+      .insert(schema.userTable)
+      .values({
+        id: outsiderId,
+        email: `${outsiderId}@example.com`,
+        emailVerified: true,
+        name: "Outsider",
+      })
+      .returning();
+
+    mockAuthenticatedSession(outsider);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workload/${member.workspace.id}/tasks?from=2024-01-01&to=2024-01-21&assigneeId=${member.user.id}`,
+    );
+
+    expect(response.status).toBe(403);
+  });
+
+  it("rejects `to` before `from`", async () => {
+    const member = await createWorkspaceMember();
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workload/${member.workspace.id}/tasks?from=2024-01-21&to=2024-01-01&assigneeId=${member.user.id}`,
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("returns only the requested assignee's matching tasks in the exact range", async () => {
+    const member = await createWorkspaceMember({ userName: "Alice" });
+    const bob = await addWorkspaceMember(member.workspace.id, "Bob");
+    const { project, columns } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+
+    const aliceTask = await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-05T00:00:00.000Z"),
+      number: 1,
+    });
+    await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: bob.id,
+      dueDate: new Date("2024-01-05T00:00:00.000Z"),
+      number: 2,
+    });
+    // Outside the requested range: excluded even though it's Alice's.
+    await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2025-06-01T00:00:00.000Z"),
+      number: 3,
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workload/${member.workspace.id}/tasks?from=2024-01-01&to=2024-01-07&assigneeId=${member.user.id}`,
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      tasks: { id: string; projectSlug: string; taskNumber: number }[];
+      truncated: boolean;
+    };
+
+    expect(payload.truncated).toBe(false);
+    expect(payload.tasks).toHaveLength(1);
+    expect(payload.tasks[0]).toMatchObject({
+      id: aliceTask.id,
+      projectSlug: project.slug,
+      taskNumber: 1,
+    });
+  });
+
+  it("returns unassigned tasks for the unassigned sentinel", async () => {
+    const member = await createWorkspaceMember({ userName: "Alice" });
+    const { project, columns } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+
+    const unassignedTask = await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: null,
+      dueDate: new Date("2024-01-05T00:00:00.000Z"),
+      number: 1,
+    });
+    await insertTask({
+      projectId: project.id,
+      columnId: columns.todo.id,
+      status: columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-05T00:00:00.000Z"),
+      number: 2,
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/workload/${member.workspace.id}/tasks?from=2024-01-01&to=2024-01-07&assigneeId=unassigned`,
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      tasks: { id: string }[];
+    };
+
+    expect(payload.tasks).toHaveLength(1);
+    expect(payload.tasks[0].id).toBe(unassignedTask.id);
+  });
 });

@@ -603,6 +603,8 @@
 				"allUsers": "Wszyscy użytkownicy",
 				"type": "Typ",
 				"allTypes": "Wszystkie typy",
+				"project": "Projekt",
+				"allProjects": "Wszystkie projekty",
 				"from": "Od",
 				"to": "Do"
 			},
@@ -616,7 +618,15 @@
 				"due_date_changed": "Zmiana terminu",
 				"title_changed": "Zmiana tytułu",
 				"moved": "Przeniesiono",
-				"description_changed": "Zmiana opisu"
+				"description_changed": "Zmiana opisu",
+				"approval_changed": "Zmiana zatwierdzenia",
+				"updated": "Aktualizacja planu",
+				"relation_created": "Dodano zależność",
+				"relation_updated": "Zaktualizowano zależność",
+				"relation_deleted": "Usunięto zależność",
+				"calendar_updated": "Zmieniono dni robocze",
+				"holiday_added": "Dodano dzień wolny",
+				"holiday_removed": "Usunięto dzień wolny"
 			},
 			"pagination": "Strona {{current}} z {{total}}",
 			"emptyTitle": "Brak aktywności",
@@ -634,10 +644,16 @@
 		},
 		"workload": {
 			"pageTitle": "Obciążenie",
-			"subtitle": "Zadania z datami, jeszcze nieukończone, na osobę przypisaną w kolejnych tygodniach. Ciemniejsze komórki oznaczają więcej równoległych zadań; wyróżnione przekraczają ustawiony próg.",
-			"previousWeeks": "Poprzednie tygodnie",
-			"nextWeeks": "Następne tygodnie",
-			"jumpToToday": "Dziś",
+			"subtitle": "Zadania z datami, jeszcze nieukończone, na osobę przypisaną w wybranym zakresie. Ciemniejsze komórki oznaczają więcej równoległych zadań; wyróżnione przekraczają ustawiony próg. Widoczny jest każdy członek zespołu, także bez żadnych zaplanowanych zadań.",
+			"fromLabel": "Od",
+			"toLabel": "Do",
+			"previousWeeks": "Poprzedni zakres",
+			"nextWeeks": "Następny zakres",
+			"jumpToToday": "Domyślny zakres",
+			"quickThisYear": "Ten rok",
+			"viewModeAriaLabel": "Tryb widoku",
+			"viewModeWeekly": "Szczegóły tygodniowe",
+			"viewModeSummary": "Podsumowanie zakresu",
 			"overloadThresholdValue": "Wyróżniaj powyżej {{count}}",
 			"assigneeColumn": "Osoba przypisana",
 			"unassigned": "Nieprzypisane",
@@ -649,7 +665,19 @@
 			"cellTooltip": "{{count}} aktywnych zadań w tygodniu od {{date}}",
 			"overloadedSrLabel": "Przeciążenie",
 			"legendLoad": "Mniej → więcej zadań",
-			"legendOverload": "Powyżej {{count}} równoległych zadań"
+			"legendOverload": "Powyżej {{count}} równoległych zadań",
+			"openPersonTasksAriaLabel": "Zobacz zadania osoby {{name}} w tym zakresie",
+			"summaryTotalColumn": "Łączne obciążenie",
+			"summaryTotalTooltip": "Suma liczby aktywnych zadań z każdego tygodnia w zakresie; zadanie obejmujące kilka tygodni jest liczone w każdym z nich.",
+			"summaryOverloadColumn": "Tygodnie powyżej progu",
+			"summaryOverloadTooltip": "Liczba tygodni w zakresie, w których liczba zadań przekroczyła {{count}}.",
+			"drillThrough": {
+				"title": "Zadania osoby {{name}}",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "Brak pasujących zadań w tym zakresie.",
+				"error": "Nie udało się wczytać zadań.",
+				"dueOn": " · Termin {{date}}"
+			}
 		},
 		"create": {
 			"pageTitle": "Utwórz obszar roboczy",
@@ -908,7 +936,21 @@
 		"relationUpdated": "zmienił zależność",
 		"relationDeleted": "usunął zależność",
 		"updatedPlan": "zaktualizował plan",
-		"changedApproval": "zmienił(a) status zatwierdzenia z {{from}} na {{to}}"
+		"changedApproval": "zmienił(a) status zatwierdzenia z {{from}} na {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Data rozpoczęcia",
+				"dueDate": "Termin",
+				"progress": "Postęp",
+				"isMilestone": "Kamień milowy",
+				"constraintType": "Typ ograniczenia",
+				"constraintDate": "Data ograniczenia",
+				"baselineStartDate": "Data rozpoczęcia (bazowa)",
+				"baselineDueDate": "Termin (bazowy)"
+			}
+		}
 	},
 	"settings": {
 		"account": "Konto",

@@ -1,19 +1,10 @@
-import {
-  and,
-  eq,
-  inArray,
-  isNotNull,
-  isNull,
-  ne,
-  not,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { projectTable, taskTable, userTable } from "../../database/schema";
-import { taskIsCompleted } from "../../task/task-is-completed";
+import getWorkspaceMembers from "../../workspace/controllers/get-workspace-members";
 import { bucketizeWorkload, buildWeekBuckets } from "../bucket-workload";
+import { notDoneDatedTaskConditions } from "../matched-task-conditions";
 
 // Keeps one huge, all-time-dated workspace from turning this into an
 // unbounded scan; the response reports `truncated` when this is hit.
@@ -69,21 +60,7 @@ async function getWorkspaceWorkload({
     })
     .from(taskTable)
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
-    .where(
-      and(
-        eq(projectTable.workspaceId, workspaceId),
-        // Archived projects are hidden from the active project list, so their
-        // tasks must not inflate workload counts either.
-        isNull(projectTable.archivedAt),
-        or(isNotNull(taskTable.startDate), isNotNull(taskTable.dueDate)),
-        not(taskIsCompleted),
-        // `taskIsCompleted` only recognizes final columns; the virtual
-        // "archived" status has no column, so exclude it explicitly the way
-        // the schedulers do.
-        ne(taskTable.status, "archived"),
-        rangeOverlap,
-      ),
-    )
+    .where(and(...notDoneDatedTaskConditions(workspaceId), rangeOverlap))
     // Deterministic order so that, when the safety cap truncates the result,
     // the same tasks are kept across identical requests instead of an
     // arbitrary DB-dependent subset.
@@ -97,11 +74,33 @@ async function getWorkspaceWorkload({
 
   const workloadRows = bucketizeWorkload(tasksForBucketing, buckets);
 
-  const assigneeIds = workloadRows
-    .map((row) => row.assigneeId)
-    .filter((id): id is string => id !== null);
+  // Every current workspace member gets a row, even with zero matching
+  // tasks, so absence of load is visible instead of the member silently
+  // disappearing from the table. The unassigned row (`null`) is left as-is:
+  // it only appears when at least one unassigned task matched.
+  const members = await getWorkspaceMembers(workspaceId);
+  const rowByAssigneeId = new Map(
+    workloadRows.map((row) => [row.assigneeId, row]),
+  );
+  const zeroCounts = () => new Array(buckets.length).fill(0);
+  for (const member of members) {
+    if (!rowByAssigneeId.has(member.id)) {
+      rowByAssigneeId.set(member.id, {
+        assigneeId: member.id,
+        counts: zeroCounts(),
+      });
+    }
+  }
+  const allRows = Array.from(rowByAssigneeId.values());
 
-  const users = assigneeIds.length
+  const memberById = new Map(members.map((member) => [member.id, member]));
+  // A task can stay assigned to a user who has since left the workspace;
+  // `members` won't have them, so look those few up separately instead of
+  // dropping their row.
+  const missingUserIds = allRows
+    .map((row) => row.assigneeId)
+    .filter((id): id is string => id !== null && !memberById.has(id));
+  const missingUsers = missingUserIds.length
     ? await db
         .select({
           id: userTable.id,
@@ -109,13 +108,16 @@ async function getWorkspaceWorkload({
           image: userTable.image,
         })
         .from(userTable)
-        .where(inArray(userTable.id, assigneeIds))
+        .where(inArray(userTable.id, missingUserIds))
     : [];
-  const userById = new Map(users.map((user) => [user.id, user]));
+  const missingUserById = new Map(missingUsers.map((user) => [user.id, user]));
 
-  const assignees = workloadRows
+  const assignees = allRows
     .map((row) => {
-      const user = row.assigneeId ? userById.get(row.assigneeId) : undefined;
+      const user = row.assigneeId
+        ? (memberById.get(row.assigneeId) ??
+          missingUserById.get(row.assigneeId))
+        : undefined;
       return {
         userId: row.assigneeId,
         name: user?.name ?? null,

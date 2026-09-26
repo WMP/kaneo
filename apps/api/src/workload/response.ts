@@ -1,4 +1,4 @@
-import { responseTimestamp, z } from "../openapi";
+import { nullableResponseTimestamp, responseTimestamp, z } from "../openapi";
 
 export const workloadBucketSchema = z
   .object({
@@ -36,3 +36,32 @@ export const workloadResponseSchema = z
     }),
   })
   .openapi("WorkspaceWorkload");
+
+export const workloadTaskSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    status: z.string().openapi({
+      description: "The slug of the column the task sits in.",
+    }),
+    priority: z.string(),
+    startDate: nullableResponseTimestamp,
+    dueDate: nullableResponseTimestamp,
+    taskNumber: z.number().int().nullable().openapi({
+      description: "Per-project counter shown as {projectSlug}-{taskNumber}.",
+    }),
+    projectId: z.string(),
+    projectName: z.string(),
+    projectSlug: z.string(),
+  })
+  .openapi("WorkloadTask");
+
+export const workloadTasksResponseSchema = z
+  .object({
+    tasks: z.array(workloadTaskSchema),
+    truncated: z.boolean().openapi({
+      description:
+        "True when the number of matching tasks hit the safety cap and results are incomplete. Narrow the date range to see everything.",
+    }),
+  })
+  .openapi("WorkspaceWorkloadTasks");

@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { addDays, addWeeks, format, startOfWeek } from "date-fns";
+import {
+  addDays,
+  differenceInCalendarDays,
+  format,
+  startOfWeek,
+} from "date-fns";
 import { ChevronLeft, ChevronRight, TriangleAlert, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +27,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import WorkloadDrillThroughSheet, {
+  type WorkloadDrillThroughRequest,
+} from "@/components/workload/workload-drill-through-sheet";
 import useWorkspaceWorkload from "@/hooks/queries/workload/use-workspace-workload";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
@@ -32,14 +46,22 @@ export const Route = createFileRoute(
   component: WorkloadComponent,
 });
 
-// A fixed window keeps the request bounded and the table a stable width;
-// people page through it with the prev/next controls instead.
-const VISIBLE_WEEKS = 8;
 const DATE_FORMAT = "yyyy-MM-dd";
 const THRESHOLD_OPTIONS = [2, 3, 4, 5, 8];
+// The previous fixed window, kept as the "default range" quick action.
+const DEFAULT_WINDOW_DAYS = 8 * 7;
+// Must track the API's own `MAX_WEEK_BUCKETS` cap so a picked range is never
+// rejected after the fact; clamped client-side via the date inputs' `max`.
+const MAX_RANGE_DAYS = 53 * 7;
+
+type ViewMode = "weekly" | "summary";
 
 function dayKey(date: Date) {
   return format(date, DATE_FORMAT);
+}
+
+function parseDayKey(value: string) {
+  return new Date(`${value}T00:00:00`);
 }
 
 // Bucket boundaries are date-only values the API anchors at UTC midnight.
@@ -61,16 +83,22 @@ function magnitudeClassName(count: number, threshold: number) {
   return "bg-foreground/15 font-medium";
 }
 
+function defaultRangeStart() {
+  return startOfWeek(new Date(), { weekStartsOn: 1 });
+}
+
 function WorkloadComponent() {
   const { t } = useTranslation();
   const { workspaceId } = Route.useParams();
-  const [windowStart, setWindowStart] = useState(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
+
+  const [from, setFrom] = useState(() => dayKey(defaultRangeStart()));
+  const [to, setTo] = useState(() =>
+    dayKey(addDays(defaultRangeStart(), DEFAULT_WINDOW_DAYS - 1)),
   );
   const [overloadThreshold, setOverloadThreshold] = useState(3);
-
-  const from = dayKey(windowStart);
-  const to = dayKey(addDays(windowStart, VISIBLE_WEEKS * 7 - 1));
+  const [viewMode, setViewMode] = useState<ViewMode>("weekly");
+  const [drillThrough, setDrillThrough] =
+    useState<WorkloadDrillThroughRequest | null>(null);
 
   const { data, isLoading, isFetching, isError } = useWorkspaceWorkload({
     workspaceId,
@@ -78,59 +106,180 @@ function WorkloadComponent() {
     to,
   });
 
-  const rangeLabel = useMemo(
-    () =>
-      `${format(windowStart, "MMM d")} – ${format(
-        addDays(windowStart, VISIBLE_WEEKS * 7 - 1),
-        "MMM d, yyyy",
-      )}`,
-    [windowStart],
+  // The span of the current selection, in days -- used both to page by "the
+  // range the person is already looking at" and to clamp `to` so a picked
+  // range never exceeds the API's bucket cap.
+  const rangeDays = Math.max(
+    1,
+    differenceInCalendarDays(parseDayKey(to), parseDayKey(from)) + 1,
   );
 
-  const assignees = data?.assignees ?? [];
+  const rangeLabel = useMemo(
+    () =>
+      `${format(parseDayKey(from), "MMM d, yyyy")} – ${format(parseDayKey(to), "MMM d, yyyy")}`,
+    [from, to],
+  );
+
+  const applyRange = (nextFrom: Date, nextTo: Date) => {
+    const clampedTo =
+      differenceInCalendarDays(nextTo, nextFrom) >= MAX_RANGE_DAYS
+        ? addDays(nextFrom, MAX_RANGE_DAYS - 1)
+        : nextTo;
+    setFrom(dayKey(nextFrom));
+    setTo(dayKey(clampedTo < nextFrom ? nextFrom : clampedTo));
+  };
+
+  const shiftRange = (direction: 1 | -1) => {
+    applyRange(
+      addDays(parseDayKey(from), direction * rangeDays),
+      addDays(parseDayKey(to), direction * rangeDays),
+    );
+  };
+
+  const resetToDefaultRange = () => {
+    const start = defaultRangeStart();
+    applyRange(start, addDays(start, DEFAULT_WINDOW_DAYS - 1));
+  };
+
+  const selectThisYear = () => {
+    const year = new Date().getFullYear();
+    applyRange(new Date(year, 0, 1), new Date(year, 11, 31));
+  };
+
   const buckets = data?.buckets ?? [];
+  const assignees = data?.assignees ?? [];
   const hasData = assignees.length > 0;
   const showLoading = isLoading || (isFetching && !data);
+
+  // A coarse, whole-range figure per person: how much they're carrying and
+  // how often they crossed the threshold, without a wide per-week grid --
+  // meant for scanning a long range (a quarter, a year) at a glance.
+  const summaryRows = useMemo(() => {
+    const rows = assignees.map((assignee) => {
+      const total = assignee.counts.reduce((sum, count) => sum + count, 0);
+      const overloadedWeeks = assignee.counts.filter(
+        (count) => count > overloadThreshold,
+      ).length;
+      return { ...assignee, total, overloadedWeeks };
+    });
+    return rows.sort((a, b) => {
+      // The unassigned row always sorts last, same as the weekly table.
+      if (a.userId === null) return b.userId === null ? 0 : 1;
+      if (b.userId === null) return -1;
+      return b.total - a.total;
+    });
+  }, [assignees, overloadThreshold]);
+
+  const openDrillThrough = (
+    assignee: { userId: string | null; name: string | null },
+    bucket?: { start: string | Date; end: string | Date },
+  ) => {
+    const rangeFrom = bucket ? dayKey(bucketDay(bucket.start)) : from;
+    const rangeTo = bucket ? dayKey(addDays(bucketDay(bucket.end), -1)) : to;
+    setDrillThrough({
+      userId: assignee.userId,
+      label: assignee.userId
+        ? (assignee.name ?? "")
+        : t("workspace:workload.unassigned"),
+      from: rangeFrom,
+      to: rangeTo,
+    });
+  };
+
+  const maxToValue = dayKey(addDays(parseDayKey(from), MAX_RANGE_DAYS - 1));
 
   return (
     <>
       <PageTitle title={t("workspace:workload.pageTitle")} />
-      <WorkspaceLayout
-        title={t("workspace:workload.pageTitle")}
-        headerActions={
-          <div className="flex items-center gap-2">
+      <WorkspaceLayout title={t("workspace:workload.pageTitle")}>
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-2.5 sm:px-6">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
-              size="xs"
-              onClick={() =>
-                setWindowStart((current) => addWeeks(current, -VISIBLE_WEEKS))
-              }
+              size="icon-sm"
+              onClick={() => shiftRange(-1)}
               aria-label={t("workspace:workload.previousWeeks")}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
-              {rangeLabel}
-            </span>
+
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {t("workspace:workload.fromLabel")}
+              <input
+                type="date"
+                className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+                value={from}
+                max={to}
+                onChange={(event) => {
+                  if (!event.target.value) return;
+                  applyRange(parseDayKey(event.target.value), parseDayKey(to));
+                }}
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {t("workspace:workload.toLabel")}
+              <input
+                type="date"
+                className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+                value={to}
+                min={from}
+                max={maxToValue}
+                onChange={(event) => {
+                  if (!event.target.value) return;
+                  applyRange(
+                    parseDayKey(from),
+                    parseDayKey(event.target.value),
+                  );
+                }}
+              />
+            </label>
+
             <Button
               variant="outline"
-              size="xs"
-              onClick={() =>
-                setWindowStart((current) => addWeeks(current, VISIBLE_WEEKS))
-              }
+              size="icon-sm"
+              onClick={() => shiftRange(1)}
               aria-label={t("workspace:workload.nextWeeks")}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() =>
-                setWindowStart(startOfWeek(new Date(), { weekStartsOn: 1 }))
-              }
-            >
+
+            <Button variant="ghost" size="xs" onClick={resetToDefaultRange}>
               {t("workspace:workload.jumpToToday")}
             </Button>
+            <Button variant="ghost" size="xs" onClick={selectThisYear}>
+              {t("workspace:workload.quickThisYear")}
+            </Button>
+
+            <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
+              {rangeLabel}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <fieldset className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
+              <legend className="sr-only">
+                {t("workspace:workload.viewModeAriaLabel")}
+              </legend>
+              {(["weekly", "summary"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={viewMode === mode}
+                  onClick={() => setViewMode(mode)}
+                  className={cn(
+                    "rounded-sm px-2.5 py-1 text-xs font-medium transition-colors",
+                    viewMode === mode
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  {mode === "weekly"
+                    ? t("workspace:workload.viewModeWeekly")
+                    : t("workspace:workload.viewModeSummary")}
+                </button>
+              ))}
+            </fieldset>
+
             <Select
               value={String(overloadThreshold)}
               onValueChange={(value) => {
@@ -158,9 +307,9 @@ function WorkloadComponent() {
               </SelectContent>
             </Select>
           </div>
-        }
-      >
-        <div className="space-y-4">
+        </div>
+
+        <div className="space-y-4 px-4 py-4 sm:px-6">
           <p className="text-sm text-muted-foreground">
             {t("workspace:workload.subtitle")}
           </p>
@@ -196,123 +345,259 @@ function WorkloadComponent() {
                 </div>
               ) : null}
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="sticky left-0 bg-background">
-                      {t("workspace:workload.assigneeColumn")}
-                    </TableHead>
-                    {buckets.map((bucket) => (
-                      <TableHead
-                        key={bucket.start}
-                        className="text-center"
-                        title={`${format(bucketDay(bucket.start), "MMM d")} – ${format(
-                          addDays(bucketDay(bucket.end), -1),
-                          "MMM d",
-                        )}`}
-                      >
-                        {format(bucketDay(bucket.start), "MMM d")}
+              {viewMode === "weekly" ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="sticky left-0 bg-background">
+                        {t("workspace:workload.assigneeColumn")}
                       </TableHead>
+                      {buckets.map((bucket) => (
+                        <TableHead
+                          key={bucket.start}
+                          className="text-center"
+                          title={`${format(bucketDay(bucket.start), "MMM d")} – ${format(
+                            addDays(bucketDay(bucket.end), -1),
+                            "MMM d",
+                          )}`}
+                        >
+                          {format(bucketDay(bucket.start), "MMM d")}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {assignees.map((assignee) => (
+                      <TableRow key={assignee.userId ?? "unassigned"}>
+                        <TableCell className="sticky left-0 bg-background p-0">
+                          <button
+                            type="button"
+                            onClick={() => openDrillThrough(assignee)}
+                            aria-label={t(
+                              "workspace:workload.openPersonTasksAriaLabel",
+                              {
+                                name:
+                                  assignee.name ??
+                                  t("workspace:workload.unassigned"),
+                              },
+                            )}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-accent/60"
+                          >
+                            {assignee.userId ? (
+                              <>
+                                <Avatar className="size-6">
+                                  <AvatarImage
+                                    src={assignee.image ?? ""}
+                                    alt={assignee.name ?? ""}
+                                  />
+                                  <AvatarFallback className="text-[10px]">
+                                    {getInitials(assignee.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">
+                                  {assignee.name}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Avatar className="size-6">
+                                  <AvatarFallback className="text-[10px] bg-muted">
+                                    <Users className="w-3 h-3" />
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm text-muted-foreground italic">
+                                  {t("workspace:workload.unassigned")}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        </TableCell>
+                        {assignee.counts.map((count, index) => {
+                          const bucket = buckets[index];
+                          const isOverloaded = count > overloadThreshold;
+                          return (
+                            <TableCell
+                              // biome-ignore lint/suspicious/noArrayIndexKey: buckets are a fixed, index-aligned sequence for this row
+                              key={index}
+                              className="p-0 text-center tabular-nums"
+                            >
+                              <button
+                                type="button"
+                                disabled={!bucket}
+                                onClick={() =>
+                                  bucket && openDrillThrough(assignee, bucket)
+                                }
+                                className={cn(
+                                  "w-full px-2 py-2 disabled:cursor-default",
+                                  bucket && "hover:bg-accent/60",
+                                  isOverloaded
+                                    ? "bg-warning/15 text-warning-foreground font-semibold"
+                                    : magnitudeClassName(
+                                        count,
+                                        overloadThreshold,
+                                      ),
+                                )}
+                                title={
+                                  bucket
+                                    ? t("workspace:workload.cellTooltip", {
+                                        count,
+                                        date: format(
+                                          bucketDay(bucket.start),
+                                          "MMM d",
+                                        ),
+                                      })
+                                    : undefined
+                                }
+                              >
+                                <span className="inline-flex items-center gap-1">
+                                  {isOverloaded ? (
+                                    <TriangleAlert
+                                      className="w-3 h-3"
+                                      aria-hidden="true"
+                                    />
+                                  ) : null}
+                                  {count}
+                                  {isOverloaded ? (
+                                    <span className="sr-only">
+                                      {t(
+                                        "workspace:workload.overloadedSrLabel",
+                                      )}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </button>
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assignees.map((assignee) => (
-                    <TableRow key={assignee.userId ?? "unassigned"}>
-                      <TableCell className="sticky left-0 bg-background">
-                        <div className="flex items-center gap-2">
-                          {assignee.userId ? (
-                            <>
-                              <Avatar className="size-6">
-                                <AvatarImage
-                                  src={assignee.image ?? ""}
-                                  alt={assignee.name ?? ""}
-                                />
-                                <AvatarFallback className="text-[10px]">
-                                  {getInitials(assignee.name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm font-medium">
-                                {assignee.name}
+                  </TableBody>
+                </Table>
+              ) : (
+                <TooltipProvider>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          {t("workspace:workload.assigneeColumn")}
+                        </TableHead>
+                        <TableHead className="text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-default underline decoration-dotted">
+                                {t("workspace:workload.summaryTotalColumn")}
                               </span>
-                            </>
-                          ) : (
-                            <>
-                              <Avatar className="size-6">
-                                <AvatarFallback className="text-[10px] bg-muted">
-                                  <Users className="w-3 h-3" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm text-muted-foreground italic">
-                                {t("workspace:workload.unassigned")}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {t("workspace:workload.summaryTotalTooltip")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                        <TableHead className="text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-default underline decoration-dotted">
+                                {t("workspace:workload.summaryOverloadColumn")}
                               </span>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      {assignee.counts.map((count, index) => {
-                        const bucket = buckets[index];
-                        const isOverloaded = count > overloadThreshold;
-                        return (
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {t("workspace:workload.summaryOverloadTooltip", {
+                                count: overloadThreshold,
+                              })}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {summaryRows.map((assignee) => (
+                        <TableRow key={assignee.userId ?? "unassigned"}>
+                          <TableCell className="p-0">
+                            <button
+                              type="button"
+                              onClick={() => openDrillThrough(assignee)}
+                              aria-label={t(
+                                "workspace:workload.openPersonTasksAriaLabel",
+                                {
+                                  name:
+                                    assignee.name ??
+                                    t("workspace:workload.unassigned"),
+                                },
+                              )}
+                              className="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-accent/60"
+                            >
+                              {assignee.userId ? (
+                                <>
+                                  <Avatar className="size-6">
+                                    <AvatarImage
+                                      src={assignee.image ?? ""}
+                                      alt={assignee.name ?? ""}
+                                    />
+                                    <AvatarFallback className="text-[10px]">
+                                      {getInitials(assignee.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium">
+                                    {assignee.name}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className="text-[10px] bg-muted">
+                                      <Users className="w-3 h-3" />
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm text-muted-foreground italic">
+                                    {t("workspace:workload.unassigned")}
+                                  </span>
+                                </>
+                              )}
+                            </button>
+                          </TableCell>
+                          <TableCell className="text-center tabular-nums">
+                            {assignee.total}
+                          </TableCell>
                           <TableCell
-                            // biome-ignore lint/suspicious/noArrayIndexKey: buckets are a fixed, index-aligned sequence for this row
-                            key={index}
                             className={cn(
                               "text-center tabular-nums",
-                              isOverloaded
-                                ? "bg-warning/15 text-warning-foreground font-semibold"
-                                : magnitudeClassName(count, overloadThreshold),
+                              assignee.overloadedWeeks > 0 &&
+                                "text-warning-foreground font-semibold",
                             )}
-                            title={
-                              bucket
-                                ? t("workspace:workload.cellTooltip", {
-                                    count,
-                                    date: format(
-                                      bucketDay(bucket.start),
-                                      "MMM d",
-                                    ),
-                                  })
-                                : undefined
-                            }
                           >
-                            <span className="inline-flex items-center gap-1">
-                              {isOverloaded ? (
-                                <TriangleAlert
-                                  className="w-3 h-3"
-                                  aria-hidden="true"
-                                />
-                              ) : null}
-                              {count}
-                              {isOverloaded ? (
-                                <span className="sr-only">
-                                  {t("workspace:workload.overloadedSrLabel")}
-                                </span>
-                              ) : null}
-                            </span>
+                            {assignee.overloadedWeeks}
                           </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TooltipProvider>
+              )}
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block size-3 rounded-sm bg-foreground/15" />
-                  {t("workspace:workload.legendLoad")}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <TriangleAlert className="w-3.5 h-3.5 text-warning-foreground" />
-                  {t("workspace:workload.legendOverload", {
-                    count: overloadThreshold,
-                  })}
-                </span>
-              </div>
+              {viewMode === "weekly" ? (
+                <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block size-3 rounded-sm bg-foreground/15" />
+                    {t("workspace:workload.legendLoad")}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <TriangleAlert className="w-3.5 h-3.5 text-warning-foreground" />
+                    {t("workspace:workload.legendOverload", {
+                      count: overloadThreshold,
+                    })}
+                  </span>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
       </WorkspaceLayout>
+
+      <WorkloadDrillThroughSheet
+        workspaceId={workspaceId}
+        request={drillThrough}
+        onClose={() => setDrillThrough(null)}
+      />
     </>
   );
 }

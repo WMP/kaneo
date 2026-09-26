@@ -8,8 +8,12 @@ import {
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import getWorkspaceWorkloadCtrl from "./controllers/get-workspace-workload";
-import { workloadResponseSchema } from "./response";
-import { workloadQuery, workspaceIdParam } from "./schema";
+import getWorkspaceWorkloadTasksCtrl from "./controllers/get-workspace-workload-tasks";
+import {
+  workloadResponseSchema,
+  workloadTasksResponseSchema,
+} from "./response";
+import { workloadQuery, workloadTasksQuery, workspaceIdParam } from "./schema";
 
 const getWorkspaceWorkloadRoute = createRoute({
   method: "get",
@@ -33,9 +37,33 @@ const getWorkspaceWorkloadRoute = createRoute({
   },
 });
 
-const workload = apiRouter<BaseVariables & { workspaceId: string }>().openapi(
-  getWorkspaceWorkloadRoute,
-  async (c) => {
+const getWorkspaceWorkloadTasksRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceWorkloadTasks",
+  path: "/{workspaceId}/tasks",
+  tags: ["Workload"],
+  summary: "Get a workload assignee's matching tasks",
+  description:
+    "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ task: ["read"] }),
+  ] as const,
+  request: { params: workspaceIdParam, query: workloadTasksQuery },
+  responses: {
+    200: jsonResponse(
+      "Matching tasks for one assignee",
+      workloadTasksResponseSchema,
+    ),
+    400: errorResponse(
+      "Workspace ID could not be determined, or the date range is invalid",
+    ),
+    403: errorResponse("No access to the workspace"),
+  },
+});
+
+const workload = apiRouter<BaseVariables & { workspaceId: string }>()
+  .openapi(getWorkspaceWorkloadRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     const { from, to } = c.req.valid("query");
 
@@ -47,7 +75,20 @@ const workload = apiRouter<BaseVariables & { workspaceId: string }>().openapi(
       }),
       200,
     );
-  },
-);
+  })
+  .openapi(getWorkspaceWorkloadTasksRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    const { from, to, assigneeId } = c.req.valid("query");
+
+    return c.json(
+      await getWorkspaceWorkloadTasksCtrl({
+        workspaceId,
+        from: new Date(from),
+        to: new Date(to),
+        assigneeId,
+      }),
+      200,
+    );
+  });
 
 export default workload;

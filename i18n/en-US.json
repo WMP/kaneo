@@ -2049,7 +2049,21 @@
 		"relationUpdated": "updated a dependency",
 		"relationDeleted": "removed a dependency",
 		"updatedPlan": "updated the plan",
-		"changedApproval": "changed approval status from {{from}} to {{to}}"
+		"changedApproval": "changed approval status from {{from}} to {{to}}",
+		"changes": {
+			"entry": "{{field}}: {{from}} → {{to}}",
+			"empty": "—",
+			"fields": {
+				"startDate": "Start date",
+				"dueDate": "Due date",
+				"progress": "Progress",
+				"isMilestone": "Milestone",
+				"constraintType": "Constraint type",
+				"constraintDate": "Constraint date",
+				"baselineStartDate": "Baseline start date",
+				"baselineDueDate": "Baseline due date"
+			}
+		}
 	},
 	"tasks": {
 		"checklistProgress": "{{completed}} of {{total}} checklist items completed",
@@ -2710,6 +2724,8 @@
 				"allUsers": "All users",
 				"type": "Type",
 				"allTypes": "All types",
+				"project": "Project",
+				"allProjects": "All projects",
 				"from": "From",
 				"to": "To"
 			},
@@ -2723,7 +2739,15 @@
 				"unassigned": "Unassigned",
 				"due_date_changed": "Due date changed",
 				"title_changed": "Title changed",
-				"description_changed": "Description changed"
+				"description_changed": "Description changed",
+				"approval_changed": "Approval changed",
+				"updated": "Plan updated",
+				"relation_created": "Dependency added",
+				"relation_updated": "Dependency updated",
+				"relation_deleted": "Dependency removed",
+				"calendar_updated": "Working days changed",
+				"holiday_added": "Holiday added",
+				"holiday_removed": "Holiday removed"
 			},
 			"pagination": "Page {{current}} of {{total}}",
 			"emptyTitle": "No activity yet",
@@ -2741,10 +2765,16 @@
 		},
 		"workload": {
 			"pageTitle": "Workload",
-			"subtitle": "Dated, not-done tasks per assignee across upcoming weeks. Denser cells mean more concurrent work; the highlighted ones are above your threshold.",
-			"previousWeeks": "Previous weeks",
-			"nextWeeks": "Next weeks",
-			"jumpToToday": "Today",
+			"subtitle": "Dated, not-done tasks per assignee across the chosen range. Denser cells mean more concurrent work; the highlighted ones are above your threshold. Every workspace member is shown, even with nothing scheduled.",
+			"fromLabel": "From",
+			"toLabel": "To",
+			"previousWeeks": "Previous range",
+			"nextWeeks": "Next range",
+			"jumpToToday": "Default range",
+			"quickThisYear": "This year",
+			"viewModeAriaLabel": "View mode",
+			"viewModeWeekly": "Weekly detail",
+			"viewModeSummary": "Range summary",
 			"overloadThresholdValue": "Highlight above {{count}}",
 			"assigneeColumn": "Assignee",
 			"unassigned": "Unassigned",
@@ -2756,7 +2786,19 @@
 			"cellTooltip": "{{count}} active tasks for the week of {{date}}",
 			"overloadedSrLabel": "Overloaded",
 			"legendLoad": "Fewer → more tasks",
-			"legendOverload": "Above {{count}} concurrent tasks"
+			"legendOverload": "Above {{count}} concurrent tasks",
+			"openPersonTasksAriaLabel": "View {{name}}'s tasks for this range",
+			"summaryTotalColumn": "Total load",
+			"summaryTotalTooltip": "Sum of each week's active task count across the range; a task spanning several weeks is counted in each one it touches.",
+			"summaryOverloadColumn": "Weeks over threshold",
+			"summaryOverloadTooltip": "Number of weeks in range where the count exceeded {{count}}.",
+			"drillThrough": {
+				"title": "{{name}}'s tasks",
+				"subtitle": "{{from}} – {{to}}",
+				"empty": "No matching tasks in this range.",
+				"error": "Failed to load tasks.",
+				"dueOn": " · Due {{date}}"
+			}
 		},
 		"create": {
 			"pageTitle": "Create Workspace",

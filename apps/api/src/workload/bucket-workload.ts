@@ -15,7 +15,9 @@ export type WeekBucket = {
   end: Date;
 };
 
-function startOfUtcDay(date: Date): Date {
+// Exported so the tasks-drill-through controller can normalize its own
+// (non-bucketed) date range the same way.
+export function startOfUtcDay(date: Date): Date {
   return new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
