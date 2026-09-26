@@ -3,6 +3,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import type { KaneoClient } from "../kaneo/client.js";
 import {
+  APPROVAL_STATUSES,
   buildFullTaskUpdateBody,
   CONSTRAINT_TYPES,
 } from "../kaneo/task-helpers.js";
@@ -38,6 +39,8 @@ const dependencyTypeSchema = z.enum(["fs", "ss", "ff", "sf"]);
 const lagDaysSchema = z.number().int().min(-3650).max(3650);
 // See VALID_TASK_CONSTRAINT_TYPES in apps/api/src/task/schema.ts.
 const constraintTypeSchema = z.enum(CONSTRAINT_TYPES);
+// See approvalStatus in apps/api/src/task/schema.ts.
+const approvalStatusSchema = z.enum(APPROVAL_STATUSES);
 
 function run(fn: () => Promise<unknown>): Promise<CallToolResult> {
   return fn()
@@ -473,6 +476,22 @@ export function registerTools(
         .describe(
           'Required when constraintType is set to anything other than "none" (enforced by the API).',
         ),
+      approvalStatus: approvalStatusSchema
+        .optional()
+        .describe(
+          "Client-approval gate: one of none, pending, approved, rejected. " +
+            "Advisory only, not enforced by the API. Setting this (or " +
+            "approvalNote) calls the same approval endpoint as PUT " +
+            "/api/task/approval/{id}, so it persists and fires the identical " +
+            "approval_changed activity/event as the REST route.",
+        ),
+      approvalNote: z
+        .string()
+        .nullable()
+        .optional()
+        .describe(
+          "Note attached to the approval gate. Null clears it; omit to preserve the existing note.",
+        ),
     })
     .strict();
 
@@ -480,21 +499,53 @@ export function registerTools(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, and constraintType/constraintDate. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored.",
+        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
       inputSchema: updateTaskSchema,
     },
     async (args) => {
-      const { taskId, ...patch } = args;
+      const { taskId, approvalStatus, approvalNote, ...patch } = args;
       return run(async () => {
         const existing = (await client.json(
           `/api/task/${encodeURIComponent(taskId)}`,
           { method: "GET" },
         )) as Record<string, unknown>;
-        const body = buildFullTaskUpdateBody(existing, patch);
-        return client.json(`/api/task/${encodeURIComponent(taskId)}`, {
-          method: "PUT",
-          body: JSON.stringify(body),
-        });
+
+        let result: unknown = existing;
+        if (Object.keys(patch).length > 0) {
+          const body = buildFullTaskUpdateBody(existing, patch);
+          result = await client.json(
+            `/api/task/${encodeURIComponent(taskId)}`,
+            {
+              method: "PUT",
+              body: JSON.stringify(body),
+            },
+          );
+        }
+
+        if (approvalStatus !== undefined || approvalNote !== undefined) {
+          const base = result as Record<string, unknown>;
+          const approvalBody: Record<string, unknown> = {
+            approvalStatus:
+              approvalStatus ??
+              (typeof base.approvalStatus === "string"
+                ? base.approvalStatus
+                : "none"),
+          };
+          if (approvalNote !== undefined) {
+            approvalBody.approvalNote = approvalNote;
+          }
+          // Same controller path as PUT /api/task/approval/{id} so the
+          // approval_changed activity/event fires identically to the REST route.
+          result = await client.json(
+            `/api/task/approval/${encodeURIComponent(taskId)}`,
+            {
+              method: "PUT",
+              body: JSON.stringify(approvalBody),
+            },
+          );
+        }
+
+        return result;
       });
     },
   );

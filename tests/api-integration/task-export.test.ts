@@ -43,6 +43,8 @@ describe("GET /task/export/:projectId", () => {
         baselineDueDate: new Date("2026-04-06T00:00:00.000Z"),
         constraintType: "must_start_on",
         constraintDate: new Date("2026-04-01T00:00:00.000Z"),
+        approvalStatus: "approved",
+        approvalNote: "Signed off by client on 2026-03-30",
       })
       .returning();
 
@@ -83,6 +85,8 @@ describe("GET /task/export/:projectId", () => {
         baselineDueDate: string | null;
         constraintType: string;
         constraintDate: string | null;
+        approvalStatus: string;
+        approvalNote: string | null;
         relations: Array<{
           relationType: string;
           dependencyType: string;
@@ -108,6 +112,8 @@ describe("GET /task/export/:projectId", () => {
       baselineDueDate: "2026-04-06T00:00:00.000Z",
       constraintType: "must_start_on",
       constraintDate: "2026-04-01T00:00:00.000Z",
+      approvalStatus: "approved",
+      approvalNote: "Signed off by client on 2026-03-30",
     });
 
     expect(exportedTarget).toMatchObject({
@@ -118,6 +124,10 @@ describe("GET /task/export/:projectId", () => {
       baselineDueDate: null,
       constraintType: "none",
       constraintDate: null,
+      // A task never touched through the approval gate still exports its
+      // defaults, rather than omitting the fields (finding 5.3).
+      approvalStatus: "none",
+      approvalNote: null,
     });
 
     // The relation appears on both ends, so a consumer can build the

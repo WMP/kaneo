@@ -41,6 +41,8 @@ async function exportTasks(projectId: string) {
       baselineDueDate: taskTable.baselineDueDate,
       constraintType: taskTable.constraintType,
       constraintDate: taskTable.constraintDate,
+      approvalStatus: taskTable.approvalStatus,
+      approvalNote: taskTable.approvalNote,
     })
     .from(taskTable)
     .leftJoin(userTable, eq(taskTable.userId, userTable.id))
@@ -154,6 +156,8 @@ async function exportTasks(projectId: string) {
       constraintDate: task.constraintDate
         ? new Date(task.constraintDate).toISOString()
         : null,
+      approvalStatus: task.approvalStatus,
+      approvalNote: task.approvalNote,
       labels: taskLabelsMap.get(task.id) || [],
       relations: taskRelationsMap.get(task.id) || [],
     })),
