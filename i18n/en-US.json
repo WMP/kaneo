@@ -2273,7 +2273,9 @@
 			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
 			"dependentsRescheduleError": "Failed to reschedule dependent tasks",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
-			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}"
+			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
+			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
+			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline"
 		},
 		"delete": {
 			"title": "Delete Task?",

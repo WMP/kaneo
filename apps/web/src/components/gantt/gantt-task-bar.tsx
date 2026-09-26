@@ -375,10 +375,64 @@ export function GanttTaskBar({
     </div>
   ) : null;
 
+  // Baseline slip label: how far the actual finish date (`displayEnd`, so
+  // this updates live during a resize/move drag) has drifted from the
+  // snapshot taken when the baseline was set. Reuses the dependency
+  // overlay's "+Nd"/"-Nd" lag-label convention (same size/weight/color) so
+  // both read as the same kind of "day delta" annotation. Rendered as its
+  // own high z-index layer (like the constraint marker/violation badge)
+  // rather than inside the thin baseline bar itself, so it stays legible
+  // even where it overlaps the actual bar above it.
+  const baselineSlipDays = baselineSchedule
+    ? differenceInCalendarDays(displayEnd, baselineSchedule.end)
+    : null;
+  const baselineSlipLabel =
+    baselineGrid?.barInView &&
+    baselineSlipDays !== null &&
+    baselineSlipDays !== 0 ? (
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0.5 z-20 grid"
+        style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
+      >
+        <div
+          style={{
+            gridColumn: `${baselineGrid.lineStart} / ${baselineGrid.lineEnd}`,
+          }}
+          className="relative"
+        >
+          <span
+            role="img"
+            aria-label={t(
+              baselineSlipDays > 0
+                ? "tasks:gantt.baselineSlipLateAriaLabel"
+                : "tasks:gantt.baselineSlipEarlyAriaLabel",
+              { title: task.title, days: Math.abs(baselineSlipDays) },
+            )}
+            title={t(
+              baselineSlipDays > 0
+                ? "tasks:gantt.baselineSlipLateAriaLabel"
+                : "tasks:gantt.baselineSlipEarlyAriaLabel",
+              { title: task.title, days: Math.abs(baselineSlipDays) },
+            )}
+            className="-translate-y-full absolute right-0 select-none whitespace-nowrap pb-1 font-semibold text-[9px] text-destructive"
+          >
+            {baselineSlipDays > 0
+              ? `+${baselineSlipDays}d`
+              : `${baselineSlipDays}d`}
+          </span>
+        </div>
+      </div>
+    ) : null;
+
   const isInView = task.isMilestone ? milestoneGrid.barInView : barInView;
 
   if (!isInView) {
-    return baselineUnderlay;
+    return (
+      <>
+        {baselineUnderlay}
+        {baselineSlipLabel}
+      </>
+    );
   }
 
   // Task date constraint (Phase 3c-ii): a small pin at the constraint date,
@@ -491,6 +545,7 @@ export function GanttTaskBar({
     return (
       <>
         {baselineUnderlay}
+        {baselineSlipLabel}
         {/* A milestone can carry a date constraint too; render the same pin as
             a normal bar so a satisfied constraint on a milestone isn't
             invisible (only its violation badge would otherwise show). */}
@@ -570,6 +625,7 @@ export function GanttTaskBar({
   return (
     <>
       {baselineUnderlay}
+      {baselineSlipLabel}
       {constraintMarker}
       <div
         className="pointer-events-none absolute inset-0 z-[1] grid items-center"

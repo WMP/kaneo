@@ -2350,7 +2350,9 @@
 			"dependentsRescheduled_few": "Rescheduled {{count}} dependent tasks",
 			"dependentsRescheduled_many": "Rescheduled {{count}} dependent tasks",
 			"dependentsRescheduled_one": "Rescheduled {{count}} dependent task",
-			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks"
+			"dependentsRescheduled_other": "Rescheduled {{count}} dependent tasks",
+			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
+			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline"
 		},
 		"kanban": {
 			"addTask": "Dodaj zadanie"
