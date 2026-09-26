@@ -487,6 +487,10 @@ export const taskTable = pgTable(
     // is required whenever constraintType isn't "none".
     constraintType: text("constraint_type").notNull().default("none"),
     constraintDate: timestamp("constraint_date", { mode: "date" }),
+    // Client-approval gate for a task (e.g. sign-off before a migration
+    // cutover). Allowed values: "none" | "pending" | "approved" | "rejected".
+    approvalStatus: text("approval_status").notNull().default("none"),
+    approvalNote: text("approval_note"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()

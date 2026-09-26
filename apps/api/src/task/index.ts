@@ -45,6 +45,7 @@ import {
   requireTaskAssigneePermission,
 } from "./controllers/require-task-permission";
 import updateTask from "./controllers/update-task";
+import updateTaskApproval from "./controllers/update-task-approval";
 import updateTaskAssignee from "./controllers/update-task-assignee";
 import {
   clearTaskBaseline,
@@ -84,6 +85,7 @@ import {
   moveTaskBody,
   projectIdParam,
   taskParam,
+  updateApprovalBody,
   updateAssigneeBody,
   updateDescriptionBody,
   updateDueDateBody,
@@ -485,6 +487,36 @@ const clearTaskBaselineRoute = createRoute({
   },
 });
 
+const updateTaskApprovalRoute = createRoute({
+  method: "put",
+  operationId: "updateTaskApproval",
+  path: "/approval/{id}",
+  tags: ["Tasks"],
+  summary: "Update task approval status",
+  description:
+    "Set a task's client-approval gate (none, pending, approved, rejected) and an optional note.",
+  middleware: [
+    workspaceAccess.fromTask(),
+    requireWorkspacePermission({ task: ["update"] }),
+    requireEntitlement,
+  ] as const,
+  request: {
+    params: taskParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: updateApprovalBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The updated task", taskSchema),
+    400: errorResponse("Invalid approval status"),
+    403: errorResponse(
+      "No workspace access, or missing task:update permission",
+    ),
+    404: errorResponse("Task not found"),
+  },
+});
+
 const updateTaskTitleRoute = createRoute({
   method: "put",
   operationId: "updateTaskTitle",
@@ -778,6 +810,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       isMilestone,
       constraintType,
       constraintDate,
+      approvalStatus,
+      approvalNote,
     } = c.req.valid("json");
 
     const currentUserId = c.get("userId");
@@ -822,6 +856,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       normalizedConstraintDate,
       userId,
       currentUserId,
+      approvalStatus,
+      approvalNote,
     );
 
     return c.json(task, 200);
@@ -885,6 +921,20 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
     const task = await updateTaskDueDate({
       id,
       dueDate: dueDate ? validateAndParseDate(dueDate, "dueDate") : null,
+      currentUserId,
+    });
+
+    return c.json(task, 200);
+  })
+  .openapi(updateTaskApprovalRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { approvalStatus, approvalNote } = c.req.valid("json");
+    const currentUserId = c.get("userId");
+
+    const task = await updateTaskApproval({
+      id,
+      approvalStatus,
+      approvalNote,
       currentUserId,
     });
 

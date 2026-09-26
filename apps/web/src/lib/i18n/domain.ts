@@ -29,6 +29,12 @@ export function getPriorityLabel(priority: string) {
   });
 }
 
+export function getApprovalStatusLabel(approvalStatus: string) {
+  return i18n.t(`tasks:approval.${approvalStatus}`, {
+    defaultValue: toDisplayCase(approvalStatus),
+  });
+}
+
 function toDisplayCase(value: string) {
   return value
     .replace(/[-_]/g, " ")

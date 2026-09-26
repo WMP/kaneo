@@ -1853,7 +1853,8 @@
 		"relationCreated": "added a dependency",
 		"relationUpdated": "updated a dependency",
 		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan"
+		"updatedPlan": "updated the plan",
+		"changedApproval": "changed approval status from {{from}} to {{to}}"
 	},
 	"tasks": {
 		"title": "Aufgaben",
@@ -2063,7 +2064,8 @@
 			"baseline": "Baseline",
 			"milestone": "Milestone",
 			"progress": "Progress",
-			"constraint": "Constraint"
+			"constraint": "Constraint",
+			"approval": "Approval"
 		},
 		"move": {
 			"title": "Aufgabe verschieben",
@@ -2155,6 +2157,12 @@
 				},
 				"updateError": "Failed to update task constraint",
 				"updateSuccess": "Task constraint updated"
+			},
+			"approval": {
+				"note": "Note",
+				"notePlaceholder": "Add a note for the client...",
+				"saveNote": "Save note",
+				"updateError": "Failed to update approval status"
 			}
 		},
 		"backlog": {
@@ -2277,7 +2285,12 @@
 			"overdueLabel": "Overdue",
 			"overdueMarkerAriaLabel": "{{title}}: overdue",
 			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None"
+			"customFieldNone": "None",
+			"approvalBadgeAriaLabel": "Approval: {{status}}",
+			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"gateWarningBadge": "Gate",
+			"gateWarningItem": "\"{{title}}\" is {{status}}",
+			"gateWarningTitle": "Blocked by an unapproved gate"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",
@@ -2396,7 +2409,14 @@
 		"descriptionSearchError": "Die Suche in Beschreibungen ist fehlgeschlagen. Ergebnisse sind möglicherweise unvollständig.",
 		"descriptionRetry": "Erneut versuchen",
 		"descriptionLoading": "Beschreibung wird geladen…",
-		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden."
+		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden.",
+		"approval": {
+			"approved": "Approved",
+			"label": "Approval",
+			"none": "No approval needed",
+			"pending": "Pending approval",
+			"rejected": "Rejected"
+		}
 	},
 	"invitations": {
 		"email": {

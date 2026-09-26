@@ -34,6 +34,10 @@ const relatedTaskSchema = z
       description:
         "Renders as a diamond marker on the Gantt chart, same as an own task.",
     }),
+    approvalStatus: z.string().openapi({
+      description:
+        "Client-approval gate: one of none, pending, approved, rejected. Used to warn when a `blocks` relation's source task is not yet approved.",
+    }),
   })
   .openapi("RelatedTask");
 

@@ -20,6 +20,8 @@ async function getTask(taskId: string) {
       baselineDueDate: taskTable.baselineDueDate,
       constraintType: taskTable.constraintType,
       constraintDate: taskTable.constraintDate,
+      approvalStatus: taskTable.approvalStatus,
+      approvalNote: taskTable.approvalNote,
       position: taskTable.position,
       createdAt: taskTable.createdAt,
       userId: taskTable.userId,

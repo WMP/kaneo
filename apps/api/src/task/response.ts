@@ -1,6 +1,8 @@
 import { nullableResponseTimestamp, responseTimestamp, z } from "../openapi";
 
 const priorityDescription = "One of: no-priority, low, medium, high, urgent.";
+const approvalStatusDescription =
+  "Client-approval gate: one of none, pending, approved, rejected.";
 
 const constraintTypeResponseDescription =
   "The Gantt scheduling constraint: none, start_no_earlier_than (SNET), " +
@@ -53,6 +55,10 @@ export const taskSchema = z
     constraintDate: nullableResponseTimestamp.openapi({
       description: "Null unless constraintType is not none.",
     }),
+    approvalStatus: z
+      .string()
+      .openapi({ description: approvalStatusDescription }),
+    approvalNote: z.string().nullable(),
     createdAt: responseTimestamp,
     customFields: z
       .array(z.object({ fieldId: z.string(), value: z.string() }))
@@ -118,6 +124,10 @@ export const boardTaskSchema = z
     constraintDate: nullableResponseTimestamp.openapi({
       description: "Null unless constraintType is not none.",
     }),
+    approvalStatus: z
+      .string()
+      .openapi({ description: approvalStatusDescription }),
+    approvalNote: z.string().nullable(),
     position: z.number().nullable(),
     createdAt: responseTimestamp,
     userId: z.string().nullable(),

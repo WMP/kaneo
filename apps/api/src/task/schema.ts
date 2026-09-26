@@ -34,6 +34,15 @@ const constraintTypeDescription =
 
 const constraintType = z.enum(VALID_TASK_CONSTRAINT_TYPES);
 
+// Client-approval gate for a task. Mirrors the taskTable.approvalStatus
+// column comment in database/schema.ts.
+export const approvalStatus = z.enum([
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 // Required object of optional filters: a RouteParameter cannot itself be optional.
 export const listTasksQuery = z.object({
   status: z.string().optional(),
@@ -142,6 +151,12 @@ export const updateTaskBody = z
           '"none"; forced to null when constraintType is "none". ' +
           "Date-only, normalized server-side to UTC midnight.",
       }),
+    approvalStatus: approvalStatus.optional().openapi({
+      description: "Omit to preserve the existing approval status.",
+    }),
+    approvalNote: z.string().nullable().optional().openapi({
+      description: "Omit to preserve the existing approval note.",
+    }),
   })
   .refine(
     (data) =>
@@ -181,6 +196,12 @@ export const updateAssigneeBody = z.object({
   userId: z.string().nullable().openapi({ description: "Null unassigns." }),
 });
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
+export const updateApprovalBody = z.object({
+  approvalStatus,
+  approvalNote: z.string().nullable().optional().openapi({
+    description: "Null clears the note; omit to preserve the existing note.",
+  }),
+});
 export const updateTitleBody = z.object({ title: z.string() });
 export const updateDescriptionBody = z.object({ description: z.string() });
 

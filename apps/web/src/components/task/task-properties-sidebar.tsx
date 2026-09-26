@@ -30,6 +30,7 @@ import useGetProject from "@/hooks/queries/project/use-get-project";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useGetTask from "@/hooks/queries/task/use-get-task";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { getApprovalStatusIcon } from "@/lib/approval";
 import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
 import {
@@ -39,11 +40,16 @@ import {
 } from "@/lib/due-date-status";
 import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
-import { getPriorityLabel, getStatusDisplayLabel } from "@/lib/i18n/domain";
+import {
+  getApprovalStatusLabel,
+  getPriorityLabel,
+  getStatusDisplayLabel,
+} from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
+import TaskApprovalPopover from "./task-approval-popover";
 import TaskAssigneePopover from "./task-assignee-popover";
 import TaskBaselinePopover from "./task-baseline-popover";
 import TaskConstraintPopover from "./task-constraint-popover";
@@ -55,6 +61,29 @@ import TaskPriorityPopover from "./task-priority-popover";
 import TaskProgressPopover from "./task-progress-popover";
 import TaskStartDatePopover from "./task-start-date-popover";
 import TaskStatusPopover from "./task-status-popover";
+
+function ApprovalControl({
+  task,
+  className,
+}: {
+  task: Task;
+  className?: string;
+}) {
+  return (
+    <TaskApprovalPopover task={task}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn("justify-start h-7 px-1.5 gap-1.5", className)}
+      >
+        {getApprovalStatusIcon(task.approvalStatus ?? "none")}
+        <span className="text-xs font-semibold truncate">
+          {getApprovalStatusLabel(task.approvalStatus ?? "none")}
+        </span>
+      </Button>
+    </TaskApprovalPopover>
+  );
+}
 
 function slugify(text: string | undefined): string {
   if (!text) return "";
@@ -433,6 +462,7 @@ export default function TaskPropertiesSidebar({
                 </TaskDueDatePopover>
               )}
               {task && <TaskScheduleButtons task={task} />}
+              {task && <ApprovalControl task={task} />}
             </div>
           </div>
         )}
@@ -625,6 +655,7 @@ export default function TaskPropertiesSidebar({
                   </TaskDueDatePopover>
                 )}
                 {task && <TaskScheduleButtons task={task} />}
+                {task && <ApprovalControl task={task} />}
               </div>
             </div>
 
@@ -819,6 +850,7 @@ export default function TaskPropertiesSidebar({
                   </TaskDueDatePopover>
                 )}
                 {task && <TaskScheduleButtons task={task} fullWidth />}
+                {task && <ApprovalControl task={task} className="w-full" />}
               </div>
             </div>
           </>

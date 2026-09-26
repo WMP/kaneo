@@ -1846,7 +1846,8 @@
 		"relationCreated": "added a dependency",
 		"relationUpdated": "updated a dependency",
 		"relationDeleted": "removed a dependency",
-		"updatedPlan": "updated the plan"
+		"updatedPlan": "updated the plan",
+		"changedApproval": "changed approval status from {{from}} to {{to}}"
 	},
 	"tasks": {
 		"title": "タスク",
@@ -2056,7 +2057,8 @@
 			"baseline": "Baseline",
 			"milestone": "Milestone",
 			"progress": "Progress",
-			"constraint": "Constraint"
+			"constraint": "Constraint",
+			"approval": "Approval"
 		},
 		"move": {
 			"title": "タスクを移動",
@@ -2148,6 +2150,12 @@
 				},
 				"updateError": "Failed to update task constraint",
 				"updateSuccess": "Task constraint updated"
+			},
+			"approval": {
+				"note": "Note",
+				"notePlaceholder": "Add a note for the client...",
+				"saveNote": "Save note",
+				"updateError": "Failed to update approval status"
 			}
 		},
 		"backlog": {
@@ -2281,7 +2289,12 @@
 			"overdueLabel": "Overdue",
 			"overdueMarkerAriaLabel": "{{title}}: overdue",
 			"customFieldLabel": "Custom field column",
-			"customFieldNone": "None"
+			"customFieldNone": "None",
+			"approvalBadgeAriaLabel": "Approval: {{status}}",
+			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"gateWarningBadge": "Gate",
+			"gateWarningItem": "\"{{title}}\" is {{status}}",
+			"gateWarningTitle": "Blocked by an unapproved gate"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",
@@ -2386,7 +2399,14 @@
 		"descriptionSearchError": "Description search failed. Results may be incomplete.",
 		"descriptionRetry": "Retry",
 		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version."
+		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"approval": {
+			"approved": "Approved",
+			"label": "Approval",
+			"none": "No approval needed",
+			"pending": "Pending approval",
+			"rejected": "Rejected"
+		}
 	},
 	"invitations": {
 		"email": {

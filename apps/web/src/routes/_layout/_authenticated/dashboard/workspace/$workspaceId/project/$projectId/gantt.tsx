@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Route as RouteIcon,
   Search,
+  TriangleAlert,
 } from "lucide-react";
 import {
   useCallback,
@@ -93,19 +94,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useBulkUpdateTaskSchedule } from "@/hooks/mutations/task/use-bulk-update-task-schedule";
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useGetCalendar from "@/hooks/queries/calendar/use-get-calendar";
 import useGetCustomFieldValuesByProject from "@/hooks/queries/custom-field/use-get-custom-field-values-by-project";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
+import { useGanttGateWarnings } from "@/hooks/queries/task-relation/use-gantt-gate-warnings";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
 import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
-import { getStatusLabel } from "@/lib/i18n/domain";
+import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import type Task from "@/types/task";
@@ -955,6 +962,12 @@ function RouteComponent() {
     () => new Set(headerColumns.map((column) => column.endIndex)),
     [headerColumns],
   );
+
+  const scheduledTaskIdList = useMemo(
+    () => scheduledTasks.map((task) => task.id),
+    [scheduledTasks],
+  );
+  const gateWarningsByTaskId = useGanttGateWarnings(scheduledTaskIdList);
 
   // Whether "today" actually falls inside the computed date range. A project
   // made up entirely of past or far-future tasks has no "today" column to
@@ -2234,6 +2247,40 @@ function RouteComponent() {
                                         {t("tasks:gantt.overdueLabel")}
                                       </span>
                                     )}
+                                    {(gateWarningsByTaskId.get(task.id)
+                                      ?.length ?? 0) > 0 && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-px text-[10px] font-medium text-destructive">
+                                            <TriangleAlert className="size-2.5" />
+                                            {t("tasks:gantt.gateWarningBadge")}
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-64">
+                                          <p className="font-medium">
+                                            {t("tasks:gantt.gateWarningTitle")}
+                                          </p>
+                                          <ul className="mt-1 list-disc space-y-0.5 pl-3.5">
+                                            {gateWarningsByTaskId
+                                              .get(task.id)
+                                              ?.map((gate) => (
+                                                <li key={gate.taskId}>
+                                                  {t(
+                                                    "tasks:gantt.gateWarningItem",
+                                                    {
+                                                      title: gate.title,
+                                                      status:
+                                                        getApprovalStatusLabel(
+                                                          gate.approvalStatus,
+                                                        ),
+                                                    },
+                                                  )}
+                                                </li>
+                                              ))}
+                                          </ul>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
                                   </div>
                                   <div className="flex w-full min-w-0 items-center gap-1.5">
                                     <p className="line-clamp-1 min-w-0 flex-1 text-xs font-medium leading-tight text-foreground">
@@ -2367,6 +2414,7 @@ function RouteComponent() {
                               }
                               onLinkDragStart={handleLinkDragStart}
                               onDatesCommitted={handleTaskDatesCommitted}
+                              gateWarnings={gateWarningsByTaskId.get(task.id)}
                             />
                           )}
                         </div>

@@ -1,7 +1,7 @@
 import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
-import { columnTable, taskTable } from "../../database/schema";
+import { activityTable, columnTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
 import {
@@ -29,6 +29,8 @@ async function updateTask(
   constraintDate: Date | null | undefined,
   userId?: string,
   currentUserId?: string,
+  approvalStatus?: string,
+  approvalNote?: string | null,
 ) {
   assertTaskPosition(position);
 
@@ -45,6 +47,8 @@ async function updateTask(
       isMilestone: taskTable.isMilestone,
       constraintType: taskTable.constraintType,
       constraintDate: taskTable.constraintDate,
+      approvalStatus: taskTable.approvalStatus,
+      approvalNote: taskTable.approvalNote,
     })
     .from(taskTable)
     .where(eq(taskTable.id, id))
@@ -80,36 +84,67 @@ async function updateTask(
     ),
   });
 
-  const [updatedTask] = await db
-    .update(taskTable)
-    .set({
-      title,
-      status,
-      columnId: column?.id ?? null,
-      startDate: startDate || null,
-      dueDate: dueDate || null,
-      projectId,
-      description,
-      priority,
-      position,
-      progress,
-      isMilestone,
-      constraintType,
-      constraintDate,
-      userId: normalizedUserId ?? null,
-    })
-    .where(eq(taskTable.id, id))
-    .returning({
-      ...getTableColumns(taskTable),
-      description: boardDescription,
-      descriptionDeferred,
-    });
+  const approvalStatusChanged =
+    approvalStatus !== undefined &&
+    existingTask.approvalStatus !== approvalStatus;
+  const nextApprovalStatus = approvalStatus ?? existingTask.approvalStatus;
+  const nextApprovalNote =
+    approvalNote === undefined ? existingTask.approvalNote : approvalNote;
 
-  if (!updatedTask) {
-    throw new HTTPException(500, {
-      message: "Failed to update task",
-    });
-  }
+  // The approval gate's activity row is written in the same transaction as
+  // the column update (see update-task-approval.ts for why: it is a
+  // compliance-relevant audit trail that a fire-and-forget event subscriber
+  // cannot guarantee exists).
+  const updatedTask = await db.transaction(async (tx) => {
+    const [task] = await tx
+      .update(taskTable)
+      .set({
+        title,
+        status,
+        columnId: column?.id ?? null,
+        startDate: startDate || null,
+        dueDate: dueDate || null,
+        projectId,
+        description,
+        priority,
+        position,
+        progress,
+        isMilestone,
+        constraintType,
+        constraintDate,
+        userId: normalizedUserId ?? null,
+        approvalStatus: nextApprovalStatus,
+        approvalNote: nextApprovalNote,
+      })
+      .where(eq(taskTable.id, id))
+      .returning({
+        ...getTableColumns(taskTable),
+        description: boardDescription,
+        descriptionDeferred,
+      });
+
+    if (!task) {
+      throw new HTTPException(500, {
+        message: "Failed to update task",
+      });
+    }
+
+    if (approvalStatusChanged) {
+      await tx.insert(activityTable).values({
+        taskId: task.id,
+        type: "approval_changed",
+        userId: currentUserId,
+        content: null,
+        eventData: {
+          oldApprovalStatus: existingTask.approvalStatus,
+          newApprovalStatus: task.approvalStatus,
+          approvalNote: task.approvalNote,
+        },
+      });
+    }
+
+    return task;
+  });
 
   if (existingTask.status !== status) {
     await publishEvent("task.status_changed", {
@@ -126,6 +161,19 @@ async function updateTask(
     await publishEvent("task-relation.refresh", {
       projectId: updatedTask.projectId,
       userId: currentUserId,
+    });
+  }
+
+  if (approvalStatusChanged) {
+    await publishEvent("task.approval_changed", {
+      taskId: updatedTask.id,
+      projectId: updatedTask.projectId,
+      userId: currentUserId,
+      oldApprovalStatus: existingTask.approvalStatus,
+      newApprovalStatus: updatedTask.approvalStatus,
+      approvalNote: updatedTask.approvalNote,
+      title: updatedTask.title,
+      type: "approval_changed",
     });
   }
 

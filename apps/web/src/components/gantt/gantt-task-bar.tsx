@@ -1,10 +1,24 @@
 import { addDays, differenceInCalendarDays, startOfDay } from "date-fns";
-import { AlertTriangle, Diamond, Flag, Link2 as Link2Icon } from "lucide-react";
+import {
+  AlertTriangle,
+  Diamond,
+  Flag,
+  Link2 as Link2Icon,
+  TriangleAlert,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
+import type { ApprovalGate } from "@/hooks/queries/task-relation/use-gantt-gate-warnings";
+import { getApprovalStatusIcon } from "@/lib/approval";
 import { cn } from "@/lib/cn";
 import { formatDateShort } from "@/lib/format";
+import { getApprovalStatusLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 import { computeConstraintViolations } from "./gantt-constraint-violations";
@@ -57,6 +71,10 @@ type GanttTaskBarProps = {
    * dependents (see gantt-dependency-cascade.ts); it never affects this
    * bar's own rendering. */
   onDatesCommitted?: (taskId: string, start: Date, end: Date) => void;
+  // Upstream "blocks" relations whose source task's approval gate is still
+  // pending or rejected. Hard-blocking at the database level is out of scope
+  // for v1 (see AGENTS.md follow-through); this only surfaces a warning.
+  gateWarnings?: ApprovalGate[];
 };
 
 export function toIsoDay(d: Date) {
@@ -74,6 +92,7 @@ export function GanttTaskBar({
   onHoverChange,
   onLinkDragStart,
   onDatesCommitted,
+  gateWarnings = [],
 }: GanttTaskBarProps) {
   const { t } = useTranslation();
   const { mutateAsync: updateTask } = useUpdateTask();
@@ -725,7 +744,27 @@ export function GanttTaskBar({
               }}
             >
               <div className="absolute inset-0 z-0 bg-primary/12 transition-colors group-hover:bg-primary/18" />
-              <span className="relative z-10 block truncate">{task.title}</span>
+              <span className="relative z-10 flex items-center gap-1 truncate">
+                {task.approvalStatus && task.approvalStatus !== "none" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        role="img"
+                        className="inline-flex shrink-0 items-center"
+                        aria-label={t("tasks:gantt.approvalBadgeAriaLabel", {
+                          status: getApprovalStatusLabel(task.approvalStatus),
+                        })}
+                      >
+                        {getApprovalStatusIcon(task.approvalStatus)}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {getApprovalStatusLabel(task.approvalStatus)}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <span className="truncate">{task.title}</span>
+              </span>
             </button>
             <button
               type="button"
@@ -738,6 +777,36 @@ export function GanttTaskBar({
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               )}
             />
+            {gateWarnings.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    role="img"
+                    className="pointer-events-auto absolute -top-1.5 -right-1.5 z-30 flex size-4 items-center justify-center rounded-full border border-background bg-destructive"
+                    aria-label={t("tasks:gantt.gateWarningAriaLabel", {
+                      count: gateWarnings.length,
+                    })}
+                  >
+                    <TriangleAlert className="size-2.5 text-white" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">
+                  <p className="font-medium">
+                    {t("tasks:gantt.gateWarningTitle")}
+                  </p>
+                  <ul className="mt-1 list-disc space-y-0.5 pl-3.5">
+                    {gateWarnings.map((gate) => (
+                      <li key={gate.taskId}>
+                        {t("tasks:gantt.gateWarningItem", {
+                          title: gate.title,
+                          status: getApprovalStatusLabel(gate.approvalStatus),
+                        })}
+                      </li>
+                    ))}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           {/* "Drag to link" handle: a small dot at the bar's finish edge,
               hidden until the bar is hovered/focused so it doesn't compete

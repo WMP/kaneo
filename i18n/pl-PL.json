@@ -847,7 +847,8 @@
 		"relationCreated": "dodał zależność",
 		"relationUpdated": "zmienił zależność",
 		"relationDeleted": "usunął zależność",
-		"updatedPlan": "zaktualizował plan"
+		"updatedPlan": "zaktualizował plan",
+		"changedApproval": "zmienił(a) status zatwierdzenia z {{from}} na {{to}}"
 	},
 	"settings": {
 		"account": "Konto",
@@ -2370,7 +2371,12 @@
 			"overdueLabel": "Zaległe",
 			"overdueMarkerAriaLabel": "{{title}}: zaległe",
 			"customFieldLabel": "Kolumna pola niestandardowego",
-			"customFieldNone": "Brak"
+			"customFieldNone": "Brak",
+			"approvalBadgeAriaLabel": "Zatwierdzenie: {{status}}",
+			"gateWarningAriaLabel": "{{count}} niezatwierdzonych bramek blokuje to zadanie",
+			"gateWarningBadge": "Bramka",
+			"gateWarningItem": "„{{title}}” ma status: {{status}}",
+			"gateWarningTitle": "Zablokowane przez niezatwierdzoną bramkę"
 		},
 		"kanban": {
 			"addTask": "Dodaj zadanie"
@@ -2474,6 +2480,12 @@
 				},
 				"updateError": "Nie udało się zaktualizować ograniczenia zadania",
 				"updateSuccess": "Zaktualizowano ograniczenie zadania"
+			},
+			"approval": {
+				"note": "Notatka",
+				"notePlaceholder": "Dodaj notatkę dla klienta...",
+				"saveNote": "Zapisz notatkę",
+				"updateError": "Nie udało się zaktualizować statusu zatwierdzenia"
 			}
 		},
 		"pr": {
@@ -2505,7 +2517,8 @@
 			"baseline": "Plan bazowy",
 			"milestone": "Kamień milowy",
 			"progress": "Postęp",
-			"constraint": "Ograniczenie"
+			"constraint": "Ograniczenie",
+			"approval": "Zatwierdzenie"
 		},
 		"relations": {
 			"blocks": "Blokuje",
@@ -2598,7 +2611,14 @@
 		"descriptionSearchError": "Description search failed. Results may be incomplete.",
 		"descriptionRetry": "Retry",
 		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version."
+		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"approval": {
+			"label": "Zatwierdzenie",
+			"none": "Nie wymaga zatwierdzenia",
+			"pending": "Oczekuje na zatwierdzenie",
+			"approved": "Zatwierdzone",
+			"rejected": "Odrzucone"
+		}
 	},
 	"press": {
 		"title": "Press kit",
