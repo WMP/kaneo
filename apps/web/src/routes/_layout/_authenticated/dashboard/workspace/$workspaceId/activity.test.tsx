@@ -80,6 +80,12 @@ vi.mock("@/hooks/queries/workspace-users/use-get-workspace-users", () => ({
   default: (params: unknown) => useGetWorkspaceUsers(params),
 }));
 
+const exportWorkspaceActivity = vi.fn();
+const useExportWorkspaceActivity = vi.fn();
+vi.mock("@/hooks/mutations/workspace/use-export-workspace-activity", () => ({
+  default: () => useExportWorkspaceActivity(),
+}));
+
 const Component = (Route as unknown as { component: ComponentType }).component;
 
 function activityRow(overrides: Record<string, unknown> = {}) {
@@ -110,6 +116,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   useGetWorkspaceUsers.mockReturnValue({
     data: [{ user: { id: "user-1", name: "Ada", email: "ada@example.com" } }],
+  });
+  useExportWorkspaceActivity.mockReturnValue({
+    mutateAsync: exportWorkspaceActivity,
+    isPending: false,
   });
 });
 
@@ -248,5 +258,35 @@ describe("workspace activity view", () => {
         useGetWorkspaceActivity.mock.calls.length - 1
       ][0];
     expect(lastCall).toMatchObject({ userId: "user-1", page: 1 });
+  });
+
+  it("offers an Export control and exports the current filters as CSV", async () => {
+    useGetWorkspaceActivity.mockReturnValue({
+      data: {
+        data: [activityRow()],
+        pagination: { total: 1, page: 1, pageSize: 25, totalPages: 1 },
+      },
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+    });
+    exportWorkspaceActivity.mockResolvedValue({ truncated: false });
+
+    render(<Component />);
+
+    fireEvent.change(screen.getByLabelText("User"), {
+      target: { value: "user-1" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Export/ }));
+    fireEvent.click(await screen.findByText("Export as CSV"));
+
+    expect(exportWorkspaceActivity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: "workspace-1",
+        userId: "user-1",
+        format: "csv",
+      }),
+    );
   });
 });

@@ -37,8 +37,10 @@ import { Separator } from "@/components/ui/separator";
 import useDeleteWorkspace from "@/hooks/mutations/workspace/use-delete-workspace";
 import useTransferWorkspaceOwnership from "@/hooks/mutations/workspace/use-transfer-workspace-ownership";
 import useUpdateWorkspace from "@/hooks/mutations/workspace/use-update-workspace";
+import useUpdateWorkspaceActivityRetention from "@/hooks/mutations/workspace/use-update-workspace-activity-retention";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetFullWorkspace from "@/hooks/queries/workspace/use-get-full-workspace";
+import useGetWorkspaceActivityRetention from "@/hooks/queries/workspace/use-get-workspace-activity-retention";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 
@@ -129,6 +131,56 @@ function RouteComponent() {
   const canEdit = canManageWorkspace();
   const canDelete = canDeleteWorkspace();
   const workspaceDescription = getWorkspaceDescription(workspace);
+
+  const { data: activityRetention } = useGetWorkspaceActivityRetention(
+    workspace?.id,
+  );
+  const { mutateAsync: updateActivityRetention, isPending: isSavingRetention } =
+    useUpdateWorkspaceActivityRetention();
+  const [retentionDaysInput, setRetentionDaysInput] = useState("");
+
+  useEffect(() => {
+    setRetentionDaysInput(
+      activityRetention?.activityRetentionDays
+        ? String(activityRetention.activityRetentionDays)
+        : "",
+    );
+  }, [activityRetention]);
+
+  const retentionDirty =
+    (activityRetention?.activityRetentionDays
+      ? String(activityRetention.activityRetentionDays)
+      : "") !== retentionDaysInput;
+
+  const handleSaveRetention = useCallback(async () => {
+    if (!workspace?.id) return;
+
+    const trimmed = retentionDaysInput.trim();
+    const parsed = trimmed === "" ? null : Number(trimmed);
+
+    if (parsed !== null && (!Number.isInteger(parsed) || parsed < 0)) {
+      toast.error(
+        t("settings:workspaceGeneral.activityRetention.toastUpdateError"),
+      );
+      return;
+    }
+
+    try {
+      await updateActivityRetention({
+        workspaceId: workspace.id,
+        activityRetentionDays: parsed,
+      });
+      toast.success(
+        t("settings:workspaceGeneral.activityRetention.toastUpdated"),
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("settings:workspaceGeneral.activityRetention.toastUpdateError"),
+      );
+    }
+  }, [workspace?.id, retentionDaysInput, updateActivityRetention, t]);
 
   // Ownership transfer is owner-only. Eligible recipients are any current
   // member who isn't the owner themselves.
@@ -400,6 +452,65 @@ function RouteComponent() {
                 />
               </form>
             </Form>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-md font-medium">
+              {t("settings:workspaceGeneral.activityRetention.title")}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {t("settings:workspaceGeneral.activityRetention.subtitle")}
+            </p>
+          </div>
+
+          <div className="space-y-4 border border-border rounded-md p-4 bg-sidebar">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">
+                  {t("settings:workspaceGeneral.activityRetention.label")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {retentionDaysInput.trim() === ""
+                    ? t(
+                        "settings:workspaceGeneral.activityRetention.keepForever",
+                      )
+                    : t("settings:workspaceGeneral.activityRetention.unit")}
+                </p>
+              </div>
+              <div className="flex w-full items-center gap-2 sm:w-auto">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={3650}
+                  step={1}
+                  className="w-full sm:w-32"
+                  placeholder={t(
+                    "settings:workspaceGeneral.activityRetention.placeholder",
+                  )}
+                  disabled={!canEdit}
+                  value={retentionDaysInput}
+                  onChange={(event) =>
+                    setRetentionDaysInput(event.target.value)
+                  }
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!canEdit || !retentionDirty || isSavingRetention}
+                  onClick={handleSaveRetention}
+                >
+                  {t("settings:workspaceGeneral.activityRetention.saveButton")}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t(
+                "settings:workspaceGeneral.activityRetention.notEnforcedNotice",
+              )}
+            </p>
           </div>
         </div>
 

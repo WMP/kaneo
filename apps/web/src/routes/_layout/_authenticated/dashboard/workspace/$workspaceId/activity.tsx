@@ -1,5 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  History,
+  Loader2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Activity from "@/components/activity";
@@ -7,9 +13,17 @@ import WorkspaceLayout from "@/components/common/workspace-layout";
 import PageTitle from "@/components/page-title";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/menu";
 import { Timeline } from "@/components/ui/timeline";
+import useExportWorkspaceActivity from "@/hooks/mutations/workspace/use-export-workspace-activity";
 import useGetWorkspaceActivity from "@/hooks/queries/workspace/use-get-workspace-activity";
 import useGetWorkspaceUsers from "@/hooks/queries/workspace-users/use-get-workspace-users";
+import { toast } from "@/lib/toast";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/workspace/$workspaceId/activity",
@@ -65,6 +79,27 @@ function RouteComponent() {
 
   const activities = useMemo(() => data?.data ?? [], [data]);
   const pagination = data?.pagination;
+
+  const { mutateAsync: exportActivity, isPending: isExporting } =
+    useExportWorkspaceActivity();
+
+  async function handleExport(format: "csv" | "json") {
+    try {
+      const { truncated } = await exportActivity({
+        workspaceId,
+        userId: userId || undefined,
+        type: type || undefined,
+        from: from ? toStartOfDayIso(from) : undefined,
+        to: to ? toEndOfDayIso(to) : undefined,
+        format,
+      });
+      if (truncated) {
+        toast.info(t("workspace:activityLog.export.truncated"));
+      }
+    } catch {
+      toast.error(t("workspace:activityLog.export.error"));
+    }
+  }
 
   function updateFilter(setter: (value: string) => void, value: string) {
     setter(value);
@@ -176,6 +211,38 @@ function RouteComponent() {
                 {t("common:actions.reset")}
               </Button>
             )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ms-auto"
+                    disabled={isExporting}
+                  />
+                }
+              >
+                <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                {t("workspace:activityLog.export.label")}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="cursor-pointer text-sm"
+                  disabled={isExporting}
+                  onClick={() => handleExport("csv")}
+                >
+                  {t("workspace:activityLog.export.csv")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer text-sm"
+                  disabled={isExporting}
+                  onClick={() => handleExport("json")}
+                >
+                  {t("workspace:activityLog.export.json")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {isLoading ? (

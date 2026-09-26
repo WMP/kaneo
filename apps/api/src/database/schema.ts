@@ -148,6 +148,10 @@ export const workspaceTable = pgTable("workspace", {
   logo: text("logo"),
   metadata: text("metadata"),
   description: text("description"),
+  // Days of activity history to keep; null (the default) means keep
+  // forever. Not currently enforced by any automatic deletion — see
+  // `apps/api/src/workspace/controllers/get-workspace-activity-retention.ts`.
+  activityRetentionDays: integer("activity_retention_days"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull(),
 });
 

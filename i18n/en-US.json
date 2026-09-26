@@ -751,6 +751,18 @@
 				"dialogDescription": "{{name}} will become the sole owner of {{workspace}}. You'll keep admin access but lose owner-only abilities like deleting the workspace or transferring it again.",
 				"transferring": "Transferring…",
 				"confirm": "Transfer ownership"
+			},
+			"activityRetention": {
+				"title": "Activity retention",
+				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
+				"label": "Keep activity for",
+				"unit": "days",
+				"keepForever": "Keep forever",
+				"placeholder": "e.g. 90",
+				"saveButton": "Save",
+				"toastUpdated": "Activity retention setting updated",
+				"toastUpdateError": "Failed to update activity retention setting",
+				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
 			}
 		},
 		"workspaceRoles": {
@@ -2560,7 +2572,14 @@
 			"emptyDescription": "Changes across every task in this workspace will show up here.",
 			"emptyFilteredTitle": "No matching activity",
 			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
-			"error": "Failed to load workspace activity."
+			"error": "Failed to load workspace activity.",
+			"export": {
+				"label": "Export",
+				"csv": "Export as CSV",
+				"json": "Export as JSON",
+				"error": "Failed to export workspace activity.",
+				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+			}
 		},
 		"create": {
 			"pageTitle": "Create Workspace",

@@ -671,6 +671,18 @@
 				"dialogDescription": "{{name}} ќе стане единствен сопственик на {{workspace}}. Ќе го задржиш администраторскиот пристап, но ќе ги изгубиш можностите резервирани за сопственикот, како бришење на работниот простор или повторно префрлање.",
 				"transferring": "Се префрла…",
 				"confirm": "Префрли сопственост"
+			},
+			"activityRetention": {
+				"title": "Activity retention",
+				"subtitle": "Set how long workspace activity history is kept. This only stores the setting — nothing is deleted automatically yet.",
+				"label": "Keep activity for",
+				"unit": "days",
+				"keepForever": "Keep forever",
+				"placeholder": "e.g. 90",
+				"saveButton": "Save",
+				"toastUpdated": "Activity retention setting updated",
+				"toastUpdateError": "Failed to update activity retention setting",
+				"notEnforcedNotice": "This setting is not enforced yet: no activity is deleted automatically. Automatic pruning is a planned follow-up."
 			}
 		},
 		"projectGeneral": {
@@ -2574,7 +2586,14 @@
 				"moved": "Moved",
 				"description_changed": "Description changed"
 			},
-			"emptyFilteredTitle": "No matching activity"
+			"emptyFilteredTitle": "No matching activity",
+			"export": {
+				"label": "Export",
+				"csv": "Export as CSV",
+				"json": "Export as JSON",
+				"error": "Failed to export workspace activity.",
+				"truncated": "Only the most recent matching records were exported. Narrow the filters to export everything."
+			}
 		}
 	},
 	"team": {
