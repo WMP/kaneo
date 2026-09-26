@@ -2703,12 +2703,14 @@
 			"types": {
 				"comment": "Comment",
 				"created": "Created",
+				"moved": "Moved",
 				"status_changed": "Status changed",
 				"priority_changed": "Priority changed",
 				"assignee_changed": "Assignee changed",
 				"unassigned": "Unassigned",
 				"due_date_changed": "Due date changed",
-				"title_changed": "Title changed"
+				"title_changed": "Title changed",
+				"description_changed": "Description changed"
 			},
 			"pagination": "Page {{current}} of {{total}}",
 			"emptyTitle": "No activity yet",

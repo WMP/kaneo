@@ -2749,7 +2749,9 @@
 				"priority_changed": "Priority changed",
 				"status_changed": "Status changed",
 				"title_changed": "Title changed",
-				"unassigned": "Unassigned"
+				"unassigned": "Unassigned",
+				"moved": "Moved",
+				"description_changed": "Description changed"
 			},
 			"emptyFilteredTitle": "No matching activity"
 		}
