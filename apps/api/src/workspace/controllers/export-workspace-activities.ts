@@ -8,6 +8,7 @@ import {
 } from "../../database/schema";
 import {
   buildWorkspaceActivityWhereClause,
+  normalizeActivityContent,
   type WorkspaceActivityFilters,
 } from "./get-workspace-activities";
 
@@ -54,11 +55,7 @@ async function exportWorkspaceActivities(
   const truncated = rows.length > MAX_EXPORT_ROWS;
   const data = truncated ? rows.slice(0, MAX_EXPORT_ROWS) : rows;
 
-  for (const row of data) {
-    if (row.content && row.type !== "comment") {
-      row.content = row.content.replace(/\n+/g, "\n");
-    }
-  }
+  normalizeActivityContent(data);
 
   return { data, truncated };
 }

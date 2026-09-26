@@ -186,7 +186,10 @@ function RouteComponent() {
     const trimmed = retentionDaysInput.trim();
     const parsed = trimmed === "" ? null : Number(trimmed);
 
-    if (parsed !== null && (!Number.isInteger(parsed) || parsed < 0)) {
+    if (
+      parsed !== null &&
+      (!Number.isInteger(parsed) || parsed < 0 || parsed > 3650)
+    ) {
       toast.error(
         t("settings:workspaceGeneral.activityRetention.toastUpdateError"),
       );

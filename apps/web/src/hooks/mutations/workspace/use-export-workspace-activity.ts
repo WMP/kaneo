@@ -11,7 +11,10 @@ function downloadBlob(blob: Blob, filename: string) {
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+  // Defer revocation: revoking the object URL synchronously after click() can
+  // abort the download in some browsers before they have started reading the
+  // blob, which is most likely on the larger, capped exports this triggers.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function useExportWorkspaceActivity() {
