@@ -34,7 +34,35 @@ surowy, dach, instalacje, wykończenie, odbiór.
 Nazwy projektów, zadań, etykiet i osób — po angielsku. Interfejs i napisy też
 po angielsku, tak jak w filmie `demo-kaneo-integration-all.mp4`.
 
-## 4. Co zostaje bez zmian
+## 4. Długość zadań i skala osi czasu
+
+Dwie uwagi z poprzednich nagrań. Obie dotyczą tego samego: plan wygląda
+nieprawdziwie.
+
+**Zadania muszą mieć różną długość.** W poprzednich danych prawie wszystkie
+zadania trwały podobnie (2–4 tygodnie), więc na wykresie wychodziły jednakowe
+kwadraciki. Prawdziwa budowa tak nie wygląda. Nowy plan ma mieszać:
+
+| Rodzaj pozycji | Długość |
+|---|---|
+| kamienie milowe (odbiory, pozwolenia) | 0 dni |
+| krótkie czynności (wylanie chudziaka, przegląd) | 1–3 dni |
+| typowe zadania | 1–3 tygodnie |
+| długie etapy (stan surowy, instalacje) | 2–4 miesiące |
+| czynności ciągnące się przez cały projekt | nadzór budowlany przez cały czas |
+
+**Domyślnie pokazywać widok Miesiąc, nie Kwartał.** W Kwartale krótkie zadania
+i tak nie mają swojej szerokości — słupek jest dociskany do minimum 20 px
+(`MIN_BAR_HOVER_HIT_PX` w `timeline.ts`), więc zadanie 2-dniowe i 3-tygodniowe
+wyglądają tak samo. To jest druga przyczyna „równych kwadracików”, niezależna
+od danych.
+
+W widoku Miesiąc słupki są proporcjonalne i różnica długości jest widoczna.
+Kwartału używać tylko tam, gdzie chodzi o pokazanie całego roku naraz —
+na przykład przy podświetlaniu po najechaniu (punkt 4.10 raportu) albo przy
+ścieżce krytycznej przez cały plan. W pozostałych fragmentach: Miesiąc.
+
+## 5. Co zostaje bez zmian
 
 - jeden film, nie zestaw krótkich,
 - widoczny kursor myszy (nakładka — nagranie przeglądarki nie zawiera
@@ -43,7 +71,7 @@ po angielsku, tak jak w filmie `demo-kaneo-integration-all.mp4`.
 - 1600 × 900, H.264,
 - rozdziały z podpisami.
 
-## 5. Czego plan musi dotknąć
+## 6. Czego plan musi dotknąć
 
 Żeby nagranie pokazało wszystko, zestaw danych musi zawierać:
 
@@ -62,8 +90,9 @@ po angielsku, tak jak w filmie `demo-kaneo-integration-all.mp4`.
 | wirtualizacja i skala | osobny projekt z około 1200 zadaniami |
 | MCP | wywołanie na żywo, które zmienia plan na ekranie |
 | pola własne | co najmniej jedno pole widoczne w karcie zadania |
+| czytelność wykresu | rozrzut długości zadań od 0 dni do kilku miesięcy (punkt 4) |
 
-## 6. Uwaga o zgodności
+## 7. Uwaga o zgodności
 
 Dane demonstracyjne muszą pozostać zmyślone. Nie używać nazw, adresów ani
 danych osobowych pochodzących od rzeczywistych klientów.
