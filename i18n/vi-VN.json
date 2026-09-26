@@ -1771,7 +1771,8 @@
 			"invitations": "Lời mời",
 			"more": "Thêm",
 			"backToBoard": "Quay lại bảng",
-			"portfolio": "Portfolio"
+			"portfolio": "Portfolio",
+			"activity": "Activity"
 		},
 		"projectList": {
 			"viewProject": "Xem dự án",
@@ -2690,6 +2691,34 @@
 			"submit": "Tạo không gian làm việc",
 			"success": "Tạo không gian làm việc thành công",
 			"error": "Không thể tạo không gian làm việc"
+		},
+		"activityLog": {
+			"backToDashboard": "Back to Dashboard",
+			"emptyDescription": "Changes across every task in this workspace will show up here.",
+			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
+			"emptyTitle": "No activity yet",
+			"error": "Failed to load workspace activity.",
+			"filters": {
+				"allTypes": "All types",
+				"allUsers": "All users",
+				"from": "From",
+				"to": "To",
+				"type": "Type",
+				"user": "User"
+			},
+			"pageTitle": "Activity",
+			"pagination": "Page {{current}} of {{total}}",
+			"types": {
+				"assignee_changed": "Assignee changed",
+				"comment": "Comment",
+				"created": "Created",
+				"due_date_changed": "Due date changed",
+				"priority_changed": "Priority changed",
+				"status_changed": "Status changed",
+				"title_changed": "Title changed",
+				"unassigned": "Unassigned"
+			},
+			"emptyFilteredTitle": "No matching activity"
 		}
 	},
 	"team": {

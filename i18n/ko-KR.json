@@ -1771,7 +1771,8 @@
 			"invitations": "초대",
 			"more": "더 보기",
 			"backToBoard": "보드로 돌아가기",
-			"portfolio": "Portfolio"
+			"portfolio": "Portfolio",
+			"activity": "Activity"
 		},
 		"projectList": {
 			"viewProject": "프로젝트 보기",
@@ -2690,6 +2691,34 @@
 			"submit": "워크스페이스 만들기",
 			"success": "워크스페이스가 생성되었습니다",
 			"error": "워크스페이스 생성에 실패했습니다"
+		},
+		"activityLog": {
+			"backToDashboard": "Back to Dashboard",
+			"emptyDescription": "Changes across every task in this workspace will show up here.",
+			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
+			"emptyTitle": "No activity yet",
+			"error": "Failed to load workspace activity.",
+			"filters": {
+				"allTypes": "All types",
+				"allUsers": "All users",
+				"from": "From",
+				"to": "To",
+				"type": "Type",
+				"user": "User"
+			},
+			"pageTitle": "Activity",
+			"pagination": "Page {{current}} of {{total}}",
+			"types": {
+				"assignee_changed": "Assignee changed",
+				"comment": "Comment",
+				"created": "Created",
+				"due_date_changed": "Due date changed",
+				"priority_changed": "Priority changed",
+				"status_changed": "Status changed",
+				"title_changed": "Title changed",
+				"unassigned": "Unassigned"
+			},
+			"emptyFilteredTitle": "No matching activity"
 		}
 	},
 	"team": {

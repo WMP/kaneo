@@ -1774,7 +1774,8 @@
 			"invitations": "Uitnodigingen",
 			"more": "Meer",
 			"backToBoard": "Terug naar bord",
-			"portfolio": "Portfolio"
+			"portfolio": "Portfolio",
+			"activity": "Activity"
 		},
 		"projectList": {
 			"viewProject": "Project bekijken",
@@ -2701,6 +2702,34 @@
 			"submit": "Werkruimte maken",
 			"success": "Werkruimte succesvol aangemaakt",
 			"error": "Aanmaken werkruimte mislukt"
+		},
+		"activityLog": {
+			"backToDashboard": "Back to Dashboard",
+			"emptyDescription": "Changes across every task in this workspace will show up here.",
+			"emptyFilteredDescription": "No activity matches these filters. Try widening the date range or clearing a filter.",
+			"emptyTitle": "No activity yet",
+			"error": "Failed to load workspace activity.",
+			"filters": {
+				"allTypes": "All types",
+				"allUsers": "All users",
+				"from": "From",
+				"to": "To",
+				"type": "Type",
+				"user": "User"
+			},
+			"pageTitle": "Activity",
+			"pagination": "Page {{current}} of {{total}}",
+			"types": {
+				"assignee_changed": "Assignee changed",
+				"comment": "Comment",
+				"created": "Created",
+				"due_date_changed": "Due date changed",
+				"priority_changed": "Priority changed",
+				"status_changed": "Status changed",
+				"title_changed": "Title changed",
+				"unassigned": "Unassigned"
+			},
+			"emptyFilteredTitle": "No matching activity"
 		}
 	},
 	"team": {

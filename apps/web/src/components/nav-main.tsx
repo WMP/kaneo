@@ -52,6 +52,14 @@ export function NavMain() {
       badge: null,
     },
     {
+      title: t("navigation:sidebar.activity"),
+      url: `/dashboard/workspace/${workspace.id}/activity`,
+      isActive:
+        window.location.pathname ===
+        `/dashboard/workspace/${workspace.id}/activity`,
+      badge: null,
+    },
+    {
       title: t("navigation:sidebar.invitations"),
       url: "/dashboard/invitations",
       isActive: window.location.pathname === "/dashboard/invitations",
