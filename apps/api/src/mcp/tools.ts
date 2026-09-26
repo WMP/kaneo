@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { VALID_TASK_CONSTRAINT_TYPES } from "../task/schema";
+import { dependencyTypeSchema, lagDaysSchema } from "../task-relation/schema";
 
 type McpToolResult = {
   content: Array<{ type: "text"; text: string }>;
@@ -223,18 +225,10 @@ const hexColorSchema = z
     "Expected a hex color like #FF6600",
   );
 const progressSchema = z.number().int().min(0).max(100);
-// The four standard project-management dependency types (Finish-to-Start,
-// Start-to-Start, Finish-to-Finish, Start-to-Finish) — see
-// apps/api/src/task-relation/schema.ts.
-const dependencyTypeSchema = z.enum(["fs", "ss", "ff", "sf"]);
-const lagDaysSchema = z.number().int().min(-3650).max(3650);
-// See VALID_TASK_CONSTRAINT_TYPES in apps/api/src/task/schema.ts.
-const constraintTypeSchema = z.enum([
-  "none",
-  "start_no_earlier_than",
-  "finish_no_later_than",
-  "must_start_on",
-]);
+// Reuse the canonical constraint-type vocabulary and the dependency-type/lag
+// validators so this tool catalog can never drift from the API's own request
+// validation.
+const constraintTypeSchema = z.enum(VALID_TASK_CONSTRAINT_TYPES);
 
 /** Register Kaneo's authenticated tool catalog on an MCP server adapter. */
 export function registerMcpTools(

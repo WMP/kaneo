@@ -2,7 +2,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import type { KaneoClient } from "../kaneo/client.js";
-import { buildFullTaskUpdateBody } from "../kaneo/task-helpers.js";
+import {
+  buildFullTaskUpdateBody,
+  CONSTRAINT_TYPES,
+} from "../kaneo/task-helpers.js";
 import { errorResult, textResult } from "../utils/mcp-result.js";
 
 const prioritySchema = z.enum([
@@ -34,12 +37,7 @@ const progressSchema = z.number().int().min(0).max(100);
 const dependencyTypeSchema = z.enum(["fs", "ss", "ff", "sf"]);
 const lagDaysSchema = z.number().int().min(-3650).max(3650);
 // See VALID_TASK_CONSTRAINT_TYPES in apps/api/src/task/schema.ts.
-const constraintTypeSchema = z.enum([
-  "none",
-  "start_no_earlier_than",
-  "finish_no_later_than",
-  "must_start_on",
-]);
+const constraintTypeSchema = z.enum(CONSTRAINT_TYPES);
 
 function run(fn: () => Promise<unknown>): Promise<CallToolResult> {
   return fn()
