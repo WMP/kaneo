@@ -79,6 +79,7 @@ import {
 } from "@/components/gantt/zoom";
 import PageTitle from "@/components/page-title";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBulkUpdateTaskSchedule } from "@/hooks/mutations/task/use-bulk-update-task-schedule";
@@ -88,6 +89,8 @@ import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
+import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
+import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { getStatusLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
@@ -1953,16 +1956,73 @@ function RouteComponent() {
                                     <span className="truncate text-[10px] text-muted-foreground">
                                       {project?.slug}-{task.number}
                                     </span>
+                                    {/* Overdue marker: reuses the same
+                                        overdue/complete rules the board and
+                                        list views already apply (a finished
+                                        task, per its own column's isFinal,
+                                        can never read as overdue) rather than
+                                        a Gantt-only definition of "late". */}
+                                    {getDueDateStatus(
+                                      task.dueDate,
+                                      isTaskCompleted(
+                                        task.status,
+                                        project?.columns,
+                                      ),
+                                    ) === "overdue" && (
+                                      <span
+                                        role="img"
+                                        aria-label={t(
+                                          "tasks:gantt.overdueMarkerAriaLabel",
+                                          { title: task.title },
+                                        )}
+                                        title={t(
+                                          "tasks:gantt.overdueMarkerAriaLabel",
+                                          { title: task.title },
+                                        )}
+                                        className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-px text-[10px] font-medium text-destructive"
+                                      >
+                                        {t("tasks:gantt.overdueLabel")}
+                                      </span>
+                                    )}
                                   </div>
-                                  <p className="w-full line-clamp-1 text-xs font-medium leading-tight text-foreground">
-                                    {task.title}
-                                  </p>
+                                  <div className="flex w-full min-w-0 items-center gap-1.5">
+                                    <p className="line-clamp-1 min-w-0 flex-1 text-xs font-medium leading-tight text-foreground">
+                                      {task.title}
+                                    </p>
+                                    {/* Owner avatar: initials over the
+                                        assignee's own image (see
+                                        task-assignee-popover.tsx and the
+                                        list/board views' identical pattern),
+                                        a plain "?" placeholder when
+                                        unassigned — small enough (size-5) to
+                                        sit beside the title without crowding
+                                        it on a narrow rail. */}
+                                    <span
+                                      title={task.assigneeName ?? undefined}
+                                    >
+                                      {task.assigneeId ? (
+                                        <Avatar className="size-5 shrink-0 border border-border/40">
+                                          <AvatarImage
+                                            src={task.assigneeImage ?? ""}
+                                            alt={task.assigneeName ?? ""}
+                                          />
+                                          <AvatarFallback className="text-[9px] font-medium">
+                                            {getInitials(task.assigneeName)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      ) : (
+                                        <span
+                                          className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border/40 bg-muted text-[9px] font-medium text-muted-foreground"
+                                          title={t("tasks:assignee.unassigned")}
+                                        >
+                                          ?
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
                                   <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
                                     {format(task.scheduleStart, "MMM d, yyyy")}{" "}
                                     - {format(task.scheduleEnd, "MMM d, yyyy")}
-                                    {task.assigneeName
-                                      ? ` • ${task.assigneeName}`
-                                      : ""}
                                   </p>
                                 </button>
                               </div>

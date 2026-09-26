@@ -2302,7 +2302,9 @@
 			"criticalPathDroppedEdges_many": "{{count}} cross-project deps skipped",
 			"criticalPathDroppedEdges_one": "{{count}} cross-project dep skipped",
 			"criticalPathDroppedEdges_other": "{{count}} cross-project deps skipped",
-			"criticalPathDroppedEdgesHint": "These dependencies reach a task in another project or with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted."
+			"criticalPathDroppedEdgesHint": "These dependencies reach a task in another project or with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
+			"overdueLabel": "Overdue",
+			"overdueMarkerAriaLabel": "{{title}}: overdue"
 		},
 		"delete": {
 			"title": "Удалить задачу?",

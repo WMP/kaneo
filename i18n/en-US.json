@@ -2281,7 +2281,9 @@
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
 			"constraintViolationAriaLabel": "{{title}}: constraint violated — {{type}}, {{date}}",
 			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
-			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline"
+			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
+			"overdueLabel": "Overdue",
+			"overdueMarkerAriaLabel": "{{title}}: overdue"
 		},
 		"delete": {
 			"title": "Delete Task?",
