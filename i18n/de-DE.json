@@ -1817,7 +1817,8 @@
 			},
 			"importedFrom": "Importiert aus {{source}}",
 			"importedBy": "Importiert von {{name}}"
-		}
+		},
+		"changedApproval": "changed approval status from {{from}} to {{to}}"
 	},
 	"tasks": {
 		"title": "Aufgaben",
@@ -1999,7 +2000,8 @@
 			"copyTaskBranch": "Aufgaben-Branch kopieren",
 			"start": "Start",
 			"startDate": "Startdatum",
-			"noDate": "Kein Datum"
+			"noDate": "Kein Datum",
+			"approval": "Approval"
 		},
 		"move": {
 			"title": "Aufgabe verschieben",
@@ -2054,6 +2056,12 @@
 					"rose": "Rosa",
 					"crimson": "Karmesinrot"
 				}
+			},
+			"approval": {
+				"note": "Note",
+				"notePlaceholder": "Add a note for the client...",
+				"saveNote": "Save note",
+				"updateError": "Failed to update approval status"
 			}
 		},
 		"backlog": {
@@ -2140,7 +2148,12 @@
 			"previousPeriod": "Vorheriger Zeitraum",
 			"nextPeriod": "Nächster Zeitraum",
 			"periodStart": "Startdatum der Zeitleiste",
-			"showTaskDates": "Aufgabendaten anzeigen"
+			"showTaskDates": "Aufgabendaten anzeigen",
+			"approvalBadgeAriaLabel": "Approval: {{status}}",
+			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"gateWarningBadge": "Gate",
+			"gateWarningItem": "\"{{title}}\" is {{status}}",
+			"gateWarningTitle": "Blocked by an unapproved gate"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",
@@ -2257,7 +2270,14 @@
 		"descriptionSearchError": "Die Suche in Beschreibungen ist fehlgeschlagen. Ergebnisse sind möglicherweise unvollständig.",
 		"descriptionRetry": "Erneut versuchen",
 		"descriptionLoading": "Beschreibung wird geladen…",
-		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden."
+		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden.",
+		"approval": {
+			"approved": "Approved",
+			"label": "Approval",
+			"none": "No approval needed",
+			"pending": "Pending approval",
+			"rejected": "Rejected"
+		}
 	},
 	"invitations": {
 		"email": {

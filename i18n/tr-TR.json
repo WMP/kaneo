@@ -1817,7 +1817,8 @@
 			},
 			"importedFrom": "Imported from {{source}}",
 			"importedBy": "Imported by {{name}}"
-		}
+		},
+		"changedApproval": "changed approval status from {{from}} to {{to}}"
 	},
 	"tasks": {
 		"title": "Görevler",
@@ -1999,7 +2000,8 @@
 			"copyTaskBranch": "Talep dalını kopyala",
 			"start": "Başlat",
 			"startDate": "Başlangıç tarihi",
-			"noDate": "Tarih yok"
+			"noDate": "Tarih yok",
+			"approval": "Approval"
 		},
 		"move": {
 			"title": "Talebi taşı",
@@ -2054,6 +2056,12 @@
 					"rose": "Gül Kurusu",
 					"crimson": "Koyu Kırmızı"
 				}
+			},
+			"approval": {
+				"note": "Note",
+				"notePlaceholder": "Add a note for the client...",
+				"saveNote": "Save note",
+				"updateError": "Failed to update approval status"
 			}
 		},
 		"backlog": {
@@ -2140,7 +2148,12 @@
 			"previousPeriod": "Previous period",
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates"
+			"showTaskDates": "Show task dates",
+			"approvalBadgeAriaLabel": "Approval: {{status}}",
+			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"gateWarningBadge": "Gate",
+			"gateWarningItem": "\"{{title}}\" is {{status}}",
+			"gateWarningTitle": "Blocked by an unapproved gate"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",
@@ -2257,7 +2270,14 @@
 		"descriptionSearchError": "Description search failed. Results may be incomplete.",
 		"descriptionRetry": "Retry",
 		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version."
+		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"approval": {
+			"approved": "Approved",
+			"label": "Approval",
+			"none": "No approval needed",
+			"pending": "Pending approval",
+			"rejected": "Rejected"
+		}
 	},
 	"invitations": {
 		"pageTitle": "Davetler",

@@ -1831,7 +1831,8 @@
 			"importedBy": "Imported by {{name}}"
 		},
 		"moved": "перемістив завдання з «{{from}}» до «{{to}}»",
-		"created": "створив це завдання"
+		"created": "створив це завдання",
+		"changedApproval": "changed approval status from {{from}} to {{to}}"
 	},
 	"tasks": {
 		"title": "Завдання",
@@ -2013,7 +2014,8 @@
 			"copyTaskBranch": "Копіювати гілку завдання",
 			"start": "Початок",
 			"startDate": "Дата початку",
-			"noDate": "Немає дати"
+			"noDate": "Немає дати",
+			"approval": "Approval"
 		},
 		"move": {
 			"title": "Перемістити завдання",
@@ -2068,6 +2070,12 @@
 					"rose": "Троянда",
 					"crimson": "Багряний"
 				}
+			},
+			"approval": {
+				"note": "Note",
+				"notePlaceholder": "Add a note for the client...",
+				"saveNote": "Save note",
+				"updateError": "Failed to update approval status"
 			}
 		},
 		"backlog": {
@@ -2154,7 +2162,12 @@
 			"previousPeriod": "Previous period",
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates"
+			"showTaskDates": "Show task dates",
+			"approvalBadgeAriaLabel": "Approval: {{status}}",
+			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
+			"gateWarningBadge": "Gate",
+			"gateWarningItem": "\"{{title}}\" is {{status}}",
+			"gateWarningTitle": "Blocked by an unapproved gate"
 		},
 		"delete": {
 			"title": "Видалити завдання?",
@@ -2273,7 +2286,14 @@
 		"descriptionSearchError": "Description search failed. Results may be incomplete.",
 		"descriptionRetry": "Retry",
 		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version."
+		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"approval": {
+			"approved": "Approved",
+			"label": "Approval",
+			"none": "No approval needed",
+			"pending": "Pending approval",
+			"rejected": "Rejected"
+		}
 	},
 	"invitations": {
 		"email": {

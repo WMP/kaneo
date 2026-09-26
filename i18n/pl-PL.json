@@ -842,7 +842,8 @@
 		"githubUser": "Użytkownik GitHub",
 		"moved": "przeniósł(ęła) zadanie z \"{{from}}\" do \"{{to}}\"",
 		"setDueDate": "ustawił(a) termin na {{date}}",
-		"unassigned": "usunął(ęła) przypisanie zadania"
+		"unassigned": "usunął(ęła) przypisanie zadania",
+		"changedApproval": "zmienił(a) status zatwierdzenia z {{from}} na {{to}}"
 	},
 	"settings": {
 		"account": "Konto",
@@ -2292,7 +2293,12 @@
 			"previousPeriod": "Previous period",
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates"
+			"showTaskDates": "Show task dates",
+			"approvalBadgeAriaLabel": "Zatwierdzenie: {{status}}",
+			"gateWarningAriaLabel": "{{count}} niezatwierdzonych bramek blokuje to zadanie",
+			"gateWarningBadge": "Bramka",
+			"gateWarningItem": "„{{title}}” ma status: {{status}}",
+			"gateWarningTitle": "Zablokowane przez niezatwierdzoną bramkę"
 		},
 		"kanban": {
 			"addTask": "Dodaj zadanie"
@@ -2359,6 +2365,12 @@
 			},
 			"status": {
 				"updateError": "Nie udało się zaktualizować statusu zadania"
+			},
+			"approval": {
+				"note": "Notatka",
+				"notePlaceholder": "Dodaj notatkę dla klienta...",
+				"saveNote": "Zapisz notatkę",
+				"updateError": "Nie udało się zaktualizować statusu zatwierdzenia"
 			}
 		},
 		"pr": {
@@ -2386,7 +2398,8 @@
 			"noDate": "Brak daty",
 			"start": "Początek",
 			"startDate": "Data rozpoczęcia",
-			"title": "Właściwości"
+			"title": "Właściwości",
+			"approval": "Zatwierdzenie"
 		},
 		"relations": {
 			"blocks": "Blokuje",
@@ -2455,7 +2468,14 @@
 		"descriptionSearchError": "Description search failed. Results may be incomplete.",
 		"descriptionRetry": "Retry",
 		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version."
+		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"approval": {
+			"label": "Zatwierdzenie",
+			"none": "Nie wymaga zatwierdzenia",
+			"pending": "Oczekuje na zatwierdzenie",
+			"approved": "Zatwierdzone",
+			"rejected": "Odrzucone"
+		}
 	},
 	"press": {
 		"title": "Press kit",
