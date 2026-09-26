@@ -99,6 +99,90 @@ function run(fn: () => Promise<unknown>): Promise<McpToolResult> {
     );
 }
 
+/** A task's custom field value, alongside its field's name and type. */
+type TaskCustomFieldValue = {
+  fieldId: string;
+  name: string;
+  type: string;
+  value: string | null;
+};
+
+// The custom-field endpoints return CustomFieldValue rows (id, taskId,
+// fieldId, value, fieldName, fieldPosition, fieldType, fieldOptions); tasks
+// only need the fieldId/name/type/value an agent reads and writes with.
+function toTaskCustomFieldValue(raw: unknown): TaskCustomFieldValue {
+  const row = raw as Record<string, unknown>;
+  return {
+    fieldId: String(row.fieldId),
+    name: typeof row.fieldName === "string" ? row.fieldName : "",
+    type: typeof row.fieldType === "string" ? row.fieldType : "",
+    value: typeof row.value === "string" ? row.value : null,
+  };
+}
+
+/**
+ * Groups a project's bulk custom-field-value rows by taskId, so `list_tasks`
+ * can attach every task's values from the single bulk fetch instead of
+ * issuing one custom-field request per task.
+ */
+function groupCustomFieldValuesByTask(
+  raw: unknown,
+): Map<string, TaskCustomFieldValue[]> {
+  const byTask = new Map<string, TaskCustomFieldValue[]>();
+  if (!Array.isArray(raw)) return byTask;
+  for (const entry of raw) {
+    const row = entry as Record<string, unknown>;
+    const taskId = typeof row.taskId === "string" ? row.taskId : undefined;
+    if (!taskId) continue;
+    const values = byTask.get(taskId) ?? [];
+    values.push(toTaskCustomFieldValue(row));
+    byTask.set(taskId, values);
+  }
+  return byTask;
+}
+
+function withCustomFields<T extends Record<string, unknown>>(
+  task: T,
+  customFields: TaskCustomFieldValue[],
+): T & { customFields: TaskCustomFieldValue[] } {
+  return { ...task, customFields };
+}
+
+/** Attaches each task's custom-field values onto every task in a board response. */
+function attachCustomFieldsToBoard(
+  board: unknown,
+  byTask: Map<string, TaskCustomFieldValue[]>,
+): unknown {
+  const data = (board as { data?: Record<string, unknown> } | null)?.data;
+  if (!data) return board;
+
+  const withTasks = (tasks: unknown) =>
+    Array.isArray(tasks)
+      ? tasks.map((task) => {
+          const t = task as Record<string, unknown>;
+          const id = typeof t.id === "string" ? t.id : undefined;
+          return withCustomFields(t, id ? (byTask.get(id) ?? []) : []);
+        })
+      : tasks;
+
+  const columns = Array.isArray(data.columns)
+    ? data.columns.map((column) => {
+        const col = column as Record<string, unknown>;
+        return { ...col, tasks: withTasks(col.tasks) };
+      })
+    : data.columns;
+
+  return {
+    ...(board as Record<string, unknown>),
+    data: {
+      ...data,
+      columns,
+      archivedTasks: withTasks(data.archivedTasks),
+      plannedTasks: withTasks(data.plannedTasks),
+    },
+  };
+}
+
 const PRIORITIES = ["no-priority", "low", "medium", "high", "urgent"] as const;
 
 function isTaskPriority(v: string): v is (typeof PRIORITIES)[number] {
@@ -396,12 +480,22 @@ export function registerMcpTools(
         if (v !== undefined && v !== null) qs.set(k, String(v));
       }
       const q = qs.toString();
-      return run(() =>
-        client.json(
+      return run(async () => {
+        const board = await client.json(
           `/api/task/tasks/${encodeURIComponent(projectId)}${q ? `?${q}` : ""}`,
           { method: "GET" },
-        ),
-      );
+        );
+        // One bulk query for the whole project's custom-field values, grouped
+        // by taskId below, instead of a request per task on the page.
+        const values = await client.json(
+          `/api/custom-field/project/${encodeURIComponent(projectId)}/values`,
+          { method: "GET" },
+        );
+        return attachCustomFieldsToBoard(
+          board,
+          groupCustomFieldValuesByTask(values),
+        );
+      });
     },
   );
 
@@ -412,11 +506,20 @@ export function registerMcpTools(
       inputSchema: z.object({ taskId: nonEmptyString }),
     },
     async (args) =>
-      run(() =>
-        client.json(`/api/task/${encodeURIComponent(args.taskId)}`, {
-          method: "GET",
-        }),
-      ),
+      run(async () => {
+        const task = (await client.json(
+          `/api/task/${encodeURIComponent(args.taskId)}`,
+          { method: "GET" },
+        )) as Record<string, unknown>;
+        const values = await client.json(
+          `/api/custom-field/task/${encodeURIComponent(args.taskId)}`,
+          { method: "GET" },
+        );
+        return withCustomFields(
+          task,
+          Array.isArray(values) ? values.map(toTaskCustomFieldValue) : [],
+        );
+      }),
   );
 
   registerTool(

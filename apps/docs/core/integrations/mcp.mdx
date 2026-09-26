@@ -144,6 +144,13 @@ tools expect. Time entries have no delete endpoint on the API, so there is no
 value together with its field's name, type and dropdown options so an agent
 doesn't need a second lookup to make sense of it.
 
+`get_task` and `list_tasks` also carry each task's custom field values inline,
+as `customFields: { fieldId, name, type, value }[]`, so reading a task or a
+board page never needs a follow-up `get_task_custom_fields` call. For
+`list_tasks`, those values come from one bulk fetch for the whole project
+rather than one request per task, so paging through a large board stays a
+constant number of requests per page.
+
 ## Debugging
 
 To run the stdio server directly:

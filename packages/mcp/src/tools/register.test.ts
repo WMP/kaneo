@@ -80,6 +80,126 @@ describe("registerTools", () => {
     });
   });
 
+  it("list_tasks attaches every task's custom field values from a single bulk request", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({
+          data: {
+            id: "project-1",
+            columns: [
+              {
+                id: "todo",
+                tasks: [{ id: "task-1" }, { id: "task-2" }],
+              },
+            ],
+            archivedTasks: [{ id: "task-3" }],
+            plannedTasks: [],
+          },
+          pagination: { total: 3, page: 1, pageSize: 50, totalPages: 1 },
+        })
+        .mockResolvedValueOnce([
+          {
+            id: "v1",
+            taskId: "task-1",
+            fieldId: "f1",
+            value: "42",
+            fieldName: "Story points",
+            fieldPosition: 0,
+            fieldType: "number",
+            fieldOptions: null,
+          },
+          {
+            id: "v2",
+            taskId: "task-3",
+            fieldId: "f1",
+            value: "8",
+            fieldName: "Story points",
+            fieldPosition: 0,
+            fieldType: "number",
+            fieldOptions: null,
+          },
+        ]),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    const result = await tools.get("list_tasks")?.handler({
+      projectId: "project-1",
+    });
+
+    // Exactly one board fetch and one bulk custom-field fetch, regardless of
+    // how many tasks are on the page: no per-task request (no N+1).
+    expect(client.json).toHaveBeenCalledTimes(2);
+    expect(client.json).toHaveBeenNthCalledWith(
+      2,
+      "/api/custom-field/project/project-1/values",
+      { method: "GET" },
+    );
+
+    const body = JSON.parse(result?.content[0]?.text ?? "{}");
+    expect(body.data.columns[0].tasks[0]).toMatchObject({
+      id: "task-1",
+      customFields: [
+        { fieldId: "f1", name: "Story points", type: "number", value: "42" },
+      ],
+    });
+    expect(body.data.columns[0].tasks[1]).toMatchObject({
+      id: "task-2",
+      customFields: [],
+    });
+    expect(body.data.archivedTasks[0]).toMatchObject({
+      id: "task-3",
+      customFields: [
+        { fieldId: "f1", name: "Story points", type: "number", value: "8" },
+      ],
+    });
+  });
+
+  it("get_task attaches the task's custom field values", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce({ id: "task-1", title: "Ship it" })
+        .mockResolvedValueOnce([
+          {
+            id: "v1",
+            taskId: "task-1",
+            fieldId: "f1",
+            value: "yes",
+            fieldName: "Approved",
+            fieldPosition: 0,
+            fieldType: "boolean",
+            fieldOptions: null,
+          },
+        ]),
+    };
+
+    registerTools(server as never, { client: client as never });
+
+    const result = await tools.get("get_task")?.handler({ taskId: "task-1" });
+
+    expect(client.json).toHaveBeenNthCalledWith(1, "/api/task/task-1", {
+      method: "GET",
+    });
+    expect(client.json).toHaveBeenNthCalledWith(
+      2,
+      "/api/custom-field/task/task-1",
+      { method: "GET" },
+    );
+
+    const body = JSON.parse(result?.content[0]?.text ?? "{}");
+    expect(body).toMatchObject({
+      id: "task-1",
+      title: "Ship it",
+      customFields: [
+        { fieldId: "f1", name: "Approved", type: "boolean", value: "yes" },
+      ],
+    });
+  });
+
   it("fetches the current task and sends a full body for update_task", async () => {
     const { server, tools } = createServerMock();
     const client = {

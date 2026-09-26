@@ -274,4 +274,131 @@ describe("MCP tool catalog", () => {
     expect(result.isError).toBe(true);
     expect(apiFetch).not.toHaveBeenCalled();
   });
+
+  it("get_task attaches the task's custom field values", async () => {
+    apiFetch
+      .mockResolvedValueOnce(
+        Response.json({ id: "t1", title: "Ship it", status: "in-progress" }),
+      )
+      .mockResolvedValueOnce(
+        Response.json([
+          {
+            id: "v1",
+            taskId: "t1",
+            fieldId: "f1",
+            value: "42",
+            fieldName: "Story points",
+            fieldPosition: 0,
+            fieldType: "number",
+            fieldOptions: null,
+          },
+        ]),
+      );
+
+    const result = await call("get_task", { taskId: "t1" });
+    const body = JSON.parse(result.content[0].text);
+
+    expect(apiFetch).toHaveBeenCalledTimes(2);
+    expect(String(apiFetch.mock.calls[0][0])).toBe(
+      "http://api.test/api/task/t1",
+    );
+    expect(String(apiFetch.mock.calls[1][0])).toBe(
+      "http://api.test/api/custom-field/task/t1",
+    );
+    expect(body).toMatchObject({
+      id: "t1",
+      title: "Ship it",
+      customFields: [
+        { fieldId: "f1", name: "Story points", type: "number", value: "42" },
+      ],
+    });
+  });
+
+  it("get_task returns an empty customFields array when the task has none", async () => {
+    apiFetch
+      .mockResolvedValueOnce(Response.json({ id: "t1" }))
+      .mockResolvedValueOnce(Response.json([]));
+
+    const result = await call("get_task", { taskId: "t1" });
+    const body = JSON.parse(result.content[0].text);
+
+    expect(body.customFields).toEqual([]);
+  });
+
+  it("list_tasks attaches every task's custom field values from a single bulk request", async () => {
+    apiFetch
+      .mockResolvedValueOnce(
+        Response.json({
+          data: {
+            id: "p1",
+            columns: [
+              {
+                id: "todo",
+                slug: "todo",
+                tasks: [{ id: "t1" }, { id: "t2" }],
+              },
+            ],
+            archivedTasks: [{ id: "t3" }],
+            plannedTasks: [{ id: "t4" }],
+          },
+          pagination: { total: 4, page: 1, pageSize: 50, totalPages: 1 },
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json([
+          {
+            id: "v1",
+            taskId: "t1",
+            fieldId: "f1",
+            value: "yes",
+            fieldName: "Approved",
+            fieldPosition: 0,
+            fieldType: "boolean",
+            fieldOptions: null,
+          },
+          {
+            id: "v2",
+            taskId: "t3",
+            fieldId: "f1",
+            value: "no",
+            fieldName: "Approved",
+            fieldPosition: 0,
+            fieldType: "boolean",
+            fieldOptions: null,
+          },
+        ]),
+      );
+
+    const result = await call("list_tasks", { projectId: "p1" });
+    const body = JSON.parse(result.content[0].text);
+
+    // Exactly one board fetch and one bulk custom-field fetch, regardless of
+    // how many tasks are on the page: no per-task request (no N+1).
+    expect(apiFetch).toHaveBeenCalledTimes(2);
+    expect(String(apiFetch.mock.calls[1][0])).toBe(
+      "http://api.test/api/custom-field/project/p1/values",
+    );
+
+    expect(body.data.columns[0].tasks[0]).toMatchObject({
+      id: "t1",
+      customFields: [
+        { fieldId: "f1", name: "Approved", type: "boolean", value: "yes" },
+      ],
+    });
+    // A task with no custom-field values still gets an (empty) array.
+    expect(body.data.columns[0].tasks[1]).toMatchObject({
+      id: "t2",
+      customFields: [],
+    });
+    expect(body.data.archivedTasks[0]).toMatchObject({
+      id: "t3",
+      customFields: [
+        { fieldId: "f1", name: "Approved", type: "boolean", value: "no" },
+      ],
+    });
+    expect(body.data.plannedTasks[0]).toMatchObject({
+      id: "t4",
+      customFields: [],
+    });
+  });
 });
