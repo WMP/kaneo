@@ -17,6 +17,7 @@ on:
       - claude/cross-project-relations
       - claude/gantt-plus-cross-project
       - claude/gantt-pan-zoom
+      - claude/integration-all
   workflow_dispatch:
     inputs:
       platforms:

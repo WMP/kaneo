@@ -1,1 +1,0 @@
-ALTER TABLE "workspace" ADD COLUMN "activity_retention_days" integer;
