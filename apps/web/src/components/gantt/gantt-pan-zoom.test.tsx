@@ -16,6 +16,12 @@ const m = vi.hoisted(() => ({
   },
 }));
 
+// A single stable mock (rather than a fresh `vi.fn()` per `useNavigate()`
+// call) so the "click still opens the task" test below can assert it was
+// called — see the "starts a pan..." test's own comment for why that
+// click/drag split matters here specifically.
+const navigate = vi.hoisted(() => vi.fn());
+
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: { component: ComponentType }) => {
     m.component = options.component;
@@ -24,7 +30,7 @@ vi.mock("@tanstack/react-router", () => ({
       useSearch: () => ({}),
     };
   },
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigate,
 }));
 vi.mock("@/components/common/project-layout", () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -169,6 +175,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   relationsMock.data = [];
+  navigate.mockClear();
   for (const prop of ["clientWidth", "offsetLeft", "getBoundingClientRect"]) {
     delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
   }
@@ -310,7 +317,7 @@ describe("Gantt drag-to-pan", () => {
     expect(scrollContainer.scrollLeft).toBe(200);
   });
 
-  it("does not start a pan from a pointerdown on the task rail", () => {
+  it("starts a pan from a horizontal drag on the task rail's row button (finding 5.6)", () => {
     const { container } = show();
     const scrollContainer = screen.getByTestId("gantt-scroll-container");
     scrollContainer.scrollLeft = 200;
@@ -326,14 +333,54 @@ describe("Gantt drag-to-pan", () => {
       clientX: 100,
       clientY: 100,
     });
-    fireEvent.pointerMove(railButton, {
+    fireEvent.pointerMove(window, {
       pointerId: 3,
       pointerType: "mouse",
       clientX: 250,
       clientY: 100,
     });
 
+    // Dragging right (clientX increased by 150) pulls the content right,
+    // i.e. decreases scrollLeft by the same amount — same "grab and pull"
+    // math as the background pan above (computePanScrollPosition), reused
+    // rather than duplicated (see handleRailPointerDown in gantt.tsx).
+    expect(scrollContainer.scrollLeft).toBe(50);
+
+    fireEvent.pointerUp(window, { pointerId: 3, pointerType: "mouse" });
+    // The drag never landed back on the button, so its own click never
+    // fires — opening a task from a drag-panned row would be a bug.
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("still opens the task on a plain click (no drag) on the task rail's row button", () => {
+    const { container } = show();
+    const scrollContainer = screen.getByTestId("gantt-scroll-container");
+    scrollContainer.scrollLeft = 200;
+
+    const railButton = container.querySelector(
+      "[data-gantt-rail] button",
+    ) as HTMLElement;
+    fireEvent.pointerDown(railButton, {
+      button: 0,
+      pointerId: 6,
+      pointerType: "mouse",
+      clientX: 100,
+      clientY: 100,
+    });
+    fireEvent.pointerUp(railButton, {
+      button: 0,
+      pointerId: 6,
+      pointerType: "mouse",
+      clientX: 100,
+      clientY: 100,
+    });
+    fireEvent.click(railButton);
+
+    // No pointermove happened, so handleRailPointerDown's own listeners
+    // never engaged — the timeline doesn't pan, and the button's normal
+    // click still opens the task.
     expect(scrollContainer.scrollLeft).toBe(200);
+    expect(navigate).toHaveBeenCalledTimes(1);
   });
 
   it("does not start a pan from a pointerdown on an external (cross-project) task bar", () => {

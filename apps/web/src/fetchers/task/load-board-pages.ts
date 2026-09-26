@@ -1,5 +1,13 @@
 import type { ProjectWithTasks } from "@/types/project";
 
+// Shared by every board-page fetcher (board/backlog/calendar/Gantt all read
+// through getTasks/getPublicProject below). Matches the API's own
+// MAX_TASK_LIST_LIMIT (see apps/api/src/task/schema.ts) — requesting more
+// than the server allows would just get silently clamped, so the two stay in
+// sync by hand. Raised from 100 so a large project (e.g. 1000+ Gantt tasks)
+// loads in a handful of sequential page round-trips instead of dozens.
+export const BOARD_PAGE_LIMIT = 500;
+
 export type BoardPage<T extends ProjectWithTasks> = {
   data: T;
   pagination: {

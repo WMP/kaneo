@@ -36,6 +36,15 @@ import {
 const CLICK_MOVE_THRESHOLD_PX = 4;
 const MOBILE_MOVE_THRESHOLD_PX = 14;
 
+// How far past the bar's own finish edge the "drag to link" dot sits (see the
+// handle below). Previously this handle was centered ON insetBox.right — the
+// same edge the resize-due handle occupies — so its hit circle overlapped the
+// resize handle's own hit region and could steal a click meant for it (see
+// finding 5.5). Anchoring the dot's own left edge here, entirely past
+// insetBox.right rather than straddling it, keeps the two hit regions
+// disjoint at every zoom level without shrinking either one.
+const LINK_HANDLE_OUTSET_PX = 3;
+
 type ScheduledTask = Task & {
   scheduleStart: Date;
   scheduleEnd: Date;
@@ -834,15 +843,21 @@ export function GanttTaskBar({
               </Tooltip>
             )}
           </div>
-          {/* "Drag to link" handle: a small dot at the bar's finish edge,
-              hidden until the bar is hovered/focused so it doesn't compete
-              visually with the move/resize affordances. Positioned at
-              insetBox.right — the same edge the dependency-line overlay
-              itself anchors a finish-to-start line to (see taskBoxes in
-              gantt.tsx, built from this same computeInsetBarBox call) — and
-              outside the inner bar's overflow-hidden bounds so it isn't
-              clipped. onPointerDown only starts the gesture; gantt.tsx owns
-              the preview line, drop hit-testing, and the mutation. */}
+          {/* "Drag to link" handle: a small dot just past the bar's finish
+              edge, hidden until the bar is hovered/focused so it doesn't
+              compete visually with the move/resize affordances. The resize-
+              due handle (above) owns the edge itself — its own hit region
+              runs right up to insetBox.right — so this dot's OWN left edge
+              starts LINK_HANDLE_OUTSET_PX past insetBox.right rather than
+              being centered on it (as it previously was): centering a size-4
+              circle on the edge put half its hit region on top of the resize
+              handle's, so grabbing the exact edge center started a relation
+              drag instead of a resize (finding 5.5). Only translate-y-1/2
+              here (not translate-x too) is what keeps the box's own left
+              edge, not its center, anchored at that offset. Still outside
+              the inner bar's overflow-hidden bounds so it isn't clipped.
+              onPointerDown only starts the gesture; gantt.tsx owns the
+              preview line, drop hit-testing, and the mutation. */}
           <button
             type="button"
             aria-label={t("tasks:gantt.linkHandleAriaLabel", {
@@ -850,7 +865,10 @@ export function GanttTaskBar({
             })}
             title={t("tasks:gantt.linkHandleAriaLabel", { title: task.title })}
             onPointerDown={handleLinkHandlePointerDown}
-            style={{ left: `${insetBox.right}px`, top: "50%" }}
+            style={{
+              left: `${insetBox.right + LINK_HANDLE_OUTSET_PX}px`,
+              top: "50%",
+            }}
             className={cn(
               // The grandparent grid wrapper (see the outer per-bar grid
               // above) sets pointer-events-none so it never intercepts clicks
@@ -861,16 +879,16 @@ export function GanttTaskBar({
               // visible but is entirely unclickable.
               //
               // pointer-events stays "none" while idle (opacity-0, same
-              // condition below) rather than always "auto": this handle sits
-              // right at the bar's own finish edge — the same place its
-              // resize-due handle lives — and a transparent, always-hit-
-              // testable circle there would intercept clicks meant for that
-              // resize handle even while invisible. It only needs pointer
-              // events once it's actually shown (hover/focus-within), so
-              // both toggle on the same triggers. Keyboard Tab still reaches
-              // the button regardless — pointer-events only gates pointer
-              // input, not focusability.
-              "pointer-events-none absolute z-30 size-4 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
+              // condition below) rather than always "auto": even moved
+              // outside the resize handle's own hit region, a transparent,
+              // always-hit-testable circle this close to the bar could still
+              // catch a click meant for whatever sits just past the edge
+              // (e.g. a tightly chained dependent bar) while invisible. It
+              // only needs pointer events once it's actually shown
+              // (hover/focus-within), so both toggle on the same triggers.
+              // Keyboard Tab still reaches the button regardless —
+              // pointer-events only gates pointer input, not focusability.
+              "pointer-events-none absolute z-30 size-4 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
               "flex items-center justify-center",
               "group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 hover:pointer-events-auto hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             )}

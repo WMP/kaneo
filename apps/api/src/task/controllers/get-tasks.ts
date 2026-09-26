@@ -27,6 +27,7 @@ import {
   projectDescriptionDeferred,
 } from "../description-pages";
 import { getSubtaskCounts } from "../get-subtask-counts";
+import { MAX_TASK_LIST_LIMIT } from "../schema";
 
 export type GetTasksOptions = {
   publicOnly?: boolean;
@@ -124,7 +125,9 @@ async function getTasksPage(
   const whereClause = and(...conditions);
   const page = options.page && options.page > 0 ? options.page : 1;
   const pageSize =
-    options.limit && options.limit > 0 ? Math.min(options.limit, 100) : 50;
+    options.limit && options.limit > 0
+      ? Math.min(options.limit, MAX_TASK_LIST_LIMIT)
+      : 50;
   const offset = (page - 1) * pageSize;
   const relatedPage = options.relatedPage ?? 1;
   const relatedPageSize = 100;

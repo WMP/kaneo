@@ -1417,19 +1417,24 @@ function RouteComponent() {
     (scheduledTasks.length > 0 || visibleExternalRelatedTasks.length > 0);
 
   // A pointerdown here should start a drag-to-pan only when it lands on
-  // genuinely empty timeline background or the day-header — not on a task
-  // bar (which has its own drag-to-move/resize), the sticky task rail, or
+  // genuinely empty timeline background, the day-header, or the sticky task
+  // rail's own non-interactive area (its header label, an external
+  // (cross-project) row's read-only info, or the blank space around a row's
+  // controls) — not on a task bar (which has its own drag-to-move/resize) or
   // any other interactive control. Task-bar handles are `<button>`s, so
   // matching `button`/`input`/`a`/`[role="button"]` already excludes them
-  // without needing to know anything about the bar itself. An external
-  // (cross-project) bar has no such button — it's read-only, so it isn't
-  // draggable/resizable — but a pointerdown on it must still be excluded
-  // from pan-start, or dragging it just pans the whole chart instead of
-  // doing nothing; `[data-gantt-external-bar]` marks it for that.
+  // without needing to know anything about the bar itself; the rail's own
+  // row-opening button is excluded the same way, but gets its own
+  // pan-on-drag wiring directly (see handleRailPointerDown below) since a
+  // plain click there must still open the task. An external (cross-project)
+  // bar has no such button — it's read-only, so it isn't draggable/
+  // resizable — but a pointerdown on it must still be excluded from
+  // pan-start, or dragging it just pans the whole chart instead of doing
+  // nothing; `[data-gantt-external-bar]` marks it for that.
   const isPannableTarget = useCallback((target: EventTarget | null) => {
     if (!(target instanceof Element)) return true;
     return !target.closest(
-      'button, input, a, [role="button"], [data-gantt-rail], [data-gantt-external-bar]',
+      'button, input, a, [role="button"], [data-gantt-external-bar]',
     );
   }, []);
 
@@ -1480,6 +1485,59 @@ function RouteComponent() {
       panStateRef.current = null;
       setIsPanning(false);
       event.currentTarget.releasePointerCapture?.(event.pointerId);
+    },
+    [],
+  );
+
+  // Drag-to-pan starting on the sticky task rail's own row-opening button
+  // (finding 5.6): dragging over the task-name column previously did nothing
+  // — isPannableTarget excludes every `button`, and this title button covers
+  // almost the whole row — so a horizontal drag there had to reach the chart
+  // area before it panned. Wired directly on the button rather than through
+  // handleChartPointerDown/isPannableTarget above because those rely on
+  // `setPointerCapture` on the chart root: capturing the pointer there would
+  // retarget this button's own compatibility `click` away from it, breaking
+  // its normal "open the task" click entirely, even for a plain click with
+  // no drag. Window-level pointermove/pointerup listeners (the same
+  // technique the resize/move handles in gantt-task-bar.tsx already use for
+  // their own click-vs-drag tension) avoid that: a real drag ends with the
+  // pointer away from this button, so its native click naturally never
+  // fires; a plain click never reaches the movement this handler reacts to,
+  // so it still opens the task exactly as before. Reuses
+  // computePanScrollPosition — the same math handleChartPointerMove above
+  // uses — rather than re-deriving the scroll formula.
+  const handleRailPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0 || event.pointerType !== "mouse") return;
+      const scrollEl = scrollContainerRef.current;
+      if (!scrollEl) return;
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startScrollLeft = scrollEl.scrollLeft;
+      const startScrollTop = scrollEl.scrollTop;
+      let isDragging = false;
+
+      const onMove = (ev: PointerEvent) => {
+        isDragging = true;
+        setIsPanning(true);
+        const next = computePanScrollPosition({
+          startScrollLeft,
+          startScrollTop,
+          deltaX: ev.clientX - startX,
+          deltaY: ev.clientY - startY,
+        });
+        scrollEl.scrollLeft = next.scrollLeft;
+        scrollEl.scrollTop = next.scrollTop;
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        if (isDragging) setIsPanning(false);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
     },
     [],
   );
@@ -1911,13 +1969,11 @@ function RouteComponent() {
                 {showTaskRail ? (
                   <div
                     data-gantt-rail=""
-                    // select-none: this rail column is excluded from the
-                    // chart's own drag-to-pan (see isPannableTarget) so its
-                    // own vertical scroll can work natively instead, but a
-                    // plain text column with no pan of its own otherwise
-                    // means a click-drag here just selects text — annoying
-                    // and useless when someone's actually trying to drag-
-                    // scroll the row list.
+                    // select-none: this header label is now a pannable target
+                    // itself (see isPannableTarget/finding 5.6 — only the
+                    // rail's own buttons are excluded, not the whole column),
+                    // so a click-drag here should pan the timeline rather
+                    // than select text.
                     className="sticky left-0 z-30 shrink-0 select-none border-r border-border bg-background px-2 py-2.5 sm:w-80 sm:px-4 sm:py-3"
                     style={{
                       width: isMobile ? `${taskColumnWidthRem}rem` : undefined,
@@ -2199,6 +2255,7 @@ function RouteComponent() {
                                 <button
                                   type="button"
                                   className="flex min-h-[44px] w-full min-w-0 flex-col items-start justify-center gap-0.5 px-2 py-2 text-left transition-colors hover:bg-muted sm:min-h-0 sm:px-3 sm:py-1.5"
+                                  onPointerDown={handleRailPointerDown}
                                   onClick={() =>
                                     navigate({
                                       to: ".",
