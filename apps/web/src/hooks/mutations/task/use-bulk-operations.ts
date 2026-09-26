@@ -107,6 +107,23 @@ export function useBulkOperations() {
     onSuccess: invalidateCommon,
   });
 
+  const bulkProgress = useMutation({
+    mutationFn: async ({
+      taskIds,
+      progress,
+    }: {
+      taskIds: string[];
+      progress: number;
+    }) => {
+      await bulkOperation({
+        taskIds,
+        operation: "updateProgress",
+        value: String(progress),
+      });
+    },
+    onSuccess: invalidateCommon,
+  });
+
   const bulkAddLabel = useMutation({
     mutationFn: async ({
       taskIds,
@@ -152,6 +169,7 @@ export function useBulkOperations() {
     bulkMoveToBacklog: bulkMoveToBacklog.mutateAsync,
     bulkMoveToBoard: bulkMoveToBoard.mutateAsync,
     bulkPriority: bulkPriority.mutateAsync,
+    bulkProgress: bulkProgress.mutateAsync,
     bulkAddLabel: bulkAddLabel.mutateAsync,
     bulkDueDate: bulkDueDate.mutateAsync,
   };

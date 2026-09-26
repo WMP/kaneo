@@ -117,6 +117,16 @@ export function GanttDependencyOverlay({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeOpacity={isDimmed ? DIMMED_OPACITY : 0.85}
+                // Explicit, not just inherited from the svg root's own
+                // pointer-events-none: at Month/Quarter a connector's routed
+                // path often runs directly over a bar compressed down to a
+                // sliver (see MIN_BAR_HOVER_HIT_PX in timeline.ts), and this
+                // line visually paints ABOVE that bar (z-[9] overlay vs.
+                // z-[1] bars) — without this, the line would win the pointer
+                // hit-test there and the bar underneath would never see its
+                // own hover, killing dependency-line highlighting exactly
+                // where it matters most.
+                style={{ pointerEvents: "none" }}
                 className="transition-[stroke-opacity] duration-150 ease-out"
               />
             )}
@@ -133,6 +143,8 @@ export function GanttDependencyOverlay({
                 isDimmed ? DIMMED_OPACITY : isIncident ? 1 : REST_OPACITY
               }
               markerEnd={`url(#gantt-dependency-arrow-${isBlocking ? "blocks" : "related"})`}
+              // See the critical-path halo path's own comment above.
+              style={{ pointerEvents: "none" }}
               className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
             />
             {/* Dependency-TYPE label (FS/SS/FF/SF, plus a "+Nd"/"-Nd" suffix

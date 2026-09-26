@@ -65,6 +65,16 @@ const CORNER_RADIUS = 8;
 // in the same pixel space the rest of this module's geometry is in — sized
 // to clear the ~9-10px label font used by GanttDependencyOverlay.
 const TYPE_LABEL_FAN_OFFSET_PX = 12;
+// Minimum clearance (px) kept between a type label's x position and the
+// source bar's own box (see typeLabelPoint in buildDependencyEdges). The
+// label itself (GanttDependencyOverlay) is centered on this point and about
+// 60px wide, so this has to clear roughly its own half-width (~30px) plus a
+// small buffer — a smaller margin would still let the box's FAR side reach
+// back over the bar even though the point itself is clear. Kept close to that
+// half-width so the label reads as "beside this bar" rather than being flung
+// so far along the connector that it lands over the target bar (or, on a
+// short Month/Quarter dependency, past it entirely).
+const LABEL_CLEAR_MARGIN_PX = 40;
 
 function verticalCenter(box: TaskBarBox) {
   return box.top + box.height / 2;
@@ -375,8 +385,25 @@ export function buildDependencyEdges(
     if (edge.relationType === "blocks") {
       const fanIndex = blocksFanIndexBySource.get(edge.sourceTaskId) ?? 0;
       blocksFanIndexBySource.set(edge.sourceTaskId, fanIndex + 1);
+      // Clear of the SOURCE bar's own box, in whichever direction the
+      // connector actually exits it (sourceDir — the same anchor-side logic
+      // buildElbowPoints itself used to route this edge). Both
+      // nearSourceCorner's x and the source bar's own box are in the same
+      // pixel space, but at Month/Quarter — where many day-tracks compress
+      // into a couple of pixels — a short lag between closely-scheduled
+      // tasks can put that raw corner point back on TOP of the (clamped-
+      // wide, see MIN_BAR_HOVER_HIT_PX) source bar itself; a label sitting
+      // there would both look like it belongs to the wrong bar and steal
+      // that bar's own hover. Pushed out to the near edge of the box plus a
+      // small margin, it always reads as "beside this bar", never "on it".
+      const { source: sourceSide } = anchorSides(dependencyType);
+      const dir = sideDir(sourceSide);
+      const clearedX =
+        dir === 1
+          ? Math.max(nearSourceCorner.x, source.right + LABEL_CLEAR_MARGIN_PX)
+          : Math.min(nearSourceCorner.x, source.left - LABEL_CLEAR_MARGIN_PX);
       typeLabelPoint = {
-        x: nearSourceCorner.x,
+        x: clearedX,
         y: nearSourceCorner.y + fanIndex * TYPE_LABEL_FAN_OFFSET_PX,
       };
     }

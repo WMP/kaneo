@@ -78,6 +78,14 @@ export type CriticalPathEdgeInput = {
 export type CriticalPathResult = {
   criticalTaskIds: ReadonlySet<string>;
   criticalEdgeIds: ReadonlySet<string>;
+  /** How many "blocks" edges were dropped because at least one endpoint
+   * isn't in the participating task set (a cross-project or dateless task —
+   * see the inScopeEdges comment below), plus any self-edge. Surfaced so the
+   * Gantt route can warn that the critical path may be understated rather
+   * than silently ignoring those edges — a task blocked by (or blocking)
+   * another project's own schedule never gets a chance to come out
+   * critical here. */
+  droppedEdgeCount: number;
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -161,6 +169,7 @@ export function computeCriticalPath(
       taskById.has(edge.sourceTaskId) &&
       taskById.has(edge.targetTaskId),
   );
+  const droppedEdgeCount = edges.length - inScopeEdges.length;
 
   const outgoingBySource = new Map<string, CriticalPathEdgeInput[]>();
   const incomingByTarget = new Map<string, CriticalPathEdgeInput[]>();
@@ -306,5 +315,5 @@ export function computeCriticalPath(
     }
   }
 
-  return { criticalTaskIds, criticalEdgeIds };
+  return { criticalTaskIds, criticalEdgeIds, droppedEdgeCount };
 }

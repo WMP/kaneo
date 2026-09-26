@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +35,13 @@ export default function TaskProgressPopover({
   const [progressInput, setProgressInput] = useState(
     String(task.progress ?? 0),
   );
+  // The last value this popover has actually sent to the server, deduped
+  // against instead of the `task.progress` prop: after a commit resolves, the
+  // prop only catches up once the refetch lands, so comparing against it lets
+  // a second trigger for the same value (e.g. committing on Enter and then the
+  // field blurring as the popover closes) fire a duplicate mutation and a
+  // duplicate success toast in that window. This ref updates synchronously.
+  const lastCommittedRef = useRef(task.progress ?? 0);
   const { mutateAsync: updateTask } = useUpdateTask();
   const { canUpdateTasks } = useWorkspacePermission();
   const canEdit = canUpdateTasks();
@@ -45,11 +52,14 @@ export default function TaskProgressPopover({
 
   const handleCommit = async (value: number) => {
     const clamped = clampProgress(value);
-    if (clamped === (task.progress ?? 0)) return;
+    if (clamped === lastCommittedRef.current) return;
+    const previousCommitted = lastCommittedRef.current;
+    lastCommittedRef.current = clamped;
     try {
       await updateTask({ ...task, progress: clamped });
       toast.success(t("tasks:popover.progress.updateSuccess"));
     } catch (error) {
+      lastCommittedRef.current = previousCommitted;
       setLocalProgress(task.progress ?? 0);
       toast.error(
         error instanceof Error
@@ -66,6 +76,12 @@ export default function TaskProgressPopover({
     // enforcement of its own the way the slider's step does.
     const nextValue = Number.isNaN(parsed) ? localProgress : parsed;
     const clamped = clampProgress(nextValue);
+    // Resync the field text directly, not only via the localProgress effect:
+    // when the clamped/reverted value equals the current localProgress (e.g.
+    // typing "150" while already at 100, or unparseable text over an unchanged
+    // value), setLocalProgress is a no-op, its effect never fires, and the
+    // invalid text would otherwise stay displayed in the field.
+    setProgressInput(String(clamped));
     setLocalProgress(clamped);
     handleCommit(clamped);
   };
@@ -77,7 +93,10 @@ export default function TaskProgressPopover({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) setLocalProgress(task.progress ?? 0);
+        if (next) {
+          setLocalProgress(task.progress ?? 0);
+          lastCommittedRef.current = task.progress ?? 0;
+        }
       }}
     >
       <PopoverTrigger asChild>{children}</PopoverTrigger>

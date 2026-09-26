@@ -16,6 +16,7 @@ import {
   getBarEdgeInsetPx,
   getBarGridColumns,
   MIN_BAR_CONTENT_PX,
+  MIN_BAR_HOVER_HIT_PX,
 } from "./timeline";
 
 const CLICK_MOVE_THRESHOLD_PX = 4;
@@ -519,7 +520,15 @@ export function GanttTaskBar({
         type: constraintTypeLabel,
         date: constraintDateLabel,
       })}
-      className="pointer-events-auto absolute -top-1.5 -right-1.5 z-30 flex size-4 items-center justify-center rounded-full border border-destructive/70 bg-background text-destructive shadow-sm"
+      // Offset far enough that the badge's own box (size-4, 16px) never
+      // reaches the smallest thing it can sit on — a milestone's diamond
+      // button, only 16-20px square itself — past its own center: a smaller
+      // offset (this used -1.5, 6px) leaves more than half the badge
+      // overlapping the button, covering its click center and, on that
+      // small a target, effectively replacing it. -2.5 (10px) clears the
+      // center on both the mobile (size-5) and desktop (sm:size-4) diamond,
+      // with a couple of px to spare either way.
+      className="pointer-events-auto absolute -top-2.5 -right-2.5 z-30 flex size-4 items-center justify-center rounded-full border border-destructive/70 bg-background text-destructive shadow-sm"
     >
       <AlertTriangle className="size-2.5" aria-hidden="true" />
     </span>
@@ -565,35 +574,46 @@ export function GanttTaskBar({
             onBlur={handleBlur}
             className="pointer-events-auto relative flex min-h-[44px] items-center justify-center sm:min-h-0"
           >
-            <button
-              type="button"
-              aria-label={t("tasks:gantt.milestoneAriaLabel", {
-                title: task.title,
-              })}
-              onClick={onOpenTask}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onOpenTask();
-                }
-              }}
-              className={cn(
-                "flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4",
-                emphasis === "highlighted" && "ring-2 ring-primary/40",
-                emphasis === "dimmed" && "opacity-35",
-                // Critical-path accent: a distinct outline (not a color swap
-                // and not red, which already means "blocking" on the
-                // dependency lines) so it reads on its own and layers
-                // cleanly with the hover ring above. `outline` is a separate
-                // box property from the box-shadow-based ring, so both can
-                // be visible together.
-                isCritical &&
-                  "outline outline-2 outline-offset-2 outline-warning",
-              )}
-            >
-              <Diamond className="size-full fill-primary/30" />
-            </button>
-            {violationBadge}
+            {/* Sized to exactly wrap the diamond button (rather than the
+                outer flex cell above, which spans the whole day column and
+                centers the button inside it) so the violation badge below —
+                positioned absolute relative to whichever ancestor is
+                `relative` — always anchors to the diamond's OWN corner
+                regardless of how much wider the day column is at the
+                current zoom. Without this, the badge's -top/-right offset
+                measured from the wide cell could land squarely on the
+                diamond's own click center instead of just outside it. */}
+            <div className="relative inline-flex shrink-0">
+              <button
+                type="button"
+                aria-label={t("tasks:gantt.milestoneAriaLabel", {
+                  title: task.title,
+                })}
+                onClick={onOpenTask}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onOpenTask();
+                  }
+                }}
+                className={cn(
+                  "flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4",
+                  emphasis === "highlighted" && "ring-2 ring-primary/40",
+                  emphasis === "dimmed" && "opacity-35",
+                  // Critical-path accent: a distinct outline (not a color swap
+                  // and not red, which already means "blocking" on the
+                  // dependency lines) so it reads on its own and layers
+                  // cleanly with the hover ring above. `outline` is a separate
+                  // box property from the box-shadow-based ring, so both can
+                  // be visible together.
+                  isCritical &&
+                    "outline outline-2 outline-offset-2 outline-warning",
+                )}
+              >
+                <Diamond className="size-full fill-primary/30" />
+              </button>
+              {violationBadge}
+            </div>
           </div>
         </div>
       </>
@@ -641,7 +661,15 @@ export function GanttTaskBar({
             bubbles up to this ancestor regardless of which child is
             hovered/focused. */}
         <div
-          style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
+          style={{
+            gridColumn: `${lineStart} / ${lineEnd}`,
+            // Guarantees a comfortable hover/pointer footprint at Month/
+            // Quarter even when this cell's own grid track compresses to a
+            // few px — see MIN_BAR_HOVER_HIT_PX. The visible bar inside
+            // still renders at its own (possibly narrower) computed width;
+            // this only widens the ancestor box hover/focus is tracked on.
+            minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
+          }}
           className="group relative"
         >
           {violationBadge}
@@ -697,9 +725,7 @@ export function GanttTaskBar({
               }}
             >
               <div className="absolute inset-0 z-0 bg-primary/12 transition-colors group-hover:bg-primary/18" />
-              <span className="relative z-10 block truncate">
-                {task.title}
-              </span>
+              <span className="relative z-10 block truncate">{task.title}</span>
             </button>
             <button
               type="button"
@@ -738,9 +764,20 @@ export function GanttTaskBar({
               // pointer-events-auto in its own class list) — this handle,
               // living outside that div, needs its own or it renders
               // visible but is entirely unclickable.
-              "pointer-events-auto absolute z-30 size-4 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
+              //
+              // pointer-events stays "none" while idle (opacity-0, same
+              // condition below) rather than always "auto": this handle sits
+              // right at the bar's own finish edge — the same place its
+              // resize-due handle lives — and a transparent, always-hit-
+              // testable circle there would intercept clicks meant for that
+              // resize handle even while invisible. It only needs pointer
+              // events once it's actually shown (hover/focus-within), so
+              // both toggle on the same triggers. Keyboard Tab still reaches
+              // the button regardless — pointer-events only gates pointer
+              // input, not focusability.
+              "pointer-events-none absolute z-30 size-4 -translate-x-1/2 -translate-y-1/2 touch-none cursor-crosshair rounded-full border border-primary/50 bg-background text-primary opacity-0 shadow-sm transition-opacity",
               "flex items-center justify-center",
-              "group-hover:opacity-100 group-focus-within:opacity-100 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+              "group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 hover:pointer-events-auto hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             )}
           >
             <Link2Icon className="size-2.5" aria-hidden="true" />

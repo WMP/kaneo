@@ -2270,7 +2270,11 @@
 			"baselineSlipEarlyAriaLabel": "{{title}}: finishing {{days}}d earlier than baseline",
 			"baselineSlipLateAriaLabel": "{{title}}: finishing {{days}}d later than baseline",
 			"legendDependencyType": "Type (click to change)",
-			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag."
+			"legendDependencyTypeHint": "Every blocking line shows its dependency type (FS/SS/FF/SF) and lag/lead — click it to change the type or lag.",
+			"criticalPathDroppedEdges_other": "{{count}} cross-project deps skipped",
+			"criticalPathDroppedEdgesHint": "These dependencies reach a task in another project or with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
+			"overdueLabel": "Overdue",
+			"overdueMarkerAriaLabel": "{{title}}: overdue"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",
@@ -2356,7 +2360,9 @@
 			"actions": "작업",
 			"searchActions": "작업 검색...",
 			"noActionsFound": "작업을 찾을 수 없습니다.",
-			"changeStatus": "상태 변경"
+			"changeStatus": "상태 변경",
+			"setProgress": "Set Progress",
+			"updateProgressError": "Failed to update progress"
 		},
 		"editor": {
 			"table": {

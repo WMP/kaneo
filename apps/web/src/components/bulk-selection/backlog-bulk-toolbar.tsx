@@ -4,6 +4,7 @@ import {
   CalendarIcon,
   ChevronDown,
   Menu,
+  Percent,
   Trash2,
   X,
 } from "lucide-react";
@@ -87,6 +88,11 @@ function BacklogBulkToolbar() {
     ],
     [],
   );
+  // See the matching comment in bulk-toolbar.tsx.
+  const progressOptions = useMemo(
+    () => [0, 25, 50, 75, 100].map((value) => ({ value, label: `${value}%` })),
+    [],
+  );
   const { project } = useProjectStore();
   const {
     bulkMoveToBoard,
@@ -94,6 +100,7 @@ function BacklogBulkToolbar() {
     bulkArchive,
     bulkAssign,
     bulkPriority,
+    bulkProgress,
     bulkAddLabel,
     bulkDueDate,
   } = useBulkOperations();
@@ -226,6 +233,23 @@ function BacklogBulkToolbar() {
     [bulkPriority, selectedTaskIds, selectedCount, clearSelection, t],
   );
 
+  const handleBulkProgress = useCallback(
+    async (progress: number) => {
+      try {
+        await bulkProgress({
+          taskIds: Array.from(selectedTaskIds),
+          progress,
+        });
+        toast.success(t("tasks:bulk.updateSuccess", { count: selectedCount }));
+        clearSelection();
+        setIsActionsOpen(false);
+      } catch (_error) {
+        toast.error(t("tasks:bulk.updateProgressError"));
+      }
+    },
+    [bulkProgress, selectedTaskIds, selectedCount, clearSelection, t],
+  );
+
   const handleBulkAddLabel = useCallback(
     async (labelId: string) => {
       try {
@@ -334,6 +358,20 @@ function BacklogBulkToolbar() {
         })),
       });
     }
+    if (canEdit) {
+      groups.push({
+        value: "progress",
+        label: t("tasks:bulk.setProgress"),
+        items: progressOptions.map((opt) => ({
+          value: `progress-${opt.value}`,
+          label: opt.label,
+          icon: <Percent className="h-4 w-4 text-muted-foreground" />,
+          onRun: () => {
+            void handleBulkProgress(opt.value);
+          },
+        })),
+      });
+    }
     if (canEditLabels) {
       groups.push({
         value: "label",
@@ -367,8 +405,10 @@ function BacklogBulkToolbar() {
     handleBulkArchive,
     handleBulkAssign,
     handleBulkPriority,
+    handleBulkProgress,
     handleBulkAddLabel,
     priorityOptions,
+    progressOptions,
     t,
   ]);
 
