@@ -7,8 +7,10 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { DayPicker } from "react-day-picker";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/cn";
+import { resolveDateFnsLocale } from "@/lib/i18n/date-fns-locale";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 
 const buttonClassNames =
@@ -25,6 +27,8 @@ function Calendar({
   const preferredWeekStartsOn = useUserPreferencesStore(
     (state) => state.weekStartsOn,
   );
+  const { t, i18n } = useTranslation();
+  const dateFnsLocale = resolveDateFnsLocale(i18n.language);
   const defaultClassNames = {
     button_next: buttonClassNames,
     button_previous: buttonClassNames,
@@ -130,8 +134,13 @@ function Calendar({
       data-slot="calendar"
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          date.toLocaleString(i18n.language, { month: "short" }),
       }}
+      labels={{
+        labelNext: () => t("tasks:calendar.nextMonth"),
+        labelPrevious: () => t("tasks:calendar.previousMonth"),
+      }}
+      locale={dateFnsLocale}
       mode="single"
       showOutsideDays={showOutsideDays}
       weekStartsOn={weekStartsOnProp ?? preferredWeekStartsOn}
