@@ -179,3 +179,68 @@ jest w `SCENARIUSZ-TUTORIAL.md`.
 z sesji MCP albo z zapytań do bazy. Wnioski z samego kodu są oznaczone
 odwołaniem do pliku. Materiał jest pomocniczy — przed decyzją wymaga
 weryfikacji przez właściciela produktu.*
+
+---
+
+# Aneks — commit `9ac09299`
+
+Pięć kolejnych commitów. Dwie pozycje z listy wyżej zamknięte, film nagrany.
+
+## Ścieżka krytyczna — zamknięta
+
+`76d5e6a9 fix(gantt): measure critical-path slack in working days`.
+Wprowadza `FS_HANDOFF_DAYS = 1` (powiązanie FS jest napięte, gdy następnik
+zaczyna się **następnego dnia roboczego**, a nie tego samego) i liczy indeksy
+dni przez `makeWorkingDayIndexer` z kalendarza obszaru.
+
+Eksperyment kontrolny, trzy pary zadań z relacją FS bez zwłoki:
+
+| Układ | Wynik |
+|---|---|
+| A kończy czw 11 mar, B zaczyna pt 12 mar (następny dzień roboczy) | oba **krytyczne** |
+| C kończy pt 12 mar, D zaczyna pon 15 mar (**przez weekend**) | oba **krytyczne** |
+| E kończy czw 8 kwi, F zaczyna czw 15 kwi (tydzień przerwy) | **żadne** |
+
+Na planie „Riverside House Build" podświetla się **22 ze 108 zadań** i jest to
+łańcuch w kolejności: blockwork → strop → ściany piętra → więźba → krycie →
+okna → weathertight shell → ścianki → stolarka → tynki → druga stolarka →
+kuchnia i łazienka → podłogi → usterki → odbiór. Do tego „Site supervision",
+które ciągnie się przez cały projekt i faktycznie ma zerowy zapas.
+
+Sprawdzone punktowo, że zadania **bez** zależności nie są oznaczane:
+„Brick and block delivery", „Steel beam installation", „Staircase
+installation", „Weekly site progress meeting" — wszystkie zwykłe.
+
+## Kalendarz daty — zamknięty
+
+`09e08367 fix(tasks): close the date calendar popover after picking a day`.
+Popover jest teraz sterowany stanem i zamyka się po wyborze dnia.
+Zmierzone: otwarty przed wyborem `true`, po wyborze `false`.
+
+**Skutek uboczny dla mojego skryptu.** Miałem w nim obejście wymuszające
+Escape po wyborze daty. Gdy aplikacja zaczęła zamykać popover sama, ten
+Escape zamykał całe okno tworzenia zadania i wywracał dwie sceny Aktu 1.
+Usunąłem obejście. To problem mojego kodu, nie aplikacji — odnotowuję, bo
+jest bezpośrednim skutkiem poprawki i ktoś inny może na to trafić tak samo.
+
+## Co zostaje
+
+| Pozycja | Stan |
+|---|---|
+| Próg 20 px w skali Miesiąc | **otwarte**, bez zmian — zmierzone ponownie: 1, 3 i 5 dni to nadal 20 px, 15 dni 30 px |
+| Dodawanie zadania z poziomu wykresu | **otwarte**, brak, nie błąd |
+
+Żadna z tych dwóch nie blokowała nagrania.
+
+## Film
+
+`demo-kaneo-tutorial.mp4` — **11 minut 55 sekund**, 1600 × 900, H.264, 10 MB.
+22 sceny, pięć aktów, zero nieudanych kroków. Nagrane w jednym przebiegu na
+commicie `9ac09299`.
+
+Akt 1 buduje plan od zera w pustym projekcie „Garden Room": zadanie z datami,
+zależność przeciągnięciem uchwytu, kamień milowy ze zwłoką, zmiana typu
+relacji z poziomu wykresu. Akty 2–5 pracują na pełnym planie Riverside.
+Prompty do agenta są widoczne w panelu po prawej razem z listą wywołań MCP.
+
+Scenariusz z oznaczeniami funkcji: `SCENARIUSZ-TUTORIAL.md`.
