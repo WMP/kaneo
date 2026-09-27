@@ -260,6 +260,8 @@ function CreateTaskModalContent({
   const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false);
 
   const [labelsOpen, setLabelsOpen] = useState(false);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [dueDateOpen, setDueDateOpen] = useState(false);
   const [labelsStep, setLabelsStep] = useState<PopoverStep>("select");
   const [searchValue, setSearchValue] = useState("");
   const [selectedColor, setSelectedColor] = useState<LabelColor>("gray");
@@ -1237,7 +1239,7 @@ function CreateTaskModalContent({
                 {statusLabel}
               </div>
 
-              <Popover>
+              <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
@@ -1260,7 +1262,12 @@ function CreateTaskModalContent({
                   <Calendar
                     mode="single"
                     selected={startDate}
-                    onSelect={setStartDate}
+                    onSelect={(date) => {
+                      setStartDate(date);
+                      // Close the calendar once a day is picked; leaving it open
+                      // over the dialog is disorienting.
+                      setStartDateOpen(false);
+                    }}
                     className="w-full bg-popover"
                   />
                   {startDate && (
@@ -1398,7 +1405,7 @@ function CreateTaskModalContent({
                 </PopoverContent>
               </Popover>
 
-              <Popover>
+              <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
@@ -1421,7 +1428,10 @@ function CreateTaskModalContent({
                   <Calendar
                     mode="single"
                     selected={dueDate}
-                    onSelect={setDueDate}
+                    onSelect={(date) => {
+                      setDueDate(date);
+                      setDueDateOpen(false);
+                    }}
                     className="w-full bg-popover"
                   />
                   {dueDate && (
