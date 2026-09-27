@@ -29,7 +29,6 @@ import {
   type GanttBarEmphasis,
   getBarEdgeInsetPx,
   getBarGridColumns,
-  MIN_BAR_CONTENT_PX,
   MIN_BAR_HOVER_HIT_PX,
 } from "./timeline";
 
@@ -717,28 +716,28 @@ export function GanttTaskBar({
         <div
           style={{
             gridColumn: `${lineStart} / ${lineEnd}`,
-            // Guarantees a comfortable hover/pointer footprint at Month/
-            // Quarter even when this cell's own grid track compresses to a
-            // few px — see MIN_BAR_HOVER_HIT_PX. The visible bar inside
-            // still renders at its own (possibly narrower) computed width;
-            // this only widens the ancestor box hover/focus is tracked on.
+            // A comfortable pointer/hover footprint even when the grid track
+            // compresses to a few px at Month/Quarter (MIN_BAR_HOVER_HIT_PX).
+            // Only the transparent hit layer below is widened to this; the
+            // drawn bar keeps its own true width so 1-, 3- and 5-day tasks
+            // read as different lengths.
             minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
           }}
-          className="group relative"
+          className="group relative flex h-11 items-center"
         >
           {violationBadge}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting; the actual interactive controls are the buttons nested below */}
+          {/* DRAWN bar: the task's TRUE width, so a 1-, 3- and 5-day task read
+              as different lengths at Month/Quarter. pointer-events-none — every
+              gesture lives on the transparent hit layer below, which never
+              shrinks under MIN_BAR_HOVER_HIT_PX. */}
           <div
+            aria-hidden="true"
             style={{
-              marginInline: `${insetBox.insetPx}px`,
-              minWidth: `${MIN_BAR_CONTENT_PX}px`,
+              marginLeft: `${insetBox.left}px`,
+              width: `${insetBox.right - insetBox.left}px`,
             }}
-            onMouseEnter={() => onHoverChange?.(true)}
-            onMouseLeave={() => onHoverChange?.(false)}
-            onFocus={() => onHoverChange?.(true)}
-            onBlur={handleBlur}
             className={cn(
-              "pointer-events-auto relative flex min-h-[44px] min-w-0 items-stretch overflow-hidden rounded-md border border-primary/25 bg-background text-left text-sm font-medium leading-none text-foreground shadow-sm transition-[opacity,border-color] hover:border-primary/40 sm:h-11 sm:min-h-0",
+              "pointer-events-none relative flex h-full items-center overflow-hidden rounded-md border border-primary/25 bg-background text-sm font-medium leading-none text-foreground shadow-sm transition-[opacity,border-color] group-hover:border-primary/40",
               emphasis === "highlighted" &&
                 "border-primary/60 ring-2 ring-primary/40",
               emphasis === "dimmed" && "opacity-35",
@@ -752,16 +751,56 @@ export function GanttTaskBar({
               <div
                 className="pointer-events-none absolute inset-y-0 left-0 z-0 bg-primary/30 dark:bg-primary/40"
                 style={{ width: `${progressFillPercent}%` }}
-                aria-hidden="true"
               />
             )}
+            <div className="pointer-events-none absolute inset-0 z-0 bg-primary/12 transition-colors group-hover:bg-primary/18" />
+            <span className="relative z-10 flex items-center gap-1 truncate px-2 sm:px-2.5">
+              {task.approvalStatus && task.approvalStatus !== "none" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      role="img"
+                      className="pointer-events-auto inline-flex shrink-0 items-center"
+                      aria-label={t("tasks:gantt.approvalBadgeAriaLabel", {
+                        status: getApprovalStatusLabel(task.approvalStatus),
+                      })}
+                    >
+                      {getApprovalStatusIcon(task.approvalStatus)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {getApprovalStatusLabel(task.approvalStatus)}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <span className="truncate">{task.title}</span>
+            </span>
+          </div>
+          {/* Transparent hit layer: at least MIN_BAR_HOVER_HIT_PX wide, carries
+              the move/resize controls and drives hover highlighting. Shares the
+              drawn bar's left edge; for a wide bar it matches the bar exactly,
+              for a narrow one it extends past the bar's end so the target stays
+              grabbable. Resize affordances are transparent until hovered so
+              they never float visibly past a short bar. */}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting; the actual interactive controls are the buttons nested below */}
+          <div
+            style={{
+              marginLeft: `${insetBox.left}px`,
+              width: `${Math.max(insetBox.right - insetBox.left, MIN_BAR_HOVER_HIT_PX)}px`,
+            }}
+            onMouseEnter={() => onHoverChange?.(true)}
+            onMouseLeave={() => onHoverChange?.(false)}
+            onFocus={() => onHoverChange?.(true)}
+            onBlur={handleBlur}
+            className="pointer-events-auto absolute inset-y-0 left-0 z-10 flex items-stretch"
+          >
             <button
               type="button"
               aria-label={t("tasks:gantt.resizeStart")}
               disabled={!startIsVisible}
               onPointerDown={handleResizeLeftPointerDown}
               className={cn(
-                "relative z-20 shrink-0 cursor-ew-resize touch-none border-r border-primary/15 bg-primary/8 hover:bg-primary/18",
+                "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-l-md hover:bg-primary/18",
                 "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               )}
@@ -769,7 +808,7 @@ export function GanttTaskBar({
             <button
               type="button"
               aria-label={t("tasks:gantt.taskAriaLabel", { title: task.title })}
-              className="relative z-10 min-h-[44px] min-w-0 flex-1 cursor-grab touch-manipulation overflow-hidden px-2 text-left active:cursor-grabbing sm:min-h-0 sm:px-2.5"
+              className="relative z-10 min-h-[44px] min-w-0 flex-1 cursor-grab touch-manipulation text-left active:cursor-grabbing sm:min-h-0"
               onPointerDown={handleMovePointerDown}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -777,72 +816,50 @@ export function GanttTaskBar({
                   onOpenTask();
                 }
               }}
-            >
-              <div className="absolute inset-0 z-0 bg-primary/12 transition-colors group-hover:bg-primary/18" />
-              <span className="relative z-10 flex items-center gap-1 truncate">
-                {task.approvalStatus && task.approvalStatus !== "none" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span
-                        role="img"
-                        className="inline-flex shrink-0 items-center"
-                        aria-label={t("tasks:gantt.approvalBadgeAriaLabel", {
-                          status: getApprovalStatusLabel(task.approvalStatus),
-                        })}
-                      >
-                        {getApprovalStatusIcon(task.approvalStatus)}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {getApprovalStatusLabel(task.approvalStatus)}
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                <span className="truncate">{task.title}</span>
-              </span>
-            </button>
+            />
             <button
               type="button"
               aria-label={t("tasks:gantt.resizeDue")}
               disabled={!endIsVisible}
               onPointerDown={handleResizeRightPointerDown}
               className={cn(
-                "relative z-20 shrink-0 cursor-ew-resize touch-none border-l border-primary/15 bg-primary/8 hover:bg-primary/18",
+                "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-r-md hover:bg-primary/18",
                 "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               )}
             />
-            {gateWarnings.length > 0 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    role="img"
-                    className="pointer-events-auto absolute -top-1.5 -right-1.5 z-30 flex size-4 items-center justify-center rounded-full border border-background bg-destructive"
-                    aria-label={t("tasks:gantt.gateWarningAriaLabel", {
-                      count: gateWarnings.length,
-                    })}
-                  >
-                    <TriangleAlert className="size-2.5 text-white" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-64">
-                  <p className="font-medium">
-                    {t("tasks:gantt.gateWarningTitle")}
-                  </p>
-                  <ul className="mt-1 list-disc space-y-0.5 pl-3.5">
-                    {gateWarnings.map((gate) => (
-                      <li key={gate.taskId}>
-                        {t("tasks:gantt.gateWarningItem", {
-                          title: gate.title,
-                          status: getApprovalStatusLabel(gate.approvalStatus),
-                        })}
-                      </li>
-                    ))}
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            )}
           </div>
+          {gateWarnings.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  role="img"
+                  style={{ left: `${insetBox.right - 8}px` }}
+                  className="pointer-events-auto absolute -top-1.5 z-30 flex size-4 items-center justify-center rounded-full border border-background bg-destructive"
+                  aria-label={t("tasks:gantt.gateWarningAriaLabel", {
+                    count: gateWarnings.length,
+                  })}
+                >
+                  <TriangleAlert className="size-2.5 text-white" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64">
+                <p className="font-medium">
+                  {t("tasks:gantt.gateWarningTitle")}
+                </p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-3.5">
+                  {gateWarnings.map((gate) => (
+                    <li key={gate.taskId}>
+                      {t("tasks:gantt.gateWarningItem", {
+                        title: gate.title,
+                        status: getApprovalStatusLabel(gate.approvalStatus),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
           {/* "Drag to link" handle: a small dot just past the bar's finish
               edge, hidden until the bar is hovered/focused so it doesn't
               compete visually with the move/resize affordances. The resize-

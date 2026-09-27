@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Plus,
   Route as RouteIcon,
   Search,
   TriangleAlert,
@@ -84,6 +85,7 @@ import {
   scrollLeftForZoom,
 } from "@/components/gantt/zoom";
 import PageTitle from "@/components/page-title";
+import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -308,6 +310,7 @@ function RouteComponent() {
     return map;
   }, [customFieldValues, selectedCustomFieldId]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [windowStart, setWindowStart] = useState<{
     projectId: string;
     date: Date;
@@ -1786,6 +1789,24 @@ function RouteComponent() {
               <RouteIcon className="size-3.5" />
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
+
+            <Button
+              size="xs"
+              className="min-h-11 touch-manipulation sm:min-h-0"
+              onClick={() => setIsCreateTaskOpen(true)}
+            >
+              <Plus className="size-3.5" />
+              {t("tasks:kanban.addTask")}
+            </Button>
+
+            {isCreateTaskOpen && (
+              <CreateTaskModal
+                open
+                projectId={projectId}
+                onClose={() => setIsCreateTaskOpen(false)}
+                status="planned"
+              />
+            )}
 
             {/* A dependency reaching a task with no resolved schedule still
                 never participates in the critical-path network

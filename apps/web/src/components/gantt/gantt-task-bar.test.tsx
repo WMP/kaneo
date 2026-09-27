@@ -242,3 +242,55 @@ describe("GanttTaskBar approval badge and gate warning", () => {
     });
   });
 });
+
+describe("GanttTaskBar drawn width vs hit area", () => {
+  function widths() {
+    // The drawn bar is the aria-hidden box that carries the title; the hit
+    // layer is the transparent parent of the resize/move controls.
+    const drawn = screen
+      .getByText("Cutover")
+      .closest("div[aria-hidden='true']") as HTMLElement;
+    const hitLayer = screen.getByLabelText(/tasks:gantt.resizeStart/)
+      .parentElement as HTMLElement;
+    return {
+      drawn: Number.parseFloat(drawn.style.width),
+      hit: Number.parseFloat(hitLayer.style.width),
+    };
+  }
+
+  it("draws a sub-hit-width bar at its true width while the hit area stays >= 20px", () => {
+    // A 1-day task at a Month-ish scale (3px/day): the drawn bar collapses to
+    // its true (floored) width, well under the 20px hit target — so a 1-, 3-
+    // and 5-day task no longer all render as the same 20px pill.
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask()}
+        timeline={timeline}
+        pixelsPerDay={3}
+        onOpenTask={vi.fn()}
+      />,
+    );
+
+    const { drawn, hit } = widths();
+    expect(hit).toBe(20);
+    expect(drawn).toBeLessThan(20);
+    expect(drawn).toBeGreaterThan(0);
+  });
+
+  it("keeps the drawn bar and hit area the same width once the bar is wide", () => {
+    // At 40px/day a 1-day bar is already far wider than the 20px minimum, so
+    // the hit area matches the drawn bar exactly (no phantom overhang).
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask()}
+        timeline={timeline}
+        pixelsPerDay={40}
+        onOpenTask={vi.fn()}
+      />,
+    );
+
+    const { drawn, hit } = widths();
+    expect(drawn).toBeGreaterThan(20);
+    expect(hit).toBe(drawn);
+  });
+});
