@@ -7,16 +7,19 @@ export type GetWorkspaceWorkloadRequest = {
   from: string;
   /** Inclusive end date (YYYY-MM-DD). */
   to: string;
+  /** Restrict to a single project; omit for the whole workspace. */
+  projectId?: string;
 };
 
 async function getWorkspaceWorkload({
   workspaceId,
   from,
   to,
+  projectId,
 }: GetWorkspaceWorkloadRequest) {
   const response = await client.workload[":workspaceId"].$get({
     param: { workspaceId },
-    query: { from, to },
+    query: { from, to, ...(projectId ? { projectId } : {}) },
   });
 
   if (!response.ok) {

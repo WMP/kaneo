@@ -140,7 +140,32 @@ export function registerTools(
 ): void {
   const { client } = ctx;
 
-  server.registerTool(
+  // Reject unknown input fields on every tool. The MCP SDK strips unknown keys
+  // from a non-strict object schema before the handler runs, which turns a
+  // client's misspelled or unsupported field into a silent success (the field
+  // is quietly dropped). Registering through this thin wrapper makes each
+  // tool's input schema strict up front — so the SDK rejects the call and
+  // advertises additionalProperties:false — for every tool at once, without
+  // threading .strict() through each registration below. Schemas that aren't a
+  // plain object (no .strict) are passed through untouched.
+  const registerTool: typeof server.registerTool = (
+    name,
+    config,
+    // biome-ignore lint/suspicious/noExplicitAny: forwards the SDK's own overloaded callback type unchanged
+    cb: any,
+  ) => {
+    const schema = (config as { inputSchema?: { strict?: () => unknown } })
+      ?.inputSchema;
+    const inputSchema =
+      schema && typeof schema.strict === "function" ? schema.strict() : schema;
+    return server.registerTool(
+      name,
+      { ...(config as object), inputSchema } as typeof config,
+      cb,
+    );
+  };
+
+  registerTool(
     "whoami",
     {
       description:
@@ -156,7 +181,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_workspaces",
     {
       description:
@@ -167,7 +192,7 @@ export function registerTools(
       run(() => client.json("/api/auth/organization/list", { method: "GET" })),
   );
 
-  server.registerTool(
+  registerTool(
     "list_projects",
     {
       description: "List projects in a workspace.",
@@ -191,7 +216,7 @@ export function registerTools(
     },
   );
 
-  server.registerTool(
+  registerTool(
     "get_project",
     {
       description: "Get a single project by ID.",
@@ -201,7 +226,7 @@ export function registerTools(
       run(() => client.json(`/api/project/${encodeURIComponent(args.id)}`)),
   );
 
-  server.registerTool(
+  registerTool(
     "create_project",
     {
       description: "Create a project in a workspace.",
@@ -226,7 +251,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_project",
     {
       description:
@@ -304,7 +329,7 @@ export function registerTools(
     dueAfter: optionalIsoDateTimeSchema,
   });
 
-  server.registerTool(
+  registerTool(
     "list_tasks",
     {
       description:
@@ -345,7 +370,7 @@ export function registerTools(
     },
   );
 
-  server.registerTool(
+  registerTool(
     "get_task",
     {
       description: "Get a task by ID.",
@@ -374,7 +399,7 @@ export function registerTools(
       }),
   );
 
-  server.registerTool(
+  registerTool(
     "create_task",
     {
       description: "Create a task in a project.",
@@ -426,7 +451,7 @@ export function registerTools(
     },
   );
 
-  server.registerTool(
+  registerTool(
     "duplicate_task",
     {
       description:
@@ -495,7 +520,7 @@ export function registerTools(
     })
     .strict();
 
-  server.registerTool(
+  registerTool(
     "update_task",
     {
       description:
@@ -550,7 +575,7 @@ export function registerTools(
     },
   );
 
-  server.registerTool(
+  registerTool(
     "move_task",
     {
       description:
@@ -575,7 +600,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_task_status",
     {
       description: "Update only the status (column) of a task.",
@@ -593,7 +618,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_task_comments",
     {
       description: "List comments on a task.",
@@ -607,7 +632,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "create_task_comment",
     {
       description: "Add a comment to a task.",
@@ -625,7 +650,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_task_comment",
     {
       description: "Update one of your comments on a task.",
@@ -643,7 +668,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "delete_task_comment",
     {
       description: "Delete one of your comments from a task.",
@@ -657,7 +682,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_workspace_labels",
     {
       description: "List labels defined in a workspace.",
@@ -672,7 +697,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "create_label",
     {
       description:
@@ -698,7 +723,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "attach_label_to_task",
     {
       description: "Attach an existing label to a task.",
@@ -716,7 +741,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "detach_label_from_task",
     {
       description: "Detach a label from its current task.",
@@ -730,7 +755,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "create_task_relation",
     {
       description:
@@ -770,7 +795,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "get_task_relations",
     {
       description:
@@ -785,7 +810,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_task_relation",
     {
       description:
@@ -812,7 +837,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "delete_task_relation",
     {
       description: "Delete a task relation by its relation ID.",
@@ -826,7 +851,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "delete_label",
     {
       description:
@@ -850,7 +875,7 @@ export function registerTools(
       }),
   );
 
-  server.registerTool(
+  registerTool(
     "list_workspace_members",
     {
       description:
@@ -865,7 +890,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "search",
     {
       description:
@@ -904,7 +929,7 @@ export function registerTools(
     },
   );
 
-  server.registerTool(
+  registerTool(
     "list_project_columns",
     {
       description:
@@ -917,7 +942,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "delete_task",
     {
       description: "Delete a task by ID.",
@@ -931,7 +956,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_task_assignee",
     {
       description:
@@ -952,7 +977,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_task_due_date",
     {
       description: "Set a task's due date. Omit dueDate to clear it.",
@@ -972,7 +997,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "set_task_baseline",
     {
       description:
@@ -987,7 +1012,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "clear_task_baseline",
     {
       description: "Remove the task's stored baseline dates, if any.",
@@ -1001,7 +1026,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_task_time_entries",
     {
       description: "List the time entries logged against a task.",
@@ -1013,7 +1038,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "get_time_entry",
     {
       description: "Get a single time entry by ID.",
@@ -1023,7 +1048,7 @@ export function registerTools(
       run(() => client.json(`/api/time-entry/${encodeURIComponent(args.id)}`)),
   );
 
-  server.registerTool(
+  registerTool(
     "create_time_entry",
     {
       description:
@@ -1049,7 +1074,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_time_entry",
     {
       description:
@@ -1074,7 +1099,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_task_activity",
     {
       description: "List a task's activity history.",
@@ -1086,7 +1111,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_notifications",
     {
       description: "List the signed-in user's notifications.",
@@ -1095,7 +1120,7 @@ export function registerTools(
     async () => run(() => client.json("/api/notification")),
   );
 
-  server.registerTool(
+  registerTool(
     "get_workspace_calendar",
     {
       description:
@@ -1110,7 +1135,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "update_workspace_working_days",
     {
       description:
@@ -1131,7 +1156,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "add_workspace_holiday",
     {
       description:
@@ -1156,7 +1181,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "delete_workspace_holiday",
     {
       description: "Remove a holiday from the workspace calendar.",
@@ -1174,7 +1199,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "list_project_custom_fields",
     {
       description:
@@ -1190,7 +1215,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "get_task_custom_fields",
     {
       description:
@@ -1206,7 +1231,7 @@ export function registerTools(
       ),
   );
 
-  server.registerTool(
+  registerTool(
     "set_task_custom_field_value",
     {
       description:

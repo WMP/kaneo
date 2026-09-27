@@ -144,6 +144,7 @@ async function exportTasks(projectId: string) {
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null,
       startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
       userId: task.userId || null,
+      assigneeName: task.assigneeName || null,
       progress: task.progress,
       isMilestone: task.isMilestone,
       baselineStartDate: task.baselineStartDate

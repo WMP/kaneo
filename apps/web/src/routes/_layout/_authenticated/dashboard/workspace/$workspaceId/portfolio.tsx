@@ -151,9 +151,17 @@ function RouteComponent() {
     return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
   }, [flatSchedule]);
 
+  // First-open default: cap the span-based auto-pick at Month. A whole-year
+  // portfolio otherwise opens in Quarter, where every task collapses to the
+  // same minimum-width pill and the view reads as useless until the user
+  // switches scale; Month keeps bar lengths legible on a yearly plan. A
+  // viewer's explicit choice still wins once they've touched the control.
   const effectiveGanttUnit = hasTouchedGanttUnit
     ? ganttUnit
-    : pickDefaultGanttUnit(overallSpanDays);
+    : ((): GanttUnit => {
+        const auto = pickDefaultGanttUnit(overallSpanDays);
+        return auto === "quarter" ? "month" : auto;
+      })();
 
   const handleUnitChange = (unit: GanttUnit) => {
     setGanttUnit(unit);

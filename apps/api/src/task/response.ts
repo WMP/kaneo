@@ -236,6 +236,10 @@ export const taskExportSchema = z
           dueDate: z.string().nullable().openapi({ format: "date-time" }),
           startDate: z.string().nullable().openapi({ format: "date-time" }),
           userId: z.string().nullable(),
+          assigneeName: z.string().nullable().openapi({
+            description:
+              "Display name of the assignee (null when unassigned or the user has no name), so an export is legible without a separate user lookup.",
+          }),
           progress: z.number().int().min(0).max(100).openapi({
             description: "Percent complete, 0-100.",
           }),

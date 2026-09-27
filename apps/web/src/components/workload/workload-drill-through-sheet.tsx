@@ -22,6 +22,8 @@ export type WorkloadDrillThroughRequest = {
   from: string;
   /** Inclusive end date (YYYY-MM-DD). */
   to: string;
+  /** Restrict to a single project; omit for the whole workspace. */
+  projectId?: string;
 };
 
 type WorkloadDrillThroughSheetProps = {
@@ -47,6 +49,7 @@ export default function WorkloadDrillThroughSheet({
     from: request?.from ?? "",
     to: request?.to ?? "",
     assigneeId,
+    projectId: request?.projectId,
   });
 
   const tasks = data?.tasks ?? [];

@@ -18,6 +18,7 @@ export type GetWorkspaceWorkloadTasksOptions = {
   from: Date;
   to: Date;
   assigneeId: string;
+  projectId?: string;
 };
 
 async function getWorkspaceWorkloadTasks({
@@ -25,6 +26,7 @@ async function getWorkspaceWorkloadTasks({
   from,
   to,
   assigneeId,
+  projectId,
 }: GetWorkspaceWorkloadTasksOptions) {
   if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
     throw new HTTPException(400, {
@@ -70,7 +72,7 @@ async function getWorkspaceWorkloadTasks({
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(
       and(
-        ...notDoneDatedTaskConditions(workspaceId),
+        ...notDoneDatedTaskConditions(workspaceId, projectId),
         assigneeCondition,
         rangeOverlap,
       ),

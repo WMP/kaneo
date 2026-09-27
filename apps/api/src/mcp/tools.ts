@@ -37,7 +37,17 @@ export function toMcpToolRegistrar(server: ShapeToolServer): McpToolRegistrar {
         name,
         {
           description: config.description,
-          inputSchema: config.inputSchema.shape,
+          // Hand the SDK the FULL, strict object schema rather than its raw
+          // shape. Given a raw shape the SDK rebuilds a NON-strict object and
+          // silently strips unknown keys before the callback runs, so a client
+          // sending an unsupported/misspelled field would get a false success
+          // (the field is quietly dropped, not rejected). The strict schema
+          // makes the SDK reject unknown keys up front and advertise
+          // additionalProperties:false in the tool's JSON schema. Cast because
+          // the SDK's TS type asks for a raw shape though at runtime it accepts
+          // a full schema (its normalizeObjectSchema returns an object schema
+          // as-is and validates against it).
+          inputSchema: config.inputSchema.strict() as unknown as z.ZodRawShape,
         },
         (args) => callback(args),
       ),

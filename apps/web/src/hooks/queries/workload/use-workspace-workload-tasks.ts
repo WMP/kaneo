@@ -9,6 +9,8 @@ type UseWorkspaceWorkloadTasksParams = {
   to: string;
   /** A user id, or the unassigned sentinel. Omit to skip the query. */
   assigneeId: string | undefined;
+  /** Restrict to a single project; omit for the whole workspace. */
+  projectId?: string;
 };
 
 function useWorkspaceWorkloadTasks({
@@ -16,12 +18,27 @@ function useWorkspaceWorkloadTasks({
   from,
   to,
   assigneeId,
+  projectId,
 }: UseWorkspaceWorkloadTasksParams) {
   return useQuery({
-    queryKey: ["workload-tasks", workspaceId, from, to, assigneeId],
+    queryKey: [
+      "workload-tasks",
+      workspaceId,
+      from,
+      to,
+      assigneeId,
+      projectId ?? null,
+    ],
     queryFn:
       workspaceId && assigneeId
-        ? () => getWorkspaceWorkloadTasks({ workspaceId, from, to, assigneeId })
+        ? () =>
+            getWorkspaceWorkloadTasks({
+              workspaceId,
+              from,
+              to,
+              assigneeId,
+              projectId,
+            })
         : skipToken,
     staleTime: 60 * 1000,
   });

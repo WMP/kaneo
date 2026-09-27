@@ -53,9 +53,12 @@
 //    the schedule, and arguably more so.
 //  - A lone task (no incoming AND no outgoing in-scope edge) is
 //    simultaneously its own root and sink, so ES = LS and EF = LF by
-//    construction: it is trivially critical. There's no meaningful
-//    "off-critical-path" state for a task with no dependency network to be
-//    off the critical path OF.
+//    construction — its slack is always 0. It is NOT reported as critical:
+//    a task with no dependency network has no chain to be the tight part
+//    OF, and highlighting every unconnected task (deliveries, inspections,
+//    standalone chores) as "critical" drowns the real chain in noise. Only
+//    tasks that participate in at least one in-scope "blocks" edge can come
+//    out critical.
 //  - A "blocks" EDGE is critical when both its endpoints are critical AND
 //    the edge is TIGHT: the specific earliest-start value that edge's
 //    type + lag contributes, given the source's ES/EF, exactly equals the
@@ -297,6 +300,11 @@ export function computeCriticalPath(
 
   const criticalTaskIds = new Set<string>();
   for (const task of tasks) {
+    // A lone task (no in-scope edge either way) has slack 0 by construction
+    // but no chain to be the tight part of — excluded so unconnected tasks
+    // don't flood the highlight (see the "lone task" note in the header).
+    if (!outgoingBySource.has(task.id) && !incomingByTarget.has(task.id))
+      continue;
     const es = earliestStart.get(task.id);
     const ls = latestStart.get(task.id);
     if (es === undefined || ls === undefined) continue;

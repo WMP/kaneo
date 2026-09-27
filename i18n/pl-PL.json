@@ -1583,8 +1583,8 @@
 			"pageTitle": "Ustawienia obiegu pracy",
 			"subtitle": "Skonfiguruj kolumny tablicy i reguły automatyzacji dla tego projektu.",
 			"title": "Obieg pracy",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "Zarządzaj polami własnymi tego projektu. Przeciągnij, aby zmienić kolejność.",
+			"customFieldsTitle": "Pola własne"
 		},
 		"repositoryBrowser": {
 			"description": "Wybierz repozytorium, w którym zainstalowano aplikację GitHub, aby włączyć synchronizację zgłoszeń.",
@@ -2059,39 +2059,39 @@
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "Dodaj",
+			"createError": "Nie udało się utworzyć pola własnego.",
+			"createSuccess": "Utworzono pole własne.",
+			"creating": "Tworzenie...",
+			"defaultLabel": "Domyślne",
+			"defaultValuePlaceholder": "Wartość domyślna",
+			"deleteButton": "Usuń",
+			"deleteError": "Nie udało się usunąć pola własnego.",
+			"deleteSuccess": "Usunięto pole własne.",
+			"deleting": "Usuwanie...",
+			"empty": "Nie skonfigurowano jeszcze żadnych pól własnych.",
+			"loading": "Wczytywanie pól własnych...",
+			"namePlaceholder": "Nazwa pola",
+			"noOptionsPlaceholder": "Brak opcji",
+			"optionsPlaceholder": "Opcje oddzielone przecinkami",
+			"required": "Wymagane",
+			"typePlaceholder": "Wybierz typ pola",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "Wartość logiczna",
+				"date": "Data",
+				"dropdown": "Lista rozwijana",
+				"number": "Liczba",
+				"text": "Tekst",
+				"multiselect": "Wielokrotny wybór"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"availableOptions": "Dostępne opcje",
+			"clearDefault": "Wyczyść",
+			"defaultValues": "{{count}} domyślnych",
+			"moreOptions": "+{{hiddenCount}} więcej",
+			"multiple": "Wiele",
+			"options": "{{count}} opcji",
+			"reorderError": "Nie udało się zmienić kolejności pól",
+			"selectPlaceholder": "Wybierz opcję/opcje"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2351,7 +2351,7 @@
 			"archive": "Archiwizuj",
 			"delete": "Usuń...",
 			"markAsPlanned": "Oznacz jako zaplanowane",
-			"duplicate": "Duplicate"
+			"duplicate": "Duplikuj"
 		},
 		"archive": {
 			"success": "Zarchiwizowano zadań: {{count}}"
@@ -2450,7 +2450,7 @@
 			"selectTask": "Wybierz zadanie",
 			"taskNotFound": "Nie znaleziono zadania",
 			"taskNotFoundDescription": "Zadanie, którego szukasz, nie istnieje lub zostało usunięte.",
-			"customFields": "Custom Fields"
+			"customFields": "Pola własne"
 		},
 		"contextMenu": {
 			"copyLink": "Kopiuj link",
@@ -2923,13 +2923,13 @@
 			"rejected": "Odrzucone"
 		},
 		"duplicate": {
-			"error": "Failed to duplicate task",
-			"success": "Task duplicated successfully",
-			"titleSuffix": "{{title}} (copy)"
+			"error": "Nie udało się zduplikować zadania",
+			"success": "Zadanie zduplikowane pomyślnie",
+			"titleSuffix": "{{title}} (kopia)"
 		},
 		"checklistProgress": "Ukończone elementy listy kontrolnej: {{completed}} z {{total}}",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "Pola własne"
 		}
 	},
 	"press": {

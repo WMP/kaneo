@@ -13,6 +13,8 @@ export type GetWorkspaceWorkloadTasksRequest = {
   to: string;
   /** A user id, or `WORKLOAD_UNASSIGNED_ASSIGNEE` for the unassigned row. */
   assigneeId: string;
+  /** Restrict to a single project; omit for the whole workspace. */
+  projectId?: string;
 };
 
 async function getWorkspaceWorkloadTasks({
@@ -20,10 +22,11 @@ async function getWorkspaceWorkloadTasks({
   from,
   to,
   assigneeId,
+  projectId,
 }: GetWorkspaceWorkloadTasksRequest) {
   const response = await client.workload[":workspaceId"].tasks.$get({
     param: { workspaceId },
-    query: { from, to, assigneeId },
+    query: { from, to, assigneeId, ...(projectId ? { projectId } : {}) },
   });
 
   if (!response.ok) {

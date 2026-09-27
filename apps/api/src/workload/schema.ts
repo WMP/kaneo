@@ -14,6 +14,10 @@ export const workloadQuery = z.object({
     description:
       "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week.",
   }),
+  projectId: z.string().min(1).optional().openapi({
+    description:
+      "Restrict the workload to a single project. Omit to include every project in the workspace (useful when one large project's unassigned tasks would otherwise swamp the view).",
+  }),
 });
 
 // The literal the tasks drill-through uses in place of a real user id to ask

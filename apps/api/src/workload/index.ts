@@ -65,20 +65,21 @@ const getWorkspaceWorkloadTasksRoute = createRoute({
 const workload = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getWorkspaceWorkloadRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
-    const { from, to } = c.req.valid("query");
+    const { from, to, projectId } = c.req.valid("query");
 
     return c.json(
       await getWorkspaceWorkloadCtrl({
         workspaceId,
         from: new Date(from),
         to: new Date(to),
+        projectId,
       }),
       200,
     );
   })
   .openapi(getWorkspaceWorkloadTasksRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
-    const { from, to, assigneeId } = c.req.valid("query");
+    const { from, to, assigneeId, projectId } = c.req.valid("query");
 
     return c.json(
       await getWorkspaceWorkloadTasksCtrl({
@@ -86,6 +87,7 @@ const workload = apiRouter<BaseVariables & { workspaceId: string }>()
         from: new Date(from),
         to: new Date(to),
         assigneeId,
+        projectId,
       }),
       200,
     );

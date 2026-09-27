@@ -243,6 +243,70 @@ describe("API integration: workspace workload", () => {
     expect(payload.assignees.at(-1)?.userId).toBeNull();
   });
 
+  it("narrows to a single project when projectId is given", async () => {
+    const member = await createWorkspaceMember({ userName: "Alice" });
+    const projectA = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+    const projectB = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+
+    // Two tasks for Alice in project A, one in project B, all in range.
+    await insertTask({
+      projectId: projectA.project.id,
+      columnId: projectA.columns.todo.id,
+      status: projectA.columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-02T00:00:00.000Z"),
+      number: 1,
+    });
+    await insertTask({
+      projectId: projectA.project.id,
+      columnId: projectA.columns.todo.id,
+      status: projectA.columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-03T00:00:00.000Z"),
+      number: 2,
+    });
+    await insertTask({
+      projectId: projectB.project.id,
+      columnId: projectB.columns.todo.id,
+      status: projectB.columns.todo.slug,
+      userId: member.user.id,
+      dueDate: new Date("2024-01-04T00:00:00.000Z"),
+      number: 3,
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const scoped = await app.request(
+      `/api/workload/${member.workspace.id}?from=2024-01-01&to=2024-01-08&projectId=${projectA.project.id}`,
+    );
+    expect(scoped.status).toBe(200);
+    const scopedPayload = (await scoped.json()) as {
+      assignees: { userId: string | null; counts: number[] }[];
+    };
+    const scopedAlice = scopedPayload.assignees.find(
+      (row) => row.userId === member.user.id,
+    );
+    // Only project A's two tasks are counted; project B's is excluded.
+    expect(scopedAlice?.counts[0]).toBe(2);
+
+    const all = await app.request(
+      `/api/workload/${member.workspace.id}?from=2024-01-01&to=2024-01-08`,
+    );
+    const allPayload = (await all.json()) as {
+      assignees: { userId: string | null; counts: number[] }[];
+    };
+    const allAlice = allPayload.assignees.find(
+      (row) => row.userId === member.user.id,
+    );
+    // Without the filter all three tasks count.
+    expect(allAlice?.counts[0]).toBe(3);
+  });
+
   it("still shows a workspace member with zero matching tasks in the range", async () => {
     const member = await createWorkspaceMember({ userName: "Alice" });
     const carol = await addWorkspaceMember(member.workspace.id, "Carol");

@@ -65,22 +65,35 @@ describe("computeCriticalPath", () => {
     expect(result.criticalEdgeIds.has("cd")).toBe(false);
   });
 
-  it("treats parallel independent tasks as each trivially critical", () => {
-    // No edges at all: each task is simultaneously its own root and sink, so
-    // ES=LS and EF=LF by construction for every one of them.
+  it("never marks parallel independent tasks (no edges) critical", () => {
+    // No edges at all: each task has zero slack by construction, but with no
+    // dependency network there is no chain to be the tight part of, so none
+    // is highlighted — highlighting every unconnected task would just be noise.
     const tasks = [task("a", 0, 3), task("b", 10, 12), task("c", 5, 5)];
 
     const result = computeCriticalPath(tasks, []);
 
-    expect(result.criticalTaskIds).toEqual(new Set(["a", "b", "c"]));
+    expect(result.criticalTaskIds.size).toBe(0);
     expect(result.criticalEdgeIds.size).toBe(0);
   });
 
-  it("treats a lone task with no dependencies as trivially critical", () => {
+  it("never marks a lone task with no dependencies critical", () => {
     const result = computeCriticalPath([task("solo", 3, 9)], []);
 
-    expect(result.criticalTaskIds).toEqual(new Set(["solo"]));
+    expect(result.criticalTaskIds.size).toBe(0);
     expect(result.criticalEdgeIds.size).toBe(0);
+  });
+
+  it("excludes a lone task even alongside a real critical chain", () => {
+    // A(0-2) -FS,0-> B(2-5) is a tight chain; "solo" has no edge at all and
+    // must stay off the highlight while the chain lights up.
+    const tasks = [task("a", 0, 2), task("b", 2, 5), task("solo", 8, 12)];
+    const edges = [blocks("e1", "a", "b")];
+
+    const result = computeCriticalPath(tasks, edges);
+
+    expect(result.criticalTaskIds).toEqual(new Set(["a", "b"]));
+    expect(result.criticalTaskIds.has("solo")).toBe(false);
   });
 
   it("a positive lag that exactly matches the gap keeps the link critical", () => {
@@ -147,14 +160,15 @@ describe("computeCriticalPath", () => {
 
   it("drops edges reaching outside the participating task set", () => {
     // "b" isn't in the task list (a cross-project/dateless task, per the
-    // caller's own filtering) — the edge into it must not blow up, and must
-    // not affect "a"'s own criticality.
+    // caller's own filtering) — the edge into it must not blow up. "a" is then
+    // left with no in-scope edge, so it's a lone task and stays off the
+    // highlight rather than being spuriously marked critical.
     const tasks = [task("a", 0, 2)];
     const edges = [blocks("e1", "a", "b")];
 
     const result = computeCriticalPath(tasks, edges);
 
-    expect(result.criticalTaskIds).toEqual(new Set(["a"]));
+    expect(result.criticalTaskIds.size).toBe(0);
     expect(result.criticalEdgeIds.size).toBe(0);
     expect(result.droppedEdgeCount).toBe(1);
   });
@@ -225,8 +239,9 @@ describe("computeCriticalPath", () => {
     it("still drops a cross-project edge whose far end has no resolved schedule", () => {
       // "client-signoff" is a dateless cross-project task — the caller
       // never includes a dateless task in `tasks` (own or cross-project),
-      // so this edge is dropped exactly like any other out-of-scope edge,
-      // and the in-scope own task's own criticality is unaffected.
+      // so this edge is dropped exactly like any other out-of-scope edge.
+      // "wave-1" is then left with no in-scope edge, so it's a lone task and
+      // stays off the highlight instead of being spuriously marked critical.
       const tasks = [task("wave-1", 3, 9)];
       const edges = [
         blocks("signoff-blocks-wave-1", "client-signoff", "wave-1"),
@@ -234,7 +249,7 @@ describe("computeCriticalPath", () => {
 
       const result = computeCriticalPath(tasks, edges);
 
-      expect(result.criticalTaskIds).toEqual(new Set(["wave-1"]));
+      expect(result.criticalTaskIds.size).toBe(0);
       expect(result.criticalEdgeIds.size).toBe(0);
       expect(result.droppedEdgeCount).toBe(1);
     });

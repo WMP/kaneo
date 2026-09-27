@@ -14,12 +14,14 @@ export type GetWorkspaceWorkloadOptions = {
   workspaceId: string;
   from: Date;
   to: Date;
+  projectId?: string;
 };
 
 async function getWorkspaceWorkload({
   workspaceId,
   from,
   to,
+  projectId,
 }: GetWorkspaceWorkloadOptions) {
   let buckets: ReturnType<typeof buildWeekBuckets>;
   try {
@@ -60,7 +62,9 @@ async function getWorkspaceWorkload({
     })
     .from(taskTable)
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
-    .where(and(...notDoneDatedTaskConditions(workspaceId), rangeOverlap))
+    .where(
+      and(...notDoneDatedTaskConditions(workspaceId, projectId), rangeOverlap),
+    )
     // Deterministic order so that, when the safety cap truncates the result,
     // the same tasks are kept across identical requests instead of an
     // arbitrary DB-dependent subset.

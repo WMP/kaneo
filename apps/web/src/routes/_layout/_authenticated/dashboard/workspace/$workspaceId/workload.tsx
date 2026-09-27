@@ -36,6 +36,7 @@ import {
 import WorkloadDrillThroughSheet, {
   type WorkloadDrillThroughRequest,
 } from "@/components/workload/workload-drill-through-sheet";
+import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useWorkspaceWorkload from "@/hooks/queries/workload/use-workspace-workload";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
@@ -97,13 +98,17 @@ function WorkloadComponent() {
   );
   const [overloadThreshold, setOverloadThreshold] = useState(3);
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
+  const [projectId, setProjectId] = useState("");
   const [drillThrough, setDrillThrough] =
     useState<WorkloadDrillThroughRequest | null>(null);
+
+  const { data: projects } = useGetProjects({ workspaceId });
 
   const { data, isLoading, isFetching, isError } = useWorkspaceWorkload({
     workspaceId,
     from,
     to,
+    projectId: projectId || undefined,
   });
 
   // The span of the current selection, in days -- used both to page by "the
@@ -183,6 +188,7 @@ function WorkloadComponent() {
         : t("workspace:workload.unassigned"),
       from: rangeFrom,
       to: rangeTo,
+      projectId: projectId || undefined,
     });
   };
 
@@ -249,6 +255,24 @@ function WorkloadComponent() {
             <Button variant="ghost" size="xs" onClick={selectThisYear}>
               {t("workspace:workload.quickThisYear")}
             </Button>
+
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {t("workspace:activityLog.filters.project")}
+              <select
+                value={projectId}
+                onChange={(event) => setProjectId(event.target.value)}
+                className="h-8 min-w-40 rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none focus-visible:border-ring"
+              >
+                <option value="">
+                  {t("workspace:activityLog.filters.allProjects")}
+                </option>
+                {(projects ?? []).map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
               {rangeLabel}

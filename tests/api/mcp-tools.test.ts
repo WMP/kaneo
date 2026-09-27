@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 import {
   type McpToolRegistrar,
   registerMcpTools,
+  toMcpToolRegistrar,
 } from "../../apps/api/src/mcp/tools";
 
 type ToolCallback = (args: unknown) => Promise<{
@@ -762,5 +764,28 @@ describe("MCP tool catalog", () => {
       id: "t4",
       customFields: [],
     });
+  });
+});
+
+describe("toMcpToolRegistrar", () => {
+  it("hands the SDK a strict schema so unknown fields are rejected, not stripped", () => {
+    // The real MCP SDK strips unknown keys from a NON-strict object schema
+    // before the handler runs (turning a client's misspelled field into a
+    // silent success). The adapter must therefore pass a strict schema down.
+    let capturedInput: unknown;
+    const registrar = toMcpToolRegistrar({
+      registerTool: (_name, config) => {
+        capturedInput = config.inputSchema;
+      },
+    });
+    registrar.registerTool(
+      "demo",
+      { description: "demo", inputSchema: z.object({ a: z.string() }) },
+      async () => ({ content: [{ type: "text", text: "" }] }),
+    );
+
+    const schema = capturedInput as z.ZodType;
+    expect(schema.safeParse({ a: "ok" }).success).toBe(true);
+    expect(schema.safeParse({ a: "ok", bogus: 1 }).success).toBe(false);
   });
 });

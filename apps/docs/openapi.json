@@ -1439,6 +1439,13 @@
               "null"
             ]
           },
+          "assigneeName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Display name of the assignee (null when unassigned or the user has no name), so an export is legible without a separate user lookup."
+          },
           "progress": {
             "type": "integer",
             "minimum": 0,
@@ -1511,6 +1518,7 @@
           "dueDate",
           "startDate",
           "userId",
+          "assigneeName",
           "progress",
           "isMilestone",
           "baselineStartDate",
@@ -18549,6 +18557,17 @@
             "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week.",
             "name": "to",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Restrict the workload to a single project. Omit to include every project in the workspace (useful when one large project's unassigned tasks would otherwise swamp the view)."
+            },
+            "required": false,
+            "description": "Restrict the workload to a single project. Omit to include every project in the workspace (useful when one large project's unassigned tasks would otherwise swamp the view).",
+            "name": "projectId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -18625,6 +18644,17 @@
             "required": true,
             "description": "Inclusive end date (YYYY-MM-DD). The last weekly bucket may extend a few days past it to complete a full week.",
             "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Restrict the workload to a single project. Omit to include every project in the workspace (useful when one large project's unassigned tasks would otherwise swamp the view)."
+            },
+            "required": false,
+            "description": "Restrict the workload to a single project. Omit to include every project in the workspace (useful when one large project's unassigned tasks would otherwise swamp the view).",
+            "name": "projectId",
             "in": "query"
           },
           {
