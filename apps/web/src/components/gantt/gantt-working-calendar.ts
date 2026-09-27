@@ -47,3 +47,65 @@ export function isWorkingDay(
   const bit = 1 << date.getDay();
   return (workingDays & bit) !== 0;
 }
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
+ * Builds a monotonic day-indexer that numbers each calendar day by how many
+ * WORKING days precede it (from `anchor`): consecutive working days get
+ * consecutive integers and a run of weekends/holidays collapses to no gap.
+ * Feed it to computeCriticalPath's `toDayIndex` so critical-path slack is
+ * measured in working days — a hand-off spanning only a weekend then reads as
+ * tight (the next working day) instead of carrying the weekend as slack.
+ *
+ * Results are cached and the forward walk is extended lazily, so repeated
+ * lookups are O(1) amortized and total work is bounded by the queried span.
+ * Dates before `anchor` fall back to a backward count (negative indices);
+ * callers that anchor at their earliest date never hit that path.
+ */
+export function makeWorkingDayIndexer(
+  anchor: Date,
+  workingDays: number,
+  holidayDateSet: ReadonlySet<string>,
+): (date: Date) => number {
+  const anchorDay = startOfLocalDay(anchor);
+  const cache = new Map<string, number>();
+  cache.set(toDateKey(anchorDay), 0);
+  let cursor = anchorDay;
+  let countBeforeCursor = 0; // working days strictly before `cursor`
+
+  return (date: Date): number => {
+    const target = startOfLocalDay(date);
+    const key = toDateKey(target);
+    const cached = cache.get(key);
+    if (cached !== undefined) return cached;
+
+    if (target.getTime() < anchorDay.getTime()) {
+      // Rare: a date earlier than the anchor. Count backward from the anchor.
+      let count = 0;
+      let day = new Date(anchorDay);
+      while (day.getTime() > target.getTime()) {
+        day = new Date(day.getFullYear(), day.getMonth(), day.getDate() - 1);
+        if (isWorkingDay(day, workingDays, holidayDateSet)) count -= 1;
+      }
+      cache.set(key, count);
+      return count;
+    }
+
+    // Extend the forward walk up to `target`, caching every day on the way.
+    while (cursor.getTime() < target.getTime()) {
+      if (isWorkingDay(cursor, workingDays, holidayDateSet)) {
+        countBeforeCursor += 1;
+      }
+      cursor = new Date(
+        cursor.getFullYear(),
+        cursor.getMonth(),
+        cursor.getDate() + 1,
+      );
+      cache.set(toDateKey(cursor), countBeforeCursor);
+    }
+    return cache.get(key) ?? countBeforeCursor;
+  };
+}

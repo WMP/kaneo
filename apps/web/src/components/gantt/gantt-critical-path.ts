@@ -108,6 +108,28 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 // a real day of slack.
 const EPSILON_DAYS = 1e-6;
 
+// A finish-to-start hand-off is TIGHT when the successor starts on the day
+// immediately after the predecessor finishes — not the same day. In whole-day
+// terms that immediate-next-day is finish + 1. Feeding day indices from the
+// working calendar (see toDayIndex) makes "the day after" mean the next
+// WORKING day, so a Friday→Monday hand-off across a weekend reads as tight
+// (0 slack) instead of carrying the weekend as phantom slack. Only FS/its
+// mirror use this; SS/FF/SF tie start-to-start or finish-to-finish, which
+// share the same instant and so carry no +1. A same-day FS overlap then
+// computes as slightly negative slack, which is still treated as critical
+// (it is the tightest, over-constrained, part of the schedule).
+const FS_HANDOFF_DAYS = 1;
+
+export type CriticalPathOptions = {
+  /** Maps a date to a whole-day ordinal. Defaults to raw calendar days. Pass
+   * a working-calendar indexer (see makeWorkingDayIndexer in
+   * gantt-working-calendar.ts) so durations, lag and slack are measured in
+   * WORKING days: a hand-off that only spans weekends/holidays then reads as
+   * tight rather than slack, matching what a planner means by a tight chain.
+   * Must be monotonic and return whole numbers. */
+  toDayIndex?: (date: Date) => number;
+};
+
 function toDay(date: Date): number {
   return Math.round(date.getTime() / MS_PER_DAY);
 }
@@ -131,7 +153,7 @@ function forwardRequiredStart(
     case "sf":
       return sourceES + lagDays - targetDuration;
     default:
-      return sourceEF + lagDays;
+      return sourceEF + lagDays + FS_HANDOFF_DAYS;
   }
 }
 
@@ -153,20 +175,22 @@ function backwardRequiredFinish(
     case "sf":
       return targetLF - lagDays + sourceDuration;
     default:
-      return targetLS - lagDays;
+      return targetLS - lagDays - FS_HANDOFF_DAYS;
   }
 }
 
 export function computeCriticalPath(
   tasks: readonly CriticalPathTaskInput[],
   edges: readonly CriticalPathEdgeInput[],
+  options?: CriticalPathOptions,
 ): CriticalPathResult {
+  const dayIndexOf = options?.toDayIndex ?? toDay;
   const taskById = new Map(tasks.map((task) => [task.id, task] as const));
   const durationById = new Map<string, number>();
   for (const task of tasks) {
     durationById.set(
       task.id,
-      toDay(task.scheduleEnd) - toDay(task.scheduleStart),
+      dayIndexOf(task.scheduleEnd) - dayIndexOf(task.scheduleStart),
     );
   }
 
@@ -238,7 +262,7 @@ export function computeCriticalPath(
     const duration = durationById.get(id) ?? 0;
     const incoming = incomingByTarget.get(id) ?? [];
 
-    let start = toDay(task.scheduleStart);
+    let start = dayIndexOf(task.scheduleStart);
     if (incoming.length > 0) {
       start = Number.NEGATIVE_INFINITY;
       for (const edge of incoming) {
@@ -257,7 +281,7 @@ export function computeCriticalPath(
       // Every incoming edge's source is in-scope (inScopeEdges guarantees
       // it) and processed earlier in topoOrder, so this is unreachable in
       // practice — guarded only so an unexpected gap never produces -Infinity.
-      if (!Number.isFinite(start)) start = toDay(task.scheduleStart);
+      if (!Number.isFinite(start)) start = dayIndexOf(task.scheduleStart);
     }
 
     earliestStart.set(id, start);
@@ -275,7 +299,7 @@ export function computeCriticalPath(
     const duration = durationById.get(id) ?? 0;
     const outgoing = outgoingBySource.get(id) ?? [];
 
-    let finish = toDay(task.scheduleEnd);
+    let finish = dayIndexOf(task.scheduleEnd);
     if (outgoing.length > 0) {
       finish = Number.POSITIVE_INFINITY;
       for (const edge of outgoing) {
@@ -291,7 +315,7 @@ export function computeCriticalPath(
         );
         if (required < finish) finish = required;
       }
-      if (!Number.isFinite(finish)) finish = toDay(task.scheduleEnd);
+      if (!Number.isFinite(finish)) finish = dayIndexOf(task.scheduleEnd);
     }
 
     latestFinish.set(id, finish);

@@ -4,6 +4,10 @@ import {
   type CriticalPathTaskInput,
   computeCriticalPath,
 } from "./gantt-critical-path";
+import {
+  DEFAULT_WORKING_DAYS,
+  makeWorkingDayIndexer,
+} from "./gantt-working-calendar";
 
 function day(n: number): Date {
   // Whole UTC days from a fixed epoch, so spans/deltas are easy to reason
@@ -27,9 +31,10 @@ function blocks(
 
 describe("computeCriticalPath", () => {
   it("marks every task and edge critical along a tight simple chain", () => {
-    // A(0-2) -FS,0-> B(2-5) -FS,0-> C(5-8): each task starts the instant its
-    // predecessor finishes, so there is no slack anywhere on the chain.
-    const tasks = [task("a", 0, 2), task("b", 2, 5), task("c", 5, 8)];
+    // A(0-2) -FS,0-> B(3-6) -FS,0-> C(7-10): each task starts the day AFTER its
+    // predecessor finishes (an FS hand-off is tight at finish+1, not the same
+    // day), so there is no slack anywhere on the chain.
+    const tasks = [task("a", 0, 2), task("b", 3, 6), task("c", 7, 10)];
     const edges = [blocks("e1", "a", "b"), blocks("e2", "b", "c")];
 
     const result = computeCriticalPath(tasks, edges);
@@ -97,9 +102,9 @@ describe("computeCriticalPath", () => {
   });
 
   it("a positive lag that exactly matches the gap keeps the link critical", () => {
-    // A(0-2) -FS,+3-> B: required start is A.end(2)+3=5, and B is dated
-    // (5-8) to match exactly — zero slack.
-    const tasks = [task("a", 0, 2), task("b", 5, 8)];
+    // A(0-2) -FS,+3-> B: required start is A.end(2)+3 lag +1 hand-off = 6, and
+    // B is dated (6-9) to match exactly — zero slack.
+    const tasks = [task("a", 0, 2), task("b", 6, 9)];
     const edges = [blocks("e1", "a", "b", "fs", 3)];
 
     const result = computeCriticalPath(tasks, edges);
@@ -109,16 +114,73 @@ describe("computeCriticalPath", () => {
   });
 
   it("the same lag introduces slack once the target's own dates sit later", () => {
-    // Same FS,+3 lag (required start still 5), but B is actually dated
-    // starting on day 7 — 2 days later than the network requires, so both
+    // Same FS,+3 lag (required start still 6), but B is actually dated
+    // starting on day 8 — 2 days later than the network requires, so both
     // ends of the link carry 2 days of slack and neither is critical.
-    const tasks = [task("a", 0, 2), task("b", 7, 10)];
+    const tasks = [task("a", 0, 2), task("b", 8, 11)];
     const edges = [blocks("e1", "a", "b", "fs", 3)];
 
     const result = computeCriticalPath(tasks, edges);
 
     expect(result.criticalTaskIds.size).toBe(0);
     expect(result.criticalEdgeIds.size).toBe(0);
+  });
+
+  it("an FS hand-off to the next calendar day is tight (default day index)", () => {
+    // A(0-2) -FS,0-> B(3-6): B starts the day after A finishes -> tight.
+    const tight = computeCriticalPath(
+      [task("a", 0, 2), task("b", 3, 6)],
+      [blocks("e1", "a", "b")],
+    );
+    expect(tight.criticalTaskIds).toEqual(new Set(["a", "b"]));
+    expect(tight.criticalEdgeIds).toEqual(new Set(["e1"]));
+
+    // A(0-2) -FS,0-> B(5-8): a whole idle day (day 4) between -> slack, so
+    // neither end is critical.
+    const slack = computeCriticalPath(
+      [task("a", 0, 2), task("b", 5, 8)],
+      [blocks("e1", "a", "b")],
+    );
+    expect(slack.criticalTaskIds.size).toBe(0);
+    expect(slack.criticalEdgeIds.size).toBe(0);
+  });
+
+  describe("working-day slack (toDayIndex)", () => {
+    // Local-time dates so the working-calendar indexer's weekday math matches
+    // regardless of the test runner's time zone. Jan 2026: 1=Thu, 2=Fri,
+    // 3=Sat, 4=Sun, 5=Mon, 6=Tue, 7=Wed. Mon-Fri working, no holidays.
+    const d = (dayOfMonth: number) => new Date(2026, 0, dayOfMonth);
+    const indexer = () =>
+      makeWorkingDayIndexer(d(1), DEFAULT_WORKING_DAYS, new Set());
+
+    it("treats a Friday->Monday hand-off across the weekend as tight", () => {
+      // A ends Fri (Jan 2), B starts the next working day Mon (Jan 5): no
+      // working day sits idle between them, so the link is tight even though
+      // three calendar days pass.
+      const tasks = [
+        { id: "a", scheduleStart: d(1), scheduleEnd: d(2) },
+        { id: "b", scheduleStart: d(5), scheduleEnd: d(6) },
+      ];
+      const result = computeCriticalPath(tasks, [blocks("e1", "a", "b")], {
+        toDayIndex: indexer(),
+      });
+      expect(result.criticalTaskIds).toEqual(new Set(["a", "b"]));
+      expect(result.criticalEdgeIds).toEqual(new Set(["e1"]));
+    });
+
+    it("does not mark a hand-off with an idle working day as critical", () => {
+      // A ends Fri (Jan 2), B starts Tue (Jan 6): Monday is a working day left
+      // idle, so the link carries a real working day of slack.
+      const tasks = [
+        { id: "a", scheduleStart: d(1), scheduleEnd: d(2) },
+        { id: "b", scheduleStart: d(6), scheduleEnd: d(7) },
+      ];
+      const result = computeCriticalPath(tasks, [blocks("e1", "a", "b")], {
+        toDayIndex: indexer(),
+      });
+      expect(result.criticalTaskIds.size).toBe(0);
+      expect(result.criticalEdgeIds.size).toBe(0);
+    });
   });
 
   it("honors SS (start-to-start) with lag", () => {

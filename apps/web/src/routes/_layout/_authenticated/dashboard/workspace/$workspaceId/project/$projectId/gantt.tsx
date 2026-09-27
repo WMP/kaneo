@@ -59,6 +59,7 @@ import {
   buildHolidayDateKeySet,
   DEFAULT_WORKING_DAYS,
   isWorkingDay,
+  makeWorkingDayIndexer,
 } from "@/components/gantt/gantt-working-calendar";
 import { computePanScrollPosition } from "@/components/gantt/pan";
 import {
@@ -795,12 +796,27 @@ function RouteComponent() {
       })),
       ...crossProjectCriticalPathTasks,
     ];
-    return computeCriticalPath(tasksInput, criticalPathEdges);
+    // Measure slack in WORKING days from the workspace calendar so a hand-off
+    // that only spans a weekend/holiday reads as tight, not slack (see
+    // makeWorkingDayIndexer). Anchor at the earliest date in play so every
+    // lookup is a forward walk.
+    let anchor: Date | null = null;
+    for (const task of tasksInput) {
+      if (anchor === null || task.scheduleStart < anchor) {
+        anchor = task.scheduleStart;
+      }
+    }
+    const toDayIndex = anchor
+      ? makeWorkingDayIndexer(anchor, workingDays, holidayDateSet)
+      : undefined;
+    return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
   }, [
     showCriticalPath,
     ownScheduleByTaskId,
     crossProjectCriticalPathTasks,
     criticalPathEdges,
+    workingDays,
+    holidayDateSet,
   ]);
 
   const bulkUpdateSchedule = useBulkUpdateTaskSchedule();
