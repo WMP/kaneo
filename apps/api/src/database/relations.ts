@@ -14,6 +14,7 @@ import {
   invitationTable,
   labelTable,
   notificationTable,
+  projectHiddenFieldTable,
   projectTable,
   sessionTable,
   taskAssignmentTable,
@@ -82,6 +83,7 @@ export const workspaceTableRelations = relations(
     notificationWorkspaceRules: many(userNotificationWorkspaceRuleTable),
     holidays: many(workspaceHolidayTable),
     activities: many(activityTable),
+    customFieldDefinitions: many(customFieldDefinitionTable),
   }),
 );
 
@@ -123,6 +125,8 @@ export const projectTableRelations = relations(
     githubIntegration: many(githubIntegrationTable),
     integrations: many(integrationTable),
     notificationWorkspaceProjects: many(userNotificationWorkspaceProjectTable),
+    customFieldDefinitions: many(customFieldDefinitionTable),
+    hiddenCustomFields: many(projectHiddenFieldTable),
   }),
 );
 
@@ -435,7 +439,12 @@ export const customFieldDefinitionTableRelations = relations(
       fields: [customFieldDefinitionTable.projectId],
       references: [projectTable.id],
     }),
+    workspace: one(workspaceTable, {
+      fields: [customFieldDefinitionTable.workspaceId],
+      references: [workspaceTable.id],
+    }),
     values: many(customFieldValueTable),
+    hiddenFor: many(projectHiddenFieldTable),
   }),
 );
 
@@ -449,6 +458,20 @@ export const customFieldValueTableRelations = relations(
     task: one(taskTable, {
       fields: [customFieldValueTable.taskId],
       references: [taskTable.id],
+    }),
+  }),
+);
+
+export const projectHiddenFieldTableRelations = relations(
+  projectHiddenFieldTable,
+  ({ one }) => ({
+    project: one(projectTable, {
+      fields: [projectHiddenFieldTable.projectId],
+      references: [projectTable.id],
+    }),
+    field: one(customFieldDefinitionTable, {
+      fields: [projectHiddenFieldTable.fieldId],
+      references: [customFieldDefinitionTable.id],
     }),
   }),
 );

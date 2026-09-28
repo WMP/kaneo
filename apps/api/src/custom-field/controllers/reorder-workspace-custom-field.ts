@@ -1,11 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { customFieldDefinitionTable } from "../../database/schema";
 import { annotateCustomField } from "../effective-fields";
 
-async function reorderCustomFields(
-  projectId: string,
+async function reorderWorkspaceCustomFields(
+  workspaceId: string,
   customFields: Array<{ id: string; position: number }>,
 ) {
   await db.transaction(async (tx) => {
@@ -16,25 +16,26 @@ async function reorderCustomFields(
         .where(
           and(
             eq(customFieldDefinitionTable.id, field.id),
-            eq(customFieldDefinitionTable.projectId, projectId),
+            eq(customFieldDefinitionTable.workspaceId, workspaceId),
           ),
         )
         .returning({ id: customFieldDefinitionTable.id });
 
       if (!updated) {
         throw new HTTPException(400, {
-          message: `Custom field ${field.id} does not belong to this project`,
+          message: `Custom field ${field.id} does not belong to this workspace`,
         });
       }
     }
   });
 
-  const updated = await db.query.customFieldDefinitionTable.findMany({
-    where: eq(customFieldDefinitionTable.projectId, projectId),
-    orderBy: (columns, { asc }) => [asc(columns.position)],
-  });
+  const fields = await db
+    .select()
+    .from(customFieldDefinitionTable)
+    .where(eq(customFieldDefinitionTable.workspaceId, workspaceId))
+    .orderBy(asc(customFieldDefinitionTable.position));
 
-  return updated.map((field) => annotateCustomField(field));
+  return fields.map((field) => annotateCustomField(field));
 }
 
-export default reorderCustomFields;
+export default reorderWorkspaceCustomFields;

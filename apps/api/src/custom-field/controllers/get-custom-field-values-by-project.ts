@@ -1,12 +1,19 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import db from "../../database";
 import {
   customFieldDefinitionTable,
   customFieldValueTable,
   taskTable,
 } from "../../database/schema";
+import { getEffectiveFieldIdSet } from "../effective-fields";
 
 async function getCustomFieldValuesByProject(projectId: string) {
+  const effectiveFieldIds = await getEffectiveFieldIdSet(projectId);
+
+  if (effectiveFieldIds.size === 0) {
+    return [];
+  }
+
   return db
     .select({
       id: customFieldValueTable.id,
@@ -25,7 +32,14 @@ async function getCustomFieldValuesByProject(projectId: string) {
       customFieldDefinitionTable,
       eq(customFieldValueTable.fieldId, customFieldDefinitionTable.id),
     )
-    .where(eq(taskTable.projectId, projectId));
+    .where(
+      and(
+        eq(taskTable.projectId, projectId),
+        // A task may still carry a value row for a field this project has
+        // since hidden — never surface those.
+        inArray(customFieldValueTable.fieldId, [...effectiveFieldIds]),
+      ),
+    );
 }
 
 export default getCustomFieldValuesByProject;

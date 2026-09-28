@@ -1,15 +1,10 @@
-import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
+import { and, inArray, isNotNull, ne } from "drizzle-orm";
 import db from "../../database";
-import {
-  customFieldDefinitionTable,
-  customFieldValueTable,
-} from "../../database/schema";
+import { customFieldValueTable } from "../../database/schema";
+import { getEffectiveCustomFieldDefinitions } from "../effective-fields";
 
 export default async function getCustomFieldFilterValues(projectId: string) {
-  const fields = await db
-    .select()
-    .from(customFieldDefinitionTable)
-    .where(eq(customFieldDefinitionTable.projectId, projectId));
+  const fields = await getEffectiveCustomFieldDefinitions(projectId);
 
   if (fields.length === 0) {
     return [];

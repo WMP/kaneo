@@ -3,7 +3,24 @@ import { responseTimestamp, z } from "../openapi";
 export const customFieldDefinitionSchema = z
   .object({
     id: z.string(),
-    projectId: z.string(),
+    // Set for a project-level definition; null for a workspace-level one
+    // (see workspaceId below — exactly one of the two is set).
+    projectId: z.string().nullable(),
+    // Set for a workspace-level definition, inherited by every project in
+    // the workspace; null for a project-level one.
+    workspaceId: z.string().nullable(),
+    // "workspace" mirrors workspaceId being set; "project" mirrors
+    // projectId being set.
+    scope: z.enum(["workspace", "project"]),
+    // true only for a workspace field that isn't required — a project-level
+    // field, or a required workspace field, can never be hidden.
+    hideable: z.boolean(),
+    // Whether the requesting project currently hides this field. Always
+    // false for a project-level field, and false for a workspace field in
+    // the effective list (a hidden one is dropped from that list entirely);
+    // only the project's field-visibility listing (`includeHidden=true`)
+    // reports true.
+    hidden: z.boolean(),
     name: z.string(),
     type: z.string(),
     required: z.boolean(),

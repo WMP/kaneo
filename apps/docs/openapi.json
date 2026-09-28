@@ -4612,7 +4612,29 @@
             "type": "string"
           },
           "projectId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspaceId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "workspace",
+              "project"
+            ]
+          },
+          "hideable": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
           },
           "name": {
             "type": "string"
@@ -4654,6 +4676,10 @@
         "required": [
           "id",
           "projectId",
+          "workspaceId",
+          "scope",
+          "hideable",
+          "hidden",
           "name",
           "type",
           "required",
@@ -18884,7 +18910,7 @@
           "Custom Fields"
         ],
         "summary": "Get custom fields",
-        "description": "Get all custom field definitions for a project.",
+        "description": "Get the effective custom field definitions for a project: its workspace's fields (minus the ones this project hides) plus the project's own fields. Pass ?includeHidden=true to instead get every inherited workspace field — hidden ones included, with their real per-project hidden state — for the project's field-visibility editor.",
         "parameters": [
           {
             "schema": {
@@ -18893,6 +18919,18 @@
             "required": true,
             "name": "projectId",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "required": false,
+            "name": "includeHidden",
+            "in": "query"
           }
         ],
         "responses": {
@@ -18942,7 +18980,7 @@
           "Custom Fields"
         ],
         "summary": "Get project custom field values",
-        "description": "Get all custom field values for every task in a project.",
+        "description": "Get all custom field values for every task in a project, including values for inherited (non-hidden) workspace fields.",
         "parameters": [
           {
             "schema": {
@@ -19000,7 +19038,7 @@
           "Custom Fields"
         ],
         "summary": "Get task custom field values",
-        "description": "Get all custom field values for a task with their definitions.",
+        "description": "Get all custom field values for a task with their definitions, including values for inherited (non-hidden) workspace fields.",
         "parameters": [
           {
             "schema": {
@@ -19058,7 +19096,7 @@
           "Custom Fields"
         ],
         "summary": "Get custom field filter values",
-        "description": "Get distinct values used by tasks for each custom field of a project.",
+        "description": "Get distinct values used by tasks for each of a project's effective custom fields.",
         "parameters": [
           {
             "schema": {
@@ -19207,6 +19245,159 @@
         }
       }
     },
+    "/custom-field/workspace/{workspaceId}": {
+      "get": {
+        "operationId": "getWorkspaceCustomFields",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Get workspace custom fields",
+        "description": "Get all workspace-level custom field definitions, inherited by every project in the workspace.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of workspace-level custom field definitions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomFieldDefinition"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access or missing read permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWorkspaceCustomField",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Create workspace custom field",
+        "description": "Create a workspace-level custom field definition, inherited by every project in the workspace.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "number",
+                      "date",
+                      "dropdown",
+                      "boolean",
+                      "multiselect"
+                    ]
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "defaultValue": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "optionColors": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "position": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created workspace custom field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomFieldDefinition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or unknown workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/custom-field/{id}": {
       "patch": {
         "operationId": "updateCustomField",
@@ -19214,7 +19405,7 @@
           "Custom Fields"
         ],
         "summary": "Update custom field",
-        "description": "Update a custom field definition's name or dropdown option colors.",
+        "description": "Update a custom field definition's name or dropdown option colors. Works for both a project-level field and a workspace-level field — a workspace field's name/type/options stay shared across every project that inherits it.",
         "parameters": [
           {
             "schema": {
@@ -19291,7 +19482,7 @@
           "Custom Fields"
         ],
         "summary": "Delete custom field",
-        "description": "Delete a custom field definition by ID.",
+        "description": "Delete a custom field definition by ID — works for both a project-level and a workspace-level field.",
         "parameters": [
           {
             "schema": {
@@ -19346,7 +19537,7 @@
           "Custom Fields"
         ],
         "summary": "Reorder custom fields",
-        "description": "Set new positions for a project's custom fields.",
+        "description": "Set new positions for a project's own custom fields.",
         "parameters": [
           {
             "schema": {
@@ -19427,6 +19618,94 @@
         }
       }
     },
+    "/custom-field/workspace/{workspaceId}/reorder": {
+      "put": {
+        "operationId": "reorderWorkspaceCustomFields",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Reorder workspace custom fields",
+        "description": "Set new positions for a workspace's custom fields.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "position": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "position"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "fields"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reordered workspace custom fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReorderCustomFieldsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A custom field does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/custom-field/value": {
       "put": {
         "operationId": "setCustomFieldValue",
@@ -19434,7 +19713,7 @@
           "Custom Fields"
         ],
         "summary": "Set custom field value",
-        "description": "Create or update a custom field value for a task.",
+        "description": "Create or update a custom field value for a task. The field must be one of the task's project's effective fields — its own field, or an inherited workspace field the project hasn't hidden.",
         "requestBody": {
           "required": true,
           "content": {
@@ -19487,6 +19766,93 @@
           },
           "403": {
             "description": "No workspace access, or missing task:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-field/project/{projectId}/visibility": {
+      "post": {
+        "operationId": "setCustomFieldVisibility",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Hide or show an inherited workspace field",
+        "description": "Hide or show, for this project only, a custom field inherited from its workspace. A required workspace field can never be hidden, and a project-level field isn't a valid target.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fieldId": {
+                    "type": "string"
+                  },
+                  "hidden": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "fieldId",
+                  "hidden"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The field's new visibility for this project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomFieldDefinition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The field isn't a workspace-level field of this project's workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, missing project:update permission, or the field is required and can't be hidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown project or custom field",
             "content": {
               "text/plain": {
                 "schema": {
