@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
@@ -69,18 +68,16 @@ describe("manual external resource links", () => {
       .values({ projectId: own.project.id, type: "github", config: "{}" })
       .returning();
     const existing = await link(own.task.id, integration.id, "issue");
-    const migration = readFileSync(
-      new URL(
-        "../../apps/api/drizzle/0051_modern_corsair.sql",
-        import.meta.url,
-      ),
-      "utf8",
-    );
     await db.transaction(async (tx) => {
       await tx.execute(
         sql`ALTER TABLE external_link ALTER COLUMN integration_id SET NOT NULL`,
       );
-      await tx.execute(sql.raw(migration));
+      // Replay the relevant schema change directly (make integration_id
+      // nullable, as this fork's 0051 migration does) instead of reading a
+      // specific upstream migration file this fork's lineage doesn't carry.
+      await tx.execute(
+        sql`ALTER TABLE external_link ALTER COLUMN integration_id DROP NOT NULL`,
+      );
       expect(await tx.query.externalLinkTable.findMany()).toEqual([existing]);
       const [manual] = await tx
         .insert(schema.externalLinkTable)

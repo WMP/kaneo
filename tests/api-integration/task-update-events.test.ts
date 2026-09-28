@@ -101,6 +101,7 @@ describe("general task update integration events", () => {
     expect(publishEvent).toHaveBeenCalledWith(
       "task.updated",
       expect.objectContaining(common),
+      { waitForHandlers: true },
     );
     expect(
       await db.query.taskTable.findFirst({
