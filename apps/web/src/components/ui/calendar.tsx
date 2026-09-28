@@ -28,7 +28,11 @@ function Calendar({
     (state) => state.weekStartsOn,
   );
   const { t, i18n } = useTranslation();
-  const dateFnsLocale = resolveDateFnsLocale(i18n.language);
+  // `i18n` can be absent when a consumer's test mocks useTranslation with only
+  // `t`; fall back so the calendar still renders (resolveDateFnsLocale and
+  // toLocaleString both accept undefined and default to en-US).
+  const language = i18n?.language;
+  const dateFnsLocale = resolveDateFnsLocale(language);
   const defaultClassNames = {
     button_next: buttonClassNames,
     button_previous: buttonClassNames,
@@ -134,7 +138,7 @@ function Calendar({
       data-slot="calendar"
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString(i18n.language, { month: "short" }),
+          date.toLocaleString(language || undefined, { month: "short" }),
       }}
       labels={{
         labelNext: () => t("tasks:calendar.nextMonth"),
