@@ -1497,6 +1497,13 @@
             ],
             "description": "Display name of the assignee (null when unassigned or the user has no name), so an export is legible without a separate user lookup."
           },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedTaskAssignee"
+            },
+            "description": "The task's full assignee list; userId/assigneeName above mirror this list's first entry and are kept for backward compatibility."
+          },
           "progress": {
             "type": "integer",
             "minimum": 0,
@@ -1570,6 +1577,7 @@
           "startDate",
           "userId",
           "assigneeName",
+          "assignees",
           "progress",
           "isMilestone",
           "baselineStartDate",
@@ -1580,6 +1588,21 @@
           "approvalNote",
           "labels",
           "relations"
+        ]
+      },
+      "ExportedTaskAssignee": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "name"
         ]
       },
       "ExportedTaskLabel": {
@@ -4490,10 +4513,10 @@
           "counts": {
             "type": "array",
             "items": {
-              "type": "integer",
+              "type": "number",
               "minimum": 0
             },
-            "description": "Dated, not-done tasks active in each bucket, aligned by index with `buckets`. A task with a start and due date spanning several buckets is counted in every one it touches."
+            "description": "This assignee's fractional effort share of the dated, not-done tasks active in each bucket, aligned by index with `buckets`. A task with a start and due date spanning several buckets contributes to every one it touches; a task with several assignees splits its contribution across them weighted by each assignee's units (equal shares when units are equal), so a value is not necessarily a whole number."
           }
         },
         "required": [

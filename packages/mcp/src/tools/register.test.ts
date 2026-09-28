@@ -772,6 +772,31 @@ describe("registerTools", () => {
     });
   });
 
+  it("replaces a task's full assignee list", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ id: "task-1" }) };
+
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("update_task_assignees")?.handler({
+      taskId: "task-1",
+      userIds: ["user-1", "user-2"],
+    });
+    expect(client.json).toHaveBeenCalledWith("/api/task/task-1/assignees", {
+      method: "PUT",
+      body: JSON.stringify({ userIds: ["user-1", "user-2"] }),
+    });
+
+    await tools.get("update_task_assignees")?.handler({
+      taskId: "task-1",
+      userIds: [],
+    });
+    expect(client.json).toHaveBeenCalledWith("/api/task/task-1/assignees", {
+      method: "PUT",
+      body: JSON.stringify({ userIds: [] }),
+    });
+  });
+
   it("sets and clears a task baseline", async () => {
     const { server, tools } = createServerMock();
     const client = { json: vi.fn().mockResolvedValue({ id: "task-1" }) };

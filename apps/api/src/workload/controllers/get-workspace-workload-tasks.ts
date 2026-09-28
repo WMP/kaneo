@@ -1,7 +1,11 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, exists, isNull, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
-import { projectTable, taskTable } from "../../database/schema";
+import {
+  projectTable,
+  taskAssignmentTable,
+  taskTable,
+} from "../../database/schema";
 import { startOfUtcDay } from "../bucket-workload";
 import { notDoneDatedTaskConditions } from "../matched-task-conditions";
 import { WORKLOAD_UNASSIGNED_ASSIGNEE } from "../schema";
@@ -44,10 +48,25 @@ async function getWorkspaceWorkloadTasks({
     });
   }
 
+  // Membership in `ganttpro_task_assignment`, not equality with the primary
+  // mirror, so a task drills through under every one of its assignees, not
+  // only its primary. The unassigned case still reads the mirror: it stays
+  // null exactly when the assignment table has no rows for the task (see
+  // `setTaskAssignees`), so `isNull` here is equivalent and cheaper.
   const assigneeCondition =
     assigneeId === WORKLOAD_UNASSIGNED_ASSIGNEE
       ? isNull(taskTable.userId)
-      : eq(taskTable.userId, assigneeId);
+      : exists(
+          db
+            .select({ one: sql`1` })
+            .from(taskAssignmentTable)
+            .where(
+              and(
+                eq(taskAssignmentTable.taskId, taskTable.id),
+                eq(taskAssignmentTable.userId, assigneeId),
+              ),
+            ),
+        );
 
   // Same overlap logic as the aggregate view, see its own comment.
   const rangeOverlap = sql`

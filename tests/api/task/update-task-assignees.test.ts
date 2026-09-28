@@ -178,6 +178,148 @@ describe("updateTaskAssignees", () => {
     );
   });
 
+  it("carries the full added/removed diff on task.assignee_changed", async () => {
+    mockFindFirst.mockResolvedValue(EXISTING_TASK);
+    mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockFilterAssignableUsers.mockResolvedValue(new Set(["user-2"]));
+    mockSetTaskAssignees.mockResolvedValue(["user-2"]);
+    mockSelect.mockReturnValue(
+      makeSelectChain([
+        {
+          ...EXISTING_TASK,
+          userId: "user-2",
+          assigneeName: "Bea",
+          assigneeId: "user-2",
+        },
+      ]),
+    );
+    // Pre-mutation read (user-1 was the sole assignee), then the
+    // post-mutation read (user-2 is now the sole assignee).
+    mockReadTaskAssignees
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-1",
+                name: "Ada",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      )
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-2",
+                name: "Bea",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      );
+
+    await updateTaskAssignees({
+      id: "task-1",
+      userIds: ["user-2"],
+      currentUserId: "user-1",
+    });
+
+    expect(mockPublishEvent).toHaveBeenCalledWith(
+      "task.assignee_changed",
+      expect.objectContaining({
+        addedAssigneeIds: ["user-2"],
+        removedAssigneeIds: ["user-1"],
+      }),
+    );
+  });
+
+  it("publishes task.assignee_changed with addedAssigneeIds when a secondary assignee is added and the primary is unchanged", async () => {
+    mockFindFirst.mockResolvedValue(EXISTING_TASK);
+    mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1", "user-2"]));
+    mockSetTaskAssignees.mockResolvedValue(["user-1", "user-2"]);
+    mockSelect.mockReturnValue(
+      makeSelectChain([
+        {
+          ...EXISTING_TASK,
+          userId: "user-1",
+          assigneeName: "Ada",
+          assigneeId: "user-1",
+        },
+      ]),
+    );
+    // Pre-mutation: only user-1. Post-mutation: user-1 and user-2.
+    mockReadTaskAssignees
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-1",
+                name: "Ada",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      )
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-1",
+                name: "Ada",
+                image: null,
+                units: 100,
+                work: null,
+              },
+              {
+                userId: "user-2",
+                name: "Bea",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      );
+
+    await updateTaskAssignees({
+      id: "task-1",
+      userIds: ["user-1", "user-2"],
+      currentUserId: "user-1",
+    });
+
+    // The primary (user-1) is unchanged, but the added secondary assignee
+    // still needs the event to fire so it can be notified downstream.
+    expect(mockPublishEvent).toHaveBeenCalledWith(
+      "task.assignee_changed",
+      expect.objectContaining({
+        oldAssignee: "user-1",
+        newAssigneeId: "user-1",
+        addedAssigneeIds: ["user-2"],
+        removedAssigneeIds: [],
+      }),
+    );
+  });
+
   it("publishes task.unassigned when the list is emptied", async () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockSetTaskAssignees.mockResolvedValue([]);

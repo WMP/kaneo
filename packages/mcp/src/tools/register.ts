@@ -978,6 +978,25 @@ export function registerTools(
   );
 
   registerTool(
+    "update_task_assignees",
+    {
+      description:
+        "Replace a task's full assignee list. The first id becomes the primary assignee; an empty list unassigns the task.",
+      inputSchema: z.object({
+        taskId: nonEmptyString,
+        userIds: z.array(nonEmptyString),
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(`/api/task/${encodeURIComponent(args.taskId)}/assignees`, {
+          method: "PUT",
+          body: JSON.stringify({ userIds: args.userIds }),
+        }),
+      ),
+  );
+
+  registerTool(
     "update_task_due_date",
     {
       description: "Set a task's due date. Omit dueDate to clear it.",

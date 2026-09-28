@@ -61,8 +61,15 @@ export function buildWeekBuckets(from: Date, to: Date): WeekBucket[] {
   return buckets;
 }
 
+export type WorkloadTaskAssignee = {
+  userId: string;
+  /** Percent allocation (`ganttpro_task_assignment.units`); default 100. */
+  units: number;
+};
+
 export type WorkloadTaskInput = {
-  assigneeId: string | null;
+  /** Every current assignee row for this task; empty means unassigned. */
+  assignees: WorkloadTaskAssignee[];
   startDate: Date | null;
   dueDate: Date | null;
 };
@@ -74,11 +81,19 @@ export type WorkloadRow = {
 };
 
 /**
- * Groups tasks by assignee (`null` for unassigned) and counts, per bucket,
- * how many are "active" there: a task's span runs from its start date to its
- * due date inclusive, or is a single day when only one of the two is set. A
- * task with neither date never contributes and is silently skipped, so
- * callers may pass the raw, unfiltered task list.
+ * Groups tasks by assignee (`null` for unassigned) and sums, per bucket, each
+ * assignee's fractional *share* of the tasks "active" there: a task's span
+ * runs from its start date to its due date inclusive, or is a single day
+ * when only one of the two is set. A task with neither date never
+ * contributes and is silently skipped, so callers may pass the raw,
+ * unfiltered task list.
+ *
+ * A task with several assignees splits its per-bucket contribution across
+ * them weighted by `units` (share = units / sum(units) for that task, so
+ * all-default units of 100 collapse to an even 1/N split); a task's total
+ * contribution to a bucket it overlaps is always 1, distributed across its
+ * assignees. A task with no assignees contributes its full 1 to the
+ * unassigned (`null`) row instead.
  */
 export function bucketizeWorkload(
   tasks: WorkloadTaskInput[],
@@ -114,16 +129,36 @@ export function bucketizeWorkload(
       continue; // Outside the requested range entirely.
     }
 
-    const key = task.assigneeId;
-    let counts = rows.get(key);
-    if (!counts) {
-      counts = new Array(buckets.length).fill(0);
-      rows.set(key, counts);
-    }
+    // Unassigned: the task's full weight of 1 goes to the null row, same as
+    // before assignees were split out.
+    const shares: Array<{ key: string | null; share: number }> =
+      task.assignees.length === 0
+        ? [{ key: null, share: 1 }]
+        : (() => {
+            const totalUnits = task.assignees.reduce(
+              (sum, assignee) => sum + assignee.units,
+              0,
+            );
+            return task.assignees.map((assignee) => ({
+              key: assignee.userId,
+              share:
+                totalUnits > 0
+                  ? assignee.units / totalUnits
+                  : 1 / task.assignees.length,
+            }));
+          })();
 
-    for (const [i, bucket] of buckets.entries()) {
-      if (spanStartDay < bucket.end && spanEndExclusive > bucket.start) {
-        counts[i] = (counts[i] ?? 0) + 1;
+    for (const { key, share } of shares) {
+      let counts = rows.get(key);
+      if (!counts) {
+        counts = new Array(buckets.length).fill(0);
+        rows.set(key, counts);
+      }
+
+      for (const [i, bucket] of buckets.entries()) {
+        if (spanStartDay < bucket.end && spanEndExclusive > bucket.start) {
+          counts[i] = (counts[i] ?? 0) + share;
+        }
       }
     }
   }

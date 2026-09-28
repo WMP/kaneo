@@ -9,6 +9,7 @@ import {
 } from "../../database/schema";
 import { publishEvent } from "../../events";
 import createNotification from "../../notification/controllers/create-notification";
+import { readTaskAssignees } from "../../task/assignments";
 import { parseMentionIds } from "../../utils/parse-mentions";
 
 async function createComment(
@@ -51,7 +52,6 @@ async function createComment(
 
   const [task] = await db
     .select({
-      assigneeId: taskTable.userId,
       projectId: taskTable.projectId,
       title: taskTable.title,
       workspaceId: projectTable.workspaceId,
@@ -85,24 +85,29 @@ async function createComment(
     });
   }
 
-  if (
-    task?.assigneeId &&
-    task.assigneeId !== userId &&
-    !mentionedIds.includes(task.assigneeId)
-  ) {
-    await createNotification({
-      userId: task.assigneeId,
-      type: "task_comment",
-      eventData: {
-        taskTitle: task.title,
-        commenterName: user?.name ?? null,
-        commentPreview: content.slice(0, 160),
-        projectId: task.projectId,
-        workspaceId: task.workspaceId,
-      },
-      resourceId: taskId,
-      resourceType: "task",
-    });
+  // Notify every current assignee, not only the primary, except the
+  // commenter and anyone already notified as an @mention above.
+  if (task) {
+    const assigneesByTaskId = await readTaskAssignees(db, [taskId]);
+    const assigneeIds = (assigneesByTaskId.get(taskId) ?? [])
+      .map((assignee) => assignee.userId)
+      .filter((id) => id !== userId && !mentionedIds.includes(id));
+
+    for (const assigneeId of assigneeIds) {
+      await createNotification({
+        userId: assigneeId,
+        type: "task_comment",
+        eventData: {
+          taskTitle: task.title,
+          commenterName: user?.name ?? null,
+          commentPreview: content.slice(0, 160),
+          projectId: task.projectId,
+          workspaceId: task.workspaceId,
+        },
+        resourceId: taskId,
+        resourceType: "task",
+      });
+    }
   }
 
   return savedActivity;

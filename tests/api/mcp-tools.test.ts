@@ -149,6 +149,21 @@ describe("MCP tool catalog", () => {
     expect(apiFetch).not.toHaveBeenCalled();
   });
 
+  it("replaces a task's full assignee list", async () => {
+    await call("update_task_assignees", {
+      taskId: "t1",
+      userIds: ["u1", "u2"],
+    });
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/task/t1/assignees",
+      method: "PUT",
+      body: { userIds: ["u1", "u2"] },
+    });
+
+    await call("update_task_assignees", { taskId: "t1", userIds: [] });
+    expect(lastRequest().body).toEqual({ userIds: [] });
+  });
+
   it("sets and clears a due date", async () => {
     await call("update_task_due_date", {
       taskId: "t1",

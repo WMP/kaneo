@@ -46,7 +46,23 @@ async function updateTaskAssignees({
 
   const previousPrimaryId = existingTask.userId;
 
-  await setTaskAssignees(db, id, trimmedUserIds);
+  // Read the pre-mutation assignee list so the published event can carry the
+  // full added/removed diff, not just the primary-mirror change.
+  const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
+  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? []).map(
+    (assignee) => assignee.userId,
+  );
+  const previousAssigneeIdSet = new Set(previousAssigneeIds);
+
+  const newAssigneeIds = await setTaskAssignees(db, id, trimmedUserIds);
+  const newAssigneeIdSet = new Set(newAssigneeIds);
+
+  const addedAssigneeIds = newAssigneeIds.filter(
+    (userId) => !previousAssigneeIdSet.has(userId),
+  );
+  const removedAssigneeIds = previousAssigneeIds.filter(
+    (userId) => !newAssigneeIdSet.has(userId),
+  );
 
   const [updatedTask] = await db
     .select({
@@ -84,9 +100,17 @@ async function updateTaskAssignees({
     });
   }
 
-  // Preserve the same primary-based events the single-assignee route fires,
-  // so external webhooks/GitHub sync stay unaffected by this route existing.
-  if (previousPrimaryId !== updatedTask.userId) {
+  // Preserve the same primary-based events the single-assignee route fires
+  // (so external webhooks/GitHub sync stay unaffected by this route
+  // existing), but also fire when only a secondary assignee was added or
+  // removed, carrying the full diff additively via
+  // addedAssigneeIds/removedAssigneeIds so every assignee — not just the
+  // primary — can be notified downstream.
+  const primaryChanged = previousPrimaryId !== updatedTask.userId;
+  const membershipChanged =
+    addedAssigneeIds.length > 0 || removedAssigneeIds.length > 0;
+
+  if (primaryChanged || membershipChanged) {
     if (!updatedTask.userId) {
       await publishEvent("task.unassigned", {
         taskId: updatedTask.id,
@@ -103,6 +127,8 @@ async function updateTaskAssignees({
         oldAssignee: previousPrimaryId,
         newAssignee: updatedTask.assigneeName ?? undefined,
         newAssigneeId: updatedTask.userId,
+        addedAssigneeIds,
+        removedAssigneeIds,
         title: updatedTask.title,
         type: "assignee_changed",
       });
