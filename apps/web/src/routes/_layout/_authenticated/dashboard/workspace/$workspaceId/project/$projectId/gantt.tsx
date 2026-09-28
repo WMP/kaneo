@@ -86,8 +86,11 @@ import {
 } from "@/components/gantt/zoom";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
+import {
+  AssigneeAvatars,
+  resolveTaskAssignees,
+} from "@/components/task/assignee-avatars";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -114,7 +117,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
 import { formatDate, formatDateMedium } from "@/lib/format";
-import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
@@ -2455,27 +2457,22 @@ function RouteComponent() {
                                     <p className="line-clamp-1 min-w-0 flex-1 text-xs font-medium leading-tight text-foreground">
                                       {task.title}
                                     </p>
-                                    {/* Owner avatar: initials over the
-                                        assignee's own image (see
-                                        task-assignee-popover.tsx and the
-                                        list/board views' identical pattern),
-                                        a plain "?" placeholder when
-                                        unassigned — small enough (size-5) to
-                                        sit beside the title without crowding
-                                        it on a narrow rail. */}
-                                    <span
-                                      title={task.assigneeName ?? undefined}
-                                    >
-                                      {task.assigneeId ? (
-                                        <Avatar className="size-5 shrink-0 border border-border/40">
-                                          <AvatarImage
-                                            src={task.assigneeImage ?? ""}
-                                            alt={task.assigneeName ?? ""}
-                                          />
-                                          <AvatarFallback className="text-[9px] font-medium">
-                                            {getInitials(task.assigneeName)}
-                                          </AvatarFallback>
-                                        </Avatar>
+                                    {/* Owner avatars: a stack of the task's
+                                        assignees (see task-assignee-popover.tsx
+                                        and the list/board views' identical
+                                        pattern), falling back to the single
+                                        primary assignee, with a plain "?"
+                                        placeholder when unassigned — small
+                                        enough (size-5) to sit beside the title
+                                        without crowding it on a narrow rail. */}
+                                    {(() => {
+                                      const taskAssignees =
+                                        resolveTaskAssignees(task);
+                                      return taskAssignees.length > 0 ? (
+                                        <AssigneeAvatars
+                                          assignees={taskAssignees}
+                                          avatarClassName="size-5 border-border/40"
+                                        />
                                       ) : (
                                         <span
                                           className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border/40 bg-muted text-[9px] font-medium text-muted-foreground"
@@ -2483,8 +2480,8 @@ function RouteComponent() {
                                         >
                                           ?
                                         </span>
-                                      )}
-                                    </span>
+                                      );
+                                    })()}
                                   </div>
                                   <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
                                     {formatDateMedium(task.scheduleStart)} -{" "}

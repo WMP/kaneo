@@ -2325,7 +2325,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Не назначено",
-				"updateError": "Не удалось обновить исполнителя задачи"
+				"updateError": "Не удалось обновить исполнителя задачи",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Не удалось обновить статус задачи"
@@ -2591,7 +2592,8 @@
 		},
 		"assignee": {
 			"label": "Исполнитель",
-			"unassigned": "Не назначено"
+			"unassigned": "Не назначено",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Срок выполнения",

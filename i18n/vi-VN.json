@@ -2296,7 +2296,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Chưa giao",
-				"updateError": "Không thể cập nhật người được giao công việc"
+				"updateError": "Không thể cập nhật người được giao công việc",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Không thể cập nhật trạng thái công việc"
@@ -2541,7 +2542,8 @@
 		},
 		"assignee": {
 			"label": "Người được giao",
-			"unassigned": "Chưa giao"
+			"unassigned": "Chưa giao",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Ngày đến hạn",

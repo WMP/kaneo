@@ -1,14 +1,16 @@
 import { Calendar, CalendarClock, CalendarX } from "lucide-react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
+import {
+  AssigneeAvatars,
+  resolveTaskAssignees,
+} from "@/components/task/assignee-avatars";
 import { TaskProgressBadges } from "@/components/task/task-progress-badges";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   dueDateStatusColors,
   getDueDateStatus,
   isTaskCompleted,
 } from "@/lib/due-date-status";
 import { formatDateShort } from "@/lib/format";
-import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
 import type { ExternalLink } from "@/types/external-link";
 import type Task from "@/types/task";
@@ -36,6 +38,7 @@ export function PublicTaskCard({
   const taskIsCompleted = isCompleted ?? isTaskCompleted(task.status);
   const labels = task.labels || [];
   const externalLinks = task.externalLinks || [];
+  const taskAssignees = useMemo(() => resolveTaskAssignees(task), [task]);
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null,
   );
@@ -85,19 +88,16 @@ export function PublicTaskCard({
         {projectSlug}-{task.number}
       </div>
 
-      {task.assigneeName && (
+      {taskAssignees.length > 0 && (
         <div className="flex items-center gap-1.5 mb-2">
-          <Avatar className="h-5 w-5">
-            <AvatarImage
-              src={task.assigneeImage ?? ""}
-              alt={task.assigneeName ?? ""}
-            />
-            <AvatarFallback className="text-[10px] font-medium border border-border/30">
-              {getInitials(task.assigneeName)}
-            </AvatarFallback>
-          </Avatar>
+          <AssigneeAvatars
+            assignees={taskAssignees}
+            avatarClassName="h-5 w-5"
+          />
           <span className="text-[10px] text-muted-foreground font-medium truncate">
-            {task.assigneeName}
+            {taskAssignees.length === 1
+              ? taskAssignees[0].name
+              : taskAssignees.map((assignee) => assignee.name).join(", ")}
           </span>
         </div>
       )}

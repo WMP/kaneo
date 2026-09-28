@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Nicht zugewiesen",
-				"updateError": "Aufgabenzuweisung konnte nicht aktualisiert werden"
+				"updateError": "Aufgabenzuweisung konnte nicht aktualisiert werden",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Aufgabenstatus konnte nicht aktualisiert werden"
@@ -2551,7 +2552,8 @@
 		},
 		"assignee": {
 			"label": "Zugewiesen an",
-			"unassigned": "Nicht zugewiesen"
+			"unassigned": "Nicht zugewiesen",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Fälligkeitsdatum",

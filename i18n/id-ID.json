@@ -2296,7 +2296,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Belum ditugaskan",
-				"updateError": "Gagal memperbarui penanggung jawab tugas"
+				"updateError": "Gagal memperbarui penanggung jawab tugas",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Gagal memperbarui status tugas"
@@ -2541,7 +2542,8 @@
 		},
 		"assignee": {
 			"label": "Penanggung jawab",
-			"unassigned": "Belum ditugaskan"
+			"unassigned": "Belum ditugaskan",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Tenggat",

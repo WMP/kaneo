@@ -2299,7 +2299,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "No asignada",
-				"updateError": "Error al actualizar el asignado a esta tarea"
+				"updateError": "Error al actualizar el asignado a esta tarea",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Error al actualizar el estado de esta tarea"
@@ -2550,7 +2551,8 @@
 		},
 		"assignee": {
 			"label": "Asignado",
-			"unassigned": "Sin asignar"
+			"unassigned": "Sin asignar",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Fecha de vencimiento",

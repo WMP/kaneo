@@ -34,9 +34,14 @@ function createWrapper() {
 const useLocation = vi.fn();
 const deleteTask = vi.fn(async () => {});
 const updateTask = vi.fn(async (input: Record<string, unknown>) => input);
+const updateTaskAssignees = vi.fn(async () => ({}));
 const setProject = vi.fn();
 let workspaceId = "workspace-1";
 let projects: { id: string; name: string; slug: string }[] | undefined;
+let workspaceMembers: Array<{
+  userId: string;
+  user: { name: string; image: string | null };
+}> = [];
 let storedProject: { id: string; columns: unknown[] } | null = null;
 let ensureTaskId: (() => Promise<string | null>) | undefined;
 
@@ -46,6 +51,7 @@ beforeEach(() => {
     { id: "project-1", name: "Alpha", slug: "alp" },
     { id: "project-2", name: "Beta", slug: "bet" },
   ];
+  workspaceMembers = [];
   storedProject = null;
   useLocation.mockReturnValue({ pathname: "/dashboard/workspace/workspace-1" });
 });
@@ -101,6 +107,10 @@ vi.mock("@/hooks/mutations/task/use-update-task", () => ({
   useUpdateTask: () => ({ mutateAsync: updateTask }),
 }));
 
+vi.mock("@/hooks/mutations/task/use-update-task-assignees", () => ({
+  useUpdateTaskAssignees: () => ({ mutateAsync: updateTaskAssignees }),
+}));
+
 vi.mock("@/hooks/queries/label/use-get-labels-by-workspace", () => ({
   default: () => ({ data: [] }),
 }));
@@ -112,7 +122,7 @@ vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
 vi.mock(
   "@/hooks/queries/workspace-users/use-get-active-workspace-users",
   () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: { members: [] } }),
+    useGetActiveWorkspaceUsers: () => ({ data: { members: workspaceMembers } }),
   }),
 );
 
@@ -461,5 +471,98 @@ describe("CreateTaskModal context isolation", () => {
     view.rerender(<CreateTaskModal open={false} onClose={vi.fn()} />);
     expect(deleteTask).toHaveBeenCalledExactlyOnceWith("task-1");
     expect(setProject).not.toHaveBeenCalled();
+  });
+});
+
+describe("CreateTaskModal multiple assignees", () => {
+  it("submits the first selected assignee as the primary userId and pushes the rest via the assignees endpoint", async () => {
+    workspaceMembers = [
+      { userId: "u1", user: { name: "Alice", image: null } },
+      { userId: "u2", user: { name: "Bob", image: null } },
+    ];
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    fireEvent.click(await screen.findByText("Alice"));
+    fireEvent.click(screen.getByText("Bob"));
+
+    enterTitle("Task with two assignees");
+    submit();
+
+    await vi.waitFor(() => {
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "u1" }),
+      );
+    });
+
+    await vi.waitFor(() => {
+      expect(updateTaskAssignees).toHaveBeenCalledWith({
+        taskId: "task-1",
+        projectId: "project-1",
+        userIds: ["u1", "u2"],
+      });
+    });
+  });
+
+  it("doesn't call the assignees endpoint when only one assignee is selected", async () => {
+    workspaceMembers = [{ userId: "u1", user: { name: "Alice", image: null } }];
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    fireEvent.click(await screen.findByText("Alice"));
+
+    enterTitle("Task with one assignee");
+    submit();
+
+    await vi.waitFor(() => {
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "u1" }),
+      );
+    });
+
+    expect(updateTaskAssignees).not.toHaveBeenCalled();
+  });
+
+  it("toggling a selected member back off removes them from the submitted set", async () => {
+    workspaceMembers = [
+      { userId: "u1", user: { name: "Alice", image: null } },
+      { userId: "u2", user: { name: "Bob", image: null } },
+    ];
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    fireEvent.click(await screen.findByText("Alice"));
+    fireEvent.click(screen.getByText("Bob"));
+    // Toggle Bob back off before submitting.
+    fireEvent.click(screen.getByText("Bob"));
+
+    enterTitle("Task with one assignee after toggling");
+    submit();
+
+    await vi.waitFor(() => {
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "u1" }),
+      );
+    });
+
+    expect(updateTaskAssignees).not.toHaveBeenCalled();
   });
 });

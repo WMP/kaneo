@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Χωρίς ανάθεση",
-				"updateError": "Αποτυχία ενημέρωσης ανάθεσης εργασίας"
+				"updateError": "Αποτυχία ενημέρωσης ανάθεσης εργασίας",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Αποτυχία ενημέρωσης κατάστασης εργασίας"
@@ -2551,7 +2552,8 @@
 		},
 		"assignee": {
 			"label": "Ανατεθειμένος",
-			"unassigned": "Χωρίς ανάθεση"
+			"unassigned": "Χωρίς ανάθεση",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Ημερομηνία λήξης",

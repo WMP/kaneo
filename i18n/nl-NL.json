@@ -2292,7 +2292,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Niet toegewezen",
-				"updateError": "Bijwerken toegewezen persoon mislukt"
+				"updateError": "Bijwerken toegewezen persoon mislukt",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Bijwerken taakstatus mislukt"
@@ -2540,7 +2541,8 @@
 		},
 		"assignee": {
 			"label": "Toegewezen persoon",
-			"unassigned": "Niet toegewezen"
+			"unassigned": "Niet toegewezen",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Einddatum",

@@ -2310,7 +2310,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Non assigné",
-				"updateError": "Échec de la mise à jour de l'assigné de la tâche"
+				"updateError": "Échec de la mise à jour de l'assigné de la tâche",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Échec de la mise à jour du statut de la tâche"
@@ -2561,7 +2562,8 @@
 		},
 		"assignee": {
 			"label": "Assigné",
-			"unassigned": "Non assigné"
+			"unassigned": "Non assigné",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Date d'échéance",

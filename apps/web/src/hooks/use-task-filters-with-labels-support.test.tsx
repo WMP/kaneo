@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTaskFiltersWithLabelsSupport } from "./use-task-filters-with-labels-support";
 
@@ -224,4 +224,108 @@ describe("useTaskFiltersWithLabelsSupport", () => {
       ]);
     },
   );
+
+  it("matches the assignee filter against a task's non-primary assignee", () => {
+    const project = {
+      id: "project-1",
+      name: "Project",
+      slug: "PROJ",
+      icon: null,
+      description: null,
+      isPublic: false,
+      createdAt: "2026-04-16T00:00:00.000Z",
+      updatedAt: "2026-04-16T00:00:00.000Z",
+      workspaceId: "workspace-1",
+      columns: [
+        {
+          id: "todo",
+          slug: "todo",
+          name: "Todo",
+          icon: null,
+          isFinal: false,
+          tasks: [
+            {
+              id: "task-multi",
+              title: "Multi-assignee task",
+              number: 1,
+              description: null,
+              status: "todo",
+              priority: null,
+              startDate: null,
+              dueDate: null,
+              progress: 0,
+              isMilestone: false,
+              baselineStartDate: null,
+              baselineDueDate: null,
+              position: 0,
+              createdAt: "2026-04-16T00:00:00.000Z",
+              updatedAt: "2026-04-16T00:00:00.000Z",
+              userId: "user-1",
+              assigneeId: "user-1",
+              assigneeName: "Alice",
+              assigneeImage: null,
+              assignees: [
+                {
+                  userId: "user-1",
+                  name: "Alice",
+                  image: null,
+                  units: 100,
+                  work: null,
+                },
+                {
+                  userId: "user-2",
+                  name: "Bob",
+                  image: null,
+                  units: 100,
+                  work: null,
+                },
+              ],
+              projectId: "project-1",
+              labels: [],
+              externalLinks: [],
+            },
+            {
+              id: "task-single",
+              title: "Single-assignee task",
+              number: 2,
+              description: null,
+              status: "todo",
+              priority: null,
+              startDate: null,
+              dueDate: null,
+              progress: 0,
+              isMilestone: false,
+              baselineStartDate: null,
+              baselineDueDate: null,
+              position: 1,
+              createdAt: "2026-04-16T00:00:00.000Z",
+              updatedAt: "2026-04-16T00:00:00.000Z",
+              userId: "user-3",
+              assigneeId: "user-3",
+              assigneeName: "Carol",
+              assigneeImage: null,
+              projectId: "project-1",
+              labels: [],
+              externalLinks: [],
+            },
+          ],
+        },
+      ],
+      plannedTasks: [],
+      archivedTasks: [],
+    };
+
+    const { result } = renderHook(
+      () => useTaskFiltersWithLabelsSupport(project, "project-1"),
+      { wrapper: createWrapper() },
+    );
+
+    act(() => {
+      result.current.updateFilter("assignee", ["user-2"]);
+    });
+
+    expect(
+      result.current.filteredProject?.columns[0]?.tasks.map((t) => t.id),
+    ).toEqual(["task-multi"]);
+  });
 });

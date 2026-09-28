@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Təyin olunmayıb",
-				"updateError": "Tapşırığın icraçısını yeniləmək alınmadı"
+				"updateError": "Tapşırığın icraçısını yeniləmək alınmadı",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Tapşırığın vəziyyətini yeniləmək alınmadı"
@@ -2559,7 +2560,8 @@
 		},
 		"assignee": {
 			"label": "İcraçı",
-			"unassigned": "Təyin olunmayıb"
+			"unassigned": "Təyin olunmayıb",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Son tarix",
