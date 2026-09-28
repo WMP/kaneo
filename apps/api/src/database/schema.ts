@@ -152,18 +152,18 @@ export const workspaceTable = pgTable("workspace", {
   // Days of activity history to keep; null or non-positive means keep
   // forever. Enforced daily by the "activity-retention" cron job — see
   // `apps/api/src/scheduler/activity-retention.ts`.
-  activityRetentionDays: integer("activity_retention_days"),
+  activityRetentionDays: integer("ganttpro_activity_retention_days"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull(),
   // Bitmask of the workspace's working weekdays: bit i (i = 0..6, 0 = Sunday,
   // matching JS Date#getDay()) set means weekday i is a WORKING day. Default
   // 62 = 0b0111110 = Monday..Friday working, Saturday/Sunday off. Individual
   // exceptions (specific non-working dates, e.g. public holidays) live in
   // workspaceHolidayTable instead of this bitmask.
-  workingDays: integer("working_days").notNull().default(62),
+  workingDays: integer("ganttpro_working_days").notNull().default(62),
 });
 
 export const workspaceHolidayTable = pgTable(
-  "workspace_holiday",
+  "ganttpro_workspace_holiday",
   {
     id: text("id")
       .$defaultFn(() => createId())
@@ -181,8 +181,8 @@ export const workspaceHolidayTable = pgTable(
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
-    index("workspace_holiday_workspaceId_idx").on(table.workspaceId),
-    unique("workspace_holiday_workspace_id_date_unique").on(
+    index("ganttpro_workspace_holiday_workspaceId_idx").on(table.workspaceId),
+    unique("ganttpro_workspace_holiday_workspace_id_date_unique").on(
       table.workspaceId,
       table.date,
     ),
@@ -368,9 +368,9 @@ export const projectTable = pgTable(
     archivedAt: timestamp("archived_at", { mode: "date" }),
     lastTaskNumber: integer("last_task_number").notNull().default(0),
     position: integer("position").notNull().default(0),
-    backgroundObjectKey: text("background_object_key"),
-    backgroundMimeType: text("background_mime_type"),
-    backgroundVersion: text("background_version"),
+    backgroundObjectKey: text("ganttpro_background_object_key"),
+    backgroundMimeType: text("ganttpro_background_mime_type"),
+    backgroundVersion: text("ganttpro_background_version"),
   },
   (table) => [
     unique("project_workspace_id_id_unique").on(table.workspaceId, table.id),
@@ -441,7 +441,7 @@ export const workflowRuleTable = pgTable(
 );
 
 export const calendarFeedTable = pgTable(
-  "calendar_feed",
+  "ganttpro_calendar_feed",
   {
     id: text("id")
       .$defaultFn(() => createId())
@@ -457,7 +457,9 @@ export const calendarFeedTable = pgTable(
     timeZone: text("time_zone").notNull().default("UTC"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
-  (table) => [index("calendar_feed_project_id_idx").on(table.projectId)],
+  (table) => [
+    index("ganttpro_calendar_feed_project_id_idx").on(table.projectId),
+  ],
 );
 
 export const taskTable = pgTable(
@@ -493,15 +495,17 @@ export const taskTable = pgTable(
     // via the check constraint below (drizzle-orm has no built-in range check
     // helper), so out-of-range values can only reach the database through a
     // path that skips the API.
-    progress: integer("progress").default(0).notNull(),
+    progress: integer("ganttpro_progress").default(0).notNull(),
     // A milestone renders as a single diamond marker at its date rather than
     // a spanning bar; see gantt-task-bar rendering on the web side.
-    isMilestone: boolean("is_milestone").default(false).notNull(),
+    isMilestone: boolean("ganttpro_is_milestone").default(false).notNull(),
     // Baseline (plan vs actual): a snapshot of startDate/dueDate taken via the
     // dedicated set/clear baseline route, not updated by ordinary task edits.
     // Both null until a baseline is set; nulled together on clear.
-    baselineStartDate: timestamp("baseline_start_date", { mode: "date" }),
-    baselineDueDate: timestamp("baseline_due_date", { mode: "date" }),
+    baselineStartDate: timestamp("ganttpro_baseline_start_date", {
+      mode: "date",
+    }),
+    baselineDueDate: timestamp("ganttpro_baseline_due_date", { mode: "date" }),
     // Scheduling constraint for the Gantt chart. One of:
     //  - "none" (default): no constraint.
     //  - "start_no_earlier_than": the task should not start before
@@ -512,12 +516,12 @@ export const taskTable = pgTable(
     //    the dependency cascade never shifts it.
     // constraintDate is date-only (UTC midnight), like startDate/dueDate, and
     // is required whenever constraintType isn't "none".
-    constraintType: text("constraint_type").notNull().default("none"),
-    constraintDate: timestamp("constraint_date", { mode: "date" }),
+    constraintType: text("ganttpro_constraint_type").notNull().default("none"),
+    constraintDate: timestamp("ganttpro_constraint_date", { mode: "date" }),
     // Client-approval gate for a task (e.g. sign-off before a migration
     // cutover). Allowed values: "none" | "pending" | "approved" | "rejected".
-    approvalStatus: text("approval_status").notNull().default("none"),
-    approvalNote: text("approval_note"),
+    approvalStatus: text("ganttpro_approval_status").notNull().default("none"),
+    approvalNote: text("ganttpro_approval_note"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
@@ -531,7 +535,7 @@ export const taskTable = pgTable(
     index("task_columnId_idx").on(table.columnId),
     unique("task_project_number_unique").on(table.projectId, table.number),
     check(
-      "task_progress_range",
+      "ganttpro_task_progress_range",
       sql`${table.progress} >= 0 AND ${table.progress} <= 100`,
     ),
   ],
@@ -656,10 +660,13 @@ export const activityTable = pgTable(
     // Set only for workspace-level activity (taskId null); task-scoped
     // activity leaves this null. See the check constraint below: exactly one
     // of taskId/workspaceId must be set.
-    workspaceId: text("workspace_id").references(() => workspaceTable.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+    workspaceId: text("ganttpro_workspace_id").references(
+      () => workspaceTable.id,
+      {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      },
+    ),
     type: text("type").notNull(),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
@@ -680,14 +687,14 @@ export const activityTable = pgTable(
   (table) => [
     index("activity_task_id_idx").on(table.taskId),
     index("activity_userId_idx").on(table.userId),
-    index("activity_workspaceId_idx").on(table.workspaceId),
+    index("ganttpro_activity_workspaceId_idx").on(table.workspaceId),
     unique("activity_task_external_source_external_url_unique").on(
       table.taskId,
       table.externalSource,
       table.externalUrl,
     ),
     check(
-      "activity_task_or_workspace",
+      "ganttpro_activity_task_or_workspace",
       sql`(${table.taskId} IS NOT NULL) OR (${table.workspaceId} IS NOT NULL)`,
     ),
   ],
@@ -1115,9 +1122,9 @@ export const taskRelationTable = pgTable(
     // Gantt chart draws); `related`/`subtask` rows keep the fs/0 defaults.
     // Kept as text, like relationType, with the fs|ss|ff|sf enum enforced in
     // the Zod layer rather than the database.
-    dependencyType: text("dependency_type").default("fs").notNull(),
+    dependencyType: text("ganttpro_dependency_type").default("fs").notNull(),
     // Lag (positive) or lead (negative) in days applied to the dependency.
-    lagDays: integer("lag_days").default(0).notNull(),
+    lagDays: integer("ganttpro_lag_days").default(0).notNull(),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => [

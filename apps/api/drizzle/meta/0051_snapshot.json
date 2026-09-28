@@ -1,5 +1,5 @@
 {
-  "id": "fcb1ec5f-e4ed-4b48-9bb0-0a164afd1343",
+  "id": "94859176-49cf-4138-8c09-ac40178dbafd",
   "prevId": "f9757406-e33b-407b-9849-36c7af901b05",
   "version": "7",
   "dialect": "postgresql",
@@ -142,8 +142,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "workspace_id": {
-          "name": "workspace_id",
+        "ganttpro_workspace_id": {
+          "name": "ganttpro_workspace_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -242,11 +242,11 @@
           "method": "btree",
           "with": {}
         },
-        "activity_workspaceId_idx": {
-          "name": "activity_workspaceId_idx",
+        "ganttpro_activity_workspaceId_idx": {
+          "name": "ganttpro_activity_workspaceId_idx",
           "columns": [
             {
-              "expression": "workspace_id",
+              "expression": "ganttpro_workspace_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -272,12 +272,12 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "activity_workspace_id_workspace_id_fk": {
-          "name": "activity_workspace_id_workspace_id_fk",
+        "activity_ganttpro_workspace_id_workspace_id_fk": {
+          "name": "activity_ganttpro_workspace_id_workspace_id_fk",
           "tableFrom": "activity",
           "tableTo": "workspace",
           "columnsFrom": [
-            "workspace_id"
+            "ganttpro_workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -313,9 +313,9 @@
       },
       "policies": {},
       "checkConstraints": {
-        "activity_task_or_workspace": {
-          "name": "activity_task_or_workspace",
-          "value": "(\"activity\".\"task_id\" IS NOT NULL) OR (\"activity\".\"workspace_id\" IS NOT NULL)"
+        "ganttpro_activity_task_or_workspace": {
+          "name": "ganttpro_activity_task_or_workspace",
+          "value": "(\"activity\".\"task_id\" IS NOT NULL) OR (\"activity\".\"ganttpro_workspace_id\" IS NOT NULL)"
         }
       },
       "isRLSEnabled": false
@@ -965,8 +965,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.calendar_feed": {
-      "name": "calendar_feed",
+    "public.ganttpro_calendar_feed": {
+      "name": "ganttpro_calendar_feed",
       "schema": "",
       "columns": {
         "id": {
@@ -1009,8 +1009,8 @@
         }
       },
       "indexes": {
-        "calendar_feed_project_id_idx": {
-          "name": "calendar_feed_project_id_idx",
+        "ganttpro_calendar_feed_project_id_idx": {
+          "name": "ganttpro_calendar_feed_project_id_idx",
           "columns": [
             {
               "expression": "project_id",
@@ -1026,9 +1026,9 @@
         }
       },
       "foreignKeys": {
-        "calendar_feed_project_id_project_id_fk": {
-          "name": "calendar_feed_project_id_project_id_fk",
-          "tableFrom": "calendar_feed",
+        "ganttpro_calendar_feed_project_id_project_id_fk": {
+          "name": "ganttpro_calendar_feed_project_id_project_id_fk",
+          "tableFrom": "ganttpro_calendar_feed",
           "tableTo": "project",
           "columnsFrom": [
             "project_id"
@@ -1042,8 +1042,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "calendar_feed_token_unique": {
-          "name": "calendar_feed_token_unique",
+        "ganttpro_calendar_feed_token_unique": {
+          "name": "ganttpro_calendar_feed_token_unique",
           "nullsNotDistinct": false,
           "columns": [
             "token"
@@ -2792,20 +2792,20 @@
           "notNull": true,
           "default": 0
         },
-        "background_object_key": {
-          "name": "background_object_key",
+        "ganttpro_background_object_key": {
+          "name": "ganttpro_background_object_key",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "background_mime_type": {
-          "name": "background_mime_type",
+        "ganttpro_background_mime_type": {
+          "name": "ganttpro_background_mime_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "background_version": {
-          "name": "background_version",
+        "ganttpro_background_version": {
+          "name": "ganttpro_background_version",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3010,15 +3010,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "dependency_type": {
-          "name": "dependency_type",
+        "ganttpro_dependency_type": {
+          "name": "ganttpro_dependency_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'fs'"
         },
-        "lag_days": {
-          "name": "lag_days",
+        "ganttpro_lag_days": {
+          "name": "ganttpro_lag_days",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -3262,54 +3262,54 @@
           "primaryKey": false,
           "notNull": false
         },
-        "progress": {
-          "name": "progress",
+        "ganttpro_progress": {
+          "name": "ganttpro_progress",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "is_milestone": {
-          "name": "is_milestone",
+        "ganttpro_is_milestone": {
+          "name": "ganttpro_is_milestone",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "baseline_start_date": {
-          "name": "baseline_start_date",
+        "ganttpro_baseline_start_date": {
+          "name": "ganttpro_baseline_start_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "baseline_due_date": {
-          "name": "baseline_due_date",
+        "ganttpro_baseline_due_date": {
+          "name": "ganttpro_baseline_due_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "constraint_type": {
-          "name": "constraint_type",
+        "ganttpro_constraint_type": {
+          "name": "ganttpro_constraint_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'none'"
         },
-        "constraint_date": {
-          "name": "constraint_date",
+        "ganttpro_constraint_date": {
+          "name": "ganttpro_constraint_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "approval_status": {
-          "name": "approval_status",
+        "ganttpro_approval_status": {
+          "name": "ganttpro_approval_status",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'none'"
         },
-        "approval_note": {
-          "name": "approval_note",
+        "ganttpro_approval_note": {
+          "name": "ganttpro_approval_note",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3445,9 +3445,9 @@
       },
       "policies": {},
       "checkConstraints": {
-        "task_progress_range": {
-          "name": "task_progress_range",
-          "value": "\"task\".\"progress\" >= 0 AND \"task\".\"progress\" <= 100"
+        "ganttpro_task_progress_range": {
+          "name": "ganttpro_task_progress_range",
+          "value": "\"task\".\"ganttpro_progress\" >= 0 AND \"task\".\"ganttpro_progress\" <= 100"
         }
       },
       "isRLSEnabled": false
@@ -4705,8 +4705,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "activity_retention_days": {
-          "name": "activity_retention_days",
+        "ganttpro_activity_retention_days": {
+          "name": "ganttpro_activity_retention_days",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -4717,8 +4717,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "working_days": {
-          "name": "working_days",
+        "ganttpro_working_days": {
+          "name": "ganttpro_working_days",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -4893,8 +4893,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.workspace_holiday": {
-      "name": "workspace_holiday",
+    "public.ganttpro_workspace_holiday": {
+      "name": "ganttpro_workspace_holiday",
       "schema": "",
       "columns": {
         "id": {
@@ -4930,8 +4930,8 @@
         }
       },
       "indexes": {
-        "workspace_holiday_workspaceId_idx": {
-          "name": "workspace_holiday_workspaceId_idx",
+        "ganttpro_workspace_holiday_workspaceId_idx": {
+          "name": "ganttpro_workspace_holiday_workspaceId_idx",
           "columns": [
             {
               "expression": "workspace_id",
@@ -4947,9 +4947,9 @@
         }
       },
       "foreignKeys": {
-        "workspace_holiday_workspace_id_workspace_id_fk": {
-          "name": "workspace_holiday_workspace_id_workspace_id_fk",
-          "tableFrom": "workspace_holiday",
+        "ganttpro_workspace_holiday_workspace_id_workspace_id_fk": {
+          "name": "ganttpro_workspace_holiday_workspace_id_workspace_id_fk",
+          "tableFrom": "ganttpro_workspace_holiday",
           "tableTo": "workspace",
           "columnsFrom": [
             "workspace_id"
@@ -4963,8 +4963,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "workspace_holiday_workspace_id_date_unique": {
-          "name": "workspace_holiday_workspace_id_date_unique",
+        "ganttpro_workspace_holiday_workspace_id_date_unique": {
+          "name": "ganttpro_workspace_holiday_workspace_id_date_unique",
           "nullsNotDistinct": false,
           "columns": [
             "workspace_id",
