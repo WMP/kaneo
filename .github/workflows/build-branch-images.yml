@@ -17,7 +17,6 @@ on:
       - claude/cross-project-relations
       - claude/gantt-plus-cross-project
       - claude/gantt-pan-zoom
-      - claude/integration-all
       - claude/determined-ptolemy-yg6qir
       - claude/gantt-pro
   workflow_dispatch:
