@@ -2513,7 +2513,8 @@
 			"gateWarningTitle": "Bloqueada por una puerta de aprobación pendiente",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "¿Eliminar tarea?",

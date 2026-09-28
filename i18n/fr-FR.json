@@ -2524,7 +2524,8 @@
 			"gateWarningTitle": "Bloquée par un portail non approuvé",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Supprimer la tâche ?",

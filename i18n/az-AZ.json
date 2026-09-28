@@ -2528,7 +2528,8 @@
 			"gateWarningTitle": "Təsdiqlənməmiş qapı tərəfindən bloklanıb",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Tapşırıq silinsin?",

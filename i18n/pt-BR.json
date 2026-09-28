@@ -2524,7 +2524,8 @@
 			"gateWarningTitle": "Bloqueado por um portão não aprovado",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Excluir tarefa?",

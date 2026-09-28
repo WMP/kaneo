@@ -2519,7 +2519,8 @@
 			"gateWarningTitle": "未承認のゲートによってブロックされています",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",

@@ -2515,7 +2515,8 @@
 			"gateWarningTitle": "Durch eine nicht genehmigte Freigabe blockiert",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",

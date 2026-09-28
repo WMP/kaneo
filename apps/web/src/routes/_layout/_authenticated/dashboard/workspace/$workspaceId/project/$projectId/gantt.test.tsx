@@ -116,6 +116,8 @@ const preferencesState = {
   setGanttShowCriticalPath: () => {},
   ganttCustomFieldByProject: {} as Record<string, string | null>,
   setGanttCustomField,
+  ganttBarColorSourceByProject: {} as Record<string, string>,
+  setGanttBarColorSource: vi.fn(),
 };
 
 vi.mock("@/store/user-preferences", () => ({
@@ -137,9 +139,13 @@ vi.mock("@/components/page-title", () => ({
 }));
 
 vi.mock("@/components/gantt/gantt-task-bar", () => ({
-  GanttTaskBar: ({ task }: { task: { title: string } }) => (
-    <div>{task.title}</div>
-  ),
+  GanttTaskBar: ({
+    task,
+    barColor,
+  }: {
+    task: { title: string };
+    barColor?: string;
+  }) => <div data-bar-color={barColor ?? ""}>{task.title}</div>,
 }));
 
 // The route reads gate warnings directly (not just through GanttTaskBar) to
@@ -234,6 +240,8 @@ afterEach(() => {
   useGetCustomFieldValuesByProject.mockReturnValue({ data: [] });
   setGanttCustomField.mockClear();
   preferencesState.ganttCustomFieldByProject = {};
+  preferencesState.ganttBarColorSourceByProject = {};
+  preferencesState.setGanttBarColorSource.mockClear();
   routeParams.projectId = "project-1";
   preferencesState.ganttTimelineUnit = "day";
   preferencesState.ganttTimelineUnitTouched = false;
@@ -612,5 +620,83 @@ describe("Gantt custom field column", () => {
     // matches (task rail + bar) are expected here.
     expect(screen.getAllByText("No approval yet").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Client approval: $/)).toBeNull();
+  });
+});
+
+describe("Gantt bar color source", () => {
+  it("colors a task's bar from its first label's resolved color when the source is 'label'", () => {
+    preferencesState.ganttBarColorSourceByProject = { "project-1": "label" };
+    mockProjectWithTask(
+      makeTask({
+        id: "labeled-task",
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+        labels: [
+          { id: "label-1", name: "Blocked", color: "green" },
+          { id: "label-2", name: "Urgent", color: "red" },
+        ],
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    // "green" resolves through the shared label palette (see
+    // constants/label-colors.ts) to this CSS custom property — the second
+    // label ("red") must be ignored, since only the first label colors the
+    // bar.
+    expect(
+      screen.getByText("Ongoing work", { selector: "[data-bar-color]" }),
+    ).toHaveAttribute("data-bar-color", "var(--color-green-600)");
+  });
+
+  it("leaves the bar uncolored when the source is 'label' but the task has no labels", () => {
+    preferencesState.ganttBarColorSourceByProject = { "project-1": "label" };
+    mockProjectWithTask(
+      makeTask({
+        id: "unlabeled-task",
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(
+      screen.getByText("Ongoing work", { selector: "[data-bar-color]" }),
+    ).toHaveAttribute("data-bar-color", "");
+  });
+
+  it("does not color bars by label when the source is left at 'none'", () => {
+    mockProjectWithTask(
+      makeTask({
+        id: "labeled-task",
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+        labels: [{ id: "label-1", name: "Blocked", color: "green" }],
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(
+      screen.getByText("Ongoing work", { selector: "[data-bar-color]" }),
+    ).toHaveAttribute("data-bar-color", "");
+  });
+
+  it("offers the 'label' option in the bar-color-source picker even with no custom field selected", () => {
+    mockProjectWithTask(
+      makeTask({
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+
+    render(<GanttRoute />);
+
+    expect(screen.getByLabelText("Bar color")).toBeInTheDocument();
   });
 });

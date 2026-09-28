@@ -2525,6 +2525,7 @@
 			"barColorSourceLabel": "Bar color",
 			"barColorSourceNone": "None",
 			"barColorSourceCustomField": "Custom field",
+			"barColorSourceFirstLabel": "First label",
 			"approvalBadgeAriaLabel": "Approval: {{status}}",
 			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
 			"gateWarningBadge": "Gate",

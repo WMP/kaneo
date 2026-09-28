@@ -2504,7 +2504,8 @@
 			"gateWarningTitle": "Geblokkeerd door een niet-goedgekeurde gate",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Taak verwijderen?",

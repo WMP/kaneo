@@ -314,8 +314,7 @@ function RouteComponent() {
     return map;
   }, [customFieldValues, selectedCustomFieldId]);
   // Persisted per-project like ganttCustomFieldByProject above: which source
-  // (if any) colors a task's bar. "customField" is the only source this
-  // feature adds; a later feature adds "label" alongside it.
+  // (if any) colors a task's bar — "none", "customField", or "label".
   const ganttBarColorSourceByProject = useUserPreferencesStore(
     (state) => state.ganttBarColorSourceByProject,
   );
@@ -492,6 +491,21 @@ function RouteComponent() {
     ],
     [project],
   );
+
+  // Same per-task-id map shape as customFieldColorByTaskId above, but sourced
+  // from each task's own first label instead of a custom field value — built
+  // from allTasks (the raw fetched tasks) rather than the derived/rolled-up
+  // scheduledTasks, since a summary or external row never carries its own
+  // labels anyway and this only needs to reach ordinary task rows.
+  const labelColorByTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (barColorSource !== "label") return map;
+    for (const task of allTasks) {
+      const firstLabel = task.labels?.[0];
+      if (firstLabel) map.set(task.id, resolveLabelColor(firstLabel.color));
+    }
+    return map;
+  }, [barColorSource, allTasks]);
 
   // Declared here (rather than down with the other relation-derived values
   // below) because the hierarchy/rollup step just below needs it to build
@@ -1913,37 +1927,43 @@ function RouteComponent() {
               </Select>
             )}
 
-            {selectedCustomFieldId && (
-              <Select
-                value={barColorSource}
-                onValueChange={(value) =>
-                  setGanttBarColorSource(
-                    projectId,
-                    isGanttBarColorSource(value) ? value : "none",
-                  )
-                }
+            <Select
+              value={barColorSource}
+              onValueChange={(value) =>
+                setGanttBarColorSource(
+                  projectId,
+                  isGanttBarColorSource(value) ? value : "none",
+                )
+              }
+            >
+              <SelectTrigger
+                size="sm"
+                className="h-9 w-full max-w-[11rem] sm:h-8"
+                aria-label={t("tasks:gantt.barColorSourceLabel")}
               >
-                <SelectTrigger
-                  size="sm"
-                  className="h-9 w-full max-w-[11rem] sm:h-8"
-                  aria-label={t("tasks:gantt.barColorSourceLabel")}
-                >
-                  <SelectValue>
-                    {barColorSource === "customField"
-                      ? t("tasks:gantt.barColorSourceCustomField")
+                <SelectValue>
+                  {barColorSource === "customField"
+                    ? t("tasks:gantt.barColorSourceCustomField")
+                    : barColorSource === "label"
+                      ? t("tasks:gantt.barColorSourceFirstLabel")
                       : t("tasks:gantt.barColorSourceNone")}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">
-                    {t("tasks:gantt.barColorSourceNone")}
-                  </SelectItem>
-                  <SelectItem value="customField">
-                    {t("tasks:gantt.barColorSourceCustomField")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  {t("tasks:gantt.barColorSourceNone")}
+                </SelectItem>
+                <SelectItem value="label">
+                  {t("tasks:gantt.barColorSourceFirstLabel")}
+                </SelectItem>
+                {/* Meaningful only once a custom field is also selected above
+                    (see customFieldColorByTaskId) — picking it beforehand is
+                    a graceful no-op, leaving bars at their default color. */}
+                <SelectItem value="customField">
+                  {t("tasks:gantt.barColorSourceCustomField")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
             {timeline && (
               <div className="flex flex-wrap items-center gap-2">
@@ -2564,7 +2584,10 @@ function RouteComponent() {
                               onLinkDragStart={handleLinkDragStart}
                               onDatesCommitted={handleTaskDatesCommitted}
                               gateWarnings={gateWarningsByTaskId.get(task.id)}
-                              barColor={customFieldColorByTaskId.get(task.id)}
+                              barColor={
+                                customFieldColorByTaskId.get(task.id) ??
+                                labelColorByTaskId.get(task.id)
+                              }
                             />
                           )}
                         </div>

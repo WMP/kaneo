@@ -14,10 +14,13 @@ export function isGanttUnit(value: unknown): value is GanttUnit {
 }
 
 // "none" keeps the default (uncolored) bar; "customField" colors a bar by the
-// selected dropdown custom field's option color. A later feature adds
-// "label" to this union — kept a plain string union so that's a one-line
-// addition rather than a redesign.
-export const GANTT_BAR_COLOR_SOURCES = ["none", "customField"] as const;
+// selected dropdown custom field's option color; "label" colors a bar by the
+// task's first label.
+export const GANTT_BAR_COLOR_SOURCES = [
+  "none",
+  "customField",
+  "label",
+] as const;
 export type GanttBarColorSource = (typeof GANTT_BAR_COLOR_SOURCES)[number];
 
 export function isGanttBarColorSource(

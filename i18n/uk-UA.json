@@ -2533,7 +2533,8 @@
 			"gateWarningTitle": "Заблоковано незатвердженим шлюзом",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Видалити завдання?",

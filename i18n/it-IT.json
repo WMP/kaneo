@@ -2524,7 +2524,8 @@
 			"gateWarningTitle": "Bloccata da un gate non approvato",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Eliminare l'Attività?",

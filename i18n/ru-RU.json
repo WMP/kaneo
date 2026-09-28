@@ -2549,7 +2549,8 @@
 			"gateWarningTitle": "Заблокировано неутверждённым шлюзом",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Удалить задачу?",

@@ -2515,7 +2515,8 @@
 			"gateWarningTitle": "Onaylanmamış bir geçit tarafından engellendi",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",

@@ -2519,7 +2519,8 @@
 			"gateWarningTitle": "被未审批的关卡阻塞",
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None"
+			"barColorSourceNone": "None",
+			"barColorSourceFirstLabel": "First label"
 		},
 		"delete": {
 			"title": "删除任务？",
