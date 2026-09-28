@@ -2582,7 +2582,8 @@
 			"barColorSourceCustomField": "Custom field",
 			"barColorSourceLabel": "Bar color",
 			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label"
+			"barColorSourceFirstLabel": "First label",
+			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",

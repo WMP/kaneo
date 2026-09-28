@@ -13,6 +13,11 @@ export type ExternalGanttTask = {
   scheduleStart: Date;
   scheduleEnd: Date;
   isMilestone: boolean;
+  // True when this row has no dates of its own and its position was DERIVED
+  // from a "blocks" dependency (see gantt-derived-schedule.ts) — drawn with a
+  // dotted, dimmer treatment and a distinct tooltip so it never reads as a
+  // real, dated bar.
+  isDerived?: boolean;
 };
 
 type GanttExternalTaskBarProps = {
@@ -66,10 +71,15 @@ export function GanttExternalTaskBar({
 
   if (!barInView) return null;
 
-  const title = t("tasks:gantt.externalTaskTitle", {
-    title: task.title,
-    projectName: task.projectName,
-  });
+  const title = t(
+    task.isDerived
+      ? "tasks:gantt.externalTaskDerivedTitle"
+      : "tasks:gantt.externalTaskTitle",
+    {
+      title: task.title,
+      projectName: task.projectName,
+    },
+  );
 
   if (task.isMilestone) {
     return (
@@ -91,6 +101,8 @@ export function GanttExternalTaskBar({
               "size-4 shrink-0 fill-muted-foreground/20 text-muted-foreground/70",
               emphasis === "highlighted" && "ring-2 ring-primary/30",
               emphasis === "dimmed" && "opacity-35",
+              // A derived (dateless) marker reads fainter than a real dated one.
+              task.isDerived && emphasis !== "dimmed" && "opacity-70",
               // Critical-path accent (see GanttTaskBar's own isCritical prop
               // for why this is `outline`, not a color swap).
               isCritical &&
@@ -120,7 +132,11 @@ export function GanttExternalTaskBar({
         onMouseEnter={() => onHoverChange?.(true)}
         onMouseLeave={() => onHoverChange?.(false)}
         className={cn(
-          "pointer-events-auto relative mx-1 flex min-h-[44px] min-w-0 cursor-default items-center gap-1.5 overflow-hidden rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 px-2 text-left text-sm font-medium leading-none text-muted-foreground shadow-sm transition-opacity sm:h-11 sm:min-h-0",
+          "pointer-events-auto relative mx-1 flex min-h-[44px] min-w-0 cursor-default items-center gap-1.5 overflow-hidden rounded-md border border-muted-foreground/40 bg-muted/40 px-2 text-left text-sm font-medium leading-none text-muted-foreground shadow-sm transition-opacity sm:h-11 sm:min-h-0",
+          // A dated cross-project bar is dashed; a derived (dateless) one is
+          // dotted and a touch fainter, so the two never read alike.
+          task.isDerived ? "border-dotted" : "border-dashed",
+          task.isDerived && emphasis !== "dimmed" && "opacity-80",
           emphasis === "highlighted" &&
             "border-primary/50 ring-2 ring-primary/30",
           emphasis === "dimmed" && "opacity-35",

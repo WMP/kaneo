@@ -2692,6 +2692,7 @@
 			"legendRelated": "Powiązane",
 			"externalProjectBadge": "w {{projectName}}",
 			"externalTaskTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}} (tylko do odczytu)",
+			"externalTaskDerivedTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}}; pozycję wyznaczono z zależności, ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
 			"legendBaseline": "Plan bazowy",
 			"legendMilestone": "Kamień milowy",
 			"milestoneAriaLabel": "{{title}}: kamień milowy, otwórz zadanie",

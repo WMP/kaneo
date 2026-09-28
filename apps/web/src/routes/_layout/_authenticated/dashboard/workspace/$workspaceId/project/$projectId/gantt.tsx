@@ -40,6 +40,7 @@ import { computeCriticalPath } from "@/components/gantt/gantt-critical-path";
 import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
+import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
 import type { ExternalGanttTask } from "@/components/gantt/gantt-external-task-bar";
 import { GanttExternalTaskBar } from "@/components/gantt/gantt-external-task-bar";
 import {
@@ -931,36 +932,101 @@ function RouteComponent() {
   // A related/blocking task from another project has no row of its own on
   // this board, so a cross-project edge would otherwise always be dropped
   // for lack of a box. Pull in the far end of every such relation as an
-  // extra, read-only Gantt row instead — as long as it actually has a date
-  // to place it by; one with neither startDate nor dueDate still can't be
-  // positioned here and is left out, same as any own task with no dates.
+  // extra, read-only Gantt row instead. A far end with its own date is placed
+  // there directly; a DATELESS far end that is the successor of a dated
+  // "blocks" predecessor is placed at the position that dependency implies
+  // (see gantt-derived-schedule.ts) — so an FS successor with no start of its
+  // own still shows, right after its predecessor, rather than vanishing with
+  // its dependency line. A dateless far end with no dated predecessor still
+  // can't be positioned and is left out.
   const externalRelatedTasks = useMemo<ExternalScheduledTask[]>(() => {
     const external = new Map<string, ExternalScheduledTask>();
+
+    // Dated schedules that can ANCHOR a derivation: this project's own dated
+    // tasks plus every dated relation endpoint (own or cross-project).
+    const datedScheduleById = new Map(ownScheduleByTaskId);
+    // Cross-project endpoints with no dates of their own — candidates to place
+    // by deriving from a dated predecessor below, keyed by id to the summary
+    // needed to render the row.
+    const undatedExternalCandidates = new Map<
+      string,
+      NonNullable<NonNullable<typeof taskRelations>[number]["sourceTask"]>
+    >();
+
     for (const relation of taskRelations ?? []) {
       if (relation.relationType === "subtask") continue;
       for (const candidate of [relation.sourceTask, relation.targetTask]) {
-        if (!candidate || candidate.projectId === projectId) continue;
-        if (external.has(candidate.id)) continue;
+        if (!candidate) continue;
         const schedule = deriveTaskSchedule(
           candidate.startDate,
           candidate.dueDate,
         );
-        if (!schedule) continue;
-        external.set(candidate.id, {
-          id: candidate.id,
-          title: candidate.title,
-          number: candidate.number,
-          projectName: candidate.projectName,
-          projectSlug: candidate.projectSlug,
-          scheduleStart: schedule.start,
-          scheduleEnd: schedule.end,
-          isMilestone: candidate.isMilestone,
-          isExternal: true as const,
-        });
+        if (schedule) {
+          // Any dated endpoint (own or cross-project) can anchor a derivation.
+          if (!datedScheduleById.has(candidate.id)) {
+            datedScheduleById.set(candidate.id, schedule);
+          }
+          if (
+            candidate.projectId !== projectId &&
+            !external.has(candidate.id)
+          ) {
+            external.set(candidate.id, {
+              id: candidate.id,
+              title: candidate.title,
+              number: candidate.number,
+              projectName: candidate.projectName,
+              projectSlug: candidate.projectSlug,
+              scheduleStart: schedule.start,
+              scheduleEnd: schedule.end,
+              isMilestone: candidate.isMilestone,
+              isExternal: true as const,
+              isDerived: false,
+            });
+          }
+          continue;
+        }
+        // No dates of its own. Only a cross-project endpoint gets a derived
+        // external row here; an own undated task keeps today's behavior.
+        if (candidate.projectId !== projectId) {
+          undatedExternalCandidates.set(candidate.id, candidate);
+        }
       }
     }
+
+    // Position each undated cross-project successor from its dated
+    // predecessor(s), so its "blocks" dependency line has a bar to land on.
+    const derived = deriveUndatedSuccessorSchedules({
+      edges: blocksEdges,
+      datedScheduleById,
+      undatedCandidateIds: undatedExternalCandidates.keys(),
+      isWorkingDay: workingDayPredicate,
+    });
+    for (const [id, schedule] of derived) {
+      if (external.has(id)) continue;
+      const candidate = undatedExternalCandidates.get(id);
+      if (!candidate) continue;
+      external.set(id, {
+        id,
+        title: candidate.title,
+        number: candidate.number,
+        projectName: candidate.projectName,
+        projectSlug: candidate.projectSlug,
+        scheduleStart: schedule.start,
+        scheduleEnd: schedule.end,
+        isMilestone: candidate.isMilestone,
+        isExternal: true as const,
+        isDerived: true,
+      });
+    }
+
     return [...external.values()];
-  }, [taskRelations, projectId]);
+  }, [
+    taskRelations,
+    projectId,
+    ownScheduleByTaskId,
+    blocksEdges,
+    workingDayPredicate,
+  ]);
 
   // The date window (which 91 days are in view, and the paging bounds
   // around them) depends only on the task list, the week-start preference,

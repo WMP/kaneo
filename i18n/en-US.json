@@ -2562,6 +2562,7 @@
 			"criticalPathDroppedEdgesHint": "These dependencies reach a task with no dates, so they can't be checked for the critical path — a task they'd otherwise make critical may not be highlighted.",
 			"externalProjectBadge": "in {{projectName}}",
 			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
+			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
 			"milestoneAriaLabel": "{{title}}: milestone, open task",
 			"progressLabel": "{{progress}}% complete",
 			"unitControlAriaLabel": "Timeline granularity",
