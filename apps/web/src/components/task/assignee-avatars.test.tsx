@@ -56,6 +56,72 @@ describe("AssigneeAvatars", () => {
   });
 });
 
+describe("AssigneeAvatars resources", () => {
+  it("renders initials for a person resource, no image", () => {
+    const { container } = render(
+      <AssigneeAvatars
+        assignees={[
+          {
+            userId: null,
+            resourceId: "r1",
+            kind: "person",
+            name: "Contractor Carl",
+            image: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(container.querySelector("img")).toBeNull();
+    expect(screen.getByText("CC")).toBeInTheDocument();
+  });
+
+  it("renders a kind icon (not initials, no image) for equipment and material", () => {
+    const { container } = render(
+      <AssigneeAvatars
+        assignees={[
+          {
+            userId: null,
+            resourceId: "r1",
+            kind: "equipment",
+            name: "Drill",
+            image: null,
+          },
+          {
+            userId: null,
+            resourceId: "r2",
+            kind: "material",
+            name: "Cement",
+            image: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(container.querySelector("img")).toBeNull();
+    expect(screen.queryByText("D")).toBeNull();
+    expect(container.querySelectorAll("svg")).toHaveLength(2);
+  });
+
+  it("keys resource avatars by resourceId, not userId", () => {
+    const { container } = render(
+      <AssigneeAvatars
+        assignees={[
+          {
+            userId: null,
+            resourceId: "r1",
+            kind: "equipment",
+            name: "Drill",
+            image: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(container.querySelectorAll('[data-slot="avatar"]')).toHaveLength(1);
+  });
+});
+
 describe("resolveTaskAssignees", () => {
   it("returns the assignees array when present", () => {
     const task = {

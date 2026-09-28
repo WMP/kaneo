@@ -1817,6 +1817,38 @@
 			"sectionTitle": "Pola własne",
 			"sectionDescription": "Pola zdefiniowane tutaj są dodawane do każdego projektu w przestrzeni roboczej. Administrator projektu może jedynie ukryć lub pokazać pole dla swojego projektu — pola wymaganego nie można ukryć."
 		},
+		"workspaceResources": {
+			"pageTitle": "Ustawienia zasobów",
+			"title": "Zasoby",
+			"subtitle": "Zarządzaj osobami, sprzętem i materiałami, które można przypisywać do zadań bez konta Kaneo.",
+			"cardDescription": "Przypisywalne zasoby, które nie mają konta Kaneo i nie mogą się zalogować.",
+			"createResource": "Utwórz zasób",
+			"editResource": "Edytuj zasób",
+			"deleteResource": "Usuń",
+			"saveResource": "Zapisz",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "Wpisz nazwę",
+			"emailLabel": "E-mail (opcjonalnie)",
+			"emailPlaceholder": "Nieużywany jeszcze do logowania ani zaproszeń",
+			"kindLabel": "Rodzaj",
+			"kind": {
+				"person": "Osoba",
+				"equipment": "Sprzęt",
+				"material": "Materiał"
+			},
+			"createDescription": "Utwórz nowy przypisywalny zasób dla tej przestrzeni roboczej. Jego rodzaju nie można zmienić po utworzeniu.",
+			"editDescription": "Zaktualizuj nazwę lub e-mail tego zasobu.",
+			"deleteConfirmTitle": "Usunąć ten zasób?",
+			"deleteConfirmDescription": "Ten zasób zostanie usunięty ze wszystkich zadań, do których był przypisany. Tej operacji nie można cofnąć.",
+			"empty": "Brak zasobów. Utwórz pierwszą osobę, sprzęt lub materiał, aby rozpocząć.",
+			"createSuccess": "Utworzono zasób",
+			"updateSuccess": "Zaktualizowano zasób",
+			"deleteSuccess": "Usunięto zasób",
+			"createError": "Nie udało się utworzyć zasobu",
+			"updateError": "Nie udało się zaktualizować zasobu",
+			"deleteError": "Nie udało się usunąć zasobu",
+			"nameRequired": "Nazwa zasobu jest wymagana"
+		},
 		"workspaceRoles": {
 			"allChangesSaved": "Wszystkie zmiany zostały zapisane",
 			"createRole": "Utwórz rolę",
@@ -2733,7 +2765,18 @@
 			"assignee": {
 				"unassigned": "Nieprzypisane",
 				"unassignAll": "Cofnij przypisanie wszystkim",
-				"updateError": "Nie udało się zmienić osoby przypisanej do zadania"
+				"updateError": "Nie udało się zmienić osoby przypisanej do zadania",
+				"resourcesHeading": "Zasoby",
+				"resourceKind": {
+					"person": "Osoba",
+					"equipment": "Sprzęt",
+					"material": "Materiał"
+				},
+				"addResource": "Nowy zasób",
+				"newResourceNamePlaceholder": "Nazwa",
+				"newResourceEmailPlaceholder": "E-mail (opcjonalnie)",
+				"createResource": "Utwórz",
+				"createResourceError": "Nie udało się utworzyć zasobu"
 			},
 			"dueDate": {
 				"clear": "Wyczyść datę",

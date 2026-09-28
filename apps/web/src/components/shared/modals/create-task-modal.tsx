@@ -16,6 +16,7 @@ import {
   type AssigneeAvatarItem,
   AssigneeAvatars,
 } from "@/components/task/assignee-avatars";
+import { AssigneeResourceSection } from "@/components/task/assignee-resource-section";
 import TaskDescriptionEditor from "@/components/task/task-description-editor";
 import {
   Accordion,
@@ -88,6 +89,7 @@ import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-a
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
@@ -98,6 +100,7 @@ import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
+import type Resource from "@/types/resource";
 import type Task from "@/types/task";
 
 type CreateTaskModalProps = {
@@ -245,18 +248,25 @@ function CreateTaskModalContent({
   const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
     workspace?.id || "",
   );
+  const { data: workspaceResources } = useGetWorkspaceResources(
+    workspace?.id || "",
+  ) as { data: Resource[] | undefined };
   const { mutateAsync: createLabel } = useCreateLabel();
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id || "",
   );
-  const { canCreateTasks, canCreateLabels } = useWorkspacePermission();
+  const { canCreateTasks, canCreateLabels, canUpdateProjects } =
+    useWorkspacePermission();
   const canCreateTaskCapability = canCreateTasks();
   const canCreateLabelCapability = canCreateLabels();
+  // Gated the same as POST /resource (project:update) — see resource/index.ts.
+  const canCreateResourceCapability = canUpdateProjects();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("no-priority");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
+  const [resourceAssigneeIds, setResourceAssigneeIds] = useState<string[]>([]);
   // The endpoints creating and updating a task still take one primary
   // assignee; the first selected user fills that role, and the rest (if
   // any) are pushed separately via the assignees endpoint below.
@@ -377,6 +387,7 @@ function CreateTaskModalContent({
       description.trim() ||
       priority !== "no-priority" ||
       assigneeIds.length > 0 ||
+      resourceAssigneeIds.length > 0 ||
       startDate ||
       dueDate ||
       selectedProjectId ||
@@ -617,15 +628,16 @@ function CreateTaskModalContent({
           );
 
       // The create/update endpoints above only take one primary assignee;
-      // push the rest (if any were selected) as a second call now that the
-      // task has an id, whether it came from a fresh create or an existing
-      // draft.
-      if (assigneeIds.length > 1) {
+      // push the rest (if any were selected), plus every resource assignee,
+      // as a second call now that the task has an id, whether it came from
+      // a fresh create or an existing draft.
+      if (assigneeIds.length > 1 || resourceAssigneeIds.length > 0) {
         try {
           await updateTaskAssignees({
             taskId: savedTask.id,
             projectId: savedTask.projectId,
             userIds: assigneeIds,
+            resourceIds: resourceAssigneeIds,
           });
         } catch (error) {
           toast.error(
@@ -676,6 +688,7 @@ function CreateTaskModalContent({
         setDescription("");
         setPriority("no-priority");
         setAssigneeIds([]);
+        setResourceAssigneeIds([]);
         setStartDate(undefined);
         setDueDate(undefined);
         setLabels([]);
@@ -737,14 +750,30 @@ function CreateTaskModalContent({
     [assigneeIds, workspaceUsers],
   );
 
-  const selectedAssigneeAvatars = useMemo<AssigneeAvatarItem[]>(
+  const selectedResources = useMemo(
     () =>
-      selectedUsers.map((member) => ({
+      resourceAssigneeIds
+        .map((id) => workspaceResources?.find((r) => r.id === id))
+        .filter((resource): resource is Resource => Boolean(resource)),
+    [resourceAssigneeIds, workspaceResources],
+  );
+
+  const selectedAssigneeAvatars = useMemo<AssigneeAvatarItem[]>(
+    () => [
+      ...selectedUsers.map((member) => ({
         userId: member.userId,
         name: member.user?.name ?? "",
         image: member.user?.image ?? null,
       })),
-    [selectedUsers],
+      ...selectedResources.map((resource) => ({
+        userId: null,
+        resourceId: resource.id,
+        kind: resource.kind,
+        name: resource.name,
+        image: null,
+      })),
+    ],
+    [selectedUsers, selectedResources],
   );
 
   useEffect(() => {
@@ -1404,12 +1433,15 @@ function CreateTaskModalContent({
                     )}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-48 p-1" align="start">
-                  <div className="space-y-1">
+                <PopoverContent className="w-56 p-1" align="start">
+                  <div className="max-h-80 space-y-1 overflow-y-auto">
                     <button
                       type="button"
                       className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/50 text-left transition-colors h-8"
-                      onClick={() => setAssigneeIds([])}
+                      onClick={() => {
+                        setAssigneeIds([]);
+                        setResourceAssigneeIds([]);
+                      }}
                     >
                       <div
                         className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
@@ -1424,9 +1456,10 @@ function CreateTaskModalContent({
                       <span className="text-sm">
                         {t("common:modals.createTask.assignUnassigned")}
                       </span>
-                      {assigneeIds.length === 0 && (
-                        <Check className="ml-auto h-4 w-4" />
-                      )}
+                      {assigneeIds.length === 0 &&
+                        resourceAssigneeIds.length === 0 && (
+                          <Check className="ml-auto h-4 w-4" />
+                        )}
                     </button>
                     {workspaceUsers?.members?.map((member) => {
                       const isSelected = assigneeIds.includes(member.userId);
@@ -1457,6 +1490,21 @@ function CreateTaskModalContent({
                         </button>
                       );
                     })}
+                    {workspace?.id && (
+                      <AssigneeResourceSection
+                        workspaceId={workspace.id}
+                        resources={workspaceResources ?? []}
+                        selectedResourceIds={resourceAssigneeIds}
+                        onToggleResource={(resourceId) =>
+                          setResourceAssigneeIds((current) =>
+                            current.includes(resourceId)
+                              ? current.filter((id) => id !== resourceId)
+                              : [...current, resourceId],
+                          )
+                        }
+                        canCreateResource={canCreateResourceCapability}
+                      />
+                    )}
                   </div>
                 </PopoverContent>
               </Popover>

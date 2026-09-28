@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Button } from "@/components/ui/button";
+import type Resource from "@/types/resource";
 import type Task from "@/types/task";
 import TaskAssigneePopover from "./task-assignee-popover";
 
@@ -18,9 +19,14 @@ afterEach(() => {
 
 const updateTaskAssignees = vi.fn();
 const toastError = vi.fn();
+const createResource = vi.fn();
 
 vi.mock("@/hooks/mutations/task/use-update-task-assignees", () => ({
   useUpdateTaskAssignees: () => ({ mutateAsync: updateTaskAssignees }),
+}));
+
+vi.mock("@/hooks/mutations/resource/use-create-resource", () => ({
+  default: () => ({ mutateAsync: createResource, isPending: false }),
 }));
 
 const workspaceUsers = {
@@ -30,6 +36,19 @@ const workspaceUsers = {
   ],
 };
 
+const workspaceResources: Resource[] = [
+  {
+    id: "r1",
+    workspaceId: "workspace-1",
+    kind: "equipment",
+    name: "Drill",
+    email: null,
+    userId: null,
+    createdAt: "2026-07-17T00:00:00.000Z",
+    updatedAt: "2026-07-17T00:00:00.000Z",
+  },
+];
+
 vi.mock(
   "@/hooks/queries/workspace-users/use-get-active-workspace-users",
   () => ({
@@ -37,12 +56,19 @@ vi.mock(
   }),
 );
 
+vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
+  default: () => ({ data: workspaceResources }),
+}));
+
 vi.mock("@/hooks/use-numbered-shortcuts", () => ({
   useNumberedShortcuts: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canAssignTasks: () => true }),
+  useWorkspacePermission: () => ({
+    canAssignTasks: () => true,
+    canUpdateProjects: () => true,
+  }),
 }));
 
 vi.mock("@/lib/toast", () => ({
@@ -120,6 +146,7 @@ describe("TaskAssigneePopover", () => {
       taskId: "task-1",
       projectId: "project-1",
       userIds: ["u1", "u2"],
+      resourceIds: [],
     });
   });
 
@@ -149,6 +176,7 @@ describe("TaskAssigneePopover", () => {
       taskId: "task-1",
       projectId: "project-1",
       userIds: ["u2"],
+      resourceIds: [],
     });
   });
 
@@ -172,6 +200,7 @@ describe("TaskAssigneePopover", () => {
       taskId: "task-1",
       projectId: "project-1",
       userIds: [],
+      resourceIds: [],
     });
   });
 
@@ -191,6 +220,83 @@ describe("TaskAssigneePopover", () => {
 
     await waitFor(() => {
       expect(toastError).toHaveBeenCalledWith("network down");
+    });
+  });
+
+  it("toggles a workspace resource in and submits it alongside the user assignees", async () => {
+    updateTaskAssignees.mockResolvedValue(undefined);
+
+    render(
+      <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+
+    const drillButton = await screen.findByRole("button", { name: /Drill/ });
+    fireEvent.click(drillButton);
+
+    expect(updateTaskAssignees).toHaveBeenCalledWith({
+      taskId: "task-1",
+      projectId: "project-1",
+      userIds: ["u1"],
+      resourceIds: ["r1"],
+    });
+  });
+
+  it("creates a new resource inline and assigns it to the task", async () => {
+    updateTaskAssignees.mockResolvedValue(undefined);
+    createResource.mockResolvedValue({
+      id: "r2",
+      workspaceId: "workspace-1",
+      kind: "person",
+      name: "Contractor",
+      email: null,
+      userId: null,
+      createdAt: "2026-07-17T00:00:00.000Z",
+      updatedAt: "2026-07-17T00:00:00.000Z",
+    });
+
+    render(
+      <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+
+    const addResourceButton = await screen.findByRole("button", {
+      name: /tasks:popover.assignee.addResource/,
+    });
+    fireEvent.click(addResourceButton);
+
+    const nameInput = screen.getByPlaceholderText(
+      "tasks:popover.assignee.newResourceNamePlaceholder",
+    );
+    fireEvent.change(nameInput, { target: { value: "Contractor" } });
+
+    const createButton = screen.getByRole("button", {
+      name: "tasks:popover.assignee.createResource",
+    });
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(createResource).toHaveBeenCalledWith({
+        workspaceId: "workspace-1",
+        kind: "person",
+        name: "Contractor",
+        email: undefined,
+      });
+    });
+
+    await waitFor(() => {
+      expect(updateTaskAssignees).toHaveBeenCalledWith({
+        taskId: "task-1",
+        projectId: "project-1",
+        userIds: ["u1"],
+        resourceIds: ["r2"],
+      });
     });
   });
 });

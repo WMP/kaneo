@@ -10,13 +10,16 @@ import {
 } from "@/components/ui/popover";
 import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-assignees";
+import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
+import type Resource from "@/types/resource";
 import type Task from "@/types/task";
 import { resolveTaskAssignees } from "./assignee-avatars";
+import { AssigneeResourceSection } from "./assignee-resource-section";
 
 const INITIAL_VISIBLE_USERS = 40;
 const VISIBLE_USERS_STEP = 40;
@@ -39,27 +42,49 @@ export default function TaskAssigneePopover({
   );
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
   const { data: workspaceUsers } = useGetActiveWorkspaceUsers(workspaceId);
-  const { canAssignTasks } = useWorkspacePermission();
+  const { data: workspaceResources } = useGetWorkspaceResources(
+    workspaceId,
+  ) as { data: Resource[] | undefined };
+  const { canAssignTasks, canUpdateProjects } = useWorkspacePermission();
   const canAssign = canAssignTasks();
+  // Gated the same as POST /resource (project:update) — see resource/index.ts.
+  const canCreateResource = canUpdateProjects();
 
   const resolvedAssigneeIds = useMemo(
-    () => resolveTaskAssignees(task).map((assignee) => assignee.userId),
+    () =>
+      resolveTaskAssignees(task)
+        .map((assignee) => assignee.userId)
+        .filter((userId): userId is string => Boolean(userId)),
     [task],
   );
 
-  // The checked set, seeded from the task's own assignees (falling back to
+  const resolvedResourceIds = useMemo(
+    () =>
+      resolveTaskAssignees(task)
+        .map((assignee) => assignee.resourceId)
+        .filter((resourceId): resourceId is string => Boolean(resourceId)),
+    [task],
+  );
+
+  // The checked sets, seeded from the task's own assignees (falling back to
   // its single primary assignee) but held locally so a second toggle made
   // while the first mutation is still in flight builds on the pending
   // selection rather than the task prop, which only catches up once the
-  // mutation's query invalidation refetches it. resolvedAssigneeIds only
-  // changes identity when the task prop itself does (it's memoized on
-  // `task`), so re-running this on every resolvedAssigneeIds change re-syncs
-  // exactly when the task changes, not on every render.
+  // mutation's query invalidation refetches it. resolvedAssigneeIds/
+  // resolvedResourceIds only change identity when the task prop itself does
+  // (they're memoized on `task`), so re-running this on every change
+  // re-syncs exactly when the task changes, not on every render.
   const [selectedIds, setSelectedIds] = useState<string[]>(resolvedAssigneeIds);
+  const [selectedResourceIds, setSelectedResourceIds] =
+    useState<string[]>(resolvedResourceIds);
 
   useEffect(() => {
     setSelectedIds(resolvedAssigneeIds);
   }, [resolvedAssigneeIds]);
+
+  useEffect(() => {
+    setSelectedResourceIds(resolvedResourceIds);
+  }, [resolvedResourceIds]);
 
   const usersOptions = useMemo(() => {
     return workspaceUsers?.members?.map((member) => ({
@@ -71,17 +96,21 @@ export default function TaskAssigneePopover({
   }, [workspaceUsers]);
 
   const commitAssignees = useCallback(
-    async (nextIds: string[]) => {
+    async (nextIds: string[], nextResourceIds: string[]) => {
       const previousIds = selectedIds;
+      const previousResourceIds = selectedResourceIds;
       setSelectedIds(nextIds);
+      setSelectedResourceIds(nextResourceIds);
       try {
         await updateTaskAssignees({
           taskId: task.id,
           projectId: task.projectId,
           userIds: nextIds,
+          resourceIds: nextResourceIds,
         });
       } catch (error) {
         setSelectedIds(previousIds);
+        setSelectedResourceIds(previousResourceIds);
         toast.error(
           error instanceof Error
             ? error.message
@@ -89,7 +118,14 @@ export default function TaskAssigneePopover({
         );
       }
     },
-    [selectedIds, task.id, task.projectId, t, updateTaskAssignees],
+    [
+      selectedIds,
+      selectedResourceIds,
+      task.id,
+      task.projectId,
+      t,
+      updateTaskAssignees,
+    ],
   );
 
   const handleToggleUser = useCallback(
@@ -97,13 +133,23 @@ export default function TaskAssigneePopover({
       const next = selectedIds.includes(userId)
         ? selectedIds.filter((id) => id !== userId)
         : [...selectedIds, userId];
-      void commitAssignees(next);
+      void commitAssignees(next, selectedResourceIds);
     },
-    [selectedIds, commitAssignees],
+    [selectedIds, selectedResourceIds, commitAssignees],
+  );
+
+  const handleToggleResource = useCallback(
+    (resourceId: string) => {
+      const next = selectedResourceIds.includes(resourceId)
+        ? selectedResourceIds.filter((id) => id !== resourceId)
+        : [...selectedResourceIds, resourceId];
+      void commitAssignees(selectedIds, next);
+    },
+    [selectedIds, selectedResourceIds, commitAssignees],
   );
 
   const handleUnassignAll = useCallback(() => {
-    void commitAssignees([]);
+    void commitAssignees([], []);
   }, [commitAssignees]);
 
   const shortcutOptions = useMemo(() => {
@@ -170,7 +216,7 @@ export default function TaskAssigneePopover({
             <span className="text-sm">
               {t("tasks:popover.assignee.unassignAll")}
             </span>
-            {selectedIds.length === 0 ? (
+            {selectedIds.length === 0 && selectedResourceIds.length === 0 ? (
               <Check className="ml-auto h-4 w-4" />
             ) : (
               <ShortcutNumber number={1} />
@@ -198,6 +244,13 @@ export default function TaskAssigneePopover({
               ) : null}
             </Button>
           ))}
+          <AssigneeResourceSection
+            workspaceId={workspaceId}
+            resources={workspaceResources ?? []}
+            selectedResourceIds={selectedResourceIds}
+            onToggleResource={handleToggleResource}
+            canCreateResource={canCreateResource}
+          />
         </div>
       </PopoverContent>
     </Popover>

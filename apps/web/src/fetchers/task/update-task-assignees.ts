@@ -1,10 +1,14 @@
 import { client } from "@kaneo/libs";
 import { HttpError } from "@/lib/http-error";
 
-async function updateTaskAssignees(taskId: string, userIds: string[]) {
+async function updateTaskAssignees(
+  taskId: string,
+  userIds: string[],
+  resourceIds: string[] = [],
+) {
   const response = await client.task[":id"].assignees.$put({
     param: { id: taskId },
-    json: { userIds },
+    json: { userIds, resourceIds },
   });
 
   if (!response.ok) {

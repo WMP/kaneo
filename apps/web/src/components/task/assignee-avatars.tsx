@@ -2,9 +2,19 @@ import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
+import { getResourceKindIcon } from "@/lib/resource-kind-icon";
+import type { AssigneeKind } from "@/types/resource";
+
+export type { AssigneeKind };
 
 export type AssigneeAvatarItem = {
-  userId: string;
+  // Exactly one of userId/resourceId is set: a real Kaneo account, or an
+  // account-less resource (person/equipment/material) from /resource.
+  userId: string | null;
+  resourceId?: string | null;
+  // Missing/undefined is treated as "user", so every call site built before
+  // resources existed (which only ever assigned users) keeps working.
+  kind?: AssigneeKind;
   name: string;
   image: string | null;
 };
@@ -16,6 +26,16 @@ type AssigneeSourceTask = {
   assigneeName?: string | null;
   assigneeImage?: string | null;
 };
+
+/** A stable React key / identity for an assignee: its resource id, falling
+ * back to its user id, falling back to its position (only reached if a
+ * fixture supplies neither, which real data never does). */
+export function getAssigneeKey(
+  assignee: AssigneeAvatarItem,
+  index: number,
+): string {
+  return assignee.resourceId ?? assignee.userId ?? `assignee-${index}`;
+}
 
 /**
  * The task's assignees for display, falling back to its single primary
@@ -70,7 +90,7 @@ export function AssigneeAvatars({
   const visible = assignees.slice(0, max);
   const overflowCount = assignees.length - visible.length;
   const names = assignees
-    .map((assignee) => assignee.name || assignee.userId)
+    .map((assignee) => assignee.name || assignee.userId || assignee.resourceId)
     .join(", ");
 
   return (
@@ -80,20 +100,30 @@ export function AssigneeAvatars({
       title={names}
       className={cn("inline-flex items-center -space-x-1.5", className)}
     >
-      {visible.map((assignee) => (
-        <Avatar
-          key={assignee.userId}
-          className={cn(
-            avatarClassName,
-            "shrink-0 border border-background ring-1 ring-border/40",
-          )}
-        >
-          <AvatarImage src={assignee.image ?? ""} alt={assignee.name} />
-          <AvatarFallback className="text-[9px] font-medium">
-            {getInitials(assignee.name)}
-          </AvatarFallback>
-        </Avatar>
-      ))}
+      {visible.map((assignee, index) => {
+        const KindIcon = getResourceKindIcon(assignee.kind);
+
+        return (
+          <Avatar
+            key={getAssigneeKey(assignee, index)}
+            className={cn(
+              avatarClassName,
+              "shrink-0 border border-background ring-1 ring-border/40",
+            )}
+          >
+            {!KindIcon && (
+              <AvatarImage src={assignee.image ?? ""} alt={assignee.name} />
+            )}
+            <AvatarFallback className="text-[9px] font-medium">
+              {KindIcon ? (
+                <KindIcon className="size-3" aria-hidden="true" />
+              ) : (
+                getInitials(assignee.name)
+              )}
+            </AvatarFallback>
+          </Avatar>
+        );
+      })}
       {overflowCount > 0 && (
         <span
           className={cn(

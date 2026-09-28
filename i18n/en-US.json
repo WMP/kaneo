@@ -1006,6 +1006,38 @@
 			"sectionTitle": "Custom Fields",
 			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden."
 		},
+		"workspaceResources": {
+			"pageTitle": "Resource Settings",
+			"title": "Resources",
+			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
+			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
+			"createResource": "Create Resource",
+			"editResource": "Edit Resource",
+			"deleteResource": "Delete",
+			"saveResource": "Save",
+			"nameLabel": "Name",
+			"namePlaceholder": "Enter a name",
+			"emailLabel": "Email (optional)",
+			"emailPlaceholder": "Not used to sign in or send invites yet",
+			"kindLabel": "Kind",
+			"kind": {
+				"person": "Person",
+				"equipment": "Equipment",
+				"material": "Material"
+			},
+			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
+			"editDescription": "Update this resource's name or email.",
+			"deleteConfirmTitle": "Delete this resource?",
+			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
+			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"createSuccess": "Resource created",
+			"updateSuccess": "Resource updated",
+			"deleteSuccess": "Resource deleted",
+			"createError": "Failed to create resource",
+			"updateError": "Failed to update resource",
+			"deleteError": "Failed to delete resource",
+			"nameRequired": "Resource name is required"
+		},
 		"workspaceCalendar": {
 			"title": "Working calendar",
 			"subtitle": "Set which weekdays this workspace works on, and add holidays. The Gantt shades non-working days and the auto-reschedule cascade skips them.",
@@ -2323,7 +2355,18 @@
 			"assignee": {
 				"unassigned": "Unassigned",
 				"unassignAll": "Unassign all",
-				"updateError": "Failed to update task assignee"
+				"updateError": "Failed to update task assignee",
+				"resourcesHeading": "Resources",
+				"resourceKind": {
+					"person": "Person",
+					"equipment": "Equipment",
+					"material": "Material"
+				},
+				"addResource": "New resource",
+				"newResourceNamePlaceholder": "Name",
+				"newResourceEmailPlaceholder": "Email (optional)",
+				"createResource": "Create",
+				"createResourceError": "Failed to create resource"
 			},
 			"status": {
 				"updateError": "Failed to update task status"

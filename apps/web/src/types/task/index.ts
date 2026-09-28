@@ -20,8 +20,15 @@ type TaskCustomFieldValue = {
   value: string | null;
 };
 
+// Exactly one of userId/resourceId is set on a server response — a real
+// Kaneo account, or an account-less resource (person/equipment/material)
+// from /resource. resourceId/kind are optional so existing test fixtures
+// and call sites built before resources existed (which only ever set
+// userId) keep compiling; treat a missing kind as "user".
 type TaskAssignee = {
-  userId: string;
+  userId: string | null;
+  resourceId?: string | null;
+  kind?: "user" | "person" | "equipment" | "material";
   name: string;
   image: string | null;
   units: number;

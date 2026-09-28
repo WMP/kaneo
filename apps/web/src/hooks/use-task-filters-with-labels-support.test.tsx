@@ -328,4 +328,103 @@ describe("useTaskFiltersWithLabelsSupport", () => {
       result.current.filteredProject?.columns[0]?.tasks.map((t) => t.id),
     ).toEqual(["task-multi"]);
   });
+
+  it("matches the assignee filter against a task's resource assignee", () => {
+    const project = {
+      id: "project-1",
+      name: "Project",
+      slug: "PROJ",
+      icon: null,
+      description: null,
+      isPublic: false,
+      createdAt: "2026-04-16T00:00:00.000Z",
+      updatedAt: "2026-04-16T00:00:00.000Z",
+      workspaceId: "workspace-1",
+      columns: [
+        {
+          id: "todo",
+          slug: "todo",
+          name: "Todo",
+          icon: null,
+          isFinal: false,
+          tasks: [
+            {
+              id: "task-with-resource",
+              title: "Task with a resource assignee",
+              number: 1,
+              description: null,
+              status: "todo",
+              priority: null,
+              startDate: null,
+              dueDate: null,
+              progress: 0,
+              isMilestone: false,
+              baselineStartDate: null,
+              baselineDueDate: null,
+              position: 0,
+              createdAt: "2026-04-16T00:00:00.000Z",
+              updatedAt: "2026-04-16T00:00:00.000Z",
+              userId: null,
+              assigneeId: null,
+              assigneeName: null,
+              assigneeImage: null,
+              assignees: [
+                {
+                  userId: null,
+                  resourceId: "resource-1",
+                  kind: "equipment" as const,
+                  name: "Drill",
+                  image: null,
+                  units: 100,
+                  work: null,
+                },
+              ],
+              projectId: "project-1",
+              labels: [],
+              externalLinks: [],
+            },
+            {
+              id: "task-unrelated",
+              title: "Unrelated task",
+              number: 2,
+              description: null,
+              status: "todo",
+              priority: null,
+              startDate: null,
+              dueDate: null,
+              progress: 0,
+              isMilestone: false,
+              baselineStartDate: null,
+              baselineDueDate: null,
+              position: 1,
+              createdAt: "2026-04-16T00:00:00.000Z",
+              updatedAt: "2026-04-16T00:00:00.000Z",
+              userId: "user-3",
+              assigneeId: "user-3",
+              assigneeName: "Carol",
+              assigneeImage: null,
+              projectId: "project-1",
+              labels: [],
+              externalLinks: [],
+            },
+          ],
+        },
+      ],
+      plannedTasks: [],
+      archivedTasks: [],
+    };
+
+    const { result } = renderHook(
+      () => useTaskFiltersWithLabelsSupport(project, "project-1"),
+      { wrapper: createWrapper() },
+    );
+
+    act(() => {
+      result.current.updateFilter("assignee", ["resource-1"]);
+    });
+
+    expect(
+      result.current.filteredProject?.columns[0]?.tasks.map((t) => t.id),
+    ).toEqual(["task-with-resource"]);
+  });
 });

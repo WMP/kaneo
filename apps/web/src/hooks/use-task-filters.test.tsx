@@ -35,8 +35,6 @@ function makeProject(tasks: Task[]): ProjectWithTasks {
     icon: null,
     description: null,
     isPublic: false,
-    createdAt: "2026-08-31T00:00:00.000Z",
-    updatedAt: "2026-08-31T00:00:00.000Z",
     workspaceId: "workspace-1",
     columns: [
       {
@@ -110,6 +108,38 @@ describe("useTaskFilters assignee filter", () => {
     );
 
     expect(filteredIds).toEqual(["task-multi"]);
+  });
+
+  it("matches a task by a resource assignee", () => {
+    const resourceAssigned = makeTask({
+      id: "task-resource",
+      assignees: [
+        {
+          userId: null,
+          resourceId: "resource-1",
+          kind: "equipment",
+          name: "Drill",
+          image: null,
+          units: 100,
+          work: null,
+        },
+      ],
+    });
+    const unrelated = makeTask({ id: "task-unrelated", userId: "user-3" });
+
+    const project = makeProject([resourceAssigned, unrelated]);
+
+    const { result } = renderHook(() => useTaskFilters(project, "project-1"));
+
+    act(() => {
+      result.current.updateFilter("assignee", ["resource-1"]);
+    });
+
+    const filteredIds = result.current.filteredProject?.columns[0]?.tasks.map(
+      (task) => task.id,
+    );
+
+    expect(filteredIds).toEqual(["task-resource"]);
   });
 
   it("keeps the unassigned case excluded when a real user is selected", () => {

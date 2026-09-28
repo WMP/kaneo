@@ -42,6 +42,16 @@ let workspaceMembers: Array<{
   userId: string;
   user: { name: string; image: string | null };
 }> = [];
+let workspaceResources: Array<{
+  id: string;
+  workspaceId: string;
+  kind: "person" | "equipment" | "material";
+  name: string;
+  email: string | null;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}> = [];
 let storedProject: { id: string; columns: unknown[] } | null = null;
 let ensureTaskId: (() => Promise<string | null>) | undefined;
 
@@ -52,6 +62,7 @@ beforeEach(() => {
     { id: "project-2", name: "Beta", slug: "bet" },
   ];
   workspaceMembers = [];
+  workspaceResources = [];
   storedProject = null;
   useLocation.mockReturnValue({ pathname: "/dashboard/workspace/workspace-1" });
 });
@@ -130,7 +141,12 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
     canCreateTasks: () => true,
     canCreateLabels: () => true,
+    canUpdateProjects: () => true,
   }),
+}));
+
+vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
+  default: () => ({ data: workspaceResources }),
 }));
 
 vi.mock("@/hooks/queries/project/use-get-projects", () => ({
@@ -506,6 +522,7 @@ describe("CreateTaskModal multiple assignees", () => {
         taskId: "task-1",
         projectId: "project-1",
         userIds: ["u1", "u2"],
+        resourceIds: [],
       });
     });
   });
@@ -564,5 +581,44 @@ describe("CreateTaskModal multiple assignees", () => {
     });
 
     expect(updateTaskAssignees).not.toHaveBeenCalled();
+  });
+
+  it("assigns a workspace resource alongside the primary user assignee", async () => {
+    workspaceMembers = [{ userId: "u1", user: { name: "Alice", image: null } }];
+    workspaceResources = [
+      {
+        id: "r1",
+        workspaceId: "workspace-1",
+        kind: "equipment",
+        name: "Drill",
+        email: null,
+        userId: null,
+        createdAt: "2026-08-05T00:00:00.000Z",
+        updatedAt: "2026-08-05T00:00:00.000Z",
+      },
+    ];
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    fireEvent.click(await screen.findByText("Alice"));
+    fireEvent.click(screen.getByText("Drill"));
+
+    enterTitle("Task with a resource assignee");
+    submit();
+
+    await vi.waitFor(() => {
+      expect(updateTaskAssignees).toHaveBeenCalledWith({
+        taskId: "task-1",
+        projectId: "project-1",
+        userIds: ["u1"],
+        resourceIds: ["r1"],
+      });
+    });
   });
 });

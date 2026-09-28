@@ -5,14 +5,19 @@ type UpdateTaskAssigneesVariables = {
   taskId: string;
   projectId: string;
   userIds: string[];
+  resourceIds?: string[];
 };
 
 export function useUpdateTaskAssignees() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ taskId, userIds }: UpdateTaskAssigneesVariables) =>
-      updateTaskAssignees(taskId, userIds),
+    mutationFn: ({
+      taskId,
+      userIds,
+      resourceIds,
+    }: UpdateTaskAssigneesVariables) =>
+      updateTaskAssignees(taskId, userIds, resourceIds ?? []),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["task", variables.taskId],

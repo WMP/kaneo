@@ -1773,6 +1773,38 @@
 			"sectionTitle": "Custom Fields",
 			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
 			"title": "Custom Fields"
+		},
+		"workspaceResources": {
+			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
+			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
+			"createError": "Failed to create resource",
+			"createResource": "Create Resource",
+			"createSuccess": "Resource created",
+			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
+			"deleteConfirmTitle": "Delete this resource?",
+			"deleteError": "Failed to delete resource",
+			"deleteResource": "Delete",
+			"deleteSuccess": "Resource deleted",
+			"editDescription": "Update this resource's name or email.",
+			"editResource": "Edit Resource",
+			"emailLabel": "Email (optional)",
+			"emailPlaceholder": "Not used to sign in or send invites yet",
+			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"kind": {
+				"equipment": "Equipment",
+				"material": "Material",
+				"person": "Person"
+			},
+			"kindLabel": "Kind",
+			"nameLabel": "Name",
+			"namePlaceholder": "Enter a name",
+			"nameRequired": "Resource name is required",
+			"pageTitle": "Resource Settings",
+			"saveResource": "Save",
+			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
+			"title": "Resources",
+			"updateError": "Failed to update resource",
+			"updateSuccess": "Resource updated"
 		}
 	},
 	"navigation": {
@@ -2315,7 +2347,18 @@
 			"assignee": {
 				"unassigned": "未割り当て",
 				"updateError": "担当者の更新に失敗しました",
-				"unassignAll": "Unassign all"
+				"unassignAll": "Unassign all",
+				"addResource": "New resource",
+				"createResource": "Create",
+				"createResourceError": "Failed to create resource",
+				"newResourceEmailPlaceholder": "Email (optional)",
+				"newResourceNamePlaceholder": "Name",
+				"resourceKind": {
+					"equipment": "Equipment",
+					"material": "Material",
+					"person": "Person"
+				},
+				"resourcesHeading": "Resources"
 			},
 			"status": {
 				"updateError": "ステータスの更新に失敗しました"

@@ -118,7 +118,9 @@ export function useTaskFilters(
       if (filters.assignee && filters.assignee.length > 0) {
         const taskAssigneeIds =
           task.assignees && task.assignees.length > 0
-            ? task.assignees.map((assignee) => assignee.userId)
+            ? task.assignees.map(
+                (assignee) => assignee.userId ?? assignee.resourceId ?? "",
+              )
             : [task.userId ?? ""];
 
         const matchesAnyAssignee = taskAssigneeIds.some((assigneeId) =>
