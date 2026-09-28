@@ -7,7 +7,7 @@ import {
   assertAssignableUser,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
-import { setTaskAssignees } from "../assignments";
+import { readTaskAssignees, setTaskAssignees } from "../assignments";
 
 async function updateTaskAssignee({
   id,
@@ -40,10 +40,26 @@ async function updateTaskAssignee({
     );
   }
 
+  // This endpoint replaces the *entire* assignee list with a single user (or
+  // none), so a task with other assignees loses them here too; read the
+  // pre-mutation list to report that in the event's addedAssigneeIds/
+  // removedAssigneeIds, same as the multi-assignee route.
+  const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
+  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? []).map(
+    (assignee) => assignee.userId,
+  );
+  const nextAssigneeIds = nextAssigneeId ? [nextAssigneeId] : [];
+  const addedAssigneeIds = nextAssigneeIds.filter(
+    (assigneeId) => !previousAssigneeIds.includes(assigneeId),
+  );
+  const removedAssigneeIds = previousAssigneeIds.filter(
+    (assigneeId) => !nextAssigneeIds.includes(assigneeId),
+  );
+
   // Wired through the shared helper (rather than a direct `.update()`) so
   // `ganttpro_task_assignment` mirrors this task's single assignee, same as
   // every other assignee mutation.
-  await setTaskAssignees(db, id, nextAssigneeId ? [nextAssigneeId] : []);
+  await setTaskAssignees(db, id, nextAssigneeIds);
 
   const [updatedTask] = await db
     .select()
@@ -86,6 +102,8 @@ async function updateTaskAssignee({
     oldAssignee: existingTask.userId,
     newAssignee: newAssigneeName,
     newAssigneeId: nextAssigneeId,
+    addedAssigneeIds,
+    removedAssigneeIds,
     title: updatedTask.title,
     type: "assignee_changed",
   });

@@ -261,6 +261,16 @@ export const taskExportSchema = z
             description:
               "Display name of the assignee (null when unassigned or the user has no name), so an export is legible without a separate user lookup.",
           }),
+          assignees: z
+            .array(
+              z
+                .object({ userId: z.string(), name: z.string() })
+                .openapi("ExportedTaskAssignee"),
+            )
+            .openapi({
+              description:
+                "The task's full assignee list; userId/assigneeName above mirror this list's first entry and are kept for backward compatibility.",
+            }),
           progress: z.number().int().min(0).max(100).openapi({
             description: "Percent complete, 0-100.",
           }),

@@ -19,9 +19,9 @@ export const workloadAssigneeSchema = z
         "The assignee's display name, or null for the unassigned row; the caller supplies its own label for it.",
     }),
     image: z.string().nullable(),
-    counts: z.array(z.number().int().nonnegative()).openapi({
+    counts: z.array(z.number().nonnegative()).openapi({
       description:
-        "Dated, not-done tasks active in each bucket, aligned by index with `buckets`. A task with a start and due date spanning several buckets is counted in every one it touches.",
+        "This assignee's fractional effort share of the dated, not-done tasks active in each bucket, aligned by index with `buckets`. A task with a start and due date spanning several buckets contributes to every one it touches; a task with several assignees splits its contribution across them weighted by each assignee's units (equal shares when units are equal), so a value is not necessarily a whole number.",
     }),
   })
   .openapi("WorkloadAssignee");

@@ -1,9 +1,18 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
-import { projectTable, taskTable, userTable } from "../../database/schema";
+import {
+  projectTable,
+  taskAssignmentTable,
+  taskTable,
+  userTable,
+} from "../../database/schema";
 import getWorkspaceMembers from "../../workspace/controllers/get-workspace-members";
-import { bucketizeWorkload, buildWeekBuckets } from "../bucket-workload";
+import {
+  bucketizeWorkload,
+  buildWeekBuckets,
+  type WorkloadTaskAssignee,
+} from "../bucket-workload";
 import { notDoneDatedTaskConditions } from "../matched-task-conditions";
 
 // Keeps one huge, all-time-dated workspace from turning this into an
@@ -56,7 +65,7 @@ async function getWorkspaceWorkload({
 
   const matchedTasks = await db
     .select({
-      assigneeId: taskTable.userId,
+      id: taskTable.id,
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
     })
@@ -76,7 +85,40 @@ async function getWorkspaceWorkload({
     ? matchedTasks.slice(0, MAX_MATCHED_TASKS)
     : matchedTasks;
 
-  const workloadRows = bucketizeWorkload(tasksForBucketing, buckets);
+  // The split is based on `ganttpro_task_assignment` — one row per
+  // task×assignee, carrying each row's `units` — rather than the
+  // denormalized `taskTable.userId` primary mirror, so a multi-assignee task
+  // splits its per-bucket contribution instead of counting once against its
+  // primary.
+  const matchedTaskIds = tasksForBucketing.map((task) => task.id);
+  const assignmentRows = matchedTaskIds.length
+    ? await db
+        .select({
+          taskId: taskAssignmentTable.taskId,
+          userId: taskAssignmentTable.userId,
+          units: taskAssignmentTable.units,
+        })
+        .from(taskAssignmentTable)
+        .where(inArray(taskAssignmentTable.taskId, matchedTaskIds))
+    : [];
+  const assigneesByTaskId = new Map<string, WorkloadTaskAssignee[]>();
+  for (const row of assignmentRows) {
+    if (!assigneesByTaskId.has(row.taskId)) {
+      assigneesByTaskId.set(row.taskId, []);
+    }
+    assigneesByTaskId
+      .get(row.taskId)
+      ?.push({ userId: row.userId, units: row.units });
+  }
+
+  const workloadRows = bucketizeWorkload(
+    tasksForBucketing.map((task) => ({
+      assignees: assigneesByTaskId.get(task.id) ?? [],
+      startDate: task.startDate,
+      dueDate: task.dueDate,
+    })),
+    buckets,
+  );
 
   // Every current workspace member gets a row, even with zero matching
   // tasks, so absence of load is visible instead of the member silently

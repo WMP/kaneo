@@ -217,31 +217,55 @@ subscribeToEvent<{
   }
 });
 
-subscribeToEvent<{
+export type TaskAssigneeChangedEventData = {
   taskId: string;
   userId: string;
   oldAssignee: string | null;
-  newAssignee: string;
-  newAssigneeId: string;
+  newAssignee?: string;
+  newAssigneeId?: string;
+  // Additive: only the multi-assignee routes set these; a publisher that
+  // still only ever changes the primary (e.g. the bulk-update endpoint)
+  // omits them, and this handler falls back to notifying just the primary,
+  // preserving its existing behavior.
+  addedAssigneeIds?: string[];
   title: string;
-}>("task.assignee_changed", async (data) => {
+};
+
+// Exported for focused unit testing without going through the full event
+// bus/module-import graph; `notification.index.ts`'s own subscription below
+// is the only production caller.
+export async function notifyOnTaskAssigneeChanged(
+  data: TaskAssigneeChangedEventData,
+): Promise<void> {
+  // Every newly-added assignee gets notified, not only the primary; when a
+  // publisher only ever changes the primary, addedAssigneeIds is absent and
+  // this collapses back to that one id.
+  const recipientIds = new Set(data.addedAssigneeIds ?? []);
   if (data.newAssigneeId) {
-    const [task] = await db
-      .select({ projectId: taskTable.projectId })
-      .from(taskTable)
-      .where(eq(taskTable.id, data.taskId))
-      .limit(1);
+    recipientIds.add(data.newAssigneeId);
+  }
 
-    const [project] = task
-      ? await db
-          .select({ workspaceId: projectTable.workspaceId })
-          .from(projectTable)
-          .where(eq(projectTable.id, task.projectId))
-          .limit(1)
-      : [];
+  if (recipientIds.size === 0) {
+    return;
+  }
 
+  const [task] = await db
+    .select({ projectId: taskTable.projectId })
+    .from(taskTable)
+    .where(eq(taskTable.id, data.taskId))
+    .limit(1);
+
+  const [project] = task
+    ? await db
+        .select({ workspaceId: projectTable.workspaceId })
+        .from(projectTable)
+        .where(eq(projectTable.id, task.projectId))
+        .limit(1)
+    : [];
+
+  for (const recipientId of recipientIds) {
     await createNotification({
-      userId: data.newAssigneeId,
+      userId: recipientId,
       type: "task_assignee_changed",
       eventData: {
         taskTitle: data.title,
@@ -252,7 +276,12 @@ subscribeToEvent<{
       resourceType: "task",
     });
   }
-});
+}
+
+subscribeToEvent<TaskAssigneeChangedEventData>(
+  "task.assignee_changed",
+  notifyOnTaskAssigneeChanged,
+);
 
 subscribeToEvent<{
   timeEntryId: string;

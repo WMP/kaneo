@@ -64,6 +64,10 @@ describe("buildWeekBuckets", () => {
   });
 });
 
+// Single-assignee tasks default to units 100, same as
+// `ganttpro_task_assignment`'s column default.
+const soloAssignee = (userId: string) => [{ userId, units: 100 }];
+
 describe("bucketizeWorkload", () => {
   // Jan1-8, Jan8-15, Jan15-22: 3 buckets (the "to" day still needs its own
   // bucket, so the window runs a day past Jan 21).
@@ -71,7 +75,13 @@ describe("bucketizeWorkload", () => {
 
   it("counts a single-day task (only a due date) in one bucket", () => {
     const rows = bucketizeWorkload(
-      [{ assigneeId: "alice", startDate: null, dueDate: day("2024-01-10") }],
+      [
+        {
+          assignees: soloAssignee("alice"),
+          startDate: null,
+          dueDate: day("2024-01-10"),
+        },
+      ],
       buckets,
     );
 
@@ -80,7 +90,13 @@ describe("bucketizeWorkload", () => {
 
   it("counts a single-day task (only a start date) in one bucket", () => {
     const rows = bucketizeWorkload(
-      [{ assigneeId: "alice", startDate: day("2024-01-02"), dueDate: null }],
+      [
+        {
+          assignees: soloAssignee("alice"),
+          startDate: day("2024-01-02"),
+          dueDate: null,
+        },
+      ],
       buckets,
     );
 
@@ -91,7 +107,7 @@ describe("bucketizeWorkload", () => {
     const rows = bucketizeWorkload(
       [
         {
-          assigneeId: "bob",
+          assignees: soloAssignee("bob"),
           startDate: day("2024-01-05"),
           dueDate: day("2024-01-16"),
         },
@@ -105,7 +121,7 @@ describe("bucketizeWorkload", () => {
 
   it("groups tasks with no assignee under the null key", () => {
     const rows = bucketizeWorkload(
-      [{ assigneeId: null, startDate: null, dueDate: day("2024-01-03") }],
+      [{ assignees: [], startDate: null, dueDate: day("2024-01-03") }],
       buckets,
     );
 
@@ -114,7 +130,7 @@ describe("bucketizeWorkload", () => {
 
   it("skips a task with neither date", () => {
     const rows = bucketizeWorkload(
-      [{ assigneeId: "alice", startDate: null, dueDate: null }],
+      [{ assignees: soloAssignee("alice"), startDate: null, dueDate: null }],
       buckets,
     );
 
@@ -125,7 +141,7 @@ describe("bucketizeWorkload", () => {
     const rows = bucketizeWorkload(
       [
         {
-          assigneeId: "alice",
+          assignees: soloAssignee("alice"),
           startDate: day("2024-05-01"),
           dueDate: day("2024-05-02"),
         },
@@ -140,7 +156,7 @@ describe("bucketizeWorkload", () => {
     const rows = bucketizeWorkload(
       [
         {
-          assigneeId: "alice",
+          assignees: soloAssignee("alice"),
           startDate: day("2024-01-10"),
           dueDate: day("2024-01-03"),
         },
@@ -155,9 +171,21 @@ describe("bucketizeWorkload", () => {
   it("sums multiple assignees and multiple tasks independently", () => {
     const rows = bucketizeWorkload(
       [
-        { assigneeId: "alice", startDate: null, dueDate: day("2024-01-02") },
-        { assigneeId: "alice", startDate: null, dueDate: day("2024-01-03") },
-        { assigneeId: "bob", startDate: null, dueDate: day("2024-01-09") },
+        {
+          assignees: soloAssignee("alice"),
+          startDate: null,
+          dueDate: day("2024-01-02"),
+        },
+        {
+          assignees: soloAssignee("alice"),
+          startDate: null,
+          dueDate: day("2024-01-03"),
+        },
+        {
+          assignees: soloAssignee("bob"),
+          startDate: null,
+          dueDate: day("2024-01-09"),
+        },
       ],
       buckets,
     );
@@ -170,9 +198,122 @@ describe("bucketizeWorkload", () => {
   it("returns no rows for an empty bucket list", () => {
     expect(
       bucketizeWorkload(
-        [{ assigneeId: "alice", startDate: null, dueDate: day("2024-01-01") }],
+        [
+          {
+            assignees: soloAssignee("alice"),
+            startDate: null,
+            dueDate: day("2024-01-01"),
+          },
+        ],
         [],
       ),
     ).toEqual([]);
+  });
+
+  it("splits a task evenly across its assignees when units are equal (default 100)", () => {
+    const rows = bucketizeWorkload(
+      [
+        {
+          assignees: [
+            { userId: "alice", units: 100 },
+            { userId: "bob", units: 100 },
+          ],
+          startDate: null,
+          dueDate: day("2024-01-02"),
+        },
+      ],
+      buckets,
+    );
+
+    expect(rows).toHaveLength(2);
+    expect(rows).toContainEqual({ assigneeId: "alice", counts: [0.5, 0, 0] });
+    expect(rows).toContainEqual({ assigneeId: "bob", counts: [0.5, 0, 0] });
+  });
+
+  it("splits a task across three assignees", () => {
+    const rows = bucketizeWorkload(
+      [
+        {
+          assignees: [
+            { userId: "alice", units: 100 },
+            { userId: "bob", units: 100 },
+            { userId: "carol", units: 100 },
+          ],
+          startDate: null,
+          dueDate: day("2024-01-02"),
+        },
+      ],
+      buckets,
+    );
+
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row.counts[0]).toBeCloseTo(1 / 3);
+    }
+  });
+
+  it("weights the split by each assignee's units", () => {
+    const rows = bucketizeWorkload(
+      [
+        {
+          assignees: [
+            { userId: "alice", units: 75 },
+            { userId: "bob", units: 25 },
+          ],
+          startDate: null,
+          dueDate: day("2024-01-02"),
+        },
+      ],
+      buckets,
+    );
+
+    expect(rows).toHaveLength(2);
+    expect(rows).toContainEqual({ assigneeId: "alice", counts: [0.75, 0, 0] });
+    expect(rows).toContainEqual({ assigneeId: "bob", counts: [0.25, 0, 0] });
+  });
+
+  it("sums a multi-assignee task's share across every bucket it spans", () => {
+    const rows = bucketizeWorkload(
+      [
+        {
+          assignees: [
+            { userId: "alice", units: 100 },
+            { userId: "bob", units: 100 },
+          ],
+          startDate: day("2024-01-05"),
+          dueDate: day("2024-01-16"),
+        },
+      ],
+      buckets,
+    );
+
+    // Jan 5-16 touches all 3 buckets; each assignee gets half in each.
+    expect(rows).toHaveLength(2);
+    expect(rows).toContainEqual({
+      assigneeId: "alice",
+      counts: [0.5, 0.5, 0.5],
+    });
+    expect(rows).toContainEqual({ assigneeId: "bob", counts: [0.5, 0.5, 0.5] });
+  });
+
+  it("leaves the unassigned bucket unaffected by assignee splitting", () => {
+    const rows = bucketizeWorkload(
+      [
+        { assignees: [], startDate: null, dueDate: day("2024-01-02") },
+        {
+          assignees: [
+            { userId: "alice", units: 100 },
+            { userId: "bob", units: 100 },
+          ],
+          startDate: null,
+          dueDate: day("2024-01-02"),
+        },
+      ],
+      buckets,
+    );
+
+    expect(rows).toContainEqual({ assigneeId: null, counts: [1, 0, 0] });
+    expect(rows).toContainEqual({ assigneeId: "alice", counts: [0.5, 0, 0] });
+    expect(rows).toContainEqual({ assigneeId: "bob", counts: [0.5, 0, 0] });
   });
 });

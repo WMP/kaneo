@@ -8,6 +8,7 @@ import {
   userTable,
 } from "../../database/schema";
 import getTaskRelationsByProject from "../../task-relation/controllers/get-task-relations-by-project";
+import { readTaskAssignees } from "../assignments";
 
 async function exportTasks(projectId: string) {
   const project = await db.query.projectTable.findFirst({
@@ -92,6 +93,11 @@ async function exportTasks(projectId: string) {
       ? await getTaskRelationsByProject(projectId, project.workspaceId)
       : [];
 
+  // readTaskAssignees already no-ops on an empty id list, so it's safe to
+  // call unconditionally here (unlike getTaskRelationsByProject above, which
+  // does its own project-wide query regardless of taskIds).
+  const assigneesByTaskId = await readTaskAssignees(db, taskIds);
+
   const taskRelationsMap = new Map<
     string,
     Array<{
@@ -145,6 +151,10 @@ async function exportTasks(projectId: string) {
       startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
       userId: task.userId || null,
       assigneeName: task.assigneeName || null,
+      assignees: (assigneesByTaskId.get(task.id) ?? []).map((assignee) => ({
+        userId: assignee.userId,
+        name: assignee.name,
+      })),
       progress: task.progress,
       isMilestone: task.isMilestone,
       baselineStartDate: task.baselineStartDate
