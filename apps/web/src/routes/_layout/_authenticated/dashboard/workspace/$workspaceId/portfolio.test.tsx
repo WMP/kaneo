@@ -261,6 +261,117 @@ describe("Portfolio route", () => {
     expect(container.querySelector("svg path")).not.toBeNull();
   });
 
+  it("widens the day columns on a wheel-zoom over the timeline (fine adjustment on top of the unit switch)", () => {
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Migrate schema",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
+    const { container } = show();
+    const grid = container.querySelector<HTMLElement>(
+      '[style*="grid-template-columns: repeat"]',
+    );
+    expect(grid).toBeTruthy();
+    const before = grid?.style.gridTemplateColumns;
+
+    const viewport = screen.getByTestId("portfolio-scroll-container");
+    fireEvent.wheel(viewport, { deltaY: -200, clientX: 500, clientY: 40 });
+
+    // The effective column width is baseDayColumnWidthRem * zoom -- a
+    // widened gridTemplateColumns proves the wheel-driven zoom factor
+    // actually reaches the rendered grid, on top of whatever the Day-unit
+    // base width already was.
+    expect(grid?.style.gridTemplateColumns).not.toBe(before);
+    const widthMatch =
+      grid?.style.gridTemplateColumns.match(/minmax\(([\d.]+)rem/);
+    const beforeMatch = before?.match(/minmax\(([\d.]+)rem/);
+    expect(Number(widthMatch?.[1])).toBeGreaterThan(Number(beforeMatch?.[1]));
+  });
+
+  it("drag-pans the scroll viewport across empty timeline background", () => {
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Migrate schema",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
+    const { container } = show();
+    const viewport = screen.getByTestId("portfolio-scroll-container");
+    viewport.scrollLeft = 200;
+    viewport.scrollTop = 30;
+
+    const content = container.querySelector(
+      ".touch-pan-x.touch-pan-y",
+    ) as HTMLElement;
+    expect(content).toBeTruthy();
+
+    fireEvent.pointerDown(content, {
+      button: 0,
+      pointerId: 1,
+      pointerType: "mouse",
+      clientX: 500,
+      clientY: 100,
+    });
+    fireEvent.pointerMove(content, {
+      pointerId: 1,
+      pointerType: "mouse",
+      clientX: 420,
+      clientY: 70,
+    });
+
+    // Dragging left (clientX decreased by 80) pulls the content left, i.e.
+    // increases scrollLeft by the same amount -- same "grab and pull"
+    // convention as the per-project Gantt.
+    expect(viewport.scrollLeft).toBe(280);
+    expect(viewport.scrollTop).toBe(60);
+
+    fireEvent.pointerUp(content, { pointerId: 1, pointerType: "mouse" });
+
+    // A click on the task bar still opens the task after the drag ends --
+    // the pan never hijacked the bar's own button.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: 'portfolio:gantt.taskAriaLabel:{"title":"Migrate schema"}',
+      }),
+    );
+    expect(screen.getByTestId("task-details-sheet")).toHaveTextContent(
+      "project-1:task-1",
+    );
+  });
+
   it("collapses a project's rows without removing the group header", () => {
     m.portfolio = {
       projects: [
