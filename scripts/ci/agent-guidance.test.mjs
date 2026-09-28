@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
 const guideDirectory = "docs/agent-guide";
 const guideFiles = readdirSync(path.join(root, guideDirectory))
@@ -81,7 +84,10 @@ test("every task contract is reachable and always-loaded files contain no issue 
   const entry = read("AGENTS.md");
   for (const filename of guideFiles) {
     const basename = path.basename(filename);
-    assert.ok(entry.includes(`(${filename})`), `AGENTS.md does not route to ${filename}`);
+    assert.ok(
+      entry.includes(`(${filename})`),
+      `AGENTS.md does not route to ${filename}`,
+    );
     if (basename !== "README.md") {
       assert.equal(
         index.split(`(${basename})`).length - 1,
@@ -91,7 +97,10 @@ test("every task contract is reachable and always-loaded files contain no issue 
     }
   }
   for (const filename of instructionFiles.filter(
-    (file) => file === "AGENTS.md" || file === "CLAUDE.md" || file.startsWith(".cursor/"),
+    (file) =>
+      file === "AGENTS.md" ||
+      file === "CLAUDE.md" ||
+      file.startsWith(".cursor/"),
   )) {
     assert.doesNotMatch(read(filename), /(?:^|[^\w/])#\d{3,}\b/m);
   }
@@ -133,7 +142,9 @@ test("documented Node and pnpm versions agree with CI and the devcontainer", () 
   );
   assert.ok(ciMajors.length > 0);
   assert.ok(ciMajors.every((major) => major === requiredMajor));
-  assert.ok(read(".devcontainer/devcontainer.json").includes(`node:${requiredMajor}.`));
+  assert.ok(
+    read(".devcontainer/devcontainer.json").includes(`node:${requiredMajor}.`),
+  );
   assert.ok(read("AGENTS.md").includes(`Node.js ${requiredMajor}`));
   assert.ok(read("AGENTS.md").includes(`pnpm ${packageManagerVersion}`));
 });
