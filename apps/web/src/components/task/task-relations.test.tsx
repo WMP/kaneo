@@ -102,6 +102,7 @@ function otherProjectRelation() {
       priority: null,
       number: 7,
       projectId: "project-other",
+      projectSlug: "OTHER",
       userId: null,
       assigneeName: null,
     },
@@ -122,6 +123,7 @@ function sameProjectRelation() {
       priority: null,
       number: 3,
       projectId: CURRENT_PROJECT_ID,
+      projectSlug: "CUR",
       userId: null,
       assigneeName: null,
     },
@@ -157,8 +159,10 @@ describe("TaskRelations cross-project correctness", () => {
     mocks.taskRelations.mockReturnValue({ data: [otherProjectRelation()] });
 
     renderRelations();
+    // The button's accessible name now also carries the task key (see the
+    // cross-project key regression below), so match the title as a substring.
     fireEvent.click(
-      screen.getByRole("button", { name: "Fix the other project's bug" }),
+      screen.getByRole("button", { name: /Fix the other project's bug/ }),
     );
 
     expect(mocks.navigate).toHaveBeenCalledWith(
@@ -176,7 +180,7 @@ describe("TaskRelations cross-project correctness", () => {
     mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
 
     renderRelations();
-    fireEvent.click(screen.getByRole("button", { name: "Fix a bug here" }));
+    fireEvent.click(screen.getByRole("button", { name: /Fix a bug here/ }));
 
     expect(mocks.navigate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -220,6 +224,24 @@ describe("TaskRelations cross-project correctness", () => {
 
     const title = screen.getByText("Fix the other project's bug");
     expect(title.className).not.toContain("line-through");
+  });
+
+  it("shows the task key (SLUG-number) for a cross-project related task", () => {
+    mocks.taskRelations.mockReturnValue({ data: [otherProjectRelation()] });
+
+    renderRelations();
+
+    // The other project's own slug, not this board's, so the row reads as
+    // belonging elsewhere.
+    expect(screen.getByText("OTHER-7")).toBeInTheDocument();
+  });
+
+  it("shows the task key for a same-project related task too", () => {
+    mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
+
+    renderRelations();
+
+    expect(screen.getByText("CUR-3")).toBeInTheDocument();
   });
 
   it("trims the search query before sending it to global search", () => {

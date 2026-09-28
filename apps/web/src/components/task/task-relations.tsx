@@ -469,7 +469,7 @@ export default function TaskRelations({
 
                           <button
                             type="button"
-                            className="flex-1 min-w-0 text-left outline-none"
+                            className="flex flex-1 min-w-0 items-center gap-1.5 text-left outline-none"
                             onClick={() =>
                               handleNavigateToTask(
                                 item.task.id,
@@ -477,8 +477,18 @@ export default function TaskRelations({
                               )
                             }
                           >
+                            {/* Task key (SLUG-number). Always shown so a
+                                related task is identifiable at a glance, and
+                                especially so a cross-project task — whose slug
+                                differs from this board's — reads as belonging
+                                elsewhere rather than as a bare title. */}
+                            {item.task.number !== null && (
+                              <span className="shrink-0 font-mono text-[11px] text-muted-foreground/80">
+                                {item.task.projectSlug}-{item.task.number}
+                              </span>
+                            )}
                             <span
-                              className={`text-sm truncate block ${isFinalStatus ? "line-through text-muted-foreground" : "text-foreground/90"}`}
+                              className={`text-sm truncate ${isFinalStatus ? "line-through text-muted-foreground" : "text-foreground/90"}`}
                             >
                               {item.task.title}
                             </span>
