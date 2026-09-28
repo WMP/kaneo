@@ -76,9 +76,11 @@ function RouteComponent() {
   const canManage = canUpdateProjects();
   const workspaceId = workspace?.id ?? "";
 
-  const { data: resources = [] } = useGetWorkspaceResources(workspaceId) as {
-    data: Resource[] | undefined;
-  };
+  const {
+    data: resources = [],
+    isLoading,
+    isError,
+  } = useGetWorkspaceResources(workspaceId);
 
   const createResource = useCreateResource();
   const updateResource = useUpdateResource();
@@ -238,7 +240,17 @@ function RouteComponent() {
 
           <Card className="!rounded-none">
             <CardPanel className="p-4">
-              {resources.length === 0 ? (
+              {isLoading ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  {t("settings:workspaceResources.loading")}
+                </p>
+              ) : isError ? (
+                // Distinguish a failed fetch from a genuinely empty workspace,
+                // so a load error never masquerades as "no resources yet".
+                <p className="py-6 text-center text-sm text-destructive">
+                  {t("settings:workspaceResources.loadError")}
+                </p>
+              ) : resources.length === 0 ? (
                 <Empty>
                   <EmptyHeader>
                     <EmptyMedia>
@@ -253,7 +265,9 @@ function RouteComponent() {
               ) : (
                 <div className="divide-y divide-border">
                   {resources.map((resource) => {
-                    const KindIcon = KIND_ICONS[resource.kind];
+                    // Fallback guard: an unexpected kind (future/garbled data)
+                    // degrades one row's icon rather than crashing the list.
+                    const KindIcon = KIND_ICONS[resource.kind] ?? Box;
                     return (
                       <div
                         key={resource.id}
@@ -284,7 +298,6 @@ function RouteComponent() {
                                 "settings:workspaceResources.editResource",
                               )}
                               className="h-8 w-8"
-                              disabled={deleteResource.isPending}
                               onClick={() => openEdit(resource)}
                             >
                               <Pencil className="size-3.5" />

@@ -477,11 +477,12 @@ export default function TaskRelations({
                               )
                             }
                           >
-                            {/* Task key (SLUG-number). Always shown so a
-                                related task is identifiable at a glance, and
-                                especially so a cross-project task — whose slug
-                                differs from this board's — reads as belonging
-                                elsewhere rather than as a bare title. */}
+                            {/* Task key (SLUG-number), shown whenever the
+                                summary carries a slug and number, so a related
+                                task is identifiable at a glance — especially a
+                                cross-project one, whose slug differs from this
+                                board's, reads as belonging elsewhere rather
+                                than as a bare title. */}
                             {item.task.projectSlug &&
                               item.task.number !== null && (
                                 <span className="shrink-0 font-mono text-[11px] text-muted-foreground/80">

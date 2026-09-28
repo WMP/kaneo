@@ -91,7 +91,7 @@ function edgeAnchorDate(
   dependencyType: CascadeDependencyType,
   source: DerivedScheduleSource,
   lagDays: number,
-): Date {
+): Date | null {
   switch (dependencyType) {
     case "fs":
     case "ff":
@@ -100,7 +100,11 @@ function edgeAnchorDate(
     case "sf":
       return addDaysExact(source.start, lagDays);
     default:
-      return source.end;
+      // Unreachable for the typed union, but a relation's dependencyType is
+      // cast from a server string at the call site, so skip an unknown type
+      // (dropping the edge) rather than guessing a wrong anchor — matching how
+      // the cascade's edgeForcedDeltaDays ignores an unrecognized type.
+      return null;
   }
 }
 
@@ -153,6 +157,7 @@ export function deriveUndatedSuccessorSchedules({
         source,
         edge.lagDays,
       );
+      if (candidateAnchor === null) continue;
       if (anchor === null || candidateAnchor > anchor) anchor = candidateAnchor;
     }
     if (anchor === null) continue;

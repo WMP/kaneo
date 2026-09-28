@@ -1841,6 +1841,8 @@
 			"deleteConfirmTitle": "Usunąć ten zasób?",
 			"deleteConfirmDescription": "Ten zasób zostanie usunięty ze wszystkich zadań, do których był przypisany. Tej operacji nie można cofnąć.",
 			"empty": "Brak zasobów. Utwórz pierwszą osobę, sprzęt lub materiał, aby rozpocząć.",
+			"loading": "Wczytywanie zasobów…",
+			"loadError": "Nie udało się wczytać zasobów. Spróbuj ponownie.",
 			"createSuccess": "Utworzono zasób",
 			"updateSuccess": "Zaktualizowano zasób",
 			"deleteSuccess": "Usunięto zasób",
@@ -2510,6 +2512,7 @@
 		"contextMenu": {
 			"copyLink": "Kopiuj link",
 			"copyLinkSuccess": "Skopiowano link do zadania!",
+			"copyLinkError": "Nie udało się skopiować linku do zadania.",
 			"moreActions": "Więcej akcji"
 		},
 		"delete": {
@@ -2694,6 +2697,7 @@
 			"externalProjectBadge": "w {{projectName}}",
 			"externalTaskTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}} (tylko do odczytu)",
 			"externalTaskDerivedTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}}; pozycję wyznaczono z zależności, ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
+			"externalTaskDerivedRailNote": "Pozycja z zależności",
 			"legendBaseline": "Plan bazowy",
 			"legendMilestone": "Kamień milowy",
 			"milestoneAriaLabel": "{{title}}: kamień milowy, otwórz zadanie",

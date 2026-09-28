@@ -250,7 +250,7 @@ function CreateTaskModalContent({
   );
   const { data: workspaceResources } = useGetWorkspaceResources(
     workspace?.id || "",
-  ) as { data: Resource[] | undefined };
+  );
   const { mutateAsync: createLabel } = useCreateLabel();
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id || "",

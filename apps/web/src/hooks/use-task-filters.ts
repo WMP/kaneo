@@ -119,7 +119,9 @@ export function useTaskFilters(
         const taskAssigneeIds =
           task.assignees && task.assignees.length > 0
             ? task.assignees.map(
-                (assignee) => assignee.userId ?? assignee.resourceId ?? "",
+                // `||`, not `??`: an empty-string id must fall through to the
+                // resource id, matching assignee-avatars.tsx's own derivation.
+                (assignee) => assignee.userId || assignee.resourceId || "",
               )
             : [task.userId ?? ""];
 

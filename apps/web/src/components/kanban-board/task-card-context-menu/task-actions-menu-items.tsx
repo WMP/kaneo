@@ -92,14 +92,15 @@ export default function TaskActionsMenuItems({
   const { Item, CheckboxItem, Separator, Sub, SubTrigger, SubContent } = kit;
   const { t } = useTranslation();
   const { project } = useProjectStore();
-  const { data: columnsData = [] } = useGetColumns(taskCardContext.projectId);
-  // Prefer the active store project's columns only when it IS this task's
+  const { data: columnsData = [] } = useGetColumns(task.projectId);
+  // Prefer the active store project's columns only when it IS this task's own
   // project. This menu is now shared by list/backlog/subtask rows, not just
   // the active board, so a task from another project must fall back to the
-  // columns fetched for taskCardContext.projectId rather than offering (and
-  // writing) the active project's status slugs.
+  // columns fetched for its own projectId rather than offering (and writing)
+  // the active project's status slugs. Keyed on task.projectId (authoritative)
+  // rather than the container's taskCardContext.projectId.
   const columns =
-    project?.id === taskCardContext.projectId &&
+    project?.id === task.projectId &&
     project?.columns &&
     project.columns.length > 0
       ? project.columns.map((col) => ({
@@ -141,12 +142,23 @@ export default function TaskActionsMenuItems({
     }));
   }, [workspaceUsers]);
 
-  const handleCopyTaskLink = () => {
+  const handleCopyTaskLink = async () => {
     const path = `/dashboard/workspace/${taskCardContext.worskpaceId}/project/${taskCardContext.projectId}/task/${task.id}`;
     const taskLink = generateLink(path);
 
-    navigator.clipboard.writeText(taskLink);
-    toast.success(t("tasks:contextMenu.copyLinkSuccess"));
+    // navigator.clipboard is undefined on a non-secure (plain HTTP) origin — a
+    // supported self-hosted single-instance deployment (see AGENTS.md) — and
+    // writeText can also reject on a permission denial. Guard and await it so a
+    // failure reports an error instead of throwing and falsely toasting success.
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("clipboard-unavailable");
+      }
+      await navigator.clipboard.writeText(taskLink);
+      toast.success(t("tasks:contextMenu.copyLinkSuccess"));
+    } catch {
+      toast.error(t("tasks:contextMenu.copyLinkError"));
+    }
   };
 
   const handleDuplicateTask = () => {

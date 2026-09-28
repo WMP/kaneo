@@ -2392,8 +2392,15 @@ function RouteComponent() {
                                   {task.title}
                                 </p>
                                 <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
-                                  {formatDateMedium(task.scheduleStart)} -{" "}
-                                  {formatDateMedium(task.scheduleEnd)}
+                                  {task.isDerived
+                                    ? // A derived row has no real dates of its
+                                      // own; show that its position comes from
+                                      // the dependency rather than a concrete
+                                      // (fabricated) date range.
+                                      t(
+                                        "tasks:gantt.externalTaskDerivedRailNote",
+                                      )
+                                    : `${formatDateMedium(task.scheduleStart)} - ${formatDateMedium(task.scheduleEnd)}`}
                                 </p>
                               </div>
                             ) : (

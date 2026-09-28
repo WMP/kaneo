@@ -1,6 +1,6 @@
 import { client } from "@kaneo/libs";
 import { HttpError } from "@/lib/http-error";
-import type { ResourceKind } from "@/types/resource";
+import type { Resource, ResourceKind } from "@/types/resource";
 
 export type GetWorkspaceResourcesRequest = {
   workspaceId: string;
@@ -10,7 +10,7 @@ export type GetWorkspaceResourcesRequest = {
 async function getWorkspaceResources({
   workspaceId,
   kind,
-}: GetWorkspaceResourcesRequest) {
+}: GetWorkspaceResourcesRequest): Promise<Resource[]> {
   const response = await client.resource.workspace[":workspaceId"].$get({
     param: { workspaceId },
     query: kind ? { kind } : {},
@@ -20,7 +20,10 @@ async function getWorkspaceResources({
     throw new HttpError(response.status, await response.text());
   }
 
-  return response.json();
+  // The API response schema types `kind` as a plain string; narrow it to the
+  // Resource shape once here, at the boundary, so consumers get typed data
+  // instead of each casting the query result themselves.
+  return (await response.json()) as Resource[];
 }
 
 export default getWorkspaceResources;

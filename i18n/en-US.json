@@ -1030,6 +1030,8 @@
 			"deleteConfirmTitle": "Delete this resource?",
 			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
 			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"loading": "Loading resources…",
+			"loadError": "Couldn't load resources. Please try again.",
 			"createSuccess": "Resource created",
 			"updateSuccess": "Resource updated",
 			"deleteSuccess": "Resource deleted",
@@ -2563,6 +2565,7 @@
 			"externalProjectBadge": "in {{projectName}}",
 			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
 			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
+			"externalTaskDerivedRailNote": "Position from dependency",
 			"milestoneAriaLabel": "{{title}}: milestone, open task",
 			"progressLabel": "{{progress}}% complete",
 			"unitControlAriaLabel": "Timeline granularity",
@@ -2650,6 +2653,7 @@
 		"contextMenu": {
 			"copyLink": "Copy link",
 			"copyLinkSuccess": "Task link copied!",
+			"copyLinkError": "Couldn't copy the task link.",
 			"moreActions": "More actions"
 		},
 		"actions": {

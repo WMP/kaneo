@@ -1804,7 +1804,9 @@
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
 			"title": "Resources",
 			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated"
+			"updateSuccess": "Resource updated",
+			"loadError": "Couldn't load resources. Please try again.",
+			"loading": "Loading resources…"
 		}
 	},
 	"navigation": {
@@ -2570,7 +2572,8 @@
 			"barColorSourceLabel": "Bar color",
 			"barColorSourceNone": "None",
 			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)"
+			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
+			"externalTaskDerivedRailNote": "Position from dependency"
 		},
 		"delete": {
 			"title": "Hapus Tugas?",
@@ -2626,7 +2629,8 @@
 		"contextMenu": {
 			"copyLink": "Salin tautan",
 			"copyLinkSuccess": "Tautan tugas disalin!",
-			"moreActions": "More actions"
+			"moreActions": "More actions",
+			"copyLinkError": "Couldn't copy the task link."
 		},
 		"actions": {
 			"duplicate": "Duplikat",

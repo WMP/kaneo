@@ -16,7 +16,6 @@ import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
-import type Resource from "@/types/resource";
 import type Task from "@/types/task";
 import { resolveTaskAssignees } from "./assignee-avatars";
 import { AssigneeResourceSection } from "./assignee-resource-section";
@@ -42,9 +41,7 @@ export default function TaskAssigneePopover({
   );
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
   const { data: workspaceUsers } = useGetActiveWorkspaceUsers(workspaceId);
-  const { data: workspaceResources } = useGetWorkspaceResources(
-    workspaceId,
-  ) as { data: Resource[] | undefined };
+  const { data: workspaceResources } = useGetWorkspaceResources(workspaceId);
   const { canAssignTasks, canUpdateProjects } = useWorkspacePermission();
   const canAssign = canAssignTasks();
   // Gated the same as POST /resource (project:update) — see resource/index.ts.
