@@ -46,6 +46,7 @@ import {
   parseTaskDate,
   pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
+import { useTimelinePanZoom } from "@/components/gantt/use-timeline-pan-zoom";
 import PageTitle from "@/components/page-title";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Button } from "@/components/ui/button";
@@ -74,8 +75,9 @@ const GANTT_UNIT_LABEL_KEYS: Record<GanttUnit, string> = {
 // Base day-column width per unit, in rem -- same values the per-project
 // Gantt uses for its own unzoomed columns (see UNIT_BASE_DAY_COLUMN_WIDTH_REM
 // in that route), reused here since the portfolio timeline shares the same
-// per-day grid math. This first version has no wheel-zoom of its own; the
-// unit switch is the only zoom lever.
+// per-day grid math. The unit switch remains the coarse lever; useTimelinePanZoom's
+// zoom factor (see below) is the fine, wheel-driven adjustment on top of it,
+// same split as the per-project Gantt.
 const UNIT_DAY_COLUMN_WIDTH_REM: Record<
   GanttUnit,
   { desktop: number; mobile: number }
@@ -163,11 +165,6 @@ function RouteComponent() {
         return auto === "quarter" ? "month" : auto;
       })();
 
-  const handleUnitChange = (unit: GanttUnit) => {
-    setGanttUnit(unit);
-    setRequestedStart(null);
-  };
-
   const range = useMemo(
     () =>
       buildGanttRange(
@@ -180,12 +177,39 @@ function RouteComponent() {
     [flatSchedule, weekStartsOn, requestedStart, effectiveGanttUnit],
   );
 
-  const dayColumnWidthRem = isMobile
+  const baseDayColumnWidthRem = isMobile
     ? UNIT_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].mobile
     : UNIT_DAY_COLUMN_WIDTH_REM[effectiveGanttUnit].desktop;
   const railWidthRem = isMobile
     ? RAIL_WIDTH_REM.mobile
     : RAIL_WIDTH_REM.desktop;
+
+  // Horizontal drag-to-pan, wheel/trackpad panning, and ctrl/cmd-wheel zoom
+  // anchored under the cursor -- the same interaction model as the
+  // per-project Gantt (see useTimelinePanZoom), layered as a fine adjustment
+  // on top of the coarse unit switch above. The listener only needs to be
+  // live once the real timeline (rather than one of the loading/empty
+  // states below) is actually on screen, hence `enabled`.
+  const {
+    viewportRef,
+    zoom,
+    setZoom,
+    isPanning,
+    onPointerDown: onTimelinePointerDown,
+    onPointerMove: onTimelinePointerMove,
+    onPointerUp: onTimelinePointerUp,
+    onPointerCancel: onTimelinePointerCancel,
+  } = useTimelinePanZoom({
+    getRailWidthPx: () => railWidthRem * getRootFontSizePx(),
+    enabled: Boolean(range) && flatSchedule.length > 0,
+  });
+  const dayColumnWidthRem = baseDayColumnWidthRem * zoom;
+
+  const handleUnitChange = (unit: GanttUnit) => {
+    setGanttUnit(unit);
+    setRequestedStart(null);
+    setZoom(1);
+  };
 
   const gridMetrics = useMemo(
     () =>
@@ -430,8 +454,21 @@ function RouteComponent() {
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-              <div className="relative min-w-max">
+            <div
+              ref={viewportRef}
+              data-testid="portfolio-scroll-container"
+              className="min-h-0 flex-1 overflow-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]"
+            >
+              <div
+                className={cn(
+                  "relative min-w-max touch-pan-x touch-pan-y",
+                  isPanning ? "cursor-grabbing" : "cursor-grab",
+                )}
+                onPointerDown={onTimelinePointerDown}
+                onPointerMove={onTimelinePointerMove}
+                onPointerUp={onTimelinePointerUp}
+                onPointerCancel={onTimelinePointerCancel}
+              >
                 <div className="sticky top-0 z-20 flex border-b border-border bg-background/95 backdrop-blur">
                   <div
                     className="sticky left-0 z-30 shrink-0 select-none border-r border-border bg-background px-3 py-2.5"
