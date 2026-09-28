@@ -2649,7 +2649,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Copy link",
-			"copyLinkSuccess": "Task link copied!"
+			"copyLinkSuccess": "Task link copied!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Duplicate",

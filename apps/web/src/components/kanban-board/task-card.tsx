@@ -49,6 +49,7 @@ import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import type Task from "@/types/task";
+import TaskActionsDropdown from "./task-card-context-menu/task-actions-dropdown";
 import TaskCardContextMenuContent from "./task-card-context-menu/task-card-context-menu-content";
 import { TaskLabels } from "./task-labels";
 
@@ -261,27 +262,38 @@ function TaskCard({ task, disableDragDrop = false }: TaskCardProps) {
               </div>
             )}
 
-            {showAssignees && (
-              <div className="absolute top-3 right-3">
-                {taskAssignees.length > 0 ? (
-                  <AssigneeAvatars
-                    assignees={taskAssignees}
-                    avatarClassName="h-5 w-5"
+            {(showAssignees || (project && workspace)) && (
+              <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1">
+                {showAssignees &&
+                  (taskAssignees.length > 0 ? (
+                    <AssigneeAvatars
+                      assignees={taskAssignees}
+                      avatarClassName="h-5 w-5"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted"
+                      title={t("tasks:assignee.unassigned")}
+                    >
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        ?
+                      </span>
+                    </div>
+                  ))}
+                {project && workspace && (
+                  <TaskActionsDropdown
+                    task={task}
+                    taskCardContext={{
+                      projectId: project.id,
+                      worskpaceId: workspace.id,
+                    }}
+                    onDeleteClick={() => setIsDeleteTaskModalOpen(true)}
                   />
-                ) : (
-                  <div
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted"
-                    title={t("tasks:assignee.unassigned")}
-                  >
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      ?
-                    </span>
-                  </div>
                 )}
               </div>
             )}
 
-            <div className="mb-2.5 pr-6">
+            <div className="mb-2.5 pr-9">
               <div
                 className="overflow-hidden break-words leading-5 font-medium text-foreground/95 text-[15px]"
                 style={{

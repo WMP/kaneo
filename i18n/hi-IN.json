@@ -2635,7 +2635,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "लिंक कॉपी करें",
-			"copyLinkSuccess": "कार्य लिंक कॉपी किया गया!"
+			"copyLinkSuccess": "कार्य लिंक कॉपी किया गया!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "डुप्लिकेट करें",

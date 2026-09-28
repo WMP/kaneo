@@ -2643,7 +2643,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Keçidi kopyala",
-			"copyLinkSuccess": "Tapşırığın keçidi kopyalandı!"
+			"copyLinkSuccess": "Tapşırığın keçidi kopyalandı!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"archive": "Arxivlə",

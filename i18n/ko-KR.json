@@ -2638,7 +2638,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "링크 복사",
-			"copyLinkSuccess": "작업 링크가 복사되었습니다!"
+			"copyLinkSuccess": "작업 링크가 복사되었습니다!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "복제",

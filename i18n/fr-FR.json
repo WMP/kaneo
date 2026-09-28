@@ -2645,7 +2645,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Copier le lien",
-			"copyLinkSuccess": "Lien de la tâche copié !"
+			"copyLinkSuccess": "Lien de la tâche copié !",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Dupliquer",

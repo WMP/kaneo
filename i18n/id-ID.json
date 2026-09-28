@@ -2625,7 +2625,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Salin tautan",
-			"copyLinkSuccess": "Tautan tugas disalin!"
+			"copyLinkSuccess": "Tautan tugas disalin!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Duplikat",

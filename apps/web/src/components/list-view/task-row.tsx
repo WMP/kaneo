@@ -45,6 +45,7 @@ import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import type Task from "@/types/task";
+import TaskActionsDropdown from "../kanban-board/task-card-context-menu/task-actions-dropdown";
 import TaskCardContextMenuContent from "../kanban-board/task-card-context-menu/task-card-context-menu-content";
 import { TaskLabels } from "../kanban-board/task-labels";
 import { ContextMenu, ContextMenuTrigger } from "../ui/context-menu";
@@ -372,6 +373,18 @@ function TaskRow({ task, projectSlug }: TaskRowProps) {
                   </div>
                 )}
               </div>
+            )}
+
+            {project && workspace && (
+              <TaskActionsDropdown
+                task={task}
+                taskCardContext={{
+                  projectId: project.id,
+                  worskpaceId: workspace.id,
+                }}
+                onDeleteClick={() => setIsDeleteTaskModalOpen(true)}
+                className="flex-shrink-0"
+              />
             )}
           </div>
         </ContextMenuTrigger>

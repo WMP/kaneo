@@ -2675,7 +2675,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Скопировать ссылку",
-			"copyLinkSuccess": "Ссылка на задачу скопирована!"
+			"copyLinkSuccess": "Ссылка на задачу скопирована!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Дублировать",

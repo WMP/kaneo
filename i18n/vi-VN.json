@@ -2625,7 +2625,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Sao chép liên kết",
-			"copyLinkSuccess": "Đã sao chép liên kết công việc!"
+			"copyLinkSuccess": "Đã sao chép liên kết công việc!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Nhân bản",

@@ -44,6 +44,7 @@ import useBacklogBulkSelectionStore from "@/store/backlog-bulk-selection";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import type Task from "@/types/task";
+import TaskActionsDropdown from "../kanban-board/task-card-context-menu/task-actions-dropdown";
 import TaskCardContextMenuContent from "../kanban-board/task-card-context-menu/task-card-context-menu-content";
 import { TaskLabels } from "../kanban-board/task-labels";
 import { ContextMenu, ContextMenuTrigger } from "../ui/context-menu";
@@ -299,6 +300,18 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
                   </div>
                 )}
               </div>
+            )}
+
+            {projectId && workspace && (
+              <TaskActionsDropdown
+                task={task}
+                taskCardContext={{
+                  projectId,
+                  worskpaceId: workspace.id,
+                }}
+                onDeleteClick={() => setIsDeleteTaskModalOpen(true)}
+                className="flex-shrink-0"
+              />
             )}
           </div>
         </ContextMenuTrigger>

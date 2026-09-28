@@ -260,6 +260,46 @@ describe("TaskRelations cross-project correctness", () => {
   });
 });
 
+describe("TaskRelations inline remove control", () => {
+  it("shows the inline remove (X) button for an editable relation and removes it on click", () => {
+    mocks.canUpdateTasks.mockReturnValue(true);
+    mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
+
+    renderRelations();
+
+    const removeButton = screen.getByRole("button", {
+      name: "tasks:relations.removeRelation",
+    });
+    fireEvent.click(removeButton);
+
+    expect(mocks.deleteRelation).toHaveBeenCalledWith("relation-2");
+  });
+
+  it("does not navigate to the related task when the inline remove button is clicked", () => {
+    mocks.canUpdateTasks.mockReturnValue(true);
+    mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
+
+    renderRelations();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.removeRelation" }),
+    );
+
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it("hides the inline remove button when the viewer cannot edit tasks", () => {
+    mocks.canUpdateTasks.mockReturnValue(false);
+    mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
+
+    renderRelations();
+
+    expect(
+      screen.queryByRole("button", { name: "tasks:relations.removeRelation" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("TaskRelations link errors", () => {
   function availableTask() {
     return {

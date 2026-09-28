@@ -2635,7 +2635,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Bağlantıyı kopyala",
-			"copyLinkSuccess": "Talep bağlantısı kopyalandı!"
+			"copyLinkSuccess": "Talep bağlantısı kopyalandı!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Çoğalt",

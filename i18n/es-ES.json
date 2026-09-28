@@ -2634,7 +2634,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Copiar enlace",
-			"copyLinkSuccess": "¡Enlace a la tarea copiado!"
+			"copyLinkSuccess": "¡Enlace a la tarea copiado!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Duplicar",

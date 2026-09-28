@@ -2635,7 +2635,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Link kopieren",
-			"copyLinkSuccess": "Aufgabenlink kopiert!"
+			"copyLinkSuccess": "Aufgabenlink kopiert!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Duplizieren",

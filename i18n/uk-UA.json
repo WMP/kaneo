@@ -2655,7 +2655,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Копіювати посилання",
-			"copyLinkSuccess": "Посилання на завдання скопійовано!"
+			"copyLinkSuccess": "Посилання на завдання скопійовано!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Дублювати",

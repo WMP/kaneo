@@ -2635,7 +2635,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Копирај линк",
-			"copyLinkSuccess": "Линкот на задачата е копиран!"
+			"copyLinkSuccess": "Линкот на задачата е копиран!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Дуплирај",

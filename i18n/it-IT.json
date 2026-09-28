@@ -2645,7 +2645,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Copia link",
-			"copyLinkSuccess": "Link attività copiato!"
+			"copyLinkSuccess": "Link attività copiato!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Duplica",

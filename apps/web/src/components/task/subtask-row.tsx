@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import TaskActionsDropdown from "@/components/kanban-board/task-card-context-menu/task-actions-dropdown";
 import TaskCardContextMenuContent from "@/components/kanban-board/task-card-context-menu/task-card-context-menu-content";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -123,6 +124,16 @@ export default function SubtaskRow({
                 )}
               </button>
             </SubtaskAssigneePopover>
+
+            <TaskActionsDropdown
+              task={task}
+              taskCardContext={{
+                projectId,
+                worskpaceId: workspaceId,
+              }}
+              onDeleteClick={onDeleteClick}
+              className="flex-shrink-0"
+            />
           </div>
         </ContextMenuTrigger>
 

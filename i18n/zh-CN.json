@@ -2638,7 +2638,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "复制链接",
-			"copyLinkSuccess": "任务链接已复制！"
+			"copyLinkSuccess": "任务链接已复制！",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "创建副本",

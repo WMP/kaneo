@@ -556,6 +556,21 @@ export default function TaskRelations({
                               )}
                             </button>
                           </SubtaskAssigneePopover>
+
+                          {canEdit && (
+                            <button
+                              type="button"
+                              className="shrink-0 flex items-center justify-center rounded p-0.5 text-muted-foreground opacity-0 outline-none transition-colors hover:bg-destructive/10 hover:text-destructive-foreground focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveRelation(item.id);
+                              }}
+                              aria-label={t("tasks:relations.removeRelation")}
+                              title={t("tasks:relations.removeRelation")}
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          )}
                         </div>
                       </ContextMenuTrigger>
 

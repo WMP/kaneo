@@ -2635,7 +2635,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "Αντιγραφή συνδέσμου",
-			"copyLinkSuccess": "Ο σύνδεσμος της εργασίας αντιγράφηκε!"
+			"copyLinkSuccess": "Ο σύνδεσμος της εργασίας αντιγράφηκε!",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"duplicate": "Δημιουργία αντιγράφου",

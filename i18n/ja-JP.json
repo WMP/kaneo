@@ -2633,7 +2633,8 @@
 		},
 		"contextMenu": {
 			"copyLink": "リンクをコピー",
-			"copyLinkSuccess": "タスクのリンクをコピーしました！"
+			"copyLinkSuccess": "タスクのリンクをコピーしました！",
+			"moreActions": "More actions"
 		},
 		"actions": {
 			"archive": "アーカイブ",
