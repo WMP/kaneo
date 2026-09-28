@@ -287,21 +287,28 @@ async function lookupWorkspaceId(
       }
 
       case "customField": {
+        // A custom field is either workspace-level (its workspaceId is set
+        // directly) or project-level (resolved through its project) — never
+        // both, so only one of the two lookups below is needed.
         const [field] = await db
           .select({
-            workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.customFieldDefinitionTable.projectId,
+            workspaceId: schema.customFieldDefinitionTable.workspaceId,
           })
           .from(schema.customFieldDefinitionTable)
-          .innerJoin(
-            schema.projectTable,
-            eq(
-              schema.customFieldDefinitionTable.projectId,
-              schema.projectTable.id,
-            ),
-          )
           .where(eq(schema.customFieldDefinitionTable.id, id))
           .limit(1);
-        return field?.workspaceId || null;
+
+        if (!field) return null;
+        if (field.workspaceId) return field.workspaceId;
+        if (!field.projectId) return null;
+
+        const [project] = await db
+          .select({ workspaceId: schema.projectTable.workspaceId })
+          .from(schema.projectTable)
+          .where(eq(schema.projectTable.id, field.projectId))
+          .limit(1);
+        return project?.workspaceId || null;
       }
 
       default:

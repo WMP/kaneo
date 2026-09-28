@@ -7,6 +7,7 @@ import {
   customFieldValueTable,
   taskTable,
 } from "../../database/schema";
+import { getEffectiveFieldIdSet } from "../effective-fields";
 
 function isMultiselectEmpty(value: string): boolean {
   if (!value || value.trim().length === 0) return true;
@@ -44,7 +45,19 @@ async function setCustomFieldValue(
     .where(eq(customFieldDefinitionTable.id, fieldId))
     .limit(1);
 
-  if (!field || field.projectId !== task.projectId) {
+  if (!field) {
+    throw new HTTPException(404, {
+      message: "Custom field not found",
+    });
+  }
+
+  // Valid targets are the task's project's own fields, plus its workspace's
+  // fields the project hasn't hidden (a hidden field's value can't be set
+  // through this route even if a value row still exists from before it was
+  // hidden).
+  const effectiveFieldIds = await getEffectiveFieldIdSet(task.projectId);
+
+  if (!effectiveFieldIds.has(field.id)) {
     throw new HTTPException(404, {
       message: "Custom field not found",
     });

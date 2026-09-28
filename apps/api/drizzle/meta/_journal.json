@@ -379,6 +379,13 @@
       "when": 1790576666213,
       "tag": "0053_ganttpro_task_assignment",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1790583849224,
+      "tag": "0054_ganttpro_workspace_custom_fields",
+      "breakpoints": true
     }
   ]
 }

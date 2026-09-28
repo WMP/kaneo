@@ -6,27 +6,29 @@ import {
   customFieldValueTable,
   projectTable,
   taskTable,
+  workspaceTable,
 } from "../../database/schema";
 import { annotateCustomField } from "../effective-fields";
 import { validateCustomFieldCreateInput } from "../validate-definition-input";
 
-async function createCustomField(
-  projectId: string,
+async function createWorkspaceCustomField(
+  workspaceId: string,
   name: string,
   type: string,
   required: boolean,
   defaultValue?: string,
   options?: string[],
   optionColors?: Record<string, string>,
+  position?: number,
 ) {
-  const [project] = await db
-    .select({ id: projectTable.id })
-    .from(projectTable)
-    .where(eq(projectTable.id, projectId))
+  const [workspace] = await db
+    .select({ id: workspaceTable.id })
+    .from(workspaceTable)
+    .where(eq(workspaceTable.id, workspaceId))
     .limit(1);
 
-  if (!project) {
-    throw new HTTPException(404, { message: "Project not found" });
+  if (!workspace) {
+    throw new HTTPException(404, { message: "Workspace not found" });
   }
 
   const normalized = validateCustomFieldCreateInput({
@@ -41,20 +43,23 @@ async function createCustomField(
   const [maxPositionResult] = await db
     .select({ maxPosition: max(customFieldDefinitionTable.position) })
     .from(customFieldDefinitionTable)
-    .where(eq(customFieldDefinitionTable.projectId, projectId));
+    .where(eq(customFieldDefinitionTable.workspaceId, workspaceId));
+
+  const resolvedPosition =
+    position ?? (maxPositionResult?.maxPosition ?? 0) + 1;
 
   const field = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(customFieldDefinitionTable)
       .values({
-        projectId,
+        workspaceId,
         name,
         type,
         required,
         defaultValue: normalized.storedDefaultValue,
         options: normalized.options,
         optionColors: normalized.optionColors,
-        position: (maxPositionResult?.maxPosition ?? 0) + 1,
+        position: resolvedPosition,
       })
       .returning();
 
@@ -66,10 +71,13 @@ async function createCustomField(
 
     const storedDefaultValue = normalized.storedDefaultValue;
     if (storedDefaultValue != null && storedDefaultValue.trim() !== "") {
+      // Backfill every task in every project of this workspace, mirroring
+      // the project-scoped create's single-project backfill.
       const tasks = await tx
         .select({ id: taskTable.id })
         .from(taskTable)
-        .where(eq(taskTable.projectId, projectId));
+        .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+        .where(eq(projectTable.workspaceId, workspaceId));
 
       const CHUNK_SIZE = 500;
       for (let i = 0; i < tasks.length; i += CHUNK_SIZE) {
@@ -92,4 +100,4 @@ async function createCustomField(
   return annotateCustomField(field);
 }
 
-export default createCustomField;
+export default createWorkspaceCustomField;

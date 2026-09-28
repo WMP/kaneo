@@ -1372,12 +1372,24 @@ export const customFieldDefinitionTable = pgTable(
     id: text("id")
       .$defaultFn(() => createId())
       .primaryKey(),
-    projectId: text("project_id")
-      .notNull()
-      .references(() => projectTable.id, {
+    // Set for a project-level definition; null for a workspace-level one.
+    // See the check constraint below: exactly one of projectId/workspaceId
+    // is set.
+    projectId: text("project_id").references(() => projectTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    // Set for a workspace-level definition, inherited by every project in
+    // the workspace unless a project hides it (ganttpro_project_hidden_field)
+    // — a required workspace field can never be hidden. Null for a
+    // project-level definition, which only that project sees.
+    workspaceId: text("ganttpro_workspace_id").references(
+      () => workspaceTable.id,
+      {
         onDelete: "cascade",
         onUpdate: "cascade",
-      }),
+      },
+    ),
     name: text("name").notNull(),
     type: text("type").notNull(), // 'text' | 'number' | 'date' | 'dropdown' | 'boolean'
     required: boolean("required").default(false).notNull(),
@@ -1396,7 +1408,48 @@ export const customFieldDefinitionTable = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("custom_field_def_projectId_idx").on(table.projectId)],
+  (table) => [
+    index("custom_field_def_projectId_idx").on(table.projectId),
+    index("ganttpro_custom_field_def_workspaceId_idx").on(table.workspaceId),
+    check(
+      "ganttpro_custom_field_scope",
+      sql`((${table.projectId} IS NOT NULL) AND (${table.workspaceId} IS NULL)) OR ((${table.projectId} IS NULL) AND (${table.workspaceId} IS NOT NULL))`,
+    ),
+  ],
+);
+
+// "This project hides this inherited workspace field." Only ever references
+// a workspace-level customFieldDefinitionTable row (enforced at the
+// application layer — hiding a required field, or a project-level field, is
+// rejected before a row is written here); absence of a row means visible.
+export const projectHiddenFieldTable = pgTable(
+  "ganttpro_project_hidden_field",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    fieldId: text("field_id")
+      .notNull()
+      .references(() => customFieldDefinitionTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("ganttpro_project_hidden_field_unique").on(
+      table.projectId,
+      table.fieldId,
+    ),
+    index("ganttpro_project_hidden_field_projectId_idx").on(table.projectId),
+    index("ganttpro_project_hidden_field_fieldId_idx").on(table.fieldId),
+  ],
 );
 
 export const customFieldValueTable = pgTable(

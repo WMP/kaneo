@@ -1,11 +1,11 @@
 import { createId } from "@paralleldrive/cuid2";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { getEffectiveCustomFieldDefinitions } from "../../custom-field/effective-fields";
 import db from "../../database";
 import {
   assetTable,
   columnTable,
-  customFieldDefinitionTable,
   customFieldValueTable,
   labelTable,
   projectTable,
@@ -158,26 +158,27 @@ async function duplicateTask({
     ),
   });
 
-  const fieldDefinitions = await db
-    .select()
-    .from(customFieldDefinitionTable)
-    .where(eq(customFieldDefinitionTable.projectId, sourceTask.projectId));
-  const sourceCustomFields = await db
-    .select({
-      fieldId: customFieldValueTable.fieldId,
-      value: customFieldValueTable.value,
-    })
-    .from(customFieldValueTable)
-    .innerJoin(
-      customFieldDefinitionTable,
-      eq(customFieldValueTable.fieldId, customFieldDefinitionTable.id),
-    )
-    .where(
-      and(
-        eq(customFieldValueTable.taskId, sourceTask.id),
-        eq(customFieldDefinitionTable.projectId, sourceTask.projectId),
-      ),
-    );
+  const fieldDefinitions = await getEffectiveCustomFieldDefinitions(
+    sourceTask.projectId,
+  );
+  const effectiveFieldIds = fieldDefinitions.map((field) => field.id);
+  const sourceCustomFields =
+    effectiveFieldIds.length === 0
+      ? []
+      : await db
+          .select({
+            fieldId: customFieldValueTable.fieldId,
+            value: customFieldValueTable.value,
+          })
+          .from(customFieldValueTable)
+          .where(
+            and(
+              eq(customFieldValueTable.taskId, sourceTask.id),
+              // Never copy a value for a field the source task's project has
+              // since hidden.
+              inArray(customFieldValueTable.fieldId, effectiveFieldIds),
+            ),
+          );
   const customFields = sourceCustomFields.map(({ fieldId, value }) => ({
     fieldId,
     value: value ?? "",

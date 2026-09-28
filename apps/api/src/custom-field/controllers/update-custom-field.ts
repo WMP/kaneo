@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { customFieldDefinitionTable } from "../../database/schema";
+import { annotateCustomField } from "../effective-fields";
 import { validateOptionColors } from "../validate-option-colors";
 
 // Minimal definition update: renaming a field and editing its dropdown
@@ -51,7 +52,7 @@ async function updateCustomField(
     });
   }
 
-  return updated;
+  return annotateCustomField(updated);
 }
 
 export default updateCustomField;

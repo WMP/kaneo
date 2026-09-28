@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { getEffectiveCustomFieldDefinitions } from "../../custom-field/effective-fields";
 import db from "../../database";
 import {
   columnTable,
-  customFieldDefinitionTable,
   customFieldValueTable,
   taskTable,
   userTable,
@@ -78,10 +78,7 @@ async function createTask({
 
   await assertValidTaskStatus(resolvedStatus, projectId);
 
-  const allFields = await db
-    .select()
-    .from(customFieldDefinitionTable)
-    .where(eq(customFieldDefinitionTable.projectId, projectId));
+  const allFields = await getEffectiveCustomFieldDefinitions(projectId);
 
   const mergedCustomFields: CustomFieldInput[] = normalizedCustomFields ?? [];
   const providedFieldIds = new Set(mergedCustomFields.map((f) => f.fieldId));

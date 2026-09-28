@@ -1,7 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { getEffectiveCustomFieldDefinitions } from "../custom-field/effective-fields";
 import db from "../database";
-import { columnTable, customFieldDefinitionTable } from "../database/schema";
+import { columnTable } from "../database/schema";
 
 export function isCustomFieldValueEmpty(
   value: string,
@@ -126,17 +127,10 @@ export async function assertRequiredCustomFields(
   projectId: string,
   customFields: { fieldId: string; value: string }[] = [],
 ): Promise<void> {
-  const allFields = await db
-    .select({
-      id: customFieldDefinitionTable.id,
-      name: customFieldDefinitionTable.name,
-      type: customFieldDefinitionTable.type,
-      required: customFieldDefinitionTable.required,
-      defaultValue: customFieldDefinitionTable.defaultValue,
-      options: customFieldDefinitionTable.options,
-    })
-    .from(customFieldDefinitionTable)
-    .where(eq(customFieldDefinitionTable.projectId, projectId));
+  // The effective set: the project's own fields, plus its workspace's
+  // fields it hasn't hidden (a required workspace field can never be
+  // hidden, so it's always in this set).
+  const allFields = await getEffectiveCustomFieldDefinitions(projectId);
 
   const validFieldIds = new Set(allFields.map((f) => f.id));
 
