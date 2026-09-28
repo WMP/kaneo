@@ -1,0 +1,23 @@
+# Gantt scheduling contract
+
+Read the implementation and its tests before changing these behaviors. The UI calculates a cascade and submits dates through the API; the API persists and validates dates, but it does not independently recompute the dependency schedule. The accepted future behavior is in [project decisions](project-decisions.md); do not confuse that target with the current implementation.
+
+## Dates and calendar
+
+Tasks have optional `startDate` and `dueDate`; API date parsing and `validateDateRange` live in `apps/api/src/utils/validate-dates.ts`. The Gantt's timeline and drag math use local calendar days (`apps/web/src/components/gantt/timeline.ts` and `apps/web/src/components/gantt/gantt-task-bar.tsx`); do not replace calendar-day arithmetic with milliseconds divided by 86,400,000 across DST boundaries. Holidays are date-only values stored at UTC midnight: `apps/web/src/components/gantt/gantt-working-calendar.ts` extracts the ISO date portion for holidays, while `toDateKey` uses a local day for displayed tasks. Test a non-UTC browser time zone when changing this boundary.
+
+`workspace.workingDays` is a seven-bit mask in JavaScript `Date#getDay()` order (Sunday bit 0); default 62 enables Monday-Friday. Holidays override a working weekday. `apps/web/src/components/gantt/gantt-working-calendar.ts` provides the common predicate; `tests/api-integration/calendar.test.ts` covers the API settings. A shifted dependent's start may be nudged forward to the next working day, preserving its span. The directly moved task is not nudged by the cascade. **Known gap:** the API accepts mask `0` (no working weekdays), but the cascade's forward search stops after 366 days and can then place a dependent on a non-working day. Do not promise a valid next working day for every accepted calendar.
+
+## Relations and movement
+
+For `blocks`, `sourceTaskId` blocks `targetTaskId`. `dependencyType` is `fs`, `ss`, `ff` or `sf`; positive `lagDays` is lag and negative is lead. Non-`blocks` relations retain `fs`/`0` storage defaults and do not schedule. Cross-project links within one workspace are supported; foreign-workspace endpoints are refused. The API rejects directional cycles for `blocks` and `subtask` on creation; `related` has no directional cycle. See `apps/api/src/task-relation/controllers/` and `tests/api-integration/task-relation-*.test.ts`.
+
+`computeDependencyCascade` in `apps/web/src/components/gantt/gantt-dependency-cascade.ts` only shifts **forward** and preserves the start-to-due span. The moved task is fixed at its new dates. Only scheduled tasks in the current project's `tasksById` participate; an absent or cross-project target is not shifted. A `must_start_on` task is pinned, and a shift that would have reached it does not propagate through it. `start_no_earlier_than` and `finish_no_later_than` are not pinning: deadline violations are reported separately by `apps/web/src/components/gantt/gantt-constraint-violations.ts`. Tests live in `apps/web/src/components/gantt/gantt-dependency-cascade.test.ts`.
+
+The UI sends a cascade as `updateSchedule` in one bulk API call. `apps/api/src/task/controllers/bulk-update-tasks.ts` validates each selected date range, updates the scheduled tasks in a transaction and emits `task.updated` per task. When changing this path, test what the UI sent, what PostgreSQL stored, activity/realtime changes and behavior after reload; `tests/api-integration/bulk-task-schedule.test.ts` covers part of that path.
+
+## Other schedule fields and gaps
+
+`isMilestone` is a Gantt marker; `progress` is a bounded percentage. A baseline is a user-triggered snapshot of current start/due dates, not a revision history; set and clear reuse `task.updated` (`apps/api/src/task/controllers/update-task-baseline.ts`). Constraints are `none`, `start_no_earlier_than`, `finish_no_later_than`, and `must_start_on` (`apps/api/src/task/schema.ts`). Calendar and constraint changes must preserve current task dates unless a specified operation explicitly moves them.
+
+**Known proof gap:** the browser's drag/resize → cascade → persisted schedule → reload is not covered by the generic `scripts/ci/browser.mjs` flow. API persistence and pure cascade tests do not prove that full interaction. The dragged task is saved first and dependents are sent in a later bulk request, so the two writes are not one transaction. **Known boundary:** the API accepts validated bulk dates and does not independently enforce the Gantt dependency graph; other API clients can write dates inconsistent with `blocks`. Server authority and an atomic operation are accepted targets (DEC-SCHED-01 and DEC-SCHED-02), with implementation and contract design still pending.

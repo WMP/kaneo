@@ -5,6 +5,9 @@
 <!-- Link to the related issue(s) this PR addresses -->
 Fixes #
 
+## Invariants touched (if applicable)
+<!-- List IDs and current statuses from docs/agent-guide/invariants.md, or write None. -->
+
 ## Type of Change
 <!-- Mark the appropriate option with an "x" -->
 - [ ] Bug fix (non-breaking change that fixes an issue)

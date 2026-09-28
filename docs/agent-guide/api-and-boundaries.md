@@ -1,0 +1,9 @@
+# API and workspace boundaries
+
+The API owns authorization. Use `@kaneo/permissions` and the route's `requireWorkspacePermission` middleware; verify both the caller's action permission and the workspace membership of every referenced resource. Hiding a button is only a UI affordance. Cross-project relations may join projects inside one workspace, but must never link foreign-workspace tasks. See `apps/api/src/task-relation/controllers/create-task-relation.ts` and `tests/api-integration/task-relation-boundaries.test.ts`.
+
+Define public routes with `createRoute` and mount them through `apiRouter()` in `apps/api/src/openapi.ts`; keep Zod request schemas in a feature's `schema.ts` and named `.openapi(...)` response schemas in `response.ts`. Route middleware declared in `createRoute({ middleware })` runs **before** request validators, so it cannot rely on `c.req.valid()`. Use `HTTPException` for expected failures. Valibot in `apps/api/src/plugins/` and `apps/api/src/ws/` is internal configuration validation, not the public API pattern.
+
+Keep handlers thin, behavior in controllers/focused utilities, and changes to `apps/docs/openapi.json` in step with public contract changes (`pnpm openapi:check:fix`, then `pnpm openapi:check`). Follow authorization and response changes into the typed `@kaneo/libs` client, web fetchers, hooks, published stdio MCP package, API's MCP HTTP routes, API keys and webhooks where they consume the same behavior. A new endpoint does not automatically need a new MCP tool; decide and record the reason.
+
+Never send secrets or private workspace fields to other tenants through API responses, activity, events, WebSockets, MCP, logs or exports. Test both an allowed user and a user from another workspace through the real API or database-backed integration path, not only a mocked permission helper.

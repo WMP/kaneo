@@ -1,0 +1,19 @@
+# Invariant index
+
+Each ID has one home below. `enforced` means a named mechanism and relevant test support the stated scope; `partial` states a known proof or coverage gap. This is a small index of cross-surface behavior, not a claim that every possible invariant has been cataloged.
+
+| ID | Behavior | Status | Mechanism / proof |
+| --- | --- | --- | --- |
+| KAN-AUTH-001 | Workspace-scoped relations cannot expose or link another workspace's tasks. | enforced | [API and boundaries](api-and-boundaries.md): endpoint membership checks and `tests/api-integration/task-relation-boundaries.test.ts`. |
+| KAN-SCHED-001 | Creating a `blocks` or `subtask` edge must not create a cycle in the workspace graph. | partial | [Scheduling](scheduling.md): `wouldCreateCycle` and cycle integration tests cover normal sequential creation; concurrent graph writes are not proven to serialize the read and insert. |
+| KAN-SCHED-002 | A Gantt cascade moves only forward, retains task span and does not shift out-of-scope tasks. | partial | [Scheduling](scheduling.md): `computeDependencyCascade` pure tests; full drag-to-reload browser behavior remains unproven. |
+| KAN-SCHED-003 | A batch schedule update writes validated dates together and publishes updates for affected tasks. | partial | [Scheduling](scheduling.md): transaction in `apps/api/src/task/controllers/bulk-update-tasks.ts` and `tests/api-integration/bulk-task-schedule.test.ts` cover success and invalid input; rollback after a mid-batch database failure and delivery after an event failure are not proven by that test. |
+| KAN-SCHED-004 | A pushed dependent lands on a configured working day. | partial | [Scheduling](scheduling.md): `apps/web/src/components/gantt/gantt-working-calendar.ts` and cascade tests cover normal calendars; the API permits working-days mask `0`, for which the 366-day search cannot find a working day. |
+| KAN-SCHED-005 | Schedule writes from every client respect the dependency graph. | unenforced | [Scheduling](scheduling.md): the API currently validates date ranges but does not independently enforce dependency consistency; DEC-SCHED-01 in [project decisions](project-decisions.md) is the accepted target. |
+| KAN-SCHED-006 | A dragged task and its dependent cascade are persisted atomically. | unenforced | [Scheduling](scheduling.md): the UI currently sends two requests; the transaction for the later batch does not cover the initial drag. DEC-SCHED-02 in [project decisions](project-decisions.md) is the accepted target. |
+| KAN-SCHED-007 | A cross-project `blocks` target within the same workspace joins the cascade. | unenforced | [Scheduling](scheduling.md): the current cascade sees only tasks from the active project. DEC-SCHED-03 in [project decisions](project-decisions.md) is the accepted target. |
+| KAN-DATA-001 | A schema change works on existing data, not only a fresh installation. | partial | [Database](database.md): migration review and CI upgrade scenario; a particular change needs its own migration evidence. |
+| KAN-REALTIME-001 | Multi-project relations refresh clients subscribed to either project. | partial | [Web and realtime](web-and-realtime.md): second project event after relation creation; a complete two-browser interaction across projects is not in the generic browser CI flow. |
+| KAN-RELEASE-001 | A development branch image is published only after CI passes for its source SHA. | unenforced | [Deployment and release](deployment.md): branch image publisher has no CI dependency. Preview tags are not release or test evidence. |
+
+When changing a listed behavior, inspect the cited code and tests; update status only after adding the relevant proof. To add an ID, use `KAN-<AREA>-NNN`, include one unique index row, a concrete mechanism and a realistic test. Never change an ID just to rename its wording.
