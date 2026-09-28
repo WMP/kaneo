@@ -68,6 +68,7 @@ import telegramIntegration from "./telegram-integration";
 import timeEntry from "./time-entry";
 import user from "./user";
 import getAvatar from "./user/controllers/get-avatar";
+import { reconcileMigrationJournal } from "./utils/adopt-existing-database";
 import { authenticateApiRequest } from "./utils/authenticate-api-request";
 import {
   authorizeAssetAccess,
@@ -940,9 +941,17 @@ export async function runStartupTasks() {
       await migrateWorkspaceUserEmail();
       await migrateSessionColumn();
 
+      const migrationsFolder = `${currentDir}/../drizzle`;
+      // Reconcile the Drizzle journal for a pre-existing upstream-created
+      // database whose recorded migration timestamps don't line up with the
+      // standard migrator comparison, so migrate() below only runs this fork's
+      // own migrations instead of restarting from 0000 and hitting "already
+      // exists". No-op on fresh or already-aligned databases.
+      await reconcileMigrationJournal(migrationsFolder);
+
       console.log("🔄 Migrating database...");
       await migrate(getDatabase(), {
-        migrationsFolder: `${currentDir}/../drizzle`,
+        migrationsFolder,
       });
       console.log("✅ Database migrated successfully!");
     },
