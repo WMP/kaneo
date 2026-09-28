@@ -19,7 +19,8 @@ type WorkspaceIdSource =
         | "comment"
         | "column"
         | "workflowRule"
-        | "customField";
+        | "customField"
+        | "resource";
       idKey: string;
     }
   | {
@@ -139,7 +140,8 @@ async function lookupWorkspaceId(
     | "comment"
     | "column"
     | "workflowRule"
-    | "customField",
+    | "customField"
+    | "resource",
   id: string,
 ): Promise<string | null> {
   try {
@@ -311,6 +313,15 @@ async function lookupWorkspaceId(
         return project?.workspaceId || null;
       }
 
+      case "resource": {
+        const [resource] = await db
+          .select({ workspaceId: schema.resourceTable.workspaceId })
+          .from(schema.resourceTable)
+          .where(eq(schema.resourceTable.id, id))
+          .limit(1);
+        return resource?.workspaceId || null;
+      }
+
       default:
         return null;
     }
@@ -407,6 +418,11 @@ export const workspaceAccess = {
   fromCustomField: (idKey = "id") =>
     workspaceAccessMiddleware({
       sources: [{ type: "lookup", resource: "customField", idKey }],
+    }),
+
+  fromResource: (idKey = "id") =>
+    workspaceAccessMiddleware({
+      sources: [{ type: "lookup", resource: "resource", idKey }],
     }),
 
   fromProjectId: (idKey = "projectId") =>

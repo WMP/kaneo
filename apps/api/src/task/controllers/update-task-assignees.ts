@@ -3,19 +3,27 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { filterWorkspaceResources } from "../../resource/workspace-resources";
 import {
   filterAssignableUsers,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
+import type { AssigneeTarget } from "../assignments";
 import { readTaskAssignees, setTaskAssignees } from "../assignments";
+
+function dedupe(ids: string[]): string[] {
+  return [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+}
 
 async function updateTaskAssignees({
   id,
   userIds,
+  resourceIds = [],
   currentUserId,
 }: {
   id: string;
   userIds: string[];
+  resourceIds?: string[];
   currentUserId: string;
 }) {
   const existingTask = await db.query.taskTable.findFirst({
@@ -28,33 +36,69 @@ async function updateTaskAssignees({
     });
   }
 
-  const trimmedUserIds = [
-    ...new Set(userIds.map((userId) => userId.trim()).filter(Boolean)),
-  ];
+  const trimmedUserIds = dedupe(userIds);
+  const trimmedResourceIds = dedupe(resourceIds);
 
-  if (trimmedUserIds.length > 0) {
+  if (trimmedUserIds.length > 0 || trimmedResourceIds.length > 0) {
     const workspaceId = await getProjectWorkspaceId(existingTask.projectId);
-    const assignable = await filterAssignableUsers(trimmedUserIds, workspaceId);
-    const notAssignable = trimmedUserIds.filter((id) => !assignable.has(id));
 
-    if (notAssignable.length > 0) {
-      throw new HTTPException(403, {
-        message: "One or more assignees are not members of this workspace",
-      });
+    if (trimmedUserIds.length > 0) {
+      const assignable = await filterAssignableUsers(
+        trimmedUserIds,
+        workspaceId,
+      );
+      const notAssignable = trimmedUserIds.filter(
+        (userId) => !assignable.has(userId),
+      );
+
+      if (notAssignable.length > 0) {
+        throw new HTTPException(403, {
+          message: "One or more assignees are not members of this workspace",
+        });
+      }
+    }
+
+    if (trimmedResourceIds.length > 0) {
+      const assignable = await filterWorkspaceResources(
+        trimmedResourceIds,
+        workspaceId,
+      );
+      const notAssignable = trimmedResourceIds.filter(
+        (resourceId) => !assignable.has(resourceId),
+      );
+
+      if (notAssignable.length > 0) {
+        throw new HTTPException(403, {
+          message:
+            "One or more resources do not belong to this task's workspace",
+        });
+      }
     }
   }
+
+  const targets: AssigneeTarget[] = [
+    ...trimmedUserIds.map((userId) => ({ userId }) satisfies AssigneeTarget),
+    ...trimmedResourceIds.map(
+      (resourceId) => ({ resourceId }) satisfies AssigneeTarget,
+    ),
+  ];
 
   const previousPrimaryId = existingTask.userId;
 
   // Read the pre-mutation assignee list so the published event can carry the
-  // full added/removed diff, not just the primary-mirror change.
+  // full added/removed diff, not just the primary-mirror change. Only user
+  // ids are ever diffed/notified — a resource has no account to notify, and
+  // no event fires for a resource-only change (see below).
   const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
-  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? []).map(
-    (assignee) => assignee.userId,
-  );
+  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? [])
+    .map((assignee) => assignee.userId)
+    .filter((userId): userId is string => userId !== null);
   const previousAssigneeIdSet = new Set(previousAssigneeIds);
 
-  const newAssigneeIds = await setTaskAssignees(db, id, trimmedUserIds);
+  const newTargets = await setTaskAssignees(db, id, targets);
+  const newAssigneeIds = newTargets
+    .filter((target): target is { userId: string } => "userId" in target)
+    .map((target) => target.userId);
   const newAssigneeIdSet = new Set(newAssigneeIds);
 
   const addedAssigneeIds = newAssigneeIds.filter(
@@ -102,10 +146,14 @@ async function updateTaskAssignees({
 
   // Preserve the same primary-based events the single-assignee route fires
   // (so external webhooks/GitHub sync stay unaffected by this route
-  // existing), but also fire when only a secondary assignee was added or
-  // removed, carrying the full diff additively via
-  // addedAssigneeIds/removedAssigneeIds so every assignee — not just the
-  // primary — can be notified downstream.
+  // existing), but also fire when only a secondary user assignee was added
+  // or removed, carrying the full diff additively via
+  // addedAssigneeIds/removedAssigneeIds so every user assignee — not just
+  // the primary — can be notified downstream. A resource-only change (no
+  // user added/removed, primary unchanged) fires neither event: a resource
+  // has no account to notify, and the activity entry this event drives
+  // (see activity/index.ts) is written in terms of the primary user, which
+  // did not change.
   const primaryChanged = previousPrimaryId !== updatedTask.userId;
   const membershipChanged =
     addedAssigneeIds.length > 0 || removedAssigneeIds.length > 0;

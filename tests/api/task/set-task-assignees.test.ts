@@ -53,20 +53,27 @@ describe("setTaskAssignees", () => {
     vi.resetAllMocks();
   });
 
-  it("dedupes, preserves the first id as primary, and mirrors it onto task.userId", async () => {
+  it("dedupes, preserves the first user id as primary, and mirrors it onto task.userId", async () => {
     const { executor, calls } = createMockExecutor();
 
     const result = await setTaskAssignees(
       // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
       executor as any,
       "task-1",
-      ["user-1", "user-2", "user-1", "  ", "user-2"],
+      [
+        { userId: "user-1" },
+        { userId: "user-2" },
+        { userId: "user-1" },
+        { userId: "  " },
+        { userId: "user-2" },
+      ],
     );
 
-    expect(result).toEqual(["user-1", "user-2"]);
+    expect(result).toEqual([{ userId: "user-1" }, { userId: "user-2" }]);
 
-    const insertCall = calls.find((call) => call.op === "insert");
-    expect(insertCall?.arg).toEqual([
+    const insertCalls = calls.filter((call) => call.op === "insert");
+    expect(insertCalls).toHaveLength(1);
+    expect(insertCalls[0]?.arg).toEqual([
       { taskId: "task-1", userId: "user-1" },
       { taskId: "task-1", userId: "user-2" },
     ]);
@@ -84,7 +91,7 @@ describe("setTaskAssignees", () => {
       // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
       executor as any,
       "task-1",
-      ["user-2"],
+      [{ userId: "user-2" }],
     );
 
     const deleteCall = calls.find((call) => call.op === "delete");
@@ -108,6 +115,64 @@ describe("setTaskAssignees", () => {
     const updateCall = calls.find((call) => call.op === "update");
     expect(updateCall?.arg).toEqual({ userId: null });
   });
+
+  it("assigns a resource-only target and leaves task.userId null", async () => {
+    const { executor, calls } = createMockExecutor();
+
+    const result = await setTaskAssignees(
+      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
+      executor as any,
+      "task-1",
+      [{ resourceId: "resource-1" }],
+    );
+
+    expect(result).toEqual([{ resourceId: "resource-1" }]);
+
+    const insertCalls = calls.filter((call) => call.op === "insert");
+    expect(insertCalls).toHaveLength(1);
+    expect(insertCalls[0]?.arg).toEqual([
+      { taskId: "task-1", resourceId: "resource-1" },
+    ]);
+
+    const updateCall = calls.find((call) => call.op === "update");
+    expect(updateCall?.arg).toEqual({ userId: null });
+  });
+
+  it("mixes a user and a resource target: the user becomes primary, both are inserted", async () => {
+    const { executor, calls } = createMockExecutor();
+
+    const result = await setTaskAssignees(
+      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
+      executor as any,
+      "task-1",
+      [{ resourceId: "resource-1" }, { userId: "user-1" }],
+    );
+
+    expect(result).toEqual([
+      { resourceId: "resource-1" },
+      { userId: "user-1" },
+    ]);
+
+    const insertCalls = calls.filter((call) => call.op === "insert");
+    // One insert per kind (user rows and resource rows conflict against
+    // different unique indexes, so they can't share one onConflictDoNothing
+    // call).
+    expect(insertCalls).toHaveLength(2);
+    expect(insertCalls).toContainEqual(
+      expect.objectContaining({
+        arg: [{ taskId: "task-1", userId: "user-1" }],
+      }),
+    );
+    expect(insertCalls).toContainEqual(
+      expect.objectContaining({
+        arg: [{ taskId: "task-1", resourceId: "resource-1" }],
+      }),
+    );
+
+    // The user target is primary even though it wasn't first in the list.
+    const updateCall = calls.find((call) => call.op === "update");
+    expect(updateCall?.arg).toEqual({ userId: "user-1" });
+  });
 });
 
 describe("readTaskAssignees", () => {
@@ -126,22 +191,28 @@ describe("readTaskAssignees", () => {
     expect(selectFn).not.toHaveBeenCalled();
   });
 
-  it("batches every task's assignees, joined to the user table, into one map", async () => {
+  it("batches every task's assignees, joined to the user and resource tables, into one map", async () => {
     const rows = [
       {
         taskId: "task-1",
         userId: "user-1",
-        name: "Ada",
-        image: null,
+        resourceId: null,
+        userName: "Ada",
+        userImage: null,
+        resourceName: null,
+        resourceKind: null,
         units: 100,
         work: null,
         createdAt: new Date("2024-01-01"),
       },
       {
         taskId: "task-1",
-        userId: "user-2",
-        name: "Bea",
-        image: "https://example.com/bea.png",
+        userId: null,
+        resourceId: "resource-1",
+        userName: null,
+        userImage: null,
+        resourceName: "Bulldozer",
+        resourceKind: "equipment",
         units: 50,
         work: 8,
         createdAt: new Date("2024-01-02"),
@@ -150,7 +221,7 @@ describe("readTaskAssignees", () => {
 
     const chain = {
       from: vi.fn(() => chain),
-      innerJoin: vi.fn(() => chain),
+      leftJoin: vi.fn(() => chain),
       where: vi.fn(() => chain),
       orderBy: vi.fn(() => Promise.resolve(rows)),
     };
@@ -165,11 +236,21 @@ describe("readTaskAssignees", () => {
 
     expect(selectFn).toHaveBeenCalledTimes(1);
     expect(result.get("task-1")).toEqual([
-      { userId: "user-1", name: "Ada", image: null, units: 100, work: null },
       {
-        userId: "user-2",
-        name: "Bea",
-        image: "https://example.com/bea.png",
+        userId: "user-1",
+        resourceId: null,
+        kind: "user",
+        name: "Ada",
+        image: null,
+        units: 100,
+        work: null,
+      },
+      {
+        userId: null,
+        resourceId: "resource-1",
+        kind: "equipment",
+        name: "Bulldozer",
+        image: null,
         units: 50,
         work: 8,
       },

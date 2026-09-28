@@ -149,7 +149,7 @@ async function updateTask(
     await setTaskAssignees(
       tx,
       task.id,
-      normalizedUserId ? [normalizedUserId] : [],
+      normalizedUserId ? [{ userId: normalizedUserId }] : [],
     );
 
     return task;

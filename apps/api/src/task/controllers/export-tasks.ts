@@ -154,6 +154,7 @@ async function exportTasks(projectId: string) {
       assignees: (assigneesByTaskId.get(task.id) ?? []).map((assignee) => ({
         userId: assignee.userId,
         name: assignee.name,
+        kind: assignee.kind,
       })),
       progress: task.progress,
       isMilestone: task.isMilestone,

@@ -12,7 +12,8 @@ export const workloadBucketSchema = z
 export const workloadAssigneeSchema = z
   .object({
     userId: z.string().nullable().openapi({
-      description: "The assignee, or null for the unassigned row.",
+      description:
+        "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; 'equipment'/'material' resources are excluded from this view entirely.",
     }),
     name: z.string().nullable().openapi({
       description:

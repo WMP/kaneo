@@ -541,12 +541,61 @@ export const taskTable = pgTable(
   ],
 );
 
+// An assignable entity that is NOT a Kaneo user account: a workspace-scoped
+// person, piece of equipment, or material. `userId` links it to a real
+// account when one exists (set later, e.g. by an F4b email/OIDC invite);
+// null until then. Costs are out of scope for this table — a later phase
+// adds them.
+export const resourceTable = pgTable(
+  "ganttpro_resource",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    // One of 'person' | 'equipment' | 'material' — see the check constraint
+    // below. Only 'person' counts toward the workload capacity split;
+    // 'equipment'/'material' are excluded from it for now.
+    kind: text("kind").notNull(),
+    name: text("name").notNull(),
+    email: text("email"),
+    // Set once this resource is linked to a real account (F4b); null for a
+    // plain account-less resource.
+    userId: text("ganttpro_user_id").references(() => userTable.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_resource_workspace_id_idx").on(table.workspaceId),
+    index("ganttpro_resource_user_id_idx").on(table.userId),
+    check(
+      "ganttpro_resource_kind",
+      sql`${table.kind} IN ('person', 'equipment', 'material')`,
+    ),
+  ],
+);
+
 // Source of truth for a task's full assignee list. `taskTable.userId`
 // ("assignee_id") stays as a denormalized "primary assignee" mirror — always
-// the first row here for a task — so the many existing
-// `leftJoin(userTable, eq(taskTable.userId, userTable.id))` call-sites keep
-// working unchanged. Every write to either side must go through
-// `task/assignments.ts`'s helpers so the two never drift apart.
+// the first USER row here for a task, or null when it has none — so the many
+// existing `leftJoin(userTable, eq(taskTable.userId, userTable.id))`
+// call-sites keep working unchanged. Every write to either side must go
+// through `task/assignments.ts`'s helpers so the two never drift apart.
+//
+// A row targets either a real user (userId set) or an account-less resource
+// (resourceId set) — see the check constraint below — never both and never
+// neither.
 export const taskAssignmentTable = pgTable(
   "ganttpro_task_assignment",
   {
@@ -559,12 +608,17 @@ export const taskAssignmentTable = pgTable(
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => userTable.id, {
+    userId: text("user_id").references(() => userTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    resourceId: text("ganttpro_resource_id").references(
+      () => resourceTable.id,
+      {
         onDelete: "cascade",
         onUpdate: "cascade",
-      }),
+      },
+    ),
     // Percent allocation (0-100 in normal use); drives the workload split in
     // a later phase.
     units: integer("units").notNull().default(100),
@@ -578,8 +632,17 @@ export const taskAssignmentTable = pgTable(
       table.taskId,
       table.userId,
     ),
+    unique("ganttpro_task_assignment_task_resource_unique").on(
+      table.taskId,
+      table.resourceId,
+    ),
     index("ganttpro_task_assignment_task_id_idx").on(table.taskId),
     index("ganttpro_task_assignment_user_id_idx").on(table.userId),
+    index("ganttpro_task_assignment_resource_id_idx").on(table.resourceId),
+    check(
+      "ganttpro_assignment_target",
+      sql`((${table.userId} IS NOT NULL) AND (${table.resourceId} IS NULL)) OR ((${table.userId} IS NULL) AND (${table.resourceId} IS NOT NULL))`,
+    ),
   ],
 );
 

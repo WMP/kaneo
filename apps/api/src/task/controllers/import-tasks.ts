@@ -103,7 +103,11 @@ async function importTasks(
           .returning();
 
         if (task) {
-          await setTaskAssignees(tx, task.id, assigneeId ? [assigneeId] : []);
+          await setTaskAssignees(
+            tx,
+            task.id,
+            assigneeId ? [{ userId: assigneeId }] : [],
+          );
         }
 
         return task;

@@ -29,6 +29,6 @@ export const workloadTasksQuery = workloadQuery.extend({
     .string()
     .min(1)
     .openapi({
-      description: `A workspace member's user id, or the literal "${WORKLOAD_UNASSIGNED_ASSIGNEE}" for tasks with no assignee.`,
+      description: `A workspace member's user id, a 'person' resource's id (see /resource), or the literal "${WORKLOAD_UNASSIGNED_ASSIGNEE}" for tasks with no assignee.`,
     }),
 });

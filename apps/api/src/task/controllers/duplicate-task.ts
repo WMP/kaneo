@@ -303,7 +303,11 @@ async function duplicateTask({
         await tx.insert(assetTable).values(assets);
       }
 
-      await setTaskAssignees(tx, task.id, task.userId ? [task.userId] : []);
+      await setTaskAssignees(
+        tx,
+        task.id,
+        task.userId ? [{ userId: task.userId }] : [],
+      );
 
       const relations =
         parentRelations.length > 0

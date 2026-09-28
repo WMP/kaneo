@@ -206,7 +206,11 @@ export const updateAssigneeBody = z.object({
 export const updateAssigneesBody = z.object({
   userIds: z.array(z.string()).openapi({
     description:
-      "The task's full assignee list, in order; the first id becomes the primary assignee (userId/assigneeId). An empty array unassigns the task.",
+      "The task's full user-assignee list, in order; the first one becomes the primary assignee (userId/assigneeId).",
+  }),
+  resourceIds: z.array(z.string()).optional().default([]).openapi({
+    description:
+      "Account-less resources (person/equipment/material, from GET/POST /resource) to also assign. Never becomes the primary assignee — task.userId only ever mirrors a userIds entry, or null when userIds is empty. userIds and resourceIds together are the task's full assignee list: omitting resourceIds (or passing []) clears every resource assignee, same as an empty userIds clears every user assignee.",
   }),
 });
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
