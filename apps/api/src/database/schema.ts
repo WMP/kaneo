@@ -1341,6 +1341,12 @@ export const customFieldDefinitionTable = pgTable(
     required: boolean("required").default(false).notNull(),
     defaultValue: text("default_value"),
     options: jsonb("options"),
+    // Maps a dropdown option's value to a color token (e.g. one of
+    // constants/label-colors.ts on the web side). Only meaningful for
+    // type === "dropdown"; null for every other field type.
+    optionColors: jsonb("ganttpro_option_colors").$type<
+      Record<string, string>
+    >(),
     position: integer("position").default(0).notNull(),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })

@@ -4556,6 +4556,15 @@
             ]
           },
           "options": {},
+          "optionColors": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
           "position": {
             "type": "number"
           },
@@ -4575,6 +4584,7 @@
           "type",
           "required",
           "defaultValue",
+          "optionColors",
           "position",
           "createdAt",
           "updatedAt"
@@ -4607,7 +4617,16 @@
           "fieldType": {
             "type": "string"
           },
-          "fieldOptions": {}
+          "fieldOptions": {},
+          "fieldOptionColors": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
         },
         "required": [
           "id",
@@ -4616,7 +4635,8 @@
           "value",
           "fieldName",
           "fieldPosition",
-          "fieldType"
+          "fieldType",
+          "fieldOptionColors"
         ]
       },
       "CustomFieldFilterValues": {
@@ -18982,6 +19002,12 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "optionColors": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
                   }
                 },
                 "required": [
@@ -19006,6 +19032,138 @@
           },
           "400": {
             "description": "Invalid body, or unknown project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/custom-field/{id}": {
+      "patch": {
+        "operationId": "updateCustomField",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Update custom field",
+        "description": "Update a custom field definition's name or dropdown option colors.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "optionColors": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated custom field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomFieldDefinition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, unknown custom field, or its workspace could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCustomField",
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Delete custom field",
+        "description": "Delete a custom field definition by ID.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted custom field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomFieldDefinition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown custom field, or its workspace could not be determined",
             "content": {
               "text/plain": {
                 "schema": {
@@ -19178,61 +19336,6 @@
           },
           "403": {
             "description": "No workspace access, or missing task:update permission",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/custom-field/{id}": {
-      "delete": {
-        "operationId": "deleteCustomField",
-        "tags": [
-          "Custom Fields"
-        ],
-        "summary": "Delete custom field",
-        "description": "Delete a custom field definition by ID.",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The deleted custom field",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomFieldDefinition"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unknown custom field, or its workspace could not be determined",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid credentials"
-          },
-          "403": {
-            "description": "No workspace access, or missing project:update permission",
             "content": {
               "text/plain": {
                 "schema": {

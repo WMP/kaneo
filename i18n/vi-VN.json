@@ -1505,7 +1505,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2499,7 +2503,10 @@
 			"gateWarningAriaLabel": "{{count}} cổng chưa được phê duyệt đang chặn công việc này",
 			"gateWarningBadge": "Cổng",
 			"gateWarningItem": "\"{{title}}\" đang ở trạng thái {{status}}",
-			"gateWarningTitle": "Bị chặn bởi một cổng chưa được phê duyệt"
+			"gateWarningTitle": "Bị chặn bởi một cổng chưa được phê duyệt",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "Xóa công việc?",

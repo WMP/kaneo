@@ -1507,7 +1507,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2517,7 +2521,10 @@
 			"gateWarningAriaLabel": "{{count}} portão não aprovado bloqueando esta tarefa",
 			"gateWarningBadge": "Portão",
 			"gateWarningItem": "\"{{title}}\" está {{status}}",
-			"gateWarningTitle": "Bloqueado por um portão não aprovado"
+			"gateWarningTitle": "Bloqueado por um portão não aprovado",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "Excluir tarefa?",

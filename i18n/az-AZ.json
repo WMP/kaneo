@@ -1506,7 +1506,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2521,7 +2525,10 @@
 			"gateWarningAriaLabel": "Bu tapşırığı bloklayan {{count}} təsdiqlənməmiş qapı",
 			"gateWarningBadge": "Qapı",
 			"gateWarningItem": "\"{{title}}\" {{status}} vəziyyətindədir",
-			"gateWarningTitle": "Təsdiqlənməmiş qapı tərəfindən bloklanıb"
+			"gateWarningTitle": "Təsdiqlənməmiş qapı tərəfindən bloklanıb",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "Tapşırıq silinsin?",

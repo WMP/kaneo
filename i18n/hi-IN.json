@@ -1506,7 +1506,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2508,7 +2512,10 @@
 			"gateWarningAriaLabel": "{{count}} अस्वीकृत गेट इस कार्य को अवरुद्ध कर रहा है",
 			"gateWarningBadge": "गेट",
 			"gateWarningItem": "\"{{title}}\" {{status}} है",
-			"gateWarningTitle": "एक अस्वीकृत गेट द्वारा अवरुद्ध"
+			"gateWarningTitle": "एक अस्वीकृत गेट द्वारा अवरुद्ध",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "कार्य हटाएँ?",

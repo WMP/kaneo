@@ -117,8 +117,12 @@ import { formatDate, formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
+import { resolveLabelColor } from "@/lib/label-color";
 import { toast } from "@/lib/toast";
-import { useUserPreferencesStore } from "@/store/user-preferences";
+import {
+  isGanttBarColorSource,
+  useUserPreferencesStore,
+} from "@/store/user-preferences";
 import type Task from "@/types/task";
 
 type GanttSearchParams = {
@@ -309,6 +313,30 @@ function RouteComponent() {
     }
     return map;
   }, [customFieldValues, selectedCustomFieldId]);
+  // Persisted per-project like ganttCustomFieldByProject above: which source
+  // (if any) colors a task's bar. "customField" is the only source this
+  // feature adds; a later feature adds "label" alongside it.
+  const ganttBarColorSourceByProject = useUserPreferencesStore(
+    (state) => state.ganttBarColorSourceByProject,
+  );
+  const setGanttBarColorSource = useUserPreferencesStore(
+    (state) => state.setGanttBarColorSource,
+  );
+  const barColorSource = ganttBarColorSourceByProject?.[projectId] ?? "none";
+  // One lookup built once per render of the values query, mirroring
+  // customFieldValueByTaskId above — resolved through the SAME shared
+  // palette task labels use (resolveLabelColor), so a bar's color always
+  // renders as an actual CSS color rather than a raw stored token.
+  const customFieldColorByTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (barColorSource !== "customField" || !selectedCustomFieldDefinition)
+      return map;
+    for (const [taskId, value] of customFieldValueByTaskId) {
+      const color = selectedCustomFieldDefinition.optionColors?.[value];
+      if (color) map.set(taskId, resolveLabelColor(color));
+    }
+    return map;
+  }, [barColorSource, selectedCustomFieldDefinition, customFieldValueByTaskId]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [windowStart, setWindowStart] = useState<{
@@ -1885,6 +1913,38 @@ function RouteComponent() {
               </Select>
             )}
 
+            {selectedCustomFieldId && (
+              <Select
+                value={barColorSource}
+                onValueChange={(value) =>
+                  setGanttBarColorSource(
+                    projectId,
+                    isGanttBarColorSource(value) ? value : "none",
+                  )
+                }
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="h-9 w-full max-w-[11rem] sm:h-8"
+                  aria-label={t("tasks:gantt.barColorSourceLabel")}
+                >
+                  <SelectValue>
+                    {barColorSource === "customField"
+                      ? t("tasks:gantt.barColorSourceCustomField")
+                      : t("tasks:gantt.barColorSourceNone")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    {t("tasks:gantt.barColorSourceNone")}
+                  </SelectItem>
+                  <SelectItem value="customField">
+                    {t("tasks:gantt.barColorSourceCustomField")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
             {timeline && (
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -2504,6 +2564,7 @@ function RouteComponent() {
                               onLinkDragStart={handleLinkDragStart}
                               onDatesCommitted={handleTaskDatesCommitted}
                               gateWarnings={gateWarningsByTaskId.get(task.id)}
+                              barColor={customFieldColorByTaskId.get(task.id)}
                             />
                           )}
                         </div>

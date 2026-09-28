@@ -14,6 +14,7 @@ import getCustomFieldValuesByTask from "./controllers/get-custom-field-values-by
 import getCustomFieldsByProject from "./controllers/get-custom-fields-by-project";
 import reorderCustomFields from "./controllers/reorder-custom-field";
 import setCustomFieldValue from "./controllers/set-custom-field-value";
+import updateCustomField from "./controllers/update-custom-field";
 import {
   customFieldDefinitionListSchema,
   customFieldDefinitionSchema,
@@ -29,6 +30,7 @@ import {
   reorderCustomFieldsBody,
   setCustomFieldValueBody,
   taskIdParam,
+  updateCustomFieldBody,
 } from "./schema";
 
 const getCustomFieldsRoute = createRoute({
@@ -154,6 +156,36 @@ const createCustomFieldRoute = createRoute({
   },
 });
 
+const updateCustomFieldRoute = createRoute({
+  method: "patch",
+  operationId: "updateCustomField",
+  path: "/{id}",
+  tags: ["Custom Fields"],
+  summary: "Update custom field",
+  description:
+    "Update a custom field definition's name or dropdown option colors.",
+  middleware: [
+    workspaceAccess.fromCustomField("id"),
+    requireWorkspacePermission({ project: ["update"] }),
+  ] as const,
+  request: {
+    params: customFieldIdParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: updateCustomFieldBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The updated custom field", customFieldDefinitionSchema),
+    400: errorResponse(
+      "Invalid body, unknown custom field, or its workspace could not be determined",
+    ),
+    403: errorResponse(
+      "No workspace access, or missing project:update permission",
+    ),
+  },
+});
+
 const reorderCustomFieldsRoute = createRoute({
   method: "put",
   operationId: "reorderCustomFields",
@@ -256,8 +288,15 @@ const customField = apiRouter()
     ),
   )
   .openapi(createCustomFieldRoute, async (c) => {
-    const { projectId, name, type, required, defaultValue, options } =
-      c.req.valid("json");
+    const {
+      projectId,
+      name,
+      type,
+      required,
+      defaultValue,
+      options,
+      optionColors,
+    } = c.req.valid("json");
 
     return c.json(
       await createCustomField(
@@ -267,9 +306,16 @@ const customField = apiRouter()
         required,
         defaultValue,
         options,
+        optionColors,
       ),
       200,
     );
+  })
+  .openapi(updateCustomFieldRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { name, optionColors } = c.req.valid("json");
+
+    return c.json(await updateCustomField(id, name, optionColors), 200);
   })
   .openapi(reorderCustomFieldsRoute, async (c) => {
     const { projectId } = c.req.valid("param");

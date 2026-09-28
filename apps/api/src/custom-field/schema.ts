@@ -26,6 +26,15 @@ export const createCustomFieldBody = z.object({
   required: z.boolean().optional().default(false),
   defaultValue: z.string().optional(),
   options: z.array(z.string()).optional(),
+  // Dropdown option value -> color token (see constants/label-colors.ts on
+  // the web side). Only meaningful when type === "dropdown".
+  optionColors: z.record(z.string(), z.string()).optional(),
+});
+
+export const updateCustomFieldBody = z.object({
+  name: z.string().optional(),
+  // null clears any stored colors; omitted leaves them unchanged.
+  optionColors: z.record(z.string(), z.string()).nullable().optional(),
 });
 
 export const reorderCustomFieldsBody = z.object({

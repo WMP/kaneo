@@ -1505,7 +1505,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2512,7 +2516,10 @@
 			"gateWarningAriaLabel": "승인되지 않은 게이트 {{count}}건이 이 작업을 차단하고 있습니다",
 			"gateWarningBadge": "게이트",
 			"gateWarningItem": "\"{{title}}\"은(는) {{status}} 상태입니다",
-			"gateWarningTitle": "승인되지 않은 게이트로 인해 차단됨"
+			"gateWarningTitle": "승인되지 않은 게이트로 인해 차단됨",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",

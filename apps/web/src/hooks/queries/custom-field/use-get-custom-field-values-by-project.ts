@@ -10,6 +10,7 @@ export type CustomFieldValue = {
   fieldPosition: number;
   fieldType: string;
   fieldOptions: unknown;
+  fieldOptionColors: Record<string, string> | null;
 };
 
 function useGetCustomFieldValuesByProject(projectId: string) {

@@ -1505,7 +1505,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2512,7 +2516,10 @@
 			"gateWarningAriaLabel": "有{{count}}个未审批的关卡正在阻塞此任务",
 			"gateWarningBadge": "关卡",
 			"gateWarningItem": "\"{{title}}\"为{{status}}",
-			"gateWarningTitle": "被未审批的关卡阻塞"
+			"gateWarningTitle": "被未审批的关卡阻塞",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "删除任务？",

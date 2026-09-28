@@ -1195,7 +1195,11 @@
 				"boolean": "Boolean",
 				"multiselect": "Multi-Select"
 			},
-			"multiple": "Multiple"
+			"multiple": "Multiple",
+			"optionColorsLabel": "Option colors",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"updateColorSuccess": "Option color updated.",
+			"updateColorError": "Failed to update option color."
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2518,6 +2522,9 @@
 			"overdueMarkerAriaLabel": "{{title}}: overdue",
 			"customFieldLabel": "Custom field column",
 			"customFieldNone": "None",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None",
+			"barColorSourceCustomField": "Custom field",
 			"approvalBadgeAriaLabel": "Approval: {{status}}",
 			"gateWarningAriaLabel": "{{count}} unapproved gate blocking this task",
 			"gateWarningBadge": "Gate",

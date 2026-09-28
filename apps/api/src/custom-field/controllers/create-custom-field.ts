@@ -12,6 +12,7 @@ import {
   isCustomFieldValueEmpty,
   validateCustomFieldValue,
 } from "../../task/validate-task-fields";
+import { validateOptionColors } from "../validate-option-colors";
 
 async function createCustomField(
   projectId: string,
@@ -20,6 +21,7 @@ async function createCustomField(
   required: boolean,
   defaultValue?: string,
   options?: string[],
+  optionColors?: Record<string, string>,
 ) {
   if (!name.trim())
     throw new HTTPException(400, { message: "Name cannot be empty" });
@@ -95,6 +97,16 @@ async function createCustomField(
     });
   }
 
+  if (optionColors && type !== "dropdown") {
+    throw new HTTPException(400, {
+      message: "Option colors are only supported for dropdown fields",
+    });
+  }
+
+  if (type === "dropdown") {
+    validateOptionColors(options, optionColors);
+  }
+
   if (type === "multiselect") {
     const normalizedOptions = Array.from(
       new Set(
@@ -149,6 +161,7 @@ async function createCustomField(
         required,
         defaultValue: storedDefaultValue ?? null,
         options: options ?? null,
+        optionColors: type === "dropdown" ? (optionColors ?? null) : null,
         position: (maxPositionResult?.maxPosition ?? 0) + 1,
       })
       .returning();

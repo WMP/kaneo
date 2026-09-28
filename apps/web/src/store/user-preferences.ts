@@ -13,6 +13,19 @@ export function isGanttUnit(value: unknown): value is GanttUnit {
   return GANTT_UNITS.includes(value as GanttUnit);
 }
 
+// "none" keeps the default (uncolored) bar; "customField" colors a bar by the
+// selected dropdown custom field's option color. A later feature adds
+// "label" to this union — kept a plain string union so that's a one-line
+// addition rather than a redesign.
+export const GANTT_BAR_COLOR_SOURCES = ["none", "customField"] as const;
+export type GanttBarColorSource = (typeof GANTT_BAR_COLOR_SOURCES)[number];
+
+export function isGanttBarColorSource(
+  value: unknown,
+): value is GanttBarColorSource {
+  return GANTT_BAR_COLOR_SOURCES.includes(value as GanttBarColorSource);
+}
+
 type UserPreferencesStore = {
   theme: "light" | "dark" | "system";
   setTheme: (
@@ -73,6 +86,14 @@ type UserPreferencesStore = {
   // value the way weekStartsOn is.
   ganttCustomFieldByProject: Record<string, string | null>;
   setGanttCustomField: (projectId: string, fieldId: string | null) => void;
+
+  // Same per-project keying as ganttCustomFieldByProject, and for the same
+  // reason: which source colors the bars is a per-project choice, not global.
+  ganttBarColorSourceByProject: Record<string, GanttBarColorSource>;
+  setGanttBarColorSource: (
+    projectId: string,
+    source: GanttBarColorSource,
+  ) => void;
 };
 
 export const useUserPreferencesStore = create<UserPreferencesStore>()(
@@ -169,6 +190,15 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
           ganttCustomFieldByProject: {
             ...state.ganttCustomFieldByProject,
             [projectId]: fieldId,
+          },
+        })),
+
+      ganttBarColorSourceByProject: {},
+      setGanttBarColorSource: (projectId, source) =>
+        set((state) => ({
+          ganttBarColorSourceByProject: {
+            ...state.ganttBarColorSourceByProject,
+            [projectId]: source,
           },
         })),
     }),

@@ -36,13 +36,70 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/preview-card";
+import labelColors from "@/constants/label-colors";
 import useCreateCustomField from "@/hooks/mutations/custom-field/use-create-custom-field";
 import useDeleteCustomField from "@/hooks/mutations/custom-field/use-delete-custom-field";
 import { useReorderCustomFields } from "@/hooks/mutations/custom-field/use-reorder-custom-field";
+import useUpdateCustomField from "@/hooks/mutations/custom-field/use-update-custom-field";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import { formatDateMedium } from "@/lib/format";
+import { resolveLabelColor } from "@/lib/label-color";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+
+/** A small color-dot button that opens the shared label palette (see
+ * constants/label-colors.ts) to assign a color to one dropdown option.
+ * Reused for both the create form (uncommitted colors) and existing fields
+ * (persisted immediately via onSelect). */
+function OptionColorSwatch({
+  color,
+  ariaLabel,
+  onSelect,
+}: {
+  color: string | undefined;
+  ariaLabel: string;
+  onSelect: (colorValue: string) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          className={cn(
+            "size-3.5 shrink-0 rounded-full border transition-transform hover:scale-110",
+            color
+              ? "border-transparent"
+              : "border-dashed border-muted-foreground/50",
+          )}
+          style={
+            color ? { backgroundColor: resolveLabelColor(color) } : undefined
+          }
+        />
+      </PopoverTrigger>
+      <PopoverContent className="w-40" align="start">
+        <div className="flex flex-wrap gap-1.5 p-1">
+          {labelColors.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              title={c.label}
+              aria-label={c.label}
+              className={cn(
+                "size-6 rounded-full border-2 transition-[scale,border-color]",
+                color === c.value
+                  ? "border-foreground scale-110"
+                  : "border-transparent hover:scale-110",
+              )}
+              style={{ backgroundColor: c.color }}
+              onClick={() => onSelect(c.value)}
+            />
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 type CustomFieldType =
   | "text"
@@ -60,6 +117,7 @@ export type CustomFieldDefinition = {
   required: boolean;
   defaultValue: string | null;
   options: string[] | null;
+  optionColors: Record<string, string> | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -98,6 +156,7 @@ export default function CustomFieldEditor({
   const { mutateAsync: deleteCustomField, isPending: deletingField } =
     useDeleteCustomField(projectId);
   const { mutateAsync: reorderCustomFields } = useReorderCustomFields();
+  const { mutateAsync: updateCustomField } = useUpdateCustomField(projectId);
 
   const [name, setName] = useState("");
   const [type, setType] = useState<CustomFieldType>("text");
@@ -107,6 +166,12 @@ export default function CustomFieldEditor({
 
   const [defaultValue, setDefaultValue] = useState<string | string[]>("");
   const [optionsText, setOptionsText] = useState("");
+  // Uncommitted per-option colors for the field currently being built below —
+  // only meaningful while type === "dropdown" && !isMultiple (the API only
+  // accepts optionColors for a single-select dropdown field).
+  const [pendingOptionColors, setPendingOptionColors] = useState<
+    Record<string, string>
+  >({});
   const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -170,6 +235,17 @@ export default function CustomFieldEditor({
         }
       }
 
+      // Colors only apply to a single-select dropdown (see the field on
+      // pendingOptionColors above); prune to options that survived dedupe.
+      const optionColors =
+        apiType === "dropdown" && options
+          ? Object.fromEntries(
+              Object.entries(pendingOptionColors).filter(([option]) =>
+                options.includes(option),
+              ),
+            )
+          : undefined;
+
       await createCustomField({
         projectId,
         name: name.trim(),
@@ -177,6 +253,10 @@ export default function CustomFieldEditor({
         required,
         defaultValue: apiDefaultValue,
         options,
+        optionColors:
+          optionColors && Object.keys(optionColors).length > 0
+            ? optionColors
+            : undefined,
       });
 
       setName("");
@@ -185,6 +265,7 @@ export default function CustomFieldEditor({
       setIsMultiple(false);
       setDefaultValue("");
       setOptionsText("");
+      setPendingOptionColors({});
 
       toast.success(t("settings:customFields.createSuccess"));
     } catch (error) {
@@ -331,6 +412,27 @@ export default function CustomFieldEditor({
       ),
     );
   }, [optionsText]);
+
+  // Colors only apply to a single-select dropdown; drop stale entries once
+  // an option is renamed/removed or the field stops being a plain dropdown.
+  useEffect(() => {
+    if (type !== "dropdown" || isMultiple) {
+      if (Object.keys(pendingOptionColors).length > 0) {
+        setPendingOptionColors({});
+      }
+      return;
+    }
+    setPendingOptionColors((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([option]) =>
+          dropdownOptions.includes(option),
+        ),
+      );
+      return Object.keys(next).length === Object.keys(current).length
+        ? current
+        : next;
+    });
+  }, [type, isMultiple, dropdownOptions, pendingOptionColors]);
 
   useEffect(() => {
     if (type !== "dropdown") {
@@ -541,6 +643,39 @@ export default function CustomFieldEditor({
                           </span>
                         </span>
                       ))}
+                    {field.type === "dropdown" && field.options?.length ? (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {field.options.map((option) => (
+                          <OptionColorSwatch
+                            key={option}
+                            color={field.optionColors?.[option]}
+                            ariaLabel={t(
+                              "settings:customFields.optionColorAriaLabel",
+                              { option },
+                            )}
+                            onSelect={async (colorValue) => {
+                              try {
+                                await updateCustomField({
+                                  id: field.id,
+                                  optionColors: {
+                                    ...(field.optionColors ?? {}),
+                                    [option]: colorValue,
+                                  },
+                                });
+                              } catch (error) {
+                                toast.error(
+                                  error instanceof Error
+                                    ? error.message
+                                    : t(
+                                        "settings:customFields.updateColorError",
+                                      ),
+                                );
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 <Button
@@ -963,6 +1098,33 @@ export default function CustomFieldEditor({
           {t("settings:customFields.addButton")}
         </Button>
       </div>
+
+      {type === "dropdown" && !isMultiple && dropdownOptions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 pl-1">
+          <span className="text-xs text-muted-foreground">
+            {t("settings:customFields.optionColorsLabel")}
+          </span>
+          {dropdownOptions.map((option) => (
+            <div key={option} className="flex items-center gap-1.5">
+              <OptionColorSwatch
+                color={pendingOptionColors[option]}
+                ariaLabel={t("settings:customFields.optionColorAriaLabel", {
+                  option,
+                })}
+                onSelect={(colorValue) =>
+                  setPendingOptionColors((current) => ({
+                    ...current,
+                    [option]: colorValue,
+                  }))
+                }
+              />
+              <span className="max-w-32 truncate text-xs text-muted-foreground">
+                {option}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1505,7 +1505,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2512,7 +2516,10 @@
 			"gateWarningAriaLabel": "未承認のゲートが{{count}}件このタスクをブロックしています",
 			"gateWarningBadge": "ゲート",
 			"gateWarningItem": "「{{title}}」は{{status}}です",
-			"gateWarningTitle": "未承認のゲートによってブロックされています"
+			"gateWarningTitle": "未承認のゲートによってブロックされています",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",

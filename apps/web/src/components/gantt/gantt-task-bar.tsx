@@ -66,6 +66,13 @@ type GanttTaskBarProps = {
    * hovered dependency and the critical-path toggle can both be active at
    * once and both need to stay legible. */
   isCritical?: boolean;
+  /** A resolved CSS color (e.g. from resolveLabelColor) to paint this bar
+   * with instead of the default primary-tinted look — used when the Gantt
+   * route's bar-color-source preference is set to something other than
+   * "none" and this task has a color to show. Applied to both the normal
+   * bar and the milestone diamond; emphasis/isCritical accents still layer
+   * on top. */
+  barColor?: string;
   /** Notified on hover and keyboard focus, to drive dependency-line highlighting. */
   onHoverChange?: (hovering: boolean) => void;
   /** Pointerdown on the "drag to link" handle at the bar's finish edge —
@@ -97,6 +104,7 @@ export function GanttTaskBar({
   onOpenTask,
   emphasis = "normal",
   isCritical = false,
+  barColor,
   onHoverChange,
   onLinkDragStart,
   onDatesCommitted,
@@ -623,8 +631,12 @@ export function GanttTaskBar({
                     onOpenTask();
                   }
                 }}
+                style={barColor ? { color: barColor } : undefined}
                 className={cn(
-                  "flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4",
+                  "flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4",
+                  barColor
+                    ? "hover:opacity-80"
+                    : "text-primary hover:text-primary/80",
                   emphasis === "highlighted" && "ring-2 ring-primary/40",
                   emphasis === "dimmed" && "opacity-35",
                   // Critical-path accent: a distinct outline (not a color swap
@@ -637,7 +649,16 @@ export function GanttTaskBar({
                     "outline outline-2 outline-offset-2 outline-warning",
                 )}
               >
-                <Diamond className="size-full fill-primary/30" />
+                <Diamond
+                  className={cn("size-full", !barColor && "fill-primary/30")}
+                  style={
+                    barColor
+                      ? {
+                          fill: `color-mix(in srgb, ${barColor} 30%, transparent)`,
+                        }
+                      : undefined
+                  }
+                />
               </button>
               {violationBadge}
               {/* Approval-status badge: every approval gate is a milestone
@@ -735,9 +756,11 @@ export function GanttTaskBar({
             style={{
               marginLeft: `${insetBox.left}px`,
               width: `${insetBox.right - insetBox.left}px`,
+              ...(barColor ? { borderColor: barColor } : null),
             }}
             className={cn(
-              "pointer-events-none relative flex h-full items-center overflow-hidden rounded-md border border-primary/25 bg-background text-sm font-medium leading-none text-foreground shadow-sm transition-[opacity,border-color] group-hover:border-primary/40",
+              "pointer-events-none relative flex h-full items-center overflow-hidden rounded-md border bg-background text-sm font-medium leading-none text-foreground shadow-sm transition-[opacity,border-color]",
+              !barColor && "border-primary/25 group-hover:border-primary/40",
               emphasis === "highlighted" &&
                 "border-primary/60 ring-2 ring-primary/40",
               emphasis === "dimmed" && "opacity-35",
@@ -749,11 +772,33 @@ export function GanttTaskBar({
           >
             {progressFillPercent > 0 && (
               <div
-                className="pointer-events-none absolute inset-y-0 left-0 z-0 bg-primary/30 dark:bg-primary/40"
-                style={{ width: `${progressFillPercent}%` }}
+                className={cn(
+                  "pointer-events-none absolute inset-y-0 left-0 z-0",
+                  !barColor && "bg-primary/30 dark:bg-primary/40",
+                )}
+                style={{
+                  width: `${progressFillPercent}%`,
+                  ...(barColor
+                    ? {
+                        backgroundColor: `color-mix(in srgb, ${barColor} 40%, transparent)`,
+                      }
+                    : null),
+                }}
               />
             )}
-            <div className="pointer-events-none absolute inset-0 z-0 bg-primary/12 transition-colors group-hover:bg-primary/18" />
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-0 z-0 transition-colors",
+                !barColor && "bg-primary/12 group-hover:bg-primary/18",
+              )}
+              style={
+                barColor
+                  ? {
+                      backgroundColor: `color-mix(in srgb, ${barColor} 12%, transparent)`,
+                    }
+                  : undefined
+              }
+            />
             <span className="relative z-10 flex items-center gap-1 truncate px-2 sm:px-2.5">
               {task.approvalStatus && task.approvalStatus !== "none" && (
                 <Tooltip>

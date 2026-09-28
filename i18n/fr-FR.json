@@ -1507,7 +1507,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Échec du réagencement des champs",
-			"selectPlaceholder": "Sélectionner une option"
+			"selectPlaceholder": "Sélectionner une option",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2517,7 +2521,10 @@
 			"gateWarningAriaLabel": "{{count}} portail non approuvé bloque cette tâche",
 			"gateWarningBadge": "Portail",
 			"gateWarningItem": "« {{title}} » est {{status}}",
-			"gateWarningTitle": "Bloquée par un portail non approuvé"
+			"gateWarningTitle": "Bloquée par un portail non approuvé",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "Supprimer la tâche ?",

@@ -9,6 +9,7 @@ export const customFieldDefinitionSchema = z
     required: z.boolean(),
     defaultValue: z.string().nullable(),
     options: z.unknown().nullable(),
+    optionColors: z.record(z.string(), z.string()).nullable(),
     position: z.number(),
     createdAt: responseTimestamp,
     updatedAt: responseTimestamp,
@@ -29,6 +30,7 @@ export const customFieldValueSchema = z
     fieldPosition: z.number(),
     fieldType: z.string(),
     fieldOptions: z.unknown().nullable(),
+    fieldOptionColors: z.record(z.string(), z.string()).nullable(),
   })
   .openapi("CustomFieldValue");
 

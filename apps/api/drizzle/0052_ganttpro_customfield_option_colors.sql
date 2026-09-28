@@ -1,0 +1,1 @@
+ALTER TABLE "custom_field_definition" ADD COLUMN "ganttpro_option_colors" jsonb;

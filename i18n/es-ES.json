@@ -1507,7 +1507,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2506,7 +2510,10 @@
 			"gateWarningAriaLabel": "{{count}} puerta de aprobación pendiente bloquea esta tarea",
 			"gateWarningBadge": "Puerta",
 			"gateWarningItem": "«{{title}}» está {{status}}",
-			"gateWarningTitle": "Bloqueada por una puerta de aprobación pendiente"
+			"gateWarningTitle": "Bloqueada por una puerta de aprobación pendiente",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "¿Eliminar tarea?",

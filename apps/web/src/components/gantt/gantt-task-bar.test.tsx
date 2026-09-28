@@ -294,3 +294,92 @@ describe("GanttTaskBar drawn width vs hit area", () => {
     expect(hit).toBe(drawn);
   });
 });
+
+describe("GanttTaskBar barColor", () => {
+  function drawnBar() {
+    return screen
+      .getByText("Cutover")
+      .closest("div[aria-hidden='true']") as HTMLElement | null;
+  }
+
+  it("uses the default primary-tinted look when no barColor is given", () => {
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask()}
+        timeline={timeline}
+        pixelsPerDay={40}
+        onOpenTask={vi.fn()}
+      />,
+    );
+
+    const bar = drawnBar();
+    expect(bar?.className).toContain("border-primary/25");
+    // No inline border color override.
+    expect(bar?.style.borderColor).toBe("");
+  });
+
+  it("paints the drawn bar's border and tint from barColor instead of the default primary classes", () => {
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask()}
+        timeline={timeline}
+        pixelsPerDay={40}
+        onOpenTask={vi.fn()}
+        barColor="rgb(16, 185, 129)"
+      />,
+    );
+
+    const bar = drawnBar();
+    expect(bar).not.toBeNull();
+    expect(bar?.className).not.toContain("border-primary/25");
+    expect(bar?.style.borderColor).toBe("rgb(16, 185, 129)");
+
+    // The static tint overlay is the first child of the drawn bar (progress
+    // fill only renders when progress > 0, which this task has none of).
+    const tintOverlay = bar?.firstElementChild as HTMLElement;
+    expect(tintOverlay.className).not.toContain("bg-primary/12");
+    expect(tintOverlay.style.backgroundColor).toContain("color-mix");
+    expect(tintOverlay.style.backgroundColor).toContain("rgb(16, 185, 129)");
+  });
+
+  it("paints the progress fill from barColor when the task has progress", () => {
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask({ progress: 50 })}
+        timeline={timeline}
+        pixelsPerDay={40}
+        onOpenTask={vi.fn()}
+        barColor="rgb(16, 185, 129)"
+      />,
+    );
+
+    const bar = drawnBar();
+    const progressFill = bar?.firstElementChild as HTMLElement;
+    expect(progressFill.className).not.toContain("bg-primary/30");
+    expect(progressFill.style.backgroundColor).toContain("color-mix");
+    expect(progressFill.style.backgroundColor).toContain("rgb(16, 185, 129)");
+  });
+
+  it("paints the milestone diamond from barColor instead of the default primary classes", () => {
+    render(
+      <GanttTaskBar
+        task={makeScheduledTask({ isMilestone: true })}
+        timeline={timeline}
+        pixelsPerDay={40}
+        onOpenTask={vi.fn()}
+        barColor="rgb(16, 185, 129)"
+      />,
+    );
+
+    const diamondButton = screen.getByLabelText(
+      /tasks:gantt.milestoneAriaLabel/,
+    );
+    expect(diamondButton.className).not.toContain("text-primary");
+    expect(diamondButton.style.color).toBe("rgb(16, 185, 129)");
+
+    const diamondIcon = diamondButton.querySelector("svg") as SVGElement;
+    expect(diamondIcon.getAttribute("class")).not.toContain("fill-primary/30");
+    expect(diamondIcon.style.fill).toContain("color-mix");
+    expect(diamondIcon.style.fill).toContain("rgb(16, 185, 129)");
+  });
+});

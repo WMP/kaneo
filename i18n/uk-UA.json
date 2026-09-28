@@ -1508,7 +1508,11 @@
 			"multiple": "Multiple",
 			"options": "{{count}} option(s)",
 			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)"
+			"selectPlaceholder": "Select option(s)",
+			"optionColorAriaLabel": "Set color for \"{{option}}\"",
+			"optionColorsLabel": "Option colors",
+			"updateColorError": "Failed to update option color.",
+			"updateColorSuccess": "Option color updated."
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -2526,7 +2530,10 @@
 			"gateWarningAriaLabel": "{{count}} незатверджений шлюз блокує це завдання",
 			"gateWarningBadge": "Шлюз",
 			"gateWarningItem": "«{{title}}» має статус {{status}}",
-			"gateWarningTitle": "Заблоковано незатвердженим шлюзом"
+			"gateWarningTitle": "Заблоковано незатвердженим шлюзом",
+			"barColorSourceCustomField": "Custom field",
+			"barColorSourceLabel": "Bar color",
+			"barColorSourceNone": "None"
 		},
 		"delete": {
 			"title": "Видалити завдання?",
