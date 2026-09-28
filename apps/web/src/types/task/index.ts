@@ -20,6 +20,14 @@ type TaskCustomFieldValue = {
   value: string | null;
 };
 
+type TaskAssignee = {
+  userId: string;
+  name: string;
+  image: string | null;
+  units: number;
+  work: number | null;
+};
+
 type Task = {
   id: string;
   title: string;
@@ -57,6 +65,11 @@ type Task = {
   labels?: TaskLabel[];
   externalLinks?: TaskExternalLink[];
   customFieldValues?: TaskCustomFieldValue[];
+  // The task's full assignee list. userId/assigneeId/assigneeName/
+  // assigneeImage mirror this list's first entry for backward
+  // compatibility. Optional so fixtures/mocks built before this field
+  // existed, or narrower task summaries that omit it, keep compiling.
+  assignees?: TaskAssignee[];
 };
 
 export default Task;

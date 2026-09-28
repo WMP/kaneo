@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Atanmamış",
-				"updateError": "Talep atananı güncellenemedi"
+				"updateError": "Talep atananı güncellenemedi",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Talep durumu güncellenemedi"
@@ -2551,7 +2552,8 @@
 		},
 		"assignee": {
 			"label": "Atanan",
-			"unassigned": "Atanmamış"
+			"unassigned": "Atanmamış",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Bitiş tarihi",

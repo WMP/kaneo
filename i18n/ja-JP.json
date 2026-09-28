@@ -2296,7 +2296,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "未割り当て",
-				"updateError": "担当者の更新に失敗しました"
+				"updateError": "担当者の更新に失敗しました",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "ステータスの更新に失敗しました"
@@ -2549,7 +2550,8 @@
 		},
 		"assignee": {
 			"label": "担当者",
-			"unassigned": "未割り当て"
+			"unassigned": "未割り当て",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "期限",

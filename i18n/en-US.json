@@ -2304,6 +2304,7 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Unassigned",
+				"unassignAll": "Unassign all",
 				"updateError": "Failed to update task assignee"
 			},
 			"status": {
@@ -2565,7 +2566,8 @@
 		},
 		"assignee": {
 			"label": "Assignee",
-			"unassigned": "Unassigned"
+			"unassigned": "Unassigned",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Due date",

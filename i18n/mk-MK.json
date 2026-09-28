@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Недоделен",
-				"updateError": "Неуспешно ажурирање на доделеност на задача"
+				"updateError": "Неуспешно ажурирање на доделеност на задача",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Неуспешно ажурирање на статус на задача"
@@ -2551,7 +2552,8 @@
 		},
 		"assignee": {
 			"label": "Доделен",
-			"unassigned": "Недоделен"
+			"unassigned": "Недоделен",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Краен рок",

@@ -2310,7 +2310,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Non assegnato",
-				"updateError": "Aggiornamento assegnatario attività fallito"
+				"updateError": "Aggiornamento assegnatario attività fallito",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Aggiornamento stato attività fallito"
@@ -2561,7 +2562,8 @@
 		},
 		"assignee": {
 			"label": "Assegnatario",
-			"unassigned": "Non assegnato"
+			"unassigned": "Non assegnato",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Data scadenza",

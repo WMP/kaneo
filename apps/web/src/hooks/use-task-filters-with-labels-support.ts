@@ -141,12 +141,19 @@ export function useTaskFiltersWithLabelsSupport(
           return false;
         }
 
-        if (
-          filters.assignee &&
-          filters.assignee.length > 0 &&
-          !filters.assignee.includes(task.userId ?? "")
-        ) {
-          return false;
+        if (filters.assignee && filters.assignee.length > 0) {
+          const taskAssigneeIds =
+            task.assignees && task.assignees.length > 0
+              ? task.assignees.map((assignee) => assignee.userId)
+              : [task.userId ?? ""];
+
+          const matchesAnyAssignee = taskAssigneeIds.some((assigneeId) =>
+            filters.assignee?.includes(assigneeId),
+          );
+
+          if (!matchesAnyAssignee) {
+            return false;
+          }
         }
 
         if (filters.dueDate && filters.dueDate.length > 0) {

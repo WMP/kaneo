@@ -2310,7 +2310,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Não atribuído",
-				"updateError": "Falha ao atualizar o responsável pela tarefa"
+				"updateError": "Falha ao atualizar o responsável pela tarefa",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Falha ao atualizar o status da tarefa"
@@ -2561,7 +2562,8 @@
 		},
 		"assignee": {
 			"label": "Responsável",
-			"unassigned": "Não atribuído"
+			"unassigned": "Não atribuído",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Data de vencimento",

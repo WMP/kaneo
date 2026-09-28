@@ -2303,7 +2303,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "असाइन नहीं",
-				"updateError": "कार्य का सौंपा गया अपडेट करने में विफल"
+				"updateError": "कार्य का सौंपा गया अपडेट करने में विफल",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "कार्य की स्थिति अपडेट करने में विफल"
@@ -2551,7 +2552,8 @@
 		},
 		"assignee": {
 			"label": "सौंपा गया",
-			"unassigned": "असाइन नहीं"
+			"unassigned": "असाइन नहीं",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "नियत तारीख",

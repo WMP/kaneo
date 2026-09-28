@@ -2317,7 +2317,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Не призначено",
-				"updateError": "Не вдалося оновити виконавця завдання"
+				"updateError": "Не вдалося оновити виконавця завдання",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "Не вдалося оновити статус завдання"
@@ -2571,7 +2572,8 @@
 		},
 		"assignee": {
 			"label": "Виконавець",
-			"unassigned": "Не призначено"
+			"unassigned": "Не призначено",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "Дата завершення",

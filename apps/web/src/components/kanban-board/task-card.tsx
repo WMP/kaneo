@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  type AssigneeAvatarItem,
+  AssigneeAvatars,
+} from "@/components/task/assignee-avatars";
 import { TaskProgressBadges } from "@/components/task/task-progress-badges";
 import {
   AlertDialog,
@@ -21,7 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import {
@@ -40,7 +43,6 @@ import {
 } from "@/lib/due-date-status";
 import { getExternalWebUrl, openExternalWebUrl } from "@/lib/external-url";
 import { formatDateShort } from "@/lib/format";
-import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import useBulkSelectionStore from "@/store/bulk-selection";
@@ -164,6 +166,26 @@ function TaskCard({ task, disableDragDrop = false }: TaskCardProps) {
     );
   }, [workspaceUsers, task.userId]);
 
+  const taskAssignees = useMemo<AssigneeAvatarItem[]>(() => {
+    if (task.assignees && task.assignees.length > 0) {
+      return task.assignees;
+    }
+    if (!task.userId) return [];
+    return [
+      {
+        userId: task.userId,
+        name: assignee?.user?.name ?? task.assigneeName ?? "",
+        image: assignee?.user?.image ?? task.assigneeImage ?? null,
+      },
+    ];
+  }, [
+    task.assignees,
+    task.userId,
+    task.assigneeName,
+    task.assigneeImage,
+    assignee,
+  ]);
+
   function handleTaskCardClick(
     e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
   ) {
@@ -241,16 +263,11 @@ function TaskCard({ task, disableDragDrop = false }: TaskCardProps) {
 
             {showAssignees && (
               <div className="absolute top-3 right-3">
-                {task.userId ? (
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage
-                      src={assignee?.user?.image ?? ""}
-                      alt={assignee?.user?.name || ""}
-                    />
-                    <AvatarFallback className="text-xs font-medium border border-border/30">
-                      {getInitials(assignee?.user?.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                {taskAssignees.length > 0 ? (
+                  <AssigneeAvatars
+                    assignees={taskAssignees}
+                    avatarClassName="h-5 w-5"
+                  />
                 ) : (
                   <div
                     className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted"

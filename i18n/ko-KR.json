@@ -2296,7 +2296,8 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "미할당",
-				"updateError": "작업 담당자 업데이트에 실패했습니다"
+				"updateError": "작업 담당자 업데이트에 실패했습니다",
+				"unassignAll": "Unassign all"
 			},
 			"status": {
 				"updateError": "작업 상태 업데이트에 실패했습니다"
@@ -2554,7 +2555,8 @@
 		},
 		"assignee": {
 			"label": "담당자",
-			"unassigned": "미할당"
+			"unassigned": "미할당",
+			"assignedAriaLabel": "Assigned to {{names}}"
 		},
 		"dueDate": {
 			"label": "마감일",

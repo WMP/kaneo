@@ -2362,7 +2362,8 @@
 		},
 		"assignee": {
 			"label": "Osoba przypisana",
-			"unassigned": "Nieprzypisane"
+			"unassigned": "Nieprzypisane",
+			"assignedAriaLabel": "Przypisano do: {{names}}"
 		},
 		"backlog": {
 			"addFilter": "Dodaj filtr...",
@@ -2713,6 +2714,7 @@
 		"popover": {
 			"assignee": {
 				"unassigned": "Nieprzypisane",
+				"unassignAll": "Cofnij przypisanie wszystkim",
 				"updateError": "Nie udało się zmienić osoby przypisanej do zadania"
 			},
 			"dueDate": {
