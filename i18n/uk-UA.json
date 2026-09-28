@@ -1512,7 +1512,18 @@
 			"optionColorAriaLabel": "Set color for \"{{option}}\"",
 			"optionColorsLabel": "Option colors",
 			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated."
+			"updateColorSuccess": "Option color updated.",
+			"hiddenOnProject": "Hidden",
+			"hideField": "Hide \"{{name}}\" for this project",
+			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
+			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
+			"inheritedTitle": "Inherited from workspace",
+			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
+			"ownFieldsTitle": "Project fields",
+			"requiredByWorkspace": "Required by workspace",
+			"showField": "Show \"{{name}}\" for this project",
+			"visibilityUpdateError": "Failed to update field visibility.",
+			"visibleOnProject": "Visible"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1764,6 +1775,13 @@
 			"loadError": "Could not load calendar feeds or labels. Please try again.",
 			"deletedLabel": "Deleted label",
 			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+		},
+		"workspaceCustomFields": {
+			"pageTitle": "Custom Field Settings",
+			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
+			"sectionTitle": "Custom Fields",
+			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
+			"title": "Custom Fields"
 		}
 	},
 	"navigation": {

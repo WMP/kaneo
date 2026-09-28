@@ -1810,6 +1810,13 @@
 			"deletionPending": "Oczekuje na usunięcie",
 			"resumeDeletion": "Wznów usuwanie"
 		},
+		"workspaceCustomFields": {
+			"pageTitle": "Ustawienia pól własnych",
+			"title": "Pola własne",
+			"subtitle": "Zarządzaj polami własnymi na poziomie przestrzeni roboczej. Każdy projekt w tej przestrzeni je dziedziczy.",
+			"sectionTitle": "Pola własne",
+			"sectionDescription": "Pola zdefiniowane tutaj są dodawane do każdego projektu w przestrzeni roboczej. Administrator projektu może jedynie ukryć lub pokazać pole dla swojego projektu — pola wymaganego nie można ukryć."
+		},
 		"workspaceRoles": {
 			"allChangesSaved": "Wszystkie zmiany zostały zapisane",
 			"createRole": "Utwórz rolę",
@@ -2095,7 +2102,18 @@
 			"updateColorError": "Nie udało się zaktualizować koloru opcji.",
 			"options": "{{count}} opcji",
 			"reorderError": "Nie udało się zmienić kolejności pól",
-			"selectPlaceholder": "Wybierz opcję/opcje"
+			"selectPlaceholder": "Wybierz opcję/opcje",
+			"inheritedTitle": "Odziedziczone z przestrzeni roboczej",
+			"inheritedDescription": "Pola zdefiniowane na poziomie przestrzeni roboczej. Ukrycie pola usuwa je tylko z tego projektu — pola wymaganego nie można ukryć.",
+			"inheritedEmpty": "Nie dodano jeszcze żadnych pól własnych na poziomie przestrzeni roboczej.",
+			"ownFieldsTitle": "Pola projektu",
+			"ownFieldsDescription": "Pola zdefiniowane tylko dla tego projektu. Przeciągnij, aby zmienić kolejność.",
+			"requiredByWorkspace": "Wymagane przez przestrzeń roboczą",
+			"visibleOnProject": "Widoczne",
+			"hiddenOnProject": "Ukryte",
+			"hideField": "Ukryj „{{name}}\" dla tego projektu",
+			"showField": "Pokaż „{{name}}\" dla tego projektu",
+			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola."
 		},
 		"administration": "Administracja",
 		"adminUsers": {
