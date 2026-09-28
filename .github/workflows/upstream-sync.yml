@@ -1,0 +1,150 @@
+name: Sync upstream
+
+# Keeps this fork's gantt-pro line current with the original project without
+# ever silently overwriting our work. Once a week (and on demand) it fetches
+# upstream/main and, when upstream has new commits, opens ONE pull request that
+# merges them into our canonical branch. Conflicts are left for a human to
+# resolve in the PR — GitHub's UI shows them file by file — and the PR body
+# carries a migration report so a database-migration number clash is never a
+# surprise.
+#
+# NOTE: a `schedule:` trigger only fires when this file is on the repository's
+# DEFAULT branch. Until it is merged to the fork's default branch the weekly run
+# does nothing; use the "Run workflow" button (workflow_dispatch) meanwhile.
+
+on:
+  schedule:
+    # Mondays 06:17 UTC (jittered off the hour to dodge scheduler backlog).
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Fork branch to sync upstream into"
+        required: false
+        default: claude/gantt-pro
+        type: string
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  UPSTREAM_REPO: https://github.com/usekaneo/kaneo.git
+  UPSTREAM_BRANCH: main
+  TARGET_BRANCH: ${{ github.event.inputs.target_branch || 'claude/gantt-pro' }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch upstream "$UPSTREAM_BRANCH" --tags
+
+      - name: Decide whether a sync is needed
+        id: decide
+        run: |
+          upstream_sha="$(git rev-parse upstream/$UPSTREAM_BRANCH)"
+          echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          echo "upstream_short=$(git rev-parse --short upstream/$UPSTREAM_BRANCH)" >> "$GITHUB_OUTPUT"
+          if git merge-base --is-ancestor "$upstream_sha" "origin/$TARGET_BRANCH"; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+            echo "Upstream is already contained in $TARGET_BRANCH — nothing to sync."
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report migration-number clashes
+        id: migrations
+        if: steps.decide.outputs.needed == 'true'
+        run: |
+          dir=apps/api/drizzle
+          nums() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '[0-9]{4}_[^/]+\.sql$' | sed 's/_.*//' | sort -u; }
+          names() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '[0-9]{4}_[^/]+\.sql$' | sort; }
+          # A clash is a 4-digit prefix used by BOTH sides for DIFFERENT files.
+          clashes=""
+          for n in $(comm -12 <(nums "origin/$TARGET_BRANCH") <(nums upstream/$UPSTREAM_BRANCH)); do
+            ours="$(names "origin/$TARGET_BRANCH" | grep "^${n}_" || true)"
+            theirs="$(names upstream/$UPSTREAM_BRANCH | grep "^${n}_" || true)"
+            if [ "$ours" != "$theirs" ]; then
+              clashes="${clashes}- \`${n}\`: ours \`${ours}\` vs upstream \`${theirs}\`\n"
+            fi
+          done
+          {
+            echo "report<<EOF"
+            if [ -n "$clashes" ]; then
+              echo "⚠️ **Migration number clash — resolve before merging.**"
+              echo ""
+              echo "Our additive delta and an upstream migration share a number. After"
+              echo "resolving file conflicts, renumber OUR delta to sit after upstream's"
+              echo "latest and regenerate it:"
+              echo ""
+              echo '```bash'
+              echo "git rm apps/api/drizzle/<our>.sql apps/api/drizzle/meta/<our>_snapshot.json"
+              echo "# keep upstream's meta/_journal.json, then:"
+              echo "pnpm --filter @kaneo/api db:generate --name ganttpro_additions"
+              echo "```"
+              echo ""
+              echo -e "$clashes"
+            else
+              echo "✅ No migration-number clash detected between upstream and \`$TARGET_BRANCH\`."
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push upstream mirror branch
+        id: mirror
+        if: steps.decide.outputs.needed == 'true'
+        run: |
+          sync_branch="upstream-sync/${UPSTREAM_BRANCH}-$(date -u +%Y%m%d)-${{ steps.decide.outputs.upstream_short }}"
+          echo "branch=$sync_branch" >> "$GITHUB_OUTPUT"
+          # Idempotent: force the mirror branch to the exact upstream tip.
+          git push --force origin "upstream/$UPSTREAM_BRANCH:refs/heads/$sync_branch"
+
+      - name: Open or update the sync pull request
+        if: steps.decide.outputs.needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ steps.mirror.outputs.branch }}
+          UPSTREAM_SHORT: ${{ steps.decide.outputs.upstream_short }}
+          # Passed via env (not inline ${{ }}) so backticks in the report are
+          # never evaluated by the shell.
+          MIGRATION_REPORT: ${{ steps.migrations.outputs.report }}
+        run: |
+          title="Sync upstream/${UPSTREAM_BRANCH} into ${TARGET_BRANCH} ($(date -u +%Y-%m-%d))"
+          {
+            echo "Automated weekly upstream sync."
+            echo ""
+            echo "Merges upstream/${UPSTREAM_BRANCH} (${UPSTREAM_SHORT}) into ${TARGET_BRANCH}."
+            echo ""
+            echo "If GitHub reports conflicts, resolve them in this PR (our work stays; take"
+            echo "upstream's changes where they don't touch gantt-pro code). Then verify"
+            echo "locally before merging:"
+            echo ""
+            echo '```bash'
+            echo "pnpm install"
+            echo "pnpm --filter @kaneo/api build && pnpm openapi:check"
+            echo "pnpm --filter @kaneo/api test"
+            echo '```'
+            echo ""
+            echo "### Migrations"
+            printf '%s\n' "$MIGRATION_REPORT"
+          } > /tmp/sync-pr-body.md
+          existing="$(gh pr list --base "$TARGET_BRANCH" --head "$HEAD_BRANCH" --state open --json number --jq '.[0].number' || true)"
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$title" --body-file /tmp/sync-pr-body.md
+            echo "Updated PR #$existing"
+          else
+            gh pr create --base "$TARGET_BRANCH" --head "$HEAD_BRANCH" --title "$title" --body-file /tmp/sync-pr-body.md
+          fi
