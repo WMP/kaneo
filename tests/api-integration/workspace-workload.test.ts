@@ -63,6 +63,16 @@ async function insertTask(options: {
       position: options.number,
     })
     .returning();
+  // Mirror setTaskAssignees: an assigned task also gets a ganttpro_task_assignment
+  // row, which is what the workload aggregation now sources from (task.userId is
+  // only the denormalized primary mirror).
+  if (options.userId) {
+    await db.insert(schema.taskAssignmentTable).values({
+      taskId: task.id,
+      userId: options.userId,
+      units: 100,
+    });
+  }
   return task;
 }
 
