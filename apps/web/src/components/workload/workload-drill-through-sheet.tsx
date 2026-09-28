@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { WORKLOAD_UNASSIGNED_ASSIGNEE } from "@/fetchers/workload/get-workspace-workload-tasks";
 import useWorkspaceWorkloadTasks from "@/hooks/queries/workload/use-workspace-workload-tasks";
+import { resolveDateFnsLocale } from "@/lib/i18n/date-fns-locale";
 import { getPriorityIcon } from "@/lib/priority";
 
 export type WorkloadDrillThroughRequest = {
@@ -37,7 +38,8 @@ export default function WorkloadDrillThroughSheet({
   request,
   onClose,
 }: WorkloadDrillThroughSheetProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateFnsLocale = resolveDateFnsLocale(i18n.language);
   const navigate = useNavigate();
 
   const assigneeId = request
@@ -68,8 +70,16 @@ export default function WorkloadDrillThroughSheet({
           <SheetDescription>
             {request
               ? t("workspace:workload.drillThrough.subtitle", {
-                  from: format(new Date(`${request.from}T00:00:00`), "MMM d"),
-                  to: format(new Date(`${request.to}T00:00:00`), "MMM d, yyyy"),
+                  from: format(new Date(`${request.from}T00:00:00`), "MMM d", {
+                    locale: dateFnsLocale,
+                  }),
+                  to: format(
+                    new Date(`${request.to}T00:00:00`),
+                    "MMM d, yyyy",
+                    {
+                      locale: dateFnsLocale,
+                    },
+                  ),
                 })
               : ""}
           </SheetDescription>
@@ -129,7 +139,9 @@ export default function WorkloadDrillThroughSheet({
                       {task.projectName}
                       {task.dueDate
                         ? t("workspace:workload.drillThrough.dueOn", {
-                            date: format(new Date(task.dueDate), "MMM d"),
+                            date: format(new Date(task.dueDate), "MMM d", {
+                              locale: dateFnsLocale,
+                            }),
                           })
                         : ""}
                     </p>

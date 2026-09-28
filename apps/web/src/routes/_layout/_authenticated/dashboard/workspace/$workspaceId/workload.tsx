@@ -40,6 +40,7 @@ import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useWorkspaceWorkload from "@/hooks/queries/workload/use-workspace-workload";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
+import { resolveDateFnsLocale } from "@/lib/i18n/date-fns-locale";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/workspace/$workspaceId/workload",
@@ -89,7 +90,8 @@ function defaultRangeStart() {
 }
 
 function WorkloadComponent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateFnsLocale = resolveDateFnsLocale(i18n.language);
   const { workspaceId } = Route.useParams();
 
   const [from, setFrom] = useState(() => dayKey(defaultRangeStart()));
@@ -121,8 +123,8 @@ function WorkloadComponent() {
 
   const rangeLabel = useMemo(
     () =>
-      `${format(parseDayKey(from), "MMM d, yyyy")} – ${format(parseDayKey(to), "MMM d, yyyy")}`,
-    [from, to],
+      `${format(parseDayKey(from), "MMM d, yyyy", { locale: dateFnsLocale })} – ${format(parseDayKey(to), "MMM d, yyyy", { locale: dateFnsLocale })}`,
+    [from, to, dateFnsLocale],
   );
 
   const applyRange = (nextFrom: Date, nextTo: Date) => {
@@ -380,12 +382,15 @@ function WorkloadComponent() {
                         <TableHead
                           key={bucket.start}
                           className="text-center"
-                          title={`${format(bucketDay(bucket.start), "MMM d")} – ${format(
+                          title={`${format(bucketDay(bucket.start), "MMM d", { locale: dateFnsLocale })} – ${format(
                             addDays(bucketDay(bucket.end), -1),
                             "MMM d",
+                            { locale: dateFnsLocale },
                           )}`}
                         >
-                          {format(bucketDay(bucket.start), "MMM d")}
+                          {format(bucketDay(bucket.start), "MMM d", {
+                            locale: dateFnsLocale,
+                          })}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -468,6 +473,7 @@ function WorkloadComponent() {
                                         date: format(
                                           bucketDay(bucket.start),
                                           "MMM d",
+                                          { locale: dateFnsLocale },
                                         ),
                                       })
                                     : undefined
