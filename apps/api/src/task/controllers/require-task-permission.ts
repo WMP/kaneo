@@ -85,8 +85,7 @@ export async function requireBulkTaskEntitlement(c: Context, next: Next) {
 
 export async function requireTaskAssigneePermission(c: Context, next: Next) {
   const id = c.req.param("id");
-  const { userId } = await readJsonBody(c);
-  const nextAssignee = typeof userId === "string" ? userId : null;
+  const body = await readJsonBody(c);
 
   const [existingTask] = await db
     .select({ userId: taskTable.userId })
@@ -94,7 +93,37 @@ export async function requireTaskAssigneePermission(c: Context, next: Next) {
     .where(eq(taskTable.id, id ?? ""))
     .limit(1);
 
-  if (existingTask && existingTask.userId !== nextAssignee) {
+  if (!existingTask) {
+    return next();
+  }
+
+  // The `/assignees` route's body carries a full list rather than a single
+  // value; compare it against the current assignee set (today, at most the
+  // primary — this middleware has no cheap access to the full assignment
+  // table) rather than reusing the single-value branch below.
+  if (Array.isArray(body.userIds)) {
+    const nextAssignees = new Set(
+      body.userIds.filter(
+        (value): value is string => typeof value === "string",
+      ),
+    );
+    const currentAssignees = new Set(
+      existingTask.userId ? [existingTask.userId] : [],
+    );
+    const changed =
+      nextAssignees.size !== currentAssignees.size ||
+      [...nextAssignees].some((userId) => !currentAssignees.has(userId));
+
+    if (changed) {
+      return requireWorkspacePermission({ task: ["assign"] })(c, next);
+    }
+
+    return next();
+  }
+
+  const nextAssignee = typeof body.userId === "string" ? body.userId : null;
+
+  if (existingTask.userId !== nextAssignee) {
     return requireWorkspacePermission({ task: ["assign"] })(c, next);
   }
 

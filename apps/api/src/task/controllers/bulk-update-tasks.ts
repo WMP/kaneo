@@ -18,6 +18,7 @@ import {
   validateAndParseDate,
   validateDateRange,
 } from "../../utils/validate-dates";
+import { setTaskAssignees } from "../assignments";
 import { buildScheduleChanges } from "../diff-schedule-fields";
 import { getSubtaskParentProjects } from "../get-subtask-parent-projects";
 import {
@@ -272,6 +273,8 @@ async function bulkUpdateTasks({
       updatedCount = result.rowCount ?? foundIds.length;
 
       for (const task of tasks) {
+        await setTaskAssignees(db, task.id, assigneeId ? [assigneeId] : []);
+
         const eventType = assigneeId
           ? "task.assignee_changed"
           : "task.unassigned";

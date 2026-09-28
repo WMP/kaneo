@@ -541,6 +541,48 @@ export const taskTable = pgTable(
   ],
 );
 
+// Source of truth for a task's full assignee list. `taskTable.userId`
+// ("assignee_id") stays as a denormalized "primary assignee" mirror — always
+// the first row here for a task — so the many existing
+// `leftJoin(userTable, eq(taskTable.userId, userTable.id))` call-sites keep
+// working unchanged. Every write to either side must go through
+// `task/assignments.ts`'s helpers so the two never drift apart.
+export const taskAssignmentTable = pgTable(
+  "ganttpro_task_assignment",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => taskTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    // Percent allocation (0-100 in normal use); drives the workload split in
+    // a later phase.
+    units: integer("units").notNull().default(100),
+    // Planned effort, stored for a later cost/estimate feature. Nullable
+    // until that phase gives it meaning.
+    work: integer("work"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("ganttpro_task_assignment_task_user_unique").on(
+      table.taskId,
+      table.userId,
+    ),
+    index("ganttpro_task_assignment_task_id_idx").on(table.taskId),
+    index("ganttpro_task_assignment_user_id_idx").on(table.userId),
+  ],
+);
+
 export const billingReminderSentTable = pgTable(
   "billing_reminder_sent",
   {

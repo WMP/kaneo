@@ -7,6 +7,7 @@ import {
   assertAssignableUser,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
+import { setTaskAssignees } from "../assignments";
 
 async function updateTaskAssignee({
   id,
@@ -39,11 +40,16 @@ async function updateTaskAssignee({
     );
   }
 
+  // Wired through the shared helper (rather than a direct `.update()`) so
+  // `ganttpro_task_assignment` mirrors this task's single assignee, same as
+  // every other assignee mutation.
+  await setTaskAssignees(db, id, nextAssigneeId ? [nextAssigneeId] : []);
+
   const [updatedTask] = await db
-    .update(taskTable)
-    .set({ userId: nextAssigneeId })
+    .select()
+    .from(taskTable)
     .where(eq(taskTable.id, id))
-    .returning();
+    .limit(1);
 
   if (!updatedTask) {
     throw new HTTPException(500, {

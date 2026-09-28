@@ -17,6 +17,7 @@ import { publishEvent } from "../../events";
 import { contentReferencesAsset } from "../../storage/cleanup-assets";
 import { copyTaskAssetObject, deleteS3Object } from "../../storage/s3";
 import { assertAssignableUser } from "../../utils/assert-assignable-user";
+import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
   assertValidTaskStatus,
@@ -300,6 +301,8 @@ async function duplicateTask({
       if (assets.length > 0) {
         await tx.insert(assetTable).values(assets);
       }
+
+      await setTaskAssignees(tx, task.id, task.userId ? [task.userId] : []);
 
       const relations =
         parentRelations.length > 0

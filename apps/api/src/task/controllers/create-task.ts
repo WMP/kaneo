@@ -13,6 +13,7 @@ import {
   assertAssignableUser,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
+import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
   assertValidTaskStatus,
@@ -165,6 +166,14 @@ async function createTask({
           fieldId,
           value: value.trim(),
         })),
+      );
+    }
+
+    if (task) {
+      await setTaskAssignees(
+        tx,
+        task.id,
+        normalizedUserId ? [normalizedUserId] : [],
       );
     }
 

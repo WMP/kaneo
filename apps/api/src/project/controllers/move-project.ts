@@ -15,6 +15,7 @@ import {
   assetTable,
   labelTable,
   projectTable,
+  taskAssignmentTable,
   taskRelationTable,
   taskTable,
   userNotificationWorkspaceProjectTable,
@@ -169,6 +170,20 @@ async function moveProject(
                 : undefined,
             ),
           );
+
+        // Reverse the mirror: a non-member's assignment row(s) for this
+        // project's tasks must go too, not just the primary-assignee column.
+        await tx.delete(taskAssignmentTable).where(
+          and(
+            inArray(
+              taskAssignmentTable.taskId,
+              tasks.map((task) => task.id),
+            ),
+            memberIds.size > 0
+              ? notInArray(taskAssignmentTable.userId, [...memberIds])
+              : undefined,
+          ),
+        );
       }
     }
 

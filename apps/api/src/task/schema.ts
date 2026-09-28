@@ -203,6 +203,12 @@ export const updatePriorityBody = z.object({ priority });
 export const updateAssigneeBody = z.object({
   userId: z.string().nullable().openapi({ description: "Null unassigns." }),
 });
+export const updateAssigneesBody = z.object({
+  userIds: z.array(z.string()).openapi({
+    description:
+      "The task's full assignee list, in order; the first id becomes the primary assignee (userId/assigneeId). An empty array unassigns the task.",
+  }),
+});
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
 export const updateApprovalBody = z.object({
   approvalStatus,

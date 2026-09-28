@@ -78,6 +78,7 @@ import { clientIpMiddleware } from "./utils/client-ip";
 import { migrateApiKeyReferenceId } from "./utils/migrate-apikey-reference-id";
 import { migrateNotificationPreferencesSchema } from "./utils/migrate-notification-preferences-schema";
 import { migrateSessionColumn } from "./utils/migrate-session-column";
+import { migrateTaskAssignments } from "./utils/migrate-task-assignments";
 import { migrateWorkspaceUserEmail } from "./utils/migrate-workspace-user-email";
 import { normalizeApiServerUrl } from "./utils/openapi-spec";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
@@ -954,6 +955,9 @@ export async function runStartupTasks() {
   await migrateNotificationPreferencesSchema();
   await migrateGitHubIntegration();
   await migrateColumns();
+  // After Drizzle migrations: the assignment table must exist so we can
+  // backfill it from every existing task's assignee_id.
+  await migrateTaskAssignments();
   await seedDefaultWorkspaceRoles();
 
   initializePlugins();

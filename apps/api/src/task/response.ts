@@ -66,10 +66,30 @@ export const taskSchema = z
   })
   .openapi("Task");
 
+const taskAssigneeSchema = z
+  .object({
+    userId: z.string(),
+    name: z.string(),
+    image: z.string().nullable(),
+    units: z.number().int().openapi({
+      description: "Percent allocation. Drives the workload split.",
+    }),
+    work: z.number().int().nullable().openapi({
+      description: "Planned effort, for a later cost/estimate feature.",
+    }),
+  })
+  .openapi("TaskAssignee");
+
+const assigneesField = z.array(taskAssigneeSchema).openapi({
+  description:
+    "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility.",
+});
+
 export const taskWithAssigneeSchema = taskSchema
   .extend({
     assigneeName: z.string().nullable(),
     assigneeId: z.string().nullable(),
+    assignees: assigneesField,
   })
   .openapi("TaskWithAssignee");
 
@@ -134,6 +154,7 @@ export const boardTaskSchema = z
     assigneeName: z.string().nullable(),
     assigneeId: z.string().nullable(),
     assigneeImage: z.string().nullable(),
+    assignees: assigneesField,
     projectId: z.string(),
     subtaskCounts: z
       .object({

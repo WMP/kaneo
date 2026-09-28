@@ -19,6 +19,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { readTaskAssignees } from "../assignments";
 import { boundedTaskRead, type TaskReadDatabase } from "../bounded-read";
 import {
   boardDescription,
@@ -184,6 +185,8 @@ async function getTasksPage(
 
   const taskIds = paginatedTasks.map((task) => task.id);
 
+  const assigneesByTaskId = await readTaskAssignees(db, taskIds);
+
   const subtaskCounts = await getSubtaskCounts(
     db,
     taskIds,
@@ -329,6 +332,7 @@ async function getTasksPage(
         subtaskCounts: subtaskCounts.get(task.id) ?? { completed: 0, total: 0 },
         labels: taskLabelsMap.get(task.id) || [],
         externalLinks: taskExternalLinksMap.get(task.id) || [],
+        assignees: assigneesByTaskId.get(task.id) || [],
       })),
   }));
 
@@ -339,6 +343,7 @@ async function getTasksPage(
       subtaskCounts: subtaskCounts.get(task.id) ?? { completed: 0, total: 0 },
       labels: taskLabelsMap.get(task.id) || [],
       externalLinks: taskExternalLinksMap.get(task.id) || [],
+      assignees: assigneesByTaskId.get(task.id) || [],
     }));
 
   const plannedTasks = paginatedTasks
@@ -348,6 +353,7 @@ async function getTasksPage(
       subtaskCounts: subtaskCounts.get(task.id) ?? { completed: 0, total: 0 },
       labels: taskLabelsMap.get(task.id) || [],
       externalLinks: taskExternalLinksMap.get(task.id) || [],
+      assignees: assigneesByTaskId.get(task.id) || [],
     }));
 
   return {

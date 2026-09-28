@@ -8,6 +8,7 @@ import {
   assertAssignableUser,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
+import { setTaskAssignees } from "../assignments";
 import { boardDescription, descriptionDeferred } from "../description-pages";
 import { buildScheduleChanges } from "../diff-schedule-fields";
 import { assertValidTaskStatus } from "../validate-task-fields";
@@ -144,6 +145,12 @@ async function updateTask(
         },
       });
     }
+
+    await setTaskAssignees(
+      tx,
+      task.id,
+      normalizedUserId ? [normalizedUserId] : [],
+    );
 
     return task;
   });

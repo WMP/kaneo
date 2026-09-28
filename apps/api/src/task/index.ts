@@ -48,6 +48,7 @@ import {
 import updateTask from "./controllers/update-task";
 import updateTaskApproval from "./controllers/update-task-approval";
 import updateTaskAssignee from "./controllers/update-task-assignee";
+import updateTaskAssignees from "./controllers/update-task-assignees";
 import {
   clearTaskBaseline,
   setTaskBaseline,
@@ -89,6 +90,7 @@ import {
   taskParam,
   updateApprovalBody,
   updateAssigneeBody,
+  updateAssigneesBody,
   updateDescriptionBody,
   updateDueDateBody,
   updatePriorityBody,
@@ -444,6 +446,38 @@ const updateTaskAssigneeRoute = createRoute({
       "No workspace access, or missing task:assign permission",
     ),
     404: errorResponse("Assignee is not a member of the workspace"),
+  },
+});
+
+const updateTaskAssigneesRoute = createRoute({
+  method: "put",
+  operationId: "updateTaskAssignees",
+  path: "/{id}/assignees",
+  tags: ["Tasks"],
+  summary: "Update task assignees",
+  description:
+    "Replace a task's full assignee list. The first id becomes the primary assignee (userId/assigneeId); an empty list unassigns the task.",
+  middleware: [
+    workspaceAccess.fromTask(),
+    requireWorkspacePermission({ task: ["assign"] }),
+    requireEntitlement,
+  ] as const,
+  request: {
+    params: taskParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: updateAssigneesBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse(
+      "The updated task, with its assignees array",
+      taskWithAssigneeSchema,
+    ),
+    400: errorResponse("Invalid body, or unknown task"),
+    403: errorResponse(
+      "No workspace access, missing task:assign permission, or an assignee is not a member of the workspace",
+    ),
   },
 });
 
@@ -955,6 +989,15 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
     const currentUserId = c.get("userId");
 
     const task = await updateTaskAssignee({ id, userId, currentUserId });
+
+    return c.json(task, 200);
+  })
+  .openapi(updateTaskAssigneesRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { userIds } = c.req.valid("json");
+    const currentUserId = c.get("userId");
+
+    const task = await updateTaskAssignees({ id, userIds, currentUserId });
 
     return c.json(task, 200);
   })

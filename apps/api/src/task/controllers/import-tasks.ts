@@ -4,6 +4,7 @@ import db from "../../database";
 import { columnTable, projectTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { filterAssignableUsers } from "../../utils/assert-assignable-user";
+import { setTaskAssignees } from "../assignments";
 import {
   coercePriority,
   coerceStatus,
@@ -100,6 +101,10 @@ async function importTasks(
             number: taskNumber,
           })
           .returning();
+
+        if (task) {
+          await setTaskAssignees(tx, task.id, assigneeId ? [assigneeId] : []);
+        }
 
         return task;
       });

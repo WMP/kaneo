@@ -225,6 +225,13 @@
               "null"
             ]
           },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskAssignee"
+            },
+            "description": "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility."
+          },
           "projectId": {
             "type": "string"
           },
@@ -282,10 +289,46 @@
           "assigneeName",
           "assigneeId",
           "assigneeImage",
+          "assignees",
           "projectId",
           "subtaskCounts",
           "labels",
           "externalLinks"
+        ]
+      },
+      "TaskAssignee": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "units": {
+            "type": "integer",
+            "description": "Percent allocation. Drives the workload split."
+          },
+          "work": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Planned effort, for a later cost/estimate feature."
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "image",
+          "units",
+          "work"
         ]
       },
       "TaskLabel": {
@@ -1327,11 +1370,19 @@
                   "string",
                   "null"
                 ]
+              },
+              "assignees": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TaskAssignee"
+                },
+                "description": "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility."
               }
             },
             "required": [
               "assigneeName",
-              "assigneeId"
+              "assigneeId",
+              "assignees"
             ]
           }
         ]
@@ -10645,6 +10696,83 @@
           },
           "404": {
             "description": "Assignee is not a member of the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/task/{id}/assignees": {
+      "put": {
+        "operationId": "updateTaskAssignees",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Update task assignees",
+        "description": "Replace a task's full assignee list. The first id becomes the primary assignee (userId/assigneeId); an empty list unassigns the task.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The task's full assignee list, in order; the first id becomes the primary assignee (userId/assigneeId). An empty array unassigns the task."
+                  }
+                },
+                "required": [
+                  "userIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task, with its assignees array",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskWithAssignee"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or unknown task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, missing task:assign permission, or an assignee is not a member of the workspace",
             "content": {
               "text/plain": {
                 "schema": {
