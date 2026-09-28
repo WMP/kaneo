@@ -93,8 +93,15 @@ export default function TaskActionsMenuItems({
   const { t } = useTranslation();
   const { project } = useProjectStore();
   const { data: columnsData = [] } = useGetColumns(taskCardContext.projectId);
+  // Prefer the active store project's columns only when it IS this task's
+  // project. This menu is now shared by list/backlog/subtask rows, not just
+  // the active board, so a task from another project must fall back to the
+  // columns fetched for taskCardContext.projectId rather than offering (and
+  // writing) the active project's status slugs.
   const columns =
-    project?.columns && project.columns.length > 0
+    project?.id === taskCardContext.projectId &&
+    project?.columns &&
+    project.columns.length > 0
       ? project.columns.map((col) => ({
           slug: col.id,
           name: col.name,
@@ -176,12 +183,14 @@ export default function TaskActionsMenuItems({
             [field]: value,
           });
       }
+      // Only on success — a `finally` here would fire the success toast even
+      // after the catch below already reported the failure, showing two
+      // contradictory toasts for one failed update.
+      toast.success(t("tasks:update.success"));
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : t("tasks:update.error"),
       );
-    } finally {
-      toast.success(t("tasks:update.success"));
     }
   };
 

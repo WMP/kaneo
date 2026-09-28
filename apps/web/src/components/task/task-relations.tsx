@@ -482,11 +482,12 @@ export default function TaskRelations({
                                 especially so a cross-project task — whose slug
                                 differs from this board's — reads as belonging
                                 elsewhere rather than as a bare title. */}
-                            {item.task.number !== null && (
-                              <span className="shrink-0 font-mono text-[11px] text-muted-foreground/80">
-                                {item.task.projectSlug}-{item.task.number}
-                              </span>
-                            )}
+                            {item.task.projectSlug &&
+                              item.task.number !== null && (
+                                <span className="shrink-0 font-mono text-[11px] text-muted-foreground/80">
+                                  {item.task.projectSlug}-{item.task.number}
+                                </span>
+                              )}
                             <span
                               className={`text-sm truncate ${isFinalStatus ? "line-through text-muted-foreground" : "text-foreground/90"}`}
                             >

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { createContext, useContext, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type Task from "@/types/task";
@@ -7,9 +13,20 @@ import TaskActionsDropdown from "./task-actions-dropdown";
 const duplicateTask = vi.fn();
 const canCreateTasks = vi.fn(() => true);
 const canDeleteTasks = vi.fn(() => true);
+// Hoisted so the vi.mock factories below (which vitest lifts above these
+// declarations) can safely reference them.
+const { updateTaskStatus, toastSuccess, toastError } = vi.hoisted(() => ({
+  updateTaskStatus: vi.fn(async () => undefined),
+  toastSuccess: vi.fn(),
+  toastError: vi.fn(),
+}));
 
 vi.mock("@/hooks/mutations/task/use-duplicate-task", () => ({
   useDuplicateTask: () => ({ mutate: duplicateTask }),
+}));
+
+vi.mock("@/lib/toast", () => ({
+  toast: { success: toastSuccess, error: toastError },
 }));
 
 afterEach(() => {
@@ -141,7 +158,7 @@ vi.mock("@/hooks/mutations/task/use-update-task-due-date", () => ({
 }));
 
 vi.mock("@/hooks/mutations/task/use-update-task-status", () => ({
-  useUpdateTaskStatus: () => ({ mutateAsync: vi.fn() }),
+  useUpdateTaskStatus: () => ({ mutateAsync: updateTaskStatus }),
 }));
 
 vi.mock("@/hooks/mutations/task/use-update-task-status-priority", () => ({
@@ -259,6 +276,23 @@ describe("TaskActionsDropdown", () => {
       screen.queryByRole("button", { name: "tasks:actions.delete" }),
     ).not.toBeInTheDocument();
     expect(screen.getByText("tasks:contextMenu.copyLink")).toBeInTheDocument();
+  });
+
+  it("shows only an error toast (never a success toast) when an action's update fails", async () => {
+    updateTaskStatus.mockRejectedValueOnce(new Error("boom"));
+    renderDropdown();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:contextMenu.moreActions" }),
+    );
+    // Archive is a plain item that runs handleChange("status", "archived").
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:actions.archive" }),
+    );
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledTimes(1));
+    // The pre-fix `finally` fired success even on failure — assert it does not.
+    expect(toastSuccess).not.toHaveBeenCalled();
   });
 
   it("does not let opening the menu bubble a click up to an ancestor (card navigation/drag)", () => {
