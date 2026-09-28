@@ -52,6 +52,7 @@ import { initializePlugins } from "./plugins";
 import { migrateGitHubIntegration } from "./plugins/github/migration";
 import project from "./project";
 import { getPublicProject } from "./project/controllers/get-public-project";
+import resource from "./resource";
 import { initializeScheduler, shutdownScheduler } from "./scheduler";
 import search from "./search";
 import slackIntegration from "./slack-integration";
@@ -777,6 +778,7 @@ export function createApp() {
   const workspaceApi = api.route("/workspace", workspace);
   const workloadApi = api.route("/workload", workload);
   const customFieldApi = api.route("/custom-field", customField);
+  const resourceApi = api.route("/resource", resource);
   const userApi = api.route("/user", user);
 
   app.route(
@@ -922,6 +924,7 @@ export function createApp() {
     workspaceApi,
     workloadApi,
     customFieldApi,
+    resourceApi,
     oauthApi,
   };
 }
@@ -1064,6 +1067,7 @@ const {
   workspaceApi,
   workloadApi,
   customFieldApi,
+  resourceApi,
   oauthApi,
 } = createdApp;
 
@@ -1107,6 +1111,7 @@ export type AppType =
   | typeof workspaceApi
   | typeof workloadApi
   | typeof customFieldApi
+  | typeof resourceApi
   | typeof userApi
   | typeof publicProjectApi
   | typeof invitationPublicApi

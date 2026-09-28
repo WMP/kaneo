@@ -91,6 +91,8 @@ async function createComment(
     const assigneesByTaskId = await readTaskAssignees(db, [taskId]);
     const assigneeIds = (assigneesByTaskId.get(taskId) ?? [])
       .map((assignee) => assignee.userId)
+      // Resource assignees (null userId) have no account to notify.
+      .filter((id): id is string => id !== null)
       .filter((id) => id !== userId && !mentionedIds.includes(id));
 
     for (const assigneeId of assigneeIds) {

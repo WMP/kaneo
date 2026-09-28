@@ -1,4 +1,4 @@
-import { and, eq, exists, isNull, sql } from "drizzle-orm";
+import { and, eq, exists, isNull, or, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -53,6 +53,9 @@ async function getWorkspaceWorkloadTasks({
   // only its primary. The unassigned case still reads the mirror: it stays
   // null exactly when the assignment table has no rows for the task (see
   // `setTaskAssignees`), so `isNull` here is equivalent and cheaper.
+  // `assigneeId` is either a user id or a person-resource id — the aggregate
+  // workload view keys a person-resource's row by its own resource id (see
+  // get-workspace-workload.ts), so this drill-through accepts either.
   const assigneeCondition =
     assigneeId === WORKLOAD_UNASSIGNED_ASSIGNEE
       ? isNull(taskTable.userId)
@@ -63,7 +66,10 @@ async function getWorkspaceWorkloadTasks({
             .where(
               and(
                 eq(taskAssignmentTable.taskId, taskTable.id),
-                eq(taskAssignmentTable.userId, assigneeId),
+                or(
+                  eq(taskAssignmentTable.userId, assigneeId),
+                  eq(taskAssignmentTable.resourceId, assigneeId),
+                ),
               ),
             ),
         );

@@ -170,7 +170,7 @@ async function createTask({
       await setTaskAssignees(
         tx,
         task.id,
-        normalizedUserId ? [normalizedUserId] : [],
+        normalizedUserId ? [{ userId: normalizedUserId }] : [],
       );
     }
 

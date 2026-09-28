@@ -273,7 +273,11 @@ async function bulkUpdateTasks({
       updatedCount = result.rowCount ?? foundIds.length;
 
       for (const task of tasks) {
-        await setTaskAssignees(db, task.id, assigneeId ? [assigneeId] : []);
+        await setTaskAssignees(
+          db,
+          task.id,
+          assigneeId ? [{ userId: assigneeId }] : [],
+        );
 
         const eventType = assigneeId
           ? "task.assignee_changed"

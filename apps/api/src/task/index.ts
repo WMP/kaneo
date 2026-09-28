@@ -456,7 +456,7 @@ const updateTaskAssigneesRoute = createRoute({
   tags: ["Tasks"],
   summary: "Update task assignees",
   description:
-    "Replace a task's full assignee list. The first id becomes the primary assignee (userId/assigneeId); an empty list unassigns the task.",
+    "Replace a task's full assignee list — userIds (real accounts) plus resourceIds (account-less people/equipment/material from /resource). The first userIds entry becomes the primary assignee (userId/assigneeId); a resource is never primary. Both empty unassigns the task.",
   middleware: [
     workspaceAccess.fromTask(),
     requireWorkspacePermission({ task: ["assign"] }),
@@ -994,10 +994,15 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   .openapi(updateTaskAssigneesRoute, async (c) => {
     const { id } = c.req.valid("param");
-    const { userIds } = c.req.valid("json");
+    const { userIds, resourceIds } = c.req.valid("json");
     const currentUserId = c.get("userId");
 
-    const task = await updateTaskAssignees({ id, userIds, currentUserId });
+    const task = await updateTaskAssignees({
+      id,
+      userIds,
+      resourceIds,
+      currentUserId,
+    });
 
     return c.json(task, 200);
   })

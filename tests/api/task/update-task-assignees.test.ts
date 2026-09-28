@@ -5,6 +5,7 @@ const mockSelect = vi.fn();
 const mockPublishEvent = vi.fn();
 const mockFilterAssignableUsers = vi.fn();
 const mockGetProjectWorkspaceId = vi.fn();
+const mockFilterWorkspaceResources = vi.fn();
 const mockSetTaskAssignees = vi.fn();
 const mockReadTaskAssignees = vi.fn();
 
@@ -28,6 +29,11 @@ vi.mock("../../../apps/api/src/utils/assert-assignable-user", () => ({
     mockFilterAssignableUsers(...args),
   getProjectWorkspaceId: (...args: unknown[]) =>
     mockGetProjectWorkspaceId(...args),
+}));
+
+vi.mock("../../../apps/api/src/resource/workspace-resources", () => ({
+  filterWorkspaceResources: (...args: unknown[]) =>
+    mockFilterWorkspaceResources(...args),
 }));
 
 vi.mock("../../../apps/api/src/task/assignments", () => ({
@@ -89,11 +95,32 @@ describe("updateTaskAssignees", () => {
     expect(mockSetTaskAssignees).not.toHaveBeenCalled();
   });
 
+  it("rejects with 403 when a resource does not belong to the task's workspace", async () => {
+    mockFindFirst.mockResolvedValue(EXISTING_TASK);
+    mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1"]));
+    mockFilterWorkspaceResources.mockResolvedValue(new Set());
+
+    await expect(
+      updateTaskAssignees({
+        id: "task-1",
+        userIds: ["user-1"],
+        resourceIds: ["resource-outsider"],
+        currentUserId: "user-1",
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+
+    expect(mockSetTaskAssignees).not.toHaveBeenCalled();
+  });
+
   it("dedupes ids, validates membership once, and replaces the assignee list", async () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1", "user-2"]));
-    mockSetTaskAssignees.mockResolvedValue(["user-1", "user-2"]);
+    mockSetTaskAssignees.mockResolvedValue([
+      { userId: "user-1" },
+      { userId: "user-2" },
+    ]);
     const updatedRow = {
       ...EXISTING_TASK,
       userId: "user-1",
@@ -108,6 +135,8 @@ describe("updateTaskAssignees", () => {
           [
             {
               userId: "user-1",
+              resourceId: null,
+              kind: "user",
               name: "Ada",
               image: null,
               units: 100,
@@ -115,6 +144,8 @@ describe("updateTaskAssignees", () => {
             },
             {
               userId: "user-2",
+              resourceId: null,
+              kind: "user",
               name: "Bea",
               image: null,
               units: 100,
@@ -135,13 +166,104 @@ describe("updateTaskAssignees", () => {
       ["user-1", "user-2"],
       "ws-1",
     );
+    expect(mockFilterWorkspaceResources).not.toHaveBeenCalled();
     expect(mockSetTaskAssignees).toHaveBeenCalledWith(
       expect.anything(),
       "task-1",
-      ["user-1", "user-2"],
+      [{ userId: "user-1" }, { userId: "user-2" }],
     );
     expect(result.assignees).toHaveLength(2);
     // Primary assignee unchanged (user-1 stays first), so no assignee event.
+    expect(mockPublishEvent).not.toHaveBeenCalled();
+  });
+
+  it("validates and assigns a mix of users and resources", async () => {
+    mockFindFirst.mockResolvedValue(EXISTING_TASK);
+    mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1"]));
+    mockFilterWorkspaceResources.mockResolvedValue(new Set(["resource-1"]));
+    mockSetTaskAssignees.mockResolvedValue([
+      { userId: "user-1" },
+      { resourceId: "resource-1" },
+    ]);
+    mockSelect.mockReturnValue(
+      makeSelectChain([
+        {
+          ...EXISTING_TASK,
+          userId: "user-1",
+          assigneeName: "Ada",
+          assigneeId: "user-1",
+        },
+      ]),
+    );
+    // user-1 was already the sole (primary) assignee before this call; only
+    // the resource is new.
+    mockReadTaskAssignees
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-1",
+                resourceId: null,
+                kind: "user",
+                name: "Ada",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      )
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "task-1",
+            [
+              {
+                userId: "user-1",
+                resourceId: null,
+                kind: "user",
+                name: "Ada",
+                image: null,
+                units: 100,
+                work: null,
+              },
+              {
+                userId: null,
+                resourceId: "resource-1",
+                kind: "equipment",
+                name: "Bulldozer",
+                image: null,
+                units: 100,
+                work: null,
+              },
+            ],
+          ],
+        ]),
+      );
+
+    await updateTaskAssignees({
+      id: "task-1",
+      userIds: ["user-1"],
+      resourceIds: ["resource-1"],
+      currentUserId: "user-1",
+    });
+
+    expect(mockFilterWorkspaceResources).toHaveBeenCalledWith(
+      ["resource-1"],
+      "ws-1",
+    );
+    expect(mockSetTaskAssignees).toHaveBeenCalledWith(
+      expect.anything(),
+      "task-1",
+      [{ userId: "user-1" }, { resourceId: "resource-1" }],
+    );
+    // task.userId (user-1) is unchanged and no user was added/removed, so a
+    // resource-only addition fires no event (a resource has no account to
+    // notify, and the activity entry is written in terms of the primary).
     expect(mockPublishEvent).not.toHaveBeenCalled();
   });
 
@@ -149,7 +271,7 @@ describe("updateTaskAssignees", () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-2"]));
-    mockSetTaskAssignees.mockResolvedValue(["user-2"]);
+    mockSetTaskAssignees.mockResolvedValue([{ userId: "user-2" }]);
     mockSelect.mockReturnValue(
       makeSelectChain([
         {
@@ -182,7 +304,7 @@ describe("updateTaskAssignees", () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-2"]));
-    mockSetTaskAssignees.mockResolvedValue(["user-2"]);
+    mockSetTaskAssignees.mockResolvedValue([{ userId: "user-2" }]);
     mockSelect.mockReturnValue(
       makeSelectChain([
         {
@@ -203,6 +325,8 @@ describe("updateTaskAssignees", () => {
             [
               {
                 userId: "user-1",
+                resourceId: null,
+                kind: "user",
                 name: "Ada",
                 image: null,
                 units: 100,
@@ -219,6 +343,8 @@ describe("updateTaskAssignees", () => {
             [
               {
                 userId: "user-2",
+                resourceId: null,
+                kind: "user",
                 name: "Bea",
                 image: null,
                 units: 100,
@@ -248,7 +374,10 @@ describe("updateTaskAssignees", () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1", "user-2"]));
-    mockSetTaskAssignees.mockResolvedValue(["user-1", "user-2"]);
+    mockSetTaskAssignees.mockResolvedValue([
+      { userId: "user-1" },
+      { userId: "user-2" },
+    ]);
     mockSelect.mockReturnValue(
       makeSelectChain([
         {
@@ -268,6 +397,8 @@ describe("updateTaskAssignees", () => {
             [
               {
                 userId: "user-1",
+                resourceId: null,
+                kind: "user",
                 name: "Ada",
                 image: null,
                 units: 100,
@@ -284,6 +415,8 @@ describe("updateTaskAssignees", () => {
             [
               {
                 userId: "user-1",
+                resourceId: null,
+                kind: "user",
                 name: "Ada",
                 image: null,
                 units: 100,
@@ -291,6 +424,8 @@ describe("updateTaskAssignees", () => {
               },
               {
                 userId: "user-2",
+                resourceId: null,
+                kind: "user",
                 name: "Bea",
                 image: null,
                 units: 100,

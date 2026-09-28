@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectTable,
+  resourceTable,
   taskAssignmentTable,
   taskTable,
   userTable,
@@ -89,26 +90,36 @@ async function getWorkspaceWorkload({
   // task×assignee, carrying each row's `units` — rather than the
   // denormalized `taskTable.userId` primary mirror, so a multi-assignee task
   // splits its per-bucket contribution instead of counting once against its
-  // primary.
+  // primary. A 'person' resource counts here exactly like a user, keyed by
+  // its own resource id; 'equipment'/'material' rows are excluded entirely —
+  // they aren't people-capacity, and costs are a later phase.
   const matchedTaskIds = tasksForBucketing.map((task) => task.id);
   const assignmentRows = matchedTaskIds.length
     ? await db
         .select({
           taskId: taskAssignmentTable.taskId,
           userId: taskAssignmentTable.userId,
+          resourceId: taskAssignmentTable.resourceId,
+          resourceKind: resourceTable.kind,
           units: taskAssignmentTable.units,
         })
         .from(taskAssignmentTable)
+        .leftJoin(
+          resourceTable,
+          eq(taskAssignmentTable.resourceId, resourceTable.id),
+        )
         .where(inArray(taskAssignmentTable.taskId, matchedTaskIds))
     : [];
   const assigneesByTaskId = new Map<string, WorkloadTaskAssignee[]>();
   for (const row of assignmentRows) {
+    const key =
+      row.userId ?? (row.resourceKind === "person" ? row.resourceId : null);
+    if (key === null) continue; // equipment/material: excluded from capacity.
+
     if (!assigneesByTaskId.has(row.taskId)) {
       assigneesByTaskId.set(row.taskId, []);
     }
-    assigneesByTaskId
-      .get(row.taskId)
-      ?.push({ userId: row.userId, units: row.units });
+    assigneesByTaskId.get(row.taskId)?.push({ userId: key, units: row.units });
   }
 
   const workloadRows = bucketizeWorkload(
@@ -120,11 +131,24 @@ async function getWorkspaceWorkload({
     buckets,
   );
 
-  // Every current workspace member gets a row, even with zero matching
-  // tasks, so absence of load is visible instead of the member silently
+  // Every current workspace member and person-resource gets a row, even with
+  // zero matching tasks, so absence of load is visible instead of silently
   // disappearing from the table. The unassigned row (`null`) is left as-is:
   // it only appears when at least one unassigned task matched.
   const members = await getWorkspaceMembers(workspaceId);
+  const personResources = await db
+    .select({
+      id: resourceTable.id,
+      name: resourceTable.name,
+    })
+    .from(resourceTable)
+    .where(
+      and(
+        eq(resourceTable.workspaceId, workspaceId),
+        eq(resourceTable.kind, "person"),
+      ),
+    );
+
   const rowByAssigneeId = new Map(
     workloadRows.map((row) => [row.assigneeId, row]),
   );
@@ -137,36 +161,85 @@ async function getWorkspaceWorkload({
       });
     }
   }
+  for (const resource of personResources) {
+    if (!rowByAssigneeId.has(resource.id)) {
+      rowByAssigneeId.set(resource.id, {
+        assigneeId: resource.id,
+        counts: zeroCounts(),
+      });
+    }
+  }
   const allRows = Array.from(rowByAssigneeId.values());
 
   const memberById = new Map(members.map((member) => [member.id, member]));
-  // A task can stay assigned to a user who has since left the workspace;
-  // `members` won't have them, so look those few up separately instead of
-  // dropping their row.
-  const missingUserIds = allRows
+  const personResourceById = new Map(
+    personResources.map((resource) => [resource.id, resource]),
+  );
+  // A task can stay assigned to a user who has since left the workspace, or
+  // to a person-resource deleted after being assigned; neither list above
+  // would have them, so look those few up separately instead of dropping
+  // their row.
+  const missingIds = allRows
     .map((row) => row.assigneeId)
-    .filter((id): id is string => id !== null && !memberById.has(id));
-  const missingUsers = missingUserIds.length
-    ? await db
-        .select({
-          id: userTable.id,
-          name: userTable.name,
-          image: userTable.image,
-        })
-        .from(userTable)
-        .where(inArray(userTable.id, missingUserIds))
-    : [];
-  const missingUserById = new Map(missingUsers.map((user) => [user.id, user]));
+    .filter(
+      (id): id is string =>
+        id !== null && !memberById.has(id) && !personResourceById.has(id),
+    );
+  const [missingUsers, missingResources] = missingIds.length
+    ? await Promise.all([
+        db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            image: userTable.image,
+          })
+          .from(userTable)
+          .where(inArray(userTable.id, missingIds)),
+        db
+          .select({ id: resourceTable.id, name: resourceTable.name })
+          .from(resourceTable)
+          .where(
+            and(
+              inArray(resourceTable.id, missingIds),
+              eq(resourceTable.kind, "person"),
+            ),
+          ),
+      ])
+    : [[], []];
+  const userById = new Map([
+    ...members.map(
+      (member): [string, { name: string; image: string | null }] => [
+        member.id,
+        member,
+      ],
+    ),
+    ...missingUsers.map(
+      (user): [string, { name: string; image: string | null }] => [
+        user.id,
+        user,
+      ],
+    ),
+  ]);
+  const resourceById = new Map([
+    ...personResources.map((resource): [string, { name: string }] => [
+      resource.id,
+      resource,
+    ]),
+    ...missingResources.map((resource): [string, { name: string }] => [
+      resource.id,
+      resource,
+    ]),
+  ]);
 
   const assignees = allRows
     .map((row) => {
-      const user = row.assigneeId
-        ? (memberById.get(row.assigneeId) ??
-          missingUserById.get(row.assigneeId))
+      const user = row.assigneeId ? userById.get(row.assigneeId) : undefined;
+      const resource = row.assigneeId
+        ? resourceById.get(row.assigneeId)
         : undefined;
       return {
         userId: row.assigneeId,
-        name: user?.name ?? null,
+        name: user?.name ?? resource?.name ?? null,
         image: user?.image ?? null,
         counts: row.counts,
       };

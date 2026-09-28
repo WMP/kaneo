@@ -230,7 +230,7 @@
             "items": {
               "$ref": "#/components/schemas/TaskAssignee"
             },
-            "description": "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility."
+            "description": "The task's full assignee list, users and resources together. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first USER entry (or are null when it has none) and are kept for backward compatibility."
           },
           "projectId": {
             "type": "string"
@@ -300,7 +300,26 @@
         "type": "object",
         "properties": {
           "userId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resourceId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "user",
+              "person",
+              "equipment",
+              "material"
+            ],
+            "description": "\"user\" for a real account; otherwise the resource's own kind. Only \"user\" and \"person\" count toward the workload capacity split — \"equipment\"/\"material\" are excluded from it."
           },
           "name": {
             "type": "string"
@@ -309,7 +328,8 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "description": "Always null for a resource; a user's avatar otherwise."
           },
           "units": {
             "type": "integer",
@@ -325,6 +345,8 @@
         },
         "required": [
           "userId",
+          "resourceId",
+          "kind",
           "name",
           "image",
           "units",
@@ -1376,7 +1398,7 @@
                 "items": {
                   "$ref": "#/components/schemas/TaskAssignee"
                 },
-                "description": "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility."
+                "description": "The task's full assignee list, users and resources together. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first USER entry (or are null when it has none) and are kept for backward compatibility."
               }
             },
             "required": [
@@ -1502,7 +1524,7 @@
             "items": {
               "$ref": "#/components/schemas/ExportedTaskAssignee"
             },
-            "description": "The task's full assignee list; userId/assigneeName above mirror this list's first entry and are kept for backward compatibility."
+            "description": "The task's full assignee list, users and resources together; userId/assigneeName above mirror this list's first USER entry (or are null when it has none) and are kept for backward compatibility."
           },
           "progress": {
             "type": "integer",
@@ -1594,15 +1616,30 @@
         "type": "object",
         "properties": {
           "userId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Null for a resource assignee."
           },
           "name": {
             "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "user",
+              "person",
+              "equipment",
+              "material"
+            ],
+            "description": "\"user\" for a real account; otherwise the resource's own kind."
           }
         },
         "required": [
           "userId",
-          "name"
+          "name",
+          "kind"
         ]
       },
       "ExportedTaskLabel": {
@@ -4495,7 +4532,7 @@
               "string",
               "null"
             ],
-            "description": "The assignee, or null for the unassigned row."
+            "description": "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; 'equipment'/'material' resources are excluded from this view entirely."
           },
           "name": {
             "type": [
@@ -4790,6 +4827,55 @@
           "taskId",
           "fieldId",
           "value"
+        ]
+      },
+      "Resource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "One of: person, equipment, material."
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Linked Kaneo account, if any. Always null in this phase — set later by an email/OIDC invite flow."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "kind",
+          "name",
+          "email",
+          "userId",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "CurrentUser": {
@@ -10763,7 +10849,7 @@
           "Tasks"
         ],
         "summary": "Update task assignees",
-        "description": "Replace a task's full assignee list. The first id becomes the primary assignee (userId/assigneeId); an empty list unassigns the task.",
+        "description": "Replace a task's full assignee list — userIds (real accounts) plus resourceIds (account-less people/equipment/material from /resource). The first userIds entry becomes the primary assignee (userId/assigneeId); a resource is never primary. Both empty unassigns the task.",
         "parameters": [
           {
             "schema": {
@@ -10786,7 +10872,15 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "The task's full assignee list, in order; the first id becomes the primary assignee (userId/assigneeId). An empty array unassigns the task."
+                    "description": "The task's full user-assignee list, in order; the first one becomes the primary assignee (userId/assigneeId)."
+                  },
+                  "resourceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": [],
+                    "description": "Account-less resources (person/equipment/material, from GET/POST /resource) to also assign. Never becomes the primary assignee — task.userId only ever mirrors a userIds entry, or null when userIds is empty. userIds and resourceIds together are the task's full assignee list: omitting resourceIds (or passing []) clears every resource assignee, same as an empty userIds clears every user assignee."
                   }
                 },
                 "required": [
@@ -18858,10 +18952,10 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "description": "A workspace member's user id, or the literal \"unassigned\" for tasks with no assignee."
+              "description": "A workspace member's user id, a 'person' resource's id (see /resource), or the literal \"unassigned\" for tasks with no assignee."
             },
             "required": true,
-            "description": "A workspace member's user id, or the literal \"unassigned\" for tasks with no assignee.",
+            "description": "A workspace member's user id, a 'person' resource's id (see /resource), or the literal \"unassigned\" for tasks with no assignee.",
             "name": "assigneeId",
             "in": "query"
           }
@@ -19853,6 +19947,307 @@
           },
           "404": {
             "description": "Unknown project or custom field",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/workspace/{workspaceId}": {
+      "get": {
+        "operationId": "listResources",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "List workspace resources",
+        "description": "List a workspace's account-less assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "person",
+                "equipment",
+                "material"
+              ],
+              "description": "Restrict the list to one kind: person, equipment, or material."
+            },
+            "required": false,
+            "description": "Restrict the list to one kind: person, equipment, or material.",
+            "name": "kind",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of workspace resources",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Resource"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access or missing read permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Create a workspace resource",
+        "description": "Create an account-less assignable resource (a person, equipment, or material) in this workspace. It has no Kaneo account and can't sign in; it can be assigned to tasks like a user.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "person",
+                      "equipment",
+                      "material"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Display name."
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Not verified or emailed in this phase; stored for a later invite flow."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or unknown workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/{id}": {
+      "patch": {
+        "operationId": "updateResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Update a resource",
+        "description": "Update a resource's name or email. Its kind can't be changed after creation.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "email": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or unknown resource",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Delete a resource",
+        "description": "Permanently delete a resource. It is removed from every task it was assigned to.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
             "content": {
               "text/plain": {
                 "schema": {

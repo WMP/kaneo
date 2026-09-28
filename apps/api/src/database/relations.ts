@@ -16,6 +16,7 @@ import {
   notificationTable,
   projectHiddenFieldTable,
   projectTable,
+  resourceTable,
   sessionTable,
   taskAssignmentTable,
   taskRelationTable,
@@ -84,6 +85,22 @@ export const workspaceTableRelations = relations(
     holidays: many(workspaceHolidayTable),
     activities: many(activityTable),
     customFieldDefinitions: many(customFieldDefinitionTable),
+    resources: many(resourceTable),
+  }),
+);
+
+export const resourceTableRelations = relations(
+  resourceTable,
+  ({ one, many }) => ({
+    workspace: one(workspaceTable, {
+      fields: [resourceTable.workspaceId],
+      references: [workspaceTable.id],
+    }),
+    user: one(userTable, {
+      fields: [resourceTable.userId],
+      references: [userTable.id],
+    }),
+    assignments: many(taskAssignmentTable),
   }),
 );
 
@@ -189,6 +206,10 @@ export const taskAssignmentTableRelations = relations(
     user: one(userTable, {
       fields: [taskAssignmentTable.userId],
       references: [userTable.id],
+    }),
+    resource: one(resourceTable, {
+      fields: [taskAssignmentTable.resourceId],
+      references: [resourceTable.id],
     }),
   }),
 );

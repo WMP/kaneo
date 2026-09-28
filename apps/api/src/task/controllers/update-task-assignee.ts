@@ -45,9 +45,13 @@ async function updateTaskAssignee({
   // pre-mutation list to report that in the event's addedAssigneeIds/
   // removedAssigneeIds, same as the multi-assignee route.
   const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
-  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? []).map(
-    (assignee) => assignee.userId,
-  );
+  // Only user assignees are ever relevant here: this route only ever sets a
+  // single user (or none), and only a user can be notified/diffed this way —
+  // a previous resource assignee (from the multi-assignee route) is dropped
+  // by this replace, same as any other non-primary assignee was already.
+  const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? [])
+    .map((assignee) => assignee.userId)
+    .filter((userId): userId is string => userId !== null);
   const nextAssigneeIds = nextAssigneeId ? [nextAssigneeId] : [];
   const addedAssigneeIds = nextAssigneeIds.filter(
     (assigneeId) => !previousAssigneeIds.includes(assigneeId),
@@ -59,7 +63,11 @@ async function updateTaskAssignee({
   // Wired through the shared helper (rather than a direct `.update()`) so
   // `ganttpro_task_assignment` mirrors this task's single assignee, same as
   // every other assignee mutation.
-  await setTaskAssignees(db, id, nextAssigneeIds);
+  await setTaskAssignees(
+    db,
+    id,
+    nextAssigneeId ? [{ userId: nextAssigneeId }] : [],
+  );
 
   const [updatedTask] = await db
     .select()

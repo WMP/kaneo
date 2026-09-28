@@ -68,9 +68,18 @@ export const taskSchema = z
 
 const taskAssigneeSchema = z
   .object({
-    userId: z.string(),
+    // Exactly one of userId/resourceId is set — a real Kaneo account, or an
+    // account-less resource (person/equipment/material) from /resource.
+    userId: z.string().nullable(),
+    resourceId: z.string().nullable(),
+    kind: z.enum(["user", "person", "equipment", "material"]).openapi({
+      description:
+        '"user" for a real account; otherwise the resource\'s own kind. Only "user" and "person" count toward the workload capacity split — "equipment"/"material" are excluded from it.',
+    }),
     name: z.string(),
-    image: z.string().nullable(),
+    image: z.string().nullable().openapi({
+      description: "Always null for a resource; a user's avatar otherwise.",
+    }),
     units: z.number().int().openapi({
       description: "Percent allocation. Drives the workload split.",
     }),
@@ -82,7 +91,7 @@ const taskAssigneeSchema = z
 
 const assigneesField = z.array(taskAssigneeSchema).openapi({
   description:
-    "The task's full assignee list. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first entry and are kept for backward compatibility.",
+    "The task's full assignee list, users and resources together. userId/assigneeId/assigneeName (and assigneeImage on the board task) mirror this list's first USER entry (or are null when it has none) and are kept for backward compatibility.",
 });
 
 export const taskWithAssigneeSchema = taskSchema
@@ -264,12 +273,23 @@ export const taskExportSchema = z
           assignees: z
             .array(
               z
-                .object({ userId: z.string(), name: z.string() })
+                .object({
+                  userId: z.string().nullable().openapi({
+                    description: "Null for a resource assignee.",
+                  }),
+                  name: z.string(),
+                  kind: z
+                    .enum(["user", "person", "equipment", "material"])
+                    .openapi({
+                      description:
+                        '"user" for a real account; otherwise the resource\'s own kind.',
+                    }),
+                })
                 .openapi("ExportedTaskAssignee"),
             )
             .openapi({
               description:
-                "The task's full assignee list; userId/assigneeName above mirror this list's first entry and are kept for backward compatibility.",
+                "The task's full assignee list, users and resources together; userId/assigneeName above mirror this list's first USER entry (or are null when it has none) and are kept for backward compatibility.",
             }),
           progress: z.number().int().min(0).max(100).openapi({
             description: "Percent complete, 0-100.",
