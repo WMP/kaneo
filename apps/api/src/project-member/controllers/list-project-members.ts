@@ -1,10 +1,11 @@
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import db from "../../database";
 import {
   projectMemberTable,
   userTable,
   workspaceUserTable,
 } from "../../database/schema";
+import { roleHasOwnerPart } from "../../utils/owner-role";
 import {
   fullAccessRoleNames,
   unusableProjectRoles,
@@ -69,7 +70,7 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
           or(
             eq(userTable.role, "admin"),
             inArray(workspaceUserTable.role, fullRoles),
-            sql`'owner' = ANY (string_to_array(replace(${workspaceUserTable.role}, ' ', ''), ','))`,
+            roleHasOwnerPart(workspaceUserTable.role),
           ),
         ),
       ),
@@ -78,16 +79,19 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
     ]),
   ]);
 
-  const members: ListedMember[] = fullAccessRows.map((row) => ({
-    ...row,
-    source: "full-access",
-    active: true,
-  }));
-  const fullAccessIds = new Set(fullAccessRows.map((row) => row.userId));
+  // Duplicate workspace membership rows repeat a user in both result sets:
+  // list each person once.
+  const members: ListedMember[] = [];
+  const listed = new Set<string>();
+  for (const row of fullAccessRows) {
+    if (listed.has(row.userId)) continue;
+    listed.add(row.userId);
+    members.push({ ...row, source: "full-access", active: true });
+  }
   const inert = new Set(unusableRoles);
-
   for (const row of projectRows) {
-    if (fullAccessIds.has(row.userId)) continue;
+    if (listed.has(row.userId)) continue;
+    listed.add(row.userId);
     members.push({ ...row, source: "project", active: !inert.has(row.role) });
   }
 

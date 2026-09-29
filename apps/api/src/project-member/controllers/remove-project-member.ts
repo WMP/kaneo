@@ -77,7 +77,7 @@ async function removeProjectMember({
   }
 
   // An inert role grants nothing, so removing it needs no reach over it.
-  const inert = isSelf ? false : await isInertRole(access, existing.role);
+  const inert = await isInertRole(access, existing.role);
   if (!isSelf && !inert) {
     await assertCanManageRole(access, existing.role);
   }

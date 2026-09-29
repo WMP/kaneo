@@ -15,6 +15,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type { GitHubImportState } from "../github-integration/import-state";
+import { roleHasOwnerPart } from "../utils/owner-role";
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
@@ -499,7 +500,7 @@ export const projectMemberTable = pgTable(
     index("ganttpro_project_member_user_id_idx").on(table.userId),
     check(
       "ganttpro_project_member_role_not_owner",
-      sql`NOT (${table.role} ~ '(^|,)\\s*owner\\s*(,|$)')`,
+      sql`NOT (${roleHasOwnerPart(table.role)})`,
     ),
   ],
 );
@@ -534,7 +535,7 @@ export const invitationProjectTable = pgTable(
     index("ganttpro_invitation_project_project_id_idx").on(table.projectId),
     check(
       "ganttpro_invitation_project_role_not_owner",
-      sql`NOT (${table.role} ~ '(^|,)\\s*owner\\s*(,|$)')`,
+      sql`NOT (${roleHasOwnerPart(table.role)})`,
     ),
   ],
 );

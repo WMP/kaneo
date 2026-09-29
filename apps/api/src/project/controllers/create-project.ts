@@ -21,6 +21,11 @@ async function createProject(
   slug: string,
   creatorUserId: string,
 ) {
+  // Read before the transaction, on purpose. If the creator's workspace role
+  // changes between this check and the insert, the outcome is one of two safe
+  // ones: a demoted creator gets no admin row (they must be added), or a
+  // promoted one gets an inert row that a later demotion would revive. That
+  // window is accepted rather than locking the membership for every create.
   const creatorHasFullAccess = await isFullAccess(creatorUserId, workspaceId);
   return db.transaction(async (tx) => {
     // Serialize ordering writes per workspace: without this, two concurrent

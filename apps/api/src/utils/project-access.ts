@@ -62,6 +62,16 @@ function splitRoles(role: string): string[] {
     .filter(Boolean);
 }
 
+// Better Auth does not enforce one membership row per user and workspace. Equal
+// duplicates are one membership; duplicates that disagree on the role are
+// ambiguous, and picking one arbitrarily could pick the wider one, so the user
+// counts as having no workspace membership until an administrator fixes it.
+function singleWorkspaceRole(roles: (string | null)[]): string | null {
+  const distinct = new Set(roles.filter((role): role is string => !!role));
+  if (distinct.size !== 1) return null;
+  return [...distinct][0] ?? null;
+}
+
 type RoleResolver = (
   workspaceId: string,
   role: string,
@@ -128,7 +138,7 @@ export async function workspaceMemberStanding(
   userId: string,
   workspaceId: string,
 ): Promise<{ owner: boolean; statements: RoleStatements | null } | null> {
-  const [member] = await db
+  const rows = await db
     .select({ role: schema.workspaceUserTable.role })
     .from(schema.workspaceUserTable)
     .where(
@@ -136,13 +146,13 @@ export async function workspaceMemberStanding(
         eq(schema.workspaceUserTable.workspaceId, workspaceId),
         eq(schema.workspaceUserTable.userId, userId),
       ),
-    )
-    .limit(1);
-  if (!member?.role) return null;
-  if (isOwnerRole(member.role)) return { owner: true, statements: null };
+    );
+  const role = singleWorkspaceRole(rows.map((row) => row.role));
+  if (!role) return null;
+  if (isOwnerRole(role)) return { owner: true, statements: null };
   return {
     owner: false,
-    statements: await resolveRoleStatements(workspaceId, member.role),
+    statements: await resolveRoleStatements(workspaceId, role),
   };
 }
 
@@ -191,6 +201,28 @@ async function queryAccessRows(
         ? eq(schema.projectTable.id, projectIds[0] as string)
         : inArray(schema.projectTable.id, projectIds),
     );
+}
+
+// One row per project. Rows repeat when the user has several workspace
+// membership rows; see `singleWorkspaceRole` for how disagreeing roles count.
+function collapseAccessRows(rows: AccessRow[]): Map<string, AccessRow> {
+  const byProject = new Map<string, AccessRow[]>();
+  for (const row of rows) {
+    byProject.set(row.projectId, [
+      ...(byProject.get(row.projectId) ?? []),
+      row,
+    ]);
+  }
+  const collapsed = new Map<string, AccessRow>();
+  for (const [projectId, group] of byProject) {
+    const [first] = group;
+    if (!first) continue;
+    collapsed.set(projectId, {
+      ...first,
+      workspaceRole: singleWorkspaceRole(group.map((row) => row.workspaceRole)),
+    });
+  }
+  return collapsed;
 }
 
 async function decide(
@@ -250,7 +282,9 @@ export async function resolveProjectAccess(
   userId: string,
   projectId: string,
 ): Promise<ProjectAccess | null> {
-  const [row] = await queryAccessRows(userId, [projectId]);
+  const row = collapseAccessRows(
+    await queryAccessRows(userId, [projectId]),
+  ).get(projectId);
   return row ? decide(row) : null;
 }
 
@@ -258,7 +292,7 @@ async function readStanding(
   userId: string,
   workspaceId: string,
 ): Promise<WorkspaceStanding | null> {
-  const [row] = await db
+  const rows = await db
     .select({
       userRole: schema.userTable.role,
       workspaceRole: schema.workspaceUserTable.role,
@@ -271,10 +305,14 @@ async function readStanding(
         eq(schema.workspaceUserTable.workspaceId, workspaceId),
       ),
     )
-    .where(eq(schema.userTable.id, userId))
-    .limit(1);
+    .where(eq(schema.userTable.id, userId));
+  const [row] = rows;
   if (!row) return null;
-  return standingOf(workspaceId, row.userRole, row.workspaceRole);
+  return standingOf(
+    workspaceId,
+    row.userRole,
+    singleWorkspaceRole(rows.map((entry) => entry.workspaceRole)),
+  );
 }
 
 // True for instance administrators, workspace owners and roles granting
@@ -341,12 +379,7 @@ export async function resolveProjectAccesses(
 ): Promise<ProjectAccess[] | null> {
   const ids = [...new Set(projectIds)];
   if (ids.length === 0) return [];
-  const rows = await queryAccessRows(userId, ids);
-  // Duplicate workspace membership rows repeat a project: keep one per project.
-  const byProject = new Map<string, AccessRow>();
-  for (const row of rows) {
-    if (!byProject.has(row.projectId)) byProject.set(row.projectId, row);
-  }
+  const byProject = collapseAccessRows(await queryAccessRows(userId, ids));
   if (byProject.size !== ids.length) return null;
   const resolve = memoizedResolver();
   const accesses: ProjectAccess[] = [];

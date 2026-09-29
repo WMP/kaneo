@@ -19,7 +19,11 @@ import { workspaceMemberStanding } from "./project-access";
 
 export const ROLE_IN_USE_CODE = "ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS";
 
-// The only static role: Better Auth refuses to delete it itself.
+// The only static role: Better Auth refuses to delete it itself. `viewer`,
+// `member` and `admin` are deliberately NOT skipped: they are rows in the role
+// catalog that an administrator may have narrowed, and deleting or renaming such
+// a row would silently widen every project member holding it back to the
+// built-in statements (a name without a row resolves to the built-in role).
 const STATIC_ROLE = "owner";
 
 async function findRoleName(

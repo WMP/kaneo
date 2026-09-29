@@ -1,13 +1,17 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
+import { roleHasOwnerPart } from "../../apps/api/src/utils/owner-role";
 import {
   accessibleProjectIds,
   fullAccessRoleNames,
   isFullAccess,
+  isOwnerRole,
   resolveProjectAccess,
   resolveProjectAccesses,
+  workspaceMemberStanding,
 } from "../../apps/api/src/utils/project-access";
+import { hasWorkspacePermission } from "../../apps/api/src/utils/require-workspace-permission";
 import { builtInRoleStatements } from "../../apps/api/src/utils/role-statements";
 import { resetTestDatabase } from "./helpers/database";
 import {
@@ -300,5 +304,113 @@ describe("resolveProjectAccesses", () => {
       await resolveProjectAccesses(w.member.id, [w.p1.id, "no-such-project"]),
     ).toBeNull();
     expect(await resolveProjectAccesses(w.member.id, [])).toEqual([]);
+  });
+});
+
+describe("duplicate workspace membership rows", () => {
+  async function duplicate(userId: string, role: string) {
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId,
+      role,
+      joinedAt: new Date(),
+    });
+  }
+
+  it("count once when the roles agree", async () => {
+    await duplicate(w.member.id, "member");
+    expect(await resolveProjectAccess(w.member.id, w.p1.id)).toMatchObject({
+      mode: "member",
+    });
+    expect(await accessibleProjectIds(w.member.id, w.workspaceId)).toHaveLength(
+      2,
+    );
+    expect(await isFullAccess(w.member.id, w.workspaceId)).toBe(false);
+    expect(await workspaceMemberStanding(w.member.id, w.workspaceId)).toEqual({
+      owner: false,
+      statements: builtInRoleStatements("member"),
+    });
+  });
+
+  it("deny when the roles disagree, whichever is wider", async () => {
+    // member + admin: picking the admin row would grant full access.
+    await duplicate(w.member.id, "admin");
+    expect(await resolveProjectAccess(w.member.id, w.p1.id)).toBeNull();
+    expect(await resolveProjectAccesses(w.member.id, [w.p1.id])).toBeNull();
+    expect(await accessibleProjectIds(w.member.id, w.workspaceId)).toEqual([]);
+    expect(await isFullAccess(w.member.id, w.workspaceId)).toBe(false);
+    expect(
+      await workspaceMemberStanding(w.member.id, w.workspaceId),
+    ).toBeNull();
+
+    // The same for a would-be full-access user with a narrower second row.
+    await duplicate(w.fullAdmin.id, "viewer");
+    expect(await resolveProjectAccess(w.fullAdmin.id, w.p1.id)).toBeNull();
+    expect(await isFullAccess(w.fullAdmin.id, w.workspaceId)).toBe(false);
+  });
+
+  it("do not touch an instance administrator", async () => {
+    await duplicate(w.instanceAdmin.id, "member");
+    await duplicate(w.instanceAdmin.id, "viewer");
+    expect(
+      await resolveProjectAccess(w.instanceAdmin.id, w.p1.id),
+    ).toMatchObject({ mode: "full", unrestricted: true });
+  });
+});
+
+describe("owner part of a role name", () => {
+  const spellings = [
+    "owner",
+    " owner ",
+    "admin,owner",
+    "member, owner",
+    "admin,\towner",
+    "owner,\nadmin",
+    "own er",
+    "coowner",
+    "owners",
+    "admin",
+    "",
+  ];
+
+  it("means the same in SQL and in isOwnerRole", async () => {
+    for (const role of spellings) {
+      const result = await db.execute<{ matched: boolean }>(
+        sql`SELECT ${roleHasOwnerPart(sql`${role}::text`)} AS matched`,
+      );
+      expect(result.rows[0]?.matched, JSON.stringify(role)).toBe(
+        isOwnerRole(role),
+      );
+    }
+  });
+});
+
+describe("the workspace-level shortcut of hasWorkspacePermission", () => {
+  it("only trusts a full-access project of the same workspace", async () => {
+    const context = (projectWorkspaceId: string) =>
+      ({
+        get: (key: string) =>
+          ({
+            userId: w.member.id,
+            workspaceId: w.workspaceId,
+            projectAccess: {
+              workspaceId: projectWorkspaceId,
+              projectId: "somewhere",
+              mode: "full",
+              statements: null,
+              unrestricted: true,
+            },
+          })[key],
+      }) as never;
+    const required = { workspace: ["manage_settings"] };
+    // Same workspace: the resolved full access is trusted.
+    expect(await hasWorkspacePermission(context(w.workspaceId), required)).toBe(
+      true,
+    );
+    // Another workspace's access says nothing about this one: fall back to the
+    // caller's role here, which is a plain member.
+    expect(
+      await hasWorkspacePermission(context("another-workspace"), required),
+    ).toBe(false);
   });
 });

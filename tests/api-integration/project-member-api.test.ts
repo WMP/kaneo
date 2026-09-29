@@ -183,6 +183,52 @@ describe("GET /project/{id}/members", () => {
   });
 });
 
+describe("GET /project/{id}/members with unusual role names and duplicate rows", () => {
+  it("lists composite owner names as full access and lookalikes as project members", async () => {
+    const w = await buildWorld();
+    const compositeOwner = await addWorkspaceMember(
+      w.workspaceId,
+      "admin,\towner",
+    );
+    const lookalike = await addWorkspaceMember(w.workspaceId, "own er");
+    await addProjectMember(w.project.id, lookalike.id, "member");
+    as(w.projectAdmin);
+    const list = (await (await call(members(w), "GET")).json()) as Member[];
+    expect(list.find((e) => e.userId === compositeOwner.id)).toMatchObject({
+      source: "full-access",
+      role: "admin,\towner",
+    });
+    expect(list.find((e) => e.userId === lookalike.id)).toMatchObject({
+      source: "project",
+      role: "member",
+    });
+  });
+
+  it("lists each person once", async () => {
+    const w = await buildWorld();
+    for (const user of [w.owner.user, w.projectAdmin, w.fullAdmin]) {
+      await db.insert(schema.workspaceUserTable).values({
+        workspaceId: w.workspaceId,
+        userId: user.id,
+        role:
+          user.id === w.owner.user.id
+            ? "owner"
+            : user.id === w.projectAdmin.id
+              ? "member"
+              : "admin",
+        joinedAt: new Date(),
+      });
+    }
+    as(w.projectAdmin);
+    const list = (await (await call(members(w), "GET")).json()) as Member[];
+    const ids = list.map((entry) => entry.userId);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toEqual(
+      expect.arrayContaining([w.owner.user.id, w.projectAdmin.id]),
+    );
+  });
+});
+
 describe("POST /project/{id}/members", () => {
   it("adds a workspace member with a project role", async () => {
     const w = await buildWorld();
@@ -435,6 +481,11 @@ describe("DELETE /project/{id}/members/{userId}", () => {
     as(w.projectViewer);
     const response = await call(member(w, w.projectViewer.id), "DELETE");
     expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      userId: w.projectViewer.id,
+      role: "viewer",
+      active: true,
+    });
     expect(await rowOf(w, w.projectViewer.id)).toBeUndefined();
   });
 

@@ -105,7 +105,12 @@ export async function hasWorkspacePermission(
   // unrestricted): no second lookup. Only a project member needs their
   // workspace role looked up.
   const first = projectAccesses?.[0];
-  if (first && projectAccesses?.every((access) => access.mode === "full")) {
+  if (
+    first &&
+    projectAccesses?.every(
+      (access) => access.mode === "full" && access.workspaceId === workspaceId,
+    )
+  ) {
     return projectAccessSatisfies(first, workspaceLevel);
   }
 
