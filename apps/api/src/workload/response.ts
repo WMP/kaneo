@@ -13,7 +13,7 @@ export const workloadAssigneeSchema = z
   .object({
     userId: z.string().nullable().openapi({
       description:
-        "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; 'equipment'/'material' resources are excluded from this view entirely.",
+        "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; a person resource linked to an account has no row of its own, and its remaining assignments count in the account's row. 'equipment'/'material' resources are excluded from this view entirely.",
     }),
     name: z.string().nullable().openapi({
       description:

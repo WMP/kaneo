@@ -1,8 +1,9 @@
-import { and, eq, exists, isNull, or, sql } from "drizzle-orm";
+import { and, eq, exists, inArray, isNull, or, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectTable,
+  resourceTable,
   taskAssignmentTable,
   taskTable,
 } from "../../database/schema";
@@ -73,6 +74,21 @@ async function getWorkspaceWorkloadTasks({
                 or(
                   eq(taskAssignmentTable.userId, assigneeId),
                   eq(taskAssignmentTable.resourceId, assigneeId),
+                  // A resource linked to this account counts in the account's
+                  // row (see the aggregate view), so it drills through here.
+                  inArray(
+                    taskAssignmentTable.resourceId,
+                    db
+                      .select({ id: resourceTable.id })
+                      .from(resourceTable)
+                      .where(
+                        and(
+                          eq(resourceTable.userId, assigneeId),
+                          eq(resourceTable.kind, "person"),
+                          eq(resourceTable.workspaceId, workspaceId),
+                        ),
+                      ),
+                  ),
                 ),
               ),
             ),

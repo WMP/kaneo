@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -104,8 +104,11 @@ async function getWorkspaceWorkload({
   // denormalized `taskTable.userId` primary mirror, so a multi-assignee task
   // splits its per-bucket contribution instead of counting once against its
   // primary. A 'person' resource counts here exactly like a user, keyed by
-  // its own resource id; 'equipment'/'material' rows are excluded entirely —
-  // they aren't people-capacity, and costs are a later phase.
+  // its own resource id, unless it is linked to an account: then it has no row
+  // of its own and what it is still assigned to (assignments in projects the
+  // account cannot open stay on the resource) counts in the account's row.
+  // 'equipment'/'material' rows are excluded entirely — they aren't
+  // people-capacity, and costs are a later phase.
   const matchedTaskIds = tasksForBucketing.map((task) => task.id);
   const assignmentRows = matchedTaskIds.length
     ? await db
@@ -114,6 +117,7 @@ async function getWorkspaceWorkload({
           userId: taskAssignmentTable.userId,
           resourceId: taskAssignmentTable.resourceId,
           resourceKind: resourceTable.kind,
+          resourceUserId: resourceTable.userId,
           units: taskAssignmentTable.units,
         })
         .from(taskAssignmentTable)
@@ -126,13 +130,26 @@ async function getWorkspaceWorkload({
   const assigneesByTaskId = new Map<string, WorkloadTaskAssignee[]>();
   for (const row of assignmentRows) {
     const key =
-      row.userId ?? (row.resourceKind === "person" ? row.resourceId : null);
+      row.userId ??
+      (row.resourceKind === "person"
+        ? (row.resourceUserId ?? row.resourceId)
+        : null);
     if (key === null) continue; // equipment/material: excluded from capacity.
 
-    if (!assigneesByTaskId.has(row.taskId)) {
-      assigneesByTaskId.set(row.taskId, []);
+    let assignees = assigneesByTaskId.get(row.taskId);
+    if (!assignees) {
+      assignees = [];
+      assigneesByTaskId.set(row.taskId, assignees);
     }
-    assigneesByTaskId.get(row.taskId)?.push({ userId: key, units: row.units });
+    // The account and a resource linked to it can both be on one task: they
+    // are one person, so the higher allocation counts once (never the sum, the
+    // rule the merge of a link uses).
+    const same = assignees.find((assignee) => assignee.userId === key);
+    if (same) {
+      same.units = Math.max(same.units, row.units);
+    } else {
+      assignees.push({ userId: key, units: row.units });
+    }
   }
 
   const workloadRows = bucketizeWorkload(
@@ -163,6 +180,8 @@ async function getWorkspaceWorkload({
       and(
         eq(resourceTable.workspaceId, workspaceId),
         eq(resourceTable.kind, "person"),
+        // A resource linked to an account is that account's row.
+        isNull(resourceTable.userId),
       ),
     );
 
