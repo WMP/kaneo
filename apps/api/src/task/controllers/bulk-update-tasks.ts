@@ -13,7 +13,10 @@ import { publishEvent } from "../../events";
 import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gitea";
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
 import { removeLabelFromGitlab } from "../../plugins/gitlab/utils/sync-label-to-gitlab";
-import { assertAssignableUser } from "../../utils/assert-assignable-user";
+import {
+  assertAssignableUser,
+  assertProjectAssignableUser,
+} from "../../utils/assert-assignable-user";
 import {
   PROJECT_ACCESS_DENIED_MESSAGE,
   type ProjectAccess,
@@ -277,7 +280,22 @@ async function bulkUpdateTasks({
       const assigneeId = value?.trim() || null;
 
       if (assigneeId) {
-        await assertAssignableUser(assigneeId, workspaceId);
+        // Before anything is written, so one task that cannot take the assignee
+        // refuses the whole request. A task that already has them as its
+        // assignee keeps them if they are still a workspace member; on every
+        // other task they must be able to open that task's project.
+        const carriedOver = tasks.some((task) => task.userId === assigneeId);
+        if (carriedOver) await assertAssignableUser(assigneeId, workspaceId);
+        const newProjectIds = [
+          ...new Set(
+            tasks
+              .filter((task) => task.userId !== assigneeId)
+              .map((task) => task.projectId),
+          ),
+        ];
+        for (const projectId of newProjectIds) {
+          await assertProjectAssignableUser(assigneeId, projectId);
+        }
       }
 
       const newAssigneeName = assigneeId
