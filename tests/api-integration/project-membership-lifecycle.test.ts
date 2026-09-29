@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
+import { addConnection, removeConnection } from "../../apps/api/src/ws";
 import { resetTestDatabase } from "./helpers/database";
 import { createProjectFixture } from "./helpers/fixtures";
 
@@ -506,5 +507,164 @@ describe("a workspace role used as a project role cannot be deleted or renamed",
       s.owner.cookie,
     );
     expect(deleted.status).toBe(200);
+  });
+});
+
+describe("sockets close at once when access ends", () => {
+  // No fake timers and no waiting: the close must be part of the request that
+  // ended the access, not a later delivery after the revalidation window.
+  const opened: Array<{ projectId: string; conn: unknown }> = [];
+
+  function socket(projectId: string, userId: string, workspaceId: string) {
+    const ws = { send: vi.fn(), close: vi.fn() };
+    const conn = addConnection(
+      projectId,
+      ws as never,
+      userId,
+      `${userId}-window`,
+      workspaceId,
+    );
+    opened.push({ projectId, conn });
+    return ws;
+  }
+
+  function sockets() {
+    return {
+      first: socket(s.p1.project.id, s.guest.id, s.first.id),
+      second: socket(s.p2.project.id, s.guest.id, s.first.id),
+      otherWorkspace: socket(s.p3.project.id, s.guest.id, s.second.id),
+      owner: socket(s.p1.project.id, s.owner.id, s.first.id),
+    };
+  }
+
+  afterEach(() => {
+    for (const { projectId, conn } of opened.splice(0)) {
+      removeConnection(projectId, conn as never);
+    }
+  });
+
+  function api(method: string, path: string, cookie: string, body?: unknown) {
+    return app.request(`/api${path}`, {
+      method,
+      headers: {
+        "content-type": "application/json",
+        Origin: origin,
+        Cookie: cookie,
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+  }
+
+  it("removing a workspace member closes their sockets in that workspace only", async () => {
+    const open = sockets();
+    const removed = await authPost(
+      "/organization/remove-member",
+      { organizationId: s.first.id, memberIdOrEmail: s.guest.memberId },
+      s.owner.cookie,
+    );
+    expect(removed.status).toBe(200);
+    expect(open.first.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.second.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.otherWorkspace.close).not.toHaveBeenCalled();
+    expect(open.owner.close).not.toHaveBeenCalled();
+  });
+
+  it("leaving a workspace closes the leaver's sockets in that workspace only", async () => {
+    const open = sockets();
+    const left = await authPost(
+      "/organization/leave",
+      { organizationId: s.first.id },
+      s.guest.cookie,
+    );
+    expect(left.status).toBe(200);
+    expect(open.first.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.second.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.otherWorkspace.close).not.toHaveBeenCalled();
+    expect(open.owner.close).not.toHaveBeenCalled();
+  });
+
+  it("a refused leave closes nothing", async () => {
+    const open = sockets();
+    const left = await authPost(
+      "/organization/leave",
+      { organizationId: s.first.id },
+      s.owner.cookie,
+    );
+    expect(left.status).toBe(400);
+    expect(open.owner.close).not.toHaveBeenCalled();
+    expect(open.first.close).not.toHaveBeenCalled();
+  });
+
+  it("removing a project member closes their sockets on that project only", async () => {
+    const open = sockets();
+    const removed = await api(
+      "DELETE",
+      `/project/${s.p1.project.id}/members/${s.guest.id}`,
+      s.owner.cookie,
+    );
+    expect(removed.status).toBe(200);
+    expect(open.first.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.second.close).not.toHaveBeenCalled();
+    expect(open.otherWorkspace.close).not.toHaveBeenCalled();
+    expect(open.owner.close).not.toHaveBeenCalled();
+  });
+
+  it("a member leaving a project closes their own sockets there", async () => {
+    const open = sockets();
+    const left = await api(
+      "DELETE",
+      `/project/${s.p2.project.id}/members/${s.guest.id}`,
+      s.guest.cookie,
+    );
+    expect(left.status).toBe(200);
+    expect(open.second.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.first.close).not.toHaveBeenCalled();
+  });
+
+  it("changing a project member's role closes their sockets on that project", async () => {
+    const open = sockets();
+    const changed = await api(
+      "PATCH",
+      `/project/${s.p1.project.id}/members/${s.guest.id}`,
+      s.owner.cookie,
+      { role: "viewer" },
+    );
+    expect(changed.status).toBe(200);
+    expect(open.first.close).toHaveBeenCalledWith(
+      1008,
+      "Project access revoked",
+    );
+    expect(open.second.close).not.toHaveBeenCalled();
+  });
+
+  it("a refused removal closes nothing", async () => {
+    const open = sockets();
+    // A member without member:delete cannot remove somebody else.
+    const denied = await api(
+      "DELETE",
+      `/project/${s.p1.project.id}/members/${s.owner.id}`,
+      s.guest.cookie,
+    );
+    expect(denied.status).toBeGreaterThanOrEqual(400);
+    expect(open.owner.close).not.toHaveBeenCalled();
+    expect(open.first.close).not.toHaveBeenCalled();
   });
 });

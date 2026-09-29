@@ -1597,3 +1597,177 @@ describe("notification rules whose selection became inaccessible", () => {
     expect((await putRule(w, [])).status).toBe(400);
   });
 });
+
+describe("creating a relation", () => {
+  const eventsOf = () =>
+    vi
+      .mocked(publishEvent)
+      .mock.calls.filter(([name]) => name === "task-relation.created")
+      .map(([, payload]) => payload as any);
+
+  it("lists, per project, the relation's tasks that live in it", async () => {
+    const w = await buildWorld();
+    actAs(w.w);
+    const created = await call("/task-relation", "POST", {
+      sourceTaskId: w.t1b.id,
+      targetTaskId: w.c2.id,
+      relationType: "blocks",
+    });
+    expect(created.status).toBe(200);
+    const [primary, secondary] = eventsOf();
+    expect(primary).toMatchObject({
+      projectId: w.p1.project.id,
+      projectTaskIds: [w.t1b.id],
+    });
+    expect(secondary).toMatchObject({
+      projectId: w.p2.project.id,
+      projectTaskIds: [w.c2.id],
+      secondaryNotification: true,
+    });
+  });
+
+  it("lists both tasks in the single event of a same-project relation", async () => {
+    const w = await buildWorld();
+    actAs(w.u);
+    expect(
+      (
+        await call("/task-relation", "POST", {
+          sourceTaskId: w.t1b.id,
+          targetTaskId: w.c1.id,
+          relationType: "related",
+        })
+      ).status,
+    ).toBe(200);
+    const events = eventsOf();
+    expect(events).toHaveLength(1);
+    expect([...events[0].projectTaskIds].sort()).toEqual(
+      [w.t1b.id, w.c1.id].sort(),
+    );
+  });
+});
+
+describe("bulk assignee", () => {
+  const bulk = (taskIds: string[], value: string | null) =>
+    call("/task/bulk", "PATCH", {
+      taskIds,
+      operation: "updateAssignee",
+      value,
+    });
+  const assigneeOf = async (taskId: string) =>
+    (
+      await db
+        .select({ userId: schema.taskTable.userId })
+        .from(schema.taskTable)
+        .where(eq(schema.taskTable.id, taskId))
+    )[0]?.userId;
+
+  it("refuses an assignee who cannot open the project of a task, writing nothing", async () => {
+    const w = await buildWorld();
+    actAs(w.a);
+    // V is a member of P2 only: fine for t2, not for t1.
+    expect((await bulk([w.t1.id], w.v.id)).status).toBe(403);
+    const mixed = await bulk([w.t2.id, w.t1.id], w.v.id);
+    expect(mixed.status).toBe(403);
+    expect(await assigneeOf(w.t2.id)).toBeNull();
+    expect(await assigneeOf(w.t1.id)).toBeNull();
+    // A user who reaches every project involved can be assigned.
+    expect((await bulk([w.t2.id, w.t1.id], w.w.id)).status).toBe(200);
+    expect(await assigneeOf(w.t1.id)).toBe(w.w.id);
+    expect(await assigneeOf(w.t2.id)).toBe(w.w.id);
+    // A user who cannot open P2 cannot be assigned to its task.
+    expect((await bulk([w.t2.id], w.u.id)).status).toBe(403);
+    expect(await assigneeOf(w.t2.id)).toBe(w.w.id);
+  });
+
+  it("unassigning needs no assignee check", async () => {
+    const w = await buildWorld();
+    actAs(w.a);
+    expect((await bulk([w.t1.id], w.w.id)).status).toBe(200);
+    expect((await bulk([w.t1.id], null)).status).toBe(200);
+    expect(await assigneeOf(w.t1.id)).toBeNull();
+  });
+
+  it("keeps a current assignee who only lost the project, but not one who left the workspace", async () => {
+    const w = await buildWorld();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: w.v.id })
+      .where(eq(schema.taskTable.id, w.t2.id));
+    await db
+      .delete(schema.projectMemberTable)
+      .where(eq(schema.projectMemberTable.userId, w.v.id));
+    actAs(w.a);
+    expect((await bulk([w.t2.id], w.v.id)).status).toBe(200);
+    await db
+      .delete(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.userId, w.v.id));
+    expect((await bulk([w.t2.id], w.v.id)).status).toBe(403);
+  });
+
+  it("a caller without access to a task's project cannot bulk-assign it", async () => {
+    const w = await buildWorld();
+    actAs(w.u);
+    expect((await bulk([w.t2.id], w.u.id)).status).toBe(403);
+    expect(await assigneeOf(w.t2.id)).toBeNull();
+  });
+});
+
+describe("duplicate workspace membership rows", () => {
+  // Better Auth does not keep one row per user and workspace. Equal rows are one
+  // membership; rows that disagree on the role are ambiguous and count as no
+  // membership, in every filter as in `resolveProjectAccess`.
+  async function duplicated(w: World, roles: [string, string]) {
+    const d = await addWorkspaceMember(w.workspaceId, roles[0]);
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId: d.id,
+      role: roles[1],
+      joinedAt: new Date(),
+    });
+    await addProjectMember(w.p1.project.id, d.id, "member");
+    await db.insert(schema.notificationTable).values({
+      userId: d.id,
+      title: "about t1",
+      resourceId: w.t1.id,
+      resourceType: "task",
+    });
+    return d;
+  }
+
+  it("ambiguous rows fail closed in lists, notifications and assignee validation", async () => {
+    const w = await buildWorld();
+    const d = await duplicated(w, ["member", "admin"]);
+    actAs(d);
+    expect(
+      await json(await call(`/project?workspaceId=${w.workspaceId}`)),
+    ).toEqual([]);
+    expect(await json<Array<any>>(await call("/notification"))).toEqual([]);
+    const found = await json<{ results: any[] }>(
+      await call(`/search?workspaceId=${w.workspaceId}&q=alpha&type=tasks`),
+    );
+    expect(found.results).toEqual([]);
+
+    actAs(w.a);
+    expect(
+      (await call(`/task/assignee/${w.t1.id}`, "PUT", { userId: d.id })).status,
+    ).toBe(403);
+  });
+
+  it("equal rows are one membership", async () => {
+    const w = await buildWorld();
+    const d = await duplicated(w, ["member", "member"]);
+    actAs(d);
+    const projects = await json<Array<any>>(
+      await call(`/project?workspaceId=${w.workspaceId}`),
+    );
+    expect(projects.map((p) => p.id)).toEqual([w.p1.project.id]);
+    expect((await json<Array<any>>(await call("/notification"))).length).toBe(
+      1,
+    );
+
+    actAs(w.a);
+    expect(
+      (await call(`/task/assignee/${w.t1.id}`, "PUT", { userId: d.id })).status,
+    ).toBe(200);
+  });
+});
