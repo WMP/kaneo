@@ -3,10 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
-import {
-  assertAssignableUser,
-  getProjectWorkspaceId,
-} from "../../utils/assert-assignable-user";
+import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { readTaskAssignees, setTaskAssignees } from "../assignments";
 
 async function updateTaskAssignee({
@@ -34,10 +31,7 @@ async function updateTaskAssignee({
   }
 
   if (nextAssigneeId) {
-    await assertAssignableUser(
-      nextAssigneeId,
-      await getProjectWorkspaceId(existingTask.projectId),
-    );
+    await assertProjectAssignableUser(nextAssigneeId, existingTask.projectId);
   }
 
   // This endpoint replaces the *entire* assignee list with a single user (or

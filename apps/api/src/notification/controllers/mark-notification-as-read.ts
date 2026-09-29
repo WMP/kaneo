@@ -3,9 +3,11 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { notificationTable } from "../../database/schema";
 
+import { resolveUserProjectScope } from "../../utils/project-scope-filters";
 import { notificationResourceAccess } from "../resource-access";
 
 async function markNotificationAsRead(id: string, userId: string) {
+  const scope = await resolveUserProjectScope(userId);
   const [notification] = await db
     .update(notificationTable)
     .set({ isRead: true })
@@ -17,6 +19,7 @@ async function markNotificationAsRead(id: string, userId: string) {
           userId,
           notificationTable.resourceId,
           notificationTable.resourceType,
+          scope,
         ),
       ),
     )

@@ -1,26 +1,13 @@
-import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import db from "../database";
-import { projectTable, workspaceUserTable } from "../database/schema";
+import { filterUsersWithProjectAccess } from "../utils/project-scope-filters";
 
 export async function assertProjectAssignee(projectId: string, userId: string) {
-  const [member] = await db
-    .select({ id: workspaceUserTable.id })
-    .from(workspaceUserTable)
-    .innerJoin(
-      projectTable,
-      eq(projectTable.workspaceId, workspaceUserTable.workspaceId),
-    )
-    .where(
-      and(
-        eq(projectTable.id, projectId),
-        eq(workspaceUserTable.userId, userId),
-      ),
-    )
-    .limit(1);
-  if (!member) {
+  // Workspace membership alone is not enough: the assignee must be able to open
+  // the project (a project membership, or full access).
+  const allowed = await filterUsersWithProjectAccess([userId], projectId);
+  if (!allowed.has(userId)) {
     throw new HTTPException(400, {
-      message: "Assignee must be a current workspace member",
+      message: "Assignee must be a current member of the project",
     });
   }
 }

@@ -7,9 +7,11 @@ import {
   workspaceTable,
 } from "../../database/schema";
 
+import { resolveUserProjectScope } from "../../utils/project-scope-filters";
 import { notificationResourceAccess } from "../resource-access";
 
 async function getNotifications(userId: string) {
+  const scope = await resolveUserProjectScope(userId);
   const rows = await db
     .select({
       notification: notificationTable,
@@ -33,6 +35,7 @@ async function getNotifications(userId: string) {
           userId,
           notificationTable.resourceId,
           notificationTable.resourceType,
+          scope,
         ),
       ),
     )

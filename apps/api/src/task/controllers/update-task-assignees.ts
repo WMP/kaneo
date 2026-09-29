@@ -5,7 +5,7 @@ import { taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { filterWorkspaceResources } from "../../resource/workspace-resources";
 import {
-  filterAssignableUsers,
+  filterProjectAssignableUsers,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
 import type { AssigneeTarget } from "../assignments";
@@ -39,21 +39,35 @@ async function updateTaskAssignees({
   const trimmedUserIds = dedupe(userIds);
   const trimmedResourceIds = dedupe(resourceIds);
 
+  // Read the pre-mutation assignee list once: it decides which assignees are
+  // NEW (only those need project access) and, below, the added/removed diff
+  // the published event carries.
+  const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
+
   if (trimmedUserIds.length > 0 || trimmedResourceIds.length > 0) {
     const workspaceId = await getProjectWorkspaceId(existingTask.projectId);
 
     if (trimmedUserIds.length > 0) {
-      const assignable = await filterAssignableUsers(
-        trimmedUserIds,
-        workspaceId,
+      // Only NEW assignees have to be able to open the project; people already
+      // assigned stay in the list even after losing their project membership,
+      // so the list can still be edited (and they can be removed from it).
+      const currentUserIds = new Set(
+        (previousAssigneesByTaskId.get(id) ?? [])
+          .map((assignee) => assignee.userId)
+          .filter((userId): userId is string => userId !== null),
       );
-      const notAssignable = trimmedUserIds.filter(
-        (userId) => !assignable.has(userId),
+      const added = trimmedUserIds.filter(
+        (userId) => !currentUserIds.has(userId),
       );
+      const assignable = await filterProjectAssignableUsers(
+        added,
+        existingTask.projectId,
+      );
+      const notAssignable = added.filter((userId) => !assignable.has(userId));
 
       if (notAssignable.length > 0) {
         throw new HTTPException(403, {
-          message: "One or more assignees are not members of this workspace",
+          message: "One or more assignees are not members of this project",
         });
       }
     }
@@ -85,11 +99,10 @@ async function updateTaskAssignees({
 
   const previousPrimaryId = existingTask.userId;
 
-  // Read the pre-mutation assignee list so the published event can carry the
+  // The pre-mutation list (read above) lets the published event carry the
   // full added/removed diff, not just the primary-mirror change. Only user
   // ids are ever diffed/notified — a resource has no account to notify, and
   // no event fires for a resource-only change (see below).
-  const previousAssigneesByTaskId = await readTaskAssignees(db, [id]);
   const previousAssigneeIds = (previousAssigneesByTaskId.get(id) ?? [])
     .map((assignee) => assignee.userId)
     .filter((userId): userId is string => userId !== null);

@@ -16,7 +16,7 @@ import {
 import { publishEvent } from "../../events";
 import { contentReferencesAsset } from "../../storage/cleanup-assets";
 import { copyTaskAssetObject, deleteS3Object } from "../../storage/s3";
-import { assertAssignableUser } from "../../utils/assert-assignable-user";
+import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
@@ -150,7 +150,7 @@ async function duplicateTask({
 
   await assertValidTaskStatus(sourceTask.status, sourceTask.projectId);
   if (sourceTask.userId)
-    await assertAssignableUser(sourceTask.userId, project.workspaceId);
+    await assertProjectAssignableUser(sourceTask.userId, sourceTask.projectId);
   const column = await db.query.columnTable.findFirst({
     where: and(
       eq(columnTable.projectId, sourceTask.projectId),

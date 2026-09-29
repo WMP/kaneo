@@ -9,6 +9,8 @@ import {
   workspaceUserTable,
 } from "../database/schema";
 import { assertPublicWebhookDestination } from "../plugins/generic-webhook/config";
+import { accessibleProjectIds } from "../utils/project-access";
+import { resolveUserProjectScope } from "../utils/project-scope-filters";
 import { decryptSecret, encryptSecret } from "./secrets";
 
 export type NotificationPreferenceProjectMode = "all" | "selected";
@@ -135,13 +137,26 @@ async function assertWorkspaceMembership(userId: string, workspaceId: string) {
   }
 }
 
+// Only projects the user can access may be selected. An inaccessible id is
+// refused exactly like an unknown one, so the request cannot probe for projects.
 export async function validateProjectSelection(
   workspaceId: string,
+  userId: string,
   selectedProjectIds: string[],
 ) {
   if (selectedProjectIds.length === 0) {
     throw new HTTPException(400, {
       message: "Select at least one project for selected project mode",
+    });
+  }
+
+  const accessible = await accessibleProjectIds(userId, workspaceId);
+  if (
+    accessible !== null &&
+    selectedProjectIds.some((id) => !accessible.includes(id))
+  ) {
+    throw new HTTPException(400, {
+      message: "One or more selected projects are invalid",
     });
   }
 
@@ -188,6 +203,13 @@ export async function getNotificationPreferences(
     orderBy: (table, { asc }) => [asc(table.createdAt)],
   });
 
+  // A stored selection can name a project the user has since lost access to;
+  // the response lists only the ones they can still open.
+  const scope = await resolveUserProjectScope(userId);
+  const canSee = (workspaceId: string, projectId: string) =>
+    scope.fullWorkspaceIds.includes(workspaceId) ||
+    scope.projectIds.includes(projectId);
+
   return {
     emailAddress,
     emailEnabled: decryptedPreference?.emailEnabled ?? false,
@@ -228,9 +250,9 @@ export async function getNotificationPreferences(
       webhookEnabled: rule.webhookEnabled ?? false,
       projectMode:
         rule.projectMode === "selected" ? "selected" : ("all" as const),
-      selectedProjectIds: rule.selectedProjects.map(
-        (project) => project.projectId,
-      ),
+      selectedProjectIds: rule.selectedProjects
+        .filter((project) => canSee(rule.workspaceId, project.projectId))
+        .map((project) => project.projectId),
       createdAt: rule.createdAt,
       updatedAt: rule.updatedAt,
     })),
@@ -513,7 +535,11 @@ export async function upsertWorkspaceRule(
   await assertWorkspaceMembership(userId, workspaceId);
 
   if (input.projectMode === "selected") {
-    await validateProjectSelection(workspaceId, input.selectedProjectIds ?? []);
+    await validateProjectSelection(
+      workspaceId,
+      userId,
+      input.selectedProjectIds ?? [],
+    );
   }
 
   const preference = await db.query.userNotificationPreferenceTable.findFirst({

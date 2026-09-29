@@ -4,10 +4,7 @@ import db from "../../database";
 import { activityTable, columnTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
-import {
-  assertAssignableUser,
-  getProjectWorkspaceId,
-} from "../../utils/assert-assignable-user";
+import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
 import { boardDescription, descriptionDeferred } from "../description-pages";
 import { buildScheduleChanges } from "../diff-schedule-fields";
@@ -44,6 +41,7 @@ async function updateTask(
         description === undefined ? sql<null>`null` : taskTable.description,
       status: taskTable.status,
       projectId: taskTable.projectId,
+      userId: taskTable.userId,
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
       progress: taskTable.progress,
@@ -73,11 +71,11 @@ async function updateTask(
 
   const normalizedUserId = userId?.trim() || undefined;
 
-  if (normalizedUserId) {
-    await assertAssignableUser(
-      normalizedUserId,
-      await getProjectWorkspaceId(projectId),
-    );
+  // Only a NEW assignee has to be able to open the project: a client that
+  // re-sends the current assignee with an unrelated edit must not be refused
+  // because that person has since lost their project membership.
+  if (normalizedUserId && normalizedUserId !== existingTask.userId) {
+    await assertProjectAssignableUser(normalizedUserId, projectId);
   }
 
   const column = await db.query.columnTable.findFirst({

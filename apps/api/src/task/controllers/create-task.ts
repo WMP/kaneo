@@ -9,10 +9,7 @@ import {
   userTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
-import {
-  assertAssignableUser,
-  getProjectWorkspaceId,
-} from "../../utils/assert-assignable-user";
+import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
@@ -110,10 +107,7 @@ async function createTask({
   let assignee: { name: string } | undefined;
 
   if (normalizedUserId) {
-    await assertAssignableUser(
-      normalizedUserId,
-      await getProjectWorkspaceId(projectId),
-    );
+    await assertProjectAssignableUser(normalizedUserId, projectId);
 
     [assignee] = await db
       .select({ name: userTable.name })

@@ -9,6 +9,7 @@ import {
   workspaceUserTable,
 } from "../database/schema";
 import createNotification from "../notification/controllers/create-notification";
+import { resolveProjectAccess } from "../utils/project-access";
 import {
   DUE_DATE_DURATION_MS,
   REMINDER_WINDOW_MINUTES,
@@ -110,6 +111,12 @@ async function processReminder(
   notificationType: "due_date_reminder" | "task_overdue",
 ) {
   if (!task.userId) return;
+
+  // An assignee who cannot open the task's project (for example one who lost
+  // their project membership but is still assigned) gets no reminder. Checked
+  // before the sent marker is written so the skip is not recorded as a delivery;
+  // `createNotification` enforces the same rule for every other notification.
+  if (!(await resolveProjectAccess(task.userId, task.projectId))) return;
 
   // Insert sent record first; if it already exists, skip notification
   try {

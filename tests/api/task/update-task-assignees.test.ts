@@ -25,7 +25,7 @@ vi.mock("../../../apps/api/src/events", () => ({
 }));
 
 vi.mock("../../../apps/api/src/utils/assert-assignable-user", () => ({
-  filterAssignableUsers: (...args: unknown[]) =>
+  filterProjectAssignableUsers: (...args: unknown[]) =>
     mockFilterAssignableUsers(...args),
   getProjectWorkspaceId: (...args: unknown[]) =>
     mockGetProjectWorkspaceId(...args),
@@ -79,9 +79,10 @@ describe("updateTaskAssignees", () => {
     expect(mockSetTaskAssignees).not.toHaveBeenCalled();
   });
 
-  it("rejects with 403 when an assignee is not a workspace member", async () => {
+  it("rejects with 403 when a new assignee cannot access the project", async () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockReadTaskAssignees.mockResolvedValue(new Map());
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1"]));
 
     await expect(
@@ -98,6 +99,7 @@ describe("updateTaskAssignees", () => {
   it("rejects with 403 when a resource does not belong to the task's workspace", async () => {
     mockFindFirst.mockResolvedValue(EXISTING_TASK);
     mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockReadTaskAssignees.mockResolvedValue(new Map());
     mockFilterAssignableUsers.mockResolvedValue(new Set(["user-1"]));
     mockFilterWorkspaceResources.mockResolvedValue(new Set());
 
@@ -128,6 +130,25 @@ describe("updateTaskAssignees", () => {
       assigneeId: "user-1",
     };
     mockSelect.mockReturnValue(makeSelectChain([updatedRow]));
+    // user-1 was already assigned before this call; only user-2 is new.
+    mockReadTaskAssignees.mockResolvedValueOnce(
+      new Map([
+        [
+          "task-1",
+          [
+            {
+              userId: "user-1",
+              resourceId: null,
+              kind: "user",
+              name: "Ada",
+              image: null,
+              units: 100,
+              work: null,
+            },
+          ],
+        ],
+      ]),
+    );
     mockReadTaskAssignees.mockResolvedValue(
       new Map([
         [
@@ -162,9 +183,10 @@ describe("updateTaskAssignees", () => {
       currentUserId: "user-1",
     });
 
+    // Only the NEW assignee is checked, against the task's project.
     expect(mockFilterAssignableUsers).toHaveBeenCalledWith(
-      ["user-1", "user-2"],
-      "ws-1",
+      ["user-2"],
+      "proj-1",
     );
     expect(mockFilterWorkspaceResources).not.toHaveBeenCalled();
     expect(mockSetTaskAssignees).toHaveBeenCalledWith(
@@ -173,8 +195,15 @@ describe("updateTaskAssignees", () => {
       [{ userId: "user-1" }, { userId: "user-2" }],
     );
     expect(result.assignees).toHaveLength(2);
-    // Primary assignee unchanged (user-1 stays first), so no assignee event.
-    expect(mockPublishEvent).not.toHaveBeenCalled();
+    // The primary assignee is unchanged (user-1 stays first) but user-2 was
+    // added, so the event carries the diff.
+    expect(mockPublishEvent).toHaveBeenCalledWith(
+      "task.assignee_changed",
+      expect.objectContaining({
+        addedAssigneeIds: ["user-2"],
+        removedAssigneeIds: [],
+      }),
+    );
   });
 
   it("validates and assigns a mix of users and resources", async () => {

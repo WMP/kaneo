@@ -3,7 +3,10 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, projectTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
-import { filterAssignableUsers } from "../../utils/assert-assignable-user";
+import {
+  filterProjectAssignableUsers,
+  NOT_PROJECT_ASSIGNABLE,
+} from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
 import {
   coercePriority,
@@ -45,9 +48,9 @@ async function importTasks(
     ),
   ];
 
-  const assignableIds = await filterAssignableUsers(
+  const assignableIds = await filterProjectAssignableUsers(
     assigneeIds,
-    project.workspaceId,
+    projectId,
   );
 
   const validStatuses = await getValidTaskStatuses(projectId);
@@ -60,7 +63,7 @@ async function importTasks(
     if (assigneeId && !assignableIds.has(assigneeId)) {
       results.push({
         success: false,
-        error: "Assignee is not a member of this workspace",
+        error: NOT_PROJECT_ASSIGNABLE,
         task: taskData,
       });
       continue;
