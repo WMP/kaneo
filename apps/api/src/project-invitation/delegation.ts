@@ -41,10 +41,11 @@ export function invitationError(
   status: ContentfulStatusCode,
   code: string,
   message: string,
+  headers?: Record<string, string>,
 ): HTTPException {
   return new HTTPException(status, {
     message,
-    res: Response.json({ code, message }, { status }),
+    res: Response.json({ code, message }, { status, headers }),
   });
 }
 

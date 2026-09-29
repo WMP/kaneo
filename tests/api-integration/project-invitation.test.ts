@@ -645,6 +645,54 @@ describe("POST /project/{id}/invitations", () => {
     });
   });
 
+  describe("rate limit", () => {
+    it("limits creating and re-sending together per user, like invite-member on cloud", async () => {
+      const w = await buildWorld();
+      const existing = await seedInvitation(w, {
+        email: "existing@example.com",
+      });
+      vi.stubEnv("KANEO_CLOUD", "true");
+      as(w.owner.user);
+
+      for (let i = 0; i < 3; i++) {
+        expect((await invite(w, {})).status).toBe(201);
+      }
+      const resend = () =>
+        call(`${invitationsPath(w.project.id)}/${existing.id}/resend`, "POST");
+      expect((await resend()).status).toBe(200);
+      // A rejected attempt counts as well.
+      expect((await invite(w, { email: "not-an-email" })).status).toBe(400);
+
+      const limited = await resend();
+      await expectCode(limited, 429, "RATE_LIMITED");
+      expect(Number(limited.headers.get("Retry-After"))).toBeGreaterThan(0);
+      const refusedCreate = await invite(w, {});
+      expect(refusedCreate.status).toBe(429);
+      expect(await invitationRows(w.workspaceId)).toHaveLength(4);
+
+      // Another user has their own budget.
+      as(w.fullAdmin);
+      expect((await invite(w, {})).status).toBe(201);
+    });
+
+    it("does not spend the budget on requests refused by the permission check", async () => {
+      const w = await buildWorld();
+      vi.stubEnv("KANEO_CLOUD", "true");
+      as(w.projectViewer);
+      for (let i = 0; i < 8; i++) {
+        await expectCode(await invite(w, {}), 403, "INSUFFICIENT_PERMISSIONS");
+      }
+    });
+
+    it("does not apply on a self-hosted instance", async () => {
+      const w = await buildWorld();
+      as(w.owner.user);
+      for (let i = 0; i < 7; i++) {
+        expect((await invite(w, {})).status).toBe(201);
+      }
+    });
+  });
+
   describe("email", () => {
     it("sends the shared invitation email with the accept link", async () => {
       const w = await buildWorld();

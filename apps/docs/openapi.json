@@ -9929,6 +9929,21 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too many invitations from this user (cloud only, 5 per minute, shared with re-sends)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
@@ -10129,6 +10144,21 @@
           },
           "409": {
             "description": "The invitation has expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many invitations from this user (cloud only, 5 per minute, shared with creating invitations)",
             "content": {
               "application/json": {
                 "schema": {

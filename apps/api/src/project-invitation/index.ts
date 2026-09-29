@@ -20,6 +20,7 @@ import {
   assertInvitationPermission,
   assertMayListInvitations,
 } from "./delegation";
+import { requireInvitationRateLimit } from "./rate-limit";
 import {
   codedErrorResponse,
   memberCandidateListSchema,
@@ -73,6 +74,7 @@ const createProjectInvitationRoute = createRoute({
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireInvitationPermission("create"),
+    requireInvitationRateLimit,
   ] as const,
   request: {
     params: projectIdParam,
@@ -95,6 +97,9 @@ const createProjectInvitationRoute = createRoute({
     ),
     409: codedErrorResponse(
       "The person is already a workspace member, or a pending invitation has a different workspace role",
+    ),
+    429: codedErrorResponse(
+      "Too many invitations from this user (cloud only, 5 per minute, shared with re-sends)",
     ),
   },
 });
@@ -156,6 +161,7 @@ const resendProjectInvitationRoute = createRoute({
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireInvitationPermission("create"),
+    requireInvitationRateLimit,
   ] as const,
   request: { params: projectInvitationParam },
   responses: {
@@ -165,6 +171,9 @@ const resendProjectInvitationRoute = createRoute({
     ),
     404: codedErrorResponse("No pending invitation of this project"),
     409: codedErrorResponse("The invitation has expired"),
+    429: codedErrorResponse(
+      "Too many invitations from this user (cloud only, 5 per minute, shared with creating invitations)",
+    ),
   },
 });
 
