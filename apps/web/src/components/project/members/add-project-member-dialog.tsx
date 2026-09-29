@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,21 +69,17 @@ function AddProjectMemberDialog({
   // opens (people joined, roles changed) and start from the given preselection.
   const initialUserId = initial?.userId;
   const initialRole = initial?.role;
+  // Held in a ref so a new function identity never re-runs the reset below.
+  const refetchLists = useRef({ refetchCandidates, refetchRoles });
+  refetchLists.current = { refetchCandidates, refetchRoles };
   useEffect(() => {
     if (!open) return;
-    void refetchCandidates({ cancelRefetch: false });
-    void refetchRoles({ cancelRefetch: false });
+    void refetchLists.current.refetchCandidates({ cancelRefetch: false });
+    void refetchLists.current.refetchRoles({ cancelRefetch: false });
     setUserId(initialUserId ?? null);
     selectRole(initialRole ?? null);
     setSearch("");
-  }, [
-    open,
-    initialUserId,
-    initialRole,
-    refetchCandidates,
-    refetchRoles,
-    selectRole,
-  ]);
+  }, [open, initialUserId, initialRole, selectRole]);
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();

@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { InfoIcon } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
@@ -127,10 +127,13 @@ function InviteToProjectDialog({
   const prefillEmail = prefill?.email;
   const prefillWorkspaceRole = prefill?.workspaceRole;
   const prefillProjectRole = prefill?.projectRole;
+  // Held in a ref so a new function identity never re-runs the reset below.
+  const refetchRoles = useRef({ refetchWorkspaceRoles, refetchProjectRoles });
+  refetchRoles.current = { refetchWorkspaceRoles, refetchProjectRoles };
   useEffect(() => {
     if (!open) return;
-    void refetchWorkspaceRoles({ cancelRefetch: false });
-    void refetchProjectRoles({ cancelRefetch: false });
+    void refetchRoles.current.refetchWorkspaceRoles({ cancelRefetch: false });
+    void refetchRoles.current.refetchProjectRoles({ cancelRefetch: false });
     resetForm({ email: prefillEmail ?? "" });
     selectWorkspaceRole(prefillWorkspaceRole ?? null);
     selectProjectRole(prefillProjectRole ?? null);
@@ -141,8 +144,6 @@ function InviteToProjectDialog({
     prefillEmail,
     prefillWorkspaceRole,
     prefillProjectRole,
-    refetchWorkspaceRoles,
-    refetchProjectRoles,
     resetForm,
     selectWorkspaceRole,
     selectProjectRole,
