@@ -24,12 +24,22 @@ describe("createFixedWindowRateLimiter", () => {
     expect(limiter.hit("a", 1001).allowed).toBe(false);
   });
 
-  it("sweeps expired windows when it grows", () => {
+  it("sweeps expired windows when it grows, at most once per window", () => {
     const limiter = createFixedWindowRateLimiter({ windowMs: 1000, max: 1 });
     for (let i = 0; i < 1000; i++) limiter.hit(`k${i}`, 0);
     expect(limiter.size).toBe(1000);
+    // Everything is expired: the first hit past the threshold sweeps.
     limiter.hit("fresh", 5000);
     expect(limiter.size).toBe(1);
+
+    // Grown again with entries that expire soon; a hit within the window of
+    // the last sweep does not walk the map, the next window's does.
+    for (let i = 0; i < 1000; i++) limiter.hit(`j${i}`, 5100);
+    expect(limiter.size).toBe(1001);
+    limiter.hit("early", 5900);
+    expect(limiter.size).toBe(1002);
+    limiter.hit("later", 6200);
+    expect(limiter.size).toBe(2);
     limiter.reset();
     expect(limiter.size).toBe(0);
   });
