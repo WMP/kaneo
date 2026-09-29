@@ -1207,13 +1207,16 @@
                 "type": "boolean"
               },
               "createLabels": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "label:create in the project: create a label on a task."
               },
-              "updateLabels": {
-                "type": "boolean"
+              "attachLabels": {
+                "type": "boolean",
+                "description": "label:update in the project: attach a label to a task or detach it."
               },
-              "deleteLabels": {
-                "type": "boolean"
+              "manageWorkspaceLabels": {
+                "type": "boolean",
+                "description": "label:create, label:update and label:delete in the caller's WORKSPACE role: label definitions of the workspace (no task)."
               },
               "updateProject": {
                 "type": "boolean"
@@ -1234,7 +1237,7 @@
               },
               "inviteToProject": {
                 "type": "boolean",
-                "description": "invitation:create."
+                "description": "invitation:create, and not a guest account on Kaneo Cloud. Unknown for an API key request (no session user); the route still refuses."
               },
               "cancelProjectInvitations": {
                 "type": "boolean",
@@ -1251,8 +1254,8 @@
               "deleteTasks",
               "assignTasks",
               "createLabels",
-              "updateLabels",
-              "deleteLabels",
+              "attachLabels",
+              "manageWorkspaceLabels",
               "updateProject",
               "deleteProject",
               "shareProject",
@@ -1262,7 +1265,7 @@
               "cancelProjectInvitations",
               "manageIntegrations"
             ],
-            "description": "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; integrations from the workspace role). The API key scope is intersected."
+            "description": "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; workspace labels and integrations from the workspace role). The API key scope is intersected. Billing is not considered: an expired Kaneo Cloud plan still answers 402 on writes."
           }
         },
         "required": [

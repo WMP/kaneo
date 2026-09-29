@@ -10,6 +10,7 @@ import {
 import { apiKeyAllows } from "../utils/require-workspace-permission";
 import { rolesWithin, splitRoles } from "../utils/role-delegation";
 import {
+  type PermissionMap,
   resolveRoleStatements,
   type SelectExecutor,
 } from "../utils/role-statements";
@@ -106,6 +107,32 @@ export async function assertNotFullAccess(
   }
 }
 
+export type ProjectStatementsDecision =
+  | "allowed"
+  | "apiKeyScope"
+  | "insufficient";
+
+// The ONE decision behind every check of a workspace-level resource that a
+// project route evaluates on the caller's effective PROJECT statements
+// (`member:*`, `invitation:*`): the API key scope first, then the statements.
+// The asserts below and `GET /api/project/{id}/access` both use it.
+export function projectStatementsDecision(
+  c: Context,
+  access: ProjectAccess,
+  required: PermissionMap,
+): ProjectStatementsDecision {
+  if (!apiKeyAllows(c, required)) return "apiKeyScope";
+  return projectAccessSatisfies(access, required) ? "allowed" : "insufficient";
+}
+
+export function mayUseProjectStatements(
+  c: Context,
+  access: ProjectAccess,
+  required: PermissionMap,
+): boolean {
+  return projectStatementsDecision(c, access, required) === "allowed";
+}
+
 // Member management is decided by the caller's PROJECT role, not by their
 // workspace role (the `member` resource is workspace-level for
 // `hasWorkspacePermission`). An API key's scope still has to allow the action.
@@ -114,13 +141,13 @@ export function assertProjectMemberPermission(
   access: ProjectAccess,
   action: "create" | "update" | "delete",
 ): void {
-  const required = { member: [action] };
-  if (!apiKeyAllows(c, required)) {
+  const decision = projectStatementsDecision(c, access, { member: [action] });
+  if (decision === "apiKeyScope") {
     throw new HTTPException(403, {
       message: PROJECT_MEMBER_ERRORS.apiKeyScope,
     });
   }
-  if (!projectAccessSatisfies(access, required)) {
+  if (decision === "insufficient") {
     throw new HTTPException(403, {
       message: PROJECT_MEMBER_ERRORS.insufficient,
     });

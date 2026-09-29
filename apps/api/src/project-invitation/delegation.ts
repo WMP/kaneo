@@ -6,14 +6,11 @@ import {
   assertAssignableProjectRole,
   assertCanManageRole,
   isInertRole,
+  mayUseProjectStatements,
   PROJECT_MEMBER_ERRORS,
+  projectStatementsDecision,
 } from "../project-member/delegation";
-import {
-  isOwnerRole,
-  type ProjectAccess,
-  projectAccessSatisfies,
-} from "../utils/project-access";
-import { apiKeyAllows } from "../utils/require-workspace-permission";
+import { isOwnerRole, type ProjectAccess } from "../utils/project-access";
 import { assertCanAssignRole, splitRoles } from "../utils/role-delegation";
 import {
   resolveRoleStatements,
@@ -60,15 +57,17 @@ export function assertInvitationPermission(
   access: ProjectAccess,
   action: "create" | "cancel",
 ): void {
-  const required = { invitation: [action] };
-  if (!apiKeyAllows(c, required)) {
+  const decision = projectStatementsDecision(c, access, {
+    invitation: [action],
+  });
+  if (decision === "apiKeyScope") {
     throw invitationError(
       403,
       INVITATION_ERROR_CODES.apiKeyScope,
       PROJECT_MEMBER_ERRORS.apiKeyScope,
     );
   }
-  if (!projectAccessSatisfies(access, required)) {
+  if (decision === "insufficient") {
     throw invitationError(
       403,
       INVITATION_ERROR_CODES.insufficient,
@@ -84,10 +83,7 @@ export function assertMayListInvitations(
   access: ProjectAccess,
 ): void {
   for (const action of ["create", "cancel"] as const) {
-    const required = { invitation: [action] };
-    if (apiKeyAllows(c, required) && projectAccessSatisfies(access, required)) {
-      return;
-    }
+    if (mayUseProjectStatements(c, access, { invitation: [action] })) return;
   }
   throw invitationError(
     403,

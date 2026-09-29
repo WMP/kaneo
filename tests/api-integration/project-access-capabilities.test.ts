@@ -32,8 +32,8 @@ const ALL_KEYS = [
   "deleteTasks",
   "assignTasks",
   "createLabels",
-  "updateLabels",
-  "deleteLabels",
+  "attachLabels",
+  "manageWorkspaceLabels",
   "updateProject",
   "deleteProject",
   "shareProject",
@@ -43,6 +43,13 @@ const ALL_KEYS = [
   "cancelProjectInvitations",
   "manageIntegrations",
 ];
+
+// What a project role can grant. Label definitions of the workspace and
+// integrations follow the WORKSPACE role instead.
+const WORKSPACE_ROLE_KEYS = ["manageWorkspaceLabels", "manageIntegrations"];
+const PROJECT_ROLE_KEYS = ALL_KEYS.filter(
+  (key) => !WORKSPACE_ROLE_KEYS.includes(key),
+).sort();
 
 function trueKeys(access: Access) {
   return Object.entries(access.capabilities)
@@ -141,18 +148,18 @@ describe("GET /project/{projectId}/access", () => {
     expect(Object.keys(access.capabilities).sort()).toEqual(
       [...ALL_KEYS].sort(),
     );
-    // Everything the project role grants, but not workspace settings: the
-    // workspace role is viewer.
-    expect(trueKeys(access)).toEqual(
-      ALL_KEYS.filter((key) => key !== "manageIntegrations").sort(),
-    );
+    // Everything the project role grants, but nothing that is decided by the
+    // workspace role (viewer): workspace labels and integrations.
+    expect(trueKeys(access)).toEqual(PROJECT_ROLE_KEYS);
   });
 
   it("does not widen a project viewer by a wider workspace role", async () => {
     const w = await buildWorld();
     const access = await accessFor(w, w.memberButProjectViewer);
     expect(access).toMatchObject({ mode: "member", role: "viewer" });
-    expect(trueKeys(access)).toEqual([]);
+    // The wide workspace role only opens what the workspace role decides
+    // (label definitions of the workspace); every project right stays shut.
+    expect(trueKeys(access)).toEqual(["manageWorkspaceLabels"]);
   });
 
   it("gives the built-in project member role task and label rights only", async () => {
@@ -235,6 +242,28 @@ describe("GET /project/{projectId}/access", () => {
     expect(access.capabilities.deleteTasks).toBe(true);
   });
 
+  it("does not offer invitations to a guest account on Kaneo Cloud", async () => {
+    const w = await buildWorld();
+    const guest = { ...w.viewerButProjectAdmin, isAnonymous: true };
+    // Self-hosted: guests are not gated.
+    expect((await accessFor(w, guest)).capabilities.inviteToProject).toBe(true);
+
+    vi.stubEnv("KANEO_CLOUD", "true");
+    try {
+      const cloudGuest = await accessFor(w, guest);
+      expect(cloudGuest.capabilities.inviteToProject).toBe(false);
+      // Only the invitation gate is affected.
+      expect(cloudGuest.capabilities.cancelProjectInvitations).toBe(true);
+      expect(cloudGuest.capabilities.addMembers).toBe(true);
+      expect(
+        (await accessFor(w, w.viewerButProjectAdmin)).capabilities
+          .inviteToProject,
+      ).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("returns 400 for an unknown project", async () => {
     const w = await buildWorld();
     as(w.fullAdmin);
@@ -305,8 +334,6 @@ describe("GET /project/{projectId}/access with API keys", () => {
     const w = await buildWorld();
     const unscoped = await bearerFor(w.viewerButProjectAdmin.id, null);
     const access = await withKey(w, unscoped);
-    expect(trueKeys(access)).toEqual(
-      ALL_KEYS.filter((key) => key !== "manageIntegrations").sort(),
-    );
+    expect(trueKeys(access)).toEqual(PROJECT_ROLE_KEYS);
   });
 });

@@ -34,6 +34,15 @@ export type ProjectAccess = {
   statements: RoleStatements | null;
   // Instance administrators and workspace owners skip statement checks.
   unrestricted: boolean;
+  // The role behind `statements`: the project role for "member", the workspace
+  // role for "full" (`null` for an instance administrator who is not a
+  // workspace member).
+  role: string | null;
+  // The caller's WORKSPACE role statements, for the workspace-level resources
+  // (`workspace`, `label` definitions of the workspace, ...). Equal to
+  // `statements` for "full"; for "member" the workspace role that decided the
+  // caller holds no full access. `null` when nothing resolves.
+  workspaceStatements: RoleStatements | null;
 };
 
 const OWNER_ROLE = "owner";
@@ -47,6 +56,21 @@ export function projectAccessSatisfies(
   return (
     access.unrestricted ||
     Boolean(access.statements && satisfies(access.statements, permissions))
+  );
+}
+
+// Does the caller's WORKSPACE role grant every requested action? Workspace-level
+// resources are decided by this even inside a project request.
+export function workspaceRoleSatisfies(
+  access: ProjectAccess,
+  permissions: PermissionMap,
+): boolean {
+  return (
+    access.unrestricted ||
+    Boolean(
+      access.workspaceStatements &&
+        satisfies(access.workspaceStatements, permissions),
+    )
   );
 }
 
@@ -95,7 +119,7 @@ type WorkspaceStanding =
   | { kind: "instance-admin" }
   | { kind: "owner" }
   | { kind: "full"; statements: RoleStatements }
-  | { kind: "restricted"; role: string };
+  | { kind: "restricted"; role: string; statements: RoleStatements | null };
 
 // How the user stands in a workspace they are a member of. Same semantics as
 // `hasWorkspacePermission`: a composite role such as "a,b" resolves as one
@@ -114,7 +138,7 @@ async function standingOf(
   if (statements?.workspace?.includes("manage_settings")) {
     return { kind: "full", statements };
   }
-  return { kind: "restricted", role: workspaceRole };
+  return { kind: "restricted", role: workspaceRole, statements };
 }
 
 // The statements of a project role, or `null` when the role can never be
@@ -241,14 +265,17 @@ async function decide(
   if (!standing) return null;
 
   if (standing.kind === "instance-admin" || standing.kind === "owner") {
+    const statements = row.workspaceRole
+      ? await resolve(workspaceId, row.workspaceRole)
+      : null;
     return {
       workspaceId,
       projectId,
       mode: "full",
-      statements: row.workspaceRole
-        ? await resolve(workspaceId, row.workspaceRole)
-        : null,
+      statements,
       unrestricted: true,
+      role: row.workspaceRole,
+      workspaceStatements: statements,
     };
   }
 
@@ -259,6 +286,8 @@ async function decide(
       mode: "full",
       statements: standing.statements,
       unrestricted: false,
+      role: row.workspaceRole,
+      workspaceStatements: standing.statements,
     };
   }
 
@@ -275,6 +304,8 @@ async function decide(
     mode: "member",
     statements,
     unrestricted: false,
+    role: row.projectRole,
+    workspaceStatements: standing.statements,
   };
 }
 

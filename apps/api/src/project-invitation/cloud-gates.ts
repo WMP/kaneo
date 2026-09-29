@@ -4,6 +4,14 @@ import { isCloud } from "../utils/is-cloud";
 import { isDisposableEmail } from "../utils/is-disposable-email";
 import { INVITATION_ERROR_CODES, invitationError } from "./delegation";
 
+// Guest (anonymous) accounts may not send invitations on cloud. One predicate
+// for the routes and for the capability the web reads.
+export function isCloudGuest(
+  user: { isAnonymous?: boolean | null } | null | undefined,
+): boolean {
+  return isCloud() && Boolean(user?.isAnonymous);
+}
+
 // The same gates Better Auth's `invite-member` gets on cloud (`hooks.before`
 // in auth.ts): the phishing incident of 2026-05-28 used throwaway accounts and
 // disposable addresses, and these routes would otherwise be a way around them.
@@ -19,7 +27,7 @@ export async function assertCloudInvitationAllowed(
     .from(schema.userTable)
     .where(eq(schema.userTable.id, actorUserId))
     .limit(1);
-  if (actor?.isAnonymous) {
+  if (isCloudGuest(actor)) {
     throw invitationError(
       403,
       INVITATION_ERROR_CODES.guest,

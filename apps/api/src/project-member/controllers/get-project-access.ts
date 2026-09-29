@@ -1,128 +1,97 @@
-import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
-import db, { schema } from "../../database";
+import { isCloudGuest } from "../../project-invitation/cloud-gates";
 import {
   type ProjectAccess,
   projectAccessSatisfies,
-  singleWorkspaceRole,
+  workspaceRoleSatisfies,
 } from "../../utils/project-access";
-import {
-  apiKeyAllows,
-  hasWorkspacePermission,
-} from "../../utils/require-workspace-permission";
+import { apiKeyAllows } from "../../utils/require-workspace-permission";
 import type { PermissionMap } from "../../utils/role-statements";
+import { mayUseProjectStatements } from "../delegation";
 
-// Actions of the project UI, each evaluated with the logic of the route that
-// performs it. `hasWorkspacePermission` is what `requireWorkspacePermission`
-// runs: the API key scope, then the statements of the caller's effective access
-// in this project for project-level resources (`project`, `task`, `label`) and
-// the WORKSPACE role for workspace-level ones (`workspace`, ...).
-const PROJECT_LEVEL_CAPABILITIES = {
-  createTasks: { task: ["create"] },
-  updateTasks: { task: ["update"] },
-  deleteTasks: { task: ["delete"] },
-  assignTasks: { task: ["assign"] },
-  createLabels: { label: ["create"] },
-  updateLabels: { label: ["update"] },
-  deleteLabels: { label: ["delete"] },
-  updateProject: { project: ["update"] },
-  deleteProject: { project: ["delete"] },
-  shareProject: { project: ["share"] },
-} satisfies Record<string, PermissionMap>;
+// Every capability is decided from the access `workspaceAccess` already
+// resolved for this request (the single decision point is `decide()` in
+// `utils/project-access.ts`) plus the API key scope: no query runs here.
+//
+// - Project-level resources (`task`, `label`, `project`) use the effective
+//   project statements, like `requireWorkspacePermission` does.
+// - `member` and `invitation` also use the effective project statements: the
+//   project member and invitation routes are the exception to the
+//   workspace-level rule (`mayUseProjectStatements`, shared with their asserts).
+// - Workspace label definitions and integrations are workspace-level: they
+//   follow the caller's WORKSPACE role.
 
-// The project member and project invitation routes are the exception to the
-// workspace-level rule: they check `member:*` and `invitation:*` against the
-// caller's effective PROJECT statements (and the API key scope) themselves.
-const PROJECT_STATEMENT_CAPABILITIES = {
-  addMembers: [{ member: ["create"] }],
-  manageMembers: [
-    { member: ["create"] },
-    { member: ["update"] },
-    { member: ["delete"] },
-  ],
-  inviteToProject: [{ invitation: ["create"] }],
-  cancelProjectInvitations: [{ invitation: ["cancel"] }],
-} satisfies Record<string, PermissionMap[]>;
-
-// Integrations stay with `workspace:manage_settings` in the workspace role.
-const INTEGRATIONS_PERMISSION = { workspace: ["manage_settings"] };
-
-export type ProjectCapabilities = Record<
-  | keyof typeof PROJECT_LEVEL_CAPABILITIES
-  | keyof typeof PROJECT_STATEMENT_CAPABILITIES
-  | "manageIntegrations",
-  boolean
->;
-
-// The role behind the access: the project role of a member, the workspace role
-// of a full-access user (`null` for an instance administrator who is not a
-// member of the workspace, or a workspace role that is ambiguous).
-async function effectiveRole(
-  userId: string,
-  access: ProjectAccess,
-): Promise<string | null> {
-  if (access.mode === "member") {
-    const [row] = await db
-      .select({ role: schema.projectMemberTable.role })
-      .from(schema.projectMemberTable)
-      .where(
-        and(
-          eq(schema.projectMemberTable.projectId, access.projectId),
-          eq(schema.projectMemberTable.userId, userId),
-        ),
-      )
-      .limit(1);
-    return row?.role ?? null;
-  }
-  const rows = await db
-    .select({ role: schema.workspaceUserTable.role })
-    .from(schema.workspaceUserTable)
-    .where(
-      and(
-        eq(schema.workspaceUserTable.workspaceId, access.workspaceId),
-        eq(schema.workspaceUserTable.userId, userId),
-      ),
-    );
-  return singleWorkspaceRole(rows.map((row) => row.role));
-}
-
-function allowedByProjectStatements(
+function allowedByProject(
   c: Context,
   access: ProjectAccess,
-  alternatives: PermissionMap[],
+  required: PermissionMap,
 ): boolean {
-  return alternatives.some(
-    (required) =>
-      apiKeyAllows(c, required) && projectAccessSatisfies(access, required),
-  );
+  return apiKeyAllows(c, required) && projectAccessSatisfies(access, required);
 }
 
-async function getProjectAccess(c: Context, access: ProjectAccess) {
-  const userId = c.get("userId") as string;
+function allowedByWorkspaceRole(
+  c: Context,
+  access: ProjectAccess,
+  required: PermissionMap,
+): boolean {
+  return apiKeyAllows(c, required) && workspaceRoleSatisfies(access, required);
+}
 
-  const projectLevel = Object.entries(PROJECT_LEVEL_CAPABILITIES);
-  const [role, integrations, ...projectLevelResults] = await Promise.all([
-    effectiveRole(userId, access),
-    hasWorkspacePermission(c, INTEGRATIONS_PERMISSION),
-    ...projectLevel.map(([, required]) => hasWorkspacePermission(c, required)),
-  ]);
+export type ProjectCapabilities = {
+  createTasks: boolean;
+  updateTasks: boolean;
+  deleteTasks: boolean;
+  assignTasks: boolean;
+  createLabels: boolean;
+  attachLabels: boolean;
+  manageWorkspaceLabels: boolean;
+  updateProject: boolean;
+  deleteProject: boolean;
+  shareProject: boolean;
+  manageMembers: boolean;
+  addMembers: boolean;
+  inviteToProject: boolean;
+  cancelProjectInvitations: boolean;
+  manageIntegrations: boolean;
+};
 
-  const capabilities = {
-    ...Object.fromEntries(
-      projectLevel.map(([key], index) => [key, projectLevelResults[index]]),
+function getProjectAccess(c: Context, access: ProjectAccess) {
+  const capabilities: ProjectCapabilities = {
+    createTasks: allowedByProject(c, access, { task: ["create"] }),
+    updateTasks: allowedByProject(c, access, { task: ["update"] }),
+    deleteTasks: allowedByProject(c, access, { task: ["delete"] }),
+    assignTasks: allowedByProject(c, access, { task: ["assign"] }),
+    // Creating a label on a task, and attaching or detaching one.
+    createLabels: allowedByProject(c, access, { label: ["create"] }),
+    attachLabels: allowedByProject(c, access, { label: ["update"] }),
+    // Label definitions of the workspace (no task) follow the workspace role.
+    manageWorkspaceLabels: allowedByWorkspaceRole(c, access, {
+      label: ["create", "update", "delete"],
+    }),
+    updateProject: allowedByProject(c, access, { project: ["update"] }),
+    deleteProject: allowedByProject(c, access, { project: ["delete"] }),
+    shareProject: allowedByProject(c, access, { project: ["share"] }),
+    addMembers: mayUseProjectStatements(c, access, { member: ["create"] }),
+    manageMembers: (["create", "update", "delete"] as const).some((action) =>
+      mayUseProjectStatements(c, access, { member: [action] }),
     ),
-    ...Object.fromEntries(
-      Object.entries(PROJECT_STATEMENT_CAPABILITIES).map(
-        ([key, alternatives]) => [
-          key,
-          allowedByProjectStatements(c, access, alternatives),
-        ],
-      ),
-    ),
-    manageIntegrations: integrations,
-  } as ProjectCapabilities;
+    // Guests of Kaneo Cloud may not send invitations (same gate as the
+    // routes). An API key request carries no session user, so the guest flag
+    // is unknown here; the route still refuses.
+    inviteToProject:
+      mayUseProjectStatements(c, access, { invitation: ["create"] }) &&
+      !isCloudGuest(c.get("user")),
+    cancelProjectInvitations: mayUseProjectStatements(c, access, {
+      invitation: ["cancel"],
+    }),
+    // Full access holds `workspace:manage_settings`, a project role never
+    // does; the routes decide on the workspace role.
+    manageIntegrations:
+      access.mode === "full" &&
+      allowedByWorkspaceRole(c, access, { workspace: ["manage_settings"] }),
+  };
 
-  return { mode: access.mode, role, capabilities };
+  return { mode: access.mode, role: access.role, capabilities };
 }
 
 export default getProjectAccess;

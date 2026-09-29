@@ -39,9 +39,17 @@ export const projectAccessSchema = z
         updateTasks: z.boolean(),
         deleteTasks: z.boolean(),
         assignTasks: z.boolean(),
-        createLabels: z.boolean(),
-        updateLabels: z.boolean(),
-        deleteLabels: z.boolean(),
+        createLabels: z.boolean().openapi({
+          description: "label:create in the project: create a label on a task.",
+        }),
+        attachLabels: z.boolean().openapi({
+          description:
+            "label:update in the project: attach a label to a task or detach it.",
+        }),
+        manageWorkspaceLabels: z.boolean().openapi({
+          description:
+            "label:create, label:update and label:delete in the caller's WORKSPACE role: label definitions of the workspace (no task).",
+        }),
         updateProject: z.boolean(),
         deleteProject: z.boolean(),
         shareProject: z.boolean(),
@@ -49,9 +57,10 @@ export const projectAccessSchema = z
           description: "member:create, member:update or member:delete.",
         }),
         addMembers: z.boolean().openapi({ description: "member:create." }),
-        inviteToProject: z
-          .boolean()
-          .openapi({ description: "invitation:create." }),
+        inviteToProject: z.boolean().openapi({
+          description:
+            "invitation:create, and not a guest account on Kaneo Cloud. Unknown for an API key request (no session user); the route still refuses.",
+        }),
         cancelProjectInvitations: z
           .boolean()
           .openapi({ description: "invitation:cancel." }),
@@ -62,7 +71,7 @@ export const projectAccessSchema = z
       })
       .openapi({
         description:
-          "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; integrations from the workspace role). The API key scope is intersected.",
+          "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; workspace labels and integrations from the workspace role). The API key scope is intersected. Billing is not considered: an expired Kaneo Cloud plan still answers 402 on writes.",
       }),
   })
   .openapi("ProjectAccess");

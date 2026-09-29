@@ -109,12 +109,12 @@ function BacklogBulkToolbar() {
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id ?? "",
   );
-  const { canUpdateTasks, canDeleteTasks, canAssignTasks, canUpdateLabels } =
+  const { canUpdateTasks, canDeleteTasks, canAssignTasks, canAttachLabels } =
     useProjectPermission(project?.id);
   const canEdit = canUpdateTasks();
   const canDelete = canDeleteTasks();
   const canAssign = canAssignTasks();
-  const canEditLabels = canUpdateLabels();
+  const canEditLabels = canAttachLabels();
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 

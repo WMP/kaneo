@@ -176,6 +176,8 @@ describe("resolveProjectAccess", () => {
       mode: "full",
       statements: builtInRoleStatements("owner"),
       unrestricted: true,
+      role: "owner",
+      workspaceStatements: builtInRoleStatements("owner"),
     });
     expect(await resolveProjectAccess(w.instanceAdmin.id, w.p1.id)).toEqual({
       workspaceId: w.workspaceId,
@@ -183,6 +185,8 @@ describe("resolveProjectAccess", () => {
       mode: "full",
       statements: null,
       unrestricted: true,
+      role: null,
+      workspaceStatements: null,
     });
     expect(await resolveProjectAccess(w.composite.id, w.p2.id)).toMatchObject({
       mode: "full",
@@ -198,6 +202,8 @@ describe("resolveProjectAccess", () => {
       mode: "full",
       statements: builtInRoleStatements("admin"),
       unrestricted: false,
+      role: "admin",
+      workspaceStatements: builtInRoleStatements("admin"),
     });
     const manager = await resolveProjectAccess(w.manager.id, w.p3.id);
     expect(manager?.mode).toBe("full");
@@ -211,6 +217,10 @@ describe("resolveProjectAccess", () => {
       mode: "member",
       statements: builtInRoleStatements("member"),
       unrestricted: false,
+      // The project role decides; the workspace role is kept for the
+      // workspace-level resources.
+      role: "member",
+      workspaceStatements: builtInRoleStatements("member"),
     });
     expect(await resolveProjectAccess(w.member.id, w.p2.id)).toMatchObject({
       mode: "member",

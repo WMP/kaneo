@@ -71,11 +71,11 @@ export default function TaskLabelsPopover({
   const { mutateAsync: attachLabel } = useAttachLabelToTask();
   const { mutateAsync: createLabel } = useCreateLabel();
   const { mutateAsync: detachLabel } = useDetachLabelFromTask();
-  const { canCreateLabels, canUpdateLabels } = useProjectPermission(
+  const { canCreateLabels, canAttachLabels } = useProjectPermission(
     task.projectId,
   );
   const canCreate = canCreateLabels();
-  const canEdit = canUpdateLabels();
+  const canEdit = canAttachLabels();
 
   const { data: taskLabels = [] } = useGetLabelsByTask(task.id);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
