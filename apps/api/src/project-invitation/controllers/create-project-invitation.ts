@@ -8,6 +8,7 @@ import {
   assertCanManageProjectRole,
   assertInvitableProjectRole,
   assertInvitableWorkspaceRole,
+  hasWorkspaceInvitationCreate,
   INVITATION_ERROR_CODES,
   invitationError,
 } from "../delegation";
@@ -146,6 +147,23 @@ async function createProjectInvitation({
           ),
         )
         .limit(1);
+      // Only an invitation made through these routes may be extended by
+      // somebody who cannot make workspace invitations.
+      const [origin] = await tx
+        .select({ source: schema.invitationOriginTable.source })
+        .from(schema.invitationOriginTable)
+        .where(eq(schema.invitationOriginTable.invitationId, existing.id))
+        .limit(1);
+      if (
+        origin?.source !== "project" &&
+        !(await hasWorkspaceInvitationCreate(access, actorUserId))
+      ) {
+        throw invitationError(
+          409,
+          INVITATION_ERROR_CODES.workspaceInvitationExists,
+          "A workspace invitation for this email already exists; ask somebody who can invite to the workspace to add this project to it",
+        );
+      }
       // Re-roling somebody else's grant needs reach over what it holds today.
       if (row && row.role !== projectRole) {
         await assertCanManageProjectRole(access, row.role);
@@ -189,6 +207,9 @@ async function createProjectInvitation({
       })
       .returning();
     if (!invitation) throw new Error("Failed to create the invitation");
+    await tx
+      .insert(schema.invitationOriginTable)
+      .values({ invitationId: invitation.id, source: "project" });
     await upsertInvitationProject(tx, {
       invitationId: invitation.id,
       workspaceId,

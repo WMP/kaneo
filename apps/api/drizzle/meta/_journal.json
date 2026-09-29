@@ -400,6 +400,13 @@
       "when": 1790700087595,
       "tag": "0056_ganttpro_project_members",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1790706729063,
+      "tag": "0057_ganttpro_invitation_origin",
+      "breakpoints": true
     }
   ]
 }

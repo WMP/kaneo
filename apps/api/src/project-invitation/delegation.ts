@@ -11,10 +11,11 @@ import {
   isOwnerRole,
   type ProjectAccess,
   projectAccessSatisfies,
+  workspaceMemberStanding,
 } from "../utils/project-access";
 import { apiKeyAllows } from "../utils/require-workspace-permission";
 import { assertCanAssignRole, splitRoles } from "../utils/role-delegation";
-import { resolveRoleStatements } from "../utils/role-statements";
+import { resolveRoleStatements, satisfies } from "../utils/role-statements";
 
 // Errors of the project invitation API: JSON `{ code, message }` so the web
 // client can branch on `code` (for example to offer "add to project" instead
@@ -27,6 +28,7 @@ export const INVITATION_ERROR_CODES = {
   unknownRole: "UNKNOWN_ROLE",
   alreadyMember: "ALREADY_WORKSPACE_MEMBER",
   roleConflict: "INVITATION_ROLE_CONFLICT",
+  workspaceInvitationExists: "WORKSPACE_INVITATION_EXISTS",
   limitReached: "INVITATION_LIMIT_REACHED",
   guest: "GUEST_CANNOT_INVITE",
   disposableEmail: "DISPOSABLE_EMAIL_NOT_ALLOWED",
@@ -222,4 +224,25 @@ export async function assertCanManageProjectRole(
     }
     throw error;
   }
+}
+
+// Does the caller hold `invitation:create` in their WORKSPACE role (owners and
+// instance administrators always do)? The project routes decide by the project
+// role, but an invitation that is not a project invitation belongs to the
+// workspace: only somebody who could have made it may attach a project to it.
+export async function hasWorkspaceInvitationCreate(
+  access: ProjectAccess,
+  actorUserId: string,
+): Promise<boolean> {
+  if (access.unrestricted) return true;
+  const standing = await workspaceMemberStanding(
+    actorUserId,
+    access.workspaceId,
+  );
+  if (!standing) return false;
+  if (standing.owner) return true;
+  return Boolean(
+    standing.statements &&
+      satisfies(standing.statements, { invitation: ["create"] }),
+  );
 }

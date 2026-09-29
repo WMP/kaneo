@@ -164,6 +164,9 @@ async function seedInvitation(
     expiresAt: Date;
     projects: [string, string][];
     inviterId: string;
+    // Made through the project routes (default), or a plain workspace
+    // invitation like Better Auth's invite-member writes.
+    origin: "project" | "workspace";
   }> = {},
 ) {
   const [row] = await db
@@ -177,6 +180,11 @@ async function seedInvitation(
       inviterId: overrides.inviterId ?? w.owner.user.id,
     })
     .returning();
+  if ((overrides.origin ?? "project") === "project") {
+    await db
+      .insert(schema.invitationOriginTable)
+      .values({ invitationId: row.id, source: "project" });
+  }
   for (const [projectId, role] of overrides.projects ?? [
     [w.project.id, "viewer"],
   ]) {
@@ -224,6 +232,12 @@ describe("POST /project/{id}/invitations", () => {
     expect(typeof body.emailAttempted).toBe("boolean");
 
     const [row] = await invitationRows(w.workspaceId);
+    expect(
+      await db
+        .select({ source: schema.invitationOriginTable.source })
+        .from(schema.invitationOriginTable)
+        .where(eq(schema.invitationOriginTable.invitationId, row.id)),
+    ).toEqual([{ source: "project" }]);
     expect(row).toMatchObject({
       id: body.id,
       email: "new.person@example.com",
@@ -506,6 +520,36 @@ describe("POST /project/{id}/invitations", () => {
       "ROLE_EXCEEDS_YOUR_PERMISSIONS",
     );
     expect(await projectRows(above.id)).toMatchObject([{ role: "member" }]);
+  });
+
+  it("attaches a project to a workspace invitation only for somebody who can invite to the workspace", async () => {
+    const w = await buildWorld();
+    const plain = await seedInvitation(w, {
+      email: "plain@example.com",
+      role: "viewer",
+      origin: "workspace",
+      projects: [],
+    });
+    // Holds invitation:create in the project only.
+    as(w.projectAdmin);
+    await expectCode(
+      await invite(w, { email: "plain@example.com" }),
+      409,
+      "WORKSPACE_INVITATION_EXISTS",
+    );
+    expect(await projectRows(plain.id)).toHaveLength(0);
+
+    // Workspace-level invitation:create: an admin (full access) and an owner.
+    for (const user of [w.fullAdmin, w.owner.user]) {
+      as(user);
+      expect((await invite(w, { email: "plain@example.com" })).status).toBe(
+        200,
+      );
+      await db
+        .delete(schema.invitationProjectTable)
+        .where(eq(schema.invitationProjectTable.invitationId, plain.id));
+    }
+    expect(await statusOf(plain.id)).toBe("pending");
   });
 
   it("answers 409 when a live pending invitation has another workspace role", async () => {
@@ -807,6 +851,73 @@ describe("DELETE /project/{id}/invitations/{invitationId}", () => {
     expect(await full.json()).toMatchObject({ canceled: true });
     expect(await projectRows(invitation.id)).toHaveLength(0);
     expect(await statusOf(invitation.id)).toBe("canceled");
+  });
+
+  it("only removes the project from a workspace invitation that had it attached", async () => {
+    const w = await buildWorld();
+    const invitation = await seedInvitation(w, {
+      email: "workspace@example.com",
+      origin: "workspace",
+      projects: [[w.project.id, "viewer"]],
+    });
+    as(w.owner.user);
+
+    const response = await cancel(w, invitation.id);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ canceled: false });
+    expect(await projectRows(invitation.id)).toHaveLength(0);
+    // The invitation itself is still usable.
+    expect(await statusOf(invitation.id)).toBe("pending");
+  });
+
+  it("cancels a project invitation whose project is deleted or moved away", async () => {
+    const w = await buildWorld();
+    const deleted = await seedInvitation(w, {
+      email: "deleted@example.com",
+      projects: [[w.other.id, "viewer"]],
+    });
+    const twoProjects = await seedInvitation(w, {
+      email: "two@example.com",
+      projects: [
+        [w.other.id, "viewer"],
+        [w.project.id, "viewer"],
+      ],
+    });
+    const workspaceInvitation = await seedInvitation(w, {
+      email: "plain@example.com",
+      origin: "workspace",
+      projects: [[w.other.id, "viewer"]],
+    });
+    const accepted = await seedInvitation(w, {
+      email: "accepted-early@example.com",
+      status: "accepted",
+      projects: [[w.other.id, "viewer"]],
+    });
+    await db
+      .delete(schema.projectTable)
+      .where(eq(schema.projectTable.id, w.other.id));
+
+    expect(await statusOf(deleted.id)).toBe("canceled");
+    expect(await statusOf(twoProjects.id)).toBe("pending");
+    expect(await statusOf(workspaceInvitation.id)).toBe("pending");
+    expect(await statusOf(accepted.id)).toBe("accepted");
+
+    // Moving the last project away drops its rows and cancels the rest.
+    const target = await createWorkspaceMember({ role: "owner" });
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: target.workspace.id,
+      userId: w.owner.user.id,
+      role: "owner",
+      joinedAt: new Date(),
+    });
+    as(w.owner.user);
+    const moved = await call(`/project/${w.project.id}/move`, "PUT", {
+      workspaceId: target.workspace.id,
+    });
+    expect(moved.status).toBe(200);
+    expect(await projectRows(twoProjects.id)).toHaveLength(0);
+    expect(await statusOf(twoProjects.id)).toBe("canceled");
+    expect(await statusOf(workspaceInvitation.id)).toBe("pending");
   });
 
   it("does not confirm invitations of other projects, states or workspaces", async () => {
