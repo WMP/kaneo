@@ -112,12 +112,12 @@ function AcceptInvitation() {
 
     try {
       if (sessionUserName) {
-        void navigate({
+        await navigate({
           to: "/dashboard/workspace/$workspaceId",
           params: { workspaceId: data?.invitation.organizationId || "" },
         });
       } else {
-        void navigate({ to: "/profile-setup" });
+        await navigate({ to: "/profile-setup" });
       }
     } catch {
       // The success state already links to the dashboard.
