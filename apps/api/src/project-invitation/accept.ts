@@ -54,6 +54,14 @@ export async function beforeAcceptProjectInvitation({
       ),
     )
     .limit(1);
+  // Known limitation: this check and Better Auth's member insert are not one
+  // atomic step, and nothing makes (workspace, user) unique in Better Auth's
+  // `workspace_member` table (adding a constraint to its table is out of scope
+  // for existing installations, which may already hold duplicates). Accepting
+  // two invitations to the same workspace at the same moment can therefore
+  // still create two member rows; the access rules fail closed on duplicates
+  // that disagree on the role (`singleWorkspaceRole`), and an administrator
+  // removes the extra row.
   if (member) {
     throw new APIError("CONFLICT", {
       code: "ALREADY_WORKSPACE_MEMBER",
@@ -115,6 +123,10 @@ export async function afterAcceptProjectInvitation({
               eq(schema.invitationTable.status, "accepted"),
             ),
           );
+        // Known limitation: the previous active workspace is cleared, not
+        // restored. The organization hooks receive no session, so the value
+        // from before the acceptance is not known here; the client picks a
+        // workspace again.
         await tx
           .update(schema.sessionTable)
           .set({ activeOrganizationId: null })

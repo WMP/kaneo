@@ -1,4 +1,5 @@
 import { and, asc, count, eq, gt, sql } from "drizzle-orm";
+import type { Context } from "hono";
 import db, { schema } from "../../database";
 import type { ProjectAccess } from "../../utils/project-access";
 import { assertCloudInvitationAllowed } from "../cloud-gates";
@@ -7,7 +8,6 @@ import {
   assertCanManageProjectRole,
   assertInvitableProjectRole,
   assertInvitableWorkspaceRole,
-  hasWorkspaceInvitationCreate,
   INVITATION_ERROR_CODES,
   invitationError,
 } from "../delegation";
@@ -17,6 +17,7 @@ import {
   type EmailDelivery,
 } from "../deliver-email";
 import { upsertInvitationProject } from "../invitation-projects";
+import { assertMayExtendInvitation, canInviteToWorkspace } from "../origin";
 import { lockInvitationEmail } from "../queries";
 
 type Created = {
@@ -50,12 +51,14 @@ async function isWorkspaceMemberEmail(
 }
 
 async function createProjectInvitation({
+  c,
   access,
   actorUserId,
   email: rawEmail,
   workspaceRole,
   projectRole,
 }: {
+  c: Context;
   access: ProjectAccess;
   actorUserId: string;
   email: string;
@@ -77,12 +80,18 @@ async function createProjectInvitation({
     );
   }
 
+  const mayInviteToWorkspace = await canInviteToWorkspace(c);
+
   const result = await db.transaction(async (tx) => {
     // Two invitations for one email at once would both pass the checks below.
     await lockInvitationEmail(tx, workspaceId, email);
 
     // Same selection as Better Auth's `findPendingInvitation`: workspace,
-    // lower-cased email, pending and not expired.
+    // lower-cased email, pending and not expired. Locked `FOR UPDATE`, and the
+    // conditions are evaluated again once the lock is granted: the trigger of
+    // migration 0057 cancels a project-origin invitation by updating its row
+    // (a project deleted or moved), so a row canceled while we waited drops out
+    // and a new invitation is created below instead.
     const live = await tx
       .select()
       .from(schema.invitationTable)
@@ -94,7 +103,8 @@ async function createProjectInvitation({
           gt(schema.invitationTable.expiresAt, new Date()),
         ),
       )
-      .orderBy(asc(schema.invitationTable.createdAt));
+      .orderBy(asc(schema.invitationTable.createdAt))
+      .for("update");
 
     if (live.length > 0) {
       const existing = live.find(
@@ -119,24 +129,10 @@ async function createProjectInvitation({
         .limit(1);
       // Only an invitation made through these routes may be extended by
       // somebody who cannot make workspace invitations.
-      const [origin] = await tx
-        .select({ source: schema.invitationOriginTable.source })
-        .from(schema.invitationOriginTable)
-        .where(eq(schema.invitationOriginTable.invitationId, existing.id))
-        .limit(1);
-      if (
-        origin?.source !== "project" &&
-        !(await hasWorkspaceInvitationCreate(access, actorUserId))
-      ) {
-        throw invitationError(
-          409,
-          INVITATION_ERROR_CODES.workspaceInvitationExists,
-          "A workspace invitation for this email already exists; ask somebody who can invite to the workspace to add this project to it",
-        );
-      }
+      await assertMayExtendInvitation(tx, existing.id, mayInviteToWorkspace);
       // Re-roling somebody else's grant needs reach over what it holds today.
       if (row && row.role !== projectRole) {
-        await assertCanManageProjectRole(access, row.role);
+        await assertCanManageProjectRole(access, row.role, tx);
       }
       await upsertInvitationProject(tx, {
         invitationId: existing.id,

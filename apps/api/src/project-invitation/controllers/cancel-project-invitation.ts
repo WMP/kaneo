@@ -29,13 +29,17 @@ async function cancelProjectInvitation({
     // Serializes with a concurrent add of another project (or role change) on
     // the same invitation, so the roles checked below are the ones removed.
     await lockInvitationEmail(tx, access.workspaceId, email);
+    // Locks the invitation row: the trigger's cancel (project move or
+    // delete) waits for us, and one that ran first makes this a 404.
     const invitation = await requirePendingProjectInvitation(
       access,
       invitationId,
       tx,
+      { lock: true },
     );
     await assertCanManageInvitation(access, actorUserId, invitation, {
       allowInert: true,
+      executor: tx,
     });
 
     await tx

@@ -4,10 +4,12 @@ import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { auth } from "../../apps/api/src/auth";
-import db, { schema } from "../../apps/api/src/database";
+import db, { getDatabase, schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
+import { assertCanManageInvitation } from "../../apps/api/src/project-invitation/delegation";
 import { upsertInvitationProject } from "../../apps/api/src/project-invitation/invitation-projects";
 import { lockInvitationEmail } from "../../apps/api/src/project-invitation/queries";
+import { resolveProjectAccess } from "../../apps/api/src/utils/project-access";
 import { mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import {
@@ -1346,5 +1348,203 @@ describe("GET /project/{id}/member-candidates", () => {
       as(user);
       expect((await candidates(w)).status).toBe(403);
     }
+  });
+});
+
+describe("the invitation row lock and the origin gate", () => {
+  const cancel = (w: World, invitationId: string, projectId = w.project.id) =>
+    call(`${invitationsPath(projectId)}/${invitationId}`, "DELETE");
+  const resend = (w: World, invitationId: string) =>
+    call(`${invitationsPath(w.project.id)}/${invitationId}/resend`, "POST");
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Holds the invitation row lock in a transaction, lets `during` start a
+  // request that has to wait for it, then does what the trigger of migration
+  // 0057 does (cancels the invitation) and commits.
+  async function cancelWhileRequestWaits(
+    invitationId: string,
+    during: () => Promise<Response>,
+  ) {
+    let pending: Promise<Response> | undefined;
+    await db.transaction(async (tx) => {
+      await tx
+        .select({ id: schema.invitationTable.id })
+        .from(schema.invitationTable)
+        .where(eq(schema.invitationTable.id, invitationId))
+        .for("update");
+      pending = during();
+      await sleep(400);
+      await tx
+        .update(schema.invitationTable)
+        .set({ status: "canceled" })
+        .where(eq(schema.invitationTable.id, invitationId));
+    });
+    return (await pending) as Response;
+  }
+
+  it("creates a new invitation when the one being extended was canceled meanwhile", async () => {
+    const w = await buildWorld();
+    const existing = await seedInvitation(w, {
+      email: "extend@example.com",
+      role: "viewer",
+      projects: [[w.project.id, "viewer"]],
+    });
+    as(w.owner.user);
+
+    const response = await cancelWhileRequestWaits(existing.id, () =>
+      invite(
+        w,
+        { email: "extend@example.com", projectRole: "member" },
+        w.other.id,
+      ),
+    );
+    expect(response.status).toBe(201);
+    const body = (await response.json()) as { id: string };
+    expect(body.id).not.toBe(existing.id);
+    expect(await statusOf(existing.id)).toBe("canceled");
+    expect(await projectRows(body.id)).toMatchObject([
+      { projectId: w.other.id, role: "member" },
+    ]);
+    // Nothing was attached to the canceled invitation.
+    expect(await projectRows(existing.id)).toHaveLength(1);
+  });
+
+  it("answers 404 for a cancel or re-send that waited on an invitation canceled meanwhile", async () => {
+    const w = await buildWorld();
+    as(w.owner.user);
+    for (const action of [cancel, resend]) {
+      const invitation = await seedInvitation(w, {
+        email: `late-${randomUUID().slice(0, 6)}@example.com`,
+        projects: [[w.project.id, "viewer"]],
+      });
+      const sendSpy = vi.spyOn(email, "sendWorkspaceInvitationEmail");
+      const response = await cancelWhileRequestWaits(invitation.id, () =>
+        action(w, invitation.id),
+      );
+      await expectCode(response, 404, "INVITATION_NOT_FOUND");
+      expect(await projectRows(invitation.id)).toHaveLength(1);
+      expect(sendSpy).not.toHaveBeenCalled();
+    }
+  });
+
+  it("makes a project move wait for a request that holds the invitation", async () => {
+    const w = await buildWorld();
+    const invitation = await seedInvitation(w, {
+      email: "held@example.com",
+      projects: [[w.project.id, "viewer"]],
+    });
+    const target = await createWorkspaceMember({ role: "owner" });
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: target.workspace.id,
+      userId: w.owner.user.id,
+      role: "owner",
+      joinedAt: new Date(),
+    });
+    as(w.owner.user);
+
+    let move: Promise<Response> | undefined;
+    let settled = false;
+    await db.transaction(async (tx) => {
+      await tx
+        .select({ id: schema.invitationTable.id })
+        .from(schema.invitationTable)
+        .where(eq(schema.invitationTable.id, invitation.id))
+        .for("update");
+      move = call(`/project/${w.project.id}/move`, "PUT", {
+        workspaceId: target.workspace.id,
+      }).then((response) => {
+        settled = true;
+        return response;
+      });
+      await sleep(500);
+      // The trigger's cancel waits for the lock: the move is not finished.
+      expect(settled).toBe(false);
+      expect(await statusOf(invitation.id)).toBe("pending");
+    });
+    expect(((await move) as Response).status).toBe(200);
+    expect(await statusOf(invitation.id)).toBe("canceled");
+  });
+
+  it("runs the role lookups of a locked check on the transaction, not the pool", async () => {
+    const w = await buildWorld();
+    const access = await resolveProjectAccess(w.canceler.id, w.project.id);
+    expect(access).not.toBeNull();
+    const original = db.select.bind(db);
+    let onTransaction = 0;
+    const executor = {
+      select: ((...args: Parameters<typeof db.select>) => {
+        onTransaction += 1;
+        return original(...args);
+      }) as typeof db.select,
+    };
+    // Any lookup that goes through the global handle instead of the executor
+    // is counted (and would have needed a second pool connection).
+    let onPool = 0;
+    // `db` is a proxy over this instance.
+    const database = getDatabase() as unknown as { select: unknown };
+    database.select = (...args: Parameters<typeof db.select>) => {
+      onPool += 1;
+      return original(...args);
+    };
+    try {
+      for (const allowInert of [false, true]) {
+        await assertCanManageInvitation(
+          access as NonNullable<typeof access>,
+          w.canceler.id,
+          { workspaceRole: "viewer", projectRole: "reader" },
+          { allowInert, executor },
+        );
+      }
+      // A role that no longer resolves takes the inert path, also on the
+      // handle.
+      await assertCanManageInvitation(
+        access as NonNullable<typeof access>,
+        w.canceler.id,
+        { workspaceRole: "gone", projectRole: "gone" },
+        { allowInert: true, executor },
+      );
+    } finally {
+      delete (database as { select?: unknown }).select;
+    }
+    expect(onTransaction).toBeGreaterThan(0);
+    expect(onPool).toBe(0);
+  });
+
+  it("re-sends a workspace invitation only for somebody who can invite to the workspace", async () => {
+    const w = await buildWorld();
+    const plain = await seedInvitation(w, {
+      email: "plain-resend@example.com",
+      role: "viewer",
+      origin: "workspace",
+      projects: [[w.project.id, "reader"]],
+    });
+    const sendSpy = vi.spyOn(email, "sendWorkspaceInvitationEmail");
+
+    // invitation:create in the project only.
+    as(w.inviter);
+    await expectCode(
+      await resend(w, plain.id),
+      409,
+      "WORKSPACE_INVITATION_EXISTS",
+    );
+    expect(sendSpy).not.toHaveBeenCalled();
+
+    // invitation:create in the workspace role (admin, full access), or
+    // unrestricted (owner).
+    for (const user of [w.fullAdmin, w.owner.user]) {
+      as(user);
+      expect((await resend(w, plain.id)).status).toBe(200);
+    }
+    expect(sendSpy).toHaveBeenCalledTimes(2);
+
+    // An invitation made through the routes has no such condition.
+    const mine = await seedInvitation(w, {
+      email: "mine-resend@example.com",
+      role: "viewer",
+      projects: [[w.project.id, "reader"]],
+    });
+    as(w.inviter);
+    expect((await resend(w, mine.id)).status).toBe(200);
   });
 });
