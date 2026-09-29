@@ -1,6 +1,6 @@
 import RoleSelect from "@/components/team/role-select";
 import { Label } from "@/components/ui/label";
-import type { RoleChoice } from "./use-role-choice";
+import type { RoleChoice } from "@/hooks/use-role-choice";
 
 type Props = {
   id: string;

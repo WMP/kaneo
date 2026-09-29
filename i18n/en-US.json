@@ -3348,7 +3348,8 @@
 		},
 		"noProjects": {
 			"title": "No project access yet",
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project."
+			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
+			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
 		},
 		"workspaceInvite": {
 			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
@@ -3368,7 +3369,8 @@
 			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
 			"insufficientPermissions": "You do not have permission to do this.",
 			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first."
-		}
+		},
+		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
 	},
 	"projectInvitations": {
 		"title": "Pending invitations",
@@ -3405,11 +3407,6 @@
 			"projectRoleLabel": "Project role",
 			"projectRoleHint": "What the person can do in this project.",
 			"rolePlaceholder": "Select a role",
-			"rolesLoading": "Loading roles...",
-			"rolesError": "Could not load the roles you can assign.",
-			"noAssignableRoles": "You cannot assign any role, so you cannot invite people.",
-			"rolePickRequired": "Choose a role.",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
 			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
 			"submit": "Send invitation",
 			"submitting": "Sending...",
@@ -3420,7 +3417,17 @@
 			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
 			"done": "Done",
 			"addAsMember": "Add as member",
-			"error": "Could not send the invitation"
+			"error": "Could not send the invitation",
+			"workspaceRolesLoading": "Loading workspace roles...",
+			"workspaceRolesError": "Could not load the workspace roles you can assign.",
+			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
+			"workspaceRolePickRequired": "Choose the workspace role.",
+			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one.",
+			"projectRolesLoading": "Loading project roles...",
+			"projectRolesError": "Could not load the project roles you can assign.",
+			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
+			"projectRolePickRequired": "Choose the project role.",
+			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one."
 		},
 		"errors": {
 			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",

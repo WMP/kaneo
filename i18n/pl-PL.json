@@ -3370,7 +3370,8 @@
 		},
 		"noProjects": {
 			"title": "Brak dostępu do projektów",
-			"description": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu."
+			"description": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu.",
+			"descriptionCanCreate": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu albo utwórz własny projekt."
 		},
 		"workspaceInvite": {
 			"info": "Osoby bez pełnego dostępu widzą tylko projekty, do których zostały dodane. Aby zaprosić kogoś do jednego projektu, użyj opcji Zaproś e-mailem w ustawieniach projektu.",
@@ -3390,7 +3391,8 @@
 			"membershipChanged": "Członkostwo zmieniło się w międzyczasie. Lista została wczytana ponownie. Spróbuj jeszcze raz.",
 			"insufficientPermissions": "Nie masz uprawnień, aby to zrobić.",
 			"roleAssignedToProjectMembers": "Członkowie projektu lub zaproszenia do projektu nadal używają tej roli. Najpierw nadaj im inną rolę."
-		}
+		},
+		"abilitiesError": "Nie udało się sprawdzić, co możesz tu zrobić. Niektóre akcje mogą być ukryte."
 	},
 	"projectInvitations": {
 		"title": "Oczekujące zaproszenia",
@@ -3427,11 +3429,6 @@
 			"projectRoleLabel": "Rola w projekcie",
 			"projectRoleHint": "Co osoba może robić w tym projekcie.",
 			"rolePlaceholder": "Wybierz rolę",
-			"rolesLoading": "Wczytywanie ról...",
-			"rolesError": "Nie udało się wczytać ról, które możesz nadawać.",
-			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz zapraszać osób.",
-			"rolePickRequired": "Wybierz rolę.",
-			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
 			"noSmtpNotice": "E-mail nie jest skonfigurowany na tym serwerze. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
 			"submit": "Wyślij zaproszenie",
 			"submitting": "Wysyłanie...",
@@ -3442,7 +3439,17 @@
 			"addedToExisting": "{{email}} ma już oczekujące zaproszenie. Ten projekt został do niego dodany. Drugi e-mail nie został wysłany. W razie potrzeby udostępnij link.",
 			"done": "Gotowe",
 			"addAsMember": "Dodaj jako członka",
-			"error": "Nie udało się wysłać zaproszenia"
+			"error": "Nie udało się wysłać zaproszenia",
+			"workspaceRolesLoading": "Wczytywanie ról w obszarze roboczym...",
+			"workspaceRolesError": "Nie udało się wczytać ról w obszarze roboczym, które możesz nadawać.",
+			"noAssignableWorkspaceRoles": "Nie możesz nadać żadnej roli w obszarze roboczym, więc nie możesz zapraszać osób.",
+			"workspaceRolePickRequired": "Wybierz rolę w obszarze roboczym.",
+			"workspaceRoleUnavailable": "Wybrana rola w obszarze roboczym nie jest już dostępna. Wybierz inną.",
+			"projectRolesLoading": "Wczytywanie ról w projekcie...",
+			"projectRolesError": "Nie udało się wczytać ról w projekcie, które możesz nadawać.",
+			"noAssignableProjectRoles": "Nie możesz nadać żadnej roli w projekcie, więc nie możesz zapraszać osób.",
+			"projectRolePickRequired": "Wybierz rolę w projekcie.",
+			"projectRoleUnavailable": "Wybrana rola w projekcie nie jest już dostępna. Wybierz inną."
 		},
 		"errors": {
 			"alreadyWorkspaceMember": "Ta osoba jest już członkiem obszaru roboczego. Dodaj ją do projektu przez Dodaj członka.",

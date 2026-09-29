@@ -15,11 +15,11 @@ import { Label } from "@/components/ui/label";
 import useAddProjectMember from "@/hooks/mutations/project-member/use-add-project-member";
 import useGetMemberCandidates from "@/hooks/queries/project-member/use-get-member-candidates";
 import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
+import { useRoleChoice } from "@/hooks/use-role-choice";
 import { cn } from "@/lib/cn";
 import { getProjectMemberErrorMessage } from "@/lib/project-member-error";
 import { toast } from "@/lib/toast";
 import RoleField from "./role-field";
-import { useRoleChoice } from "./use-role-choice";
 
 type Props = {
   open: boolean;

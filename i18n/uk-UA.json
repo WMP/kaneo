@@ -3335,20 +3335,25 @@
 			"emailPlaceholder": "colleague@company.com",
 			"error": "Could not send the invitation",
 			"invalidEmail": "Enter a valid email address",
-			"noAssignableRoles": "You cannot assign any role, so you cannot invite people.",
 			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
 			"projectRoleHint": "What the person can do in this project.",
 			"projectRoleLabel": "Project role",
-			"rolePickRequired": "Choose a role.",
 			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
 			"submit": "Send invitation",
 			"submitting": "Sending...",
 			"title": "Invite to project",
 			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role"
+			"workspaceRoleLabel": "Workspace role",
+			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
+			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
+			"projectRolePickRequired": "Choose the project role.",
+			"projectRolesError": "Could not load the project roles you can assign.",
+			"projectRolesLoading": "Loading project roles...",
+			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
+			"workspaceRolePickRequired": "Choose the workspace role.",
+			"workspaceRolesError": "Could not load the workspace roles you can assign.",
+			"workspaceRolesLoading": "Loading workspace roles...",
+			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
 		},
 		"list": {
 			"ariaActions": "Actions for the invitation of {{email}}",
@@ -3427,7 +3432,8 @@
 		},
 		"noProjects": {
 			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet"
+			"title": "No project access yet",
+			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
 		},
 		"pageTitle": "Project members",
 		"removeDialog": {
@@ -3463,6 +3469,7 @@
 		"workspaceInvite": {
 			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
 			"link": "Open project settings"
-		}
+		},
+		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
 	}
 }

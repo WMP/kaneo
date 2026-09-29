@@ -13,6 +13,7 @@ import {
   getInvitationEmailMessageKey,
   useInvitationEmailDelivery,
 } from "@/hooks/use-invitation-email-delivery";
+import { useRoleChoice } from "@/hooks/use-role-choice";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
@@ -45,10 +46,6 @@ type Props = {
   onClose: () => void;
 };
 
-// Preferred role for a new invitation. The API decides which roles the caller
-// may grant, so this only applies when it is in that list.
-const PREFERRED_INVITE_ROLE = "member";
-
 type TeamMemberFormValues = { email: string };
 
 function InviteTeamMemberModal({ open, onClose }: Props) {
@@ -68,7 +65,6 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
     isError: rolesFailed,
     refetch: refetchRoles,
   } = useGetAssignableRoles(workspaceId);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   // The modal stays mounted while closed, so the query's own refetch-on-mount
   // never fires when it opens. Refresh the list each time it opens: the
   // caller's permissions may have changed since it was last fetched.
@@ -78,28 +74,24 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
     }
   }, [open, workspaceId, refetchRoles]);
   // Data can outlive a failed background refetch (isError with data): keep
-  // using it. Only "no data at all" blocks the picker.
-  const hasRoleData = assignableRoles !== undefined;
+  // using it. Only "no data at all" blocks the picker. The choice rules (only
+  // `member` is ever picked for the user, a vanished pick is not replaced) live
+  // in useRoleChoice, shared with the project invite dialogs.
   const roleOptions = assignableRoles ?? [];
-  const isAssignable = (candidate: string) =>
-    roleOptions.some((option) => option.role === candidate);
-  // Only `member` is ever chosen for the user, and only while it is
-  // assignable. Anything else (viewer, admin, a custom role) needs an explicit
-  // pick: a silent fallback to the first listed role could invite an admin.
-  const defaultRole = isAssignable(PREFERRED_INVITE_ROLE)
-    ? PREFERRED_INVITE_ROLE
-    : undefined;
-  // Judged against the fresh list: a pick that vanished from a refetch is not
-  // replaced, the user must choose again.
-  const selectedRoleUnavailable =
-    hasRoleData && selectedRole !== null && !isAssignable(selectedRole);
-  const role =
-    !hasRoleData || selectedRoleUnavailable
-      ? undefined
-      : (selectedRole ?? defaultRole);
-  const hasNoAssignableRoles = hasRoleData && roleOptions.length === 0;
-  const needsExplicitRole =
-    hasRoleData && !hasNoAssignableRoles && !role && !selectedRoleUnavailable;
+  const roleNames = useMemo(
+    () => assignableRoles?.map((option) => option.role),
+    [assignableRoles],
+  );
+  const choice = useRoleChoice(roleNames);
+  const {
+    role,
+    selected: selectedRole,
+    select: setSelectedRole,
+    hasData: hasRoleData,
+    unavailable: selectedRoleUnavailable,
+    needsExplicit: needsExplicitRole,
+    isEmpty: hasNoAssignableRoles,
+  } = choice;
   const [createdInvitation, setCreatedInvitation] = useState<{
     id: string;
     email: string;

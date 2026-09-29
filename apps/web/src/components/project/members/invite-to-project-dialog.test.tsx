@@ -199,7 +199,7 @@ describe("InviteToProjectDialog", () => {
     });
     expect(send).toBeDisabled();
     expect(
-      screen.getByText("projectInvitations:invite.rolePickRequired"),
+      screen.getByText("projectInvitations:invite.projectRolePickRequired"),
     ).toBeVisible();
 
     await pick(
@@ -214,11 +214,32 @@ describe("InviteToProjectDialog", () => {
     renderDialog();
 
     expect(
-      screen.getByText("projectInvitations:invite.noAssignableRoles"),
+      screen.getByText("projectInvitations:invite.noAssignableProjectRoles"),
     ).toBeVisible();
     expect(
       screen.getByRole("button", { name: "projectInvitations:invite.submit" }),
     ).toBeDisabled();
+  });
+
+  it("words each role field's own state for that field", () => {
+    workspaceRoles = {
+      data: [{ role: "viewer", isDefault: true }],
+      isLoading: false,
+      isError: false,
+    };
+    projectRoles = {
+      data: [{ role: "viewer", isDefault: true }],
+      isLoading: false,
+      isError: false,
+    };
+    renderDialog();
+
+    expect(
+      screen.getByText("projectInvitations:invite.workspaceRolePickRequired"),
+    ).toBeVisible();
+    expect(
+      screen.getByText("projectInvitations:invite.projectRolePickRequired"),
+    ).toBeVisible();
   });
 
   it("shows loading and error states of the role lists", () => {
@@ -227,10 +248,10 @@ describe("InviteToProjectDialog", () => {
     renderDialog();
 
     expect(
-      screen.getByText("projectInvitations:invite.rolesLoading"),
+      screen.getByText("projectInvitations:invite.workspaceRolesLoading"),
     ).toBeVisible();
     expect(
-      screen.getByText("projectInvitations:invite.rolesError"),
+      screen.getByText("projectInvitations:invite.projectRolesError"),
     ).toBeVisible();
     expect(
       screen.getByRole("button", { name: "projectInvitations:invite.submit" }),
@@ -492,6 +513,34 @@ describe("InviteToProjectDialog", () => {
           "projectInvitations:errors.alreadyWorkspaceMember",
         ),
       ).toBeVisible();
+      expect(
+        screen.queryByRole("button", {
+          name: "projectInvitations:invite.addAsMember",
+        }),
+      ).toBeNull();
+    });
+
+    it("drops the warning, and its add button, as soon as the email changes", async () => {
+      createInvitation.mockRejectedValue(alreadyMember());
+      renderDialog({
+        candidates: [{ id: "user-7", email: "carol@example.com" }],
+        onAddExistingMember,
+      });
+      await submitEmail("carol@example.com");
+      await screen.findByText(
+        "projectInvitations:errors.alreadyWorkspaceMember",
+      );
+
+      fireEvent.change(
+        screen.getByPlaceholderText(
+          "projectInvitations:invite.emailPlaceholder",
+        ),
+        { target: { value: "dave@example.com" } },
+      );
+
+      expect(
+        screen.queryByText("projectInvitations:errors.alreadyWorkspaceMember"),
+      ).toBeNull();
       expect(
         screen.queryByRole("button", {
           name: "projectInvitations:invite.addAsMember",

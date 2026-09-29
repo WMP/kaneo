@@ -29,13 +29,11 @@ import useCreateProjectInvitation from "@/hooks/mutations/project-invitation/use
 import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
-import {
-  getErrorCode,
-  getProjectMemberErrorMessage,
-} from "@/lib/project-member-error";
+import { useRoleChoice } from "@/hooks/use-role-choice";
+import { getProjectMemberErrorMessage } from "@/lib/project-member-error";
 import { toast } from "@/lib/toast";
+import { readCode } from "@/lib/workspace-role-error";
 import RoleField from "./role-field";
-import { useRoleChoice } from "./use-role-choice";
 
 type Candidate = { id: string; email: string };
 
@@ -179,7 +177,7 @@ function InviteToProjectDialog({
       setCreated({ id: invitation.id, email, message });
       form.reset({ email: "" });
     } catch (error) {
-      if (getErrorCode(error) === "ALREADY_WORKSPACE_MEMBER") {
+      if (readCode(error) === "ALREADY_WORKSPACE_MEMBER") {
         setAlreadyMemberEmail(email);
         return;
       }
@@ -202,12 +200,20 @@ function InviteToProjectDialog({
   const addAsMemberRole = projectChoice.role;
 
   const workspaceRoleTexts = {
-    loading: t("projectInvitations:invite.rolesLoading"),
-    error: t("projectInvitations:invite.rolesError"),
-    none: t("projectInvitations:invite.noAssignableRoles"),
+    loading: t("projectInvitations:invite.workspaceRolesLoading"),
+    error: t("projectInvitations:invite.workspaceRolesError"),
+    none: t("projectInvitations:invite.noAssignableWorkspaceRoles"),
     placeholder: t("projectInvitations:invite.rolePlaceholder"),
-    pickRequired: t("projectInvitations:invite.rolePickRequired"),
-    unavailable: t("projectInvitations:invite.roleUnavailable"),
+    pickRequired: t("projectInvitations:invite.workspaceRolePickRequired"),
+    unavailable: t("projectInvitations:invite.workspaceRoleUnavailable"),
+  };
+  const projectRoleTexts = {
+    loading: t("projectInvitations:invite.projectRolesLoading"),
+    error: t("projectInvitations:invite.projectRolesError"),
+    none: t("projectInvitations:invite.noAssignableProjectRoles"),
+    placeholder: t("projectInvitations:invite.rolePlaceholder"),
+    pickRequired: t("projectInvitations:invite.projectRolePickRequired"),
+    unavailable: t("projectInvitations:invite.projectRoleUnavailable"),
   };
 
   return (
@@ -288,6 +294,12 @@ function InviteToProjectDialog({
                       <FormControl>
                         <Input
                           {...field}
+                          onChange={(event) => {
+                            // A new address makes the warning about the old
+                            // one (and its "Add as member") stale.
+                            setAlreadyMemberEmail(null);
+                            field.onChange(event);
+                          }}
                           placeholder={t(
                             "projectInvitations:invite.emailPlaceholder",
                           )}
@@ -316,7 +328,7 @@ function InviteToProjectDialog({
                   isLoading={projectRolesLoading}
                   isError={projectRolesFailed}
                   choice={projectChoice}
-                  texts={workspaceRoleTexts}
+                  texts={projectRoleTexts}
                 />
               </DialogPanel>
               <DialogFooter>
