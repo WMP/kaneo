@@ -12,7 +12,7 @@ A workspace admin creates projects and invites people to a specific project with
 | --- | --- |
 | Model | B: access to project data always comes from a project membership, except for full-access users (below). |
 | Full access | Workspace owner, instance administrator, and any workspace role that grants `workspace:manage_settings` (the built-in `admin` has it). They see every project in the workspace and act with their workspace role. |
-| Upgrade of existing installations | A migration creates project memberships only for workspace members whose role is `owner` or `admin`, stored as project role `admin` (owner is never a project role). **Other existing members lose access to all projects after the upgrade until an administrator adds them.** Release notes and user documentation must say this. |
+| Upgrade of existing installations | The migration creates the tables and **no rows**. Workspace owners, instance administrators and roles that grant `workspace:manage_settings` keep reaching every existing project through the full-access rule, so nothing is copied for them (a copied `admin` row would become a stale admin right after a demotion). **Every other existing member (built-in member and viewer, custom roles) loses access to all projects after the upgrade until an administrator adds them.** Release notes and user documentation must say this. |
 | Project creator | Becomes a project member with the project role `admin`. |
 | Project role | A name from the workspace role catalog (built-in `viewer`, `member`, `admin`, or a custom `workspace_role`). Its statements apply only inside that project. `owner` is never a project role. |
 | Invitation to a project | The inviter chooses the workspace role and the project role. Both must be a subset of the inviter's own permissions: workspace role against the inviter's workspace role, project role against the inviter's effective role in that project. |
@@ -35,15 +35,15 @@ New additive migration after `0055_ganttpro_resources`:
 
 - `ganttpro_project_member(id, project_id → project cascade, user_id → user cascade, role, created_at)`, unique `(project_id, user_id)`, index on `user_id`.
 - `ganttpro_invitation_project(id, invitation_id → invitation cascade, project_id → project cascade, role)`, unique `(invitation_id, project_id)`.
-- `ganttpro_calendar_feed.ganttpro_created_by` (nullable user id) so a feed stops serving when its creator loses project access. Legacy feeds without a creator keep working and are listed as a known gap.
-- Backfill: one project membership per existing project for each workspace member with role `owner` (also inside a composite role such as `admin,owner`) or `admin`, always with project role `admin`.
+- Later stage, not in 0056: `ganttpro_calendar_feed.ganttpro_created_by` (nullable user id) so a feed stops serving when its creator loses project access. Legacy feeds without a creator keep working and are listed as a known gap.
+- Both tables carry a `CHECK` that the role is not `owner`, also inside a composite name such as `admin,owner`. There is no backfill.
 
 Removing a workspace member (remove, leave, account deletion) deletes that user's memberships in the workspace's projects. Moving a project to another workspace drops memberships of users who are not members of the target workspace.
 
 ## Stage 2a decisions and current state
 
 - Project role that cannot be exercised (`owner`, or a name that no longer resolves in the workspace catalog) grants no access instead of read access without permissions. Moving a project to another workspace drops members who are not in the target workspace and members whose custom role does not exist there.
-- Full-access users are listed by `GET /api/project/{id}/members` with `source: "full-access"` and their workspace role. They cannot be changed or removed at project level (400) and cannot be added as project members (409). Their own project row (owners and admins get one from the migration and from project creation) is inert.
+- Full-access users are listed by `GET /api/project/{id}/members` with `source: "full-access"` and their workspace role. They cannot be changed or removed at project level (400) and cannot be added as project members (409). Their own project row (project creation leaves one for the creator) is inert.
 - A workspace role that a project membership or a pending project invitation still names cannot be deleted; renaming it is refused as well (rename is blocked rather than synchronised). Both are enforced in `hooks.before` for `/organization/delete-role` and `/organization/update-role`, since Better Auth has no role hook.
 - Removing a workspace member deletes their project memberships in that workspace in `beforeRemoveMember`; `/organization/leave` runs no organization hook and is handled in `hooks.after`. Account deletion cascades by foreign key.
 - Also gated in 2a because they are single-project writes: creating a task label on a task (`POST /api/label` with `taskId`), creating a relation whose target lives in another project, moving a task into another project (access plus `task:create` there), project move source and bulk task updates (every project).
@@ -63,7 +63,7 @@ Public projects (`isPublic`) remain readable without an account.
 
 | Stage | Branch | Scope | Verification |
 | --- | --- | --- | --- |
-| 2a | `claude/rbac-stage2a-core` | Schema, migration and backfill; `resolveProjectAccess`; middleware and project-scoped permissions; creator membership; cleanup on member removal; project member API (`GET/POST/PATCH/DELETE /api/project/{id}/members`, assignable project roles) with the delegation rule. | Migration on a fresh and on a populated database; integration tests per single-project route family (allowed member, non-member, full-access user, other workspace); existing suites. |
+| 2a | `claude/rbac-stage2a-core` | Schema and migration (tables, no backfill); `resolveProjectAccess`; middleware and project-scoped permissions; creator membership; cleanup on member removal; project member API (`GET/POST/PATCH/DELETE /api/project/{id}/members`, assignable project roles) with the delegation rule. | Migration on a fresh and on a populated database; integration tests per single-project route family (allowed member, non-member, full-access user, other workspace); existing suites. |
 | 2b | `claude/rbac-stage2b-lists` | All filter surfaces above, WebSocket delivery and close on removal, calendar feed creator. | Integration test per endpoint: data of an inaccessible project is absent, including relation targets and counts. |
 | 2c | `claude/rbac-stage2c-invites` | Project invitations (`POST /api/project/{id}/invitations`), accept hook that creates project memberships, direct add of an existing workspace member, delegation checks. | Integration tests for escalation attempts, acceptance, link and email delivery. |
 | 2d | `claude/rbac-stage2d-web` | Project members settings, invite to project, assignee pickers from project members, empty states for users without projects. | Component tests, web typecheck, browser pass of the invite and accept flow. |

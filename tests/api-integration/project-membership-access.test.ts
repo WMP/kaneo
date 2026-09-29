@@ -626,11 +626,14 @@ describe("project roles decide what a member can do inside the project", () => {
     expect(await response.text()).toBe(DENIED_PROJECT);
   });
 
-  it("owner is never honoured as a project role", async () => {
-    const sneaky = await seeded("member", "owner");
-    const response = await call(`/task/${sneaky.w.task.id}`, "GET");
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe(DENIED_PROJECT);
+  it("owner cannot be stored as a project role", async () => {
+    const w = await buildWorld();
+    const user = await addWorkspaceMember(w.workspaceId, "member");
+    for (const role of ["owner", "admin,owner"]) {
+      await expect(
+        addProjectMember(w.project.id, user.id, role),
+      ).rejects.toThrow();
+    }
   });
 
   it("a custom workspace role works as a project role", async () => {

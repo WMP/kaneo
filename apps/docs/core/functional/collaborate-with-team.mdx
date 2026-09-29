@@ -24,7 +24,7 @@ Access to a project comes from being a member of that project:
 - A project member with the right permission can add other workspace members to the same project, but never with a role that has more permissions than their own.
 
 <Warning>
-  **Upgrading an existing installation:** the upgrade gives every workspace owner and admin membership in all existing projects. Workspace members with any other role lose access to all projects until an administrator adds them to the projects they need.
+  **Upgrading an existing installation:** workspace owners and roles that can manage workspace settings (such as the built-in admin) keep access to every existing project. All other existing workspace members (member, viewer and custom roles) lose access to all projects until an administrator adds them to the projects they need.
 </Warning>
 
 Project members are managed through the API for now (`GET`, `POST`, `PATCH` and `DELETE` on `/api/project/{projectId}/members`, and `GET /api/project/{projectId}/assignable-roles` for the roles you may hand out); the web interface for it is still to come.

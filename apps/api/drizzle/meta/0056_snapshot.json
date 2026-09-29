@@ -1,5 +1,5 @@
 {
-  "id": "99fb31dc-5ae7-4cbd-894e-81775932ddf3",
+  "id": "f00abb0b-a719-4857-8bfc-8302c5336e5d",
   "prevId": "e21d18a2-7fa7-4c00-973f-570b15d88a91",
   "version": "7",
   "dialect": "postgresql",
@@ -2328,7 +2328,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "ganttpro_invitation_project_role_not_owner": {
+          "name": "ganttpro_invitation_project_role_not_owner",
+          "value": "NOT ('owner' = ANY (string_to_array(replace(\"ganttpro_invitation_project\".\"role\", ' ', ''), ',')))"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.job_lease": {
@@ -3049,7 +3054,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "ganttpro_project_member_role_not_owner": {
+          "name": "ganttpro_project_member_role_not_owner",
+          "value": "NOT ('owner' = ANY (string_to_array(replace(\"ganttpro_project_member\".\"role\", ' ', ''), ',')))"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.project": {

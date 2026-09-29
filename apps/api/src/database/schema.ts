@@ -497,6 +497,10 @@ export const projectMemberTable = pgTable(
       table.userId,
     ),
     index("ganttpro_project_member_user_id_idx").on(table.userId),
+    check(
+      "ganttpro_project_member_role_not_owner",
+      sql`NOT ('owner' = ANY (string_to_array(replace(${table.role}, ' ', ''), ',')))`,
+    ),
   ],
 );
 
@@ -528,6 +532,10 @@ export const invitationProjectTable = pgTable(
       table.projectId,
     ),
     index("ganttpro_invitation_project_project_id_idx").on(table.projectId),
+    check(
+      "ganttpro_invitation_project_role_not_owner",
+      sql`NOT ('owner' = ANY (string_to_array(replace(${table.role}, ' ', ''), ',')))`,
+    ),
   ],
 );
 

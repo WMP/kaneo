@@ -57,7 +57,7 @@ async function build() {
   // A row in another workspace's project never counts here.
   await addProjectMember(foreign.id, member.id, "member");
   const unusable = await addWorkspaceMember(workspaceId, "member");
-  await addProjectMember(p1.id, unusable.id, "owner");
+  await addProjectMember(p1.id, unusable.id, "deleted-role");
   await addProjectMember(p2.id, unusable.id, "ghost-role");
   await addProjectMember(p3.id, unusable.id, "member");
   const nobody = await addWorkspaceMember(workspaceId, "member");
@@ -134,8 +134,8 @@ describe("accessibleProjectIds", () => {
   });
 
   it("skips memberships whose role can never be exercised", async () => {
-    // owner is not a project role and ghost-role no longer resolves; only the
-    // valid `member` row on p3 counts.
+    // deleted-role and ghost-role no longer resolve; only the valid `member`
+    // row on p3 counts.
     expect(await accessibleProjectIds(w.unusable.id, w.workspaceId)).toEqual([
       w.p3.id,
     ]);

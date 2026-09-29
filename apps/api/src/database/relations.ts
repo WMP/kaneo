@@ -54,6 +54,7 @@ export const userTableRelations = relations(userTable, ({ many, one }) => ({
   notificationWorkspaceRules: many(userNotificationWorkspaceRuleTable),
   sentInvitations: many(invitationTable),
   apikeys: many(apikeyTable),
+  projectMemberships: many(projectMemberTable),
 }));
 
 export const sessionTableRelations = relations(sessionTable, ({ one }) => ({
@@ -393,7 +394,8 @@ export const teamMemberTableRelations = relations(
 
 export const invitationTableRelations = relations(
   invitationTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
+    invitationProjects: many(invitationProjectTable),
     workspace: one(workspaceTable, {
       fields: [invitationTable.workspaceId],
       references: [workspaceTable.id],
