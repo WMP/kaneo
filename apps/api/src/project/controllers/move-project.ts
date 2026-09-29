@@ -14,6 +14,7 @@ import db from "../../database";
 import {
   assetTable,
   labelTable,
+  projectMemberTable,
   projectTable,
   taskAssignmentTable,
   taskRelationTable,
@@ -22,6 +23,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { projectRoleStatements } from "../../utils/project-access";
 import { closeProjectConnections } from "../../ws";
 
 async function moveProject(
@@ -213,6 +215,49 @@ async function moveProject(
       throw new HTTPException(409, {
         message: "Project was moved to another workspace, please try again",
       });
+    }
+
+    // Project members must belong to the workspace the project now lives in,
+    // and their project role must exist in its role catalog: a stale row would
+    // otherwise revive access if the person joined that workspace later, and a
+    // custom role name that only exists in the source workspace resolves to no
+    // permissions. Both are dropped; an administrator adds people again.
+    await tx
+      .delete(projectMemberTable)
+      .where(
+        and(
+          eq(projectMemberTable.projectId, id),
+          notInArray(
+            projectMemberTable.userId,
+            tx
+              .select({ userId: workspaceUserTable.userId })
+              .from(workspaceUserTable)
+              .where(eq(workspaceUserTable.workspaceId, targetWorkspaceId)),
+          ),
+        ),
+      );
+    const remainingMembers = await tx
+      .select({
+        id: projectMemberTable.id,
+        role: projectMemberTable.role,
+      })
+      .from(projectMemberTable)
+      .where(eq(projectMemberTable.projectId, id));
+    const unusableRoles = new Set<string>();
+    for (const role of new Set(remainingMembers.map((row) => row.role))) {
+      if (!(await projectRoleStatements(targetWorkspaceId, role))) {
+        unusableRoles.add(role);
+      }
+    }
+    if (unusableRoles.size > 0) {
+      await tx
+        .delete(projectMemberTable)
+        .where(
+          and(
+            eq(projectMemberTable.projectId, id),
+            inArray(projectMemberTable.role, [...unusableRoles]),
+          ),
+        );
     }
 
     // Assets and task labels denormalize the project's workspace.

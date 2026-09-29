@@ -20,6 +20,7 @@ import {
   APIError,
   createAuthMiddleware,
   getSessionFromCtx,
+  isAPIError,
 } from "better-auth/api";
 import {
   admin as adminPlugin,
@@ -67,6 +68,11 @@ import { isCloud } from "./utils/is-cloud";
 import { isDisposableEmail } from "./utils/is-disposable-email";
 import { isLocalSignInPath } from "./utils/is-local-sign-in-path";
 import { trackPasswordResetDelivery } from "./utils/password-reset-delivery";
+import { removeUserProjectMemberships } from "./utils/project-access";
+import {
+  assertRoleNotUsedByProjects,
+  findRoleName,
+} from "./utils/project-role-guard";
 import {
   assertGuestRegistrationAllowed,
   assertUserRegistrationAllowed,
@@ -534,6 +540,14 @@ export const auth = betterAuth({
             });
           }
         },
+        // Project memberships must not outlive workspace membership: they
+        // would come back to life if the person joined again. Runs before the
+        // removal so a failure aborts it instead of leaving stale rows. The
+        // `/organization/leave` route runs no organization hook and is handled
+        // in `hooks.after`.
+        beforeRemoveMember: async ({ member, organization }) => {
+          await removeUserProjectMemberships(member.userId, organization.id);
+        },
         afterRemoveMember: async ({ member }) => {
           if (member?.organizationId) {
             void syncWorkspaceSeats(member.organizationId).catch((error) => {
@@ -736,6 +750,53 @@ export const auth = betterAuth({
         }
       }
 
+      // A project role is a workspace role name. Refuse to delete or rename a
+      // role that project members (or pending project invitations) still use.
+      // Better Auth has no organization hook for role changes, and this check
+      // needs no actor, so it can run here. The organization is resolved like
+      // Better Auth does (`??`, body first, then the active organization).
+      if (
+        ctx.path === "/organization/delete-role" ||
+        ctx.path === "/organization/update-role"
+      ) {
+        const isRename =
+          ctx.path === "/organization/update-role" &&
+          typeof ctx.body?.data?.roleName === "string" &&
+          ctx.body.data.roleName !== "";
+        if (ctx.path === "/organization/delete-role" || isRename) {
+          let workspaceId: unknown = ctx.body?.organizationId;
+          if (workspaceId === undefined || workspaceId === null) {
+            // Fail closed: a failing lookup propagates. Without a session
+            // Better Auth answers 401 itself.
+            const session = await auth.api.getSession({
+              headers: ctx.headers ?? new Headers(),
+              query: { disableRefresh: true },
+            });
+            workspaceId = (
+              session?.session as
+                | { activeOrganizationId?: string | null }
+                | undefined
+            )?.activeOrganizationId;
+          }
+          if (typeof workspaceId === "string" && workspaceId) {
+            const role = await findRoleName(workspaceId, {
+              roleName: ctx.body?.roleName,
+              roleId: ctx.body?.roleId,
+            });
+            if (role) {
+              await assertRoleNotUsedByProjects({
+                workspaceId,
+                role,
+                action:
+                  ctx.path === "/organization/delete-role"
+                    ? "delete"
+                    : "rename",
+              });
+            }
+          }
+        }
+      }
+
       // Role delegation for an invitation re-send, which returns before any
       // organization hook runs (new invitations: `beforeCreateInvitation`,
       // role changes: `beforeUpdateMemberRole`).
@@ -842,6 +903,25 @@ export const auth = betterAuth({
       }
     }),
     after: createAuthMiddleware(async (ctx) => {
+      // Leaving a workspace runs no organization hook, so drop the leaver's
+      // project memberships in that workspace here. `returned` is the member
+      // Better Auth removed, or an error when the request did not succeed.
+      if (ctx.path === "/organization/leave") {
+        const returned = ctx.context.returned as unknown;
+        if (returned && !isAPIError(returned) && typeof returned === "object") {
+          const { userId, organizationId } = returned as {
+            userId?: unknown;
+            organizationId?: unknown;
+          };
+          if (
+            typeof userId === "string" &&
+            typeof organizationId === "string"
+          ) {
+            await removeUserProjectMemberships(userId, organizationId);
+          }
+        }
+      }
+
       if (ctx.path.startsWith("/sign-up") || ctx.path.startsWith("/sign-in")) {
         const newSession = ctx.context.newSession;
         if (newSession) {
