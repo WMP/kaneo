@@ -407,6 +407,13 @@
       "when": 1790706729063,
       "tag": "0057_ganttpro_invitation_origin",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1790720245124,
+      "tag": "0058_ganttpro_resource_invitation",
+      "breakpoints": true
     }
   ]
 }

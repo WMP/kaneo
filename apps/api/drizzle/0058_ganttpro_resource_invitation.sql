@@ -1,0 +1,3 @@
+ALTER TABLE "ganttpro_resource" ADD COLUMN "ganttpro_invitation_id" text;--> statement-breakpoint
+ALTER TABLE "ganttpro_resource" ADD CONSTRAINT "ganttpro_resource_ganttpro_invitation_id_invitation_id_fk" FOREIGN KEY ("ganttpro_invitation_id") REFERENCES "public"."invitation"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+CREATE INDEX "ganttpro_resource_invitation_id_idx" ON "ganttpro_resource" USING btree ("ganttpro_invitation_id");

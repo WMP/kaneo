@@ -645,9 +645,9 @@ export const taskTable = pgTable(
 
 // An assignable entity that is NOT a Kaneo user account: a workspace-scoped
 // person, piece of equipment, or material. `userId` links it to a real
-// account when one exists (set later, e.g. by an F4b email/OIDC invite);
-// null until then. Costs are out of scope for this table — a later phase
-// adds them.
+// account when one exists (set when the person accepts an invitation sent from
+// the resource, or when an administrator links it to a member); null until
+// then. Costs are out of scope for this table — a later phase adds them.
 export const resourceTable = pgTable(
   "ganttpro_resource",
   {
@@ -666,12 +666,26 @@ export const resourceTable = pgTable(
     kind: text("kind").notNull(),
     name: text("name").notNull(),
     email: text("email"),
-    // Set once this resource is linked to a real account (F4b); null for a
-    // plain account-less resource.
+    // Set once this resource is linked to a real account (an accepted
+    // invitation sent from the resource, or "link to member"); null for a plain
+    // account-less resource. Assignments moved to the account are user
+    // assignments; the resource keeps only the ones the account cannot access.
     userId: text("ganttpro_user_id").references(() => userTable.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
+    // The invitation sent from this resource ("Invite" in the resources
+    // settings), while the person has not accepted it. Acceptance links the
+    // resource (`userId`), moves its assignments to the account and clears this
+    // column; deleting the invitation clears it too. Its status (pending,
+    // expired, canceled) is read from the invitation row.
+    invitationId: text("ganttpro_invitation_id").references(
+      () => invitationTable.id,
+      {
+        onDelete: "set null",
+        onUpdate: "cascade",
+      },
+    ),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
@@ -681,6 +695,7 @@ export const resourceTable = pgTable(
   (table) => [
     index("ganttpro_resource_workspace_id_idx").on(table.workspaceId),
     index("ganttpro_resource_user_id_idx").on(table.userId),
+    index("ganttpro_resource_invitation_id_idx").on(table.invitationId),
     check(
       "ganttpro_resource_kind",
       sql`${table.kind} IN ('person', 'equipment', 'material')`,
