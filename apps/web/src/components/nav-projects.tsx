@@ -28,11 +28,11 @@ import {
   Forward,
   MoreHorizontal,
   Settings,
-  Trash2,
 } from "lucide-react";
 import { type CSSProperties, type ReactNode, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -42,7 +42,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
 import {
@@ -58,10 +57,11 @@ import useDeleteProject from "@/hooks/mutations/project/use-delete-project";
 import useReorderProjects from "@/hooks/mutations/project/use-reorder-projects";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { projectAccessQueryOptions } from "@/lib/project-access-query";
 import { toast } from "@/lib/toast";
 import type { ProjectWithTasks } from "@/types/project";
+import { DeleteProjectMenuItem } from "./delete-project-menu-item";
 import CreateProjectModal from "./shared/modals/create-project-modal";
 import {
   AlertDialog,
@@ -114,33 +114,6 @@ function SortableProjectItem({
   );
 }
 
-// Deleting a project is decided per project (the project role for a member),
-// so the menu item asks for its own project. It only mounts, and so only asks,
-// while the row's menu is open.
-function DeleteProjectMenuItem({
-  projectId,
-  onSelect,
-}: {
-  projectId: string;
-  onSelect: () => void;
-}) {
-  const { t } = useTranslation();
-  const { canDeleteProject } = useProjectPermission(projectId);
-  if (!canDeleteProject()) return null;
-  return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem
-        className="h-7 items-start text-destructive cursor-pointer text-sm"
-        onClick={onSelect}
-      >
-        <Trash2 className="text-destructive" />
-        <span>{t("navigation:projectList.deleteProject")}</span>
-      </DropdownMenuItem>
-    </>
-  );
-}
-
 export function NavProjects() {
   const { t } = useTranslation();
   const { isMobile } = useSidebar();
@@ -149,6 +122,15 @@ export function NavProjects() {
     workspaceId: workspace?.id || "",
   });
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  // Warms the caller's access to a project before its row menu opens.
+  const prefetchProjectAccess = (projectId: string) => {
+    if (!currentUser?.id) return;
+    void queryClient.prefetchQuery({
+      ...projectAccessQueryOptions(projectId, currentUser.id),
+      staleTime: 60 * 1000,
+    });
+  };
   const { mutateAsync: deleteProject } = useDeleteProject();
   const reorderProjects = useReorderProjects();
   const { canCreateProjects, canUpdateProjects } = useWorkspacePermission();
@@ -293,6 +275,12 @@ export function NavProjects() {
                                   // must not reach it.
                                   onPointerDown={(event) =>
                                     event.stopPropagation()
+                                  }
+                                  onPointerEnter={() =>
+                                    prefetchProjectAccess(project.id)
+                                  }
+                                  onFocus={() =>
+                                    prefetchProjectAccess(project.id)
                                   }
                                   className="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground after:-inset-2 after:absolute md:after:hidden peer-data-[size=sm]/menu-button:top-1 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 group-data-[collapsible=icon]:hidden group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0"
                                 />
