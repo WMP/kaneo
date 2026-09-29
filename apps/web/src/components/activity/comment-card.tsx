@@ -41,6 +41,8 @@ function forgeOf(externalSource: string | null | undefined) {
 type CommentCardProps = {
   commentId: string;
   taskId: string;
+  // The task's project, for mentions while editing.
+  projectId?: string;
   content: string;
   user: {
     id?: string;
@@ -57,6 +59,7 @@ type CommentCardProps = {
 export default function CommentCard({
   commentId,
   taskId,
+  projectId,
   content,
   user,
   createdAt,
@@ -278,6 +281,7 @@ export default function CommentCard({
             onChange={isEditing ? setEditedContent : undefined}
             placeholder={t("activity:comment.editPlaceholder")}
             taskId={taskId}
+            projectId={projectId}
             uploadSurface="comment"
             className={
               isEditing

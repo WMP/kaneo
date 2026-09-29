@@ -594,10 +594,13 @@ function Activity({
   activity,
   step,
   showConnector = false,
+  projectId,
 }: {
   activity: ActivityItem;
   step: number;
   showConnector?: boolean;
+  // The project of the task the feed belongs to (absent in the workspace log).
+  projectId?: string;
 }) {
   const { t } = useTranslation();
   const { data: workspace } = useActiveWorkspace();
@@ -637,6 +640,7 @@ function Activity({
             // Comment-type activity always has a taskId (only workspace-level
             // activity, e.g. calendar changes, ever leaves it null).
             taskId={activity.taskId as string}
+            projectId={projectId}
             content={activity.content || ""}
             user={commentUser}
             createdAt={activity.createdAt}

@@ -679,7 +679,9 @@ export default function TaskDetailsContent({
       <div className="flex flex-col gap-4">
         <h1 className="text-md font-semibold">{t("tasks:detail.activity")}</h1>
 
-        {user?.id && taskId && <CommentInput taskId={taskId} />}
+        {user?.id && taskId && (
+          <CommentInput taskId={taskId} projectId={projectId} />
+        )}
 
         {activities.length > 0 ? (
           <Timeline>
@@ -696,6 +698,7 @@ export default function TaskDetailsContent({
                   activity={activity}
                   step={activities.length - index}
                   showConnector={showConnector}
+                  projectId={projectId}
                 />
               );
             })}

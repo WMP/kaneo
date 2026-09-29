@@ -1,3 +1,8 @@
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryObserver,
+} from "@tanstack/react-query";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import { Extension } from "@tiptap/core";
 import TaskItem from "@tiptap/extension-task-item";
@@ -58,13 +63,12 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: mocks.t }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-// The editor reads the task's project from the query cache for mentions.
-vi.mock("@tanstack/react-query", async (original) => ({
-  ...(await original<object>()),
-  useQuery: () => ({ data: undefined }),
-}));
+const useProjectMembers = vi.hoisted(() => vi.fn());
 vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
-  useProjectMembers: () => ({ data: undefined }),
+  useProjectMembers: (projectId: string | undefined) => {
+    useProjectMembers(projectId);
+    return { data: undefined };
+  },
 }));
 vi.mock("@/lib/toast", () => ({
   toast: {
@@ -132,6 +136,56 @@ beforeEach(() => {
   vi.mocked(toast.success).mockClear();
   vi.mocked(toast.dismiss).mockClear();
   uploadMock.mockReset();
+});
+
+describe("CommentEditor mentions", () => {
+  it("offers the people of the given project, and none to a read-only viewer", () => {
+    useProjectMembers.mockClear();
+    const { rerender } = render(
+      <CommentEditor
+        value=""
+        onChange={() => {}}
+        taskId="task-1"
+        projectId="project-1"
+      />,
+    );
+    expect(useProjectMembers).toHaveBeenLastCalledWith("project-1");
+
+    rerender(
+      <CommentEditor value="" taskId="task-1" projectId="project-1" readOnly />,
+    );
+    expect(useProjectMembers).toHaveBeenLastCalledWith(undefined);
+  });
+
+  it("does not disturb the task query: a refetch still runs the task's own query function", async () => {
+    const queryFn = vi.fn(async () => ({
+      id: "task-1",
+      projectId: "project-1",
+    }));
+    const client = new QueryClient();
+    await client.fetchQuery({ queryKey: ["task", "task-1"], queryFn });
+    // A task view observes the query the way the app does.
+    const observer = new QueryObserver(client, {
+      queryKey: ["task", "task-1"],
+      queryFn,
+    });
+    const unsubscribe = observer.subscribe(() => {});
+
+    render(
+      <QueryClientProvider client={client}>
+        <CommentEditor
+          value=""
+          onChange={() => {}}
+          taskId="task-1"
+          projectId="project-1"
+        />
+      </QueryClientProvider>,
+    );
+    queryFn.mockClear();
+    await client.refetchQueries({ queryKey: ["task", "task-1"] });
+    expect(queryFn).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
 });
 
 describe("CommentEditor image upload insertion", () => {
