@@ -5,6 +5,7 @@ import {
   projectMemberTable,
   projectTable,
 } from "../../database/schema";
+import { isFullAccess } from "../../utils/project-access";
 
 export const DEFAULT_PROJECT_COLUMNS = [
   { name: "To Do", slug: "to-do", position: 0, isFinal: false },
@@ -20,6 +21,7 @@ async function createProject(
   slug: string,
   creatorUserId: string,
 ) {
+  const creatorHasFullAccess = await isFullAccess(creatorUserId, workspaceId);
   return db.transaction(async (tx) => {
     // Serialize ordering writes per workspace: without this, two concurrent
     // creates can read the same max(position) and land on the same slot, and a
@@ -47,14 +49,18 @@ async function createProject(
       .returning();
 
     if (createdProject) {
-      // The creator becomes a project admin in the same transaction, so they
-      // never lose sight of a project they just made (a workspace role without
-      // full access reaches projects only through a membership).
-      await tx.insert(projectMemberTable).values({
-        projectId: createdProject.id,
-        userId: creatorUserId,
-        role: "admin",
-      });
+      // A creator without full access becomes a project admin in the same
+      // transaction, so they never lose sight of a project they just made (they
+      // reach projects only through a membership). A full-access creator
+      // already reaches every project, and a stored admin row would turn into a
+      // stale admin right after a demotion.
+      if (!creatorHasFullAccess) {
+        await tx.insert(projectMemberTable).values({
+          projectId: createdProject.id,
+          userId: creatorUserId,
+          role: "admin",
+        });
+      }
 
       for (const col of DEFAULT_PROJECT_COLUMNS) {
         await tx.insert(columnTable).values({

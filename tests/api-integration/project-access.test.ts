@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import {
   accessibleProjectIds,
+  fullAccessRoleNames,
   isFullAccess,
   resolveProjectAccess,
+  resolveProjectAccesses,
 } from "../../apps/api/src/utils/project-access";
 import { builtInRoleStatements } from "../../apps/api/src/utils/role-statements";
 import { resetTestDatabase } from "./helpers/database";
@@ -227,5 +229,76 @@ describe("resolveProjectAccess", () => {
     expect(
       await resolveProjectAccess(w.owner.id, "no-such-project"),
     ).toBeNull();
+  });
+});
+
+describe("catalog rows that do not parse", () => {
+  // The built-in admin has workspace:manage_settings. A catalog row for it with
+  // unusable content falls back to the built-in role, everywhere.
+  it("fall back to the built-in role in every full-access decision", async () => {
+    await db.insert(schema.workspaceRoleTable).values([
+      { workspaceId: w.workspaceId, role: "admin", permission: "not json" },
+      { workspaceId: w.workspaceId, role: "viewer", permission: "" },
+      { workspaceId: w.workspaceId, role: "junk", permission: "[1,2" },
+    ]);
+    const names = await fullAccessRoleNames(w.workspaceId);
+    expect(names).toContain("admin");
+    expect(names).not.toContain("viewer");
+    expect(names).not.toContain("junk");
+    // Same answer from the per-user decision and from the access rule.
+    expect(await isFullAccess(w.fullAdmin.id, w.workspaceId)).toBe(true);
+    expect(await resolveProjectAccess(w.fullAdmin.id, w.p1.id)).toMatchObject({
+      mode: "full",
+      statements: builtInRoleStatements("admin"),
+    });
+  });
+
+  it("agree with isFullAccess for every candidate role", async () => {
+    await db.insert(schema.workspaceRoleTable).values([
+      {
+        workspaceId: w.workspaceId,
+        role: "admin",
+        permission: JSON.stringify({ task: ["read"] }),
+      },
+      { workspaceId: w.workspaceId, role: "broken", permission: "{" },
+    ]);
+    const names = await fullAccessRoleNames(w.workspaceId);
+    // An admin row without manage_settings is no longer full access.
+    expect(names).not.toContain("admin");
+    for (const role of ["admin", "manager", "member", "viewer", "broken"]) {
+      const user = await addWorkspaceMember(w.workspaceId, role);
+      expect(await isFullAccess(user.id, w.workspaceId), role).toBe(
+        names.includes(role),
+      );
+    }
+  });
+});
+
+describe("resolveProjectAccesses", () => {
+  it("tolerates duplicate workspace membership rows", async () => {
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId: w.member.id,
+      role: "member",
+      joinedAt: new Date(),
+    });
+    const accesses = await resolveProjectAccesses(w.member.id, [
+      w.p1.id,
+      w.p2.id,
+      w.p1.id,
+    ]);
+    expect(accesses?.map((access) => access.projectId).sort()).toEqual(
+      [w.p1.id, w.p2.id].sort(),
+    );
+  });
+
+  it("is null when any project is unknown or not accessible", async () => {
+    expect(
+      await resolveProjectAccesses(w.member.id, [w.p1.id, w.p3.id]),
+    ).toBeNull();
+    expect(
+      await resolveProjectAccesses(w.member.id, [w.p1.id, "no-such-project"]),
+    ).toBeNull();
+    expect(await resolveProjectAccesses(w.member.id, [])).toEqual([]);
   });
 });

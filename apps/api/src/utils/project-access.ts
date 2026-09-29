@@ -2,12 +2,11 @@ import { and, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
 import {
-  builtInRoleStatements,
   type PermissionMap,
-  parsePermissionStatements,
   type RoleStatements,
   resolveRoleStatements,
   satisfies,
+  statementsFromCatalogRow,
 } from "./role-statements";
 
 // Project-level access (model B). Access to a project's data always comes from
@@ -38,6 +37,7 @@ export type ProjectAccess = {
 };
 
 const OWNER_ROLE = "owner";
+const BUILT_IN_ROLES = ["viewer", "member", "admin"];
 
 // Does the access grant every requested action inside its project?
 export function projectAccessSatisfies(
@@ -62,6 +62,25 @@ function splitRoles(role: string): string[] {
     .filter(Boolean);
 }
 
+type RoleResolver = (
+  workspaceId: string,
+  role: string,
+) => Promise<RoleStatements | null>;
+
+// Resolves each (workspace, role) once per call site, for bulk decisions.
+function memoizedResolver(): RoleResolver {
+  const cache = new Map<string, Promise<RoleStatements | null>>();
+  return (workspaceId, role) => {
+    const key = `${workspaceId}\u0000${role}`;
+    let result = cache.get(key);
+    if (!result) {
+      result = resolveRoleStatements(workspaceId, role);
+      cache.set(key, result);
+    }
+    return result;
+  };
+}
+
 type WorkspaceStanding =
   | { kind: "instance-admin" }
   | { kind: "owner" }
@@ -75,12 +94,13 @@ async function standingOf(
   workspaceId: string,
   userRole: string | null | undefined,
   workspaceRole: string | null | undefined,
+  resolve: RoleResolver = resolveRoleStatements,
 ): Promise<WorkspaceStanding | null> {
   if (userRole === "admin") return { kind: "instance-admin" };
   if (!workspaceRole) return null;
-  if (splitRoles(workspaceRole).includes(OWNER_ROLE)) return { kind: "owner" };
+  if (isOwnerRole(workspaceRole)) return { kind: "owner" };
 
-  const statements = await resolveRoleStatements(workspaceId, workspaceRole);
+  const statements = await resolve(workspaceId, workspaceRole);
   if (statements?.workspace?.includes("manage_settings")) {
     return { kind: "full", statements };
   }
@@ -94,9 +114,36 @@ async function standingOf(
 export async function projectRoleStatements(
   workspaceId: string,
   role: string,
+  resolve: RoleResolver = resolveRoleStatements,
 ): Promise<RoleStatements | null> {
   if (isOwnerRole(role)) return null;
-  return resolveRoleStatements(workspaceId, role);
+  return resolve(workspaceId, role);
+}
+
+// The caller's standing by WORKSPACE role alone, with Better Auth's semantics:
+// a member of that workspace, `owner` (also inside a composite name) holding
+// everything, anybody else holding what their role's statements grant. Instance
+// administrators get no special treatment here. `null` for a non-member.
+export async function workspaceMemberStanding(
+  userId: string,
+  workspaceId: string,
+): Promise<{ owner: boolean; statements: RoleStatements | null } | null> {
+  const [member] = await db
+    .select({ role: schema.workspaceUserTable.role })
+    .from(schema.workspaceUserTable)
+    .where(
+      and(
+        eq(schema.workspaceUserTable.workspaceId, workspaceId),
+        eq(schema.workspaceUserTable.userId, userId),
+      ),
+    )
+    .limit(1);
+  if (!member?.role) return null;
+  if (isOwnerRole(member.role)) return { owner: true, statements: null };
+  return {
+    owner: false,
+    statements: await resolveRoleStatements(workspaceId, member.role),
+  };
 }
 
 type AccessRow = {
@@ -146,12 +193,16 @@ async function queryAccessRows(
     );
 }
 
-async function decide(row: AccessRow): Promise<ProjectAccess | null> {
+async function decide(
+  row: AccessRow,
+  resolve: RoleResolver = resolveRoleStatements,
+): Promise<ProjectAccess | null> {
   const { workspaceId, projectId } = row;
   const standing = await standingOf(
     workspaceId,
     row.userRole,
     row.workspaceRole,
+    resolve,
   );
   // Neither an instance administrator nor a workspace member: a leftover
   // project row grants nothing.
@@ -163,7 +214,7 @@ async function decide(row: AccessRow): Promise<ProjectAccess | null> {
       projectId,
       mode: "full",
       statements: row.workspaceRole
-        ? await resolveRoleStatements(workspaceId, row.workspaceRole)
+        ? await resolve(workspaceId, row.workspaceRole)
         : null,
       unrestricted: true,
     };
@@ -180,7 +231,11 @@ async function decide(row: AccessRow): Promise<ProjectAccess | null> {
   }
 
   if (!row.projectRole) return null;
-  const statements = await projectRoleStatements(workspaceId, row.projectRole);
+  const statements = await projectRoleStatements(
+    workspaceId,
+    row.projectRole,
+    resolve,
+  );
   if (!statements) return null;
   return {
     workspaceId,
@@ -287,10 +342,16 @@ export async function resolveProjectAccesses(
   const ids = [...new Set(projectIds)];
   if (ids.length === 0) return [];
   const rows = await queryAccessRows(userId, ids);
-  if (rows.length !== ids.length) return null;
-  const accesses: ProjectAccess[] = [];
+  // Duplicate workspace membership rows repeat a project: keep one per project.
+  const byProject = new Map<string, AccessRow>();
   for (const row of rows) {
-    const access = await decide(row);
+    if (!byProject.has(row.projectId)) byProject.set(row.projectId, row);
+  }
+  if (byProject.size !== ids.length) return null;
+  const resolve = memoizedResolver();
+  const accesses: ProjectAccess[] = [];
+  for (const row of byProject.values()) {
+    const access = await decide(row, resolve);
     if (!access) return null;
     accesses.push(access);
   }
@@ -313,9 +374,11 @@ export async function requireProjectAccessFor(
   return access;
 }
 
-// Workspace role names that grant `workspace:manage_settings` (so full access),
-// resolved like `resolveRoleStatements`: an edited catalog row wins over the
-// built-in definition. `owner` is always included; composite names containing
+// Workspace role names that grant `workspace:manage_settings` (so full access).
+// Each candidate (every catalog row and the built-in viewer, member, admin) is
+// resolved with `statementsFromCatalogRow`, exactly like `resolveRoleStatements`
+// does for one role: a row with an invalid or empty permission falls back to
+// the built-in role. `owner` is always included; composite names containing
 // `owner` are matched separately by the caller.
 export async function fullAccessRoleNames(
   workspaceId: string,
@@ -327,22 +390,12 @@ export async function fullAccessRoleNames(
     })
     .from(schema.workspaceRoleTable)
     .where(eq(schema.workspaceRoleTable.workspaceId, workspaceId));
+  const catalog = new Map(rows.map((row) => [row.role, row.permission]));
+  const candidates = new Set<string>([...catalog.keys(), ...BUILT_IN_ROLES]);
   const names = new Set<string>([OWNER_ROLE]);
-  const seen = new Set<string>();
-  for (const row of rows) {
-    seen.add(row.role);
-    const statements = row.permission
-      ? parsePermissionStatements(row.permission)
-      : null;
-    if (statements?.workspace?.includes("manage_settings")) names.add(row.role);
-  }
-  for (const builtIn of ["viewer", "member", "admin"]) {
-    if (seen.has(builtIn)) continue;
-    if (
-      builtInRoleStatements(builtIn)?.workspace?.includes("manage_settings")
-    ) {
-      names.add(builtIn);
-    }
+  for (const role of candidates) {
+    const statements = statementsFromCatalogRow(role, catalog.get(role));
+    if (statements?.workspace?.includes("manage_settings")) names.add(role);
   }
   return [...names];
 }
@@ -368,15 +421,10 @@ export async function unusableProjectRoles(
         inArray(schema.workspaceRoleTable.role, roles),
       ),
     );
-  const catalog = new Map(
-    rows.map((row) => [
-      row.role,
-      row.permission ? parsePermissionStatements(row.permission) : null,
-    ]),
-  );
+  const catalog = new Map(rows.map((row) => [row.role, row.permission]));
   return roles.filter(
     (role) =>
-      isOwnerRole(role) || !(catalog.get(role) ?? builtInRoleStatements(role)),
+      isOwnerRole(role) || !statementsFromCatalogRow(role, catalog.get(role)),
   );
 }
 

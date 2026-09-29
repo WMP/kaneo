@@ -41,10 +41,24 @@ export function parsePermissionStatements(raw: string): RoleStatements | null {
   return result;
 }
 
-async function customRoleStatements(
+// The statements a catalog row grants, falling back to the built-in role when
+// the row is missing, has no permission, or holds one that is not valid JSON.
+// The single definition of "what does this role name mean": everything that
+// resolves a role, one at a time or in bulk, goes through it.
+export function statementsFromCatalogRow(
+  role: string,
+  permission: string | null | undefined,
+): RoleStatements | null {
+  return (
+    (permission ? parsePermissionStatements(permission) : null) ??
+    builtInRoleStatements(role)
+  );
+}
+
+async function catalogPermission(
   workspaceId: string,
   role: string,
-): Promise<RoleStatements | null> {
+): Promise<string | null> {
   const [row] = await db
     .select({ permission: schema.workspaceRoleTable.permission })
     .from(schema.workspaceRoleTable)
@@ -56,9 +70,7 @@ async function customRoleStatements(
     )
     .limit(1);
 
-  if (!row?.permission) return null;
-
-  return parsePermissionStatements(row.permission);
+  return row?.permission ?? null;
 }
 
 export function satisfies(
@@ -85,9 +97,9 @@ export async function resolveRoleStatements(
   workspaceId: string,
   role: string,
 ): Promise<RoleStatements | null> {
-  return (
-    (await customRoleStatements(workspaceId, role)) ??
-    builtInRoleStatements(role)
+  return statementsFromCatalogRow(
+    role,
+    await catalogPermission(workspaceId, role),
   );
 }
 

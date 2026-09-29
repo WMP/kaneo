@@ -639,10 +639,15 @@ describe("project roles decide what a member can do inside the project", () => {
   it("owner cannot be stored as a project role", async () => {
     const w = await buildWorld();
     const user = await addWorkspaceMember(w.workspaceId, "member");
-    for (const role of ["owner", "admin,owner"]) {
-      await expect(
-        addProjectMember(w.project.id, user.id, role),
-      ).rejects.toThrow();
+    for (const role of ["owner", "admin,owner", "admin,\towner"]) {
+      // Drizzle wraps the driver error; the constraint is on its cause.
+      const error = await addProjectMember(w.project.id, user.id, role).then(
+        () => null,
+        (thrown: { cause?: { constraint?: string } }) => thrown,
+      );
+      expect(error?.cause?.constraint, role).toBe(
+        "ganttpro_project_member_role_not_owner",
+      );
     }
   });
 
@@ -722,6 +727,29 @@ describe("stale and revoked access", () => {
     const response = await call(`/task/${w.task.id}`, "GET");
     expect(response.status).toBe(403);
     expect(await response.text()).toBe(DENIED_PROJECT);
+  });
+});
+
+describe("project creation by a full-access user", () => {
+  it("leaves no membership row: full access already reaches the project", async () => {
+    const owner = await createWorkspaceMember({ role: "owner" });
+    mockAuthenticatedSession(owner.user as User);
+    const created = await call("/project", "POST", {
+      name: "Made by the owner",
+      workspaceId: owner.workspace.id,
+      icon: "Folder",
+      slug: "mbo",
+    });
+    expect(created.status).toBe(200);
+    const project = (await created.json()) as { id: string };
+
+    expect(
+      await db
+        .select()
+        .from(schema.projectMemberTable)
+        .where(eq(schema.projectMemberTable.projectId, project.id)),
+    ).toHaveLength(0);
+    expect((await call(`/project/${project.id}`, "GET")).status).toBe(200);
   });
 });
 
@@ -815,6 +843,37 @@ describe("requests that touch several projects", () => {
     });
     expect(mixed.status).toBe(403);
     expect(await mixed.text()).toBe("Insufficient permissions");
+  });
+
+  it("bulk update tolerates duplicate workspace membership rows", async () => {
+    const w = await buildWorld();
+    const user = await addWorkspaceMember(w.workspaceId, "member");
+    await addProjectMember(w.project.id, user.id, "admin");
+    await addProjectMember(w.otherProject.id, user.id, "admin");
+    // Better Auth does not enforce one membership row per user and workspace.
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId: user.id,
+      role: "member",
+      joinedAt: new Date(),
+    });
+    const [foreignTask] = await db
+      .insert(schema.taskTable)
+      .values({
+        projectId: w.otherProject.id,
+        title: "Second project",
+        status: "to-do",
+        number: 1,
+        position: 1,
+      })
+      .returning();
+    mockAuthenticatedSession(user as User);
+    const response = await call("/task/bulk", "PATCH", {
+      taskIds: [w.task.id, foreignTask.id],
+      operation: "updatePriority",
+      value: "high",
+    });
+    expect(response.status, await response.clone().text()).toBe(200);
   });
 
   it("moving a task needs access, and task:create, in the destination project", async () => {
@@ -1120,6 +1179,21 @@ describe("workspace-level permissions come from the workspace role", () => {
         })
       ).status,
     ).toBe(200);
+  });
+
+  it("lets a composite owner role act as owner inside a project", async () => {
+    const w = await buildWorld();
+    // "admin,owner" is not one catalog role: only its owner part counts, and
+    // that is unrestricted.
+    const user = await addWorkspaceMember(w.workspaceId, "admin,owner");
+    mockAuthenticatedSession(user as User);
+    const response = await call(
+      `/generic-webhook-integration/project/${w.project.id}`,
+      "POST",
+      { webhookUrl: "https://hooks.example.com/kaneo" },
+    );
+    expect(response.status).not.toBe(403);
+    expect(response.status).not.toBe(401);
   });
 
   it("does not let a project admin manage integrations of the project", async () => {

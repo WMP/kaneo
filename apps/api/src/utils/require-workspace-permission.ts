@@ -1,14 +1,22 @@
-import { and, eq } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
-import db, { schema } from "../database";
 import { isInstanceAdmin } from "./is-instance-admin";
-import { type ProjectAccess, projectAccessSatisfies } from "./project-access";
 import {
-  type PermissionMap,
-  resolveRoleStatements,
-  satisfies,
-} from "./role-statements";
+  type ProjectAccess,
+  projectAccessSatisfies,
+  workspaceMemberStanding,
+} from "./project-access";
+import { type PermissionMap, satisfies } from "./role-statements";
+
+// Does the API key behind this request (if any) allow `required`? A request
+// without a scoped key is not restricted here. Every scope check goes through
+// this helper.
+export function apiKeyAllows(c: Context, required: PermissionMap): boolean {
+  const apiKey = c.get("apiKey") as
+    | { permissions?: Record<string, string[]> | null }
+    | undefined;
+  return !apiKey?.permissions || satisfies(apiKey.permissions, required);
+}
 
 function projectAccessesOf(c: Context): ProjectAccess[] | null {
   const many = c.get("projectAccesses") as ProjectAccess[] | undefined;
@@ -68,12 +76,7 @@ export async function hasWorkspacePermission(
   const workspaceId = workspaceIdOverride ?? c.get("workspaceId");
   if (!workspaceId) return false;
 
-  const apiKey = c.get("apiKey") as
-    | { permissions?: Record<string, string[]> | null }
-    | undefined;
-  if (apiKey?.permissions && !satisfies(apiKey.permissions, permissions)) {
-    return false;
-  }
+  if (!apiKeyAllows(c, permissions)) return false;
 
   if (await isInstanceAdmin(c)) {
     return true;
@@ -97,22 +100,21 @@ export async function hasWorkspacePermission(
   }
   if (Object.keys(workspaceLevel).length === 0) return true;
 
-  const [member] = await db
-    .select({ role: schema.workspaceUserTable.role })
-    .from(schema.workspaceUserTable)
-    .where(
-      and(
-        eq(schema.workspaceUserTable.workspaceId, workspaceId),
-        eq(schema.workspaceUserTable.userId, userId),
-      ),
-    )
-    .limit(1);
+  // A full-access caller already holds their workspace role's statements in
+  // the resolved access (and owners, composite owner names included, are
+  // unrestricted): no second lookup. Only a project member needs their
+  // workspace role looked up.
+  const first = projectAccesses?.[0];
+  if (first && projectAccesses?.every((access) => access.mode === "full")) {
+    return projectAccessSatisfies(first, workspaceLevel);
+  }
 
-  if (!member?.role) return false;
-
-  const statements = await resolveRoleStatements(workspaceId, member.role);
-
-  return Boolean(statements && satisfies(statements, workspaceLevel));
+  const standing = await workspaceMemberStanding(userId, workspaceId);
+  if (!standing) return false;
+  if (standing.owner) return true;
+  return Boolean(
+    standing.statements && satisfies(standing.statements, workspaceLevel),
+  );
 }
 
 export function requireWorkspacePermission(permissions: PermissionMap) {
@@ -123,10 +125,7 @@ export function requireWorkspacePermission(permissions: PermissionMap) {
       });
     }
 
-    const apiKey = c.get("apiKey") as
-      | { permissions?: Record<string, string[]> | null }
-      | undefined;
-    if (apiKey?.permissions && !satisfies(apiKey.permissions, permissions)) {
+    if (!apiKeyAllows(c, permissions)) {
       throw new HTTPException(403, { message: "Insufficient API key scope" });
     }
 
