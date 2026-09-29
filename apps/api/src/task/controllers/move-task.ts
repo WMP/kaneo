@@ -1,11 +1,13 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   assetTable,
   columnTable,
   projectTable,
+  taskAssignmentTable,
   taskTable,
+  userTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
 import {
@@ -14,9 +16,8 @@ import {
 } from "../../utils/project-access";
 import { filterUsersWithProjectAccess } from "../../utils/project-scope-filters";
 import {
-  type AssigneeTarget,
   readTaskAssignees,
-  setTaskAssignees,
+  recomputeTaskPrimaryAssignees,
 } from "../assignments";
 import { claimTaskNumber } from "./claim-task-numbers";
 import { nextTaskPosition } from "./next-task-position";
@@ -132,27 +133,7 @@ async function moveTask({
     destinationStatus,
   );
 
-  // Assignees who cannot open the destination project are removed with the move
-  // (as `moveProject` does for people outside the target workspace); the rest,
-  // and resources, stay.
-  const assignees = (await readTaskAssignees(db, [taskId])).get(taskId) ?? [];
-  const userAssigneeIds = [
-    ...new Set([
-      ...(existingTask.userId ? [existingTask.userId] : []),
-      ...assignees.flatMap((assignee) =>
-        assignee.userId ? [assignee.userId] : [],
-      ),
-    ]),
-  ];
-  const keptUserIds = await filterUsersWithProjectAccess(
-    userAssigneeIds,
-    destinationProjectId,
-  );
-  const removedAssigneeIds = userAssigneeIds.filter(
-    (userId) => !keptUserIds.has(userId),
-  );
-
-  const movedTask = await db.transaction(async (tx) => {
+  const { movedTask, removedAssigneeIds } = await db.transaction(async (tx) => {
     const nextTaskNumber = await claimTaskNumber(destinationProjectId, tx);
     const nextPosition = await nextTaskPosition(
       tx,
@@ -184,24 +165,48 @@ async function moveTask({
       .set({ projectId: destinationProjectId })
       .where(eq(assetTable.taskId, taskId));
 
-    if (removedAssigneeIds.length > 0) {
-      const remaining: AssigneeTarget[] = [
-        ...userAssigneeIds
-          .filter((userId) => keptUserIds.has(userId))
-          .map((userId) => ({ userId })),
+    // Assignees who cannot open the destination project are removed with the
+    // move (as `moveProject` does for people outside the target workspace);
+    // the others, and resources, stay. Read inside the transaction, so the rows
+    // that are checked are the rows that are deleted.
+    const assignees = (await readTaskAssignees(tx, [taskId])).get(taskId) ?? [];
+    const userAssigneeIds = [
+      ...new Set([
+        ...(existingTask.userId ? [existingTask.userId] : []),
         ...assignees.flatMap((assignee) =>
-          assignee.resourceId ? [{ resourceId: assignee.resourceId }] : [],
+          assignee.userId ? [assignee.userId] : [],
         ),
-      ];
-      await setTaskAssignees(tx, taskId, remaining);
-      const [reloaded] = await tx
-        .select({ userId: taskTable.userId })
-        .from(taskTable)
-        .where(eq(taskTable.id, taskId));
-      return { ...updatedTask, userId: reloaded?.userId ?? null };
+      ]),
+    ];
+    const keptUserIds = await filterUsersWithProjectAccess(
+      userAssigneeIds,
+      destinationProjectId,
+    );
+    const removed = userAssigneeIds.filter(
+      (userId) => !keptUserIds.has(userId),
+    );
+
+    if (removed.length === 0) {
+      return { movedTask: updatedTask, removedAssigneeIds: removed };
     }
 
-    return updatedTask;
+    await tx
+      .delete(taskAssignmentTable)
+      .where(
+        and(
+          eq(taskAssignmentTable.taskId, taskId),
+          inArray(taskAssignmentTable.userId, removed),
+        ),
+      );
+    await recomputeTaskPrimaryAssignees(tx, [taskId]);
+    const [reloaded] = await tx
+      .select({ userId: taskTable.userId })
+      .from(taskTable)
+      .where(eq(taskTable.id, taskId));
+    return {
+      movedTask: { ...updatedTask, userId: reloaded?.userId ?? null },
+      removedAssigneeIds: removed,
+    };
   });
 
   await publishEvent("task.moved", {
@@ -216,14 +221,35 @@ async function moveTask({
     newStatus: resolvedColumn.slug,
   });
 
-  if (removedAssigneeIds.length > 0 && !movedTask.userId) {
-    await publishEvent("task.unassigned", {
-      taskId,
-      type: "unassigned",
-      userId: currentUserId,
-      projectId: destinationProject.id,
-      title: movedTask.title,
-    });
+  // The same events an assignee change publishes, so the activity feed,
+  // notifications and integrations see the removal.
+  if (removedAssigneeIds.length > 0) {
+    if (!movedTask.userId) {
+      await publishEvent("task.unassigned", {
+        taskId,
+        projectId: destinationProject.id,
+        userId: currentUserId,
+        title: movedTask.title,
+        type: "unassigned",
+      });
+    } else {
+      const [newAssignee] = await db
+        .select({ name: userTable.name })
+        .from(userTable)
+        .where(eq(userTable.id, movedTask.userId));
+      await publishEvent("task.assignee_changed", {
+        taskId,
+        projectId: destinationProject.id,
+        userId: currentUserId,
+        oldAssignee: existingTask.userId,
+        newAssignee: newAssignee?.name,
+        newAssigneeId: movedTask.userId,
+        addedAssigneeIds: [],
+        removedAssigneeIds,
+        title: movedTask.title,
+        type: "assignee_changed",
+      });
+    }
   }
 
   return {
