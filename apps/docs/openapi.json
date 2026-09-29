@@ -8295,7 +8295,7 @@
           "Projects"
         ],
         "summary": "List projects",
-        "description": "List a workspace's projects in sidebar order, each with rollup task statistics. Archived projects are excluded unless includeArchived is set.",
+        "description": "List a workspace's projects in sidebar order, each with rollup task statistics. Archived projects are excluded unless includeArchived is set. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
         "parameters": [
           {
             "schema": {
@@ -8436,7 +8436,7 @@
           "Projects"
         ],
         "summary": "Get workspace portfolio",
-        "description": "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+        "description": "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. A dependency is listed only when both of its projects are.",
         "parameters": [
           {
             "schema": {
@@ -8811,7 +8811,7 @@
           "Projects"
         ],
         "summary": "Reorder projects",
-        "description": "Set the sidebar order of a workspace's projects. The given positions express relative order only -- the workspace is renumbered to 0..n-1.",
+        "description": "Set the sidebar order of a workspace's projects. The given positions express relative order only -- the workspace is renumbered to 0..n-1. A caller without full access may only order projects they are a member of; any other id is refused like an unknown one.",
         "parameters": [
           {
             "schema": {
@@ -11232,7 +11232,7 @@
           "Tasks"
         ],
         "summary": "Update task assignee",
-        "description": "Assign a task to a workspace member, or send null to unassign it.",
+        "description": "Assign a task to a member who can open its project (a project member, or a user with full access), or send null to unassign it.",
         "parameters": [
           {
             "schema": {
@@ -11385,7 +11385,7 @@
             "description": "Missing or invalid credentials"
           },
           "403": {
-            "description": "No workspace access, missing task:assign permission, or an assignee is not a member of the workspace",
+            "description": "No workspace access, missing task:assign permission, or a new assignee cannot access the task's project",
             "content": {
               "text/plain": {
                 "schema": {
@@ -13418,7 +13418,7 @@
           "Labels"
         ],
         "summary": "Get workspace labels",
-        "description": "Get all labels for a specific workspace",
+        "description": "Get all labels for a specific workspace. Labels attached to tasks of projects the caller cannot access are left out unless the caller has full access.",
         "parameters": [
           {
             "schema": {
@@ -14460,7 +14460,7 @@
           "Search"
         ],
         "summary": "Global search",
-        "description": "Search across tasks, projects, workspaces, comments, and activities in one workspace. Results are ranked by relevance and returned as a single flat list, each entry tagged with its `type`.",
+        "description": "Search across tasks, projects, workspaces, comments, and activities in one workspace. Results are ranked by relevance and returned as a single flat list, each entry tagged with its `type`. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
         "parameters": [
           {
             "schema": {
@@ -17982,7 +17982,7 @@
           "Task Relations"
         ],
         "summary": "Get task relations",
-        "description": "Get every relation where the task is the source or the target, each with a summary of both linked tasks. Relations pointing outside the caller's workspace are omitted.",
+        "description": "Get every relation where the task is the source or the target, each with a summary of both linked tasks. Relations pointing outside the caller's workspace, or to a task in a project the caller cannot access, are omitted.",
         "parameters": [
           {
             "schema": {
@@ -18040,7 +18040,7 @@
           "Task Relations"
         ],
         "summary": "Get project task relations",
-        "description": "Get every relation touching one of the project's tasks, each with a summary of both linked tasks, in a single call. Powers the Gantt chart's dependency lines. Relations pointing outside the caller's workspace are omitted.",
+        "description": "Get every relation touching one of the project's tasks, each with a summary of both linked tasks, in a single call. Powers the Gantt chart's dependency lines. Relations pointing outside the caller's workspace, or to a task in a project the caller cannot access, are omitted.",
         "parameters": [
           {
             "schema": {
@@ -18829,7 +18829,7 @@
           "Workspaces"
         ],
         "summary": "Get workspace members",
-        "description": "Get all members of a workspace, with their role.",
+        "description": "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them.",
         "parameters": [
           {
             "schema": {
@@ -18942,7 +18942,7 @@
           "Workspaces"
         ],
         "summary": "Get workspace activity",
-        "description": "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated.",
+        "description": "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. Activity that belongs to the workspace and to no task stays visible.",
         "parameters": [
           {
             "schema": {
@@ -19342,7 +19342,7 @@
           "Workload"
         ],
         "summary": "Get workspace workload",
-        "description": "Aggregate a workspace's dated, not-done tasks by assignee over weekly buckets across a date range, for spotting who is overloaded. A task with neither a start nor a due date is excluded; one with only a start or only a due date counts as a single day on that date. Unassigned tasks are grouped into their own row.",
+        "description": "Aggregate a workspace's dated, not-done tasks by assignee over weekly buckets across a date range, for spotting who is overloaded. A task with neither a start nor a due date is excluded; one with only a start or only a due date counts as a single day on that date. Unassigned tasks are grouped into their own row. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. Member rows follow the workspace member list rule.",
         "parameters": [
           {
             "schema": {
@@ -19430,7 +19430,7 @@
           "Workload"
         ],
         "summary": "Get a workload assignee's matching tasks",
-        "description": "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work.",
+        "description": "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
         "parameters": [
           {
             "schema": {

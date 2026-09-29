@@ -22,7 +22,7 @@ const getWorkspaceWorkloadRoute = createRoute({
   tags: ["Workload"],
   summary: "Get workspace workload",
   description:
-    "Aggregate a workspace's dated, not-done tasks by assignee over weekly buckets across a date range, for spotting who is overloaded. A task with neither a start nor a due date is excluded; one with only a start or only a due date counts as a single day on that date. Unassigned tasks are grouped into their own row.",
+    "Aggregate a workspace's dated, not-done tasks by assignee over weekly buckets across a date range, for spotting who is overloaded. A task with neither a start nor a due date is excluded; one with only a start or only a due date counts as a single day on that date. Unassigned tasks are grouped into their own row. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. Member rows follow the workspace member list rule.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ task: ["read"] }),
@@ -44,7 +44,7 @@ const getWorkspaceWorkloadTasksRoute = createRoute({
   tags: ["Workload"],
   summary: "Get a workload assignee's matching tasks",
   description:
-    "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work.",
+    "Drill-through for the workload view: the same dated, not-done tasks counted for one assignee (or the unassigned row) over the exact requested date range, for opening or filtering to that person's work. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ task: ["read"] }),

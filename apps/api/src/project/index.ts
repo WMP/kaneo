@@ -98,7 +98,7 @@ const listProjectsRoute = createRoute({
   tags: ["Projects"],
   summary: "List projects",
   description:
-    "List a workspace's projects in sidebar order, each with rollup task statistics. Archived projects are excluded unless includeArchived is set.",
+    "List a workspace's projects in sidebar order, each with rollup task statistics. Archived projects are excluded unless includeArchived is set. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
   middleware: [workspaceAccess.fromQuery()] as const,
   request: { query: listProjectsQuery },
   responses: {
@@ -115,7 +115,7 @@ const getPortfolioRoute = createRoute({
   tags: ["Projects"],
   summary: "Get workspace portfolio",
   description:
-    "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set.",
+    "Get every project in a workspace together with its tasks' scheduling data (start/due date, progress, milestone flag, status), plus the cross-project `blocks` relations between them, for one shared cross-project timeline. Archived tasks are excluded; archived projects are excluded unless includeArchived is set. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. A dependency is listed only when both of its projects are.",
   middleware: [
     workspaceAccess.fromQuery(),
     requireWorkspacePermission({ project: ["read"], task: ["read"] }),
@@ -186,7 +186,7 @@ const reorderProjectsRoute = createRoute({
   tags: ["Projects"],
   summary: "Reorder projects",
   description:
-    "Set the sidebar order of a workspace's projects. The given positions express relative order only -- the workspace is renumbered to 0..n-1.",
+    "Set the sidebar order of a workspace's projects. The given positions express relative order only -- the workspace is renumbered to 0..n-1. A caller without full access may only order projects they are a member of; any other id is refused like an unknown one.",
   middleware: [
     workspaceAccess.fromQuery(),
     requireWorkspacePermission({ project: ["update"] }),

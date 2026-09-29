@@ -90,7 +90,7 @@ const getWorkspaceActivityRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Get workspace activity",
   description:
-    "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated.",
+    "List activity across every task in the workspace, newest first: comments alongside system events such as status and assignee changes. Filter by user, activity type, project, or a creation-date range; paginated. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of. Activity that belongs to the workspace and to no task stays visible.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ task: ["read"] }),

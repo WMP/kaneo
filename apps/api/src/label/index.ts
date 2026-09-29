@@ -55,7 +55,8 @@ const getWorkspaceLabelsRoute = createRoute({
   path: "/workspace/{workspaceId}",
   tags: ["Labels"],
   summary: "Get workspace labels",
-  description: "Get all labels for a specific workspace",
+  description:
+    "Get all labels for a specific workspace. Labels attached to tasks of projects the caller cannot access are left out unless the caller has full access.",
   middleware: [workspaceAccess.fromParam()] as const,
   request: { params: workspaceIdParam },
   responses: {

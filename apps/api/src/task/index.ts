@@ -427,7 +427,7 @@ const updateTaskAssigneeRoute = createRoute({
   tags: ["Tasks"],
   summary: "Update task assignee",
   description:
-    "Assign a task to a workspace member, or send null to unassign it.",
+    "Assign a task to a member who can open its project (a project member, or a user with full access), or send null to unassign it.",
   middleware: [
     workspaceAccess.fromTask(),
     requireWorkspacePermission({ task: ["assign"] }),
@@ -477,7 +477,7 @@ const updateTaskAssigneesRoute = createRoute({
     ),
     400: errorResponse("Invalid body, or unknown task"),
     403: errorResponse(
-      "No workspace access, missing task:assign permission, or an assignee is not a member of the workspace",
+      "No workspace access, missing task:assign permission, or a new assignee cannot access the task's project",
     ),
   },
 });
