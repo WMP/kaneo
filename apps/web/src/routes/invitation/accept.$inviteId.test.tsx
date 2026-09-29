@@ -359,4 +359,134 @@ describe("AcceptInvitation", () => {
       expect(toast.error).not.toHaveBeenCalled();
     });
   });
+
+  describe("project invitations", () => {
+    const oneProject = [{ id: "project-1", name: "Apollo", role: "member" }];
+    const twoProjects = [
+      { id: "project-1", name: "Apollo", role: "member" },
+      { id: "project-2", name: "Zephyr", role: "viewer" },
+    ];
+
+    function renderWithProjects({
+      signedIn,
+      projects,
+    }: {
+      signedIn: boolean;
+      projects?: { id: string; name: string; role: string }[];
+    }) {
+      useSession.mockReturnValue(
+        signedIn
+          ? {
+              data: { user: { email: "invitee@kaneo.test", name: "Ada" } },
+              isPending: false,
+            }
+          : { data: null, isPending: false },
+      );
+      useGetInvitationDetails.mockReturnValue({
+        data: {
+          valid: true,
+          invitation: {
+            id: "invitation-1",
+            email: "invitee@kaneo.test",
+            workspaceName: "Kaneo",
+            inviterName: "Ada",
+            expiresAt: "2999-01-01T00:00:00.000Z",
+            status: "pending",
+            expired: false,
+            projects,
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+      render(<AcceptInvitation />);
+    }
+
+    it("names the project and the role for a signed-in invitee", () => {
+      renderWithProjects({ signedIn: true, projects: oneProject });
+
+      expect(
+        screen.getByText("projectInvitations:accept.invitedToProject"),
+      ).toBeVisible();
+    });
+
+    it("lists every project of the invitation for a signed-out invitee", () => {
+      renderWithProjects({ signedIn: false, projects: twoProjects });
+
+      expect(
+        screen.getByText("projectInvitations:accept.invitedToProjects"),
+      ).toBeVisible();
+      expect(
+        screen.getAllByText("projectInvitations:accept.projectRole"),
+      ).toHaveLength(2);
+    });
+
+    it("shows no project line for a plain workspace invitation", () => {
+      renderWithProjects({ signedIn: true, projects: [] });
+
+      expect(
+        screen.queryByText("projectInvitations:accept.invitedToProject"),
+      ).toBeNull();
+      expect(
+        screen.queryByText("projectInvitations:accept.invitedToProjects"),
+      ).toBeNull();
+    });
+
+    it("explains what to do when the person already is a workspace member", async () => {
+      acceptInvitation.mockResolvedValue({
+        data: null,
+        error: {
+          code: "ALREADY_WORKSPACE_MEMBER",
+          message: "You are already a member of this workspace.",
+        },
+      });
+      writeAutoAcceptMarker("invitation-1");
+
+      renderWithProjects({ signedIn: true, projects: oneProject });
+
+      expect(
+        await screen.findByText("projectInvitations:accept.alreadyMemberTitle"),
+      ).toBeVisible();
+      expect(
+        screen.getByText("projectInvitations:accept.alreadyMemberDescription"),
+      ).toBeVisible();
+      // It is a state of its own, not an error toast, and nothing to retry.
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
+      expect(readAutoAcceptMarker("invitation-1")).toBeNull();
+    });
+
+    it("keeps the accept button and says so when the project access was not applied", async () => {
+      acceptInvitation.mockResolvedValue({
+        data: null,
+        error: {
+          code: "PROJECT_INVITATION_NOT_APPLIED",
+          message: "The project access of the invitation could not be applied.",
+        },
+      });
+      renderWithProjects({ signedIn: true, projects: oneProject });
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      );
+
+      await waitFor(() =>
+        expect(toast.error).toHaveBeenCalledWith(
+          "projectInvitations:errors.notApplied",
+        ),
+      );
+      // The same link can be used again.
+      expect(
+        screen.getByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeEnabled();
+    });
+  });
 });

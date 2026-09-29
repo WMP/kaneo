@@ -1,5 +1,6 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { InfoIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -225,6 +226,16 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                     </AlertDescription>
                   </Alert>
                 ) : null}
+                <p className="text-xs text-muted-foreground">
+                  {t("projectMembers:workspaceInvite.info")}{" "}
+                  <Link
+                    to="/dashboard/settings/projects"
+                    onClick={onClose}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    {t("projectMembers:workspaceInvite.link")}
+                  </Link>
+                </p>
                 <FormField
                   control={form.control}
                   name="email"

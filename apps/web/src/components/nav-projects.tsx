@@ -57,6 +57,7 @@ import useDeleteProject from "@/hooks/mutations/project/use-delete-project";
 import useReorderProjects from "@/hooks/mutations/project/use-reorder-projects";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import { useRestrictedProjectAccess } from "@/hooks/use-restricted-project-access";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { projectAccessQueryOptions } from "@/lib/project-access-query";
 import { toast } from "@/lib/toast";
@@ -138,6 +139,7 @@ export function NavProjects() {
   // Matches the API, which gates /project/reorder on `project: ["update"]`
   // alone — not the create+update+delete bundle.
   const canReorder = canUpdateProjects();
+  const isRestricted = useRestrictedProjectAccess() === true;
   const navigate = useNavigate();
   const { workspaceId: currentWorkspaceId, projectId: currentProjectId } =
     useParams({
@@ -348,6 +350,15 @@ export function NavProjects() {
                       );
                     })}
                   </SortableContext>
+
+                  {projects && projects.length === 0 && isRestricted ? (
+                    <li
+                      role="status"
+                      className="px-3.5 py-1 text-xs text-sidebar-foreground/70"
+                    >
+                      {t("projectMembers:noProjects.description")}
+                    </li>
+                  ) : null}
 
                   {canCreate && (
                     <SidebarMenuItem className="mt-1">

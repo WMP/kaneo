@@ -56,6 +56,7 @@ import { shortcuts } from "@/constants/shortcuts";
 import useReorderProjects from "@/hooks/mutations/project/use-reorder-projects";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useRestrictedProjectAccess } from "@/hooks/use-restricted-project-access";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { formatDateMedium } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -158,6 +159,9 @@ function RouteComponent() {
 
   const { canCreateProjects, canUpdateProjects } = useWorkspacePermission();
   const canCreate = canCreateProjects();
+  // Somebody who sees only the projects they were added to has an empty list
+  // when nobody added them yet, which is not the same as "no projects".
+  const isRestricted = useRestrictedProjectAccess() === true;
   // Matches the API, which gates /project/reorder on `project: ["update"]`
   // alone — not the create+update+delete bundle.
   const canReorder = canUpdateProjects();
@@ -314,11 +318,17 @@ function RouteComponent() {
               <EmptyMedia variant="icon">
                 <LayoutGrid />
               </EmptyMedia>
-              <EmptyTitle>{t("workspace:projects.emptyTitle")}</EmptyTitle>
+              <EmptyTitle>
+                {isRestricted
+                  ? t("projectMembers:noProjects.title")
+                  : t("workspace:projects.emptyTitle")}
+              </EmptyTitle>
               <EmptyDescription>
-                {canCreate
-                  ? t("workspace:projects.emptyDescription")
-                  : t("workspace:projects.emptyDescriptionReadOnly")}
+                {isRestricted
+                  ? t("projectMembers:noProjects.description")
+                  : canCreate
+                    ? t("workspace:projects.emptyDescription")
+                    : t("workspace:projects.emptyDescriptionReadOnly")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>

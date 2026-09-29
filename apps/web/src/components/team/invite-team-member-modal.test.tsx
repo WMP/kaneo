@@ -44,6 +44,28 @@ vi.mock("react-i18next", async (importOriginal) => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    children,
+    to,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    onClick?: () => void;
+  }) => (
+    <a
+      href={to}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick?.();
+      }}
+    >
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({
     refetchQueries: vi.fn().mockResolvedValue(undefined),
@@ -104,6 +126,21 @@ const submitEmail = async (value: string) => {
 };
 
 describe("InviteTeamMemberModal", () => {
+  it("says that people without full access see only their projects and links to the project settings", () => {
+    const onClose = vi.fn();
+    render(<InviteTeamMemberModal open onClose={onClose} />);
+
+    expect(
+      screen.getByText(/projectMembers:workspaceInvite\.info/),
+    ).toBeVisible();
+    const link = screen.getByRole("link", {
+      name: "projectMembers:workspaceInvite.link",
+    });
+    expect(link).toHaveAttribute("href", "/dashboard/settings/projects");
+    fireEvent.click(link);
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it("rejects an invalid email with a translated message and sends nothing", async () => {
     render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 

@@ -19,6 +19,7 @@ import { Trans, useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import type { InvitationProject } from "@/fetchers/invitation/get-invitation-details";
 import { useGetInvitationDetails } from "@/hooks/queries/invitation/use-get-invitation-details";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -28,11 +29,45 @@ import {
   writeAutoAcceptMarker,
 } from "@/lib/auto-accept-invitation";
 import { toast } from "@/lib/toast";
+import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 import { AuthLayout } from "../../components/auth/layout";
 
 export const Route = createFileRoute("/invitation/accept/$inviteId")({
   component: AcceptInvitation,
 });
+
+// What accepting adds the person to besides the workspace. Absent for a plain
+// workspace invitation.
+function InvitedProjects({ projects }: { projects?: InvitationProject[] }) {
+  const { t } = useTranslation();
+  if (!projects || projects.length === 0) return null;
+  if (projects.length === 1) {
+    const [project] = projects;
+    return (
+      <p className="text-sm text-foreground">
+        {t("projectInvitations:accept.invitedToProject", {
+          project: project.name,
+          role: getWorkspaceRoleLabel(project.role, t),
+        })}
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-1 text-sm text-foreground">
+      <p>{t("projectInvitations:accept.invitedToProjects")}</p>
+      <ul className="list-inside list-disc">
+        {projects.map((project) => (
+          <li key={project.id}>
+            {t("projectInvitations:accept.projectRole", {
+              project: project.name,
+              role: getWorkspaceRoleLabel(project.role, t),
+            })}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function AcceptInvitation() {
   const { t } = useTranslation();
@@ -42,6 +77,9 @@ function AcceptInvitation() {
   const navigate = useNavigate();
   const [isAccepting, setIsAccepting] = useState(false);
   const [hasAccepted, setHasAccepted] = useState(false);
+  // The signed-in person already belongs to the workspace, so the invitation
+  // cannot add them to its project (409 ALREADY_WORKSPACE_MEMBER).
+  const [isAlreadyMember, setIsAlreadyMember] = useState(false);
   // True from the first render when this browser holds a fresh auto-accept
   // marker, until the automatic accept fails or the effect below decides not
   // to run it. It lets the page show an "accepting" state instead of flashing
@@ -86,7 +124,16 @@ function AcceptInvitation() {
 
     const { data, error } = result;
     if (error) {
-      toast.error(error.message || t("auth:invitation.toast.acceptFailed"));
+      if (error.code === "ALREADY_WORKSPACE_MEMBER") {
+        // Nothing to retry: show what to do instead of an error toast.
+        clearAutoAcceptMarker(inviteId);
+        setIsAlreadyMember(true);
+      } else if (error.code === "PROJECT_INVITATION_NOT_APPLIED") {
+        // The invitation is usable again; the manual button stays for a retry.
+        toast.error(t("projectInvitations:errors.notApplied"));
+      } else {
+        toast.error(error.message || t("auth:invitation.toast.acceptFailed"));
+      }
       setIsAccepting(false);
       setIsAutoAccepting(false);
       return;
@@ -291,6 +338,39 @@ function AcceptInvitation() {
     );
   }
 
+  if (isSignedIn && isAlreadyMember) {
+    return (
+      <>
+        <PageTitle title={t("auth:invitation.pageTitleAccept")} />
+        <AuthLayout title={t("auth:invitation.pageTitleAccept")}>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary/10 rounded-full">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <div className="space-y-3 text-center" role="status">
+              <h2 className="text-lg font-semibold text-foreground">
+                {t("projectInvitations:accept.alreadyMemberTitle")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t("projectInvitations:accept.alreadyMemberDescription", {
+                  workspaceName: invitation.workspaceName,
+                })}
+              </p>
+              <InvitedProjects projects={invitation.projects} />
+            </div>
+            <Button
+              render={<Link to="/dashboard" />}
+              variant="outline"
+              className="w-full"
+            >
+              {t("auth:invitation.goToDashboard")}
+            </Button>
+          </div>
+        </AuthLayout>
+      </>
+    );
+  }
+
   // Accepted: a success state with a way on, whatever happens to navigation.
   if (isSignedIn && hasAccepted) {
     return (
@@ -365,6 +445,7 @@ function AcceptInvitation() {
                   components={{ inviter: <strong /> }}
                 />
               </p>
+              <InvitedProjects projects={invitation.projects} />
             </div>
 
             <div className="space-y-3 pt-2">
@@ -434,6 +515,7 @@ function AcceptInvitation() {
                 components={{ inviter: <strong /> }}
               />
             </p>
+            <InvitedProjects projects={invitation.projects} />
             <p className="text-sm text-muted-foreground">
               {t("auth:invitation.createAccountOrSignIn")}
             </p>
