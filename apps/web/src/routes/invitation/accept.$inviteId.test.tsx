@@ -289,7 +289,7 @@ describe("AcceptInvitation", () => {
       expect(toast.error).not.toHaveBeenCalled();
     });
 
-    it("offers no manual action or link between joining and the navigation", async () => {
+    it("switches to the success state as soon as the invitation is accepted", async () => {
       let resolveSetActive: (value: unknown) => void = () => {};
       setActive.mockReturnValue(
         new Promise((resolve) => {
@@ -301,19 +301,9 @@ describe("AcceptInvitation", () => {
       renderSignedInInvitation();
 
       await waitFor(() => expect(setActive).toHaveBeenCalledTimes(1));
-      // Joined, activation still pending: nothing clickable yet.
+      // Activation is still pending, yet the page is already in the success
+      // state: a way on is visible and the manual accept is gone.
       expect(navigate).not.toHaveBeenCalled();
-      expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull();
-      expect(
-        screen.queryByRole("button", {
-          name: "auth:invitation.acceptInvitation",
-        }),
-      ).toBeNull();
-      expect(screen.getByText("auth:invitation.autoAccepting")).toBeVisible();
-
-      resolveSetActive({});
-      await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
-      // Once navigation has been issued, the success view is the fallback.
       expect(
         await screen.findByText("auth:invitation.goToDashboard"),
       ).toBeVisible();
@@ -322,15 +312,17 @@ describe("AcceptInvitation", () => {
           name: "auth:invitation.acceptInvitation",
         }),
       ).toBeNull();
+      expect(readAutoAcceptMarker("invitation-1")).toBeNull();
+      expect(toast.success).toHaveBeenCalledWith(
+        "auth:invitation.toast.acceptSuccess",
+      );
+
+      resolveSetActive({});
+      await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
     });
 
-    it("keeps a manual accept's actions hidden until navigation is issued", async () => {
-      let resolveSetActive: (value: unknown) => void = () => {};
-      setActive.mockReturnValue(
-        new Promise((resolve) => {
-          resolveSetActive = resolve;
-        }),
-      );
+    it("ends in the success state after a manual accept too, without a stuck spinner", async () => {
+      setActive.mockReturnValue(new Promise(() => {}));
       renderSignedInInvitation();
 
       fireEvent.click(
@@ -339,14 +331,32 @@ describe("AcceptInvitation", () => {
         }),
       );
 
-      await waitFor(() => expect(setActive).toHaveBeenCalledTimes(1));
-      expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull();
       expect(
-        screen.getByRole("button", { name: "auth:invitation.accepting" }),
-      ).toBeDisabled();
+        await screen.findByText("auth:invitation.goToDashboard"),
+      ).toBeVisible();
+      expect(
+        screen.queryByRole("button", { name: "auth:invitation.accepting" }),
+      ).toBeNull();
+    });
 
-      resolveSetActive({});
+    it("still ends in the success state when navigating throws after joining", async () => {
+      navigate.mockImplementationOnce(() => {
+        throw new Error("router exploded");
+      });
+      writeAutoAcceptMarker("invitation-1");
+
+      renderSignedInInvitation();
+
       await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
+      expect(
+        await screen.findByText("auth:invitation.goToDashboard"),
+      ).toBeVisible();
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 });

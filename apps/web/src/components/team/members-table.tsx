@@ -116,9 +116,11 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   const canChangeRoles = Boolean(canManageTeam());
   const canRemove = Boolean(canRemoveMembers());
   const canInvite = Boolean(canInviteUsers());
-  // "Invite again" creates one invitation and cancels another, and Better Auth
-  // checks the two permissions separately.
-  const canInviteAgain = canInvite && Boolean(canCancelInvitations());
+  // Cancelling is its own permission in Better Auth, and "Invite again" needs
+  // it on top of the right to invite (it creates one invitation and cancels
+  // another).
+  const canCancel = Boolean(canCancelInvitations());
+  const canInviteAgain = canInvite && canCancel;
 
   const assignableRoleNames = useMemo(
     () => (assignableRoles ?? []).map((r) => r.role),
@@ -459,7 +461,7 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                 –
               </TableCell>
               <TableCell className="pe-6 py-3 text-right">
-                {canInvite ? (
+                {canInvite && (isInvitationLive(invitation) || canCancel) ? (
                   <Menu>
                     <MenuTrigger
                       render={
@@ -512,12 +514,14 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                           {t("team:invitations.inviteAgain")}
                         </MenuItem>
                       ) : null}
-                      <MenuItem
-                        onClick={() => setInvitationToCancel(invitation)}
-                      >
-                        <TrashIcon className="size-4" />
-                        {t("team:membersTable.cancelInvitation")}
-                      </MenuItem>
+                      {canCancel ? (
+                        <MenuItem
+                          onClick={() => setInvitationToCancel(invitation)}
+                        >
+                          <TrashIcon className="size-4" />
+                          {t("team:membersTable.cancelInvitation")}
+                        </MenuItem>
+                      ) : null}
                     </MenuPopup>
                   </Menu>
                 ) : null}

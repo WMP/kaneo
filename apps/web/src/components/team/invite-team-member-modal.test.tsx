@@ -65,8 +65,10 @@ vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: activeWorkspace }),
 }));
 
+const refetchRoles = vi.fn();
+
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
-  default: () => rolesState,
+  default: () => ({ ...rolesState, refetch: refetchRoles }),
 }));
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
@@ -450,6 +452,22 @@ describe("InviteTeamMemberModal", () => {
           expect.objectContaining({ role: "viewer" }),
         ),
       );
+    });
+
+    it("refetches the assignable roles each time the modal opens, not on mount while closed", () => {
+      const { rerender } = render(
+        <InviteTeamMemberModal open={false} onClose={vi.fn()} />,
+      );
+      expect(refetchRoles).not.toHaveBeenCalled();
+
+      rerender(<InviteTeamMemberModal open onClose={vi.fn()} />);
+      expect(refetchRoles).toHaveBeenCalledTimes(1);
+      // It joins a request already in flight instead of restarting it.
+      expect(refetchRoles).toHaveBeenCalledWith({ cancelRefetch: false });
+
+      rerender(<InviteTeamMemberModal open={false} onClose={vi.fn()} />);
+      rerender(<InviteTeamMemberModal open onClose={vi.fn()} />);
+      expect(refetchRoles).toHaveBeenCalledTimes(2);
     });
   });
 });

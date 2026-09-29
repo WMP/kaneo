@@ -92,10 +92,14 @@ function AcceptInvitation() {
       return;
     }
 
-    // From here on the user is a member, so the manual "Accept" never returns.
-    // Every action stays hidden (isAccepting) until navigation has been issued,
-    // and only then does the success view take over as a fallback.
+    // The user is a member from here on. Show the success state (with its way
+    // on) right away and never bring the manual "Accept" back; everything that
+    // follows is best effort and cannot leave the page stuck. A click on the
+    // dashboard link while the workspace is still being activated is fine.
     clearAutoAcceptMarker(inviteId);
+    setHasAccepted(true);
+    setIsAccepting(false);
+    toast.success(t("auth:invitation.toast.acceptSuccess"));
 
     try {
       await authClient.organization.setActive({
@@ -106,18 +110,18 @@ function AcceptInvitation() {
       // resolves a workspace on its own.
     }
 
-    toast.success(t("auth:invitation.toast.acceptSuccess"));
-
-    if (sessionUserName) {
-      void navigate({
-        to: "/dashboard/workspace/$workspaceId",
-        params: { workspaceId: data?.invitation.organizationId || "" },
-      });
-    } else {
-      void navigate({ to: "/profile-setup" });
+    try {
+      if (sessionUserName) {
+        void navigate({
+          to: "/dashboard/workspace/$workspaceId",
+          params: { workspaceId: data?.invitation.organizationId || "" },
+        });
+      } else {
+        void navigate({ to: "/profile-setup" });
+      }
+    } catch {
+      // The success state already links to the dashboard.
     }
-    setHasAccepted(true);
-    setIsAccepting(false);
   }, [inviteId, navigate, sessionUserName, t]);
 
   // Joins the workspace without another click, but only for a user who just

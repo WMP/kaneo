@@ -1,7 +1,7 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
@@ -65,8 +65,17 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
     data: assignableRoles,
     isLoading: rolesLoading,
     isError: rolesFailed,
+    refetch: refetchRoles,
   } = useGetAssignableRoles(workspaceId);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  // The modal stays mounted while closed, so the query's own refetch-on-mount
+  // never fires when it opens. Refresh the list each time it opens: the
+  // caller's permissions may have changed since it was last fetched.
+  useEffect(() => {
+    if (open && workspaceId) {
+      void refetchRoles({ cancelRefetch: false });
+    }
+  }, [open, workspaceId, refetchRoles]);
   // Data can outlive a failed background refetch (isError with data): keep
   // using it. Only "no data at all" blocks the picker.
   const hasRoleData = assignableRoles !== undefined;

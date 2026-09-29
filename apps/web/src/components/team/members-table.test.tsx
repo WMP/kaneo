@@ -333,14 +333,33 @@ describe("MembersTable expired invitations", () => {
     expect(success).not.toHaveBeenCalledWith("team:inviteModal.success");
   });
 
-  it("hides 'Invite again' without the right to cancel invitations", async () => {
+  it("offers no actions for an expired invitation without the right to cancel", () => {
     canCancelInvitations.mockReturnValue(false);
     renderRow(expiredInvitation);
+
+    // Neither "Invite again" nor "Cancel" is available, so there is no menu.
+    expect(
+      screen.queryByRole("button", {
+        name: "team:membersTable.ariaInvitationActions",
+      }),
+    ).toBeNull();
+  });
+
+  it("hides cancel, but keeps the link action, on a live invitation without the right to cancel", async () => {
+    canCancelInvitations.mockReturnValue(false);
+    renderRow(pendingInvitation);
     openMenu();
 
-    await screen.findByRole("menuitem", {
-      name: "team:membersTable.cancelInvitation",
-    });
+    expect(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.copyLink",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("menuitem", {
+        name: "team:membersTable.cancelInvitation",
+      }),
+    ).toBeNull();
     expect(
       screen.queryByRole("menuitem", { name: "team:invitations.inviteAgain" }),
     ).toBeNull();
