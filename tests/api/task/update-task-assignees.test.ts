@@ -4,6 +4,7 @@ const mockFindFirst = vi.fn();
 const mockSelect = vi.fn();
 const mockPublishEvent = vi.fn();
 const mockFilterAssignableUsers = vi.fn();
+const mockFilterWorkspaceMembers = vi.fn();
 const mockGetProjectWorkspaceId = vi.fn();
 const mockFilterWorkspaceResources = vi.fn();
 const mockSetTaskAssignees = vi.fn();
@@ -25,6 +26,9 @@ vi.mock("../../../apps/api/src/events", () => ({
 }));
 
 vi.mock("../../../apps/api/src/utils/assert-assignable-user", () => ({
+  // Workspace-level check, applied to assignees carried over unchanged.
+  filterAssignableUsers: (...args: unknown[]) =>
+    mockFilterWorkspaceMembers(...args),
   filterProjectAssignableUsers: (...args: unknown[]) =>
     mockFilterAssignableUsers(...args),
   getProjectWorkspaceId: (...args: unknown[]) =>
@@ -63,6 +67,9 @@ function makeSelectChain(rows: unknown[]) {
 describe("updateTaskAssignees", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockFilterWorkspaceMembers.mockImplementation(
+      async (ids: string[]) => new Set(ids),
+    );
   });
 
   it("throws 404 when the task does not exist", async () => {
@@ -93,6 +100,32 @@ describe("updateTaskAssignees", () => {
       }),
     ).rejects.toMatchObject({ status: 403 });
 
+    expect(mockSetTaskAssignees).not.toHaveBeenCalled();
+  });
+
+  it("rejects with 403 when a carried-over assignee is no longer a workspace member", async () => {
+    mockFindFirst.mockResolvedValue(EXISTING_TASK);
+    mockGetProjectWorkspaceId.mockResolvedValue("ws-1");
+    mockReadTaskAssignees.mockResolvedValue(
+      new Map([["task-1", [{ userId: "user-left", resourceId: null }]]]),
+    );
+    mockFilterAssignableUsers.mockResolvedValue(new Set());
+    mockFilterWorkspaceMembers.mockResolvedValue(new Set());
+
+    await expect(
+      updateTaskAssignees({
+        id: "task-1",
+        userIds: ["user-left"],
+        currentUserId: "user-1",
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+
+    // Carried over: only the workspace-level check applies, not the project's.
+    expect(mockFilterWorkspaceMembers).toHaveBeenCalledWith(
+      ["user-left"],
+      "ws-1",
+    );
+    expect(mockFilterAssignableUsers).toHaveBeenCalledWith([], "proj-1");
     expect(mockSetTaskAssignees).not.toHaveBeenCalled();
   });
 
