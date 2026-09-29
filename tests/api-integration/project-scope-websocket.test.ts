@@ -174,7 +174,7 @@ describe("what a project socket receives", () => {
     expect(JSON.stringify(messages(onP2))).not.toContain(w.t1.id);
   });
 
-  it("without projectTaskIds a relation event carries no foreign or unlisted id", async () => {
+  it("a relation event without projectTaskIds carries no relation id at all", async () => {
     const w = await buildWorld();
     const onP1 = connect(w.p1.project.id, w.u.id, w.workspaceId);
     const onP2 = connect(w.p2.project.id, w.a.id, w.workspaceId);
@@ -200,9 +200,9 @@ describe("what a project socket receives", () => {
       expect(onP2.send).toHaveBeenCalled();
     });
     const [forP1] = messages(onP1);
-    // The primary event's own source task is the one id known to be local.
-    expect(forP1.taskId).toBe(w.t1.id);
-    expect(forP1.sourceTaskId).toBe(w.t1.id);
+    // No fallback: nothing is sent that the publisher did not list.
+    expect(forP1.taskId).toBe("");
+    expect(forP1.sourceTaskId).toBeUndefined();
     expect(forP1.targetTaskId).toBeUndefined();
     const [forP2] = messages(onP2);
     expect(forP2.taskId).toBe("");
@@ -596,5 +596,96 @@ describe("how revalidation behaves under load and failure", () => {
     await update(w);
     await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(2));
     expect(resolveProjectAccess).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("repeated failed checks", () => {
+  const update = (w: Awaited<ReturnType<typeof buildWorld>>) =>
+    publishEvent("task.updated", {
+      taskId: w.t1.id,
+      projectId: w.p1.project.id,
+      userId: w.a.id,
+    });
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 150));
+
+  it("closes a connection with 1011 after three failed checks in a row, only that connection", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const failing = connect(w.p1.project.id, w.u.id, w.workspaceId);
+    const healthy = connect(w.p1.project.id, w.w.id, w.workspaceId);
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const actual = await vi.importActual<
+      typeof import("../../apps/api/src/utils/project-access")
+    >("../../apps/api/src/utils/project-access");
+    // The check fails for one user only, whatever the delivery.
+    vi.mocked(resolveProjectAccess).mockImplementation(
+      async (userId, projectId) => {
+        if (userId === w.u.id) throw new Error("database unavailable");
+        return actual.resolveProjectAccess(userId, projectId);
+      },
+    );
+    try {
+      vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        await update(w);
+        await vi.waitFor(() =>
+          expect(healthy.send).toHaveBeenCalledTimes(attempt),
+        );
+        await settle();
+        // A blip: the message is skipped, the socket stays.
+        expect(failing.send).not.toHaveBeenCalled();
+        expect(failing.close).not.toHaveBeenCalled();
+      }
+      await update(w);
+      await vi.waitFor(() => expect(failing.close).toHaveBeenCalledTimes(1));
+      expect(failing.close).toHaveBeenCalledWith(
+        1011,
+        "Project access could not be verified",
+      );
+      expect(failing.send).not.toHaveBeenCalled();
+      await vi.waitFor(() => expect(healthy.send).toHaveBeenCalledTimes(3));
+      expect(healthy.close).not.toHaveBeenCalled();
+    } finally {
+      vi.mocked(resolveProjectAccess).mockImplementation(
+        actual.resolveProjectAccess,
+      );
+      error.mockRestore();
+    }
+  });
+
+  it("an answered check resets the count", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const socket = connect(w.p1.project.id, w.u.id, w.workspaceId);
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+    const failOnce = () =>
+      vi
+        .mocked(resolveProjectAccess)
+        .mockRejectedValueOnce(new Error("database unavailable"));
+
+    // fail, fail, succeed, fail, fail: never three in a row.
+    failOnce();
+    await update(w);
+    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(1));
+    await settle();
+    failOnce();
+    await update(w);
+    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(2));
+    await settle();
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(1));
+    // The answered check confirmed the connection; force it due again.
+    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+    failOnce();
+    await update(w);
+    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(3));
+    await settle();
+    failOnce();
+    await update(w);
+    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(4));
+    await settle();
+    expect(socket.close).not.toHaveBeenCalled();
+    error.mockRestore();
   });
 });

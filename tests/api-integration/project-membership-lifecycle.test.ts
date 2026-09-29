@@ -668,3 +668,105 @@ describe("sockets close at once when access ends", () => {
     expect(open.first.close).not.toHaveBeenCalled();
   });
 });
+
+describe("sockets and role changes", () => {
+  const opened: Array<{ projectId: string; conn: unknown }> = [];
+
+  function socket(projectId: string, userId: string, workspaceId: string) {
+    const ws = { send: vi.fn(), close: vi.fn() };
+    const conn = addConnection(
+      projectId,
+      ws as never,
+      userId,
+      `${userId}-window`,
+      workspaceId,
+    );
+    opened.push({ projectId, conn });
+    return ws;
+  }
+
+  afterEach(() => {
+    for (const { projectId, conn } of opened.splice(0)) {
+      removeConnection(projectId, conn as never);
+    }
+  });
+
+  const patchRole = (path: string, role: string) =>
+    app.request(`/api${path}`, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        Origin: origin,
+        Cookie: s.owner.cookie,
+      },
+      body: JSON.stringify({ role }),
+    });
+
+  it("re-saving the same project role closes nothing", async () => {
+    const onProject = socket(s.p1.project.id, s.guest.id, s.first.id);
+    const same = await patchRole(
+      `/project/${s.p1.project.id}/members/${s.guest.id}`,
+      "member",
+    );
+    expect(same.status).toBe(200);
+    expect(onProject.close).not.toHaveBeenCalled();
+    const changed = await patchRole(
+      `/project/${s.p1.project.id}/members/${s.guest.id}`,
+      "viewer",
+    );
+    expect(changed.status).toBe(200);
+    expect(onProject.close).toHaveBeenCalledTimes(1);
+  });
+
+  it("changing a workspace role closes the member's sockets in that workspace only", async () => {
+    const first = socket(s.p1.project.id, s.guest.id, s.first.id);
+    const second = socket(s.p2.project.id, s.guest.id, s.first.id);
+    const otherWorkspace = socket(s.p3.project.id, s.guest.id, s.second.id);
+    const ownerSocket = socket(s.p1.project.id, s.owner.id, s.first.id);
+
+    const changed = await authPost(
+      "/organization/update-member-role",
+      {
+        organizationId: s.first.id,
+        memberId: s.guest.memberId,
+        role: "viewer",
+      },
+      s.owner.cookie,
+    );
+    expect(changed.status).toBe(200);
+    expect(first.close).toHaveBeenCalledWith(1008, "Project access revoked");
+    expect(second.close).toHaveBeenCalledWith(1008, "Project access revoked");
+    expect(otherWorkspace.close).not.toHaveBeenCalled();
+    expect(ownerSocket.close).not.toHaveBeenCalled();
+  });
+
+  it("setting the workspace role a member already has closes nothing", async () => {
+    const first = socket(s.p1.project.id, s.guest.id, s.first.id);
+    const same = await authPost(
+      "/organization/update-member-role",
+      {
+        organizationId: s.first.id,
+        memberId: s.guest.memberId,
+        role: "member",
+      },
+      s.owner.cookie,
+    );
+    expect(same.status).toBe(200);
+    expect(first.close).not.toHaveBeenCalled();
+  });
+
+  it("a refused workspace role change closes nothing", async () => {
+    const first = socket(s.p1.project.id, s.guest.id, s.first.id);
+    const refused = await authPost(
+      "/organization/update-member-role",
+      {
+        organizationId: s.first.id,
+        memberId: s.guest.memberId,
+        role: "no-such-role",
+      },
+      s.owner.cookie,
+    );
+    expect(refused.status).toBeGreaterThanOrEqual(400);
+    expect(first.close).not.toHaveBeenCalled();
+  });
+});
