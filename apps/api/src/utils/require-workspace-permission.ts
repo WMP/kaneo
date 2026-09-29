@@ -3,12 +3,32 @@ import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
 import { isInstanceAdmin } from "./is-instance-admin";
+import { type ProjectAccess, projectAccessSatisfies } from "./project-access";
 import {
   type PermissionMap,
   resolveRoleStatements,
   satisfies,
 } from "./role-statements";
 
+function projectAccessesOf(c: Context): ProjectAccess[] | null {
+  const many = c.get("projectAccesses") as ProjectAccess[] | undefined;
+  if (many && many.length > 0) return many;
+  const one = c.get("projectAccess") as ProjectAccess | undefined;
+  return one ? [one] : null;
+}
+
+// Checks a permission for the current request.
+//
+// - When the request resolved a project (`workspaceAccess` set
+//   `projectAccess`), the statements of the user's effective role IN THAT
+//   PROJECT apply: the project role for a project member, the workspace role
+//   for a full-access user. A bulk request that touches several projects must
+//   hold the permission in every one of them.
+// - Without a resolved project the workspace role applies (workspace settings,
+//   roles, invitations, creating projects, workspace-wide lists).
+// - With `workspaceIdOverride` the request acts on ANOTHER workspace than the
+//   one it was authorized against, so the workspace role of that workspace
+//   applies, never the statements of the source project.
 export async function hasWorkspacePermission(
   c: Context,
   permissions: PermissionMap,
@@ -33,6 +53,13 @@ export async function hasWorkspacePermission(
 
   const userId = c.get("userId");
   if (!userId) return false;
+
+  const projectAccesses = workspaceIdOverride ? null : projectAccessesOf(c);
+  if (projectAccesses) {
+    return projectAccesses.every((access) =>
+      projectAccessSatisfies(access, permissions),
+    );
+  }
 
   const [member] = await db
     .select({ role: schema.workspaceUserTable.role })

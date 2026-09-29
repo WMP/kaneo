@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import db, { schema } from "../../../apps/api/src/database";
 import { DEFAULT_PROJECT_COLUMNS } from "../../../apps/api/src/project/controllers/create-project";
 
@@ -47,16 +48,73 @@ export async function createWorkspaceMember(
   return { user, workspace };
 }
 
+// A new user who joins an EXISTING workspace with a workspace role. Joining the
+// workspace gives no project access: pair it with `addProjectMember`.
+export async function addWorkspaceMember(workspaceId: string, role: string) {
+  const userId = `user-${randomUUID()}`;
+  const [user] = await db
+    .insert(schema.userTable)
+    .values({
+      id: userId,
+      email: `${userId}@example.com`,
+      emailVerified: true,
+      name: `Member ${role}`,
+    })
+    .returning();
+  await db.insert(schema.workspaceUserTable).values({
+    workspaceId,
+    userId,
+    role,
+    joinedAt: new Date(),
+  });
+  return user;
+}
+
+// Gives a user access to a project with a project role (a workspace role
+// catalog name, never `owner`).
+export async function addProjectMember(
+  projectId: string,
+  userId: string,
+  role: string,
+) {
+  const [row] = await db
+    .insert(schema.projectMemberTable)
+    .values({ projectId, userId, role })
+    .returning();
+  return row;
+}
+
+// The project role a workspace member gets from `members: "workspace"`: their
+// own workspace role, except that `owner` is never a project role.
+function projectRoleForWorkspaceRole(role: string) {
+  return role
+    .split(",")
+    .map((part) => part.trim())
+    .includes("owner")
+    ? "admin"
+    : role;
+}
+
+// `members` decides who can see the project:
+// - "workspace" (default): every CURRENT workspace member becomes a project
+//   member with the project role equal to their workspace role. Role-matrix
+//   tests then exercise the same permissions as before project membership
+//   existed. Members added to the workspace afterwards get no project access:
+//   use `addProjectMember`.
+// - "none": nobody is a project member. Access tests use this so that access
+//   comes only from full-access roles or an explicit `addProjectMember`.
 export async function createProjectFixture({
   workspaceId,
   name = "Integration Project",
   icon = "Folder",
   slug = `project-${randomUUID()}`,
+  members = "workspace",
 }: {
   workspaceId: string;
   name?: string;
   icon?: string;
   slug?: string;
+  members?: "workspace" | "none";
 }) {
   const [project] = await db
     .insert(schema.projectTable)
@@ -67,6 +125,25 @@ export async function createProjectFixture({
       slug,
     })
     .returning();
+
+  if (members === "workspace") {
+    const workspaceMembers = await db
+      .select({
+        userId: schema.workspaceUserTable.userId,
+        role: schema.workspaceUserTable.role,
+      })
+      .from(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.workspaceId, workspaceId));
+    if (workspaceMembers.length > 0) {
+      await db.insert(schema.projectMemberTable).values(
+        workspaceMembers.map((member) => ({
+          projectId: project.id,
+          userId: member.userId,
+          role: projectRoleForWorkspaceRole(member.role),
+        })),
+      );
+    }
+  }
 
   const insertedColumns: (typeof schema.columnTable.$inferSelect)[] = [];
 

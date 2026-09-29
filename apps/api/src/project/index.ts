@@ -476,7 +476,13 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(createProjectRoute, async (c) => {
     const { name, icon, slug } = c.req.valid("json");
     const workspaceId = c.get("workspaceId");
-    const newProject = await createProjectCtrl(workspaceId, name, icon, slug);
+    const newProject = await createProjectCtrl(
+      workspaceId,
+      name,
+      icon,
+      slug,
+      c.get("userId"),
+    );
     return c.json(toPublicProject(newProject), 200);
   })
   .openapi(getProjectRoute, async (c) => {

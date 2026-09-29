@@ -6,6 +6,7 @@ const { state } = vi.hoisted(() => ({
   state: {
     resolveCalls: 0,
     validateCalls: [] as { userId: string; workspaceId: string }[],
+    projectCalls: [] as { userId: string; projectId: string }[],
     caller: "anonymous" as "anonymous" | "member" | "outsider",
   },
 }));
@@ -33,6 +34,15 @@ vi.mock("../../../apps/api/src/utils/validate-workspace-access", () => ({
   },
 }));
 
+// A workspace member reaches every project except "project-denied", which
+// stands for a project they are not a member of.
+vi.mock("../../../apps/api/src/utils/project-access", () => ({
+  resolveProjectAccess: async (userId: string, projectId: string) => {
+    state.projectCalls.push({ userId, projectId });
+    return projectId === "project-denied" ? null : { projectId };
+  },
+}));
+
 const { authorizeAssetAccess, isPublicAsset } = await import(
   "../../../apps/api/src/utils/authorize-asset-access"
 );
@@ -52,6 +62,7 @@ describe("authorizeAssetAccess", () => {
   beforeEach(() => {
     state.resolveCalls = 0;
     state.validateCalls = [];
+    state.projectCalls = [];
     state.caller = "anonymous";
   });
 
@@ -59,6 +70,7 @@ describe("authorizeAssetAccess", () => {
     const status = await statusOf(
       authorizeAssetAccess(context, {
         workspaceId: "workspace-1",
+        projectId: "project-1",
         surface: "description",
         isPublic: true,
       }),
@@ -74,6 +86,7 @@ describe("authorizeAssetAccess", () => {
     const status = await statusOf(
       authorizeAssetAccess(context, {
         workspaceId: "workspace-1",
+        projectId: "project-1",
         surface: "description",
         isPublic: false,
       }),
@@ -88,6 +101,7 @@ describe("authorizeAssetAccess", () => {
     const status = await statusOf(
       authorizeAssetAccess(context, {
         workspaceId: "workspace-1",
+        projectId: "project-1",
         surface: "description",
         isPublic: null,
       }),
@@ -102,6 +116,7 @@ describe("authorizeAssetAccess", () => {
     const status = await statusOf(
       authorizeAssetAccess(context, {
         workspaceId: "workspace-1",
+        projectId: "project-1",
         surface: "description",
         isPublic: false,
       }),
@@ -112,10 +127,48 @@ describe("authorizeAssetAccess", () => {
       { userId: "user-member", workspaceId: "workspace-1" },
     ]);
   });
+
+  it("rejects a workspace member who is not a member of the asset's project", async () => {
+    state.caller = "member";
+
+    const status = await statusOf(
+      authorizeAssetAccess(context, {
+        workspaceId: "workspace-1",
+        projectId: "project-denied",
+        surface: "description",
+        isPublic: false,
+      }),
+    );
+
+    expect(status).toBe(403);
+    expect(state.projectCalls).toEqual([
+      { userId: "user-member", projectId: "project-denied" },
+    ]);
+  });
+
+  it("still serves a public description asset without any project check", async () => {
+    const status = await statusOf(
+      authorizeAssetAccess(context, {
+        workspaceId: "workspace-1",
+        projectId: "project-denied",
+        surface: "description",
+        isPublic: true,
+      }),
+    );
+
+    expect(status).toBe(200);
+    expect(state.projectCalls).toEqual([]);
+  });
+
   it.each(["comment", "unknown"])(
     "keeps %s assets private even in a public project",
     async (surface) => {
-      const asset = { workspaceId: "workspace-1", isPublic: true, surface };
+      const asset = {
+        workspaceId: "workspace-1",
+        projectId: "project-1",
+        isPublic: true,
+        surface,
+      };
       expect(isPublicAsset(asset)).toBe(false);
       expect(await statusOf(authorizeAssetAccess(context, asset))).toBe(401);
       state.caller = "outsider";

@@ -83,6 +83,7 @@ import { migrateSessionColumn } from "./utils/migrate-session-column";
 import { migrateTaskAssignments } from "./utils/migrate-task-assignments";
 import { migrateWorkspaceUserEmail } from "./utils/migrate-workspace-user-email";
 import { normalizeApiServerUrl } from "./utils/openapi-spec";
+import { resolveProjectAccess } from "./utils/project-access";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
 import { drainSignInEmails } from "./utils/sign-in-email-tasks";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
@@ -450,6 +451,7 @@ export function createApp() {
           filename: schema.assetTable.filename,
           surface: schema.assetTable.surface,
           workspaceId: schema.assetTable.workspaceId,
+          projectId: schema.assetTable.projectId,
           isPublic: schema.projectTable.isPublic,
         })
         .from(schema.assetTable)
@@ -856,7 +858,18 @@ export function createApp() {
           throw new HTTPException(401, { message: "Unauthorized" });
         }
 
-        await validateWorkspaceAccess(userId, project.workspaceId);
+        await validateWorkspaceAccess(
+          userId,
+          project.workspaceId,
+          c.get("apiKey")?.id,
+        );
+        // A project socket streams that project's events: it needs a project
+        // membership (or full access), not just workspace membership.
+        if (!(await resolveProjectAccess(userId, projectId))) {
+          throw new HTTPException(403, {
+            message: "You don't have access to this project",
+          });
+        }
         workspaceId = project.workspaceId;
       }
 

@@ -12,7 +12,10 @@ import {
 } from "../openapi";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
-import { workspaceAccess } from "../utils/workspace-access-middleware";
+import {
+  assertProjectAccess,
+  workspaceAccess,
+} from "../utils/workspace-access-middleware";
 import createTaskRelation from "./controllers/create-task-relation";
 import deleteTaskRelation from "./controllers/delete-task-relation";
 import getTaskRelations from "./controllers/get-task-relations";
@@ -30,14 +33,17 @@ import {
   updateTaskRelationBody,
 } from "./schema";
 
-async function workspaceIdOfTask(taskId: string) {
+async function scopeOfTask(taskId: string) {
   const [task] = await db
-    .select({ workspaceId: projectTable.workspaceId })
+    .select({
+      workspaceId: projectTable.workspaceId,
+      projectId: taskTable.projectId,
+    })
     .from(taskTable)
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(eq(taskTable.id, taskId))
     .limit(1);
-  return task?.workspaceId ?? null;
+  return task ?? null;
 }
 
 function requireUserId(c: Context) {
@@ -62,13 +68,14 @@ async function scopeToSourceTask(c: Context, next: Next) {
     throw new HTTPException(400, { message: "sourceTaskId is required" });
   }
 
-  const workspaceId = await workspaceIdOfTask(sourceTaskId);
-  if (!workspaceId) {
+  const scope = await scopeOfTask(sourceTaskId);
+  if (!scope) {
     throw new HTTPException(404, { message: "Source task not found" });
   }
 
-  await validateWorkspaceAccess(userId, workspaceId);
-  c.set("workspaceId", workspaceId);
+  await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
+  await assertProjectAccess(c, userId, { projectId: scope.projectId });
+  c.set("workspaceId", scope.workspaceId);
   return next();
 }
 
@@ -85,13 +92,14 @@ async function scopeToRelation(c: Context, next: Next) {
     throw new HTTPException(404, { message: "Task relation not found" });
   }
 
-  const workspaceId = await workspaceIdOfTask(rel.sourceTaskId);
-  if (!workspaceId) {
+  const scope = await scopeOfTask(rel.sourceTaskId);
+  if (!scope) {
     throw new HTTPException(404, { message: "Task not found" });
   }
 
-  await validateWorkspaceAccess(userId, workspaceId);
-  c.set("workspaceId", workspaceId);
+  await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
+  await assertProjectAccess(c, userId, { projectId: scope.projectId });
+  c.set("workspaceId", scope.workspaceId);
   return next();
 }
 

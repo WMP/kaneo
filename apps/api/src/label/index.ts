@@ -5,7 +5,10 @@ import {
   jsonResponse,
 } from "../openapi";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
-import { workspaceAccess } from "../utils/workspace-access-middleware";
+import {
+  projectFromBodyTask,
+  workspaceAccess,
+} from "../utils/workspace-access-middleware";
 import assignLabelToTask from "./controllers/assign-label-to-task";
 import createLabel from "./controllers/create-label";
 import deleteLabel from "./controllers/delete-label";
@@ -71,6 +74,7 @@ const createLabelRoute = createRoute({
   description: "Create a new label in a workspace",
   middleware: [
     workspaceAccess.fromBody(),
+    projectFromBodyTask(),
     requireWorkspacePermission({ label: ["create"] }),
   ] as const,
   request: {

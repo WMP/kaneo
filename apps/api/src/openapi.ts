@@ -1,6 +1,7 @@
 import { OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Session, User } from "better-auth/types";
 import { HTTPException } from "hono/http-exception";
+import type { ProjectAccess } from "./utils/project-access";
 
 export { createRoute } from "@hono/zod-openapi";
 export { z };
@@ -18,6 +19,11 @@ export type BaseVariables = {
   user: User | null;
   session: Session | null;
   apiKey?: ApiKey;
+  // Set by `workspaceAccess` when the request is scoped to one project, or to
+  // several (`projectAccesses`, bulk task requests).
+  projectId?: string;
+  projectAccess?: ProjectAccess;
+  projectAccesses?: ProjectAccess[];
 };
 
 // createRoute({ middleware }) registers middleware BEFORE the request

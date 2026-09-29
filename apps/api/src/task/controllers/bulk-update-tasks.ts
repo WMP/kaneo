@@ -14,6 +14,7 @@ import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gi
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
 import { removeLabelFromGitlab } from "../../plugins/gitlab/utils/sync-label-to-gitlab";
 import { assertAssignableUser } from "../../utils/assert-assignable-user";
+import { resolveProjectAccesses } from "../../utils/project-access";
 import {
   validateAndParseDate,
   validateDateRange,
@@ -109,6 +110,15 @@ async function bulkUpdateTasks({
   if (!membership) {
     throw new HTTPException(403, {
       message: "You don't have access to this workspace",
+    });
+  }
+
+  // Workspace membership does not open a project: every project the tasks
+  // belong to needs a project membership or full access.
+  const accessProjectIds = [...new Set(tasks.map((t) => t.projectId))];
+  if (!(await resolveProjectAccesses(userId, accessProjectIds))) {
+    throw new HTTPException(403, {
+      message: "You don't have access to this project",
     });
   }
 

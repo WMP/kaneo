@@ -7,6 +7,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { resolveProjectAccess } from "../../utils/project-access";
 import { wouldCreateCycle } from "./detect-relation-cycle";
 
 async function createTaskRelation({
@@ -88,6 +89,17 @@ async function createTaskRelation({
 
       if (!targetTask) {
         throw new HTTPException(404, { message: "Target task not found" });
+      }
+
+      // The request was authorized for the source task's project only. Linking
+      // into another project of the workspace needs access to that one too.
+      if (
+        targetTask.projectId !== sourceTask.projectId &&
+        !(await resolveProjectAccess(userId, targetTask.projectId))
+      ) {
+        throw new HTTPException(403, {
+          message: "You don't have access to this project",
+        });
       }
 
       const existing = await tx

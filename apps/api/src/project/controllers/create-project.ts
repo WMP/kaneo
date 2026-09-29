@@ -1,6 +1,10 @@
 import { eq, max, sql } from "drizzle-orm";
 import db from "../../database";
-import { columnTable, projectTable } from "../../database/schema";
+import {
+  columnTable,
+  projectMemberTable,
+  projectTable,
+} from "../../database/schema";
 
 export const DEFAULT_PROJECT_COLUMNS = [
   { name: "To Do", slug: "to-do", position: 0, isFinal: false },
@@ -14,6 +18,7 @@ async function createProject(
   name: string,
   icon: string,
   slug: string,
+  creatorUserId: string,
 ) {
   return db.transaction(async (tx) => {
     // Serialize ordering writes per workspace: without this, two concurrent
@@ -42,6 +47,15 @@ async function createProject(
       .returning();
 
     if (createdProject) {
+      // The creator becomes a project admin in the same transaction, so they
+      // never lose sight of a project they just made (a workspace role without
+      // full access reaches projects only through a membership).
+      await tx.insert(projectMemberTable).values({
+        projectId: createdProject.id,
+        userId: creatorUserId,
+        role: "admin",
+      });
+
       for (const col of DEFAULT_PROJECT_COLUMNS) {
         await tx.insert(columnTable).values({
           projectId: createdProject.id,
