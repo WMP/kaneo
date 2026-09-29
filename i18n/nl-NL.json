@@ -3277,5 +3277,170 @@
 		"railHeader": "Project",
 		"title": "Portfoliotijdlijn",
 		"toggleProjectAriaLabel": "{{name}}: uitvouwen of samenvouwen"
+	},
+	"projectInvitations": {
+		"accept": {
+			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
+			"alreadyMemberTitle": "You are already a member",
+			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
+			"invitedToProjects": "You are invited to these projects:",
+			"projectRole": "{{project}} as {{role}}"
+		},
+		"empty": "No pending invitations.",
+		"errors": {
+			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
+			"disposableEmail": "Disposable email addresses are not allowed.",
+			"expired": "This invitation has expired. Invite the person again.",
+			"guestCannotInvite": "Guest accounts cannot invite people.",
+			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
+			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
+			"notFound": "This invitation no longer exists. The list was reloaded.",
+			"rateLimited": "Too many invitations. Try again in a moment.",
+			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
+			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
+			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+		},
+		"invite": {
+			"addAsMember": "Add as member",
+			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
+			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
+			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
+			"createdSent": "Invitation sent to {{email}}.",
+			"createdTitle": "Invitation created",
+			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
+			"done": "Done",
+			"emailLabel": "Email",
+			"emailPlaceholder": "colleague@company.com",
+			"error": "Could not send the invitation",
+			"invalidEmail": "Enter a valid email address",
+			"noAssignableRoles": "You cannot assign any role, so you cannot invite people.",
+			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"rolePickRequired": "Choose a role.",
+			"rolePlaceholder": "Select a role",
+			"rolesError": "Could not load the roles you can assign.",
+			"rolesLoading": "Loading roles...",
+			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
+			"submit": "Send invitation",
+			"submitting": "Sending...",
+			"title": "Invite to project",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"list": {
+			"ariaActions": "Actions for the invitation of {{email}}",
+			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
+			"cancelDialogTitle": "Cancel invitation?",
+			"cancelError": "Could not cancel the invitation",
+			"cancelSuccess": "Invitation cancelled",
+			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"columns": {
+				"email": "Email",
+				"roles": "Roles"
+			},
+			"projectRole": "Project role: {{role}}",
+			"renewError": "Could not renew the invitation link",
+			"resendError": "Could not resend the invitation",
+			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
+			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
+			"rolesRetry": "Retry",
+			"workspaceRole": "Workspace role: {{role}}"
+		},
+		"loadError": "Could not load the pending invitations.",
+		"subtitle": "People invited to this project who have not joined yet.",
+		"title": "Pending invitations"
+	},
+	"projectMembers": {
+		"addDialog": {
+			"description": "Choose a workspace member and a project role.",
+			"error": "Could not add the member",
+			"loadError": "Could not load the people you can add.",
+			"loading": "Loading people...",
+			"memberLabel": "Workspace member",
+			"noAssignableRoles": "You cannot assign any role.",
+			"noCandidates": "Everyone in this workspace already has access to this project.",
+			"noMatches": "No one matches your search.",
+			"roleLabel": "Project role",
+			"rolePickRequired": "Choose the project role.",
+			"rolePlaceholder": "Select a role",
+			"rolesError": "Could not load the roles you can assign.",
+			"rolesLoading": "Loading roles...",
+			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
+			"searchPlaceholder": "Search by name or email",
+			"submit": "Add member",
+			"submitting": "Adding...",
+			"success": "Member added to the project",
+			"title": "Add project member"
+		},
+		"addMember": "Add member",
+		"errors": {
+			"alreadyProjectMember": "This person is already a member of this project.",
+			"cannotChangeOwnRole": "You cannot change your own project role.",
+			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
+			"insufficientPermissions": "You do not have permission to do this.",
+			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
+			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
+			"notProjectMember": "This person is not a member of this project any more.",
+			"notWorkspaceMember": "This person is not a member of the workspace.",
+			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
+			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
+			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
+			"unknownRole": "This role does not exist. Reload the page and choose another one.",
+			"userHasFullAccess": "This person already has full access to every project."
+		},
+		"inviteByEmail": "Invite by email",
+		"leaveDialog": {
+			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
+			"error": "Could not leave the project",
+			"success": "You left the project",
+			"title": "Leave this project?"
+		},
+		"loadError": "Could not load the project members.",
+		"loading": "Loading members...",
+		"noAccess": {
+			"back": "Back to projects",
+			"description": "Ask a project admin or a workspace admin to add you.",
+			"title": "You do not have access to this project"
+		},
+		"noProjects": {
+			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
+			"title": "No project access yet"
+		},
+		"pageTitle": "Project members",
+		"removeDialog": {
+			"description": "{{name}} will lose access to this project. They stay in the workspace.",
+			"error": "Could not remove the member",
+			"success": "Member removed from the project",
+			"title": "Remove from project?"
+		},
+		"retry": "Retry",
+		"subtitle": "People who can open this project, and what they can do in it.",
+		"table": {
+			"ariaActions": "Actions for {{name}}",
+			"ariaChangeRole": "Change project role of {{name}}",
+			"columns": {
+				"member": "Member",
+				"role": "Project role"
+			},
+			"emptyDescription": "Add a workspace member or invite someone by email.",
+			"emptyTitle": "No members yet",
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
+			"inactive": "inactive",
+			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
+			"leaveProject": "Leave project",
+			"removeMember": "Remove from project",
+			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
+			"rolesRetry": "Retry",
+			"roleUpdateError": "Could not update the project role",
+			"roleUpdateSuccess": "Project role updated",
+			"you": "You"
+		},
+		"title": "Members",
+		"workspaceInvite": {
+			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
+			"link": "Open project settings"
+		}
 	}
 }

@@ -3299,5 +3299,170 @@
 		"railHeader": "Projekt",
 		"title": "Oś czasu portfolio",
 		"toggleProjectAriaLabel": "{{name}}: rozwiń lub zwiń"
+	},
+	"projectMembers": {
+		"title": "Członkowie",
+		"pageTitle": "Członkowie projektu",
+		"subtitle": "Osoby, które mogą otworzyć ten projekt, i to, co mogą w nim robić.",
+		"loading": "Wczytywanie członków...",
+		"loadError": "Nie udało się wczytać członków projektu.",
+		"retry": "Spróbuj ponownie",
+		"addMember": "Dodaj członka",
+		"inviteByEmail": "Zaproś e-mailem",
+		"table": {
+			"columns": {
+				"member": "Członek",
+				"role": "Rola w projekcie"
+			},
+			"you": "Ty",
+			"fullAccess": "Pełny dostęp",
+			"fullAccessHint": "Ma dostęp do wszystkich projektów przez swoją rolę w obszarze roboczym. Zmienisz ją w członkach obszaru roboczego.",
+			"inactive": "nieaktywny",
+			"inactiveHint": "Ta rola nie daje już dostępu. Wybierz inną rolę albo usuń osobę.",
+			"emptyTitle": "Brak członków",
+			"emptyDescription": "Dodaj członka obszaru roboczego albo zaproś kogoś e-mailem.",
+			"ariaChangeRole": "Zmień rolę w projekcie: {{name}}",
+			"ariaActions": "Akcje dla: {{name}}",
+			"removeMember": "Usuń z projektu",
+			"leaveProject": "Opuść projekt",
+			"rolesLoadError": "Nie udało się wczytać ról, które możesz nadawać. Teraz nie zmienisz ról.",
+			"rolesRetry": "Spróbuj ponownie",
+			"roleUpdateSuccess": "Rola w projekcie została zmieniona",
+			"roleUpdateError": "Nie udało się zmienić roli w projekcie"
+		},
+		"removeDialog": {
+			"title": "Usunąć z projektu?",
+			"description": "{{name}} straci dostęp do tego projektu. Zostanie w obszarze roboczym.",
+			"success": "Członek został usunięty z projektu",
+			"error": "Nie udało się usunąć członka"
+		},
+		"leaveDialog": {
+			"title": "Opuścić ten projekt?",
+			"description": "Stracisz dostęp do tego projektu. Administrator projektu lub obszaru roboczego może dodać Cię ponownie.",
+			"success": "Opuszczono projekt",
+			"error": "Nie udało się opuścić projektu"
+		},
+		"addDialog": {
+			"title": "Dodaj członka projektu",
+			"description": "Wybierz członka obszaru roboczego i rolę w projekcie.",
+			"memberLabel": "Członek obszaru roboczego",
+			"searchPlaceholder": "Szukaj po imieniu lub e-mailu",
+			"noCandidates": "Wszyscy w tym obszarze roboczym mają już dostęp do tego projektu.",
+			"noMatches": "Nikt nie pasuje do wyszukiwania.",
+			"loading": "Wczytywanie osób...",
+			"loadError": "Nie udało się wczytać osób, które możesz dodać.",
+			"roleLabel": "Rola w projekcie",
+			"rolePlaceholder": "Wybierz rolę",
+			"rolesLoading": "Wczytywanie ról...",
+			"rolesError": "Nie udało się wczytać ról, które możesz nadawać.",
+			"noAssignableRoles": "Nie możesz nadać żadnej roli.",
+			"rolePickRequired": "Wybierz rolę w projekcie.",
+			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
+			"submit": "Dodaj członka",
+			"submitting": "Dodawanie...",
+			"success": "Członek został dodany do projektu",
+			"error": "Nie udało się dodać członka"
+		},
+		"noAccess": {
+			"title": "Nie masz dostępu do tego projektu",
+			"description": "Poproś administratora projektu lub obszaru roboczego o dodanie Cię.",
+			"back": "Wróć do projektów"
+		},
+		"noProjects": {
+			"title": "Brak dostępu do projektów",
+			"description": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu."
+		},
+		"workspaceInvite": {
+			"info": "Osoby bez pełnego dostępu widzą tylko projekty, do których zostały dodane. Aby zaprosić kogoś do jednego projektu, użyj opcji Zaproś e-mailem w ustawieniach projektu.",
+			"link": "Otwórz ustawienia projektu"
+		},
+		"errors": {
+			"roleExceedsYourPermissions": "Nie możesz nadać roli z większymi uprawnieniami niż Twoje.",
+			"cannotManageMember": "Nie możesz zarządzać członkiem, który ma więcej uprawnień niż Ty.",
+			"cannotChangeOwnRole": "Nie możesz zmienić własnej roli w projekcie.",
+			"ownerRoleNotAllowed": "Roli właściciela nie można użyć w projekcie.",
+			"unknownRole": "Ta rola nie istnieje. Odśwież stronę i wybierz inną.",
+			"memberHasFullAccess": "Ta osoba ma pełny dostęp przez rolę w obszarze roboczym. Zmienisz ją w członkach obszaru roboczego.",
+			"userHasFullAccess": "Ta osoba ma już pełny dostęp do wszystkich projektów.",
+			"alreadyProjectMember": "Ta osoba jest już członkiem tego projektu.",
+			"notWorkspaceMember": "Ta osoba nie jest członkiem obszaru roboczego.",
+			"notProjectMember": "Ta osoba nie jest już członkiem tego projektu.",
+			"membershipChanged": "Członkostwo zmieniło się w międzyczasie. Lista została wczytana ponownie. Spróbuj jeszcze raz.",
+			"insufficientPermissions": "Nie masz uprawnień, aby to zrobić.",
+			"roleAssignedToProjectMembers": "Członkowie projektu lub zaproszenia do projektu nadal używają tej roli. Najpierw nadaj im inną rolę."
+		}
+	},
+	"projectInvitations": {
+		"title": "Oczekujące zaproszenia",
+		"subtitle": "Osoby zaproszone do tego projektu, które jeszcze nie dołączyły.",
+		"empty": "Brak oczekujących zaproszeń.",
+		"loadError": "Nie udało się wczytać oczekujących zaproszeń.",
+		"list": {
+			"columns": {
+				"email": "E-mail",
+				"roles": "Role"
+			},
+			"workspaceRole": "Rola w obszarze roboczym: {{role}}",
+			"projectRole": "Rola w projekcie: {{role}}",
+			"ariaActions": "Akcje dla zaproszenia: {{email}}",
+			"cancelDialogTitle": "Anulować zaproszenie?",
+			"cancelDialogDescription": "Zaproszenie dla {{email}} do tego projektu zostanie anulowane. Link przestanie działać, jeśli nie daje dostępu do innego projektu.",
+			"cancelSuccess": "Zaproszenie zostało anulowane",
+			"cancelSuccessOtherProjects": "Ten projekt został usunięty z zaproszenia. Zaproszenie nadal daje dostęp do innych projektów.",
+			"cancelError": "Nie udało się anulować zaproszenia",
+			"resendNotDelivered": "Zaproszenie zostało odnowione, ale nie udało się wysłać e-maila. Skopiuj link i wyślij go sam.",
+			"resendError": "Nie udało się wysłać zaproszenia ponownie",
+			"renewError": "Nie udało się odnowić linku zaproszenia",
+			"rolesLoadError": "Nie udało się wczytać ról, które możesz nadawać. Teraz nie wyślesz zaproszeń ponownie.",
+			"rolesRetry": "Spróbuj ponownie"
+		},
+		"invite": {
+			"title": "Zaproś do projektu",
+			"description": "Zaproś osobę, której nie ma jeszcze w obszarze roboczym. Dostanie role wybrane poniżej.",
+			"emailLabel": "E-mail",
+			"emailPlaceholder": "kolega@firma.pl",
+			"invalidEmail": "Wpisz poprawny adres e-mail",
+			"workspaceRoleLabel": "Rola w obszarze roboczym",
+			"workspaceRoleHint": "Co osoba może robić w obszarze roboczym.",
+			"projectRoleLabel": "Rola w projekcie",
+			"projectRoleHint": "Co osoba może robić w tym projekcie.",
+			"rolePlaceholder": "Wybierz rolę",
+			"rolesLoading": "Wczytywanie ról...",
+			"rolesError": "Nie udało się wczytać ról, które możesz nadawać.",
+			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz zapraszać osób.",
+			"rolePickRequired": "Wybierz rolę.",
+			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
+			"noSmtpNotice": "E-mail nie jest skonfigurowany na tym serwerze. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
+			"submit": "Wyślij zaproszenie",
+			"submitting": "Wysyłanie...",
+			"createdTitle": "Zaproszenie zostało utworzone",
+			"createdSent": "Zaproszenie zostało wysłane do {{email}}.",
+			"createdNotSent": "Zaproszenie dla {{email}} zostało utworzone. E-mail nie został wysłany. Udostępnij link poniżej.",
+			"createdSendFailed": "Zaproszenie dla {{email}} zostało utworzone, ale nie udało się wysłać e-maila. Udostępnij link poniżej albo wyślij zaproszenie ponownie z listy.",
+			"addedToExisting": "{{email}} ma już oczekujące zaproszenie. Ten projekt został do niego dodany. Drugi e-mail nie został wysłany. W razie potrzeby udostępnij link.",
+			"done": "Gotowe",
+			"addAsMember": "Dodaj jako członka",
+			"error": "Nie udało się wysłać zaproszenia"
+		},
+		"errors": {
+			"alreadyWorkspaceMember": "Ta osoba jest już członkiem obszaru roboczego. Dodaj ją do projektu przez Dodaj członka.",
+			"roleConflict": "Oczekujące zaproszenie dla tego adresu e-mail już istnieje z inną rolą w obszarze roboczym. Anuluj je albo użyj tej samej roli.",
+			"workspaceInvitationExists": "Ten adres e-mail ma już oczekujące zaproszenie do obszaru roboczego. Dodać do niego projekt może tylko osoba, która może zapraszać do obszaru roboczego.",
+			"expired": "To zaproszenie wygasło. Zaproś osobę ponownie.",
+			"notFound": "To zaproszenie już nie istnieje. Lista została wczytana ponownie.",
+			"limitReached": "W obszarze roboczym jest zbyt wiele oczekujących zaproszeń. Najpierw anuluj część z nich.",
+			"guestCannotInvite": "Konta gości nie mogą zapraszać osób.",
+			"disposableEmail": "Jednorazowe adresy e-mail są niedozwolone.",
+			"rateLimited": "Zbyt wiele zaproszeń. Spróbuj za chwilę.",
+			"rateLimitedRetry": "Zbyt wiele zaproszeń. Spróbuj za {{seconds}} s.",
+			"notApplied": "Nie udało się nadać dostępu do projektu z tego zaproszenia. Spróbuj przyjąć je ponownie. Jeśli to się powtarza, poproś administratora obszaru roboczego o dodanie Cię do projektu."
+		},
+		"accept": {
+			"invitedToProject": "Zaproszono Cię do projektu {{project}} z rolą {{role}}.",
+			"invitedToProjects": "Zaproszono Cię do tych projektów:",
+			"projectRole": "{{project}}, rola: {{role}}",
+			"alreadyMemberTitle": "Jesteś już członkiem",
+			"alreadyMemberDescription": "Jesteś już członkiem obszaru {{workspaceName}}, więc to zaproszenie nie doda Cię do projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu."
+		}
 	}
 }
