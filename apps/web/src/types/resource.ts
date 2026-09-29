@@ -4,19 +4,39 @@ export type ResourceKind = "person" | "equipment" | "material";
  * account-less resource kinds. */
 export type AssigneeKind = ResourceKind | "user";
 
-/** A workspace-scoped assignable entity with no Kaneo account: a person,
- * a piece of equipment, or a material. Assignable to tasks like a user,
- * but never able to sign in (see AssigneeAvatarItem for how it renders
- * alongside real user assignees). */
+/** The account a person resource is linked to, as the caller may see it. */
+export type ResourceLinkedUser = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};
+
+/** The invitation sent from a person resource, while it can still be accepted
+ * ("pending") or is past its expiry ("expired"). */
+export type ResourceInvitation = {
+  status: "pending" | "expired";
+  expiresAt: string;
+};
+
+/** A workspace-scoped assignable entity: a person, a piece of equipment, or a
+ * material. Assignable to tasks like a user. A person resource has no account
+ * until it is invited (the invitation link is remembered) or linked to a
+ * member; then its assignments in the projects the account can open belong to
+ * the account (see AssigneeAvatarItem for how it renders alongside real user
+ * assignees). */
 export type Resource = {
   id: string;
   workspaceId: string;
   kind: ResourceKind;
   name: string;
   email: string | null;
-  // Linked Kaneo account, if any. Always null in this phase (F4a/F4a-web) —
-  // set later by an email/OIDC invite flow (F4b).
+  // Linked Kaneo account, if any.
   userId: string | null;
+  // The linked account when the caller may see that member; null for an
+  // unlinked resource, and for a linked one whose member the caller cannot see.
+  user?: ResourceLinkedUser | null;
+  invitation?: ResourceInvitation | null;
   createdAt: string;
   updatedAt: string;
 };

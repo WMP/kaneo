@@ -52,11 +52,17 @@ export function AssigneeResourceSection({
   const [email, setEmail] = useState("");
 
   const groupedResources = useMemo(() => {
+    // A resource linked to an account is that account: it is picked as the
+    // member. One that is still on the task stays listed, so it can be removed.
+    const pickable = resources.filter(
+      (resource) =>
+        !resource.userId || selectedResourceIds.includes(resource.id),
+    );
     return RESOURCE_KINDS.map((resourceKind) => ({
       kind: resourceKind,
-      items: resources.filter((resource) => resource.kind === resourceKind),
+      items: pickable.filter((resource) => resource.kind === resourceKind),
     })).filter((group) => group.items.length > 0);
-  }, [resources]);
+  }, [resources, selectedResourceIds]);
 
   const resetForm = () => {
     setName("");

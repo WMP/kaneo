@@ -1,8 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Box, Pencil, Plus, Trash2, User, Wrench } from "lucide-react";
+import {
+  Box,
+  Link2,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+  Unlink,
+  User,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
+import ResourceInviteDialog from "@/components/resource/resource-invite-dialog";
+import ResourceLinkDialog from "@/components/resource/resource-link-dialog";
+import ResourceStatusBadge from "@/components/resource/resource-status-badge";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -47,9 +60,11 @@ import {
 } from "@/components/ui/select";
 import useCreateResource from "@/hooks/mutations/resource/use-create-resource";
 import useDeleteResource from "@/hooks/mutations/resource/use-delete-resource";
+import useUnlinkResource from "@/hooks/mutations/resource/use-unlink-resource";
 import useUpdateResource from "@/hooks/mutations/resource/use-update-resource";
 import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { getResourceErrorMessage } from "@/lib/resource-error";
 import { toast } from "@/lib/toast";
 import type Resource from "@/types/resource";
 import type { ResourceKind } from "@/types/resource";
@@ -70,10 +85,14 @@ const KIND_ICONS: Record<ResourceKind, typeof Wrench> = {
 
 function RouteComponent() {
   const { t } = useTranslation();
-  const { workspace, canUpdateProjects } = useWorkspacePermission();
+  const { workspace, canUpdateProjects, canManageTeam } =
+    useWorkspacePermission();
   // Gated the same as POST/PATCH/DELETE /resource (project:update) — see
   // resource/index.ts.
   const canManage = canUpdateProjects();
+  // Linking a resource to a member also needs member:update (see the link
+  // route); inviting is decided per project by the API, which the dialog shows.
+  const canLink = canManage && canManageTeam();
   const workspaceId = workspace?.id ?? "";
 
   const {
@@ -85,6 +104,7 @@ function RouteComponent() {
   const createResource = useCreateResource();
   const updateResource = useUpdateResource();
   const deleteResource = useDeleteResource();
+  const unlinkResource = useUnlinkResource();
 
   const kindLabel = (kind: ResourceKind) =>
     t(`settings:workspaceResources.kind.${kind}`);
@@ -108,6 +128,29 @@ function RouteComponent() {
   const [deletingResource, setDeletingResource] = useState<Resource | null>(
     null,
   );
+
+  // Invite, link and unlink dialogs
+  const [inviting, setInviting] = useState<Resource | null>(null);
+  const [linking, setLinking] = useState<Resource | null>(null);
+  const [unlinking, setUnlinking] = useState<Resource | null>(null);
+
+  const handleUnlink = async () => {
+    if (!unlinking) return;
+
+    try {
+      await unlinkResource.mutateAsync({ id: unlinking.id });
+      toast.success(t("settings:workspaceResources.unlink.success"));
+      setUnlinking(null);
+    } catch (error) {
+      toast.error(
+        getResourceErrorMessage(
+          error,
+          t,
+          "settings:workspaceResources.unlink.error",
+        ),
+      );
+    }
+  };
 
   const resetCreate = () => {
     setNewName("");
@@ -133,7 +176,7 @@ function RouteComponent() {
         workspaceId,
         kind: newKind,
         name: trimmed,
-        email: newEmail.trim() || undefined,
+        email: newKind === "person" ? newEmail.trim() || undefined : undefined,
       });
       toast.success(t("settings:workspaceResources.createSuccess"));
       setCreateOpen(false);
@@ -168,7 +211,10 @@ function RouteComponent() {
       await updateResource.mutateAsync({
         id: editingResource.id,
         name: trimmed,
-        email: editEmail.trim() || null,
+        // Only a person has an email; leave it out for the other kinds.
+        ...(editingResource.kind === "person"
+          ? { email: editEmail.trim() || null }
+          : {}),
       });
       toast.success(t("settings:workspaceResources.updateSuccess"));
       setEditOpen(false);
@@ -288,9 +334,61 @@ function RouteComponent() {
                               {resource.email}
                             </span>
                           )}
+                          <ResourceStatusBadge resource={resource} />
                         </div>
                         {canManage && (
                           <div className="flex items-center gap-1 flex-shrink-0">
+                            {resource.kind === "person" && !resource.userId && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  className="gap-1"
+                                  disabled={!resource.email}
+                                  title={
+                                    resource.email
+                                      ? undefined
+                                      : t(
+                                          "settings:workspaceResources.inviteNeedsEmail",
+                                        )
+                                  }
+                                  onClick={() => setInviting(resource)}
+                                >
+                                  <Send className="size-3" />
+                                  {t(
+                                    "settings:workspaceResources.inviteAction",
+                                  )}
+                                </Button>
+                                {canLink && (
+                                  <Button
+                                    variant="outline"
+                                    size="xs"
+                                    className="gap-1"
+                                    onClick={() => setLinking(resource)}
+                                  >
+                                    <Link2 className="size-3" />
+                                    {t(
+                                      "settings:workspaceResources.linkAction",
+                                    )}
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                            {resource.kind === "person" &&
+                              resource.userId &&
+                              canLink && (
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  className="gap-1"
+                                  onClick={() => setUnlinking(resource)}
+                                >
+                                  <Unlink className="size-3" />
+                                  {t(
+                                    "settings:workspaceResources.unlinkAction",
+                                  )}
+                                </Button>
+                              )}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -383,18 +481,22 @@ function RouteComponent() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="new-resource-email">
-                {t("settings:workspaceResources.emailLabel")}
-              </Label>
-              <Input
-                id="new-resource-email"
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder={t("settings:workspaceResources.emailPlaceholder")}
-              />
-            </div>
+            {newKind === "person" && (
+              <div className="space-y-2">
+                <Label htmlFor="new-resource-email">
+                  {t("settings:workspaceResources.emailLabel")}
+                </Label>
+                <Input
+                  id="new-resource-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder={t(
+                    "settings:workspaceResources.emailPlaceholder",
+                  )}
+                />
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -451,18 +553,27 @@ function RouteComponent() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="edit-resource-email">
-                {t("settings:workspaceResources.emailLabel")}
-              </Label>
-              <Input
-                id="edit-resource-email"
-                type="email"
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder={t("settings:workspaceResources.emailPlaceholder")}
-              />
-            </div>
+            {editingResource?.kind === "person" && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-resource-email">
+                  {t("settings:workspaceResources.emailLabel")}
+                </Label>
+                <Input
+                  id="edit-resource-email"
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder={t(
+                    "settings:workspaceResources.emailPlaceholder",
+                  )}
+                />
+                {editingResource.invitation && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("settings:workspaceResources.emailChangeDetaches")}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -481,6 +592,53 @@ function RouteComponent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {inviting && workspaceId && (
+        <ResourceInviteDialog
+          resource={inviting}
+          workspaceId={workspaceId}
+          onClose={() => setInviting(null)}
+          onLinkInstead={(resource) => {
+            setInviting(null);
+            setLinking(resource);
+          }}
+        />
+      )}
+
+      {linking && workspaceId && (
+        <ResourceLinkDialog
+          resource={linking}
+          workspaceId={workspaceId}
+          onClose={() => setLinking(null)}
+        />
+      )}
+
+      {/* Unlink Confirmation */}
+      <AlertDialog
+        open={unlinking !== null}
+        onOpenChange={(open) => {
+          if (!open) setUnlinking(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("settings:workspaceResources.unlink.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("settings:workspaceResources.unlink.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => setUnlinking(null)}>
+              {t("common:actions.cancel")}
+            </Button>
+            <Button onClick={handleUnlink} disabled={unlinkResource.isPending}>
+              {t("settings:workspaceResources.unlinkAction")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation */}
       <AlertDialog
