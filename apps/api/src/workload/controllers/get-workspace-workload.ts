@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -8,6 +8,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { foldTargetId } from "../../resource/fold-linked-resources";
 import { accessibleProjectIds } from "../../utils/project-access";
 import getWorkspaceMembers from "../../workspace/controllers/get-workspace-members";
 import {
@@ -109,6 +110,32 @@ async function getWorkspaceWorkload({
   // account cannot open stay on the resource) counts in the account's row.
   // 'equipment'/'material' rows are excluded entirely — they aren't
   // people-capacity, and costs are a later phase.
+  //
+  // The fold into the account's row applies only when the caller may see that
+  // account (`foldTargetId`): otherwise the resource keeps its own row.
+  const members = await getWorkspaceMembers(
+    workspaceId,
+    userId,
+    visibleProjectIds,
+  );
+  const visibleAccountIds = new Set(members.map((member) => member.id));
+  const allPersonResources = await db
+    .select({
+      id: resourceTable.id,
+      name: resourceTable.name,
+      userId: resourceTable.userId,
+    })
+    .from(resourceTable)
+    .where(
+      and(
+        eq(resourceTable.workspaceId, workspaceId),
+        eq(resourceTable.kind, "person"),
+      ),
+    );
+  const personResources = allPersonResources.filter(
+    (resource) => foldTargetId(resource, visibleAccountIds) === resource.id,
+  );
+
   const matchedTaskIds = tasksForBucketing.map((task) => task.id);
   const assignmentRows = matchedTaskIds.length
     ? await db
@@ -132,7 +159,10 @@ async function getWorkspaceWorkload({
     const key =
       row.userId ??
       (row.resourceKind === "person"
-        ? (row.resourceUserId ?? row.resourceId)
+        ? foldTargetId(
+            { id: row.resourceId ?? "", userId: row.resourceUserId },
+            visibleAccountIds,
+          )
         : null);
     if (key === null) continue; // equipment/material: excluded from capacity.
 
@@ -165,26 +195,6 @@ async function getWorkspaceWorkload({
   // zero matching tasks, so absence of load is visible instead of silently
   // disappearing from the table. The unassigned row (`null`) is left as-is:
   // it only appears when at least one unassigned task matched.
-  const members = await getWorkspaceMembers(
-    workspaceId,
-    userId,
-    visibleProjectIds,
-  );
-  const personResources = await db
-    .select({
-      id: resourceTable.id,
-      name: resourceTable.name,
-    })
-    .from(resourceTable)
-    .where(
-      and(
-        eq(resourceTable.workspaceId, workspaceId),
-        eq(resourceTable.kind, "person"),
-        // A resource linked to an account is that account's row.
-        isNull(resourceTable.userId),
-      ),
-    );
-
   const rowByAssigneeId = new Map(
     workloadRows.map((row) => [row.assigneeId, row]),
   );

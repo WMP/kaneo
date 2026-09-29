@@ -7,6 +7,7 @@ import {
   taskAssignmentTable,
   taskTable,
 } from "../../database/schema";
+import { loadVisibleAccountIds } from "../../resource/fold-linked-resources";
 import { accessibleProjectIds } from "../../utils/project-access";
 import { startOfUtcDay } from "../bucket-workload";
 import { notDoneDatedTaskConditions } from "../matched-task-conditions";
@@ -61,6 +62,17 @@ async function getWorkspaceWorkloadTasks({
   // `assigneeId` is either a user id or a person-resource id — the aggregate
   // workload view keys a person-resource's row by its own resource id (see
   // get-workspace-workload.ts), so this drill-through accepts either.
+  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
+  // The resources linked to this account count in its row only for a caller
+  // who may see the account (`foldTargetId`), so the drill-through never
+  // confirms who a resource is linked to.
+  const accountVisible =
+    assigneeId !== WORKLOAD_UNASSIGNED_ASSIGNEE &&
+    (
+      await loadVisibleAccountIds(workspaceId, userId, visibleProjectIds, [
+        assigneeId,
+      ])
+    ).has(assigneeId);
   const assigneeCondition =
     assigneeId === WORKLOAD_UNASSIGNED_ASSIGNEE
       ? isNull(taskTable.userId)
@@ -74,21 +86,21 @@ async function getWorkspaceWorkloadTasks({
                 or(
                   eq(taskAssignmentTable.userId, assigneeId),
                   eq(taskAssignmentTable.resourceId, assigneeId),
-                  // A resource linked to this account counts in the account's
-                  // row (see the aggregate view), so it drills through here.
-                  inArray(
-                    taskAssignmentTable.resourceId,
-                    db
-                      .select({ id: resourceTable.id })
-                      .from(resourceTable)
-                      .where(
-                        and(
-                          eq(resourceTable.userId, assigneeId),
-                          eq(resourceTable.kind, "person"),
-                          eq(resourceTable.workspaceId, workspaceId),
-                        ),
-                      ),
-                  ),
+                  accountVisible
+                    ? inArray(
+                        taskAssignmentTable.resourceId,
+                        db
+                          .select({ id: resourceTable.id })
+                          .from(resourceTable)
+                          .where(
+                            and(
+                              eq(resourceTable.userId, assigneeId),
+                              eq(resourceTable.kind, "person"),
+                              eq(resourceTable.workspaceId, workspaceId),
+                            ),
+                          ),
+                      )
+                    : undefined,
                 ),
               ),
             ),
@@ -99,8 +111,6 @@ async function getWorkspaceWorkloadTasks({
     least(${taskTable.startDate}, ${taskTable.dueDate}) < ${rangeEnd}
     and greatest(${taskTable.startDate}, ${taskTable.dueDate}) >= ${rangeStart}
   `;
-
-  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
 
   const rows = await db
     .select({

@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import db from "../../database";
 import {
   projectMemberTable,
@@ -43,7 +43,13 @@ async function getWorkspaceMembers(
   workspaceId: string,
   viewerUserId: string,
   viewerProjectIds: string[] | null,
+  // Only these users are looked at (and returned when visible): the caller
+  // that needs a few people (the account a resource is linked to) does not
+  // read the whole workspace. The visibility rules are the same.
+  options: { userIds?: string[] } = {},
 ) {
+  const { userIds } = options;
+  if (userIds && userIds.length === 0) return [];
   const memberRows = await db
     .select({
       id: userTable.id,
@@ -55,7 +61,14 @@ async function getWorkspaceMembers(
     })
     .from(workspaceUserTable)
     .innerJoin(userTable, eq(workspaceUserTable.userId, userTable.id))
-    .where(eq(workspaceUserTable.workspaceId, workspaceId));
+    .where(
+      userIds
+        ? and(
+            eq(workspaceUserTable.workspaceId, workspaceId),
+            inArray(userTable.id, userIds),
+          )
+        : eq(workspaceUserTable.workspaceId, workspaceId),
+    );
 
   // One entry per user. Duplicate membership rows follow the rule of
   // `resolveProjectAccess` (`singleWorkspaceRole`): equal rows are one
@@ -96,7 +109,14 @@ async function getWorkspaceMembers(
         role: projectMemberTable.role,
       })
       .from(projectMemberTable)
-      .where(inArray(projectMemberTable.projectId, viewerProjectIds));
+      .where(
+        userIds
+          ? and(
+              inArray(projectMemberTable.projectId, viewerProjectIds),
+              inArray(projectMemberTable.userId, userIds),
+            )
+          : inArray(projectMemberTable.projectId, viewerProjectIds),
+      );
     const isUsable = createUsableProjectRoleChecker();
     for (const row of sharing) {
       if (await isUsable(workspaceId, row.role)) visibleIds.add(row.userId);

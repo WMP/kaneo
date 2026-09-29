@@ -31,29 +31,31 @@ export async function describeResources(
   rows: ResourceRow[],
   viewer: { userId: string; workspaceId: string },
 ): Promise<DescribedResource[]> {
-  const linkedIds = rows.flatMap((row) => (row.userId ? [row.userId] : []));
-  const membersById = new Map<
-    string,
-    { id: string; name: string; email: string; image: string | null }
-  >();
-  if (linkedIds.length > 0) {
-    const scope = await accessibleProjectIds(viewer.userId, viewer.workspaceId);
-    const members = await getWorkspaceMembers(
-      viewer.workspaceId,
-      viewer.userId,
-      scope,
-    );
-    for (const member of members) {
-      if (linkedIds.includes(member.id)) {
-        membersById.set(member.id, {
-          id: member.id,
-          name: member.name,
-          email: member.email,
-          image: member.image,
-        });
-      }
-    }
-  }
+  const linkedIds = [
+    ...new Set(rows.flatMap((row) => (row.userId ? [row.userId] : []))),
+  ];
+  // Only the linked accounts are looked at, with the members-list rules.
+  const scope =
+    linkedIds.length > 0
+      ? await accessibleProjectIds(viewer.userId, viewer.workspaceId)
+      : null;
+  const members = await getWorkspaceMembers(
+    viewer.workspaceId,
+    viewer.userId,
+    scope,
+    { userIds: linkedIds },
+  );
+  const membersById = new Map(
+    members.map((member) => [
+      member.id,
+      {
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        image: member.image,
+      },
+    ]),
+  );
 
   const invitationIds = rows.flatMap((row) =>
     row.invitationId && !row.userId ? [row.invitationId] : [],
