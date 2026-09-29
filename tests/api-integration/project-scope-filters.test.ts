@@ -239,6 +239,51 @@ async function buildWorld() {
   };
 }
 
+// Response shapes the tests read, kept to the fields they assert on.
+type Row = { id: string };
+type ProjectRow = { id: string; statistics: { totalTasks: number } };
+type SearchHit = {
+  id: string;
+  type: string;
+  title: string;
+  projectId?: string;
+};
+type SearchBody = { results: SearchHit[] };
+type ActivityRow = { id: string; taskId: string | null };
+type ActivityFeed = { data: ActivityRow[]; pagination: { total: number } };
+type Portfolio = {
+  projects: Array<{ id: string; tasks: Row[] }>;
+  dependencies: Array<{ sourceTaskId: string; targetTaskId: string }>;
+};
+type Workload = {
+  assignees: Array<{ userId: string | null; counts: number[] }>;
+};
+type WorkloadTasks = { tasks: Row[]; truncated?: boolean };
+type BoardTask = {
+  id: string;
+  subtaskCounts?: { completed: number; total: number };
+};
+type Board = {
+  columns: Array<{ tasks: BoardTask[] }>;
+  plannedTasks: BoardTask[];
+  archivedTasks: BoardTask[];
+};
+type BoardBody = Board | { data: Board };
+type PreferencesBody = {
+  workspaces: Array<{ projectMode: string; selectedProjectIds: string[] }>;
+};
+type ImportBody = { results: { successful: number; failed: number } };
+// What the mocked publishEvent received for a relation or assignee event.
+type PublishedEvent = {
+  projectId: string;
+  projectTaskIds: string[];
+  secondaryNotification?: boolean;
+  oldAssignee?: string | null;
+  newAssigneeId?: string;
+  addedAssigneeIds?: string[];
+  removedAssigneeIds?: string[];
+};
+
 type World = Awaited<ReturnType<typeof buildWorld>>;
 
 function call(path: string, method = "GET", body?: unknown) {
@@ -253,7 +298,7 @@ function call(path: string, method = "GET", body?: unknown) {
   });
 }
 
-async function json<T = any>(response: Response): Promise<T> {
+async function json<T = unknown>(response: Response): Promise<T> {
   expect(response.status, await response.clone().text()).toBe(200);
   return (await response.json()) as T;
 }
@@ -271,14 +316,14 @@ describe("project list and reorder", () => {
   it("lists only the caller's projects, with only their statistics", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<Array<any>>(
+    const own = await json<ProjectRow[]>(
       await call(`/project?workspaceId=${w.workspaceId}`),
     );
     expect(own.map((p) => p.id)).toEqual([w.p1.project.id]);
     expect(own[0].statistics.totalTasks).toBe(3);
 
     actAs(w.a);
-    const all = await json<Array<any>>(
+    const all = await json<ProjectRow[]>(
       await call(`/project?workspaceId=${w.workspaceId}`),
     );
     expect(all.map((p) => p.id).sort()).toEqual(
@@ -338,7 +383,7 @@ describe("project list and reorder", () => {
       (await unknown.text()).replace("no-such-project", "X"),
     );
 
-    const ok = await json<Array<any>>(
+    const ok = await json<Row[]>(
       await call(`/project/reorder?workspaceId=${w.workspaceId}`, "PUT", {
         projects: [{ id: w.p1.project.id, position: 0 }],
       }),
@@ -346,7 +391,7 @@ describe("project list and reorder", () => {
     expect(ok.map((p) => p.id)).toEqual([w.p1.project.id]);
 
     actAs(w.a);
-    const full = await json<Array<any>>(
+    const full = await json<Row[]>(
       await call(`/project/reorder?workspaceId=${w.workspaceId}`, "PUT", {
         projects: [
           { id: w.p2.project.id, position: 0 },
@@ -362,24 +407,24 @@ describe("portfolio", () => {
   it("drops projects, tasks and cross-project dependencies the caller cannot reach", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(
+    const own = await json<Portfolio>(
       await call(`/project/portfolio?workspaceId=${w.workspaceId}`),
     );
-    expect(own.projects.map((p: any) => p.id)).toEqual([w.p1.project.id]);
-    expect(own.projects[0].tasks.map((t: any) => t.id).sort()).toEqual(
+    expect(own.projects.map((p) => p.id)).toEqual([w.p1.project.id]);
+    expect(own.projects[0].tasks.map((t) => t.id).sort()).toEqual(
       [w.t1.id, w.t1b.id, w.c1.id].sort(),
     );
     expect(own.dependencies).toEqual([]);
     expect(JSON.stringify(own)).not.toContain(w.t2.id);
 
     actAs(w.w);
-    const both = await json<any>(
+    const both = await json<Portfolio>(
       await call(`/project/portfolio?workspaceId=${w.workspaceId}`),
     );
     expect(both.dependencies).toHaveLength(1);
 
     actAs(w.a);
-    const all = await json<any>(
+    const all = await json<Portfolio>(
       await call(`/project/portfolio?workspaceId=${w.workspaceId}`),
     );
     expect(all.projects).toHaveLength(2);
@@ -398,10 +443,10 @@ describe("search", () => {
   it("returns hits of the caller's projects only, for every result type", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<{ results: any[] }>(await search(w, "hidden"));
+    const own = await json<SearchBody>(await search(w, "hidden"));
     expect(own.results).toEqual([]);
 
-    const visible = await json<{ results: any[] }>(
+    const visible = await json<SearchBody>(
       await search(w, "visible", "&limit=50"),
     );
     expect(visible.results.length).toBeGreaterThan(0);
@@ -409,17 +454,17 @@ describe("search", () => {
       expect(result.projectId ?? w.p1.project.id).toBe(w.p1.project.id);
     }
 
-    const needle = await json<{ results: any[] }>(
+    const needle = await json<SearchBody>(
       await search(w, "needle", "&limit=50"),
     );
     expect(needle.results.map((r) => r.id)).toEqual([w.comment1.id]);
 
     // Projects by name and tasks by short id.
-    const byProjectName = await json<{ results: any[] }>(
+    const byProjectName = await json<SearchBody>(
       await search(w, "project", "&type=projects"),
     );
     expect(byProjectName.results.map((r) => r.id)).toEqual([w.p1.project.id]);
-    const shortId = await json<{ results: any[] }>(
+    const shortId = await json<SearchBody>(
       await search(w, "hid-1", "&type=tasks"),
     );
     expect(shortId.results).toEqual([]);
@@ -428,11 +473,11 @@ describe("search", () => {
   it("projectId and excludeProjectId cannot reach an inaccessible project", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const scoped = await json<{ results: any[] }>(
+    const scoped = await json<SearchBody>(
       await search(w, "alpha", `&projectId=${w.p2.project.id}`),
     );
     expect(scoped.results).toEqual([]);
-    const excluded = await json<{ results: any[] }>(
+    const excluded = await json<SearchBody>(
       await search(w, "alpha", `&excludeProjectId=${w.p1.project.id}`),
     );
     expect(excluded.results).toEqual([]);
@@ -441,13 +486,13 @@ describe("search", () => {
   it("a full-access caller finds both projects", async () => {
     const w = await buildWorld();
     actAs(w.a);
-    const needle = await json<{ results: any[] }>(
+    const needle = await json<SearchBody>(
       await search(w, "needle", "&limit=50"),
     );
     expect(needle.results.map((r) => r.id).sort()).toEqual(
       [w.comment1.id, w.comment2.id].sort(),
     );
-    const tasks = await json<{ results: any[] }>(
+    const tasks = await json<SearchBody>(
       await search(w, "alpha", "&type=tasks"),
     );
     expect(tasks.results.map((r) => r.id).sort()).toEqual(
@@ -464,35 +509,34 @@ describe("search", () => {
 
 describe("workload", () => {
   const range = "from=2026-10-01&to=2026-10-31";
-  const total = (body: any) =>
+  const total = (body: Workload) =>
     body.assignees.reduce(
-      (sum: number, row: any) =>
-        sum + row.counts.reduce((a: number, b: number) => a + b, 0),
+      (sum, row) => sum + row.counts.reduce((a, b) => a + b, 0),
       0,
     );
 
   it("counts and lists only tasks of the caller's projects", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(
+    const own = await json<Workload>(
       await call(`/workload/${w.workspaceId}?${range}`),
     );
     expect(total(own)).toBe(1);
-    const tasks = await json<any>(
+    const tasks = await json<WorkloadTasks>(
       await call(
         `/workload/${w.workspaceId}/tasks?${range}&assigneeId=unassigned`,
       ),
     );
-    expect(tasks.tasks.map((t: any) => t.id)).toEqual([w.t1.id]);
+    expect(tasks.tasks.map((t) => t.id)).toEqual([w.t1.id]);
 
     // `projectId` can only narrow the set.
-    const forced = await json<any>(
+    const forced = await json<WorkloadTasks>(
       await call(
         `/workload/${w.workspaceId}/tasks?${range}&assigneeId=unassigned&projectId=${w.p2.project.id}`,
       ),
     );
     expect(forced.tasks).toEqual([]);
-    const forcedAggregate = await json<any>(
+    const forcedAggregate = await json<Workload>(
       await call(
         `/workload/${w.workspaceId}?${range}&projectId=${w.p2.project.id}`,
       ),
@@ -500,16 +544,16 @@ describe("workload", () => {
     expect(total(forcedAggregate)).toBe(0);
 
     actAs(w.a);
-    const all = await json<any>(
+    const all = await json<Workload>(
       await call(`/workload/${w.workspaceId}?${range}`),
     );
     expect(total(all)).toBe(2);
-    const allTasks = await json<any>(
+    const allTasks = await json<WorkloadTasks>(
       await call(
         `/workload/${w.workspaceId}/tasks?${range}&assigneeId=unassigned`,
       ),
     );
-    expect(allTasks.tasks.map((t: any) => t.id).sort()).toEqual(
+    expect(allTasks.tasks.map((t) => t.id).sort()).toEqual(
       [w.t1.id, w.t2.id].sort(),
     );
   });
@@ -517,10 +561,10 @@ describe("workload", () => {
   it("lists only the members the caller may see as assignee rows", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(
+    const own = await json<Workload>(
       await call(`/workload/${w.workspaceId}?${range}`),
     );
-    const ids = own.assignees.map((row: any) => row.userId);
+    const ids = own.assignees.map((row) => row.userId);
     expect(ids).toContain(w.u.id);
     expect(ids).toContain(w.w.id);
     expect(ids).not.toContain(w.v.id);
@@ -540,26 +584,26 @@ describe("workspace activity and export", () => {
   it("returns task activity of the caller's projects plus workspace-level activity", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(
+    const own = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity?limit=100`),
     );
-    expect(own.data.map((row: any) => row.id)).toContain(w.comment1.id);
-    expect(own.data.map((row: any) => row.id)).not.toContain(w.comment2.id);
-    expect(own.data.some((row: any) => row.taskId === null)).toBe(true);
-    expect(own.data.every((row: any) => row.taskId !== w.t2.id)).toBe(true);
+    expect(own.data.map((row) => row.id)).toContain(w.comment1.id);
+    expect(own.data.map((row) => row.id)).not.toContain(w.comment2.id);
+    expect(own.data.some((row) => row.taskId === null)).toBe(true);
+    expect(own.data.every((row) => row.taskId !== w.t2.id)).toBe(true);
     // The count does not include the hidden rows either.
     actAs(w.a);
-    const all = await json<any>(
+    const all = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity?limit=100`),
     );
     expect(all.pagination.total).toBe(own.pagination.total + 1);
-    expect(all.data.map((row: any) => row.id)).toContain(w.comment2.id);
+    expect(all.data.map((row) => row.id)).toContain(w.comment2.id);
   });
 
   it("a projectId filter cannot reach an inaccessible project", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const forced = await json<any>(
+    const forced = await json<ActivityFeed>(
       await call(
         `/workspace/${w.workspaceId}/activity?projectId=${w.p2.project.id}`,
       ),
@@ -571,11 +615,11 @@ describe("workspace activity and export", () => {
   it("the export applies the same scope", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(
+    const own = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity/export?format=json`),
     );
-    expect(own.data.map((row: any) => row.id)).toContain(w.comment1.id);
-    expect(own.data.map((row: any) => row.id)).not.toContain(w.comment2.id);
+    expect(own.data.map((row) => row.id)).toContain(w.comment1.id);
+    expect(own.data.map((row) => row.id)).not.toContain(w.comment2.id);
     const csv = await (
       await call(`/workspace/${w.workspaceId}/activity/export?format=csv`)
     ).text();
@@ -583,10 +627,10 @@ describe("workspace activity and export", () => {
     expect(csv).not.toContain("needle in the hidden project");
 
     actAs(w.a);
-    const all = await json<any>(
+    const all = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity/export?format=json`),
     );
-    expect(all.data.map((row: any) => row.id)).toContain(w.comment2.id);
+    expect(all.data.map((row) => row.id)).toContain(w.comment2.id);
   });
 
   it("refuses a user of another workspace", async () => {
@@ -602,7 +646,7 @@ describe("workspace labels", () => {
   it("excludes labels attached to tasks of inaccessible projects", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<Array<any>>(
+    const own = await json<Row[]>(
       await call(`/label/workspace/${w.workspaceId}`),
     );
     expect(own.map((label) => label.id).sort()).toEqual(
@@ -610,7 +654,7 @@ describe("workspace labels", () => {
     );
 
     actAs(w.a);
-    const all = await json<Array<any>>(
+    const all = await json<Row[]>(
       await call(`/label/workspace/${w.workspaceId}`),
     );
     expect(all.map((label) => label.id).sort()).toEqual(
@@ -629,9 +673,7 @@ describe("task relations", () => {
   it("drops a relation whose other task is in an inaccessible project", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const byTask = await json<Array<any>>(
-      await call(`/task-relation/${w.t1.id}`),
-    );
+    const byTask = await json<Row[]>(await call(`/task-relation/${w.t1.id}`));
     expect(byTask.map((rel) => rel.id).sort()).toEqual(
       byTask
         .filter((rel) => rel.id !== w.blocksAcross.id)
@@ -642,7 +684,7 @@ describe("task relations", () => {
     expect(JSON.stringify(byTask)).not.toContain(w.t2.id);
     expect(JSON.stringify(byTask)).not.toContain(w.c2.id);
 
-    const byProject = await json<Array<any>>(
+    const byProject = await json<Row[]>(
       await call(`/task-relation/project/${w.p1.project.id}`),
     );
     expect(byProject.map((rel) => rel.id)).not.toContain(w.blocksAcross.id);
@@ -652,25 +694,25 @@ describe("task relations", () => {
 
     // A caller who can open both projects still sees the link.
     actAs(w.w);
-    const both = await json<Array<any>>(
-      await call(`/task-relation/${w.t1.id}`),
-    );
+    const both = await json<Row[]>(await call(`/task-relation/${w.t1.id}`));
     expect(both.map((rel) => rel.id)).toContain(w.blocksAcross.id);
 
     actAs(w.a);
-    const all = await json<Array<any>>(await call(`/task-relation/${w.t1.id}`));
+    const all = await json<Row[]>(await call(`/task-relation/${w.t1.id}`));
     expect(all.map((rel) => rel.id)).toContain(w.blocksAcross.id);
   });
 
   it("the project task export drops the relation too", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const exported = await json<any>(
+    const exported = await json<unknown>(
       await call(`/task/export/${w.p1.project.id}`),
     );
     expect(JSON.stringify(exported)).not.toContain(w.t2.id);
     actAs(w.a);
-    const full = await json<any>(await call(`/task/export/${w.p1.project.id}`));
+    const full = await json<unknown>(
+      await call(`/task/export/${w.p1.project.id}`),
+    );
     expect(JSON.stringify(full)).toContain(w.t2.id);
   });
 
@@ -705,27 +747,33 @@ describe("task relations", () => {
 });
 
 describe("subtask counts", () => {
-  const countsOf = (body: any, taskId: string) => {
-    const board = body.data ?? body;
+  const countsOf = (body: BoardBody, taskId: string) => {
+    const board = "data" in body ? body.data : body;
     return [
-      ...board.columns.flatMap((column: any) => column.tasks),
+      ...board.columns.flatMap((column) => column.tasks),
       ...board.plannedTasks,
       ...board.archivedTasks,
-    ].find((task: any) => task.id === taskId)?.subtaskCounts;
+    ].find((task) => task.id === taskId)?.subtaskCounts;
   };
 
   it("counts only children in projects the caller can open", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<any>(await call(`/task/tasks/${w.p1.project.id}`));
+    const own = await json<BoardBody>(
+      await call(`/task/tasks/${w.p1.project.id}`),
+    );
     expect(countsOf(own, w.t1.id)).toEqual({ completed: 0, total: 1 });
 
     actAs(w.w);
-    const both = await json<any>(await call(`/task/tasks/${w.p1.project.id}`));
+    const both = await json<BoardBody>(
+      await call(`/task/tasks/${w.p1.project.id}`),
+    );
     expect(countsOf(both, w.t1.id)).toEqual({ completed: 0, total: 2 });
 
     actAs(w.a);
-    const all = await json<any>(await call(`/task/tasks/${w.p1.project.id}`));
+    const all = await json<BoardBody>(
+      await call(`/task/tasks/${w.p1.project.id}`),
+    );
     expect(countsOf(all, w.t1.id)).toEqual({ completed: 0, total: 2 });
   });
 
@@ -736,7 +784,7 @@ describe("subtask counts", () => {
       .set({ isPublic: true })
       .where(eq(schema.projectTable.id, w.p1.project.id));
     mockAnonymousSession();
-    const body = await json<any>(
+    const body = await json<BoardBody>(
       await call(`/public-project/${w.p1.project.id}`),
     );
     // P2 is not public, so its child is not counted.
@@ -748,7 +796,7 @@ describe("workspace member list", () => {
   it("shows a restricted caller only themselves, full-access members and people sharing a project", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const own = await json<Array<any>>(
+    const own = await json<Row[]>(
       await call(`/workspace/${w.workspaceId}/members`),
     );
     const ids = own.map((member) => member.id).sort();
@@ -765,7 +813,7 @@ describe("workspace member list", () => {
     const w = await buildWorld();
     actAs(w.x);
     const ids = (
-      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+      await json<Row[]>(await call(`/workspace/${w.workspaceId}/members`))
     )
       .map((member) => member.id)
       .sort();
@@ -776,7 +824,7 @@ describe("workspace member list", () => {
     const w = await buildWorld();
     actAs(w.a);
     const ids = (
-      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+      await json<Row[]>(await call(`/workspace/${w.workspaceId}/members`))
     ).map((member) => member.id);
     for (const user of [w.u, w.v, w.w, w.x, w.r, w.a]) {
       expect(ids).toContain(user.id);
@@ -797,7 +845,7 @@ describe("notifications", () => {
   it("lists and marks only notifications about tasks in accessible projects", async () => {
     const w = await buildWorld();
     actAs(w.u);
-    const listed = await json<Array<any>>(await call("/notification"));
+    const listed = await json<Row[]>(await call("/notification"));
     expect(listed.map((n) => n.id).sort()).toEqual(
       [w.nP1.id, w.nGeneral.id].sort(),
     );
@@ -814,7 +862,7 @@ describe("notifications", () => {
     const w = await buildWorld();
     await addProjectMember(w.p2.project.id, w.u.id, "viewer");
     actAs(w.u);
-    const listed = await json<Array<any>>(await call("/notification"));
+    const listed = await json<Row[]>(await call("/notification"));
     expect(listed.map((n) => n.id)).toContain(w.nP2.id);
   });
 
@@ -938,7 +986,9 @@ describe("notification preferences", () => {
         projectId: w.p2.project.id,
       })),
     );
-    const read = await json<any>(await call("/notification-preferences"));
+    const read = await json<PreferencesBody>(
+      await call("/notification-preferences"),
+    );
     expect(read.workspaces[0].selectedProjectIds).toEqual([w.p1.project.id]);
   });
 });
@@ -964,7 +1014,7 @@ describe("assignees", () => {
       userId: w.v.id,
     });
     expect(create.status).toBe(403);
-    const imported = await json<any>(
+    const imported = await json<ImportBody>(
       await call(`/task/import/${w.p1.project.id}`, "POST", {
         tasks: [
           { title: "ok", status: "to-do", userId: w.w.id },
@@ -1083,8 +1133,10 @@ describe("MCP tools call the filtered routes", () => {
         "utf8",
       ),
     );
-    expect(source).toContain("`/api/project?${qs.toString()}`");
-    expect(source).toContain("`/api/search?${qs.toString()}`");
+    // The source contains template literals; spell the placeholder out.
+    const interpolation = "$" + "{qs.toString()}";
+    expect(source).toContain(`\`/api/project?${interpolation}\``);
+    expect(source).toContain(`\`/api/search?${interpolation}\``);
     expect(source).toContain("/members`");
     expect(source).toContain("`/api/label/workspace/");
   });
@@ -1097,7 +1149,7 @@ describe("search scope details", () => {
   it("returns workspace results to a caller who has no project scope at all", async () => {
     const w = await buildWorld();
     actAs(w.x);
-    const all = await json<{ results: any[] }>(
+    const all = await json<SearchBody>(
       await search(w, "Integration", "&limit=50"),
     );
     // (The workspace query joins members, so the same workspace can repeat.)
@@ -1107,7 +1159,7 @@ describe("search scope details", () => {
     expect(new Set(all.results.map((r) => r.id))).toEqual(
       new Set([w.workspaceId]),
     );
-    const workspacesOnly = await json<{ results: any[] }>(
+    const workspacesOnly = await json<SearchBody>(
       await search(w, "Integration", "&type=workspaces"),
     );
     expect(new Set(workspacesOnly.results.map((r) => r.id))).toEqual(
@@ -1115,8 +1167,7 @@ describe("search scope details", () => {
     );
     // Project-scoped types stay empty for them.
     expect(
-      (await json<{ results: any[] }>(await search(w, "alpha", "&type=tasks")))
-        .results,
+      (await json<SearchBody>(await search(w, "alpha", "&type=tasks"))).results,
     ).toEqual([]);
   });
 
@@ -1133,13 +1184,13 @@ describe("search scope details", () => {
       })
       .returning();
     actAs(instanceAdmin);
-    const tasks = await json<{ results: any[] }>(
+    const tasks = await json<SearchBody>(
       await search(w, "alpha", "&type=tasks"),
     );
     expect(tasks.results.map((r) => r.id).sort()).toEqual(
       [w.t1.id, w.t2.id].sort(),
     );
-    const projects = await json<{ results: any[] }>(
+    const projects = await json<SearchBody>(
       await search(w, "project", "&type=projects"),
     );
     expect(projects.results).toHaveLength(2);
@@ -1163,7 +1214,7 @@ describe("member list for member managers", () => {
     await addProjectMember(w.p1.project.id, manager.id, "member");
     actAs(manager);
     const ids = (
-      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+      await json<Row[]>(await call(`/workspace/${w.workspaceId}/members`))
     ).map((member) => member.id);
     for (const user of [w.u, w.v, w.w, w.x, w.r, w.a]) {
       expect(ids).toContain(user.id);
@@ -1181,7 +1232,7 @@ describe("member list for member managers", () => {
     await addProjectMember(w.p1.project.id, reader.id, "member");
     actAs(reader);
     const ids = (
-      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+      await json<Row[]>(await call(`/workspace/${w.workspaceId}/members`))
     ).map((member) => member.id);
     expect(ids).not.toContain(w.v.id);
     expect(ids).not.toContain(w.x.id);
@@ -1201,7 +1252,7 @@ describe("notification list scope", () => {
       })
       .returning();
     actAs(w.a);
-    const listed = await json<Array<any>>(await call("/notification"));
+    const listed = await json<Row[]>(await call("/notification"));
     expect(listed.map((n) => n.id)).toContain(forAdmin.id);
   });
 
@@ -1212,7 +1263,7 @@ describe("notification list scope", () => {
       .set({ role: "deleted-role" })
       .where(eq(schema.projectMemberTable.userId, w.u.id));
     actAs(w.u);
-    const listed = await json<Array<any>>(await call("/notification"));
+    const listed = await json<Row[]>(await call("/notification"));
     expect(listed.map((n) => n.id)).toEqual([w.nGeneral.id]);
   });
 });
@@ -1252,17 +1303,17 @@ describe("relation activity", () => {
     const w = await buildWorld();
     const { hiddenEnd, visibleEnd } = await seedRelationActivity(w);
     actAs(w.u);
-    const own = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    const own = await json<Row[]>(await call(`/activity/${w.t1.id}`));
     expect(own.map((row) => row.id)).toContain(visibleEnd.id);
     expect(own.map((row) => row.id)).not.toContain(hiddenEnd.id);
     expect(JSON.stringify(own)).not.toContain(w.t2.id);
 
     actAs(w.w);
-    const both = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    const both = await json<Row[]>(await call(`/activity/${w.t1.id}`));
     expect(both.map((row) => row.id)).toContain(hiddenEnd.id);
 
     actAs(w.a);
-    const all = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    const all = await json<Row[]>(await call(`/activity/${w.t1.id}`));
     expect(all.map((row) => row.id)).toContain(hiddenEnd.id);
   });
 
@@ -1270,18 +1321,18 @@ describe("relation activity", () => {
     const w = await buildWorld();
     const { hiddenEnd, visibleEnd } = await seedRelationActivity(w);
     actAs(w.u);
-    const feed = await json<any>(
+    const feed = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity?limit=100`),
     );
-    expect(feed.data.map((row: any) => row.id)).toContain(visibleEnd.id);
-    expect(feed.data.map((row: any) => row.id)).not.toContain(hiddenEnd.id);
-    const exported = await json<any>(
+    expect(feed.data.map((row) => row.id)).toContain(visibleEnd.id);
+    expect(feed.data.map((row) => row.id)).not.toContain(hiddenEnd.id);
+    const exported = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity/export?format=json`),
     );
-    expect(exported.data.map((row: any) => row.id)).not.toContain(hiddenEnd.id);
+    expect(exported.data.map((row) => row.id)).not.toContain(hiddenEnd.id);
     expect(JSON.stringify(exported)).not.toContain(w.t2.id);
     // Searching for the hidden task's id finds nothing either.
-    const found = await json<{ results: any[] }>(
+    const found = await json<SearchBody>(
       await call(
         `/search?workspaceId=${w.workspaceId}&q=${w.t2.id}&type=activities`,
       ),
@@ -1289,11 +1340,11 @@ describe("relation activity", () => {
     expect(found.results).toEqual([]);
 
     actAs(w.a);
-    const all = await json<any>(
+    const all = await json<ActivityFeed>(
       await call(`/workspace/${w.workspaceId}/activity?limit=100`),
     );
-    expect(all.data.map((row: any) => row.id)).toContain(hiddenEnd.id);
-    const foundByAdmin = await json<{ results: any[] }>(
+    expect(all.data.map((row) => row.id)).toContain(hiddenEnd.id);
+    const foundByAdmin = await json<SearchBody>(
       await call(
         `/search?workspaceId=${w.workspaceId}&q=${w.t2.id}&type=activities`,
       ),
@@ -1348,7 +1399,9 @@ describe("relation update and delete", () => {
       .mocked(publishEvent)
       .mock.calls.filter(([name]) => name === "task-relation.updated");
     expect(events).toHaveLength(2);
-    const [primary, secondary] = events.map(([, payload]) => payload as any);
+    const [primary, secondary] = events.map(
+      ([, payload]) => payload as PublishedEvent,
+    );
     expect(primary).toMatchObject({
       projectId: w.p1.project.id,
       projectTaskIds: [w.t1.id],
@@ -1366,7 +1419,7 @@ describe("relation update and delete", () => {
     const deleted = vi
       .mocked(publishEvent)
       .mock.calls.filter(([name]) => name === "task-relation.deleted")
-      .map(([, payload]) => payload as any);
+      .map(([, payload]) => payload as PublishedEvent);
     expect(deleted.map((e) => [e.projectId, e.projectTaskIds])).toEqual([
       [w.p1.project.id, [w.t1.id]],
       [w.p2.project.id, [w.t2.id]],
@@ -1382,7 +1435,7 @@ describe("relation update and delete", () => {
     const deleted = vi
       .mocked(publishEvent)
       .mock.calls.filter(([name]) => name === "task-relation.deleted")
-      .map(([, payload]) => payload as any);
+      .map(([, payload]) => payload as PublishedEvent);
     expect(deleted).toHaveLength(1);
     expect([...deleted[0].projectTaskIds].sort()).toEqual(
       [w.t1.id, w.t1b.id].sort(),
@@ -1472,7 +1525,7 @@ describe("duplicating a task", () => {
     actAs(w.a);
     const response = await call(`/task/duplicate/${w.t1.id}`, "POST", {});
     expect(response.status).toBe(200);
-    const copy = await json<any>(response);
+    const copy = await json<Row>(response);
     const [row] = await db
       .select({ userId: schema.taskTable.userId })
       .from(schema.taskTable)
@@ -1490,7 +1543,7 @@ describe("duplicating a task", () => {
       .insert(schema.taskAssignmentTable)
       .values({ taskId: w.t1.id, userId: w.w.id });
     actAs(w.a);
-    const copy = await json<any>(
+    const copy = await json<Row>(
       await call(`/task/duplicate/${w.t1.id}`, "POST", {}),
     );
     const [row] = await db
@@ -1609,14 +1662,18 @@ describe("notification rules whose selection became inaccessible", () => {
         ),
       );
 
-    const read = await json<any>(await call("/notification-preferences"));
+    const read = await json<PreferencesBody>(
+      await call("/notification-preferences"),
+    );
     expect(read.workspaces[0].projectMode).toBe("selected");
     expect(read.workspaces[0].selectedProjectIds).toEqual([]);
 
     // The client sends back exactly what it was shown.
     const saved = await putRule(w, []);
     expect(saved.status).toBe(200);
-    const after = await json<any>(await call("/notification-preferences"));
+    const after = await json<PreferencesBody>(
+      await call("/notification-preferences"),
+    );
     expect(after.workspaces[0].selectedProjectIds).toEqual([]);
     const stored = await db
       .select()
@@ -1638,7 +1695,7 @@ describe("creating a relation", () => {
     vi
       .mocked(publishEvent)
       .mock.calls.filter(([name]) => name === "task-relation.created")
-      .map(([, payload]) => payload as any);
+      .map(([, payload]) => payload as PublishedEvent);
 
   it("lists, per project, the relation's tasks that live in it", async () => {
     const w = await buildWorld();
@@ -1783,8 +1840,8 @@ describe("duplicate workspace membership rows", () => {
     expect(
       await json(await call(`/project?workspaceId=${w.workspaceId}`)),
     ).toEqual([]);
-    expect(await json<Array<any>>(await call("/notification"))).toEqual([]);
-    const found = await json<{ results: any[] }>(
+    expect(await json<Row[]>(await call("/notification"))).toEqual([]);
+    const found = await json<SearchBody>(
       await call(`/search?workspaceId=${w.workspaceId}&q=alpha&type=tasks`),
     );
     expect(found.results).toEqual([]);
@@ -1799,13 +1856,11 @@ describe("duplicate workspace membership rows", () => {
     const w = await buildWorld();
     const d = await duplicated(w, ["member", "member"]);
     actAs(d);
-    const projects = await json<Array<any>>(
+    const projects = await json<ProjectRow[]>(
       await call(`/project?workspaceId=${w.workspaceId}`),
     );
     expect(projects.map((p) => p.id)).toEqual([w.p1.project.id]);
-    expect((await json<Array<any>>(await call("/notification"))).length).toBe(
-      1,
-    );
+    expect((await json<Row[]>(await call("/notification"))).length).toBe(1);
 
     actAs(w.a);
     expect(
@@ -1819,7 +1874,7 @@ describe("relation events from deleting and duplicating tasks", () => {
     vi
       .mocked(publishEvent)
       .mock.calls.filter(([event]) => event === name)
-      .map(([, payload]) => payload as any);
+      .map(([, payload]) => payload as PublishedEvent);
 
   it("deleting a task never puts its id in the other project's event", async () => {
     const w = await buildWorld();
@@ -1859,7 +1914,7 @@ describe("relation events from deleting and duplicating tasks", () => {
     // c2 lives in P2, its parent t1 in P1: the copy (in P2) must not be listed.
     const crossProject = await call(`/task/duplicate/${w.c2.id}`, "POST", {});
     expect(crossProject.status).toBe(200);
-    const copy = await json<any>(crossProject);
+    const copy = await json<Row>(crossProject);
     const created = eventsNamed("task-relation.created");
     expect(created).toHaveLength(1);
     expect(created[0]).toMatchObject({
@@ -1870,7 +1925,7 @@ describe("relation events from deleting and duplicating tasks", () => {
 
     vi.mocked(publishEvent).mockClear();
     // c1 and its parent share P1: both are listed.
-    const sameProject = await json<any>(
+    const sameProject = await json<Row>(
       await call(`/task/duplicate/${w.c1.id}`, "POST", {}),
     );
     const [event] = eventsNamed("task-relation.created");
@@ -1886,7 +1941,7 @@ describe("moving a task publishes the assignee events", () => {
     vi
       .mocked(publishEvent)
       .mock.calls.filter(([event]) => event === name)
-      .map(([, payload]) => payload as any);
+      .map(([, payload]) => payload as PublishedEvent);
 
   async function assign(w: World, userIds: string[]) {
     await db
@@ -2046,9 +2101,7 @@ describe("member list with duplicate membership rows", () => {
     for (const viewer of [w.a, w.u]) {
       actAs(viewer);
       const ids = (
-        await json<Array<any>>(
-          await call(`/workspace/${w.workspaceId}/members`),
-        )
+        await json<Row[]>(await call(`/workspace/${w.workspaceId}/members`))
       ).map((member) => member.id);
       expect(ids.filter((id) => id === twice.id)).toHaveLength(1);
       expect(ids).not.toContain(ambiguous.id);
