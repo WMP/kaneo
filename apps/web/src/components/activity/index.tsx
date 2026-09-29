@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import useGetWorkspaceUsers from "@/hooks/queries/workspace-users/use-get-workspace-users";
+import useGetWorkspaceMembers from "@/hooks/queries/workspace/use-get-workspace-members";
 import { formatDateMedium, formatRelativeTime } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import {
@@ -601,7 +601,7 @@ function Activity({
 }) {
   const { t } = useTranslation();
   const { data: workspace } = useActiveWorkspace();
-  const { data: workspaceUsers } = useGetWorkspaceUsers({
+  const { data: workspaceUsers } = useGetWorkspaceMembers({
     workspaceId: workspace?.id,
   });
 

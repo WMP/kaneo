@@ -75,9 +75,9 @@ vi.mock("@/hooks/queries/workspace/use-get-workspace-activity", () => ({
   default: (params: unknown) => useGetWorkspaceActivity(params),
 }));
 
-const useGetWorkspaceUsers = vi.fn();
-vi.mock("@/hooks/queries/workspace-users/use-get-workspace-users", () => ({
-  default: (params: unknown) => useGetWorkspaceUsers(params),
+const useGetWorkspaceMembers = vi.fn();
+vi.mock("@/hooks/queries/workspace/use-get-workspace-members", () => ({
+  default: (params: unknown) => useGetWorkspaceMembers(params),
 }));
 
 const useGetProjects = vi.fn();
@@ -119,7 +119,7 @@ function activityRow(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  useGetWorkspaceUsers.mockReturnValue({
+  useGetWorkspaceMembers.mockReturnValue({
     data: [{ user: { id: "user-1", name: "Ada", email: "ada@example.com" } }],
   });
   useGetProjects.mockReturnValue({

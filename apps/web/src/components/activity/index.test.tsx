@@ -57,9 +57,9 @@ vi.mock("@/lib/i18n/domain", () => ({
   getConstraintTypeLabel: (value: string) => value,
 }));
 
-const useGetWorkspaceUsers = vi.fn();
-vi.mock("@/hooks/queries/workspace-users/use-get-workspace-users", () => ({
-  default: (params: unknown) => useGetWorkspaceUsers(params),
+const useGetWorkspaceMembers = vi.fn();
+vi.mock("@/hooks/queries/workspace/use-get-workspace-members", () => ({
+  default: (params: unknown) => useGetWorkspaceMembers(params),
 }));
 
 vi.mock("@/lib/format", () => ({
@@ -95,7 +95,7 @@ function renderActivity(activity: ReturnType<typeof baseActivity>) {
 
 describe("Activity", () => {
   beforeEach(() => {
-    useGetWorkspaceUsers.mockReturnValue({ data: [] });
+    useGetWorkspaceMembers.mockReturnValue({ data: [] });
   });
 
   it("renders a field-level before/after list for a schedule update", () => {

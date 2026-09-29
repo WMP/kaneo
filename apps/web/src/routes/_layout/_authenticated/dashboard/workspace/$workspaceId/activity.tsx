@@ -23,7 +23,7 @@ import { Timeline } from "@/components/ui/timeline";
 import useExportWorkspaceActivity from "@/hooks/mutations/workspace/use-export-workspace-activity";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useGetWorkspaceActivity from "@/hooks/queries/workspace/use-get-workspace-activity";
-import useGetWorkspaceUsers from "@/hooks/queries/workspace-users/use-get-workspace-users";
+import useGetWorkspaceMembers from "@/hooks/queries/workspace/use-get-workspace-members";
 import { toast } from "@/lib/toast";
 
 export const Route = createFileRoute(
@@ -70,7 +70,7 @@ function toEndOfDayIso(value: string) {
 function RouteComponent() {
   const { t } = useTranslation();
   const { workspaceId } = Route.useParams();
-  const { data: workspaceUsers } = useGetWorkspaceUsers({ workspaceId });
+  const { data: workspaceUsers } = useGetWorkspaceMembers({ workspaceId });
   const { data: projects } = useGetProjects({ workspaceId });
 
   const [userId, setUserId] = useState("");
