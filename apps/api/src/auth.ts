@@ -6,7 +6,6 @@ import {
   sendMagicLinkEmail,
   sendOtpEmail,
   sendPasswordResetEmail,
-  sendWorkspaceInvitationEmail,
 } from "@kaneo/email";
 import {
   ac,
@@ -46,6 +45,7 @@ import { syncWorkspaceSeats } from "./billing/controllers/sync-seats";
 import db, { schema } from "./database";
 import { authDatabaseAdapter } from "./database/auth-adapter";
 import { publishEvent } from "./events";
+import { sendInvitationEmail } from "./invitation/send-invitation-email";
 import deleteAccountData from "./user/controllers/delete-account-data";
 import { resolveAuthSecret } from "./utils/auth-secret";
 import {
@@ -57,8 +57,6 @@ import { checkWorkspaceName } from "./utils/check-workspace-name";
 import { mapCustomOAuthProfileToUser } from "./utils/custom-oauth-profile";
 import { generateDemoName } from "./utils/generate-demo-name";
 import { getDefaultCookieAttributes } from "./utils/get-default-cookie-attributes";
-import { getInvitationEmailSubject } from "./utils/get-invitation-email-subject";
-import { getWorkspaceInvitationEmailCopy } from "./utils/get-workspace-invitation-email-copy";
 import { getGithubSsoOAuthCredentials } from "./utils/github-sso-env";
 import {
   hasRegisteredUsers,
@@ -557,36 +555,13 @@ export const auth = betterAuth({
         },
       },
       async sendInvitationEmail(data) {
-        const inviteLink = `${clientUrl.replace(/\/+$/, "")}/invitation/accept/${data.id}`;
-        const locale = await getUserLocale(data.email);
-        const copy = getWorkspaceInvitationEmailCopy(locale);
-
-        const result = await sendWorkspaceInvitationEmail(
-          data.email,
-          getInvitationEmailSubject(
-            locale,
-            data.inviter.user.name,
-            data.organization.name,
-          ),
-          {
-            inviterEmail: data.inviter.user.email,
-            inviterName: data.inviter.user.name,
-            workspaceName: data.organization.name,
-            invitationLink: inviteLink,
-            to: data.email,
-            copy,
-          },
-        );
-
-        if (
-          result?.success === false &&
-          result.reason === "SMTP_NOT_CONFIGURED"
-        ) {
-          console.warn(
-            "Invitation created but email not sent due to SMTP not being configured",
-          );
-          return;
-        }
+        await sendInvitationEmail({
+          invitationId: data.id,
+          email: data.email,
+          inviterName: data.inviter.user.name,
+          inviterEmail: data.inviter.user.email,
+          workspaceName: data.organization.name,
+        });
       },
     }),
     genericOAuth({
