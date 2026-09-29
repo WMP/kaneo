@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { getApiUrl } from "@/fetchers/get-api-url";
 import { authClient } from "@/lib/auth-client";
+import { isUnauthorizedError } from "@/lib/http-error";
 import {
   isProjectAccessDenied,
   projectAccessQueryKey,
@@ -22,9 +23,13 @@ const BASE_DELAY = 1000; // 1 second
 // We send a lightweight ping every 30 seconds to keep the connection alive.
 const WS_PING_INTERVAL_MS = 30_000;
 
-// The API closes a project socket with 1008 when the caller's access to the
-// project ended or changed ("Project access revoked", session or API key gone).
+// The API closes a project socket with 1008 and this reason when the caller's
+// access to the project ended or changed (`ACCESS_REVOKED_CLOSE_REASON` in
+// `apps/api/src/ws/index.ts`). Other 1008 closes (the session or API key is no
+// longer valid, the project moved to another workspace) are not this event and
+// keep the ordinary reconnect.
 export const PROJECT_ACCESS_REVOKED_CLOSE_CODE = 1008;
+export const PROJECT_ACCESS_REVOKED_CLOSE_REASON = "Project access revoked";
 
 export type ProjectAccessRevoked = {
   // False when the project can no longer be opened (403 on a fresh check).
@@ -52,6 +57,10 @@ export function useProjectWebSocket(
     let retryTimeout: ReturnType<typeof setTimeout> | null = null;
     let pingInterval: ReturnType<typeof setInterval> | null = null;
     let hasConnected = false;
+    // What the last "access revoked" close decided. While a check is running,
+    // or after it ended in a refusal (or a signed-out caller), nothing may open
+    // another socket: not the backoff, not a focus or online signal.
+    let revocation: "none" | "checking" | "denied" = "none";
 
     function clearPing() {
       if (pingInterval !== null) {
@@ -193,7 +202,10 @@ export function useProjectWebSocket(
         clearPing();
         activeSocket = null;
 
-        if (event?.code === PROJECT_ACCESS_REVOKED_CLOSE_CODE) {
+        if (
+          event?.code === PROJECT_ACCESS_REVOKED_CLOSE_CODE &&
+          event.reason === PROJECT_ACCESS_REVOKED_CLOSE_REASON
+        ) {
           void handleAccessRevoked();
           return;
         }
@@ -202,7 +214,7 @@ export function useProjectWebSocket(
     }
 
     function scheduleReconnect() {
-      if (disposed || retries >= MAX_RETRIES) return;
+      if (disposed || revocation !== "none" || retries >= MAX_RETRIES) return;
       const delay = BASE_DELAY * 2 ** retries; // 1s, 2s, 4s, 8s, 16s
       retries += 1;
       retryTimeout = setTimeout(connect, delay);
@@ -213,6 +225,7 @@ export function useProjectWebSocket(
     // reconnect with the new access. 403: stop reconnecting (it would only be
     // refused again) and let the page leave the project.
     async function handleAccessRevoked() {
+      revocation = "checking";
       queryClient.invalidateQueries({
         queryKey: projectAccessQueryKey(projectId),
       });
@@ -224,11 +237,17 @@ export function useProjectWebSocket(
           staleTime: 0,
         });
       } catch (error) {
+        if (isUnauthorizedError(error)) {
+          // Signed out: the auth flow takes over. No toast, no reconnect loop.
+          revocation = "denied";
+          return;
+        }
         // Anything but a refusal (network, 5xx) says nothing about access:
         // keep the project open and reconnect.
         accessible = !isProjectAccessDenied(error);
       }
       if (disposed) return;
+      revocation = accessible ? "none" : "denied";
       onAccessRevokedRef.current?.({ accessible });
       if (accessible) scheduleReconnect();
     }
@@ -247,7 +266,7 @@ export function useProjectWebSocket(
         activeSocket !== null &&
         (activeSocket.readyState === WebSocket.OPEN ||
           activeSocket.readyState === WebSocket.CONNECTING);
-      if (disposed || live) return;
+      if (disposed || live || revocation !== "none") return;
       if (retryTimeout !== null) {
         clearTimeout(retryTimeout);
         retryTimeout = null;

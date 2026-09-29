@@ -32,7 +32,7 @@ class TestSocket {
   static instances: TestSocket[] = [];
   readyState = 0;
   onopen: (() => void) | null = null;
-  onclose: ((event?: { code: number }) => void) | null = null;
+  onclose: ((event?: { code: number; reason?: string }) => void) | null = null;
   onmessage: ((event: { data: string }) => void) | null = null;
   send = vi.fn();
   // Deliberately delay close events to reproduce the project-switch race.
@@ -47,6 +47,8 @@ class TestSocket {
     this.onopen?.();
   }
 }
+
+const REVOKED = { code: 1008, reason: "Project access revoked" };
 
 describe("project WebSocket lifecycle", () => {
   beforeEach(() => {
@@ -125,7 +127,7 @@ describe("project WebSocket lifecycle", () => {
       useProjectWebSocket("project-a", { onAccessRevoked }),
     );
     await act(async () => {
-      TestSocket.instances[0].onclose?.({ code: 1008 });
+      TestSocket.instances[0].onclose?.(REVOKED);
     });
 
     expect(client.invalidateQueries).toHaveBeenCalledWith({
@@ -155,7 +157,7 @@ describe("project WebSocket lifecycle", () => {
       useProjectWebSocket("project-a", { onAccessRevoked }),
     );
     await act(async () => {
-      TestSocket.instances[0].onclose?.({ code: 1008 });
+      TestSocket.instances[0].onclose?.(REVOKED);
     });
 
     expect(onAccessRevoked).toHaveBeenCalledExactlyOnceWith({
@@ -173,7 +175,7 @@ describe("project WebSocket lifecycle", () => {
       useProjectWebSocket("project-a", { onAccessRevoked }),
     );
     await act(async () => {
-      TestSocket.instances[0].onclose?.({ code: 1008 });
+      TestSocket.instances[0].onclose?.(REVOKED);
     });
     expect(onAccessRevoked).toHaveBeenCalledExactlyOnceWith({
       accessible: true,
@@ -193,11 +195,94 @@ describe("project WebSocket lifecycle", () => {
       useProjectWebSocket("project-a", { onAccessRevoked }),
     );
     act(() => {
-      TestSocket.instances[0].onclose?.({ code: 1008 });
+      TestSocket.instances[0].onclose?.(REVOKED);
     });
     unmount();
     await act(async () => finish({}));
     expect(onAccessRevoked).not.toHaveBeenCalled();
+  });
+
+  it("keeps the ordinary backoff for another 1008 reason (credential revoked, project moved)", () => {
+    const onAccessRevoked = vi.fn();
+    const { unmount } = renderHook(() =>
+      useProjectWebSocket("project-a", { onAccessRevoked }),
+    );
+    act(() =>
+      TestSocket.instances[0].onclose?.({
+        code: 1008,
+        reason: "Project workspace changed",
+      }),
+    );
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(TestSocket.instances).toHaveLength(2);
+    expect(onAccessRevoked).not.toHaveBeenCalled();
+    expect(getProjectAccess).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it("leaves a signed-out caller to the auth flow: no toast, no reconnect", async () => {
+    getProjectAccess.mockRejectedValue(new HttpError(401, "Unauthorized"));
+    const onAccessRevoked = vi.fn();
+    const { unmount } = renderHook(() =>
+      useProjectWebSocket("project-a", { onAccessRevoked }),
+    );
+    await act(async () => {
+      TestSocket.instances[0].onclose?.(REVOKED);
+    });
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+      window.dispatchEvent(new Event("online"));
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(onAccessRevoked).not.toHaveBeenCalled();
+    expect(TestSocket.instances).toHaveLength(1);
+    unmount();
+  });
+
+  it("opens no socket from a focus or online signal while the access check is running", async () => {
+    let finish: (value: unknown) => void = () => {};
+    getProjectAccess.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const { unmount } = renderHook(() =>
+      useProjectWebSocket("project-a", { onAccessRevoked: vi.fn() }),
+    );
+    act(() => {
+      TestSocket.instances[0].onclose?.(REVOKED);
+    });
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(TestSocket.instances).toHaveLength(1);
+
+    // The check ends with access still there: a single reconnect follows.
+    await act(async () =>
+      finish({ mode: "member", role: "viewer", capabilities: {} }),
+    );
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(TestSocket.instances).toHaveLength(2);
+    unmount();
+  });
+
+  it("does not reconnect from a focus signal after access was refused", async () => {
+    getProjectAccess.mockRejectedValue(new HttpError(403, "no access"));
+    const { unmount } = renderHook(() =>
+      useProjectWebSocket("project-a", { onAccessRevoked: vi.fn() }),
+    );
+    await act(async () => {
+      TestSocket.instances[0].onclose?.(REVOKED);
+    });
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+      window.dispatchEvent(new Event("focus"));
+      document.dispatchEvent(new Event("visibilitychange"));
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(TestSocket.instances).toHaveLength(1);
+    unmount();
   });
 
   it("keeps the ordinary backoff for a normal close code", () => {
