@@ -1,9 +1,10 @@
 import { authClient } from "@/lib/auth-client";
+import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
 export type InviteWorkspaceMemberRequest = {
   workspaceId: string;
   email: string;
-  role?: "owner" | "admin" | "member";
+  role?: string;
 };
 
 const inviteWorkspaceMember = async ({
@@ -18,7 +19,7 @@ const inviteWorkspaceMember = async ({
   });
 
   if (error) {
-    throw new Error(error.message || "Failed to invite workspace member");
+    throw toWorkspaceMemberError(error);
   }
 
   return data;

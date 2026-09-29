@@ -26,6 +26,7 @@ import { shortcuts } from "@/constants/shortcuts";
 import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { authClient } from "@/lib/auth-client";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import CreateProjectModal from "../shared/modals/create-project-modal";
@@ -51,6 +52,8 @@ function CommandPalette() {
   const { data: workspace } = useActiveWorkspace();
   const { data: session } = authClient.useSession();
   const { data: config } = useGetConfig();
+  const { canCreateProjects } = useWorkspacePermission();
+  const canCreateProject = canCreateProjects();
   const isAdmin = session?.user?.role === "admin";
   const canCreateWorkspace =
     isAdmin || (config !== undefined && !config.disableWorkspaceCreation);
@@ -85,7 +88,10 @@ function CommandPalette() {
             params: { workspaceId: workspace.id },
           });
         },
-        [shortcuts.project.create]: () => setIsCreateProjectOpen(true),
+        [shortcuts.project.create]: () => {
+          if (!canCreateProject) return;
+          setIsCreateProjectOpen(true);
+        },
       },
       [shortcuts.task.prefix]: {
         [shortcuts.task.create]: () => setIsCreateTaskOpen(true),
@@ -134,7 +140,11 @@ function CommandPalette() {
               defaultValue: "Members",
             }),
             onRun: () => {
-              navigate({ to: "/dashboard/settings/workspace/members" });
+              if (!workspace?.id) return;
+              navigate({
+                to: "/dashboard/workspace/$workspaceId/members",
+                params: { workspaceId: workspace.id },
+              });
             },
           },
           {
@@ -143,12 +153,16 @@ function CommandPalette() {
             shortcut: `${shortcuts.task.prefix} ${shortcuts.task.create}`,
             onRun: () => setIsCreateTaskOpen(true),
           },
-          {
-            value: "create-project",
-            label: t("navigation:commandPalette.createProject"),
-            shortcut: `${shortcuts.project.prefix} ${shortcuts.project.create}`,
-            onRun: () => setIsCreateProjectOpen(true),
-          },
+          ...(canCreateProject
+            ? [
+                {
+                  value: "create-project",
+                  label: t("navigation:commandPalette.createProject"),
+                  shortcut: `${shortcuts.project.prefix} ${shortcuts.project.create}`,
+                  onRun: () => setIsCreateProjectOpen(true),
+                },
+              ]
+            : []),
         ],
       },
       {
@@ -195,7 +209,14 @@ function CommandPalette() {
         ],
       },
     ],
-    [navigate, setTheme, t, workspace?.id, canCreateWorkspace],
+    [
+      navigate,
+      setTheme,
+      t,
+      workspace?.id,
+      canCreateWorkspace,
+      canCreateProject,
+    ],
   );
 
   const shortcutHandlers = useMemo(() => {

@@ -1936,6 +1936,13 @@
 				"quickSelectNumber": "Numarayla seçenek seç",
 				"calendarView": "Takvim görünümüne geç"
 			}
+		},
+		"mobileProjectNav": {
+			"backlog": "Backlog",
+			"board": "Board",
+			"gantt": "Gantt",
+			"projects": "Projects",
+			"view": "View"
 		}
 	},
 	"notifications": {
@@ -2920,7 +2927,13 @@
 			"linkCopied": "Davet bağlantısı kopyalandı",
 			"copyFailed": "Otomatik olarak kopyalanamadı. Bağlantıyı seçip Ctrl+C tuşlarına basın.",
 			"pendingBadge": "beklemede",
-			"expires": "{{date}} tarihinde sona erer"
+			"expires": "{{date}} tarihinde sona erer",
+			"renew": "Renew invitation link",
+			"renewError": "Failed to renew the invitation link",
+			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
+			"resend": "Resend invitation",
+			"resendError": "Failed to resend the invitation",
+			"resendSuccess": "Invitation sent again"
 		},
 		"inviteModal": {
 			"title": "Ekip Üyesi Davet Et",
@@ -2931,7 +2944,11 @@
 			"error": "Ekip üyesi davet edilemedi",
 			"createdTitle": "Davet oluşturuldu",
 			"shareLinkDescription": "Bu bağlantıyı {{email}} ile paylaşın, böylece çalışma alanına katılabilir.",
-			"done": "Bitti"
+			"done": "Bitti",
+			"invalidEmail": "Enter a valid email address",
+			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
+			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
+			"successNoEmail": "Invitation created. No email was sent."
 		},
 		"membersTable": {
 			"emptyTitle": "Henüz ekip üyesi yok",
@@ -2958,6 +2975,16 @@
 			"roleUpdateSuccess": "Rol güncellendi",
 			"roleUpdateError": "Rol güncellenemedi",
 			"ariaInvitationActions": "Davet işlemleri"
+		},
+		"errors": {
+			"alreadyInvited": "This person already has a pending invitation.",
+			"alreadyMember": "This person is already a member of the workspace.",
+			"cannotChangeOwnRole": "You can't change your own role.",
+			"cannotInviteWithRole": "You can't invite someone with this role.",
+			"cannotManageMember": "You can't manage this member.",
+			"cannotUpdateMember": "You can't change this member.",
+			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
+			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
 		}
 	},
 	"publicProject": {

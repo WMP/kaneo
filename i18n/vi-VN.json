@@ -1933,6 +1933,13 @@
 				"quickSelectNumber": "Chọn tùy chọn theo số",
 				"calendarView": "Chuyển sang chế độ xem lịch"
 			}
+		},
+		"mobileProjectNav": {
+			"backlog": "Backlog",
+			"board": "Board",
+			"gantt": "Gantt",
+			"projects": "Projects",
+			"view": "View"
 		}
 	},
 	"notifications": {
@@ -2909,7 +2916,13 @@
 			"linkLabel": "Liên kết lời mời",
 			"copyLink": "Sao chép liên kết",
 			"linkCopied": "Đã sao chép liên kết lời mời",
-			"copyFailed": "Không thể sao chép tự động. Hãy chọn liên kết và nhấn Ctrl+C."
+			"copyFailed": "Không thể sao chép tự động. Hãy chọn liên kết và nhấn Ctrl+C.",
+			"renew": "Renew invitation link",
+			"renewError": "Failed to renew the invitation link",
+			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
+			"resend": "Resend invitation",
+			"resendError": "Failed to resend the invitation",
+			"resendSuccess": "Invitation sent again"
 		},
 		"inviteModal": {
 			"title": "Mời thành viên nhóm",
@@ -2920,7 +2933,11 @@
 			"error": "Không thể mời thành viên nhóm",
 			"createdTitle": "Đã tạo lời mời",
 			"shareLinkDescription": "Chia sẻ liên kết này với {{email}} để họ có thể tham gia không gian làm việc.",
-			"done": "Xong"
+			"done": "Xong",
+			"invalidEmail": "Enter a valid email address",
+			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
+			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
+			"successNoEmail": "Invitation created. No email was sent."
 		},
 		"membersTable": {
 			"emptyTitle": "Chưa có thành viên nhóm nào",
@@ -2947,6 +2964,16 @@
 			"cancelInviteError": "Không thể hủy lời mời",
 			"roleUpdateSuccess": "Đã cập nhật vai trò",
 			"roleUpdateError": "Không thể cập nhật vai trò"
+		},
+		"errors": {
+			"alreadyInvited": "This person already has a pending invitation.",
+			"alreadyMember": "This person is already a member of the workspace.",
+			"cannotChangeOwnRole": "You can't change your own role.",
+			"cannotInviteWithRole": "You can't invite someone with this role.",
+			"cannotManageMember": "You can't manage this member.",
+			"cannotUpdateMember": "You can't change this member.",
+			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
+			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
 		}
 	},
 	"publicProject": {

@@ -3,6 +3,8 @@ import {
   CopyIcon,
   EllipsisIcon,
   MailIcon,
+  RefreshCwIcon,
+  SendIcon,
   ShieldIcon,
   TrashIcon,
 } from "lucide-react";
@@ -10,7 +12,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useCancelInvitation from "@/hooks/mutations/workspace-user/use-cancel-invitation";
 import useDeleteWorkspaceUser from "@/hooks/mutations/workspace-user/use-delete-workspace-user";
+import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useUpdateWorkspaceUserRole from "@/hooks/mutations/workspace-user/use-update-workspace-user-role";
+import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useWorkspaceRoles from "@/hooks/queries/workspace/use-workspace-roles";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
@@ -18,6 +22,7 @@ import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
+import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
 import type {
   WorkspaceUser,
   WorkspaceUserInvitation,
@@ -104,6 +109,12 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   const { mutateAsync: cancelInvitation, isPending: isCancelling } =
     useCancelInvitation();
   const { mutateAsync: updateMemberRole } = useUpdateWorkspaceUserRole();
+  const { mutateAsync: inviteMember, isPending: isResending } =
+    useInviteWorkspaceUser();
+  const { data: config } = useGetConfig();
+  // Without SMTP there is no email to resend, but the action still renews the
+  // link's expiry. Only an explicit `true` may promise an email.
+  const emailsAreSent = config?.hasSmtp === true;
   const { copy: copyInvitationLink } = useCopyInvitationLink();
   const { data: allWorkspaceRoles = [] } = useWorkspaceRoles(workspaceId);
   const { canManageTeam, canRemoveMembers, canInviteUsers } =
@@ -136,9 +147,39 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
       toast.success(t("team:membersTable.roleUpdateSuccess"));
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("team:membersTable.roleUpdateError"),
+        getWorkspaceMemberErrorMessage(
+          error,
+          t,
+          "team:membersTable.roleUpdateError",
+        ),
+      );
+    }
+  };
+
+  const handleResendInvitation = async (
+    invitation: WorkspaceUserInvitation,
+  ) => {
+    try {
+      await inviteMember({
+        email: invitation.email,
+        role: invitation.role,
+        workspaceId,
+        resend: true,
+      });
+      toast.success(
+        emailsAreSent
+          ? t("team:invitations.resendSuccess")
+          : t("team:invitations.renewSuccess"),
+      );
+    } catch (error) {
+      toast.error(
+        getWorkspaceMemberErrorMessage(
+          error,
+          t,
+          emailsAreSent
+            ? "team:invitations.resendError"
+            : "team:invitations.renewError",
+        ),
       );
     }
   };
@@ -386,6 +427,19 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                       >
                         <CopyIcon className="size-4" />
                         {t("team:invitations.copyLink")}
+                      </MenuItem>
+                      <MenuItem
+                        disabled={isResending}
+                        onClick={() => handleResendInvitation(invitation)}
+                      >
+                        {emailsAreSent ? (
+                          <SendIcon className="size-4" />
+                        ) : (
+                          <RefreshCwIcon className="size-4" />
+                        )}
+                        {emailsAreSent
+                          ? t("team:invitations.resend")
+                          : t("team:invitations.renew")}
                       </MenuItem>
                       <MenuItem
                         onClick={() => setInvitationToCancel(invitation)}

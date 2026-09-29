@@ -493,6 +493,13 @@
 				"openTask": "Otwórz zaznaczone zadanie",
 				"quickSelectNumber": "Wybierz opcję numerem"
 			}
+		},
+		"mobileProjectNav": {
+			"view": "Widok",
+			"backlog": "Backlog",
+			"board": "Tablica",
+			"gantt": "Wykres Gantta",
+			"projects": "Projekty"
 		}
 	},
 	"notifications": {
@@ -722,7 +729,13 @@
 			"linkLabel": "Link zaproszenia",
 			"copyLink": "Skopiuj link",
 			"linkCopied": "Link zaproszenia skopiowany",
-			"copyFailed": "Nie udało się skopiować automatycznie. Zaznacz link i naciśnij Ctrl+C."
+			"copyFailed": "Nie udało się skopiować automatycznie. Zaznacz link i naciśnij Ctrl+C.",
+			"resend": "Wyślij zaproszenie ponownie",
+			"resendSuccess": "Zaproszenie zostało wysłane ponownie",
+			"resendError": "Nie udało się ponownie wysłać zaproszenia",
+			"renew": "Odnów link zaproszenia",
+			"renewSuccess": "Link zaproszenia został odnowiony. E-mail nie został wysłany. Skopiuj link i wyślij go sam.",
+			"renewError": "Nie udało się odnowić linku zaproszenia"
 		},
 		"inviteModal": {
 			"title": "Zaproś członka zespołu",
@@ -733,7 +746,11 @@
 			"error": "Nie udało się zaprosić członka zespołu",
 			"createdTitle": "Zaproszenie utworzone",
 			"shareLinkDescription": "Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego.",
-			"done": "Gotowe"
+			"done": "Gotowe",
+			"invalidEmail": "Wpisz poprawny adres e-mail",
+			"noSmtpNotice": "Ten serwer nie ma skonfigurowanej poczty. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
+			"successNoEmail": "Zaproszenie zostało utworzone. E-mail nie został wysłany.",
+			"shareLinkDescriptionNoEmail": "E-mail nie został wysłany. Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego."
 		},
 		"membersTable": {
 			"emptyTitle": "Brak członków zespołu",
@@ -760,6 +777,16 @@
 			"cancelInviteError": "Nie udało się anulować zaproszenia",
 			"roleUpdateSuccess": "Rola zaktualizowana",
 			"roleUpdateError": "Nie udało się zaktualizować roli"
+		},
+		"errors": {
+			"roleExceedsYourPermissions": "Nie możesz nadać roli z większymi uprawnieniami niż Twoje.",
+			"cannotChangeOwnRole": "Nie możesz zmienić własnej roli.",
+			"cannotManageMember": "Nie możesz zarządzać tym członkiem.",
+			"cannotUpdateMember": "Nie możesz zmienić tego członka.",
+			"cannotInviteWithRole": "Nie możesz zaprosić kogoś z tą rolą.",
+			"alreadyMember": "Ta osoba jest już członkiem obszaru roboczego.",
+			"alreadyInvited": "Ta osoba ma już oczekujące zaproszenie.",
+			"invitationLimitReached": "Osiągnięto limit zaproszeń w tym obszarze roboczym."
 		}
 	},
 	"publicProject": {

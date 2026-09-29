@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover";
 import icons from "@/constants/project-icons";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 
 type MobileProjectNavProps = {
@@ -42,6 +43,8 @@ export default function MobileProjectNav({
 }: MobileProjectNavProps) {
   const { t } = useTranslation();
   const { data: projects = [] } = useGetProjects({ workspaceId });
+  const { canCreateProjects } = useWorkspacePermission();
+  const canCreate = canCreateProjects();
 
   return (
     <Popover>
@@ -60,7 +63,7 @@ export default function MobileProjectNav({
         <div className="space-y-3">
           <div className="space-y-1">
             <p className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              View
+              {t("navigation:mobileProjectNav.view")}
             </p>
             <div className="grid grid-cols-4 gap-1">
               <button
@@ -73,7 +76,7 @@ export default function MobileProjectNav({
                     : "border-transparent text-muted-foreground hover:bg-accent",
                 )}
               >
-                Backlog
+                {t("navigation:mobileProjectNav.backlog")}
               </button>
               <button
                 type="button"
@@ -86,7 +89,7 @@ export default function MobileProjectNav({
                 )}
               >
                 <SquareKanban className="size-3.5" />
-                Board
+                {t("navigation:mobileProjectNav.board")}
               </button>
               <button
                 type="button"
@@ -112,14 +115,14 @@ export default function MobileProjectNav({
                 )}
               >
                 <CalendarDays className="size-3.5" />
-                Gantt
+                {t("navigation:mobileProjectNav.gantt")}
               </button>
             </div>
           </div>
 
           <div className="space-y-1">
             <p className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              Projects
+              {t("navigation:mobileProjectNav.projects")}
             </p>
             <div className="max-h-56 space-y-0.5 overflow-y-auto">
               {(projects ?? []).map((project) => {
@@ -148,14 +151,16 @@ export default function MobileProjectNav({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onAddProject}
-            className="flex w-full items-center gap-2 rounded-md border border-border px-2 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-accent"
-          >
-            <Plus className="size-3.5" />
-            Add project
-          </button>
+          {canCreate ? (
+            <button
+              type="button"
+              onClick={onAddProject}
+              className="flex w-full items-center gap-2 rounded-md border border-border px-2 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-accent"
+            >
+              <Plus className="size-3.5" />
+              {t("navigation:projectList.addProject")}
+            </button>
+          ) : null}
         </div>
       </PopoverContent>
     </Popover>

@@ -1,11 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 import queryClient from "@/query-client";
 
 type InviteWorkspaceUserRequest = {
   workspaceId: string;
   email: string;
-  role: "admin" | "member" | "owner";
+  // Custom workspace roles exist, so this is a role name, not a fixed union.
+  role: string;
   resend?: boolean;
 };
 
@@ -25,7 +27,7 @@ function useInviteWorkspaceUser() {
       });
 
       if (error) {
-        throw new Error(error.message || "Failed to invite workspace member");
+        throw toWorkspaceMemberError(error);
       }
 
       return data;

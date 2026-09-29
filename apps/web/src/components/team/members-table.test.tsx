@@ -6,6 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { WorkspaceMemberError } from "@/lib/workspace-role-error";
 import type {
   WorkspaceUser,
   WorkspaceUserInvitation,
@@ -39,6 +40,17 @@ vi.mock("@/hooks/mutations/workspace-user/use-cancel-invitation", () => ({
   default: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+const inviteMember = vi.fn();
+let config: { hasSmtp: boolean } | undefined = { hasSmtp: true };
+
+vi.mock("@/hooks/mutations/workspace-user/use-invite-workspace-user", () => ({
+  default: () => ({ mutateAsync: inviteMember, isPending: false }),
+}));
+
+vi.mock("@/hooks/queries/config/use-get-config", () => ({
+  default: () => ({ data: config }),
+}));
+
 vi.mock("@/hooks/mutations/workspace-user/use-delete-workspace-user", () => ({
   default: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
@@ -70,6 +82,8 @@ vi.mock("../providers/auth-provider/hooks/use-auth", () => ({
 
 beforeEach(() => {
   canInviteUsers.mockReturnValue(true);
+  config = { hasSmtp: true };
+  inviteMember.mockResolvedValue({ id: "invite-1" });
 });
 
 afterEach(() => {
@@ -160,5 +174,113 @@ describe("MembersTable pending invitation row menu", () => {
         name: "team:membersTable.ariaInvitationActions",
       }),
     ).toBeNull();
+  });
+});
+
+describe("MembersTable resend invitation", () => {
+  const openMenu = () =>
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "team:membersTable.ariaInvitationActions",
+      }),
+    );
+
+  const renderTable = () =>
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[pendingInvitation]}
+        users={[] as WorkspaceUser[]}
+      />,
+    );
+
+  it("resends with the invitation's own email and role when email is configured", async () => {
+    renderTable();
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "team:invitations.resend" }),
+    );
+
+    await waitFor(() =>
+      expect(inviteMember).toHaveBeenCalledWith({
+        email: "invitee@example.com",
+        role: "member",
+        workspaceId: "workspace-1",
+        resend: true,
+      }),
+    );
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("team:invitations.resendSuccess"),
+    );
+  });
+
+  it("offers a renew action that says no email was sent when SMTP is off", async () => {
+    config = { hasSmtp: false };
+    renderTable();
+    openMenu();
+
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.resend" }),
+    ).toBeNull();
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "team:invitations.renew" }),
+    );
+
+    await waitFor(() =>
+      expect(inviteMember).toHaveBeenCalledWith(
+        expect.objectContaining({ resend: true }),
+      ),
+    );
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("team:invitations.renewSuccess"),
+    );
+  });
+
+  it("does not promise an email while the config is unknown", async () => {
+    config = undefined;
+    renderTable();
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "team:invitations.renew" }),
+    );
+
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("team:invitations.renewSuccess"),
+    );
+  });
+
+  it("shows a translated message for a known API error code", async () => {
+    inviteMember.mockRejectedValue(
+      new WorkspaceMemberError("raw api text", {
+        code: "INVITATION_LIMIT_REACHED",
+      }),
+    );
+    renderTable();
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "team:invitations.resend" }),
+    );
+
+    await waitFor(() =>
+      expect(error).toHaveBeenCalledWith("team:errors.invitationLimitReached"),
+    );
+    expect(success).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the resend error copy when the API sent no message", async () => {
+    inviteMember.mockRejectedValue(new WorkspaceMemberError(""));
+    renderTable();
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "team:invitations.resend" }),
+    );
+
+    await waitFor(() =>
+      expect(error).toHaveBeenCalledWith("team:invitations.resendError"),
+    );
   });
 });

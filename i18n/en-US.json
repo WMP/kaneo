@@ -1936,6 +1936,13 @@
 				"openTask": "Open selected task",
 				"quickSelectNumber": "Select option by number"
 			}
+		},
+		"mobileProjectNav": {
+			"view": "View",
+			"backlog": "Backlog",
+			"board": "Board",
+			"gantt": "Gantt",
+			"projects": "Projects"
 		}
 	},
 	"notifications": {
@@ -2936,7 +2943,13 @@
 			"linkLabel": "Invitation link",
 			"copyLink": "Copy link",
 			"linkCopied": "Invitation link copied",
-			"copyFailed": "Couldn't copy automatically. Select the link and press Ctrl+C."
+			"copyFailed": "Couldn't copy automatically. Select the link and press Ctrl+C.",
+			"resend": "Resend invitation",
+			"resendSuccess": "Invitation sent again",
+			"resendError": "Failed to resend the invitation",
+			"renew": "Renew invitation link",
+			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
+			"renewError": "Failed to renew the invitation link"
 		},
 		"inviteModal": {
 			"title": "Invite Team Member",
@@ -2947,7 +2960,11 @@
 			"error": "Failed to invite team member",
 			"createdTitle": "Invitation created",
 			"shareLinkDescription": "Share this link with {{email}} so they can join the workspace.",
-			"done": "Done"
+			"done": "Done",
+			"invalidEmail": "Enter a valid email address",
+			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
+			"successNoEmail": "Invitation created. No email was sent.",
+			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace."
 		},
 		"membersTable": {
 			"emptyTitle": "No team members yet",
@@ -2974,6 +2991,16 @@
 			"cancelInviteError": "Failed to cancel invitation",
 			"roleUpdateSuccess": "Role updated",
 			"roleUpdateError": "Failed to update role"
+		},
+		"errors": {
+			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
+			"cannotChangeOwnRole": "You can't change your own role.",
+			"cannotManageMember": "You can't manage this member.",
+			"cannotUpdateMember": "You can't change this member.",
+			"cannotInviteWithRole": "You can't invite someone with this role.",
+			"alreadyMember": "This person is already a member of the workspace.",
+			"alreadyInvited": "This person already has a pending invitation.",
+			"invitationLimitReached": "The invitation limit for this workspace has been reached."
 		}
 	},
 	"publicProject": {

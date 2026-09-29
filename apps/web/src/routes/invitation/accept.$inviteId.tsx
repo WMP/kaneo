@@ -14,13 +14,17 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useGetInvitationDetails } from "@/hooks/queries/invitation/use-get-invitation-details";
 import { authClient } from "@/lib/auth-client";
+import {
+  consumeAutoAcceptMarker,
+  writeAutoAcceptMarker,
+} from "@/lib/auto-accept-invitation";
 import { toast } from "@/lib/toast";
 import { AuthLayout } from "../../components/auth/layout";
 
@@ -47,7 +51,9 @@ function AcceptInvitation() {
   const isLoading = isSessionLoading || isInvitationLoading;
   const isSignedIn = !!session?.user;
 
-  const handleAcceptInvitation = async () => {
+  const sessionUserName = session?.user?.name;
+
+  const handleAcceptInvitation = useCallback(async () => {
     setIsAccepting(true);
     try {
       const { data, error } = await authClient.organization.acceptInvitation({
@@ -65,7 +71,7 @@ function AcceptInvitation() {
 
       toast.success(t("auth:invitation.toast.acceptSuccess"));
 
-      if (!session?.user?.name) {
+      if (!sessionUserName) {
         navigate({ to: "/profile-setup" });
         return;
       }
@@ -83,10 +89,36 @@ function AcceptInvitation() {
     } finally {
       setIsAccepting(false);
     }
-  };
+  }, [inviteId, navigate, sessionUserName, t]);
+
+  // Joins the workspace without another click, but only for a user who just
+  // signed in or up from this page (see writeAutoAcceptMarker). The ref keeps
+  // React StrictMode's second effect run from accepting twice.
+  const autoAcceptAttemptedFor = useRef<string | null>(null);
+  const sessionEmail = session?.user?.email;
+  const acceptableInvitation = invitationData?.valid
+    ? (invitationData.invitation ?? null)
+    : null;
+
+  useEffect(() => {
+    if (autoAcceptAttemptedFor.current === inviteId) return;
+    if (!sessionEmail || !acceptableInvitation) return;
+    autoAcceptAttemptedFor.current = inviteId;
+
+    if (!consumeAutoAcceptMarker(inviteId)) return;
+
+    const emailsMatch =
+      sessionEmail.trim().toLowerCase() ===
+      acceptableInvitation.email.trim().toLowerCase();
+    // A different account is signed in: keep the manual UI and its wording.
+    if (!emailsMatch) return;
+
+    void handleAcceptInvitation();
+  }, [inviteId, sessionEmail, acceptableInvitation, handleAcceptInvitation]);
 
   const handleSignIn = () => {
     const email = invitationData?.invitation?.email;
+    writeAutoAcceptMarker(inviteId);
     navigate({
       to: "/auth/sign-in",
       search: { invitationId: inviteId, email },
@@ -98,6 +130,7 @@ function AcceptInvitation() {
   // creation on instances running with DISABLE_REGISTRATION=true.
   const handleCreateAccount = () => {
     const email = invitationData?.invitation?.email;
+    writeAutoAcceptMarker(inviteId);
     navigate({
       to: "/auth/sign-up",
       search: { invitationId: inviteId, email },

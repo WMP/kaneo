@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 
 type ProjectCrumbSelectProps = {
   workspaceId: string;
@@ -29,6 +30,8 @@ export default function ProjectCrumbSelect({
 }: ProjectCrumbSelectProps) {
   const { t } = useTranslation();
   const { data: projects = [] } = useGetProjects({ workspaceId });
+  const { canCreateProjects } = useWorkspacePermission();
+  const canCreate = canCreateProjects();
 
   return (
     <DropdownMenu>
@@ -76,16 +79,20 @@ export default function ProjectCrumbSelect({
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem
-            onClick={onAddProject}
-            className="h-8 gap-2 text-sm"
-          >
-            <Plus className="size-3.5" />
-            {t("navigation:projectList.addProject")}
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        {canCreate ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={onAddProject}
+                className="h-8 gap-2 text-sm"
+              >
+                <Plus className="size-3.5" />
+                {t("navigation:projectList.addProject")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );

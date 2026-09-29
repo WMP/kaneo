@@ -1933,6 +1933,13 @@
 				"openTask": "打开所选任务",
 				"quickSelectNumber": "按数字选择选项"
 			}
+		},
+		"mobileProjectNav": {
+			"backlog": "Backlog",
+			"board": "Board",
+			"gantt": "Gantt",
+			"projects": "Projects",
+			"view": "View"
 		}
 	},
 	"notifications": {
@@ -2909,7 +2916,13 @@
 			"linkLabel": "邀请链接",
 			"copyLink": "复制链接",
 			"linkCopied": "邀请链接已复制",
-			"copyFailed": "无法自动复制，请选中链接后按 Ctrl+C。"
+			"copyFailed": "无法自动复制，请选中链接后按 Ctrl+C。",
+			"renew": "Renew invitation link",
+			"renewError": "Failed to renew the invitation link",
+			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
+			"resend": "Resend invitation",
+			"resendError": "Failed to resend the invitation",
+			"resendSuccess": "Invitation sent again"
 		},
 		"inviteModal": {
 			"title": "邀请团队成员",
@@ -2920,7 +2933,11 @@
 			"error": "邀请团队成员失败",
 			"createdTitle": "邀请已创建",
 			"shareLinkDescription": "将此链接分享给 {{email}}，以便对方加入工作区。",
-			"done": "完成"
+			"done": "完成",
+			"invalidEmail": "Enter a valid email address",
+			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
+			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
+			"successNoEmail": "Invitation created. No email was sent."
 		},
 		"membersTable": {
 			"emptyTitle": "暂无团队成员",
@@ -2947,6 +2964,16 @@
 			"cancelInviteError": "取消邀请失败",
 			"roleUpdateSuccess": "角色已更新",
 			"roleUpdateError": "更新角色失败"
+		},
+		"errors": {
+			"alreadyInvited": "This person already has a pending invitation.",
+			"alreadyMember": "This person is already a member of the workspace.",
+			"cannotChangeOwnRole": "You can't change your own role.",
+			"cannotInviteWithRole": "You can't invite someone with this role.",
+			"cannotManageMember": "You can't manage this member.",
+			"cannotUpdateMember": "You can't change this member.",
+			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
+			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
 		}
 	},
 	"publicProject": {

@@ -1,13 +1,17 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { InfoIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
+import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
+import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
+import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -34,11 +38,11 @@ type Props = {
   onClose: () => void;
 };
 
-const teamMemberSchema = z.object({
-  email: z.string(),
-});
+// Role sent with every invitation until the role picker exists. Kept as a
+// string because custom workspace roles are valid invitation roles.
+const DEFAULT_INVITE_ROLE = "member";
 
-type TeamMemberFormValues = z.infer<typeof teamMemberSchema>;
+type TeamMemberFormValues = { email: string };
 
 function InviteTeamMemberModal({ open, onClose }: Props) {
   const { t } = useTranslation();
@@ -48,10 +52,28 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   const workspaceId = workspace?.id;
   const { canInviteUsers } = useWorkspacePermission();
   const canInvite = canInviteUsers();
+  const { data: config } = useGetConfig();
+  // Only an explicit `true` may promise an email: while the config is loading
+  // or failed we do not know, so the copy must not claim one was sent.
+  const emailsAreSent = config?.hasSmtp === true;
+  const showNoSmtpNotice = config?.hasSmtp === false;
+  const role: string = DEFAULT_INVITE_ROLE;
   const [createdInvitation, setCreatedInvitation] = useState<{
     id: string;
     email: string;
   } | null>(null);
+
+  const teamMemberSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .pipe(z.email(t("team:inviteModal.invalidEmail"))),
+      }),
+    [t],
+  );
 
   const form = useForm<TeamMemberFormValues>({
     resolver: standardSchemaResolver(teamMemberSchema),
@@ -76,13 +98,17 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       const invitation = await mutateAsync({
         email,
         workspaceId,
-        role: "member",
-      }); // TODO: role and email
+        role,
+      });
       await queryClient.refetchQueries({
         queryKey: ["workspace-users", workspaceId],
       });
 
-      toast.success(t("team:inviteModal.success"));
+      toast.success(
+        emailsAreSent
+          ? t("team:inviteModal.success")
+          : t("team:inviteModal.successNoEmail"),
+      );
 
       // The link is the only delivery channel when SMTP is unconfigured, so the
       // modal stays open on it instead of closing. If the API ever stops
@@ -97,7 +123,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       onClose();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : t("team:inviteModal.error"),
+        getWorkspaceMemberErrorMessage(error, t, "team:inviteModal.error"),
       );
     }
   };
@@ -132,9 +158,13 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
           <>
             <DialogPanel className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {t("team:inviteModal.shareLinkDescription", {
-                  email: createdInvitation.email,
-                })}
+                {emailsAreSent
+                  ? t("team:inviteModal.shareLinkDescription", {
+                      email: createdInvitation.email,
+                    })
+                  : t("team:inviteModal.shareLinkDescriptionNoEmail", {
+                      email: createdInvitation.email,
+                    })}
               </p>
               <InvitationLinkField invitationId={createdInvitation.id} />
             </DialogPanel>
@@ -147,7 +177,15 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="contents">
-              <DialogPanel>
+              <DialogPanel className="space-y-4">
+                {showNoSmtpNotice ? (
+                  <Alert variant="info" role="status">
+                    <InfoIcon />
+                    <AlertDescription>
+                      {t("team:inviteModal.noSmtpNotice")}
+                    </AlertDescription>
+                  </Alert>
+                ) : null}
                 <FormField
                   control={form.control}
                   name="email"

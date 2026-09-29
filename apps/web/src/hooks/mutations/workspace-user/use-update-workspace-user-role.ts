@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
 type UpdateWorkspaceUserRoleRequest = {
   workspaceId: string;
@@ -22,9 +23,7 @@ function useUpdateWorkspaceUserRole() {
       });
 
       if (error) {
-        throw new Error(
-          error.message || "Failed to update workspace member role",
-        );
+        throw toWorkspaceMemberError(error);
       }
 
       return data;
