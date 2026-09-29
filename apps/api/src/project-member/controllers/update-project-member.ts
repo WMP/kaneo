@@ -7,6 +7,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import type { ProjectAccess } from "../../utils/project-access";
+import { closeUserProjectConnections } from "../../ws";
 import {
   assertAssignableProjectRole,
   assertCanManageRole,
@@ -90,6 +91,12 @@ async function updateProjectMember({
   if (!updated) {
     throw new HTTPException(409, { message: PROJECT_MEMBER_ERRORS.changed });
   }
+
+  // A role change closes the member's project sockets on every instance; they
+  // reconnect with the access the new role gives. The old role's access must not
+  // linger on an open socket, and an assignable role never grants less than
+  // "some access", so reconnecting is always safe.
+  await closeUserProjectConnections(userId, projectId);
 
   return {
     userId,

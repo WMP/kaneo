@@ -9,6 +9,7 @@ import {
 } from "../../database/schema";
 import type { ProjectAccess } from "../../utils/project-access";
 import { apiKeyAllows } from "../../utils/require-workspace-permission";
+import { closeUserProjectConnections } from "../../ws";
 import {
   assertCanManageRole,
   assertNotFullAccess,
@@ -97,6 +98,10 @@ async function removeProjectMember({
   if (deleted.length === 0) {
     throw new HTTPException(409, { message: PROJECT_MEMBER_ERRORS.changed });
   }
+
+  // Their project sockets end now, on every instance, instead of at the next
+  // delivery after the revalidation window.
+  await closeUserProjectConnections(userId, projectId);
 
   return {
     userId,

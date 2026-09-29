@@ -81,6 +81,7 @@ import {
 } from "./utils/role-delegation";
 import { queueSignInEmail } from "./utils/sign-in-email-tasks";
 import { authCaptchaPaths, verifyTurnstile } from "./utils/verify-turnstile";
+import { closeUserWorkspaceConnections } from "./ws";
 
 config();
 
@@ -549,6 +550,12 @@ export const auth = betterAuth({
           await removeUserProjectMemberships(member.userId, organization.id);
         },
         afterRemoveMember: async ({ member }) => {
+          if (member?.userId && member.organizationId) {
+            await closeUserWorkspaceConnections(
+              member.userId,
+              member.organizationId,
+            );
+          }
           if (member?.organizationId) {
             void syncWorkspaceSeats(member.organizationId).catch((error) => {
               console.error("Seat sync after member remove failed:", error);
@@ -906,6 +913,7 @@ export const auth = betterAuth({
             typeof organizationId === "string"
           ) {
             await removeUserProjectMemberships(userId, organizationId);
+            await closeUserWorkspaceConnections(userId, organizationId);
           }
         }
       }
