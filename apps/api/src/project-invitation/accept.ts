@@ -5,6 +5,7 @@ import {
   isFullAccess,
   removeUserProjectMemberships,
 } from "../utils/project-access";
+import { closeUserWorkspaceConnections } from "../ws";
 import { applyInvitationProjects } from "./apply-invitation-projects";
 
 // Project invitations ride on Better Auth's accept flow
@@ -139,6 +140,19 @@ export async function afterAcceptProjectInvitation({
               ),
             ),
           );
+      });
+      // The revert takes the membership away again: end any project socket the
+      // person opened in that short window instead of waiting for the
+      // revalidation. Granting memberships (the normal acceptance) and the
+      // purge before a fresh join revoke nothing, so nothing closes there.
+      await closeUserWorkspaceConnections(
+        user.id,
+        invitation.organizationId,
+      ).catch((closeError) => {
+        console.error(
+          `Closing the sockets after reverting invitation ${invitation.id} failed:`,
+          closeError,
+        );
       });
     } catch (revertError) {
       console.error(

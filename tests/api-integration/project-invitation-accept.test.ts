@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
+import type { WSContext } from "hono/ws";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import * as applyModule from "../../apps/api/src/project-invitation/apply-invitation-projects";
+import { addConnection, removeConnection } from "../../apps/api/src/ws";
 import { defaultRolePayloads } from "../../packages/permissions/src";
 import { resetTestDatabase } from "./helpers/database";
 import { createProjectFixture } from "./helpers/fixtures";
@@ -403,6 +405,47 @@ describe("accepting a project invitation", () => {
     expect(await activeWorkspaceOf(invitee.id)).toEqual([workspaceId]);
     expect(await roleMap(invitee.id)).toEqual({ [P.id]: "member" });
     expect(await isWorkspaceMember(invitee.id)).toBe(true);
+  });
+
+  it("closes the person's sockets only when the acceptance is reverted", async () => {
+    const email = newEmail("invitee");
+    const invitationId = await inviteToProject(P.id, email, "member", "member");
+    const invitee = await signUp(email);
+    const socket = { send: vi.fn(), close: vi.fn() };
+    const connection = addConnection(
+      P.id,
+      socket as unknown as WSContext,
+      invitee.id,
+      "window",
+      workspaceId,
+    );
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      // Granting memberships revokes nothing: nothing closes.
+      vi.spyOn(applyModule, "applyInvitationProjects").mockRejectedValueOnce(
+        new Error("database went away"),
+      );
+      expect((await accept(invitee, invitationId)).status).toBe(500);
+      // The revert removed the membership Better Auth had just created.
+      expect(socket.close).toHaveBeenCalledTimes(1);
+
+      const second = { send: vi.fn(), close: vi.fn() };
+      const other = addConnection(
+        P.id,
+        second as unknown as WSContext,
+        invitee.id,
+        "window-2",
+        workspaceId,
+      );
+      try {
+        expect((await accept(invitee, invitationId)).status).toBe(200);
+        expect(second.close).not.toHaveBeenCalled();
+      } finally {
+        removeConnection(P.id, other);
+      }
+    } finally {
+      removeConnection(P.id, connection);
+    }
   });
 
   it("keeps workspace invitations of Better Auth working: no project until added", async () => {

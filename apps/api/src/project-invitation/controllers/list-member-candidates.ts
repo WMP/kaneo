@@ -3,7 +3,9 @@ import db, { schema } from "../../database";
 import {
   createFullAccessChecker,
   type ProjectAccess,
+  singleWorkspaceRole,
 } from "../../utils/project-access";
+import { groupRows } from "../../utils/project-scope-filters";
 
 // Workspace members who can be added to the project right now: not a member of
 // it yet and not full-access (full-access members reach every project through
@@ -38,30 +40,24 @@ async function listMemberCandidates(access: ProjectAccess) {
     )
     .orderBy(asc(schema.userTable.name), asc(schema.userTable.id));
 
-  // Duplicate workspace membership rows repeat a person. Rows that disagree on
-  // the role make the membership ambiguous, which counts as no membership at
-  // all (see `singleWorkspaceRole` in `utils/project-access.ts`): not offered.
-  const rolesById = new Map<string, Set<string>>();
-  for (const row of rows) {
-    rolesById.set(
-      row.id,
-      (rolesById.get(row.id) ?? new Set()).add(row.workspaceRole),
-    );
-  }
-
+  // Duplicate workspace membership rows repeat a person: collapse them like
+  // the access rules do. Rows that disagree on the role make the membership
+  // ambiguous, which counts as no membership at all: not offered.
   const isFullAccess = createFullAccessChecker(access.workspaceId);
-  const seen = new Set<string>();
   const candidates: {
     id: string;
     name: string;
     email: string;
     image: string | null;
   }[] = [];
-  for (const row of rows) {
-    if (seen.has(row.id)) continue;
-    seen.add(row.id);
-    if ((rolesById.get(row.id)?.size ?? 0) > 1) continue;
-    if (await isFullAccess(row.instanceRole, row.workspaceRole)) continue;
+  for (const group of groupRows(rows, (row) => row.id).values()) {
+    const [row] = group;
+    if (!row) continue;
+    const workspaceRole = singleWorkspaceRole(
+      group.map((entry) => entry.workspaceRole),
+    );
+    if (!workspaceRole) continue;
+    if (await isFullAccess(row.instanceRole, workspaceRole)) continue;
     candidates.push({
       id: row.id,
       name: row.name,
