@@ -37,9 +37,14 @@ vi.mock("../../../apps/api/src/utils/validate-workspace-access", () => ({
 // A workspace member reaches every project except "project-denied", which
 // stands for a project they are not a member of.
 vi.mock("../../../apps/api/src/utils/project-access", () => ({
-  resolveProjectAccess: async (userId: string, projectId: string) => {
+  requireProjectAccessFor: async (userId: string, projectId: string) => {
     state.projectCalls.push({ userId, projectId });
-    return projectId === "project-denied" ? null : { projectId };
+    if (projectId === "project-denied") {
+      throw new HTTPException(403, {
+        message: "You don't have access to this project",
+      });
+    }
+    return { projectId };
   },
 }));
 
