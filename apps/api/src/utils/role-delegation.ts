@@ -8,6 +8,7 @@ import {
   parsePermissionStatements,
   type RoleStatements,
   resolveRoleStatements,
+  type SelectExecutor,
 } from "./role-statements";
 
 // A non-owner may only hand out roles whose permissions are a subset of their
@@ -28,10 +29,13 @@ export function splitRoles(role: string): string[] {
     .filter(Boolean);
 }
 
-async function isInstanceAdminUser(userId: string): Promise<boolean> {
+async function isInstanceAdminUser(
+  userId: string,
+  executor: SelectExecutor,
+): Promise<boolean> {
   // Read the current role instead of a session snapshot, which can predate
   // an administrator's change.
-  const [row] = await db
+  const [row] = await executor
     .select({ role: schema.userTable.role })
     .from(schema.userTable)
     .where(eq(schema.userTable.id, userId))
@@ -42,8 +46,9 @@ async function isInstanceAdminUser(userId: string): Promise<boolean> {
 async function findMembershipRole(
   workspaceId: string,
   userId: string,
+  executor: SelectExecutor,
 ): Promise<string | null> {
-  const [member] = await db
+  const [member] = await executor
     .select({ role: schema.workspaceUserTable.role })
     .from(schema.workspaceUserTable)
     .where(
@@ -64,12 +69,13 @@ export type Actor =
 async function resolveActor(
   workspaceId: string,
   actorUserId: string,
+  executor: SelectExecutor = db,
 ): Promise<Actor | null> {
-  if (await isInstanceAdminUser(actorUserId)) {
+  if (await isInstanceAdminUser(actorUserId, executor)) {
     return { unrestricted: true };
   }
 
-  const role = await findMembershipRole(workspaceId, actorUserId);
+  const role = await findMembershipRole(workspaceId, actorUserId, executor);
   if (!role) return null;
 
   if (splitRoles(role).includes(OWNER_ROLE)) {
@@ -80,15 +86,16 @@ async function resolveActor(
   // "a,b" resolves as one unknown name and therefore grants nothing.
   return {
     unrestricted: false,
-    statements: await resolveRoleStatements(workspaceId, role),
+    statements: await resolveRoleStatements(workspaceId, role, executor),
   };
 }
 
 async function requireActor(
   workspaceId: string,
   actorUserId: string,
+  executor: SelectExecutor = db,
 ): Promise<Actor> {
-  const actor = await resolveActor(workspaceId, actorUserId);
+  const actor = await resolveActor(workspaceId, actorUserId, executor);
   if (!actor) {
     throw new APIError("FORBIDDEN", {
       code: "YOU_ARE_NOT_A_MEMBER_OF_THIS_WORKSPACE",
@@ -111,11 +118,12 @@ export async function rolesWithin(
   workspaceId: string,
   roles: string[],
   granted: RoleStatements,
+  executor: SelectExecutor = db,
 ): Promise<boolean> {
   if (roles.length === 0) return false;
   for (const role of roles) {
     if (role === OWNER_ROLE) return false;
-    const statements = await resolveRoleStatements(workspaceId, role);
+    const statements = await resolveRoleStatements(workspaceId, role, executor);
     if (!statements || !isStatementSubset(statements, granted)) return false;
   }
   return true;
@@ -126,13 +134,16 @@ export async function assertCanAssignRole({
   actorUserId,
   targetRole,
   targetMember,
+  executor = db,
 }: {
   workspaceId: string;
   actorUserId: string;
   targetRole: string;
   targetMember?: { userId: string; role: string };
+  // Run the lookups on this connection (a transaction that holds locks).
+  executor?: SelectExecutor;
 }): Promise<void> {
-  const actor = await requireActor(workspaceId, actorUserId);
+  const actor = await requireActor(workspaceId, actorUserId, executor);
   if (actor.unrestricted) return;
 
   if (targetMember && targetMember.userId === actorUserId) {
@@ -145,13 +156,20 @@ export async function assertCanAssignRole({
   const granted = actor.statements;
   if (!granted) throw exceedsPermissions();
 
-  if (!(await rolesWithin(workspaceId, splitRoles(targetRole), granted))) {
+  if (
+    !(await rolesWithin(workspaceId, splitRoles(targetRole), granted, executor))
+  ) {
     throw exceedsPermissions();
   }
 
   if (
     targetMember &&
-    !(await rolesWithin(workspaceId, splitRoles(targetMember.role), granted))
+    !(await rolesWithin(
+      workspaceId,
+      splitRoles(targetMember.role),
+      granted,
+      executor,
+    ))
   ) {
     throw new APIError("FORBIDDEN", {
       code: "YOU_CANNOT_MANAGE_THIS_MEMBER",

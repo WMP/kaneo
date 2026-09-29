@@ -9,6 +9,10 @@ import {
 } from "../utils/project-access";
 import { apiKeyAllows } from "../utils/require-workspace-permission";
 import { rolesWithin, splitRoles } from "../utils/role-delegation";
+import {
+  resolveRoleStatements,
+  type SelectExecutor,
+} from "../utils/role-statements";
 
 // Stable error messages of the project member API. They are part of the API
 // contract (documented in the route descriptions) and asserted by tests.
@@ -73,6 +77,7 @@ export async function assertAssignableProjectRole(
 export async function assertCanManageRole(
   access: ProjectAccess,
   currentRole: string,
+  executor?: SelectExecutor,
 ): Promise<void> {
   if (access.unrestricted) return;
   if (
@@ -81,6 +86,7 @@ export async function assertCanManageRole(
       access.workspaceId,
       splitRoles(currentRole),
       access.statements,
+      executor,
     ))
   ) {
     throw new HTTPException(403, {
@@ -127,6 +133,16 @@ export function assertProjectMemberPermission(
 export async function isInertRole(
   access: ProjectAccess,
   role: string,
+  executor?: SelectExecutor,
 ): Promise<boolean> {
-  return (await projectRoleStatements(access.workspaceId, role)) === null;
+  return (
+    (await projectRoleStatements(
+      access.workspaceId,
+      role,
+      executor
+        ? (workspaceId, name) =>
+            resolveRoleStatements(workspaceId, name, executor)
+        : undefined,
+    )) === null
+  );
 }
