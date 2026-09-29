@@ -1,21 +1,21 @@
 import { client } from "@kaneo/libs";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 async function fetchProjectMembers(projectId: string) {
   const response = await client.project[":projectId"].members.$get({
     param: { projectId },
   });
 
-  if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
-  }
+  if (!response.ok) throw await readProjectApiError(response);
 
   return response.json();
 }
 
-export type ProjectMemberRow = Awaited<
+// The rows as the API lists them, for the members settings section.
+export type ProjectMember = Awaited<
   ReturnType<typeof fetchProjectMembers>
 >[number];
+export type ProjectMemberRow = ProjectMember;
 
 // The shape the assignee and mention pickers already consume (the Better Auth
 // member list: `{ members: [{ userId, role, user }] }`), built from the project

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignableRolesWorkspaceKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
 import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
+import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
 type UpdateWorkspaceRoleRequest = {
   workspaceId: string;
@@ -22,7 +23,7 @@ function useUpdateWorkspaceRole() {
         roleName,
         data: { permission },
       });
-      if (error) throw new Error(error.message || "Failed to update role");
+      if (error) throw toWorkspaceMemberError(error);
       return data;
     },
     onSuccess: (_data, variables) => {

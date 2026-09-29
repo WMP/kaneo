@@ -1,6 +1,13 @@
 import { client } from "@kaneo/libs";
 
 import { HttpError } from "@/lib/http-error";
+export type InvitationProject = {
+  id: string;
+  name: string;
+  /** The project role the invitation grants in this project. */
+  role: string;
+};
+
 export type InvitationDetails = {
   id: string;
   email: string;
@@ -9,6 +16,8 @@ export type InvitationDetails = {
   expiresAt: string;
   status: string;
   expired: boolean;
+  /** Empty or omitted for a plain workspace invitation. */
+  projects?: InvitationProject[];
 };
 
 export type GetInvitationDetailsResponse = {

@@ -21,6 +21,11 @@ export function isUnauthorizedError(error: unknown): boolean {
   );
 }
 
+export function isForbiddenError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  return "status" in error && error.status === 403;
+}
+
 // Shared unauthorized redirect for both the React Query error cache and direct
 // fetcher calls (e.g. route loaders) that bypass the QueryCache. Stashes the
 // current pathname/search/hash so the sign-in page can return the user to

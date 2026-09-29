@@ -7,6 +7,7 @@ import {
 import {
   HttpError,
   handleUnauthorized,
+  isForbiddenError,
   isUnauthorizedError,
 } from "@/lib/http-error";
 import { useConnectivityStore } from "@/store/connectivity";
@@ -102,8 +103,12 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
+      // A 403 does not fix itself by asking again, and the project pages show
+      // their "no access" state as soon as it arrives.
       retry: (failureCount, error) =>
-        isNetworkError(error) || isUnauthorizedError(error)
+        isNetworkError(error) ||
+        isUnauthorizedError(error) ||
+        isForbiddenError(error)
           ? false
           : failureCount < 2,
     },

@@ -39,6 +39,7 @@ import useWorkspaceRoles, {
 } from "@/hooks/queries/workspace/use-workspace-roles";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
+import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/settings/workspace/roles",
@@ -771,9 +772,11 @@ export function CustomRoleEditor({
       toast.success(t("settings:workspaceRoles.toast.updated"));
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("settings:workspaceRoles.toast.updateError"),
+        getWorkspaceMemberErrorMessage(
+          error,
+          t,
+          "settings:workspaceRoles.toast.updateError",
+        ),
       );
     }
   };
@@ -881,9 +884,11 @@ function DeleteRoleConfirm({
               onDeleted();
             } catch (error) {
               toast.error(
-                error instanceof Error
-                  ? error.message
-                  : t("settings:workspaceRoles.toast.deleteError"),
+                getWorkspaceMemberErrorMessage(
+                  error,
+                  t,
+                  "settings:workspaceRoles.toast.deleteError",
+                ),
               );
             }
           }}

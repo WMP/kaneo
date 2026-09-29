@@ -23,6 +23,13 @@ describe("queryClient connectivity handling", () => {
     expect(retry(0, new TypeError("Failed to fetch"))).toBe(false);
   });
 
+  it("does not retry a 403, which asking again cannot change", () => {
+    const retry = queryClient.getDefaultOptions().queries?.retry as RetryFn;
+    expect(retry(0, new HttpError(403, "No access to the project"))).toBe(
+      false,
+    );
+  });
+
   it("still retries an API error whose message merely says 'Failed to fetch …'", () => {
     // The server answered (HTTP 500); the old substring match treated this as
     // a network failure and skipped the retry.

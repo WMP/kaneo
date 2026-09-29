@@ -11,6 +11,10 @@ const ERROR_KEYS_BY_CODE: Record<string, string> = {
   USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION: "team:errors.alreadyMember",
   USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION: "team:errors.alreadyInvited",
   INVITATION_LIMIT_REACHED: "team:errors.invitationLimitReached",
+  // Deleting or renaming a role that project members or pending project
+  // invitations still use is refused until they are moved to another role.
+  ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS:
+    "projectMembers:errors.roleAssignedToProjectMembers",
 };
 
 type WorkspaceMemberErrorInit = {

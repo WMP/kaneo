@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignableRolesWorkspaceKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
 import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
+import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
 type DeleteWorkspaceRoleRequest = {
   workspaceId: string;
@@ -20,7 +21,7 @@ function useDeleteWorkspaceRole() {
         roleName,
       });
       if (error) {
-        throw new Error(error.message || "Failed to delete role");
+        throw toWorkspaceMemberError(error);
       }
       return data;
     },
