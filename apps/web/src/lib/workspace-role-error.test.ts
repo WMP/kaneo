@@ -94,6 +94,20 @@ describe("getWorkspaceMemberErrorMessage", () => {
   });
 });
 
+describe("role in use by project members", () => {
+  it("maps ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS to its translated message", () => {
+    expect(
+      getWorkspaceMemberErrorMessage(
+        new WorkspaceMemberError("English text", {
+          code: "ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS",
+        }),
+        t,
+        FALLBACK,
+      ),
+    ).toBe("[projectMembers:errors.roleAssignedToProjectMembers]");
+  });
+});
+
 describe("toWorkspaceMemberError", () => {
   it("keeps the code, status and message", () => {
     const error = toWorkspaceMemberError({

@@ -7,6 +7,8 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "@/lib/toast";
+import { WorkspaceMemberError } from "@/lib/workspace-role-error";
 import { CustomRoleEditor, PermissionList } from "./roles";
 
 const m = vi.hoisted(() => ({ update: vi.fn() }));
@@ -86,6 +88,40 @@ describe("workspace role permission editing", () => {
         roleName: "admin",
         permission: {},
       }),
+    );
+  });
+  it("explains that a role still used by project members cannot be changed", async () => {
+    m.update.mockRejectedValue(
+      new WorkspaceMemberError("", {
+        code: "ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS",
+        status: 409,
+      }),
+    );
+    render(
+      <CustomRoleEditor
+        workspaceId="workspace"
+        role={{
+          id: "role",
+          workspaceId: "workspace",
+          role: "qa-lead",
+          permission: { task: ["read"] },
+          createdAt: new Date(),
+        }}
+        isDefault={false}
+        onDelete={() => {}}
+      />,
+    );
+    // Save is offered once something changed.
+    fireEvent.click(screen.getAllByRole("switch", { checked: true })[0]);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:workspaceRoles.saveChanges",
+      }),
+    );
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "projectMembers:errors.roleAssignedToProjectMembers",
+      ),
     );
   });
   it("also exposes unknown stored permission entries instead of silently retaining them", () => {
