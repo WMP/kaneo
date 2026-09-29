@@ -83,6 +83,18 @@ async function invitations(email: string) {
     );
 }
 
+// What a rejected re-send must leave untouched.
+async function invitationState(email: string) {
+  return (await invitations(email))
+    .map(({ id, role, status, expiresAt }) => ({
+      id,
+      role,
+      status,
+      expiresAt: expiresAt.getTime(),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
 // Bearer-only request: no cookie, so only Better Auth's bearer plugin can
 // resolve the session.
 function postWithBearer(path: string, body: unknown, token: string) {
@@ -217,10 +229,12 @@ describe("invitations cannot exceed the inviter's permissions", () => {
     const { owner, inviter } = actors;
 
     expect((await invite(owner, "r1@example.com", "admin")).status).toBe(200);
+    const before = await invitationState("r1@example.com");
     await expectForbidden(
       await invite(inviter, "r1@example.com", "viewer", true),
       "ROLE_EXCEEDS_YOUR_PERMISSIONS",
     );
+    expect(await invitationState("r1@example.com")).toEqual(before);
 
     expect((await invite(owner, "r2@example.com", "viewer")).status).toBe(200);
     expect(
@@ -361,24 +375,46 @@ describe("role delegation holds for every way of authenticating", () => {
     expect(created.status).toBe(200);
     const { key } = (await created.json()) as { key: string };
 
+    // `x-api-key` only: no cookie and no Authorization header.
+    const resendWithKey = (email: string) =>
+      app.request("/api/auth/organization/invite-member", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Origin: origin,
+          "x-api-key": key,
+        },
+        body: JSON.stringify({
+          organizationId: workspaceId,
+          email,
+          role: "viewer",
+          resend: true,
+        }),
+      });
+
     expect((await invite(owner, "keyed@example.com", "admin")).status).toBe(
       200,
     );
-    const response = await app.request("/api/auth/organization/invite-member", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        Origin: origin,
-        "x-api-key": key,
-      },
-      body: JSON.stringify({
-        organizationId: workspaceId,
-        email: "keyed@example.com",
-        role: "viewer",
-        resend: true,
-      }),
-    });
-    await expectForbidden(response, "ROLE_EXCEEDS_YOUR_PERMISSIONS");
+    const before = await invitationState("keyed@example.com");
+    await expectForbidden(
+      await resendWithKey("keyed@example.com"),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(await invitationState("keyed@example.com")).toEqual(before);
+
+    // An allowed re-send with the same key still succeeds even though the
+    // key is checked twice (our session lookup and the endpoint's own hook).
+    expect((await invite(owner, "keyed-ok@example.com", "viewer")).status).toBe(
+      200,
+    );
+    const [sent] = await invitationState("keyed-ok@example.com");
+    const response = await resendWithKey("keyed-ok@example.com");
+    expect(response.status).toBe(200);
+    const after = await invitationState("keyed-ok@example.com");
+    expect(after).toHaveLength(1);
+    expect(after[0].id).toBe(sent.id);
+    expect(after[0].role).toBe("viewer");
+    expect(after[0].status).toBe("pending");
   });
 
   it("blocks a bearer-authenticated inviter from re-sending an admin invitation", async () => {
@@ -387,7 +423,7 @@ describe("role delegation holds for every way of authenticating", () => {
     expect((await invite(owner, "bearer@example.com", "admin")).status).toBe(
       200,
     );
-    const before = await invitations("bearer@example.com");
+    const before = await invitationState("bearer@example.com");
 
     await expectForbidden(
       await postWithBearer(
@@ -402,9 +438,9 @@ describe("role delegation holds for every way of authenticating", () => {
       ),
       "ROLE_EXCEEDS_YOUR_PERMISSIONS",
     );
-    const after = await invitations("bearer@example.com");
+    const after = await invitationState("bearer@example.com");
     expect(after).toHaveLength(1);
-    expect(after[0].expiresAt).toEqual(before[0].expiresAt);
+    expect(after).toEqual(before);
   });
 
   it("does not let an empty organizationId skip the check when an organization is active", async () => {
@@ -430,6 +466,7 @@ describe("role delegation holds for every way of authenticating", () => {
     expect((await invite(owner, "empty@example.com", "admin")).status).toBe(
       200,
     );
+    const before = await invitationState("empty@example.com");
     await expectForbidden(
       await post(
         "/organization/invite-member",
@@ -443,6 +480,7 @@ describe("role delegation holds for every way of authenticating", () => {
       ),
       "ROLE_EXCEEDS_YOUR_PERMISSIONS",
     );
+    expect(await invitationState("empty@example.com")).toEqual(before);
   });
 
   it("does not treat an expired pending invitation as the one being re-sent", async () => {

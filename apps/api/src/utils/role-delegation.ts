@@ -197,14 +197,10 @@ export async function assertCanResendInvitation({
   const granted = actor.statements;
   if (!granted) throw exceedsPermissions();
 
-  for (const invitation of pending) {
-    if (
-      !(await rolesWithin(
-        workspaceId,
-        splitRoles(invitation.role ?? ""),
-        granted,
-      ))
-    ) {
+  // One check per distinct role set, however many rows share it.
+  const roleSets = new Set(pending.map((invitation) => invitation.role ?? ""));
+  for (const roleSet of roleSets) {
+    if (!(await rolesWithin(workspaceId, splitRoles(roleSet), granted))) {
       throw exceedsPermissions();
     }
   }
