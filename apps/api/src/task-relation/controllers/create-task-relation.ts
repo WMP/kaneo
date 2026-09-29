@@ -11,6 +11,7 @@ import {
   projectAccessSatisfies,
   requireProjectAccessFor,
 } from "../../utils/project-access";
+import { relationTaskIdsInProject } from "../event-task-ids";
 import { wouldCreateCycle } from "./detect-relation-cycle";
 
 async function createTaskRelation({
@@ -178,6 +179,13 @@ async function createTaskRelation({
     },
   );
 
+  // Which of the relation's tasks live in each project, so the WebSocket layer
+  // sends a project's subscribers only ids of tasks in that project.
+  const projects = {
+    sourceProjectId: sourceTask.projectId,
+    targetProjectId: targetTask.projectId,
+  };
+
   // waitForHandlers: the activity module logs this creation off the event,
   // and that write should be visible by the time this request returns
   // rather than racing the response.
@@ -187,6 +195,11 @@ async function createTaskRelation({
       ...relation,
       taskId: sourceTaskId,
       projectId: sourceTask.projectId,
+      projectTaskIds: relationTaskIdsInProject(
+        relation,
+        projects,
+        sourceTask.projectId,
+      ),
       userId,
     },
     { waitForHandlers: true },
@@ -206,6 +219,11 @@ async function createTaskRelation({
         ...relation,
         taskId: sourceTaskId,
         projectId: targetTask.projectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          targetTask.projectId,
+        ),
         userId,
         secondaryNotification: true,
       },
