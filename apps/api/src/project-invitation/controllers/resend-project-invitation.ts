@@ -1,4 +1,5 @@
 import { and, eq, gt } from "drizzle-orm";
+import type { Context } from "hono";
 import db, { schema } from "../../database";
 import type { ProjectAccess } from "../../utils/project-access";
 import { assertCloudInvitationAllowed } from "../cloud-gates";
@@ -9,6 +10,7 @@ import {
   invitationError,
 } from "../delegation";
 import { deliverInvitationEmail } from "../deliver-email";
+import { assertMayExtendInvitation, canInviteToWorkspace } from "../origin";
 import {
   lockInvitationEmail,
   requirePendingProjectInvitation,
@@ -18,10 +20,12 @@ import {
 // out by the default lifetime, and the email sent again with the re-sender as
 // the inviter shown in it. An expired invitation is refused; invite again.
 async function resendProjectInvitation({
+  c,
   access,
   actorUserId,
   invitationId,
 }: {
+  c: Context;
   access: ProjectAccess;
   actorUserId: string;
   invitationId: string;
@@ -29,17 +33,25 @@ async function resendProjectInvitation({
   const first = await requirePendingProjectInvitation(access, invitationId);
   await assertCloudInvitationAllowed(actorUserId, first.email);
 
+  const mayInviteToWorkspace = await canInviteToWorkspace(c);
+
   const expiresAt = newInvitationExpiry();
   // Read and checked again under the lock: the roles the caller is judged on
   // are the ones the email is sent for.
   const extended = await db.transaction(async (tx) => {
     await lockInvitationEmail(tx, access.workspaceId, first.email);
+    // Locks the invitation row and re-checks it is still pending (the
+    // trigger of migration 0057 cancels through the same row).
     const current = await requirePendingProjectInvitation(
       access,
       invitationId,
       tx,
+      { lock: true },
     );
-    await assertCanManageInvitation(access, actorUserId, current);
+    await assertMayExtendInvitation(tx, invitationId, mayInviteToWorkspace);
+    await assertCanManageInvitation(access, actorUserId, current, {
+      executor: tx,
+    });
     const rows = await tx
       .update(schema.invitationTable)
       .set({ expiresAt })
@@ -51,7 +63,7 @@ async function resendProjectInvitation({
         ),
       )
       .returning({ id: schema.invitationTable.id });
-    return rows.length > 0 ? current : null;
+    return rows.length > 0;
   });
   if (!extended) {
     throw invitationError(

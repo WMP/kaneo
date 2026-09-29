@@ -12,11 +12,13 @@ import {
   isOwnerRole,
   type ProjectAccess,
   projectAccessSatisfies,
-  workspaceMemberStanding,
 } from "../utils/project-access";
 import { apiKeyAllows } from "../utils/require-workspace-permission";
 import { assertCanAssignRole, splitRoles } from "../utils/role-delegation";
-import { resolveRoleStatements, satisfies } from "../utils/role-statements";
+import {
+  resolveRoleStatements,
+  type SelectExecutor,
+} from "../utils/role-statements";
 
 // Errors of the project invitation API: JSON `{ code, message }` so the web
 // client can branch on `code` (for example to offer "add to project" instead
@@ -104,12 +106,14 @@ async function assertWorkspaceRoleWithinCaller(
   access: ProjectAccess,
   actorUserId: string,
   workspaceRole: string,
+  executor?: SelectExecutor,
 ): Promise<void> {
   try {
     await assertCanAssignRole({
       workspaceId: access.workspaceId,
       actorUserId,
       targetRole: workspaceRole,
+      executor,
     });
   } catch (error) {
     if (isAPIError(error)) {
@@ -201,23 +205,41 @@ export async function assertCanManageInvitation(
   access: ProjectAccess,
   actorUserId: string,
   invitation: { workspaceRole: string; projectRole: string },
-  { allowInert = false }: { allowInert?: boolean } = {},
+  {
+    allowInert = false,
+    executor,
+  }: {
+    allowInert?: boolean;
+    // The transaction that holds the invitation's lock: every lookup runs on
+    // its connection instead of asking the pool for a second one.
+    executor?: SelectExecutor;
+  } = {},
 ): Promise<void> {
   if (access.unrestricted) return;
   if (
     !(
       allowInert &&
-      (await isInertWorkspaceRole(access.workspaceId, invitation.workspaceRole))
+      (await isInertWorkspaceRole(
+        access.workspaceId,
+        invitation.workspaceRole,
+        executor,
+      ))
     )
   ) {
     await assertWorkspaceRoleWithinCaller(
       access,
       actorUserId,
       invitation.workspaceRole,
+      executor,
     );
   }
-  if (!(allowInert && (await isInertRole(access, invitation.projectRole)))) {
-    await assertCanManageProjectRole(access, invitation.projectRole);
+  if (
+    !(
+      allowInert &&
+      (await isInertRole(access, invitation.projectRole, executor))
+    )
+  ) {
+    await assertCanManageProjectRole(access, invitation.projectRole, executor);
   }
 }
 
@@ -227,9 +249,10 @@ export async function assertCanManageInvitation(
 async function isInertWorkspaceRole(
   workspaceId: string,
   role: string,
+  executor?: SelectExecutor,
 ): Promise<boolean> {
   for (const part of splitRoles(role)) {
-    if (await resolveRoleStatements(workspaceId, part)) return false;
+    if (await resolveRoleStatements(workspaceId, part, executor)) return false;
   }
   return true;
 }
@@ -239,9 +262,10 @@ async function isInertWorkspaceRole(
 export async function assertCanManageProjectRole(
   access: ProjectAccess,
   projectRole: string,
+  executor?: SelectExecutor,
 ): Promise<void> {
   try {
-    await assertCanManageRole(access, projectRole);
+    await assertCanManageRole(access, projectRole, executor);
   } catch (error) {
     if (
       error instanceof HTTPException &&
@@ -253,25 +277,4 @@ export async function assertCanManageProjectRole(
     }
     throw error;
   }
-}
-
-// Does the caller hold `invitation:create` in their WORKSPACE role (owners and
-// instance administrators always do)? The project routes decide by the project
-// role, but an invitation that is not a project invitation belongs to the
-// workspace: only somebody who could have made it may attach a project to it.
-export async function hasWorkspaceInvitationCreate(
-  access: ProjectAccess,
-  actorUserId: string,
-): Promise<boolean> {
-  if (access.unrestricted) return true;
-  const standing = await workspaceMemberStanding(
-    actorUserId,
-    access.workspaceId,
-  );
-  if (!standing) return false;
-  if (standing.owner) return true;
-  return Boolean(
-    standing.statements &&
-      satisfies(standing.statements, { invitation: ["create"] }),
-  );
 }
