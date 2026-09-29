@@ -37,6 +37,9 @@ type ProjectConnection = {
   // `ACCESS_REVALIDATE_MS` has passed. It is the time a check STARTED, so a slow
   // check never makes a connection look fresher than it is.
   validatedAt: number;
+  // Consecutive revalidations that could not be decided (a database error), not
+  // access being refused. Reset by any check that gets an answer.
+  failedChecks: number;
 } & ConnectionCredential;
 
 // A socket is authorized once, at the upgrade. Membership can be removed, and a
@@ -45,6 +48,15 @@ type ProjectConnection = {
 // passed). This bounds how long a removed member keeps receiving events when
 // nothing closed the socket explicitly (`closeUserProjectConnections`).
 export const ACCESS_REVALIDATE_MS = 60_000;
+
+// A check that cannot be decided skips the message for that connection and is
+// asked again on the next delivery, so a single blip disconnects nobody. A
+// connection that fails this many checks in a row is closed (1011, per
+// connection, so a longer outage does not disconnect everyone at once) and its
+// client reconnects and refetches instead of silently missing updates.
+export const MAX_FAILED_ACCESS_CHECKS = 3;
+const ACCESS_CHECK_FAILED_CLOSE_CODE = 1011;
+const ACCESS_CHECK_FAILED_CLOSE_REASON = "Project access could not be verified";
 
 export const ACCESS_REVOKED_CLOSE_CODE = 1008;
 export const ACCESS_REVOKED_CLOSE_REASON = "Project access revoked";
@@ -395,11 +407,24 @@ async function revalidateConnections(
     due.map(async (conn) => {
       const verdict = await verdictFor(projectId, conn);
       if (verdict.ok === true) {
+        conn.failedChecks = 0;
         conn.validatedAt = verdict.checkedAt;
         if (verdict.expiresAt !== undefined) conn.expiresAt = verdict.expiresAt;
         return;
       }
       withheld.add(conn);
+      if (verdict.ok === null) {
+        conn.failedChecks += 1;
+        if (conn.failedChecks >= MAX_FAILED_ACCESS_CHECKS) {
+          dropConnection(
+            projectId,
+            conn,
+            ACCESS_CHECK_FAILED_CLOSE_CODE,
+            ACCESS_CHECK_FAILED_CLOSE_REASON,
+          );
+        }
+        return;
+      }
       if (verdict.ok === false) {
         dropConnection(
           projectId,
@@ -496,6 +521,7 @@ export function addConnection(
     initiatorId,
     workspaceId,
     validatedAt: Date.now(),
+    failedChecks: 0,
     ...credential,
   };
   projectConnections.get(projectId)?.add(conn);
@@ -730,13 +756,10 @@ for (const eventName of taskUpdateEvents) {
 
     if (relationEvents.has(eventName)) {
       // A relation event reaches the subscribers of both projects, so a project
-      // only gets ids of tasks IN that project. The publisher lists them in
-      // `projectTaskIds`; when it did not (a caller that predates the field), the
-      // safe default is the primary event's source task and nothing on the
-      // secondary one. No lookup happens here.
-      const inProject = new Set(
-        data.projectTaskIds ?? (data.secondaryNotification ? [] : [taskId]),
-      );
+      // only gets ids of tasks IN that project. `publishRelationEvent` requires
+      // the publisher to list them in `projectTaskIds`; nothing else is sent, and
+      // no lookup happens here.
+      const inProject = new Set(data.projectTaskIds);
       if (!inProject.has(taskId)) taskId = "";
       if (sourceTaskId && !inProject.has(sourceTaskId)) {
         sourceTaskId = undefined;
