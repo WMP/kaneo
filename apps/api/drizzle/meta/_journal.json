@@ -393,6 +393,13 @@
       "when": 1790591513281,
       "tag": "0055_ganttpro_resources",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1790696547981,
+      "tag": "0056_ganttpro_project_members",
+      "breakpoints": true
     }
   ]
 }

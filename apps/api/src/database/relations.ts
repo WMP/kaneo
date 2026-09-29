@@ -11,10 +11,12 @@ import {
   externalLinkTable,
   githubIntegrationTable,
   integrationTable,
+  invitationProjectTable,
   invitationTable,
   labelTable,
   notificationTable,
   projectHiddenFieldTable,
+  projectMemberTable,
   projectTable,
   resourceTable,
   sessionTable,
@@ -144,6 +146,35 @@ export const projectTableRelations = relations(
     notificationWorkspaceProjects: many(userNotificationWorkspaceProjectTable),
     customFieldDefinitions: many(customFieldDefinitionTable),
     hiddenCustomFields: many(projectHiddenFieldTable),
+    members: many(projectMemberTable),
+  }),
+);
+
+export const projectMemberTableRelations = relations(
+  projectMemberTable,
+  ({ one }) => ({
+    project: one(projectTable, {
+      fields: [projectMemberTable.projectId],
+      references: [projectTable.id],
+    }),
+    user: one(userTable, {
+      fields: [projectMemberTable.userId],
+      references: [userTable.id],
+    }),
+  }),
+);
+
+export const invitationProjectTableRelations = relations(
+  invitationProjectTable,
+  ({ one }) => ({
+    invitation: one(invitationTable, {
+      fields: [invitationProjectTable.invitationId],
+      references: [invitationTable.id],
+    }),
+    project: one(projectTable, {
+      fields: [invitationProjectTable.projectId],
+      references: [projectTable.id],
+    }),
   }),
 );
 

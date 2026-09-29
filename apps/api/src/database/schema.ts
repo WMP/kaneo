@@ -462,6 +462,75 @@ export const calendarFeedTable = pgTable(
   ],
 );
 
+// Membership of a user in ONE project. Access to project data comes from a row
+// here, except for users with full access (instance administrators, workspace
+// owners and roles granting `workspace:manage_settings`), who reach every
+// project of their workspace. `role` names a workspace role catalog entry
+// (`viewer`/`member`/`admin` or a custom `workspace_role`, never `owner`) whose
+// statements apply inside this project only. A row never grants access on its
+// own: workspace membership is always checked first, see
+// `apps/api/src/utils/project-access.ts`.
+export const projectMemberTable = pgTable(
+  "ganttpro_project_member",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    role: text("role").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("ganttpro_project_member_project_user_unique").on(
+      table.projectId,
+      table.userId,
+    ),
+    index("ganttpro_project_member_user_id_idx").on(table.userId),
+  ],
+);
+
+// The projects (and the role in each) a workspace invitation grants once it is
+// accepted. Written and consumed by the project invitation flow.
+export const invitationProjectTable = pgTable(
+  "ganttpro_invitation_project",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    invitationId: text("invitation_id")
+      .notNull()
+      .references(() => invitationTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    role: text("role").notNull(),
+  },
+  (table) => [
+    unique("ganttpro_invitation_project_invitation_project_unique").on(
+      table.invitationId,
+      table.projectId,
+    ),
+    index("ganttpro_invitation_project_project_id_idx").on(table.projectId),
+  ],
+);
+
 export const taskTable = pgTable(
   "task",
   {
