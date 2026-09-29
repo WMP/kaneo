@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/popover";
 import icons from "@/constants/project-icons";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 
 type MobileProjectNavProps = {
@@ -27,7 +26,8 @@ type MobileProjectNavProps = {
   onSelectCalendar: () => void;
   onSelectGantt: () => void;
   onSelectProject: (projectId: string) => void;
-  onAddProject: () => void;
+  // Omitted when the user may not create projects; the item is then not shown.
+  onAddProject?: () => void;
 };
 
 export default function MobileProjectNav({
@@ -43,8 +43,6 @@ export default function MobileProjectNav({
 }: MobileProjectNavProps) {
   const { t } = useTranslation();
   const { data: projects = [] } = useGetProjects({ workspaceId });
-  const { canCreateProjects } = useWorkspacePermission();
-  const canCreate = canCreateProjects();
 
   return (
     <Popover>
@@ -151,7 +149,7 @@ export default function MobileProjectNav({
             </div>
           </div>
 
-          {canCreate ? (
+          {onAddProject ? (
             <button
               type="button"
               onClick={onAddProject}

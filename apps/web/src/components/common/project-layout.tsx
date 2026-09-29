@@ -24,6 +24,7 @@ import {
 import { shortcuts } from "@/constants/shortcuts";
 import useGetProject from "@/hooks/queries/project/use-get-project";
 import { useProjectWebSocket } from "@/hooks/use-project-websocket";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { useBackgroundStore } from "@/store/background";
 
@@ -53,6 +54,12 @@ export default function ProjectLayout({
   const { background } = useBackgroundStore();
 
   useProjectWebSocket(projectId);
+  // Gated once here; the header components render "Add project" only when
+  // they receive a handler.
+  const { canCreateProjects } = useWorkspacePermission();
+  const handleAddProject = canCreateProjects()
+    ? () => setIsCreateProjectModalOpen(true)
+    : undefined;
 
   const resolvedView =
     activeView ??
@@ -147,7 +154,7 @@ export default function ProjectLayout({
                 projectId={projectId}
                 projectName={project?.name}
                 onSelectProject={handleProjectSwitch}
-                onAddProject={() => setIsCreateProjectModalOpen(true)}
+                onAddProject={handleAddProject}
               />
             </div>
 
@@ -161,7 +168,7 @@ export default function ProjectLayout({
                 onSelectCalendar={handleNavigateToCalendar}
                 onSelectGantt={handleNavigateToGantt}
                 onSelectProject={handleProjectSwitch}
-                onAddProject={() => setIsCreateProjectModalOpen(true)}
+                onAddProject={handleAddProject}
               />
             </div>
 

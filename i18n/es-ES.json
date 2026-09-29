@@ -309,7 +309,8 @@
 			"toast": {
 				"acceptFailed": "Error al aceptar la invitación",
 				"acceptSuccess": "¡Invitación aceptada! Bienvenido al equipo."
-			}
+			},
+			"autoAccepting": "Accepting invitation..."
 		},
 		"onboarding": {
 			"pageTitle": "Bienvenido a Kaneo",
@@ -2944,7 +2945,11 @@
 			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
 			"resend": "Resend invitation",
 			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again"
+			"resendSuccess": "Invitation sent again",
+			"expired": "Expired {{date}}",
+			"inviteAgain": "Invite again",
+			"inviteAgainError": "Failed to invite again",
+			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email."
 		},
 		"inviteModal": {
 			"title": "Invitar miembro al equipo",
@@ -2963,7 +2968,10 @@
 			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
 			"roleLabel": "Role",
 			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles..."
+			"rolesLoading": "Loading roles...",
+			"sending": "Sending...",
+			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
+			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email."
 		},
 		"membersTable": {
 			"emptyTitle": "No hay miembros en el equipo aún",

@@ -18,6 +18,7 @@ import {
 import { usePendingInvitations } from "@/hooks/queries/invitation/use-pending-invitations";
 import useWorkspaceCreationAccess from "@/hooks/use-workspace-creation-access";
 import { authClient } from "@/lib/auth-client";
+import { clearAutoAcceptMarker } from "@/lib/auto-accept-invitation";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -68,6 +69,7 @@ function InvitationsPage() {
         organizationId: data?.invitation.organizationId || organizationId,
       });
 
+      clearAutoAcceptMarker(invitationId);
       toast.success(t("invitations:toast.acceptSuccess"));
 
       await queryClient.invalidateQueries({
@@ -103,6 +105,7 @@ function InvitationsPage() {
         return;
       }
 
+      clearAutoAcceptMarker(invitationId);
       toast.success(t("invitations:toast.rejectSuccess"));
 
       await queryClient.invalidateQueries({

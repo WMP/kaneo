@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AUTO_ACCEPT_MAX_AGE_MS,
+  clearAutoAcceptMarker,
   consumeAutoAcceptMarker,
+  hasFreshAutoAcceptMarker,
   isAutoAcceptMarkerFresh,
   parseAutoAcceptMarker,
   readAutoAcceptMarker,
@@ -11,6 +13,7 @@ import {
 const NOW = 1_800_000_000_000;
 
 afterEach(() => {
+  localStorage.clear();
   sessionStorage.clear();
   vi.restoreAllMocks();
 });
@@ -61,25 +64,40 @@ describe("isAutoAcceptMarkerFresh", () => {
 });
 
 describe("write, read and consume", () => {
-  it("round-trips through sessionStorage", () => {
+  it("round-trips through localStorage, keyed by invitation", () => {
     writeAutoAcceptMarker("inv-1", NOW);
-    expect(readAutoAcceptMarker()).toEqual({
+    expect(readAutoAcceptMarker("inv-1")).toEqual({
       invitationId: "inv-1",
       createdAt: NOW,
     });
+    expect(readAutoAcceptMarker("inv-2")).toBeNull();
+  });
+
+  it("is visible to another tab and never touches sessionStorage", () => {
+    writeAutoAcceptMarker("inv-1", NOW);
+    // localStorage is shared by every tab of the origin, sessionStorage is not.
+    expect(localStorage.length).toBe(1);
+    expect(sessionStorage.length).toBe(0);
   });
 
   it("consumes a fresh marker for the same invitation exactly once", () => {
     writeAutoAcceptMarker("inv-1", NOW);
     expect(consumeAutoAcceptMarker("inv-1", NOW + 1000)).toBe(true);
     expect(consumeAutoAcceptMarker("inv-1", NOW + 1000)).toBe(false);
-    expect(readAutoAcceptMarker()).toBeNull();
+    expect(readAutoAcceptMarker("inv-1")).toBeNull();
   });
 
   it("does not consume a marker written for another invitation", () => {
     writeAutoAcceptMarker("inv-1", NOW);
     expect(consumeAutoAcceptMarker("inv-2", NOW + 1000)).toBe(false);
-    expect(readAutoAcceptMarker()?.invitationId).toBe("inv-1");
+    expect(readAutoAcceptMarker("inv-1")?.invitationId).toBe("inv-1");
+  });
+
+  it("keeps markers of different invitations independent", () => {
+    writeAutoAcceptMarker("inv-1", NOW);
+    writeAutoAcceptMarker("inv-2", NOW);
+    expect(consumeAutoAcceptMarker("inv-1", NOW + 1000)).toBe(true);
+    expect(consumeAutoAcceptMarker("inv-2", NOW + 1000)).toBe(true);
   });
 
   it("clears but does not honour an expired marker", () => {
@@ -87,15 +105,38 @@ describe("write, read and consume", () => {
     expect(
       consumeAutoAcceptMarker("inv-1", NOW + AUTO_ACCEPT_MAX_AGE_MS + 1),
     ).toBe(false);
-    expect(readAutoAcceptMarker()).toBeNull();
+    expect(readAutoAcceptMarker("inv-1")).toBeNull();
   });
 
   it("returns false when nothing was written", () => {
     expect(consumeAutoAcceptMarker("inv-1", NOW)).toBe(false);
   });
+
+  it("clears a marker explicitly", () => {
+    writeAutoAcceptMarker("inv-1", NOW);
+    clearAutoAcceptMarker("inv-1");
+    expect(consumeAutoAcceptMarker("inv-1", NOW + 1000)).toBe(false);
+  });
+
+  it("prunes stale markers of other invitations when writing", () => {
+    writeAutoAcceptMarker("old", NOW);
+    writeAutoAcceptMarker("new", NOW + AUTO_ACCEPT_MAX_AGE_MS + 1);
+    expect(readAutoAcceptMarker("old")).toBeNull();
+    expect(readAutoAcceptMarker("new")).not.toBeNull();
+  });
+
+  it("peeks without consuming", () => {
+    writeAutoAcceptMarker("inv-1", NOW);
+    expect(hasFreshAutoAcceptMarker("inv-1", NOW + 1000)).toBe(true);
+    expect(hasFreshAutoAcceptMarker("inv-1", NOW + 1000)).toBe(true);
+    expect(
+      hasFreshAutoAcceptMarker("inv-1", NOW + AUTO_ACCEPT_MAX_AGE_MS + 1),
+    ).toBe(false);
+    expect(hasFreshAutoAcceptMarker("inv-2", NOW)).toBe(false);
+  });
 });
 
-describe("when sessionStorage throws", () => {
+describe("when localStorage throws", () => {
   it("never throws and never grants auto-accept", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("blocked");
@@ -108,7 +149,9 @@ describe("when sessionStorage throws", () => {
     });
 
     expect(() => writeAutoAcceptMarker("inv-1", NOW)).not.toThrow();
-    expect(readAutoAcceptMarker()).toBeNull();
+    expect(() => clearAutoAcceptMarker("inv-1")).not.toThrow();
+    expect(readAutoAcceptMarker("inv-1")).toBeNull();
+    expect(hasFreshAutoAcceptMarker("inv-1", NOW)).toBe(false);
     expect(consumeAutoAcceptMarker("inv-1", NOW)).toBe(false);
   });
 });

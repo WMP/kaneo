@@ -300,6 +300,7 @@
 			"createAccountOrSignIn": "Create an account to accept this invitation, or sign in if you already have one.",
 			"createAccount": "Create Account",
 			"accepting": "Accepting...",
+			"autoAccepting": "Accepting invitation...",
 			"acceptInvitation": "Accept Invitation",
 			"goToDashboard": "Go to Dashboard",
 			"signedInAs": "Signed in as <email>{{email}}</email>",
@@ -2949,7 +2950,11 @@
 			"resendError": "Failed to resend the invitation",
 			"renew": "Renew invitation link",
 			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"renewError": "Failed to renew the invitation link"
+			"renewError": "Failed to renew the invitation link",
+			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
+			"expired": "Expired {{date}}",
+			"inviteAgain": "Invite again",
+			"inviteAgainError": "Failed to invite again"
 		},
 		"inviteModal": {
 			"title": "Invite Team Member",
@@ -2968,7 +2973,10 @@
 			"roleLabel": "Role",
 			"rolesLoading": "Loading roles...",
 			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people."
+			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
+			"sending": "Sending...",
+			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
+			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace."
 		},
 		"membersTable": {
 			"emptyTitle": "No team members yet",

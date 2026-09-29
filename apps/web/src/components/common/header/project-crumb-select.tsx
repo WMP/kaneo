@@ -11,14 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 
 type ProjectCrumbSelectProps = {
   workspaceId: string;
   projectId: string;
   projectName?: string;
   onSelectProject: (projectId: string) => void;
-  onAddProject: () => void;
+  // Omitted when the user may not create projects; the item is then not shown.
+  onAddProject?: () => void;
 };
 
 export default function ProjectCrumbSelect({
@@ -30,8 +30,6 @@ export default function ProjectCrumbSelect({
 }: ProjectCrumbSelectProps) {
   const { t } = useTranslation();
   const { data: projects = [] } = useGetProjects({ workspaceId });
-  const { canCreateProjects } = useWorkspacePermission();
-  const canCreate = canCreateProjects();
 
   return (
     <DropdownMenu>
@@ -79,7 +77,7 @@ export default function ProjectCrumbSelect({
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
-        {canCreate ? (
+        {onAddProject ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

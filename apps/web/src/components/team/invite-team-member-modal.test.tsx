@@ -172,6 +172,69 @@ describe("InviteTeamMemberModal", () => {
     );
   });
 
+  it("claims neither an email nor its absence while the config is unknown", async () => {
+    config = undefined;
+    render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+    expect(screen.queryByText("team:inviteModal.noSmtpNotice")).toBeNull();
+
+    await submitEmail("a@example.com");
+
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith(
+        "team:inviteModal.successUnknownEmail",
+      ),
+    );
+    expect(success).not.toHaveBeenCalledWith("team:inviteModal.success");
+    expect(success).not.toHaveBeenCalledWith("team:inviteModal.successNoEmail");
+    expect(
+      await screen.findByText(
+        "team:inviteModal.shareLinkDescriptionUnknownEmail",
+      ),
+    ).toBeVisible();
+  });
+
+  it("disables submit and sends only one request while the invitation is being created", async () => {
+    let resolveInvite: (value: { id: string }) => void = () => {};
+    mutateAsync.mockReturnValue(
+      new Promise((resolve) => {
+        resolveInvite = resolve;
+      }),
+    );
+    render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+    await submitEmail("a@example.com");
+
+    const busyButton = await screen.findByRole("button", {
+      name: "team:inviteModal.sending",
+    });
+    expect(busyButton).toBeDisabled();
+    fireEvent.click(busyButton);
+    // Enter in the email field submits the form again.
+    fireEvent.submit(
+      screen
+        .getByPlaceholderText("team:inviteModal.emailPlaceholder")
+        .closest("form") as HTMLFormElement,
+    );
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+
+    resolveInvite({ id: "invite-9" });
+    expect(await screen.findByText("link:invite-9")).toBeVisible();
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-enables submit after a failed request", async () => {
+    mutateAsync.mockRejectedValue(new Error("boom"));
+    render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+    await submitEmail("a@example.com");
+
+    await waitFor(() => expect(error).toHaveBeenCalledWith("boom"));
+    expect(
+      screen.getByRole("button", { name: "team:inviteModal.sendInvitation" }),
+    ).toBeEnabled();
+  });
+
   describe("role picker", () => {
     const roleTrigger = () =>
       screen.getByRole("combobox", { name: "team:inviteModal.roleLabel" });

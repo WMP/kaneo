@@ -13,9 +13,9 @@ import useCancelInvitation from "@/hooks/mutations/workspace-user/use-cancel-inv
 import useDeleteWorkspaceUser from "@/hooks/mutations/workspace-user/use-delete-workspace-user";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useUpdateWorkspaceUserRole from "@/hooks/mutations/workspace-user/use-update-workspace-user-role";
-import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
+import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
@@ -105,10 +105,7 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   const { mutateAsync: updateMemberRole } = useUpdateWorkspaceUserRole();
   const { mutateAsync: inviteMember, isPending: isResending } =
     useInviteWorkspaceUser();
-  const { data: config } = useGetConfig();
-  // Without SMTP there is no email to resend, but the action still renews the
-  // link's expiry. Only an explicit `true` may promise an email.
-  const emailsAreSent = config?.hasSmtp === true;
+  const emailDelivery = useInvitationEmailDelivery();
   const { copy: copyInvitationLink } = useCopyInvitationLink();
   // Roles the current user may grant. Undefined until loaded, in which case no
   // role Select is offered rather than one that may list the wrong choices.
@@ -150,6 +147,13 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
     }
   };
 
+  // Better Auth renews an invitation only while it is pending and unexpired.
+  // Any other row cannot be resent: inviting again would leave the old row
+  // behind, so those get "Invite again", which replaces it.
+  const isInvitationLive = (invitation: WorkspaceUserInvitation) =>
+    invitation.status === "pending" &&
+    new Date(invitation.expiresAt).getTime() > Date.now();
+
   const handleResendInvitation = async (
     invitation: WorkspaceUserInvitation,
   ) => {
@@ -161,18 +165,46 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
         resend: true,
       });
       toast.success(
-        emailsAreSent
+        emailDelivery === "sent"
           ? t("team:invitations.resendSuccess")
-          : t("team:invitations.renewSuccess"),
+          : emailDelivery === "not-sent"
+            ? t("team:invitations.renewSuccess")
+            : t("team:invitations.renewSuccessUnknownEmail"),
       );
     } catch (error) {
       toast.error(
         getWorkspaceMemberErrorMessage(
           error,
           t,
-          emailsAreSent
+          emailDelivery === "sent"
             ? "team:invitations.resendError"
             : "team:invitations.renewError",
+        ),
+      );
+    }
+  };
+
+  const handleInviteAgain = async (invitation: WorkspaceUserInvitation) => {
+    try {
+      await cancelInvitation({ invitationId: invitation.id, workspaceId });
+      await inviteMember({
+        email: invitation.email,
+        role: invitation.role,
+        workspaceId,
+      });
+      toast.success(
+        emailDelivery === "sent"
+          ? t("team:inviteModal.success")
+          : emailDelivery === "not-sent"
+            ? t("team:inviteModal.successNoEmail")
+            : t("team:inviteModal.successUnknownEmail"),
+      );
+    } catch (error) {
+      toast.error(
+        getWorkspaceMemberErrorMessage(
+          error,
+          t,
+          "team:invitations.inviteAgainError",
         ),
       );
     }
@@ -385,10 +417,15 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {invitation.expiresAt
-                        ? t("team:invitations.expires", {
-                            defaultValue: "Expires {{date}}",
-                            date: formatDateMedium(invitation.expiresAt),
-                          })
+                        ? isInvitationLive(invitation)
+                          ? t("team:invitations.expires", {
+                              defaultValue: "Expires {{date}}",
+                              date: formatDateMedium(invitation.expiresAt),
+                            })
+                          : t("team:invitations.expired", {
+                              defaultValue: "Expired {{date}}",
+                              date: formatDateMedium(invitation.expiresAt),
+                            })
                         : "–"}
                     </div>
                   </div>
@@ -422,25 +459,37 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                       <EllipsisIcon className="size-4" />
                     </MenuTrigger>
                     <MenuPopup align="end">
-                      <MenuItem
-                        onClick={() => copyInvitationLink(invitation.id)}
-                      >
-                        <CopyIcon className="size-4" />
-                        {t("team:invitations.copyLink")}
-                      </MenuItem>
-                      <MenuItem
-                        disabled={isResending}
-                        onClick={() => handleResendInvitation(invitation)}
-                      >
-                        {emailsAreSent ? (
+                      {isInvitationLive(invitation) ? (
+                        <>
+                          <MenuItem
+                            onClick={() => copyInvitationLink(invitation.id)}
+                          >
+                            <CopyIcon className="size-4" />
+                            {t("team:invitations.copyLink")}
+                          </MenuItem>
+                          <MenuItem
+                            disabled={isResending}
+                            onClick={() => handleResendInvitation(invitation)}
+                          >
+                            {emailDelivery === "sent" ? (
+                              <SendIcon className="size-4" />
+                            ) : (
+                              <RefreshCwIcon className="size-4" />
+                            )}
+                            {emailDelivery === "sent"
+                              ? t("team:invitations.resend")
+                              : t("team:invitations.renew")}
+                          </MenuItem>
+                        </>
+                      ) : (
+                        <MenuItem
+                          disabled={isResending || isCancelling}
+                          onClick={() => handleInviteAgain(invitation)}
+                        >
                           <SendIcon className="size-4" />
-                        ) : (
-                          <RefreshCwIcon className="size-4" />
-                        )}
-                        {emailsAreSent
-                          ? t("team:invitations.resend")
-                          : t("team:invitations.renew")}
-                      </MenuItem>
+                          {t("team:invitations.inviteAgain")}
+                        </MenuItem>
+                      )}
                       <MenuItem
                         onClick={() => setInvitationToCancel(invitation)}
                       >

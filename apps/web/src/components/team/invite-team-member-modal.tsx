@@ -1,14 +1,14 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
-import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
+import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
@@ -62,11 +62,11 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   const workspaceId = workspace?.id;
   const { canInviteUsers } = useWorkspacePermission();
   const canInvite = canInviteUsers();
-  const { data: config } = useGetConfig();
-  // Only an explicit `true` may promise an email: while the config is loading
-  // or failed we do not know, so the copy must not claim one was sent.
-  const emailsAreSent = config?.hasSmtp === true;
-  const showNoSmtpNotice = config?.hasSmtp === false;
+  const emailDelivery = useInvitationEmailDelivery();
+  const showNoSmtpNotice = emailDelivery === "not-sent";
+  // Blocks a second request from Enter or a fast double click while the first
+  // one is still running.
+  const submittingRef = useRef(false);
   const roleFieldId = useId();
   const {
     data: assignableRoles,
@@ -110,6 +110,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   });
 
   const onSubmit = async ({ email }: TeamMemberFormValues) => {
+    if (submittingRef.current) return;
     if (!workspaceId) {
       toast.error(t("team:inviteModal.error"));
       return;
@@ -125,6 +126,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       toast.error(t("team:inviteModal.error"));
       return;
     }
+    submittingRef.current = true;
     try {
       const invitation = await mutateAsync({
         email,
@@ -136,9 +138,11 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       });
 
       toast.success(
-        emailsAreSent
+        emailDelivery === "sent"
           ? t("team:inviteModal.success")
-          : t("team:inviteModal.successNoEmail"),
+          : emailDelivery === "not-sent"
+            ? t("team:inviteModal.successNoEmail")
+            : t("team:inviteModal.successUnknownEmail"),
       );
 
       // The link is the only delivery channel when SMTP is unconfigured, so the
@@ -157,6 +161,8 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       toast.error(
         getWorkspaceMemberErrorMessage(error, t, "team:inviteModal.error"),
       );
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -191,13 +197,17 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
           <>
             <DialogPanel className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {emailsAreSent
+                {emailDelivery === "sent"
                   ? t("team:inviteModal.shareLinkDescription", {
                       email: createdInvitation.email,
                     })
-                  : t("team:inviteModal.shareLinkDescriptionNoEmail", {
-                      email: createdInvitation.email,
-                    })}
+                  : emailDelivery === "not-sent"
+                    ? t("team:inviteModal.shareLinkDescriptionNoEmail", {
+                        email: createdInvitation.email,
+                      })
+                    : t("team:inviteModal.shareLinkDescriptionUnknownEmail", {
+                        email: createdInvitation.email,
+                      })}
               </p>
               <InvitationLinkField invitationId={createdInvitation.id} />
             </DialogPanel>
@@ -288,9 +298,17 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!workspaceId || !canInvite || !role}
+                  disabled={
+                    !workspaceId ||
+                    !canInvite ||
+                    !role ||
+                    form.formState.isSubmitting
+                  }
+                  aria-busy={form.formState.isSubmitting}
                 >
-                  {t("team:inviteModal.sendInvitation")}
+                  {form.formState.isSubmitting
+                    ? t("team:inviteModal.sending")
+                    : t("team:inviteModal.sendInvitation")}
                 </Button>
               </DialogFooter>
             </form>

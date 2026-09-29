@@ -36,8 +36,10 @@ vi.mock("@/lib/format", () => ({
   formatDateMedium: () => "Sep 1, 2026",
 }));
 
+const cancelInvitation = vi.fn();
+
 vi.mock("@/hooks/mutations/workspace-user/use-cancel-invitation", () => ({
-  default: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  default: () => ({ mutateAsync: cancelInvitation, isPending: false }),
 }));
 
 const inviteMember = vi.fn();
@@ -97,6 +99,7 @@ vi.mock("../providers/auth-provider/hooks/use-auth", () => ({
 }));
 
 beforeEach(() => {
+  cancelInvitation.mockResolvedValue({});
   isOwner = false;
   assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
   updateMemberRole.mockResolvedValue({});
@@ -115,7 +118,20 @@ const pendingInvitation = {
   email: "invitee@example.com",
   role: "member",
   status: "pending",
-  expiresAt: "2026-09-01T00:00:00.000Z",
+  expiresAt: "2999-01-01T00:00:00.000Z",
+} as unknown as WorkspaceUserInvitation;
+
+const expiredInvitation = {
+  ...pendingInvitation,
+  id: "invite-old",
+  role: "qa-lead",
+  expiresAt: "2000-01-01T00:00:00.000Z",
+} as unknown as WorkspaceUserInvitation;
+
+const rejectedInvitation = {
+  ...pendingInvitation,
+  id: "invite-rejected",
+  status: "rejected",
 } as unknown as WorkspaceUserInvitation;
 
 describe("MembersTable pending invitation row menu", () => {
@@ -196,6 +212,125 @@ describe("MembersTable pending invitation row menu", () => {
   });
 });
 
+describe("MembersTable expired invitations", () => {
+  const renderRow = (invitation: WorkspaceUserInvitation) =>
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[invitation]}
+        users={[] as WorkspaceUser[]}
+      />,
+    );
+  const openMenu = () =>
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "team:membersTable.ariaInvitationActions",
+      }),
+    );
+
+  it("offers only 'Invite again' and cancel for an expired invitation", async () => {
+    renderRow(expiredInvitation);
+    openMenu();
+
+    expect(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.resend" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.renew" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.copyLink" }),
+    ).toBeNull();
+    expect(screen.getByText("team:invitations.expired")).toBeVisible();
+  });
+
+  it("cancels the old invitation, then invites again with the same email and role without resend", async () => {
+    const calls: string[] = [];
+    cancelInvitation.mockImplementation(async () => {
+      calls.push("cancel");
+    });
+    inviteMember.mockImplementation(async () => {
+      calls.push("invite");
+      return { id: "invite-new" };
+    });
+    renderRow(expiredInvitation);
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    );
+
+    await waitFor(() => expect(inviteMember).toHaveBeenCalled());
+    expect(cancelInvitation).toHaveBeenCalledWith({
+      invitationId: "invite-old",
+      workspaceId: "workspace-1",
+    });
+    expect(inviteMember).toHaveBeenCalledWith({
+      email: "invitee@example.com",
+      role: "qa-lead",
+      workspaceId: "workspace-1",
+    });
+    expect(calls).toEqual(["cancel", "invite"]);
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("team:inviteModal.success"),
+    );
+  });
+
+  it("does not invite when cancelling the old invitation fails", async () => {
+    cancelInvitation.mockRejectedValue(new Error("cancel failed"));
+    renderRow(expiredInvitation);
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    );
+
+    await waitFor(() => expect(error).toHaveBeenCalledWith("cancel failed"));
+    expect(inviteMember).not.toHaveBeenCalled();
+  });
+
+  it("treats a non-pending row like an expired one", async () => {
+    renderRow(rejectedInvitation);
+    openMenu();
+
+    expect(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.resend" }),
+    ).toBeNull();
+  });
+
+  it("uses neutral copy after inviting again while the config is unknown", async () => {
+    config = undefined;
+    renderRow(expiredInvitation);
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith(
+        "team:inviteModal.successUnknownEmail",
+      ),
+    );
+  });
+});
+
 describe("MembersTable resend invitation", () => {
   const openMenu = () =>
     fireEvent.click(
@@ -266,8 +401,12 @@ describe("MembersTable resend invitation", () => {
     );
 
     await waitFor(() =>
-      expect(success).toHaveBeenCalledWith("team:invitations.renewSuccess"),
+      expect(success).toHaveBeenCalledWith(
+        "team:invitations.renewSuccessUnknownEmail",
+      ),
     );
+    expect(success).not.toHaveBeenCalledWith("team:invitations.renewSuccess");
+    expect(success).not.toHaveBeenCalledWith("team:invitations.resendSuccess");
   });
 
   it("shows a translated message for a known API error code", async () => {

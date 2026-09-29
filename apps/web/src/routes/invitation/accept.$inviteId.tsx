@@ -22,7 +22,9 @@ import { Button } from "@/components/ui/button";
 import { useGetInvitationDetails } from "@/hooks/queries/invitation/use-get-invitation-details";
 import { authClient } from "@/lib/auth-client";
 import {
+  clearAutoAcceptMarker,
   consumeAutoAcceptMarker,
+  hasFreshAutoAcceptMarker,
   writeAutoAcceptMarker,
 } from "@/lib/auto-accept-invitation";
 import { toast } from "@/lib/toast";
@@ -39,6 +41,13 @@ function AcceptInvitation() {
   });
   const navigate = useNavigate();
   const [isAccepting, setIsAccepting] = useState(false);
+  // True from the first render when this browser holds a fresh auto-accept
+  // marker, until the automatic accept fails or the effect below decides not
+  // to run it. It lets the page show an "accepting" state instead of flashing
+  // the manual actions, so nothing can navigate away and race the request.
+  const [isAutoAccepting, setIsAutoAccepting] = useState(() =>
+    hasFreshAutoAcceptMarker(inviteId),
+  );
 
   const { data: session, isPending: isSessionLoading } =
     authClient.useSession();
@@ -55,6 +64,7 @@ function AcceptInvitation() {
 
   const handleAcceptInvitation = useCallback(async () => {
     setIsAccepting(true);
+    let accepted = false;
     try {
       const { data, error } = await authClient.organization.acceptInvitation({
         invitationId: inviteId,
@@ -69,6 +79,8 @@ function AcceptInvitation() {
         organizationId: data?.invitation.organizationId,
       });
 
+      accepted = true;
+      clearAutoAcceptMarker(inviteId);
       toast.success(t("auth:invitation.toast.acceptSuccess"));
 
       if (!sessionUserName) {
@@ -88,6 +100,9 @@ function AcceptInvitation() {
       );
     } finally {
       setIsAccepting(false);
+      // After a success the page is navigating away; keep the accepting state
+      // rather than flashing the manual actions. After a failure, show them.
+      if (!accepted) setIsAutoAccepting(false);
     }
   }, [inviteId, navigate, sessionUserName, t]);
 
@@ -105,13 +120,19 @@ function AcceptInvitation() {
     if (!sessionEmail || !acceptableInvitation) return;
     autoAcceptAttemptedFor.current = inviteId;
 
-    if (!consumeAutoAcceptMarker(inviteId)) return;
+    if (!consumeAutoAcceptMarker(inviteId)) {
+      setIsAutoAccepting(false);
+      return;
+    }
 
     const emailsMatch =
       sessionEmail.trim().toLowerCase() ===
       acceptableInvitation.email.trim().toLowerCase();
     // A different account is signed in: keep the manual UI and its wording.
-    if (!emailsMatch) return;
+    if (!emailsMatch) {
+      setIsAutoAccepting(false);
+      return;
+    }
 
     void handleAcceptInvitation();
   }, [inviteId, sessionEmail, acceptableInvitation, handleAcceptInvitation]);
@@ -240,6 +261,28 @@ function AcceptInvitation() {
     );
   }
 
+  // Automatic accept in flight: nothing else to click, so no other action can
+  // navigate away and race the request.
+  if (isSignedIn && isAutoAccepting) {
+    return (
+      <>
+        <PageTitle title={t("auth:invitation.pageTitleAccept")} />
+        <AuthLayout title={t("auth:invitation.pageTitleAccept")}>
+          <div
+            className="flex flex-col items-center gap-3 py-8"
+            role="status"
+            aria-live="polite"
+          >
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">
+              {t("auth:invitation.autoAccepting")}
+            </p>
+          </div>
+        </AuthLayout>
+      </>
+    );
+  }
+
   if (isSignedIn) {
     return (
       <>
@@ -284,13 +327,15 @@ function AcceptInvitation() {
                 )}
               </Button>
 
-              <Button
-                render={<Link to="/dashboard" />}
-                variant="outline"
-                className="w-full"
-              >
-                {t("auth:invitation.goToDashboard")}
-              </Button>
+              {isAccepting ? null : (
+                <Button
+                  render={<Link to="/dashboard" />}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t("auth:invitation.goToDashboard")}
+                </Button>
+              )}
             </div>
 
             <div className="pt-4 border-t border-border">

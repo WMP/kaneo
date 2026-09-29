@@ -300,6 +300,7 @@
 			"createAccountOrSignIn": "Utwórz konto, aby zaakceptować to zaproszenie, albo zaloguj się, jeśli już je masz.",
 			"createAccount": "Utwórz konto",
 			"accepting": "Akceptowanie...",
+			"autoAccepting": "Akceptowanie zaproszenia...",
 			"acceptInvitation": "Zaakceptuj zaproszenie",
 			"goToDashboard": "Przejdź do pulpitu",
 			"signedInAs": "Zalogowano jako <email>{{email}}</email>",
@@ -735,7 +736,11 @@
 			"resendError": "Nie udało się ponownie wysłać zaproszenia",
 			"renew": "Odnów link zaproszenia",
 			"renewSuccess": "Link zaproszenia został odnowiony. E-mail nie został wysłany. Skopiuj link i wyślij go sam.",
-			"renewError": "Nie udało się odnowić linku zaproszenia"
+			"renewError": "Nie udało się odnowić linku zaproszenia",
+			"renewSuccessUnknownEmail": "Link zaproszenia został odnowiony. Jeśli osoba nie dostała e-maila, udostępnij jej link.",
+			"expired": "Wygasło {{date}}",
+			"inviteAgain": "Zaproś ponownie",
+			"inviteAgainError": "Nie udało się ponownie zaprosić"
 		},
 		"inviteModal": {
 			"title": "Zaproś członka zespołu",
@@ -754,7 +759,10 @@
 			"roleLabel": "Rola",
 			"rolesLoading": "Wczytywanie ról...",
 			"rolesError": "Nie udało się wczytać ról, które możesz nadać. Spróbuj ponownie później.",
-			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia."
+			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia.",
+			"sending": "Wysyłanie...",
+			"successUnknownEmail": "Zaproszenie zostało utworzone. Jeśli osoba nie dostała e-maila, udostępnij jej link.",
+			"shareLinkDescriptionUnknownEmail": "Jeśli adres {{email}} nie dostał e-maila, udostępnij mu ten link, aby mógł dołączyć do obszaru roboczego."
 		},
 		"membersTable": {
 			"emptyTitle": "Brak członków zespołu",
