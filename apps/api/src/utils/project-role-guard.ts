@@ -1,9 +1,7 @@
-import { DEFAULT_ROLE_NAMES } from "@kaneo/permissions";
 import { APIError } from "better-auth/api";
 import { and, eq } from "drizzle-orm";
 import db, { schema } from "../database";
-import { isOwnerRole } from "./project-access";
-import { resolveRoleStatements } from "./role-statements";
+import { workspaceMemberStanding } from "./project-access";
 
 // A project role is a name from the workspace role catalog. Deleting or
 // renaming a `workspace_role` that a project membership (or a pending project
@@ -15,11 +13,14 @@ import { resolveRoleStatements } from "./role-statements";
 // The guard runs BEFORE Better Auth authorizes the request, so it must not tell
 // an unauthorized caller anything: it only speaks up for a caller who would be
 // allowed to delete or rename the role anyway, and stays out of the way of
-// Better Auth's own answer for predefined roles.
+// Better Auth's own answer for `owner`. `viewer`, `member` and `admin` are
+// dynamic catalog rows that Better Auth lets a caller delete or rename, so they
+// are guarded like any custom role.
 
 export const ROLE_IN_USE_CODE = "ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS";
 
-const PREDEFINED_ROLES: readonly string[] = [...DEFAULT_ROLE_NAMES, "owner"];
+// The only static role: Better Auth refuses to delete it itself.
+const STATIC_ROLE = "owner";
 
 async function findRoleName(
   workspaceId: string,
@@ -45,34 +46,17 @@ async function findRoleName(
 }
 
 // Would Better Auth let this user delete (`ac:delete`) or rename (`ac:update`)
-// roles of the workspace? Instance administrators and owners always may.
+// roles of the workspace? Its rule: a member of that workspace whose role holds
+// the permission, `owner` included. Instance administrators get no special
+// treatment there, so they get none here.
 async function mayManageRoles(
   workspaceId: string,
   userId: string,
   action: "delete" | "update",
 ): Promise<boolean> {
-  const [user] = await db
-    .select({ role: schema.userTable.role })
-    .from(schema.userTable)
-    .where(eq(schema.userTable.id, userId))
-    .limit(1);
-  if (user?.role === "admin") return true;
-
-  const [member] = await db
-    .select({ role: schema.workspaceUserTable.role })
-    .from(schema.workspaceUserTable)
-    .where(
-      and(
-        eq(schema.workspaceUserTable.workspaceId, workspaceId),
-        eq(schema.workspaceUserTable.userId, userId),
-      ),
-    )
-    .limit(1);
-  if (!member?.role) return false;
-  if (isOwnerRole(member.role)) return true;
-
-  const statements = await resolveRoleStatements(workspaceId, member.role);
-  return Boolean(statements?.ac?.includes(action));
+  const standing = await workspaceMemberStanding(userId, workspaceId);
+  if (!standing) return false;
+  return standing.owner || Boolean(standing.statements?.ac?.includes(action));
 }
 
 export async function isRoleUsedByProjects(
@@ -151,7 +135,7 @@ export async function guardRoleChange({
   }
 
   const role = await findRoleName(workspaceId, body ?? {});
-  if (!role || PREDEFINED_ROLES.includes(role)) return;
+  if (!role || role === STATIC_ROLE) return;
 
   if (await isRoleUsedByProjects(workspaceId, role)) {
     throw new APIError("BAD_REQUEST", {

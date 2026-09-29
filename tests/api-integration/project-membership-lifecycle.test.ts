@@ -394,17 +394,61 @@ describe("a workspace role used as a project role cannot be deleted or renamed",
     expect(await roleExists("triager")).toBe(true);
   });
 
-  it("leaves predefined roles to Better Auth", async () => {
-    await useRole("member");
-    const deleted = await authPost(
+  it("leaves owner to Better Auth but guards the other default roles", async () => {
+    const owner = await authPost(
       "/organization/delete-role",
       { organizationId: s.first.id, roleName: "owner" },
       s.owner.cookie,
     );
-    expect(deleted.status).toBe(400);
-    expect(((await deleted.json()) as { code?: string }).code).toBe(
+    expect(owner.status).toBe(400);
+    expect(((await owner.json()) as { code?: string }).code).toBe(
       "CANNOT_DELETE_A_PRE_DEFINED_ROLE",
     );
+
+    // viewer, member and admin are dynamic catalog rows that Better Auth would
+    // let the owner delete or rename: while project members hold them, refuse.
+    await useRole("viewer");
+    await expectBlocked(
+      await authPost(
+        "/organization/delete-role",
+        { organizationId: s.first.id, roleName: "viewer" },
+        s.owner.cookie,
+      ),
+    );
+    await expectBlocked(
+      await authPost(
+        "/organization/update-role",
+        {
+          organizationId: s.first.id,
+          roleName: "viewer",
+          data: { roleName: "watcher" },
+        },
+        s.owner.cookie,
+      ),
+    );
+    expect(await roleExists("viewer")).toBe(true);
+  });
+
+  it("gives instance administrators no special treatment", async () => {
+    await createRole("triager");
+    await useRole("triager");
+    const instanceAdmin = await signUp("instanceadmin");
+    await db
+      .update(schema.userTable)
+      .set({ role: "admin" })
+      .where(eq(schema.userTable.id, instanceAdmin.id));
+    // Not a member of the workspace: Better Auth refuses, so the guard stays
+    // silent instead of answering in its place.
+    const response = await authPost(
+      "/organization/delete-role",
+      { organizationId: s.first.id, roleName: "triager" },
+      instanceAdmin.cookie,
+    );
+    expect(response.status).toBe(403);
+    expect(((await response.json()) as { code?: string }).code).not.toBe(
+      "ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS",
+    );
+    expect(await roleExists("triager")).toBe(true);
   });
 
   it("blocks a rename while used, but not permission edits", async () => {

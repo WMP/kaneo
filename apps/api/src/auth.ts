@@ -750,6 +750,10 @@ export const auth = betterAuth({
         }
       }
 
+      // Known limitation: `auth.api.getSession` below re-runs the API-key
+      // plugin's usage claim, so a request authenticated with `x-api-key`
+      // counts twice against the key's rate limit and `remaining` (same as
+      // the invitation re-send check).
       // A project role is a workspace role name. Refuse to delete or rename a
       // role that project members (or pending project invitations) still use,
       // but only for a caller Better Auth would let do it (see
