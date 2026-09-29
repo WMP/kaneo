@@ -36,6 +36,22 @@ vi.mock("@/hooks/mutations/project-member/use-remove-project-member", () => ({
   default: () => ({ mutateAsync: removeMember, isPending: false }),
 }));
 
+// The real hook's order (request, afterLeft, then invalidation) has its own
+// test; here `leave` runs the request and then afterLeft.
+const leaveRequest = vi.fn();
+vi.mock("@/hooks/mutations/project-member/use-leave-project", () => ({
+  default: () => ({
+    leave: async (
+      variables: { projectId: string; userId: string },
+      afterLeft: () => void | Promise<void>,
+    ) => {
+      await leaveRequest(variables);
+      await afterLeft();
+    },
+    isPending: false,
+  }),
+}));
+
 const member = (overrides: Partial<ProjectMember>): ProjectMember => ({
   userId: "user",
   name: "User",
@@ -117,6 +133,7 @@ const rowOf = (name: string) => {
 beforeEach(() => {
   updateMember.mockResolvedValue({});
   removeMember.mockResolvedValue({});
+  leaveRequest.mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -358,17 +375,18 @@ describe("ProjectMembersTable", () => {
     );
 
     await waitFor(() =>
-      expect(removeMember).toHaveBeenCalledWith({
+      expect(leaveRequest).toHaveBeenCalledWith({
         projectId: "project-1",
         userId: "me",
       }),
     );
     await waitFor(() => expect(onLeft).toHaveBeenCalledTimes(1));
+    expect(removeMember).not.toHaveBeenCalled();
     expect(success).toHaveBeenCalledWith("projectMembers:leaveDialog.success");
   });
 
   it("does not navigate away when leaving fails", async () => {
-    removeMember.mockRejectedValue(new ProjectMemberError("", { status: 500 }));
+    leaveRequest.mockRejectedValue(new ProjectMemberError("", { status: 500 }));
     renderTable();
 
     fireEvent.click(

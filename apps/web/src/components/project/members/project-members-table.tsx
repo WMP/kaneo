@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ProjectMember } from "@/fetchers/project-member/get-project-members";
+import useLeaveProject from "@/hooks/mutations/project-member/use-leave-project";
 import useRemoveProjectMember from "@/hooks/mutations/project-member/use-remove-project-member";
 import useUpdateProjectMember from "@/hooks/mutations/project-member/use-update-project-member";
 import { getInitials } from "@/lib/get-initials";
@@ -42,8 +43,8 @@ type Props = {
   assignableRoles: { role: string }[] | undefined;
   assignableRolesFailed: boolean;
   onRetryRoles: () => void;
-  /** Called after the caller left the project. */
-  onLeft: () => void;
+  /** Navigates away once the caller left the project; awaited. */
+  onLeft: () => void | Promise<void>;
 };
 
 // Access rows first (they reach every project), then the project's own
@@ -71,8 +72,10 @@ function ProjectMembersTable({
   );
   const [confirmLeave, setConfirmLeave] = useState(false);
   const { mutateAsync: updateMember } = useUpdateProjectMember(workspaceId);
-  const { mutateAsync: removeMember, isPending: isRemoving } =
+  const { mutateAsync: removeMember, isPending: isRemovingMember } =
     useRemoveProjectMember(workspaceId);
+  const { leave, isPending: isLeaving } = useLeaveProject(workspaceId);
+  const isRemoving = isRemovingMember || isLeaving;
 
   const assignableRoleNames = useMemo(
     () => (assignableRoles ?? []).map((role) => role.role),
@@ -128,9 +131,10 @@ function ProjectMembersTable({
   const handleLeave = async () => {
     if (!currentUserId) return;
     try {
-      await removeMember({ projectId, userId: currentUserId });
-      toast.success(t("projectMembers:leaveDialog.success"));
-      onLeft();
+      await leave({ projectId, userId: currentUserId }, async () => {
+        toast.success(t("projectMembers:leaveDialog.success"));
+        await onLeft();
+      });
     } catch (error) {
       toast.error(
         getProjectMemberErrorMessage(

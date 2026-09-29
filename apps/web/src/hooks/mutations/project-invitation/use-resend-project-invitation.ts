@@ -7,7 +7,11 @@ function useResendProjectInvitation(workspaceId?: string) {
   return useMutation({
     mutationFn: resendProjectInvitation,
     onSettled: (_data, _error, { projectId }) =>
-      invalidateProjectMembership(queryClient, { projectId, workspaceId }),
+      invalidateProjectMembership(queryClient, {
+        projectId,
+        workspaceId,
+        settle: "invitations",
+      }),
   });
 }
 

@@ -8,7 +8,11 @@ function useCancelProjectInvitation(workspaceId?: string) {
     mutationFn: cancelProjectInvitation,
     // Also on failure: a 404 means the invitation is gone already.
     onSettled: (_data, _error, { projectId }) =>
-      invalidateProjectMembership(queryClient, { projectId, workspaceId }),
+      invalidateProjectMembership(queryClient, {
+        projectId,
+        workspaceId,
+        settle: "invitations",
+      }),
   });
 }
 

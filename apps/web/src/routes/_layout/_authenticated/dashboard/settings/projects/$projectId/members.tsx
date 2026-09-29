@@ -32,12 +32,12 @@ function MembersSettings() {
             key={projectId}
             projectId={projectId}
             workspaceId={workspaceId}
-            onLeft={() => {
-              void navigate({
+            onLeft={() =>
+              navigate({
                 to: "/dashboard/workspace/$workspaceId",
                 params: { workspaceId },
-              });
-            }}
+              })
+            }
           />
         ) : null}
       </div>

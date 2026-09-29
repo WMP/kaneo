@@ -6,8 +6,14 @@ function useCreateProjectInvitation(workspaceId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createProjectInvitation,
-    onSuccess: (_data, { projectId }) =>
-      invalidateProjectMembership(queryClient, { projectId, workspaceId }),
+    // Also on failure: a 409 means an invitation for this email exists or the
+    // person joined meanwhile, and the lists must show what is stored.
+    onSettled: (_data, _error, { projectId }) =>
+      invalidateProjectMembership(queryClient, {
+        projectId,
+        workspaceId,
+        settle: "invitations",
+      }),
   });
 }
 

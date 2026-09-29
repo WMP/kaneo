@@ -6,7 +6,9 @@ function useAddProjectMember(workspaceId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addProjectMember,
-    onSuccess: (_data, { projectId }) =>
+    // Also on failure: a 409 means the person was added (or gained full
+    // access) meanwhile, and the lists must show what is stored.
+    onSettled: (_data, _error, { projectId }) =>
       invalidateProjectMembership(queryClient, { projectId, workspaceId }),
   });
 }
