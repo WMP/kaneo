@@ -1,6 +1,8 @@
 import { APIError } from "better-auth/api";
 import { and, eq } from "drizzle-orm";
 import db, { schema } from "../database";
+import { linkInvitedResources } from "../resource/link-resource";
+import { publishMovedAssignments } from "../resource/transfer-assignments";
 import {
   isFullAccess,
   removeUserProjectMemberships,
@@ -23,7 +25,7 @@ import { applyInvitationProjects } from "./apply-invitation-projects";
 // project memberships.
 
 type AcceptInput = {
-  invitation: { id: string; organizationId: string };
+  invitation: { id: string; organizationId: string; inviterId?: string };
   user: { id: string };
 };
 
@@ -74,7 +76,10 @@ export async function beforeAcceptProjectInvitation({
 
 // Runs after Better Auth accepted the invitation and created the member. Turns
 // the invitation's `ganttpro_invitation_project` rows into project memberships
-// in one transaction (see `applyInvitationProjects`).
+// in one transaction (see `applyInvitationProjects`). The same transaction also
+// links the resources the invitation was sent from and moves their assignments
+// in the projects the person can open now (`linkInvitedResources`), so a failure
+// of either rolls both back and takes the revert below.
 //
 // If that fails, Better Auth has already committed the acceptance and would
 // answer 200. Leaving the person in the workspace with no projects would be a
@@ -96,14 +101,31 @@ export async function afterAcceptProjectInvitation({
 }: AcceptInput & { member: { id: string } }): Promise<void> {
   try {
     const fullAccess = await isFullAccess(user.id, invitation.organizationId);
-    await applyInvitationProjects({
-      invitationId: invitation.id,
-      workspaceId: invitation.organizationId,
+    const moves = await db.transaction(async (tx) => {
+      const applied = await applyInvitationProjects({
+        invitationId: invitation.id,
+        workspaceId: invitation.organizationId,
+        userId: user.id,
+        // A full-access person reaches every project through their workspace
+        // role; a stored project row would only become a stale grant after a
+        // demotion (the member API refuses to add such people, too).
+        skipGrants: fullAccess,
+        executor: tx,
+      });
+      return linkInvitedResources(tx, {
+        invitationId: invitation.id,
+        workspaceId: invitation.organizationId,
+        userId: user.id,
+        // The new memberships are not visible outside this transaction yet, so
+        // the reachable projects come from what was just granted.
+        projectScope: fullAccess ? null : applied.grantedProjectIds,
+      });
+    });
+    // After the commit; a failing publish is logged and never undoes the link.
+    await publishMovedAssignments({
+      moves,
       userId: user.id,
-      // A full-access person reaches every project through their workspace
-      // role; a stored project row would only become a stale grant after a
-      // demotion (the member API refuses to add such people, too).
-      skipGrants: fullAccess,
+      actorUserId: invitation.inviterId ?? user.id,
     });
   } catch (error) {
     console.error(

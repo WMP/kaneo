@@ -18,18 +18,25 @@ import { unusableProjectRoles } from "../utils/project-access";
 //   and an invitation never overwrites an existing membership.
 // - Every invitation row is deleted afterwards, granted or skipped: nothing of
 //   a used invitation is left to be applied a second time.
+//
+// With `executor` (a transaction the caller holds) the work joins it instead of
+// opening its own, so the caller can do more in the same transaction (linking
+// the resources an invitation was sent from). `grantedProjectIds` are the
+// projects the person now holds a membership row in.
 export async function applyInvitationProjects({
   invitationId,
   workspaceId,
   userId,
   skipGrants,
+  executor = db,
 }: {
   invitationId: string;
   workspaceId: string;
   userId: string;
   skipGrants: boolean;
-}): Promise<{ granted: number; skipped: number }> {
-  return db.transaction(async (tx) => {
+  executor?: Pick<typeof db, "transaction">;
+}): Promise<{ granted: number; skipped: number; grantedProjectIds: string[] }> {
+  return executor.transaction(async (tx) => {
     const rows = await tx
       .select({
         projectId: schema.invitationProjectTable.projectId,
@@ -44,7 +51,9 @@ export async function applyInvitationProjects({
       .where(eq(schema.invitationProjectTable.invitationId, invitationId))
       .for("share", { of: schema.projectTable });
 
-    if (rows.length === 0) return { granted: 0, skipped: 0 };
+    if (rows.length === 0) {
+      return { granted: 0, skipped: 0, grantedProjectIds: [] };
+    }
 
     const inWorkspace = rows.filter(
       (row) => row.projectWorkspaceId === workspaceId,
@@ -80,6 +89,10 @@ export async function applyInvitationProjects({
       .delete(schema.invitationProjectTable)
       .where(eq(schema.invitationProjectTable.invitationId, invitationId));
 
-    return { granted: grants.length, skipped: rows.length - grants.length };
+    return {
+      granted: grants.length,
+      skipped: rows.length - grants.length,
+      grantedProjectIds: grants.map((row) => row.projectId),
+    };
   });
 }

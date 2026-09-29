@@ -3,13 +3,14 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { resourceTable, taskAssignmentTable } from "../../database/schema";
 import { recomputeTaskPrimaryAssignees } from "../../task/assignments";
+import { describeResources } from "../describe-resources";
 
 // Deleting a resource cascades away its assignment rows (FK onDelete:
 // cascade), but a task's primary-assignee mirror only ever mirrors a USER
 // target, so no task's `userId` needs recomputing here. This still reads the
 // affected task ids first — a resource can be assigned to several tasks — in
 // case a later phase adds a resource-aware mirror.
-async function deleteResource(id: string) {
+async function deleteResource(id: string, viewerUserId: string) {
   const affectedTasks = await db
     .select({ taskId: taskAssignmentTable.taskId })
     .from(taskAssignmentTable)
@@ -32,7 +33,14 @@ async function deleteResource(id: string) {
     affectedTasks.map((task) => task.taskId),
   );
 
-  return deleted;
+  const [described] = await describeResources([deleted], {
+    userId: viewerUserId,
+    workspaceId: deleted.workspaceId,
+  });
+  if (!described) {
+    throw new HTTPException(500, { message: "Failed to delete resource" });
+  }
+  return described;
 }
 
 export default deleteResource;

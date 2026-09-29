@@ -29,6 +29,17 @@ type Created = {
   expiresAt: Date;
 } & EmailDelivery;
 
+// One project of an invitation and the role it grants there. `access` is the
+// CALLER's access to that project: the delegation checks run against it.
+export type InvitationProjectGrant = {
+  access: ProjectAccess;
+  projectRole: string;
+};
+
+export type InvitationRow = typeof schema.invitationTable.$inferSelect;
+
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 async function isWorkspaceMemberEmail(
   workspaceId: string,
   email: string,
@@ -50,27 +61,55 @@ async function isWorkspaceMemberEmail(
   return Boolean(member);
 }
 
-async function createProjectInvitation({
+// The shared core of every invitation that grants projects: the project
+// invitation route and "Invite" on a resource. It applies the cloud gates, the
+// role delegation for the workspace role and for EACH project role, the
+// refusal of somebody who already is a workspace member, the per-email advisory
+// lock, extending a live invitation of the same workspace role, the pending
+// limit, the `project` origin row, the project rows and the email.
+//
+// The `access` of every grant is the caller's access to a project of
+// `workspaceId`. `inTransaction` runs in the same transaction after the rows are
+// written, so a caller can store its own link to the invitation and have it
+// roll back together with the invitation.
+export async function createInvitationForProjects({
   c,
-  access,
+  workspaceId,
   actorUserId,
   email: rawEmail,
   workspaceRole,
-  projectRole,
+  grants,
+  inTransaction,
 }: {
   c: Context;
-  access: ProjectAccess;
+  workspaceId: string;
   actorUserId: string;
   email: string;
   workspaceRole: string;
-  projectRole: string;
-}): Promise<{ created: boolean; invitation: Created }> {
-  const { workspaceId, projectId } = access;
+  grants: InvitationProjectGrant[];
+  inTransaction?: (
+    tx: Transaction,
+    invitation: InvitationRow,
+    created: boolean,
+  ) => Promise<void>;
+}): Promise<{
+  created: boolean;
+  invitation: InvitationRow;
+  delivery: EmailDelivery;
+  email: string;
+}> {
+  const [first] = grants;
+  if (!first) throw new Error("An invitation needs at least one project");
+  if (grants.some((grant) => grant.access.workspaceId !== workspaceId)) {
+    throw new Error("A project of another workspace cannot be invited to");
+  }
   const email = rawEmail.trim().toLowerCase();
 
   await assertCloudInvitationAllowed(actorUserId, email);
-  await assertInvitableWorkspaceRole(access, actorUserId, workspaceRole);
-  await assertInvitableProjectRole(access, projectRole);
+  await assertInvitableWorkspaceRole(first.access, actorUserId, workspaceRole);
+  for (const grant of grants) {
+    await assertInvitableProjectRole(grant.access, grant.projectRole);
+  }
 
   if (await isWorkspaceMemberEmail(workspaceId, email)) {
     throw invitationError(
@@ -117,29 +156,32 @@ async function createProjectInvitation({
           "A pending invitation for this email already exists with a different workspace role",
         );
       }
-      const [row] = await tx
-        .select({ role: schema.invitationProjectTable.role })
-        .from(schema.invitationProjectTable)
-        .where(
-          and(
-            eq(schema.invitationProjectTable.invitationId, existing.id),
-            eq(schema.invitationProjectTable.projectId, projectId),
-          ),
-        )
-        .limit(1);
       // Only an invitation made through these routes may be extended by
       // somebody who cannot make workspace invitations.
       await assertMayExtendInvitation(tx, existing.id, mayInviteToWorkspace);
-      // Re-roling somebody else's grant needs reach over what it holds today.
-      if (row && row.role !== projectRole) {
-        await assertCanManageProjectRole(access, row.role, tx);
+      for (const { access, projectRole } of grants) {
+        const [row] = await tx
+          .select({ role: schema.invitationProjectTable.role })
+          .from(schema.invitationProjectTable)
+          .where(
+            and(
+              eq(schema.invitationProjectTable.invitationId, existing.id),
+              eq(schema.invitationProjectTable.projectId, access.projectId),
+            ),
+          )
+          .limit(1);
+        // Re-roling somebody else's grant needs reach over what it holds today.
+        if (row && row.role !== projectRole) {
+          await assertCanManageProjectRole(access, row.role, tx);
+        }
+        await upsertInvitationProject(tx, {
+          invitationId: existing.id,
+          workspaceId,
+          projectId: access.projectId,
+          role: projectRole,
+        });
       }
-      await upsertInvitationProject(tx, {
-        invitationId: existing.id,
-        workspaceId,
-        projectId,
-        role: projectRole,
-      });
+      await inTransaction?.(tx, existing, false);
       return { created: false, invitation: existing };
     }
 
@@ -176,12 +218,15 @@ async function createProjectInvitation({
     await tx
       .insert(schema.invitationOriginTable)
       .values({ invitationId: invitation.id, source: "project" });
-    await upsertInvitationProject(tx, {
-      invitationId: invitation.id,
-      workspaceId,
-      projectId,
-      role: projectRole,
-    });
+    for (const { access, projectRole } of grants) {
+      await upsertInvitationProject(tx, {
+        invitationId: invitation.id,
+        workspaceId,
+        projectId: access.projectId,
+        role: projectRole,
+      });
+    }
+    await inTransaction?.(tx, invitation, true);
     return { created: true, invitation };
   });
 
@@ -200,14 +245,46 @@ async function createProjectInvitation({
 
   return {
     created: result.created,
+    invitation: result.invitation,
+    delivery,
+    email,
+  };
+}
+
+async function createProjectInvitation({
+  c,
+  access,
+  actorUserId,
+  email,
+  workspaceRole,
+  projectRole,
+}: {
+  c: Context;
+  access: ProjectAccess;
+  actorUserId: string;
+  email: string;
+  workspaceRole: string;
+  projectRole: string;
+}): Promise<{ created: boolean; invitation: Created }> {
+  const result = await createInvitationForProjects({
+    c,
+    workspaceId: access.workspaceId,
+    actorUserId,
+    email,
+    workspaceRole,
+    grants: [{ access, projectRole }],
+  });
+
+  return {
+    created: result.created,
     invitation: {
       id: result.invitation.id,
-      email,
+      email: result.email,
       workspaceRole,
       projectRole,
-      projectId,
+      projectId: access.projectId,
       expiresAt: result.invitation.expiresAt,
-      ...delivery,
+      ...result.delivery,
     },
   };
 }

@@ -2,12 +2,15 @@ import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { resourceTable } from "../../database/schema";
+import { describeResources } from "../describe-resources";
+import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
 
 // Kind is immutable after creation — changing what a resource *is* (person vs
 // equipment vs material) would retroactively change how it counts in the
 // workload split, so it isn't offered here.
 async function updateResource(
   id: string,
+  viewerUserId: string,
   name?: string,
   email?: string | null,
 ) {
@@ -25,11 +28,29 @@ async function updateResource(
     throw new HTTPException(400, { message: "Name cannot be empty" });
   }
 
+  const normalizedEmail =
+    email === undefined ? undefined : email?.trim().toLowerCase() || null;
+  const emailChanged =
+    normalizedEmail !== undefined &&
+    normalizedEmail !== (existing.email?.toLowerCase() ?? null);
+  // Only a person can have an email. A stored address on another kind (from
+  // before this rule) can stay or be cleared, but not be replaced.
+  if (emailChanged && normalizedEmail && existing.kind !== "person") {
+    throw resourceError(
+      400,
+      RESOURCE_ERROR_CODES.emailNotAllowed,
+      "Only a person can have an email address",
+    );
+  }
+
   const [updated] = await db
     .update(resourceTable)
     .set({
       ...(name !== undefined ? { name: name.trim() } : {}),
-      ...(email !== undefined ? { email: email?.trim() || null } : {}),
+      ...(normalizedEmail !== undefined ? { email: normalizedEmail } : {}),
+      // The invitation was sent to the old address: it no longer belongs to
+      // this resource (it stays valid for that address).
+      ...(emailChanged ? { invitationId: null } : {}),
     })
     .where(eq(resourceTable.id, id))
     .returning();
@@ -38,7 +59,14 @@ async function updateResource(
     throw new HTTPException(500, { message: "Failed to update resource" });
   }
 
-  return updated;
+  const [described] = await describeResources([updated], {
+    userId: viewerUserId,
+    workspaceId: updated.workspaceId,
+  });
+  if (!described) {
+    throw new HTTPException(500, { message: "Failed to update resource" });
+  }
+  return described;
 }
 
 export default updateResource;

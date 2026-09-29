@@ -4913,7 +4913,7 @@
               "string",
               "null"
             ],
-            "description": "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; 'equipment'/'material' resources are excluded from this view entirely."
+            "description": "The assignee, or null for the unassigned row. A 'person' resource (see /resource) counts here exactly like a user, keyed by its own resource id; a person resource linked to an account has no row of its own, and its remaining assignments count in the account's row. 'equipment'/'material' resources are excluded from this view entirely."
           },
           "name": {
             "type": [
@@ -5237,7 +5237,61 @@
               "string",
               "null"
             ],
-            "description": "Linked Kaneo account, if any. Always null in this phase — set later by an email/OIDC invite flow."
+            "description": "The linked Kaneo account, if any. Set when the person accepts an invitation sent from the resource, or by linking the resource to a member. Assignments of the resource in projects the account can open were moved to the account."
+          },
+          "user": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "image": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "image"
+            ],
+            "description": "The linked account as the caller may see it (the members list rules); null when the resource is not linked, or the caller cannot see that member."
+          },
+          "invitation": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "expired"
+                ]
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "status",
+              "expiresAt"
+            ],
+            "description": "The invitation sent from the resource, while it can still be accepted (pending) or is past its expiry (expired). Null when there is none, or it was canceled or rejected."
           },
           "createdAt": {
             "type": "string",
@@ -5255,8 +5309,116 @@
           "name",
           "email",
           "userId",
+          "user",
+          "invitation",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "ResourceInvitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The invitation id; the accept link is /invitation/accept/{id}."
+          },
+          "created": {
+            "type": "boolean",
+            "description": "False when a live pending invitation for this address and workspace role already existed and the projects were added to it (no second email)."
+          },
+          "email": {
+            "type": "string"
+          },
+          "workspaceRole": {
+            "type": "string"
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "projectId",
+                "role"
+              ]
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "emailAttempted": {
+            "type": "boolean",
+            "description": "True when the API tried to send the invitation email. False when SMTP is not configured (share the accept link yourself) and when nothing was sent because the invitation already existed."
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "True when the email was handed to the SMTP relay. False when it was not attempted or the relay refused it."
+          }
+        },
+        "required": [
+          "id",
+          "created",
+          "email",
+          "workspaceRole",
+          "projects",
+          "expiresAt",
+          "emailAttempted",
+          "emailSent"
+        ]
+      },
+      "ResourceInviteDefaults": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "hasAssignments": {
+                  "type": "boolean",
+                  "description": "True when the resource is assigned to a task of the project: the projects to pre-select."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "hasAssignments"
+              ]
+            }
+          }
+        },
+        "required": [
+          "projects"
+        ]
+      },
+      "ResourceLink": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "movedTaskCount": {
+            "type": "integer",
+            "description": "The number of tasks whose assignment moved from the resource to the account."
+          }
+        },
+        "required": [
+          "resource",
+          "movedTaskCount"
         ]
       },
       "CurrentUser": {
@@ -21344,7 +21506,7 @@
           "Resources"
         ],
         "summary": "List workspace resources",
-        "description": "List a workspace's account-less assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind.",
+        "description": "List a workspace's assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind. A person resource can be linked to a Kaneo account: `userId` is that account and `user` its name, email and image when the caller may see that member; `invitation` is the state of the invitation sent from the resource.",
         "parameters": [
           {
             "schema": {
@@ -21405,7 +21567,7 @@
           "Resources"
         ],
         "summary": "Create a workspace resource",
-        "description": "Create an account-less assignable resource (a person, equipment, or material) in this workspace. It has no Kaneo account and can't sign in; it can be assigned to tasks like a user.",
+        "description": "Create an assignable resource (a person, equipment, or material) in this workspace. It has no Kaneo account and can't sign in until a person resource is invited or linked to a member; it can be assigned to tasks like a user. Only a person can have an email (400 RESOURCE_EMAIL_NOT_ALLOWED); it is stored in lower case.",
         "parameters": [
           {
             "schema": {
@@ -21438,8 +21600,7 @@
                   },
                   "email": {
                     "type": "string",
-                    "format": "email",
-                    "description": "Not verified or emailed in this phase; stored for a later invite flow."
+                    "description": "Only for a person. Stored in lower case; not verified. It is the address an invitation sent from the resource goes to."
                   }
                 },
                 "required": [
@@ -21504,7 +21665,7 @@
           "Resources"
         ],
         "summary": "Update a resource",
-        "description": "Update a resource's name or email. Its kind can't be changed after creation.",
+        "description": "Update a resource's name or email. Its kind can't be changed after creation, and only a person can have an email (400 RESOURCE_EMAIL_NOT_ALLOWED). Changing or clearing the email detaches an invitation sent from the resource.",
         "parameters": [
           {
             "schema": {
@@ -21531,7 +21692,7 @@
                       "string",
                       "null"
                     ],
-                    "format": "email"
+                    "description": "Only for a person. Stored in lower case. Changing or clearing it detaches an invitation sent from the resource (that invitation stays valid for its old address)."
                   }
                 }
               }
@@ -21628,6 +21789,411 @@
           "404": {
             "description": "Resource not found",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/{id}/invite": {
+      "post": {
+        "operationId": "inviteResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Invite a person resource to the workspace",
+        "description": "Send an invitation to the email address of a person resource, granting a workspace role and the listed projects (one project role each). The resource must be a person with an email and not linked to an account (400 RESOURCE_NOT_PERSON, 400 RESOURCE_HAS_NO_EMAIL, 409 RESOURCE_ALREADY_LINKED). The invitation is the same as a project invitation (accept link, one project row per project) and the resource remembers it. When the person accepts, the resource is linked to their account and its task assignments in the projects they can open move to the account (an assignment they already had on the same task is merged: the higher `units`, `work` kept from either side). Assignments in other projects stay on the resource. Authorization: resource management (project:update in the workspace role) plus, for EACH project, invitation:create in the caller's effective permissions in that project (API key scope too); the workspace role must be within the caller's own workspace role and each project role within the caller's effective permissions in that project; owner is never allowed. Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 INSUFFICIENT_PERMISSIONS, 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 409 ALREADY_WORKSPACE_MEMBER (use link instead), 409 INVITATION_ROLE_CONFLICT, 403 INVITATION_LIMIT_REACHED, and on cloud 403 GUEST_CANNOT_INVITE, 400 DISPOSABLE_EMAIL_NOT_ALLOWED and 429 RATE_LIMITED. When a live pending invitation with the same workspace role exists for the address, the projects are added to it (200, no second email).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workspaceRole": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The workspace role the person gets when they join: the built-in viewer, member or admin, or a custom role. Every permission it carries must also be held by the caller, and owner is never allowed."
+                  },
+                  "projects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "projectId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "role": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The project role in that project: a role of the workspace catalog whose permissions the caller also holds in that project. owner is never a project role."
+                        }
+                      },
+                      "required": [
+                        "projectId",
+                        "role"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "description": "The projects the invitation grants, each with its role. At least one; a project may appear once."
+                  }
+                },
+                "required": [
+                  "workspaceRole",
+                  "projects"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "An existing pending invitation now also grants these projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceInvitation"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The new invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceInvitation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, not a person, no email, owner role, unknown role, or a duplicated project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, missing project:update, no access to a project, missing invitation:create in a project, or a role beyond the caller's permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already linked, the address belongs to a workspace member, a pending invitation has another workspace role, or the resource changed meanwhile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many invitations from this user (cloud only, 5 per minute, shared with project invitations)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/{id}/invite-defaults": {
+      "get": {
+        "operationId": "getResourceInviteDefaults",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Projects a resource can be invited to",
+        "description": "The projects the caller can invite to (invitation:create in their effective permissions of that project, and in the API key scope), for the invite dialog. `hasAssignments` marks the projects the resource is assigned in: the ones to pre-select. Projects the caller cannot open, or cannot invite to, and archived projects are not listed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects to invite to",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceInviteDefaults"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/{id}/link": {
+      "post": {
+        "operationId": "linkResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Link a person resource to a workspace member",
+        "description": "Link a person resource to somebody who already is a member of the workspace, without an invitation. The resource's task assignments in the projects the member can open move to their account (merged with an assignment they already have on the same task: the higher `units`, `work` kept from either side); assignments in other projects stay on the resource, and the workload counts them in the member's row. Requires resource management (project:update) and member:update in the caller's workspace role. Errors carry a `code`: 400 RESOURCE_NOT_PERSON, 400 NOT_A_WORKSPACE_MEMBER, 409 RESOURCE_ALREADY_LINKED.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "A member of the resource's workspace."
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The linked resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceLink"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not a person, or the user is not a member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update or member:update",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The resource is already linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource/{id}/unlink": {
+      "post": {
+        "operationId": "unlinkResource",
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Unlink a resource from its account",
+        "description": "Remove the link between a resource and its account. Assignments that were moved to the account stay with the account (they are ordinary assignments now); the resource has its own workload row again. Requires the same permissions as linking. 409 RESOURCE_NOT_LINKED when it is not linked.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The unlinked resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing project:update or member:update",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The resource is not linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

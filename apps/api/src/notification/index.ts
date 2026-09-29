@@ -228,6 +228,11 @@ export type TaskAssigneeChangedEventData = {
   // omits them, and this handler falls back to notifying just the primary,
   // preserving its existing behavior.
   addedAssigneeIds?: string[];
+  // Set by a publisher that re-attributes existing work instead of assigning
+  // it: "resource_link" (a resource's assignments moved to the account it was
+  // linked to). Such a change reaches the activity feed, realtime clients and
+  // integrations like any assignee change, but nobody is notified about it.
+  source?: string;
   title: string;
 };
 
@@ -237,6 +242,10 @@ export type TaskAssigneeChangedEventData = {
 export async function notifyOnTaskAssigneeChanged(
   data: TaskAssigneeChangedEventData,
 ): Promise<void> {
+  if (data.source === "resource_link") {
+    return;
+  }
+
   // Every newly-added assignee gets notified, not only the primary; when a
   // publisher only ever changes the primary, addedAssigneeIds is absent and
   // this collapses back to that one id.
