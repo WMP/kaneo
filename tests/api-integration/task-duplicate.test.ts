@@ -666,8 +666,17 @@ describe("API integration: task duplication", () => {
       .update(schema.taskTable)
       .set({ userId: other.user.id })
       .where(eq(schema.taskTable.id, own.task.id));
-    expect((await requestDuplicate(own.app, own.task.id)).status).toBe(403);
-    expect(await db.query.taskTable.findMany()).toHaveLength(1);
+    // The copy is created without the assignee who cannot open the project,
+    // instead of failing the duplication.
+    const response = await requestDuplicate(own.app, own.task.id);
+    expect(response.status).toBe(200);
+    const copy = (await response.json()) as { id: string };
+    const tasks = await db.query.taskTable.findMany();
+    expect(tasks).toHaveLength(2);
+    expect(tasks.find((task) => task.id === copy.id)?.userId).toBeNull();
+    expect(tasks.find((task) => task.id === own.task.id)?.userId).toBe(
+      other.user.id,
+    );
   });
 
   it("cleans up partial asset copies and returns a safe error", async () => {

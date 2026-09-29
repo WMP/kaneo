@@ -183,6 +183,9 @@ type RouteCase = {
   // when it differs: workspace-level permissions such as
   // workspace:manage_settings come from the WORKSPACE role.
   memberStatus?: number;
+  // A route on a relation answers 404 to a caller who may not see it (both of
+  // its projects are checked and no 403 reveals that the relation exists).
+  deniedAsNotFound?: string;
 };
 
 const ROUTES: RouteCase[] = [
@@ -466,6 +469,7 @@ const ROUTES: RouteCase[] = [
     name: "delete relation",
     method: "DELETE",
     path: (w) => `/task-relation/${w.relation.id}`,
+    deniedAsNotFound: "Task relation not found",
   },
   // Integrations
   {
@@ -568,6 +572,9 @@ describe("single-project routes are gated by project membership", () => {
         } else {
           expect(response.status, text).toBe(route.ok ?? 200);
         }
+      } else if (route.deniedAsNotFound) {
+        expect(response.status).toBe(404);
+        expect(await response.text()).toBe(route.deniedAsNotFound);
       } else {
         expect(response.status).toBe(403);
         expect(await response.text()).toBe(actor.message);

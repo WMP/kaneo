@@ -178,7 +178,7 @@ describe("PATCH /task-relation/{id}", () => {
     expect(response.status).toBe(400);
   });
 
-  it("rejects a foreign relation with a 403, matching delete's tenant boundary (scopeToRelation denies workspace access before the 404 the handler itself would raise)", async () => {
+  it("answers a foreign relation with a 404, like delete (scopeToRelation hides a relation the caller may not see instead of answering 403)", async () => {
     const own = await context();
     const foreign = await context();
 
@@ -196,7 +196,7 @@ describe("PATCH /task-relation/{id}", () => {
       lagDays: 1,
     });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it("rejects an empty update body with a 400", async () => {
