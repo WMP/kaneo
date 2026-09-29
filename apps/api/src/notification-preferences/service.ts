@@ -550,16 +550,26 @@ export async function upsertWorkspaceRule(
     with: { selectedProjects: true },
   });
 
-  // A rule that already selects projects can be saved with an EMPTY selection:
-  // the projects it named may no longer be accessible to the user, the response
-  // no longer lists them, and the client sends back what it was shown. Such a
-  // rule notifies about no project until projects are selected again. A new rule,
-  // or one switched to "selected", still needs at least one project.
-  const keepsEmptiedSelection =
+  // An EMPTY selection is saveable only for a rule whose selected projects have
+  // ALL become inaccessible to the user: the response no longer lists them, so
+  // the client sends back what it was shown. Such a rule notifies about no
+  // project until projects are selected again. A rule that still has an
+  // accessible project, a new rule, and one switched to "selected" keep needing
+  // at least one project (400).
+  let keepsEmptiedSelection = false;
+  if (
     input.projectMode === "selected" &&
     (input.selectedProjectIds ?? []).length === 0 &&
     existing?.projectMode === "selected" &&
-    existing.selectedProjects.length > 0;
+    existing.selectedProjects.length > 0
+  ) {
+    const accessible = await accessibleProjectIds(userId, workspaceId);
+    keepsEmptiedSelection =
+      accessible !== null &&
+      existing.selectedProjects.every(
+        (project) => !accessible.includes(project.projectId),
+      );
+  }
 
   if (input.projectMode === "selected" && !keepsEmptiedSelection) {
     await validateProjectSelection(
