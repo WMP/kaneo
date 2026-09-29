@@ -1384,3 +1384,216 @@ describe("relation update and delete", () => {
     );
   });
 });
+
+describe("existing assignees must still be workspace members", () => {
+  it("update-task and the assignee list refuse to write back someone who left the workspace", async () => {
+    const w = await buildWorld();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: w.v.id })
+      .where(eq(schema.taskTable.id, w.t2.id));
+    await db
+      .insert(schema.taskAssignmentTable)
+      .values({ taskId: w.t2.id, userId: w.v.id });
+    // V leaves the workspace but stays assigned.
+    await db
+      .delete(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.userId, w.v.id));
+    actAs(w.a);
+    expect(
+      (await call(`/task/${w.t2.id}/assignees`, "PUT", { userIds: [w.v.id] }))
+        .status,
+    ).toBe(403);
+    expect(
+      (
+        await call(`/task/${w.t2.id}`, "PUT", {
+          title: "renamed",
+          description: "",
+          priority: "low",
+          status: "to-do",
+          position: 0,
+          projectId: w.p2.project.id,
+          userId: w.v.id,
+        })
+      ).status,
+    ).toBe(403);
+    // Removing them is fine.
+    expect(
+      (await call(`/task/${w.t2.id}/assignees`, "PUT", { userIds: [] })).status,
+    ).toBe(200);
+  });
+});
+
+describe("duplicating a task", () => {
+  it("drops an assignee who cannot open the project instead of failing", async () => {
+    const w = await buildWorld();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: w.v.id })
+      .where(eq(schema.taskTable.id, w.t1.id));
+    await db
+      .insert(schema.taskAssignmentTable)
+      .values({ taskId: w.t1.id, userId: w.v.id });
+    actAs(w.a);
+    const response = await call(`/task/duplicate/${w.t1.id}`, "POST", {});
+    expect(response.status).toBe(200);
+    const copy = await json<any>(response);
+    const [row] = await db
+      .select({ userId: schema.taskTable.userId })
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, copy.id));
+    expect(row?.userId).toBeNull();
+  });
+
+  it("keeps an assignee who can open the project", async () => {
+    const w = await buildWorld();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: w.w.id })
+      .where(eq(schema.taskTable.id, w.t1.id));
+    await db
+      .insert(schema.taskAssignmentTable)
+      .values({ taskId: w.t1.id, userId: w.w.id });
+    actAs(w.a);
+    const copy = await json<any>(
+      await call(`/task/duplicate/${w.t1.id}`, "POST", {}),
+    );
+    const [row] = await db
+      .select({ userId: schema.taskTable.userId })
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, copy.id));
+    expect(row?.userId).toBe(w.w.id);
+  });
+});
+
+describe("moving a task", () => {
+  async function assigned(w: World, userIds: string[]) {
+    await db
+      .update(schema.taskTable)
+      .set({ userId: userIds[0] })
+      .where(eq(schema.taskTable.id, w.t1.id));
+    await db
+      .insert(schema.taskAssignmentTable)
+      .values(userIds.map((userId) => ({ taskId: w.t1.id, userId })));
+  }
+  const assigneesOf = async (taskId: string) =>
+    (
+      await db
+        .select({ userId: schema.taskAssignmentTable.userId })
+        .from(schema.taskAssignmentTable)
+        .where(eq(schema.taskAssignmentTable.taskId, taskId))
+    )
+      .map((row) => row.userId)
+      .sort();
+
+  it("removes assignees who cannot open the destination project and keeps the rest", async () => {
+    const w = await buildWorld();
+    await assigned(w, [w.u.id, w.w.id]);
+    actAs(w.a);
+    const moved = await call(`/task/move/${w.t1.id}`, "PUT", {
+      destinationProjectId: w.p2.project.id,
+    });
+    expect(moved.status).toBe(200);
+    expect(await assigneesOf(w.t1.id)).toEqual([w.w.id]);
+    const [row] = await db
+      .select({ userId: schema.taskTable.userId })
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, w.t1.id));
+    // The primary assignee mirror follows the remaining assignee.
+    expect(row?.userId).toBe(w.w.id);
+    expect(
+      vi
+        .mocked(publishEvent)
+        .mock.calls.filter(([name]) => name === "task.unassigned"),
+    ).toHaveLength(0);
+  });
+
+  it("unassigns the task when nobody assigned can open the destination", async () => {
+    const w = await buildWorld();
+    await assigned(w, [w.u.id]);
+    actAs(w.a);
+    expect(
+      (
+        await call(`/task/move/${w.t1.id}`, "PUT", {
+          destinationProjectId: w.p2.project.id,
+        })
+      ).status,
+    ).toBe(200);
+    expect(await assigneesOf(w.t1.id)).toEqual([]);
+    const [row] = await db
+      .select({ userId: schema.taskTable.userId })
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, w.t1.id));
+    expect(row?.userId).toBeNull();
+    expect(
+      vi
+        .mocked(publishEvent)
+        .mock.calls.filter(([name]) => name === "task.unassigned"),
+    ).toHaveLength(1);
+  });
+
+  it("leaves assignees alone when they can open both projects", async () => {
+    const w = await buildWorld();
+    await assigned(w, [w.w.id]);
+    actAs(w.a);
+    expect(
+      (
+        await call(`/task/move/${w.t1.id}`, "PUT", {
+          destinationProjectId: w.p2.project.id,
+        })
+      ).status,
+    ).toBe(200);
+    expect(await assigneesOf(w.t1.id)).toEqual([w.w.id]);
+  });
+});
+
+describe("notification rules whose selection became inaccessible", () => {
+  const putRule = (w: World, projectIds: string[], mode = "selected") =>
+    call(`/notification-preferences/workspaces/${w.workspaceId}`, "PUT", {
+      isActive: true,
+      emailEnabled: false,
+      ntfyEnabled: false,
+      gotifyEnabled: false,
+      webhookEnabled: false,
+      projectMode: mode,
+      selectedProjectIds: projectIds,
+    });
+
+  it("a stored selection that became empty for the caller stays saveable", async () => {
+    const w = await buildWorld();
+    // U selected only P2 back when they had access to it; that is gone now.
+    actAs(w.u);
+    await addProjectMember(w.p2.project.id, w.u.id, "viewer");
+    expect((await putRule(w, [w.p2.project.id])).status).toBe(200);
+    await db
+      .delete(schema.projectMemberTable)
+      .where(
+        and(
+          eq(schema.projectMemberTable.userId, w.u.id),
+          eq(schema.projectMemberTable.projectId, w.p2.project.id),
+        ),
+      );
+
+    const read = await json<any>(await call("/notification-preferences"));
+    expect(read.workspaces[0].projectMode).toBe("selected");
+    expect(read.workspaces[0].selectedProjectIds).toEqual([]);
+
+    // The client sends back exactly what it was shown.
+    const saved = await putRule(w, []);
+    expect(saved.status).toBe(200);
+    const after = await json<any>(await call("/notification-preferences"));
+    expect(after.workspaces[0].selectedProjectIds).toEqual([]);
+    const stored = await db
+      .select()
+      .from(schema.userNotificationWorkspaceProjectTable);
+    expect(stored).toEqual([]);
+  });
+
+  it("a new rule, or one switched to selected, still needs a project", async () => {
+    const w = await buildWorld();
+    actAs(w.u);
+    expect((await putRule(w, [])).status).toBe(400);
+    expect((await putRule(w, [], "all")).status).toBe(200);
+    expect((await putRule(w, [])).status).toBe(400);
+  });
+});

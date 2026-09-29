@@ -542,7 +542,26 @@ export async function upsertWorkspaceRule(
 ): Promise<NotificationPreferenceResponse> {
   await assertWorkspaceMembership(userId, workspaceId);
 
-  if (input.projectMode === "selected") {
+  const existing = await db.query.userNotificationWorkspaceRuleTable.findFirst({
+    where: and(
+      eq(userNotificationWorkspaceRuleTable.userId, userId),
+      eq(userNotificationWorkspaceRuleTable.workspaceId, workspaceId),
+    ),
+    with: { selectedProjects: true },
+  });
+
+  // A rule that already selects projects can be saved with an EMPTY selection:
+  // the projects it named may no longer be accessible to the user, the response
+  // no longer lists them, and the client sends back what it was shown. Such a
+  // rule notifies about no project until projects are selected again. A new rule,
+  // or one switched to "selected", still needs at least one project.
+  const keepsEmptiedSelection =
+    input.projectMode === "selected" &&
+    (input.selectedProjectIds ?? []).length === 0 &&
+    existing?.projectMode === "selected" &&
+    existing.selectedProjects.length > 0;
+
+  if (input.projectMode === "selected" && !keepsEmptiedSelection) {
     await validateProjectSelection(
       workspaceId,
       userId,
@@ -590,13 +609,6 @@ export async function upsertWorkspaceRule(
       message: "Enable Gotify notifications globally before using them here",
     });
   }
-
-  const existing = await db.query.userNotificationWorkspaceRuleTable.findFirst({
-    where: and(
-      eq(userNotificationWorkspaceRuleTable.userId, userId),
-      eq(userNotificationWorkspaceRuleTable.workspaceId, workspaceId),
-    ),
-  });
 
   let ruleId = existing?.id;
 
@@ -647,7 +659,10 @@ export async function upsertWorkspaceRule(
       ),
     );
 
-  if (input.projectMode === "selected") {
+  if (
+    input.projectMode === "selected" &&
+    (input.selectedProjectIds ?? []).length > 0
+  ) {
     await db.insert(userNotificationWorkspaceProjectTable).values(
       (input.selectedProjectIds ?? []).map((projectId) => ({
         workspaceId,

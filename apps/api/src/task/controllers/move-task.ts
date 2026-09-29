@@ -12,6 +12,12 @@ import {
   projectAccessSatisfies,
   requireProjectAccessFor,
 } from "../../utils/project-access";
+import { filterUsersWithProjectAccess } from "../../utils/project-scope-filters";
+import {
+  type AssigneeTarget,
+  readTaskAssignees,
+  setTaskAssignees,
+} from "../assignments";
 import { claimTaskNumber } from "./claim-task-numbers";
 import { nextTaskPosition } from "./next-task-position";
 
@@ -126,6 +132,26 @@ async function moveTask({
     destinationStatus,
   );
 
+  // Assignees who cannot open the destination project are removed with the move
+  // (as `moveProject` does for people outside the target workspace); the rest,
+  // and resources, stay.
+  const assignees = (await readTaskAssignees(db, [taskId])).get(taskId) ?? [];
+  const userAssigneeIds = [
+    ...new Set([
+      ...(existingTask.userId ? [existingTask.userId] : []),
+      ...assignees.flatMap((assignee) =>
+        assignee.userId ? [assignee.userId] : [],
+      ),
+    ]),
+  ];
+  const keptUserIds = await filterUsersWithProjectAccess(
+    userAssigneeIds,
+    destinationProjectId,
+  );
+  const removedAssigneeIds = userAssigneeIds.filter(
+    (userId) => !keptUserIds.has(userId),
+  );
+
   const movedTask = await db.transaction(async (tx) => {
     const nextTaskNumber = await claimTaskNumber(destinationProjectId, tx);
     const nextPosition = await nextTaskPosition(
@@ -158,6 +184,23 @@ async function moveTask({
       .set({ projectId: destinationProjectId })
       .where(eq(assetTable.taskId, taskId));
 
+    if (removedAssigneeIds.length > 0) {
+      const remaining: AssigneeTarget[] = [
+        ...userAssigneeIds
+          .filter((userId) => keptUserIds.has(userId))
+          .map((userId) => ({ userId })),
+        ...assignees.flatMap((assignee) =>
+          assignee.resourceId ? [{ resourceId: assignee.resourceId }] : [],
+        ),
+      ];
+      await setTaskAssignees(tx, taskId, remaining);
+      const [reloaded] = await tx
+        .select({ userId: taskTable.userId })
+        .from(taskTable)
+        .where(eq(taskTable.id, taskId));
+      return { ...updatedTask, userId: reloaded?.userId ?? null };
+    }
+
     return updatedTask;
   });
 
@@ -172,6 +215,16 @@ async function moveTask({
     oldStatus: existingTask.status,
     newStatus: resolvedColumn.slug,
   });
+
+  if (removedAssigneeIds.length > 0 && !movedTask.userId) {
+    await publishEvent("task.unassigned", {
+      taskId,
+      type: "unassigned",
+      userId: currentUserId,
+      projectId: destinationProject.id,
+      title: movedTask.title,
+    });
+  }
 
   return {
     task: movedTask,

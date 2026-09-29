@@ -16,7 +16,7 @@ import {
 import { publishEvent } from "../../events";
 import { contentReferencesAsset } from "../../storage/cleanup-assets";
 import { copyTaskAssetObject, deleteS3Object } from "../../storage/s3";
-import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
+import { filterUsersWithProjectAccess } from "../../utils/project-scope-filters";
 import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
@@ -149,8 +149,18 @@ async function duplicateTask({
   }
 
   await assertValidTaskStatus(sourceTask.status, sourceTask.projectId);
-  if (sourceTask.userId)
-    await assertProjectAssignableUser(sourceTask.userId, sourceTask.projectId);
+  // The copy keeps the assignee only if they can still open the project; an
+  // assignee who lost access is dropped from the copy instead of failing it.
+  const duplicatedAssigneeId =
+    sourceTask.userId &&
+    (
+      await filterUsersWithProjectAccess(
+        [sourceTask.userId],
+        sourceTask.projectId,
+      )
+    ).has(sourceTask.userId)
+      ? sourceTask.userId
+      : null;
   const column = await db.query.columnTable.findFirst({
     where: and(
       eq(columnTable.projectId, sourceTask.projectId),
@@ -263,7 +273,7 @@ async function duplicateTask({
         .values({
           id: duplicatedTaskId,
           projectId: sourceTask.projectId,
-          userId: sourceTask.userId,
+          userId: duplicatedAssigneeId,
           title: title?.trim() || sourceTask.title,
           status: sourceTask.status,
           columnId: column?.id ?? null,

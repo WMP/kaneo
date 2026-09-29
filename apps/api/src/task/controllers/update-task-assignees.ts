@@ -5,6 +5,7 @@ import { taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { filterWorkspaceResources } from "../../resource/workspace-resources";
 import {
+  filterAssignableUsers,
   filterProjectAssignableUsers,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
@@ -59,11 +60,21 @@ async function updateTaskAssignees({
       const added = trimmedUserIds.filter(
         (userId) => !currentUserIds.has(userId),
       );
+      const carried = trimmedUserIds.filter((userId) =>
+        currentUserIds.has(userId),
+      );
+      // New assignees must be able to open the project; carried-over ones only
+      // have to be workspace members still, so someone who left the workspace is
+      // rejected instead of being written back.
       const assignable = await filterProjectAssignableUsers(
         added,
         existingTask.projectId,
       );
-      const notAssignable = added.filter((userId) => !assignable.has(userId));
+      const stillMembers = await filterAssignableUsers(carried, workspaceId);
+      const notAssignable = [
+        ...added.filter((userId) => !assignable.has(userId)),
+        ...carried.filter((userId) => !stillMembers.has(userId)),
+      ];
 
       if (notAssignable.length > 0) {
         throw new HTTPException(403, {

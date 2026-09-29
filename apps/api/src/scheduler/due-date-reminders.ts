@@ -9,7 +9,6 @@ import {
   workspaceUserTable,
 } from "../database/schema";
 import createNotification from "../notification/controllers/create-notification";
-import { resolveProjectAccess } from "../utils/project-access";
 import {
   DUE_DATE_DURATION_MS,
   REMINDER_WINDOW_MINUTES,
@@ -112,11 +111,12 @@ async function processReminder(
 ) {
   if (!task.userId) return;
 
-  // An assignee who cannot open the task's project (for example one who lost
-  // their project membership but is still assigned) gets no reminder. Checked
-  // before the sent marker is written so the skip is not recorded as a delivery;
-  // `createNotification` enforces the same rule for every other notification.
-  if (!(await resolveProjectAccess(task.userId, task.projectId))) return;
+  // An assignee who cannot open the task's project gets no reminder:
+  // `createNotification` refuses it like any other notification. The sent marker
+  // below is still written for them, exactly as it is when the user turned
+  // reminders off; reminder windows are minutes wide around the due time, so a
+  // later change of access would not have delivered it anyway, and checking
+  // here too would resolve access twice per task.
 
   // Insert sent record first; if it already exists, skip notification
   try {
