@@ -40,6 +40,7 @@ import gitlabIntegration, {
 } from "./gitlab-integration";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
+import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
 import label from "./label";
 import mattermostIntegration from "./mattermost-integration";
 import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
@@ -52,6 +53,7 @@ import { initializePlugins } from "./plugins";
 import { migrateGitHubIntegration } from "./plugins/github/migration";
 import project from "./project";
 import { getPublicProject } from "./project/controllers/get-public-project";
+import projectInvitation from "./project-invitation";
 import projectMember from "./project-member";
 import resource from "./resource";
 import { initializeScheduler, shutdownScheduler } from "./scheduler";
@@ -76,7 +78,6 @@ import {
   authorizeAssetAccess,
   isPublicAsset,
 } from "./utils/authorize-asset-access";
-import { getInvitationDetails } from "./utils/check-registration-allowed";
 import { clientIpMiddleware } from "./utils/client-ip";
 import { migrateApiKeyReferenceId } from "./utils/migrate-apikey-reference-id";
 import { migrateNotificationPreferencesSchema } from "./utils/migrate-notification-preferences-schema";
@@ -398,7 +399,7 @@ export function createApp() {
 
   const invitationPublicApi = api.get("/invitation/public/:id", async (c) => {
     const { id } = c.req.param();
-    const result = await getInvitationDetails(id);
+    const result = await getInvitationDetailsController(id);
     return c.json(result);
   });
 
@@ -736,6 +737,7 @@ export function createApp() {
   const calendarApi = api.route("/calendar", calendar);
   const projectApi = api.route("/project", project);
   const projectMemberApi = api.route("/project", projectMember);
+  const projectInvitationApi = api.route("/project", projectInvitation);
   const calendarFeedApi = api.route("/calendar-feed", calendarFeed);
   const taskApi = api.route("/task", task);
   const columnApi = api.route("/column", column);
@@ -922,6 +924,7 @@ export function createApp() {
     notificationPreferencesApi,
     projectApi,
     projectMemberApi,
+    projectInvitationApi,
     calendarFeedApi,
     publicProjectApi,
     searchApi,
@@ -1067,6 +1070,7 @@ const {
   notificationPreferencesApi,
   projectApi,
   projectMemberApi,
+  projectInvitationApi,
   calendarFeedApi,
   publicProjectApi,
   searchApi,
@@ -1100,6 +1104,7 @@ export type AppType =
   | typeof configApi
   | typeof projectApi
   | typeof projectMemberApi
+  | typeof projectInvitationApi
   | typeof calendarFeedApi
   | typeof taskApi
   | typeof columnApi
