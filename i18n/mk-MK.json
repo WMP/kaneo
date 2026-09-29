@@ -154,7 +154,9 @@
 					"terracotta": "Теракота",
 					"rose": "Роза",
 					"crimson": "Гримизна"
-				}
+				},
+				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
 			}
 		},
 		"boolean": {

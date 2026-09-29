@@ -159,6 +159,8 @@
 				"labelCreateError": "Failed to create label",
 				"createMore": "Create more",
 				"createButton": "Create Task",
+				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
 				"discardTitle": "Discard task?",
 				"discardDescription": "Your unsaved task details will be lost.",
 				"discardButton": "Discard task",

@@ -303,10 +303,27 @@ function CreateTaskModalContent({
     canCreateTasks,
     canCreateLabels,
     isCheckingPermissions: isCheckingProjectPermissions,
+    isError: projectPermissionsFailed,
   } = useProjectPermission(resolvedProjectId);
   // Submitting needs a project and the right to create tasks in it.
   const canCreateTaskCapability = canCreateTasks();
   const canCreateLabelCapability = canCreateLabels();
+  // The dialog always stays open so another project can be picked. Creating is
+  // blocked until the chosen project says yes: while its permissions load, when
+  // they cannot be read, and when it does not allow creating tasks.
+  const projectBlocksCreating =
+    Boolean(resolvedProjectId) &&
+    (isCheckingProjectPermissions ||
+      projectPermissionsFailed ||
+      !canCreateTaskCapability);
+  const projectAccessMessage =
+    resolvedProjectId && !isCheckingProjectPermissions
+      ? projectPermissionsFailed
+        ? t("common:modals.createTask.permissionsUnavailable")
+        : canCreateTaskCapability
+          ? null
+          : t("common:modals.createTask.noCreatePermission")
+      : null;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const draftCreationPromiseRef = useRef<Promise<Task | null> | null>(null);
@@ -501,6 +518,9 @@ function CreateTaskModalContent({
 
   const ensureDraftTask = useCallback(async () => {
     if (!activeRef.current || submittingRef.current) return null;
+    // A project that does not (or cannot yet) allow creating tasks gets no
+    // draft: it would only be refused.
+    if (projectBlocksCreating) return null;
     if (draftTaskRef.current) {
       return draftTaskRef.current.projectId === resolvedProjectId
         ? draftTaskRef.current.id
@@ -570,6 +590,7 @@ function CreateTaskModalContent({
     dueDate,
     priority,
     resolvedProjectId,
+    projectBlocksCreating,
     title,
     t,
     customFieldValues,
@@ -1125,18 +1146,6 @@ function CreateTaskModalContent({
         );
     }
   };
-
-  // Defense-in-depth: if the user lacks task-create permission, don't render
-  // the modal even if a stale trigger somehow opens it (e.g., keyboard
-  // shortcut after the capability has changed).
-  // Without a project yet the picker must stay reachable, and while the
-  // project's permissions load the dialog stays up (submitting is guarded).
-  if (
-    resolvedProjectId &&
-    !isCheckingProjectPermissions &&
-    !canCreateTaskCapability
-  )
-    return null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -1711,6 +1720,15 @@ function CreateTaskModalContent({
             </div>
           </div>
 
+          {projectAccessMessage && (
+            <p
+              role="alert"
+              className="flex-shrink-0 border-t border-border px-6 py-2 text-xs text-destructive"
+            >
+              {projectAccessMessage}
+            </p>
+          )}
+
           <DialogFooter className="flex-shrink-0 border-t border-border bg-background px-6 py-4">
             <div className="flex items-center gap-3 mr-auto">
               <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
@@ -1735,7 +1753,12 @@ function CreateTaskModalContent({
             </Button>
             <Button
               type="submit"
-              disabled={!title.trim() || !resolvedProjectId || isSubmitting}
+              disabled={
+                !title.trim() ||
+                !resolvedProjectId ||
+                projectBlocksCreating ||
+                isSubmitting
+              }
               size="sm"
               className="disabled:opacity-50"
             >

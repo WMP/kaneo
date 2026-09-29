@@ -153,6 +153,8 @@
 				"labelCreateError": "Nie udało się utworzyć etykiety",
 				"createMore": "Utwórz kolejne",
 				"createButton": "Utwórz zadanie",
+				"noCreatePermission": "Nie możesz tworzyć zadań w tym projekcie. Wybierz inny projekt.",
+				"permissionsUnavailable": "Nie udało się sprawdzić Twoich uprawnień w tym projekcie. Spróbuj ponownie lub wybierz inny projekt.",
 				"discardTitle": "Odrzucić zadanie?",
 				"discardDescription": "Niezapisane szczegóły zadania zostaną utracone.",
 				"discardButton": "Odrzuć zadanie",

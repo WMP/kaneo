@@ -78,6 +78,7 @@ afterEach(() => {
   cleanup();
   document.body.innerHTML = "";
   vi.clearAllMocks();
+  projectPermissions.byProject = {};
 });
 
 vi.mock("@tanstack/react-router", () => ({
@@ -141,12 +142,24 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
     canUpdateProjects: () => true,
   }),
 }));
+// Per project: what the API said about the caller's rights in it.
+const projectPermissions = vi.hoisted(() => ({
+  byProject: {} as Record<
+    string,
+    { canCreate?: boolean; checking?: boolean; failed?: boolean }
+  >,
+}));
 vi.mock("@/hooks/use-project-permission", () => ({
-  useProjectPermission: () => ({
-    canCreateTasks: () => true,
-    canCreateLabels: () => true,
-    canUpdateProjects: () => true,
-  }),
+  useProjectPermission: (projectId: string) => {
+    const state = projectPermissions.byProject[projectId] ?? {};
+    const allowed = state.canCreate ?? true;
+    return {
+      canCreateTasks: () => allowed && !state.failed && !state.checking,
+      canCreateLabels: () => allowed,
+      isCheckingPermissions: state.checking ?? false,
+      isError: state.failed ?? false,
+    };
+  },
 }));
 
 vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
@@ -283,6 +296,84 @@ describe("CreateTaskModal", () => {
           projectId: "project-2",
         }),
       );
+    });
+  });
+
+  describe("when the chosen project does not allow creating tasks", () => {
+    const createButton = () =>
+      screen.getByRole("button", {
+        name: "common:modals.createTask.createButton",
+      });
+
+    // The picker's trigger shows the chosen project (or the prompt).
+    async function pick(name: string) {
+      if (!screen.queryByRole("button", { name })) {
+        const trigger = document.querySelector(
+          "button.rounded-md.border-border",
+        ) as HTMLElement;
+        fireEvent.click(trigger);
+      }
+      fireEvent.click(await screen.findByRole("button", { name }));
+    }
+
+    it("keeps the dialog, explains why and lets the person pick another project", async () => {
+      projectPermissions.byProject = { "project-2": { canCreate: false } };
+      useLocation.mockReturnValue({
+        pathname: "/dashboard/workspace/workspace-1",
+      });
+      render(<CreateTaskModal open onClose={vi.fn()} />, {
+        wrapper: createWrapper(),
+      });
+      enterTitle();
+
+      await pick("Beta");
+      expect(
+        screen.getByPlaceholderText(
+          "common:modals.createTask.taskTitlePlaceholder",
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "common:modals.createTask.noCreatePermission",
+      );
+      expect(createButton()).toBeDisabled();
+
+      await pick("Alpha");
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(createButton()).toBeEnabled();
+    });
+
+    it("says so when the permissions cannot be read", async () => {
+      projectPermissions.byProject = { "project-2": { failed: true } };
+      useLocation.mockReturnValue({
+        pathname: "/dashboard/workspace/workspace-1",
+      });
+      render(<CreateTaskModal open onClose={vi.fn()} />, {
+        wrapper: createWrapper(),
+      });
+      enterTitle();
+
+      await pick("Beta");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "common:modals.createTask.permissionsUnavailable",
+      );
+      expect(createButton()).toBeDisabled();
+    });
+
+    it("disables Create while the project's permissions load, without an error", async () => {
+      projectPermissions.byProject = { "project-2": { checking: true } };
+      useLocation.mockReturnValue({
+        pathname: "/dashboard/workspace/workspace-1",
+      });
+      render(<CreateTaskModal open onClose={vi.fn()} />, {
+        wrapper: createWrapper(),
+      });
+      enterTitle();
+
+      await pick("Beta");
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(createButton()).toBeDisabled();
+      fireEvent.submit(document.querySelector("form") as HTMLFormElement);
+      expect(createTask).not.toHaveBeenCalled();
     });
   });
 
