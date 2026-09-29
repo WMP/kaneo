@@ -21,7 +21,7 @@ type AssignableRole = { role: string; isDefault: boolean };
 
 const OWNER_ROLE = "owner";
 
-function splitRoles(role: string): string[] {
+export function splitRoles(role: string): string[] {
   return role
     .split(",")
     .map((r) => r.trim())
@@ -56,7 +56,7 @@ async function findMembershipRole(
   return member?.role ?? null;
 }
 
-type Actor =
+export type Actor =
   | { unrestricted: true }
   | { unrestricted: false; statements: RoleStatements | null };
 
@@ -107,7 +107,7 @@ function exceedsPermissions(): APIError {
 
 // True when every role resolves to a non-owner role within `granted`. An empty
 // list, `owner` and an unresolvable name are never within.
-async function rolesWithin(
+export async function rolesWithin(
   workspaceId: string,
   roles: string[],
   granted: RoleStatements,
@@ -215,6 +215,17 @@ export async function getAssignableRoles(
   // non-member simply has nothing to assign.
   if (!actor) return [];
 
+  return assignableRolesFor(workspaceId, actor);
+}
+
+// The catalog roles an actor may hand out: those whose permissions the actor
+// also holds (everything but `owner` for an unrestricted actor). `actor` is the
+// workspace-level actor for workspace invitations and role changes, or the
+// actor's effective statements inside a project for project membership.
+export async function assignableRolesFor(
+  workspaceId: string,
+  actor: Actor,
+): Promise<AssignableRole[]> {
   const rows = await db
     .select({
       role: schema.workspaceRoleTable.role,

@@ -52,6 +52,7 @@ import { initializePlugins } from "./plugins";
 import { migrateGitHubIntegration } from "./plugins/github/migration";
 import project from "./project";
 import { getPublicProject } from "./project/controllers/get-public-project";
+import projectMember from "./project-member";
 import resource from "./resource";
 import { initializeScheduler, shutdownScheduler } from "./scheduler";
 import search from "./search";
@@ -734,6 +735,7 @@ export function createApp() {
   const billingApi = api.route("/billing", billing);
   const calendarApi = api.route("/calendar", calendar);
   const projectApi = api.route("/project", project);
+  const projectMemberApi = api.route("/project", projectMember);
   const calendarFeedApi = api.route("/calendar-feed", calendarFeed);
   const taskApi = api.route("/task", task);
   const columnApi = api.route("/column", column);
@@ -923,6 +925,7 @@ export function createApp() {
     notificationApi,
     notificationPreferencesApi,
     projectApi,
+    projectMemberApi,
     calendarFeedApi,
     publicProjectApi,
     searchApi,
@@ -1067,6 +1070,7 @@ const {
   notificationApi,
   notificationPreferencesApi,
   projectApi,
+  projectMemberApi,
   calendarFeedApi,
   publicProjectApi,
   searchApi,
@@ -1099,6 +1103,7 @@ export type AppType =
   | typeof calendarApi
   | typeof configApi
   | typeof projectApi
+  | typeof projectMemberApi
   | typeof calendarFeedApi
   | typeof taskApi
   | typeof columnApi
