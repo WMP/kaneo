@@ -92,18 +92,15 @@ export async function resolveRoleStatements(
 }
 
 // True when every action `target` grants is also granted by `granted`.
-// Resources with no actions grant nothing and are ignored.
+// Resources with no actions grant nothing and are ignored (built-in roles may
+// list them; `parsePermissionStatements` already drops them for stored roles).
 export function isStatementSubset(
   target: RoleStatements,
   granted: RoleStatements,
 ): boolean {
+  const required: PermissionMap = {};
   for (const [resource, actions] of Object.entries(target)) {
-    if (actions.length === 0) continue;
-    const allowed = granted[resource];
-    if (!allowed) return false;
-    for (const action of actions) {
-      if (!allowed.includes(action)) return false;
-    }
+    if (actions.length > 0) required[resource] = [...actions];
   }
-  return true;
+  return satisfies(granted, required);
 }

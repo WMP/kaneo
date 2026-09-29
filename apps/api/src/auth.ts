@@ -1,4 +1,5 @@
 import { apiKey } from "@better-auth/api-key";
+import { getCurrentAuthContext } from "@better-auth/core/context";
 import {
   isSmtpConfigured,
   OTP_EXPIRY_SECONDS,
@@ -15,11 +16,7 @@ import {
 } from "@kaneo/permissions";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
-import {
-  APIError,
-  createAuthMiddleware,
-  getSessionFromCtx,
-} from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import {
   admin as adminPlugin,
   anonymous,
@@ -35,7 +32,7 @@ import {
 import type { AccessControl } from "better-auth/plugins/access";
 import type { UserWithAnonymous } from "better-auth/plugins/anonymous";
 import { config } from "dotenv-mono";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   findBillableWorkspaces,
   formatBillableWorkspacesMessage,
@@ -71,7 +68,10 @@ import {
   assertUserRegistrationAllowed,
   normalizeInvitationId,
 } from "./utils/registration-policy";
-import { assertCanAssignRole } from "./utils/role-delegation";
+import {
+  assertCanAssignRole,
+  assertCanResendInvitation,
+} from "./utils/role-delegation";
 import { queueSignInEmail } from "./utils/sign-in-email-tasks";
 import { authCaptchaPaths, verifyTurnstile } from "./utils/verify-turnstile";
 
@@ -483,7 +483,7 @@ export const auth = betterAuth({
         },
         // Invitations may not carry a role beyond the inviter's own
         // permissions. Re-sends skip this hook and are checked in
-        // `hooks.before`; role changes are checked there as well.
+        // `hooks.before`.
         beforeCreateInvitation: async ({
           invitation,
           inviter,
@@ -493,6 +493,24 @@ export const auth = betterAuth({
             workspaceId: organization.id,
             actorUserId: inviter.id,
             targetRole: invitation.role,
+          });
+        },
+        // Runs after Better Auth's own role validation and `member:update`
+        // check. The hook is not told who is acting, and `hooks.before` sees
+        // the original request context, in which Bearer and API-key sessions
+        // are not resolved yet. The endpoint context is the one Better Auth's
+        // own session middleware filled in, after those plugins ran.
+        beforeUpdateMemberRole: async ({ member, newRole, organization }) => {
+          const { context } = await getCurrentAuthContext();
+          const actorUserId = context.session?.user.id;
+          if (!actorUserId) {
+            throw new APIError("UNAUTHORIZED");
+          }
+          await assertCanAssignRole({
+            workspaceId: organization.id,
+            actorUserId,
+            targetRole: newRole,
+            targetMember: { userId: member.userId, role: member.role },
           });
         },
         beforeDeleteOrganization: async ({ organization }) => {
@@ -686,21 +704,52 @@ export const auth = betterAuth({
           throw new APIError("FORBIDDEN", { message: verdict.reason });
       }
 
+      // Better Auth runs this hook before its plugin hooks and hands every
+      // hook the ORIGINAL context, so `getSessionFromCtx` here cannot see
+      // sessions the bearer and API-key plugins resolve from the
+      // `Authorization` / `x-api-key` headers. Resolve the session through
+      // `auth.api.getSession`, which dispatches through all plugins, exactly
+      // like `authenticateApiRequest` does. Loaded lazily, at most once.
+      type HookSession = {
+        userId: string;
+        isAnonymous: boolean;
+        activeOrganizationId: string | null;
+      };
+      let sessionLookup: Promise<HookSession | null> | null = null;
+      const loadSession = () => {
+        sessionLookup ??= auth.api
+          .getSession({
+            headers: ctx.headers ?? new Headers(),
+            query: { disableRefresh: true },
+          })
+          .then((result): HookSession | null =>
+            result
+              ? {
+                  userId: result.user.id,
+                  isAnonymous: Boolean(
+                    (result.user as { isAnonymous?: boolean | null })
+                      .isAnonymous,
+                  ),
+                  activeOrganizationId:
+                    (
+                      result.session as {
+                        activeOrganizationId?: string | null;
+                      }
+                    ).activeOrganizationId ?? null,
+                }
+              : null,
+          )
+          .catch(() => null);
+        return sessionLookup;
+      };
+
       // Block invite-member calls on cloud from anonymous users or to
       // disposable-email addresses. The 2026-05-28 incident saw ~14k phishing
       // invites sent from throwaway disposable-email signups; gating here
       // shuts that path off without affecting self-hosted instances.
       if (ctx.path === "/organization/invite-member" && isCloud()) {
-        // `before` hooks don't auto-populate ctx.context.session; load it
-        // explicitly. `disableRefresh` keeps this gate cheap: we only need
-        // the user record, not a session refresh side-effect.
-        const session = await getSessionFromCtx(ctx, {
-          disableRefresh: true,
-        }).catch(() => null);
-        const sessionUser = session?.user as
-          | { isAnonymous?: boolean | null }
-          | undefined;
-        if (sessionUser?.isAnonymous) {
+        const session = await loadSession();
+        if (session?.isAnonymous) {
           throw new APIError("FORBIDDEN", {
             message: "Guest accounts may not send workspace invitations.",
           });
@@ -714,87 +763,35 @@ export const auth = betterAuth({
         }
       }
 
-      // Role delegation for the two routes the `organizationHooks` cannot
-      // cover. `beforeUpdateMemberRole` is not told who is acting, and an
-      // invitation re-send returns before `beforeCreateInvitation` runs and
-      // re-sends the EXISTING invitation's role.
+      // Role delegation for an invitation re-send, which returns before any
+      // organization hook runs (new invitations: `beforeCreateInvitation`,
+      // role changes: `beforeUpdateMemberRole`).
       if (
-        ctx.path === "/organization/update-member-role" ||
-        (ctx.path === "/organization/invite-member" &&
-          ctx.body?.resend === true)
+        ctx.path === "/organization/invite-member" &&
+        ctx.body?.resend === true
       ) {
-        const session = await getSessionFromCtx(ctx, {
-          disableRefresh: true,
-        }).catch(() => null);
+        const session = await loadSession();
         // Unauthenticated: let Better Auth produce its own 401.
         if (!session) {
           return;
         }
-        const activeOrganizationId = (
-          session.session as { activeOrganizationId?: string | null }
-        ).activeOrganizationId;
+        // `||`, as in Better Auth: an empty `organizationId` falls back to the
+        // active organization.
         const workspaceId: unknown =
-          ctx.body?.organizationId ?? activeOrganizationId;
-        if (typeof workspaceId !== "string" || !workspaceId) {
-          return;
-        }
-
-        if (ctx.path === "/organization/update-member-role") {
-          const rawRole: unknown = ctx.body?.role;
-          const targetRole = (Array.isArray(rawRole) ? rawRole : [rawRole])
-            .filter((role): role is string => typeof role === "string")
-            .join(",");
-          const memberId: unknown = ctx.body?.memberId;
-          if (typeof memberId !== "string") {
-            return;
-          }
-          const [targetMember] = await db
-            .select({
-              userId: schema.workspaceUserTable.userId,
-              role: schema.workspaceUserTable.role,
-              workspaceId: schema.workspaceUserTable.workspaceId,
-            })
-            .from(schema.workspaceUserTable)
-            .where(eq(schema.workspaceUserTable.id, memberId))
-            .limit(1);
-          // Unknown member or one in another workspace: Better Auth owns
-          // the error for those.
-          if (!targetMember || targetMember.workspaceId !== workspaceId) {
-            return;
-          }
-          await assertCanAssignRole({
-            workspaceId,
-            actorUserId: session.user.id,
-            targetRole,
-            targetMember: {
-              userId: targetMember.userId,
-              role: targetMember.role,
-            },
-          });
-          return;
-        }
-
+          ctx.body?.organizationId || session.activeOrganizationId;
         const inviteeEmail: unknown = ctx.body?.email;
-        if (typeof inviteeEmail !== "string") {
+        if (
+          typeof workspaceId !== "string" ||
+          !workspaceId ||
+          typeof inviteeEmail !== "string"
+        ) {
           return;
         }
-        const pending = await db
-          .select({ role: schema.invitationTable.role })
-          .from(schema.invitationTable)
-          .where(
-            and(
-              eq(schema.invitationTable.workspaceId, workspaceId),
-              eq(schema.invitationTable.email, inviteeEmail.toLowerCase()),
-              eq(schema.invitationTable.status, "pending"),
-            ),
-          );
-        for (const invitation of pending) {
-          await assertCanAssignRole({
-            workspaceId,
-            actorUserId: session.user.id,
-            targetRole: invitation.role ?? "",
-          });
-        }
+        await assertCanResendInvitation({
+          workspaceId,
+          actorUserId: session.userId,
+          email: inviteeEmail,
+        });
         return;
       }
 

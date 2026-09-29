@@ -8,7 +8,12 @@ import { resetTestDatabase } from "./helpers/database";
 const origin = "http://localhost:5173";
 const { app } = createApp();
 
-type Actor = { id: string; cookie: string; memberId: string };
+type Actor = {
+  id: string;
+  cookie: string;
+  token: string;
+  memberId: string;
+};
 
 async function post(path: string, body: unknown, cookie: string) {
   return app.request(`/api/auth${path}`, {
@@ -38,7 +43,10 @@ async function signUp(name: string) {
     .getSetCookie()
     .map((entry) => entry.split(";")[0])
     .join("; ");
-  return { id: body.user.id, cookie };
+  // Bearer plugin: the signed session token, usable without the cookie.
+  const token = response.headers.get("set-auth-token") ?? "";
+  expect(token).not.toBe("");
+  return { id: body.user.id, cookie, token };
 }
 
 const memberStatements = defaultRolePayloads.member;
@@ -73,6 +81,20 @@ async function invitations(email: string) {
         eq(schema.invitationTable.email, email),
       ),
     );
+}
+
+// Bearer-only request: no cookie, so only Better Auth's bearer plugin can
+// resolve the session.
+function postWithBearer(path: string, body: unknown, token: string) {
+  return app.request(`/api/auth${path}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Origin: origin,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
 }
 
 function invite(actor: Actor, email: string, role: string, resend?: boolean) {
@@ -250,6 +272,148 @@ describe("member role changes", () => {
 
     expect((await setRole(owner, admin2, "viewer")).status).toBe(200);
     expect(await storedRole(admin2)).toBe("viewer");
+  });
+});
+
+describe("role delegation holds for every way of authenticating", () => {
+  function bearerSetRole(actor: Actor, memberId: string, role: string) {
+    return postWithBearer(
+      "/organization/update-member-role",
+      { organizationId: workspaceId, memberId, role },
+      actor.token,
+    );
+  }
+
+  it("blocks a bearer-authenticated manager from escalating a role", async () => {
+    const { manager, viewer, admin2 } = actors;
+
+    await expectForbidden(
+      await bearerSetRole(manager, viewer.memberId, "admin"),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(await storedRole(viewer)).toBe("viewer");
+
+    await expectForbidden(
+      await bearerSetRole(manager, manager.memberId, "admin"),
+      "YOU_CANNOT_CHANGE_YOUR_OWN_ROLE",
+    );
+    expect(await storedRole(manager)).toBe("manager");
+
+    await expectForbidden(
+      await bearerSetRole(manager, admin2.memberId, "viewer"),
+      "YOU_CANNOT_MANAGE_THIS_MEMBER",
+    );
+    expect(await storedRole(admin2)).toBe("admin");
+
+    // The same token still works within the manager's own permissions.
+    expect(
+      (await bearerSetRole(manager, viewer.memberId, "member")).status,
+    ).toBe(200);
+    expect(await storedRole(viewer)).toBe("member");
+  });
+
+  it("blocks a bearer-authenticated inviter from re-sending an admin invitation", async () => {
+    const { owner, inviter } = actors;
+
+    expect((await invite(owner, "bearer@example.com", "admin")).status).toBe(
+      200,
+    );
+    const before = await invitations("bearer@example.com");
+
+    await expectForbidden(
+      await postWithBearer(
+        "/organization/invite-member",
+        {
+          organizationId: workspaceId,
+          email: "bearer@example.com",
+          role: "viewer",
+          resend: true,
+        },
+        inviter.token,
+      ),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    const after = await invitations("bearer@example.com");
+    expect(after).toHaveLength(1);
+    expect(after[0].expiresAt).toEqual(before[0].expiresAt);
+  });
+
+  it("does not let an empty organizationId skip the check when an organization is active", async () => {
+    const { manager, viewer, inviter, owner } = actors;
+
+    for (const actor of [manager, inviter]) {
+      await db
+        .update(schema.sessionTable)
+        .set({ activeOrganizationId: workspaceId })
+        .where(eq(schema.sessionTable.userId, actor.id));
+    }
+
+    await expectForbidden(
+      await postWithBearer(
+        "/organization/update-member-role",
+        { organizationId: "", memberId: viewer.memberId, role: "admin" },
+        manager.token,
+      ),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(await storedRole(viewer)).toBe("viewer");
+
+    expect((await invite(owner, "empty@example.com", "admin")).status).toBe(
+      200,
+    );
+    await expectForbidden(
+      await post(
+        "/organization/invite-member",
+        {
+          organizationId: "",
+          email: "empty@example.com",
+          role: "viewer",
+          resend: true,
+        },
+        inviter.cookie,
+      ),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+  });
+
+  it("does not treat an expired pending invitation as the one being re-sent", async () => {
+    const { owner, inviter } = actors;
+
+    await db.insert(schema.invitationTable).values({
+      workspaceId,
+      email: "expired@example.com",
+      role: "admin",
+      status: "pending",
+      expiresAt: new Date(Date.now() - 60_000),
+      inviterId: owner.id,
+    });
+
+    // Better Auth ignores the expired row and creates a fresh invitation,
+    // which `beforeCreateInvitation` checks against the requested role.
+    const response = await invite(
+      inviter,
+      "expired@example.com",
+      "viewer",
+      true,
+    );
+    expect(response.status).not.toBe(403);
+    expect(response.status).toBe(200);
+
+    const roles = (await invitations("expired@example.com"))
+      .map((row) => row.role)
+      .sort();
+    expect(roles).toEqual(["admin", "viewer"]);
+  });
+
+  it("answers an unknown role with Better Auth's validation error", async () => {
+    const { manager, viewer } = actors;
+
+    const response = await setRole(manager, viewer, "no-such-role");
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as { code?: string }).code).toBe(
+      "ROLE_NOT_FOUND",
+    );
+    expect(await storedRole(viewer)).toBe("viewer");
   });
 });
 
