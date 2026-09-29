@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -212,13 +213,9 @@ describe("InviteTeamMemberModal", () => {
       name: "team:inviteModal.sending",
     });
     expect(busyButton).toBeDisabled();
+    // A disabled submit button also blocks the form's implicit submission
+    // (Enter in the email field), so clicking it again must do nothing.
     fireEvent.click(busyButton);
-    // Enter in the email field submits the form again.
-    fireEvent.submit(
-      screen
-        .getByPlaceholderText("team:inviteModal.emailPlaceholder")
-        .closest("form") as HTMLFormElement,
-    );
     expect(mutateAsync).toHaveBeenCalledTimes(1);
 
     resolveInvite({ id: "invite-9" });
@@ -262,7 +259,7 @@ describe("InviteTeamMemberModal", () => {
         "team:roles.viewer",
         "team:roles.member",
         "team:roles.admin",
-        "Qa-lead",
+        "Qa-Lead",
       ]);
       expect(options).not.toContain("team:roles.owner");
     });
@@ -271,7 +268,7 @@ describe("InviteTeamMemberModal", () => {
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 
       fireEvent.click(roleTrigger());
-      const option = await screen.findByRole("option", { name: "Qa-lead" });
+      const option = await screen.findByRole("option", { name: "Qa-Lead" });
       fireEvent.pointerDown(option);
       fireEvent.click(option, { detail: 1 });
       await submitEmail("a@example.com");
@@ -285,10 +282,10 @@ describe("InviteTeamMemberModal", () => {
       );
     });
 
-    it("defaults to the first returned role when member is not assignable", async () => {
+    it("requires an explicit pick when member is not assignable, instead of falling back to the first role", async () => {
       rolesState = {
         data: [
-          { role: "viewer", isDefault: true },
+          { role: "admin", isDefault: true },
           { role: "qa-lead", isDefault: false },
         ],
         isLoading: false,
@@ -296,13 +293,62 @@ describe("InviteTeamMemberModal", () => {
       };
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 
-      expect(roleTrigger()).toHaveTextContent("team:roles.viewer");
+      expect(roleTrigger()).toHaveTextContent(
+        "team:inviteModal.rolePlaceholder",
+      );
+      expect(roleTrigger()).not.toHaveTextContent("team:roles.admin");
+      expect(
+        screen.getByText("team:inviteModal.rolePickRequired"),
+      ).toBeVisible();
+      expect(submitButton()).toBeDisabled();
+
+      fireEvent.click(roleTrigger());
+      const option = await screen.findByRole("option", { name: "Qa-Lead" });
+      fireEvent.pointerDown(option);
+      fireEvent.click(option, { detail: 1 });
+      await waitFor(() => expect(submitButton()).toBeEnabled());
 
       await submitEmail("a@example.com");
-
       await waitFor(() =>
         expect(mutateAsync).toHaveBeenCalledWith(
-          expect.objectContaining({ role: "viewer" }),
+          expect.objectContaining({ role: "qa-lead" }),
+        ),
+      );
+    });
+
+    it("drops the implicit member default when member leaves the list", async () => {
+      const { rerender } = render(
+        <InviteTeamMemberModal open onClose={vi.fn()} />,
+      );
+      expect(roleTrigger()).toHaveTextContent("team:roles.member");
+
+      rolesState = {
+        data: DEFAULT_ROLES.filter((r) => r.role !== "member"),
+        isLoading: false,
+        isError: false,
+      };
+      rerender(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+      expect(roleTrigger()).toHaveTextContent(
+        "team:inviteModal.rolePlaceholder",
+      );
+      expect(roleTrigger()).not.toHaveTextContent("team:roles.viewer");
+      expect(submitButton()).toBeDisabled();
+    });
+
+    it("applies a typeahead change on the closed trigger (reported with reason none)", async () => {
+      render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+      // Focusing the trigger force-mounts the (hidden) items typeahead reads.
+      act(() => roleTrigger().focus());
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      fireEvent.keyDown(roleTrigger(), { key: "q" });
+
+      await waitFor(() => expect(roleTrigger()).toHaveTextContent("Qa-Lead"));
+      await submitEmail("a@example.com");
+      await waitFor(() =>
+        expect(mutateAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ role: "qa-lead" }),
         ),
       );
     });
@@ -367,10 +413,10 @@ describe("InviteTeamMemberModal", () => {
         <InviteTeamMemberModal open onClose={vi.fn()} />,
       );
       fireEvent.click(roleTrigger());
-      const option = await screen.findByRole("option", { name: "Qa-lead" });
+      const option = await screen.findByRole("option", { name: "Qa-Lead" });
       fireEvent.pointerDown(option);
       fireEvent.click(option, { detail: 1 });
-      await waitFor(() => expect(roleTrigger()).toHaveTextContent("Qa-lead"));
+      await waitFor(() => expect(roleTrigger()).toHaveTextContent("Qa-Lead"));
 
       rolesState = {
         data: DEFAULT_ROLES.filter((r) => r.role !== "qa-lead"),
@@ -382,10 +428,10 @@ describe("InviteTeamMemberModal", () => {
       expect(screen.getByRole("alert")).toHaveTextContent(
         "team:inviteModal.roleUnavailable",
       );
+      // The vanished pick stays visible as the invalid selection; nothing else
+      // is selected in its place.
+      expect(roleTrigger()).toHaveTextContent("Qa-Lead");
       expect(roleTrigger()).not.toHaveTextContent("team:roles.member");
-      expect(roleTrigger()).toHaveTextContent(
-        "team:inviteModal.rolePlaceholder",
-      );
       expect(submitButton()).toBeDisabled();
 
       // Choosing again clears the message and re-enables submit.

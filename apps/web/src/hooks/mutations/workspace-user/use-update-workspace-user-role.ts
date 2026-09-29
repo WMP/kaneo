@@ -48,8 +48,11 @@ function useUpdateWorkspaceUserRole() {
       queryClient.invalidateQueries({
         queryKey: ["workspace-capabilities", variables.workspaceId],
       });
-      // No assignable-roles invalidation: that list is keyed by the caller's
-      // role, so it refetches by itself once the invalidation above changes it.
+      // No assignable-roles invalidation here: what the caller may grant
+      // depends only on the caller's own role and the workspace's roles.
+      // Changing another member's role affects neither, and the API rejects a
+      // change to the caller's own role. Workspace role edits and ownership
+      // transfer invalidate that list themselves.
     },
   });
 }

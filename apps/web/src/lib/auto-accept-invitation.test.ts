@@ -42,6 +42,12 @@ describe("parseAutoAcceptMarker", () => {
   });
 });
 
+describe("AUTO_ACCEPT_MAX_AGE_MS", () => {
+  it("is 15 minutes", () => {
+    expect(AUTO_ACCEPT_MAX_AGE_MS).toBe(15 * 60 * 1000);
+  });
+});
+
 describe("isAutoAcceptMarkerFresh", () => {
   const marker = { invitationId: "a", createdAt: NOW };
 

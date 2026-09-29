@@ -2954,7 +2954,10 @@
 			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
 			"expired": "Expired {{date}}",
 			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again"
+			"inviteAgainError": "Failed to invite again",
+			"inviteAgainCancelError": "The new invitation was sent, but the old one could not be cancelled. Cancel it manually.",
+			"expiredBadge": "expired",
+			"rejectedBadge": "rejected"
 		},
 		"inviteModal": {
 			"title": "Invite Team Member",
@@ -2976,6 +2979,7 @@
 			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
 			"sending": "Sending...",
 			"rolePlaceholder": "Select a role",
+			"rolePickRequired": "Choose the role for this invitation.",
 			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
 			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
 			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace."

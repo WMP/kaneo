@@ -1,14 +1,17 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
-import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
+import {
+  getInvitationEmailMessageKey,
+  useInvitationEmailDelivery,
+} from "@/hooks/use-invitation-email-delivery";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
@@ -64,9 +67,6 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   const canInvite = canInviteUsers();
   const emailDelivery = useInvitationEmailDelivery();
   const showNoSmtpNotice = emailDelivery === "not-sent";
-  // Blocks a second request from Enter or a fast double click while the first
-  // one is still running.
-  const submittingRef = useRef(false);
   const roleFieldId = useId();
   const {
     data: assignableRoles,
@@ -78,21 +78,25 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   // using it. Only "no data at all" blocks the picker.
   const hasRoleData = assignableRoles !== undefined;
   const roleOptions = assignableRoles ?? [];
-  const defaultRole = roleOptions.some((r) => r.role === PREFERRED_INVITE_ROLE)
+  const isAssignable = (candidate: string) =>
+    roleOptions.some((option) => option.role === candidate);
+  // Only `member` is ever chosen for the user, and only while it is
+  // assignable. Anything else (viewer, admin, a custom role) needs an explicit
+  // pick: a silent fallback to the first listed role could invite an admin.
+  const defaultRole = isAssignable(PREFERRED_INVITE_ROLE)
     ? PREFERRED_INVITE_ROLE
-    : roleOptions[0]?.role;
-  // A pick that vanished from a refetched list is not silently replaced: the
-  // selection is emptied and the user must choose again.
+    : undefined;
+  // Judged against the fresh list: a pick that vanished from a refetch is not
+  // replaced, the user must choose again.
   const selectedRoleUnavailable =
-    hasRoleData &&
-    selectedRole !== null &&
-    !roleOptions.some((r) => r.role === selectedRole);
-  const role = !hasRoleData
-    ? undefined
-    : selectedRoleUnavailable
+    hasRoleData && selectedRole !== null && !isAssignable(selectedRole);
+  const role =
+    !hasRoleData || selectedRoleUnavailable
       ? undefined
       : (selectedRole ?? defaultRole);
   const hasNoAssignableRoles = hasRoleData && roleOptions.length === 0;
+  const needsExplicitRole =
+    hasRoleData && !hasNoAssignableRoles && !role && !selectedRoleUnavailable;
   const [createdInvitation, setCreatedInvitation] = useState<{
     id: string;
     email: string;
@@ -118,7 +122,6 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   });
 
   const onSubmit = async ({ email }: TeamMemberFormValues) => {
-    if (submittingRef.current) return;
     if (!workspaceId) {
       toast.error(t("team:inviteModal.error"));
       return;
@@ -134,7 +137,6 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       toast.error(t("team:inviteModal.error"));
       return;
     }
-    submittingRef.current = true;
     try {
       const invitation = await mutateAsync({
         email,
@@ -145,13 +147,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
         queryKey: ["workspace-users", workspaceId],
       });
 
-      toast.success(
-        emailDelivery === "sent"
-          ? t("team:inviteModal.success")
-          : emailDelivery === "not-sent"
-            ? t("team:inviteModal.successNoEmail")
-            : t("team:inviteModal.successUnknownEmail"),
-      );
+      toast.success(t(getInvitationEmailMessageKey("created", emailDelivery)));
 
       // The link is the only delivery channel when SMTP is unconfigured, so the
       // modal stays open on it instead of closing. If the API ever stops
@@ -169,8 +165,6 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       toast.error(
         getWorkspaceMemberErrorMessage(error, t, "team:inviteModal.error"),
       );
-    } finally {
-      submittingRef.current = false;
     }
   };
 
@@ -205,17 +199,9 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
           <>
             <DialogPanel className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {emailDelivery === "sent"
-                  ? t("team:inviteModal.shareLinkDescription", {
-                      email: createdInvitation.email,
-                    })
-                  : emailDelivery === "not-sent"
-                    ? t("team:inviteModal.shareLinkDescriptionNoEmail", {
-                        email: createdInvitation.email,
-                      })
-                    : t("team:inviteModal.shareLinkDescriptionUnknownEmail", {
-                        email: createdInvitation.email,
-                      })}
+                {t(getInvitationEmailMessageKey("shareLink", emailDelivery), {
+                  email: createdInvitation.email,
+                })}
               </p>
               <InvitationLinkField invitationId={createdInvitation.id} />
             </DialogPanel>
@@ -272,16 +258,26 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                     </p>
                   ) : hasRoleData ? (
                     <>
+                      {/* Keyed by the option set. When items leave a mounted
+                          Base UI Select it resets its value on its own (and
+                          reports it as an ordinary change), which would
+                          silently pick a role. A fresh instance never does. */}
                       <Select
+                        key={roleOptions.map((option) => option.role).join("|")}
                         id={roleFieldId}
-                        value={role ?? null}
-                        onValueChange={(value, details) => {
-                          // Base UI also emits a change with reason "none" when
-                          // the selected item leaves the list, resetting to its
-                          // initial value. That is the silent fallback we
-                          // avoid: only a user's choice counts.
-                          if (details.reason === "none") return;
-                          if (typeof value === "string" && value) {
+                        value={
+                          selectedRoleUnavailable
+                            ? selectedRole
+                            : (role ?? null)
+                        }
+                        onValueChange={(value) => {
+                          // Any change counts, whatever its reason (typeahead
+                          // on the closed trigger reports "none" too), as long
+                          // as it names a role in the current list.
+                          if (
+                            typeof value === "string" &&
+                            isAssignable(value)
+                          ) {
                             setSelectedRole(value);
                           }
                         }}
@@ -290,7 +286,11 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                           <SelectValue
                             placeholder={t("team:inviteModal.rolePlaceholder")}
                           >
-                            {role ? getWorkspaceRoleLabel(role, t) : null}
+                            {role
+                              ? getWorkspaceRoleLabel(role, t)
+                              : selectedRoleUnavailable && selectedRole
+                                ? getWorkspaceRoleLabel(selectedRole, t)
+                                : null}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
@@ -304,6 +304,10 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                       {selectedRoleUnavailable ? (
                         <p className="text-sm text-destructive" role="alert">
                           {t("team:inviteModal.roleUnavailable")}
+                        </p>
+                      ) : needsExplicitRole ? (
+                        <p className="text-sm text-muted-foreground">
+                          {t("team:inviteModal.rolePickRequired")}
                         </p>
                       ) : null}
                     </>

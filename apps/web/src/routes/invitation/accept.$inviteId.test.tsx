@@ -11,6 +11,7 @@ import {
   readAutoAcceptMarker,
   writeAutoAcceptMarker,
 } from "@/lib/auto-accept-invitation";
+import { toast } from "@/lib/toast";
 import { Route } from "./accept.$inviteId";
 
 const navigate = vi.fn();
@@ -75,7 +76,7 @@ function renderSignedOutInvitation() {
   render(<AcceptInvitation />);
 }
 
-function renderSignedInInvitation(email = "invitee@kaneo.test") {
+function renderSignedInInvitation(email: string | null = "invitee@kaneo.test") {
   useSession.mockReturnValue({
     data: { user: { email, name: "Ada" } },
     isPending: false,
@@ -103,6 +104,8 @@ function renderSignedInInvitation(email = "invitee@kaneo.test") {
 afterEach(() => {
   cleanup();
   navigate.mockReset();
+  vi.mocked(toast.error).mockClear();
+  vi.mocked(toast.success).mockClear();
   acceptInvitation.mockReset();
   setActive.mockReset();
   localStorage.clear();
@@ -177,8 +180,12 @@ describe("AcceptInvitation", () => {
           params: { workspaceId: "workspace-1" },
         }),
       );
-      // Still no manual actions between success and the navigation.
-      expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull();
+      // The manual "Accept" is never offered again once the user has joined.
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
       expect(readAutoAcceptMarker("invitation-1")).toBeNull();
     });
 
@@ -248,6 +255,59 @@ describe("AcceptInvitation", () => {
       await waitFor(() =>
         expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull(),
       );
+    });
+
+    it("drops the accepting state and shows the manual UI when the session has no email", async () => {
+      writeAutoAcceptMarker("invitation-1");
+
+      renderSignedInInvitation(null);
+
+      expect(
+        await screen.findByText("auth:invitation.goToDashboard"),
+      ).toBeVisible();
+      expect(screen.queryByText("auth:invitation.autoAccepting")).toBeNull();
+      expect(acceptInvitation).not.toHaveBeenCalled();
+    });
+
+    it("still counts as joined when activating the workspace throws", async () => {
+      setActive.mockRejectedValue(new Error("boom"));
+      writeAutoAcceptMarker("invitation-1");
+
+      renderSignedInInvitation();
+
+      await waitFor(() =>
+        expect(navigate).toHaveBeenCalledWith({
+          to: "/dashboard/workspace/$workspaceId",
+          params: { workspaceId: "workspace-1" },
+        }),
+      );
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it("sends the user on, and never shows the manual accept, when navigating fails after joining", async () => {
+      navigate.mockImplementationOnce(() => {
+        throw new Error("router exploded");
+      });
+      writeAutoAcceptMarker("invitation-1");
+
+      renderSignedInInvitation();
+
+      await waitFor(() =>
+        expect(navigate).toHaveBeenLastCalledWith({ to: "/dashboard" }),
+      );
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
+      // The success state stays as a fallback with a way on.
+      expect(screen.getByText("auth:invitation.goToDashboard")).toBeVisible();
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 });

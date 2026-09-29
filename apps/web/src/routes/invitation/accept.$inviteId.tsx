@@ -41,6 +41,7 @@ function AcceptInvitation() {
   });
   const navigate = useNavigate();
   const [isAccepting, setIsAccepting] = useState(false);
+  const [hasAccepted, setHasAccepted] = useState(false);
   // True from the first render when this browser holds a fresh auto-accept
   // marker, until the automatic accept fails or the effect below decides not
   // to run it. It lets the page show an "accepting" state instead of flashing
@@ -72,15 +73,25 @@ function AcceptInvitation() {
 
       if (error) {
         toast.error(error.message || t("auth:invitation.toast.acceptFailed"));
+        setIsAutoAccepting(false);
         return;
       }
 
-      await authClient.organization.setActive({
-        organizationId: data?.invitation.organizationId,
-      });
-
+      // From here on the user is a member. Whatever fails below must never
+      // bring the manual "Accept" UI back: a second accept would only error.
       accepted = true;
+      setHasAccepted(true);
       clearAutoAcceptMarker(inviteId);
+
+      try {
+        await authClient.organization.setActive({
+          organizationId: data?.invitation.organizationId,
+        });
+      } catch {
+        // Making it the active workspace is a convenience; the dashboard
+        // resolves a workspace on its own.
+      }
+
       toast.success(t("auth:invitation.toast.acceptSuccess"));
 
       if (!sessionUserName) {
@@ -93,16 +104,24 @@ function AcceptInvitation() {
         params: { workspaceId: data?.invitation.organizationId || "" },
       });
     } catch (error) {
+      if (accepted) {
+        // Joined, but a later step threw: send the user on instead of
+        // reporting a failure. The success view below is the fallback.
+        try {
+          navigate({ to: "/dashboard" });
+        } catch {
+          // The success view already offers a link to the dashboard.
+        }
+        return;
+      }
       toast.error(
         error instanceof Error
           ? error.message
           : t("auth:invitation.toast.acceptFailed"),
       );
+      setIsAutoAccepting(false);
     } finally {
       setIsAccepting(false);
-      // After a success the page is navigating away; keep the accepting state
-      // rather than flashing the manual actions. After a failure, show them.
-      if (!accepted) setIsAutoAccepting(false);
     }
   }, [inviteId, navigate, sessionUserName, t]);
 
@@ -117,6 +136,12 @@ function AcceptInvitation() {
 
   useEffect(() => {
     if (autoAcceptAttemptedFor.current === inviteId) return;
+    // Signed in but without an email: there is nothing to match against, so
+    // this can never auto-accept. Show the manual UI instead of spinning.
+    if (isSignedIn && !sessionEmail) {
+      setIsAutoAccepting(false);
+      return;
+    }
     if (!sessionEmail || !acceptableInvitation) return;
     autoAcceptAttemptedFor.current = inviteId;
 
@@ -135,7 +160,13 @@ function AcceptInvitation() {
     }
 
     void handleAcceptInvitation();
-  }, [inviteId, sessionEmail, acceptableInvitation, handleAcceptInvitation]);
+  }, [
+    inviteId,
+    isSignedIn,
+    sessionEmail,
+    acceptableInvitation,
+    handleAcceptInvitation,
+  ]);
 
   const handleSignIn = () => {
     const email = invitationData?.invitation?.email;
@@ -255,6 +286,35 @@ function AcceptInvitation() {
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-destructive/10 rounded-full">
               <XCircle className="w-6 h-6 text-destructive" />
             </div>
+          </div>
+        </AuthLayout>
+      </>
+    );
+  }
+
+  // Accepted: a success state with a way on, whatever happens to navigation.
+  if (isSignedIn && hasAccepted) {
+    return (
+      <>
+        <PageTitle title={t("auth:invitation.pageTitleAccept")} />
+        <AuthLayout title={t("auth:invitation.pageTitleAccept")}>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary/10 rounded-full">
+              <CheckCircle className="w-6 h-6 text-primary" />
+            </div>
+            <p
+              className="text-center text-sm text-muted-foreground"
+              role="status"
+            >
+              {t("auth:invitation.toast.acceptSuccess")}
+            </p>
+            <Button
+              render={<Link to="/dashboard" />}
+              variant="outline"
+              className="w-full"
+            >
+              {t("auth:invitation.goToDashboard")}
+            </Button>
           </div>
         </AuthLayout>
       </>

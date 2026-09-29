@@ -15,3 +15,35 @@ export function useInvitationEmailDelivery(): InvitationEmailDelivery {
   if (config?.hasSmtp === false) return "not-sent";
   return "unknown";
 }
+
+type InvitationEmailMessage = "created" | "shareLink" | "renewed";
+
+// Static keys so the i18n tooling still sees every string in use.
+const MESSAGE_KEYS = {
+  created: {
+    sent: "team:inviteModal.success",
+    "not-sent": "team:inviteModal.successNoEmail",
+    unknown: "team:inviteModal.successUnknownEmail",
+  },
+  shareLink: {
+    sent: "team:inviteModal.shareLinkDescription",
+    "not-sent": "team:inviteModal.shareLinkDescriptionNoEmail",
+    unknown: "team:inviteModal.shareLinkDescriptionUnknownEmail",
+  },
+  renewed: {
+    sent: "team:invitations.resendSuccess",
+    "not-sent": "team:invitations.renewSuccess",
+    unknown: "team:invitations.renewSuccessUnknownEmail",
+  },
+} as const satisfies Record<
+  InvitationEmailMessage,
+  Record<InvitationEmailDelivery, string>
+>;
+
+/** Copy for an invitation outcome that depends on whether email is sent. */
+export function getInvitationEmailMessageKey(
+  message: InvitationEmailMessage,
+  delivery: InvitationEmailDelivery,
+): string {
+  return MESSAGE_KEYS[message][delivery];
+}

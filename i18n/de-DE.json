@@ -2938,7 +2938,10 @@
 			"expired": "Expired {{date}}",
 			"inviteAgain": "Invite again",
 			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email."
+			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
+			"expiredBadge": "expired",
+			"inviteAgainCancelError": "The new invitation was sent, but the old one could not be cancelled. Cancel it manually.",
+			"rejectedBadge": "rejected"
 		},
 		"inviteModal": {
 			"title": "Teammitglied einladen",
@@ -2962,7 +2965,8 @@
 			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
 			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
 			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one."
+			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
+			"rolePickRequired": "Choose the role for this invitation."
 		},
 		"membersTable": {
 			"emptyTitle": "Noch keine Teammitglieder",

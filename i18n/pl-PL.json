@@ -740,7 +740,10 @@
 			"renewSuccessUnknownEmail": "Link zaproszenia został odnowiony. Jeśli osoba nie dostała e-maila, udostępnij jej link.",
 			"expired": "Wygasło {{date}}",
 			"inviteAgain": "Zaproś ponownie",
-			"inviteAgainError": "Nie udało się ponownie zaprosić"
+			"inviteAgainError": "Nie udało się ponownie zaprosić",
+			"inviteAgainCancelError": "Nowe zaproszenie zostało wysłane, ale nie udało się anulować starego. Anuluj je ręcznie.",
+			"expiredBadge": "wygasłe",
+			"rejectedBadge": "odrzucone"
 		},
 		"inviteModal": {
 			"title": "Zaproś członka zespołu",
@@ -762,6 +765,7 @@
 			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia.",
 			"sending": "Wysyłanie...",
 			"rolePlaceholder": "Wybierz rolę",
+			"rolePickRequired": "Wybierz rolę dla tego zaproszenia.",
 			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
 			"successUnknownEmail": "Zaproszenie zostało utworzone. Jeśli osoba nie dostała e-maila, udostępnij jej link.",
 			"shareLinkDescriptionUnknownEmail": "Jeśli adres {{email}} nie dostał e-maila, udostępnij mu ten link, aby mógł dołączyć do obszaru roboczego."

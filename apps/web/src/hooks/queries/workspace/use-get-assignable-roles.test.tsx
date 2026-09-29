@@ -8,17 +8,14 @@ import useGetAssignableRoles, {
 } from "./use-get-assignable-roles";
 
 const getAssignableRoles = vi.fn();
-let activeMember: {
-  data: { role: string } | null | undefined;
-  isLoading: boolean;
-};
+let auth: { user: { id: string } | null | undefined; isLoading: boolean };
 
 vi.mock("@/fetchers/workspace/get-assignable-roles", () => ({
   default: (workspaceId: string) => getAssignableRoles(workspaceId),
 }));
 
-vi.mock("@/hooks/queries/workspace-users/use-active-workspace-user", () => ({
-  useGetActiveWorkspaceUser: () => activeMember,
+vi.mock("@/components/providers/auth-provider/hooks/use-auth", () => ({
+  default: () => auth,
 }));
 
 function setup() {
@@ -34,7 +31,7 @@ function setup() {
 beforeEach(() => {
   getAssignableRoles.mockReset();
   getAssignableRoles.mockResolvedValue([{ role: "viewer", isDefault: true }]);
-  activeMember = { data: { role: "admin" }, isLoading: false };
+  auth = { user: { id: "user-1" }, isLoading: false };
 });
 
 describe("useGetAssignableRoles", () => {
@@ -50,8 +47,20 @@ describe("useGetAssignableRoles", () => {
     expect(getAssignableRoles).not.toHaveBeenCalled();
   });
 
-  it("stays loading while the caller's own role is still being resolved", () => {
-    activeMember = { data: undefined, isLoading: true };
+  it("is not loading when nobody is signed in", () => {
+    auth = { user: null, isLoading: false };
+    const { wrapper } = setup();
+
+    const { result } = renderHook(() => useGetAssignableRoles("ws-1"), {
+      wrapper,
+    });
+
+    expect(result.current.isLoading).toBe(false);
+    expect(getAssignableRoles).not.toHaveBeenCalled();
+  });
+
+  it("reports loading while the session is still resolving", () => {
+    auth = { user: undefined, isLoading: true };
     const { wrapper } = setup();
 
     const { result } = renderHook(() => useGetAssignableRoles("ws-1"), {
@@ -62,7 +71,7 @@ describe("useGetAssignableRoles", () => {
     expect(getAssignableRoles).not.toHaveBeenCalled();
   });
 
-  it("fetches once the role is known and caches it under a key that includes the role", async () => {
+  it("fetches for the requested workspace and caches it per workspace and user", async () => {
     const { queryClient, wrapper } = setup();
 
     const { result } = renderHook(() => useGetAssignableRoles("ws-1"), {
@@ -72,26 +81,46 @@ describe("useGetAssignableRoles", () => {
     await waitFor(() => expect(result.current.data).toHaveLength(1));
     expect(getAssignableRoles).toHaveBeenCalledWith("ws-1");
     expect(
-      queryClient.getQueryData(assignableRolesQueryKey("ws-1", "admin")),
+      queryClient.getQueryData(assignableRolesQueryKey("ws-1", "user-1")),
     ).toEqual([{ role: "viewer", isDefault: true }]);
   });
 
-  it("refetches when the caller's role changes", async () => {
+  it("surfaces an error and retries through refetch", async () => {
+    getAssignableRoles.mockRejectedValueOnce(new Error("boom"));
     const { wrapper } = setup();
-    const { result, rerender } = renderHook(
-      () => useGetAssignableRoles("ws-1"),
-      { wrapper },
-    );
-    await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(getAssignableRoles).toHaveBeenCalledTimes(1);
 
-    activeMember = { data: { role: "member" }, isLoading: false };
-    rerender();
+    const { result } = renderHook(() => useGetAssignableRoles("ws-1"), {
+      wrapper,
+    });
 
-    await waitFor(() => expect(getAssignableRoles).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
+
+    await result.current.refetch();
+
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(getAssignableRoles).toHaveBeenCalledTimes(2);
   });
 
-  it("the workspace prefix key matches every role-specific entry", async () => {
+  it("keeps the previous list while a new user's list loads, but only within a workspace", async () => {
+    const { wrapper } = setup();
+    const { result, rerender } = renderHook(
+      ({ workspaceId }: { workspaceId: string }) =>
+        useGetAssignableRoles(workspaceId),
+      { wrapper, initialProps: { workspaceId: "ws-1" } },
+    );
+    await waitFor(() => expect(result.current.data).toBeDefined());
+
+    getAssignableRoles.mockReturnValue(new Promise(() => {}));
+    auth = { user: { id: "user-2" }, isLoading: false };
+    rerender({ workspaceId: "ws-1" });
+    expect(result.current.data).toEqual([{ role: "viewer", isDefault: true }]);
+
+    rerender({ workspaceId: "ws-2" });
+    expect(result.current.data).toBeUndefined();
+  });
+
+  it("the workspace prefix key invalidates the cached entry", async () => {
     const { queryClient, wrapper } = setup();
     const { result } = renderHook(() => useGetAssignableRoles("ws-1"), {
       wrapper,

@@ -10,7 +10,7 @@
 // cannot join a different account.
 const STORAGE_KEY_PREFIX = "kaneo:auto-accept-invitation:";
 
-export const AUTO_ACCEPT_MAX_AGE_MS = 30 * 60 * 1000;
+export const AUTO_ACCEPT_MAX_AGE_MS = 15 * 60 * 1000;
 
 export type AutoAcceptMarker = {
   invitationId: string;
@@ -113,7 +113,7 @@ export function hasFreshAutoAcceptMarker(
 
 /**
  * Returns true, and removes the marker, when it was written for this
- * invitation within the last 30 minutes. A stale marker is removed without
+ * invitation within the last 15 minutes. A stale marker is removed without
  * granting anything. Markers of other invitations are left alone.
  */
 export function consumeAutoAcceptMarker(

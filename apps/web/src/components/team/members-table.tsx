@@ -15,7 +15,10 @@ import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-
 import useUpdateWorkspaceUserRole from "@/hooks/mutations/workspace-user/use-update-workspace-user-role";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
-import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
+import {
+  getInvitationEmailMessageKey,
+  useInvitationEmailDelivery,
+} from "@/hooks/use-invitation-email-delivery";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
@@ -124,9 +127,12 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
     [assignableRoleNames],
   );
   // No data at all (not merely a failed background refetch): every role Select
-  // would silently degrade to a badge, so say so and offer a retry.
+  // would silently degrade to a badge, and resend / invite-again would vanish
+  // from invitation rows, so say so and offer a retry to anyone affected.
   const showRolesLoadError =
-    canChangeRoles && assignableRolesFailed && assignableRoles === undefined;
+    (canChangeRoles || canInvite) &&
+    assignableRolesFailed &&
+    assignableRoles === undefined;
 
   // Owner first, then everyone else (stable on ties so the original
   // listMembers order is preserved within each group).
@@ -174,13 +180,7 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
         workspaceId,
         resend: true,
       });
-      toast.success(
-        emailDelivery === "sent"
-          ? t("team:invitations.resendSuccess")
-          : emailDelivery === "not-sent"
-            ? t("team:invitations.renewSuccess")
-            : t("team:invitations.renewSuccessUnknownEmail"),
-      );
+      toast.success(t(getInvitationEmailMessageKey("renewed", emailDelivery)));
     } catch (error) {
       toast.error(
         getWorkspaceMemberErrorMessage(
@@ -194,21 +194,17 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
     }
   };
 
+  // The new invitation comes first: Better Auth ignores expired and
+  // non-pending rows, so it is created without conflict, and a failure at this
+  // step leaves the old row untouched. Cancelling the old row afterwards is
+  // tidy-up; if that fails the new invitation is kept.
   const handleInviteAgain = async (invitation: WorkspaceUserInvitation) => {
     try {
-      await cancelInvitation({ invitationId: invitation.id, workspaceId });
       await inviteMember({
         email: invitation.email,
         role: invitation.role,
         workspaceId,
       });
-      toast.success(
-        emailDelivery === "sent"
-          ? t("team:inviteModal.success")
-          : emailDelivery === "not-sent"
-            ? t("team:inviteModal.successNoEmail")
-            : t("team:inviteModal.successUnknownEmail"),
-      );
     } catch (error) {
       toast.error(
         getWorkspaceMemberErrorMessage(
@@ -217,6 +213,13 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
           "team:invitations.inviteAgainError",
         ),
       );
+      return;
+    }
+    try {
+      await cancelInvitation({ invitationId: invitation.id, workspaceId });
+      toast.success(t(getInvitationEmailMessageKey("created", emailDelivery)));
+    } catch {
+      toast.error(t("team:invitations.inviteAgainCancelError"));
     }
   };
 
@@ -352,13 +355,20 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                       {t("team:roles.owner", { defaultValue: "Owner" })}
                     </Badge>
                   ) : showRoleSelect ? (
+                    // Keyed by the option set: a mounted Base UI Select resets
+                    // its value (reported as an ordinary change) when items
+                    // leave, and a fresh instance never does.
                     <Select
+                      key={roleOptions.join("|")}
                       value={member.role}
-                      onValueChange={(value, details) => {
-                        // Ignore Base UI's programmatic resets (reason "none");
-                        // only a user's choice may change a member's role.
-                        if (details.reason === "none") return;
-                        if (typeof value === "string" && value) {
+                      onValueChange={(value) => {
+                        // Any change counts, whatever its reason (typeahead on
+                        // the closed trigger reports "none" too), as long as
+                        // it names a role this row actually offers.
+                        if (
+                          typeof value === "string" &&
+                          roleOptions.includes(value)
+                        ) {
                           handleChangeRole(member, value);
                         }
                       }}
@@ -439,13 +449,17 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                         size="sm"
                         className="font-mono text-[9px] uppercase tracking-wider"
                       >
-                        {t("team:invitations.pendingBadge", {
-                          defaultValue: "pending",
-                        })}
+                        {invitation.status === "rejected"
+                          ? t("team:invitations.rejectedBadge")
+                          : isInvitationLive(invitation)
+                            ? t("team:invitations.pendingBadge", {
+                                defaultValue: "pending",
+                              })
+                            : t("team:invitations.expiredBadge")}
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {invitation.expiresAt
+                      {invitation.expiresAt && invitation.status !== "rejected"
                         ? isInvitationLive(invitation)
                           ? t("team:invitations.expires", {
                               defaultValue: "Expires {{date}}",
