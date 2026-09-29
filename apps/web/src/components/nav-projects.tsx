@@ -356,7 +356,9 @@ export function NavProjects() {
                       role="status"
                       className="px-3.5 py-1 text-xs text-sidebar-foreground/70"
                     >
-                      {t("projectMembers:noProjects.description")}
+                      {canCreate
+                        ? t("projectMembers:noProjects.descriptionCanCreate")
+                        : t("projectMembers:noProjects.description")}
                     </li>
                   ) : null}
 

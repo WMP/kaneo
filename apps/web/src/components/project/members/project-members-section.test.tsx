@@ -25,6 +25,8 @@ vi.mock("@/components/providers/auth-provider/hooks/use-auth", () => ({
 
 type Abilities = {
   isLoading: boolean;
+  hasError: boolean;
+  retry: () => void;
   assignableRoles: { role: string; isDefault: boolean }[] | undefined;
   assignableRolesFailed: boolean;
   refetchAssignableRoles: () => void;
@@ -36,6 +38,8 @@ type Abilities = {
 };
 const ALL: Abilities = {
   isLoading: false,
+  hasError: false,
+  retry: vi.fn(),
   assignableRoles: [{ role: "member", isDefault: true }],
   assignableRolesFailed: false,
   refetchAssignableRoles: vi.fn(),
@@ -69,8 +73,14 @@ vi.mock(
 vi.mock("@/hooks/queries/project-member/use-get-member-candidates", () => ({
   default: () => ({ data: [{ id: "u-7", email: "carol@example.com" }] }),
 }));
+const useGetAssignableRoles = vi.fn((_workspaceId: string | undefined) => ({
+  data: [],
+  isError: false,
+  refetch: vi.fn(),
+}));
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
-  default: () => ({ data: [], isError: false, refetch: vi.fn() }),
+  default: (workspaceId: string | undefined) =>
+    useGetAssignableRoles(workspaceId),
 }));
 
 type DialogProps = Record<string, unknown> & { open: boolean };
@@ -215,5 +225,54 @@ describe("ProjectMembersSection", () => {
 
     expect(inviteProps?.candidates).toBeUndefined();
     expect(inviteProps?.onAddExistingMember).toBeUndefined();
+  });
+
+  it("mounts a dialog only for a caller who can use it", () => {
+    abilities = { ...ALL, canAdd: false, canInvite: false };
+    renderSection();
+
+    expect(addProps).toBeUndefined();
+    expect(inviteProps).toBeUndefined();
+  });
+
+  it("mounts both dialogs for a caller who can use them", () => {
+    renderSection();
+
+    expect(addProps).toBeDefined();
+    expect(inviteProps).toBeDefined();
+  });
+
+  it("asks for the workspace assignable roles only when the caller can invite", () => {
+    abilities = { ...ALL, canInvite: false };
+    renderSection();
+    expect(useGetAssignableRoles).toHaveBeenLastCalledWith(undefined);
+
+    cleanup();
+    abilities = { ...ALL, canInvite: true };
+    renderSection();
+    expect(useGetAssignableRoles).toHaveBeenLastCalledWith("workspace-1");
+  });
+
+  it("shows an error with a retry when a permission probe failed for another reason than 403", () => {
+    abilities = {
+      ...ALL,
+      hasError: true,
+      canAdd: false,
+      canInvite: false,
+      canViewInvitations: false,
+    };
+    renderSection();
+
+    expect(screen.getByText("projectMembers:abilitiesError")).toBeVisible();
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "projectMembers:retry" })[0],
+    );
+    expect(abilities.retry).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows no such error when everything answered", () => {
+    renderSection();
+
+    expect(screen.queryByText("projectMembers:abilitiesError")).toBeNull();
   });
 });

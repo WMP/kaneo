@@ -325,7 +325,9 @@ function RouteComponent() {
               </EmptyTitle>
               <EmptyDescription>
                 {isRestricted
-                  ? t("projectMembers:noProjects.description")
+                  ? canCreate
+                    ? t("projectMembers:noProjects.descriptionCanCreate")
+                    : t("projectMembers:noProjects.description")
                   : canCreate
                     ? t("workspace:projects.emptyDescription")
                     : t("workspace:projects.emptyDescriptionReadOnly")}

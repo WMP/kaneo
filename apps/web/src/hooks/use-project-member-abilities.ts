@@ -1,10 +1,18 @@
 import useGetProjectInvitations from "@/hooks/queries/project-invitation/use-get-project-invitations";
 import useGetMemberCandidates from "@/hooks/queries/project-member/use-get-member-candidates";
 import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
+import { isForbiddenError } from "@/lib/http-error";
 
 export type ProjectMemberAbilities = {
   /** True until the answers below are known; show no controls meanwhile. */
   isLoading: boolean;
+  /**
+   * An answer failed for a reason other than "not allowed" (network, 5xx). The
+   * controls that depend on it are unknown, not refused: show an error with
+   * `retry` instead of silently hiding them.
+   */
+  hasError: boolean;
+  retry: () => void;
   /** Roles the caller may hand out here; undefined until loaded (or failed). */
   assignableRoles: { role: string; isDefault: boolean }[] | undefined;
   assignableRolesFailed: boolean;
@@ -33,6 +41,9 @@ export type ProjectMemberAbilities = {
  * - the pending invitations list: it needs `invitation:create` or
  *   `invitation:cancel`, so a 403 there means no invitation controls.
  *
+ * "No rights" comes from a 403 only. Any other failure leaves the answer
+ * unknown and is reported through `hasError`.
+ *
  * These are hints for what to show. The API decides every action, and a
  * refusal (for a custom role that grants only part of a bundle) is reported
  * to the user by the error mapping, never left as a silent failure.
@@ -51,10 +62,26 @@ export function useProjectMemberAbilities(
   const memberRights = candidates.isSuccess;
   const invitationRights = invitations.isSuccess;
 
+  const failedUnexpectedly = (query: {
+    isError: boolean;
+    error: unknown;
+  }): boolean => query.isError && !isForbiddenError(query.error);
+  const rolesFailed = roles.isError && assignableRoles === undefined;
+  const hasError =
+    rolesFailed ||
+    failedUnexpectedly(candidates) ||
+    failedUnexpectedly(invitations);
+
   return {
     isLoading: roles.isPending || candidates.isPending || invitations.isPending,
+    hasError,
+    retry: () => {
+      if (rolesFailed) void roles.refetch();
+      if (failedUnexpectedly(candidates)) void candidates.refetch();
+      if (failedUnexpectedly(invitations)) void invitations.refetch();
+    },
     assignableRoles,
-    assignableRolesFailed: roles.isError && assignableRoles === undefined,
+    assignableRolesFailed: rolesFailed,
     refetchAssignableRoles: () => {
       void roles.refetch();
     },

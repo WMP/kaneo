@@ -85,6 +85,18 @@ describe("NavProjects empty state", () => {
     expect(notice).toHaveAttribute("role", "status");
   });
 
+  it("offers both ways to a member who may create projects", () => {
+    canCreate = true;
+    renderNav();
+
+    expect(
+      screen.getByText("projectMembers:noProjects.descriptionCanCreate"),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("projectMembers:noProjects.description"),
+    ).toBeNull();
+  });
+
   it("says nothing while the project list is still loading", () => {
     projects = undefined;
     renderNav();

@@ -16,7 +16,15 @@ vi.mock("@/components/providers/auth-provider/hooks/use-auth", () => ({
 }));
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ ...permission, hasPermission }),
+  useWorkspacePermission: () => permission,
+}));
+
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    organization: {
+      hasPermission: (args: unknown) => hasPermission(args),
+    },
+  },
 }));
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -34,7 +42,7 @@ beforeEach(() => {
 
 describe("useRestrictedProjectAccess", () => {
   it("is restricted for a member without workspace:manage_settings", async () => {
-    hasPermission.mockResolvedValue(false);
+    hasPermission.mockResolvedValue({ data: { success: false }, error: null });
     const { result } = renderHook(() => useRestrictedProjectAccess(), {
       wrapper,
     });
@@ -42,17 +50,44 @@ describe("useRestrictedProjectAccess", () => {
     expect(result.current).toBeUndefined();
     await waitFor(() => expect(result.current).toBe(true));
     expect(hasPermission).toHaveBeenCalledWith({
-      workspace: ["manage_settings"],
+      organizationId: "workspace-1",
+      permissions: { workspace: ["manage_settings"] },
     });
   });
 
   it("is not restricted for a role that grants workspace:manage_settings", async () => {
-    hasPermission.mockResolvedValue(true);
+    hasPermission.mockResolvedValue({ data: { success: true }, error: null });
     const { result } = renderHook(() => useRestrictedProjectAccess(), {
       wrapper,
     });
 
     await waitFor(() => expect(result.current).toBe(false));
+  });
+
+  it("stays unknown, never restricted, when the check fails", async () => {
+    hasPermission.mockResolvedValue({
+      data: null,
+      error: { message: "Internal error", status: 500 },
+    });
+    const { result } = renderHook(() => useRestrictedProjectAccess(), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(hasPermission).toHaveBeenCalled());
+    // Give a wrongly resolved answer the chance to arrive.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(result.current).toBeUndefined();
+  });
+
+  it("stays unknown when the request itself is rejected", async () => {
+    hasPermission.mockRejectedValue(new TypeError("Failed to fetch"));
+    const { result } = renderHook(() => useRestrictedProjectAccess(), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(hasPermission).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(result.current).toBeUndefined();
   });
 
   it("is never restricted for an owner, without asking", () => {

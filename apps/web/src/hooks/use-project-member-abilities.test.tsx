@@ -1,9 +1,11 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpError } from "@/lib/http-error";
 import { useProjectMemberAbilities } from "./use-project-member-abilities";
 
 type Q = {
   data?: unknown;
+  error?: unknown;
   isPending: boolean;
   isSuccess: boolean;
   isError: boolean;
@@ -19,6 +21,15 @@ const ok = (data: unknown): Q => ({
 });
 const forbidden = (): Q => ({
   data: undefined,
+  error: new HttpError(403, "No access"),
+  isPending: false,
+  isSuccess: false,
+  isError: true,
+  refetch: vi.fn(),
+});
+const broken = (): Q => ({
+  data: undefined,
+  error: new HttpError(500, "boom"),
   isPending: false,
   isSuccess: false,
   isError: true,
@@ -119,5 +130,43 @@ describe("useProjectMemberAbilities", () => {
     const result = abilities();
     expect(result.assignableRoles).toBeUndefined();
     expect(result.assignableRolesFailed).toBe(true);
+  });
+
+  it("does not call a 403 an error: it is the answer", () => {
+    candidates = forbidden();
+    invitations = forbidden();
+
+    expect(abilities().hasError).toBe(false);
+  });
+
+  it("treats a failure that is not a 403 as unknown, with an error and a retry, not as no rights", () => {
+    candidates = broken();
+    invitations = broken();
+    roles = ok(ROLES);
+    const failedRoles = roles;
+
+    const result = abilities();
+    expect(result.hasError).toBe(true);
+    expect(result.canAdd).toBe(false);
+    expect(result.canViewInvitations).toBe(false);
+
+    result.retry();
+    expect((candidates as Q).refetch).toHaveBeenCalledTimes(1);
+    expect((invitations as Q).refetch).toHaveBeenCalledTimes(1);
+    // The role list did not fail, so it is not asked again.
+    expect(failedRoles.refetch).not.toHaveBeenCalled();
+  });
+
+  it("retries only what failed, including the role list", () => {
+    roles = broken();
+    candidates = ok([]);
+    invitations = forbidden();
+
+    const result = abilities();
+    expect(result.hasError).toBe(true);
+    result.retry();
+    expect(roles.refetch).toHaveBeenCalledTimes(1);
+    expect(candidates.refetch).not.toHaveBeenCalled();
+    expect(invitations.refetch).not.toHaveBeenCalled();
   });
 });

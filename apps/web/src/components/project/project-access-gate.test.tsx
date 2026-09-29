@@ -19,12 +19,18 @@ vi.mock("@tanstack/react-router", () => ({
   }) => <a href={to.replace("$workspaceId", params.workspaceId)}>{children}</a>,
 }));
 
+vi.mock("@/fetchers/project/get-project", () => ({ default: vi.fn() }));
+
 let projectState: { error: unknown };
-vi.mock("@/hooks/queries/project/use-get-project", () => ({
-  default: () => projectState,
+const useQuery = vi.fn((_options: Record<string, unknown>) => projectState);
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: (options: Record<string, unknown>) => useQuery(options),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  useQuery.mockClear();
+});
 
 function renderGate() {
   return render(
@@ -69,5 +75,19 @@ describe("ProjectAccessGate", () => {
     renderGate();
 
     expect(screen.getByText("the project pages")).toBeVisible();
+  });
+
+  it("reads the project afresh on every mount, so a cached project cannot hide a revoked access", () => {
+    projectState = { error: null };
+    renderGate();
+
+    expect(useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // Same key as useGetProject: one cache entry, one request.
+        queryKey: ["projects", "workspace-1", "project-1"],
+        refetchOnMount: "always",
+        meta: { expectForbidden: true },
+      }),
+    );
   });
 });

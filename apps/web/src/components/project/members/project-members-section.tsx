@@ -20,7 +20,7 @@ type Props = {
   projectId: string;
   workspaceId: string;
   /** Called after the current user left the project. */
-  onLeft: () => void;
+  onLeft: () => void | Promise<void>;
 };
 
 type InvitePrefill = {
@@ -45,7 +45,7 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
     data: workspaceRoles,
     isError: workspaceRolesFailed,
     refetch: refetchWorkspaceRoles,
-  } = useGetAssignableRoles(workspaceId);
+  } = useGetAssignableRoles(abilities.canInvite ? workspaceId : undefined);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addInitial, setAddInitial] = useState<
@@ -112,6 +112,18 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
             </div>
           ) : null}
         </div>
+
+        {abilities.hasError ? (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 rounded-md border border-destructive/32 px-4 py-3 text-sm text-destructive"
+          >
+            <span>{t("projectMembers:abilitiesError")}</span>
+            <Button variant="outline" size="xs" onClick={abilities.retry}>
+              {t("projectMembers:retry")}
+            </Button>
+          </div>
+        ) : null}
 
         <div className="rounded-md border border-border">
           {membersLoading ? (
@@ -191,29 +203,33 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
         </section>
       ) : null}
 
-      <AddProjectMemberDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        projectId={projectId}
-        workspaceId={workspaceId}
-        initial={addInitial}
-      />
-      <InviteToProjectDialog
-        open={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-        projectId={projectId}
-        workspaceId={workspaceId}
-        prefill={invitePrefill}
-        candidates={abilities.canAdd ? candidates : undefined}
-        onAddExistingMember={
-          abilities.canAdd
-            ? ({ userId, role }) => {
-                setInviteOpen(false);
-                openAdd({ userId, role });
-              }
-            : undefined
-        }
-      />
+      {abilities.canAdd ? (
+        <AddProjectMemberDialog
+          open={addOpen}
+          onClose={() => setAddOpen(false)}
+          projectId={projectId}
+          workspaceId={workspaceId}
+          initial={addInitial}
+        />
+      ) : null}
+      {abilities.canInvite ? (
+        <InviteToProjectDialog
+          open={inviteOpen}
+          onClose={() => setInviteOpen(false)}
+          projectId={projectId}
+          workspaceId={workspaceId}
+          prefill={invitePrefill}
+          candidates={abilities.canAdd ? candidates : undefined}
+          onAddExistingMember={
+            abilities.canAdd
+              ? ({ userId, role }) => {
+                  setInviteOpen(false);
+                  openAdd({ userId, role });
+                }
+              : undefined
+          }
+        />
+      ) : null}
     </div>
   );
 }

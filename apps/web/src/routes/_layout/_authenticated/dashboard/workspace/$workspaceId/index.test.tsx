@@ -74,13 +74,16 @@ describe("workspace projects page without projects", () => {
     expect(screen.queryByText("workspace:projects.emptyTitle")).toBeNull();
   });
 
-  it("still offers to create a project to a member who may", () => {
+  it("offers both ways to a member who may create projects: ask an admin, or create one", () => {
     canCreate = true;
     render(<ProjectsPage />);
 
     expect(
-      screen.getByText("projectMembers:noProjects.description"),
+      screen.getByText("projectMembers:noProjects.descriptionCanCreate"),
     ).toBeVisible();
+    expect(
+      screen.queryByText("projectMembers:noProjects.description"),
+    ).toBeNull();
     expect(
       screen.getAllByRole("button", {
         name: "workspace:projects.createProject",
