@@ -1127,7 +1127,8 @@
 				"duplicateProject": "A project can only be listed once.",
 				"emailNotAllowed": "Only a person can have an email address.",
 				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace."
+				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
+				"workspaceNotFound": "Workspace not found."
 			}
 		},
 		"workspaceCalendar": {

@@ -37,7 +37,7 @@ const ERROR_KEYS_BY_CODE = {
     "settings:workspaceResources.errors.emailNotAllowed",
   RESOURCE_NAME_REQUIRED: "settings:workspaceResources.nameRequired",
   RESOURCE_NOT_FOUND: "settings:workspaceResources.errors.notFound",
-  WORKSPACE_NOT_FOUND: "settings:workspaceResources.errors.notFound",
+  WORKSPACE_NOT_FOUND: "settings:workspaceResources.errors.workspaceNotFound",
 } as const;
 
 /** The `code` of a failed resource request, when the API sent one. */

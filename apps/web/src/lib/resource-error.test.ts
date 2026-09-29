@@ -44,6 +44,7 @@ describe("getResourceErrorMessage", () => {
     ["NOT_A_WORKSPACE_MEMBER", "errors.notMember"],
     ["RATE_LIMITED", "errors.rateLimited"],
     ["RESOURCE_NOT_FOUND", "errors.notFound"],
+    ["WORKSPACE_NOT_FOUND", "errors.workspaceNotFound"],
     ["RESOURCE_NAME_REQUIRED", "nameRequired"],
   ])("maps %s to its translated key", async (code, key) => {
     expect(

@@ -1985,7 +1985,8 @@
 				"duplicateProject": "Projekt można podać tylko raz.",
 				"emailNotAllowed": "Tylko osoba może mieć adres e-mail.",
 				"notFound": "Nie znaleziono zasobu.",
-				"alreadyWorkspaceMemberOnly": "Ten adres należy do członka przestrzeni roboczej."
+				"alreadyWorkspaceMemberOnly": "Ten adres należy do członka przestrzeni roboczej.",
+				"workspaceNotFound": "Nie znaleziono przestrzeni roboczej."
 			}
 		},
 		"workspaceRoles": {

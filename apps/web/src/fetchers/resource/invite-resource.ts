@@ -8,8 +8,8 @@ export type InviteResourceRequest = {
 };
 
 // Sends the invitation of a person resource: one invitation to its email
-// address, for the chosen projects. A failure keeps the API's JSON body (with
-// its `code`) as the error message; see `getResourceErrorMessage`.
+// address, for the chosen projects. A failure is thrown with the API's `code`
+// (`readProjectApiError`); see `getResourceErrorMessage`.
 async function inviteResource({
   id,
   workspaceRole,

@@ -1846,7 +1846,8 @@
 				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
 				"unknownRole": "One of the roles no longer exists. Pick another one.",
 				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace."
+				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
+				"workspaceNotFound": "Workspace not found."
 			},
 			"invite": {
 				"addedToExisting": "The projects were added to the pending invitation for this address.",

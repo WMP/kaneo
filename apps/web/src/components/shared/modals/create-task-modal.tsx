@@ -1524,6 +1524,9 @@ function CreateTaskModalContent({
                             (member) => member.userId,
                           ) ?? []
                         }
+                        // Whatever is selected stays in the list, so a linked
+                        // resource never vanishes from under the pointer.
+                        assignedResourceIds={resourceAssigneeIds}
                         selectedResourceIds={resourceAssigneeIds}
                         onToggleResource={(resourceId) =>
                           setResourceAssigneeIds((current) =>
