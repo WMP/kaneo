@@ -1,7 +1,7 @@
 import { sendWorkspaceInvitationEmail } from "@kaneo/email";
-import { eq } from "drizzle-orm";
-import db, { schema } from "../database";
+import { getClientUrl } from "../utils/client-url";
 import { getInvitationEmailSubject } from "../utils/get-invitation-email-subject";
+import { getUserLocale } from "../utils/get-user-locale";
 import { getWorkspaceInvitationEmailCopy } from "../utils/get-workspace-invitation-email-copy";
 
 // The single place that builds and sends the invitation email. Better Auth's
@@ -16,18 +16,8 @@ export type InvitationEmailOutcome =
   // has to share the accept link themselves.
   | "not-configured";
 
-async function getUserLocale(email: string): Promise<string | null> {
-  const [user] = await db
-    .select({ locale: schema.userTable.locale })
-    .from(schema.userTable)
-    .where(eq(schema.userTable.email, email))
-    .limit(1);
-  return user?.locale ?? null;
-}
-
 export function getInvitationLink(invitationId: string): string {
-  const clientUrl = process.env.KANEO_CLIENT_URL || "http://localhost:5173";
-  return `${clientUrl.replace(/\/+$/, "")}/invitation/accept/${invitationId}`;
+  return `${getClientUrl().replace(/\/+$/, "")}/invitation/accept/${invitationId}`;
 }
 
 // Throws when SMTP is configured but delivery fails, as the underlying mail
@@ -63,7 +53,7 @@ export async function sendInvitationEmail({
 
   if (result?.success === false && result.reason === "SMTP_NOT_CONFIGURED") {
     console.warn(
-      "Invitation created but email not sent due to SMTP not being configured",
+      `Invitation ${invitationId} was created but its email was not sent: SMTP is not configured`,
     );
     return "not-configured";
   }

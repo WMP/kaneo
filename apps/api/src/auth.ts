@@ -50,6 +50,10 @@ import {
   afterAcceptProjectInvitation,
   beforeAcceptProjectInvitation,
 } from "./project-invitation/accept";
+import {
+  INVITATION_EXPIRES_IN_SECONDS,
+  PENDING_INVITATION_LIMIT,
+} from "./project-invitation/constants";
 import deleteAccountData from "./user/controllers/delete-account-data";
 import { resolveAuthSecret } from "./utils/auth-secret";
 import {
@@ -58,9 +62,11 @@ import {
   userExistsByEmail,
 } from "./utils/check-registration-allowed";
 import { checkWorkspaceName } from "./utils/check-workspace-name";
+import { getClientUrl } from "./utils/client-url";
 import { mapCustomOAuthProfileToUser } from "./utils/custom-oauth-profile";
 import { generateDemoName } from "./utils/generate-demo-name";
 import { getDefaultCookieAttributes } from "./utils/get-default-cookie-attributes";
+import { getUserLocale } from "./utils/get-user-locale";
 import { getGithubSsoOAuthCredentials } from "./utils/github-sso-env";
 import {
   hasRegisteredUsers,
@@ -98,7 +104,7 @@ const isWorkspaceCreationDisabled =
   process.env.DISABLE_WORKSPACE_CREATION === "true";
 
 const apiUrl = process.env.KANEO_API_URL || "http://localhost:1337";
-const clientUrl = process.env.KANEO_CLIENT_URL || "http://localhost:5173";
+const clientUrl = getClientUrl();
 
 const trustedOrigins = [clientUrl];
 try {
@@ -126,16 +132,6 @@ const authSecret = (() => {
     process.exit(1);
   }
 })();
-
-async function getUserLocale(email: string) {
-  const [user] = await db
-    .select({ locale: schema.userTable.locale })
-    .from(schema.userTable)
-    .where(eq(schema.userTable.email, email))
-    .limit(1);
-
-  return user?.locale ?? null;
-}
 
 function getLocaleKey(locale?: string | null) {
   const normalized = locale?.toLowerCase();
@@ -440,6 +436,10 @@ export const auth = betterAuth({
       // everyone. The invitation link id is the actual secret here, so gate on
       // that rather than on email verification.
       requireEmailVerificationOnInvitation: false,
+      // Shared with the project invitation routes, which create invitations
+      // themselves.
+      invitationExpiresIn: INVITATION_EXPIRES_IN_SECONDS,
+      invitationLimit: PENDING_INVITATION_LIMIT,
       organizationHooks: {
         beforeCreateOrganization: async ({ organization }) => {
           const check = checkWorkspaceName(organization.name ?? "");
