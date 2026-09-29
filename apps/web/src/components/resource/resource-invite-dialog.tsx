@@ -22,10 +22,7 @@ import useInviteResource from "@/hooks/mutations/resource/use-invite-resource";
 import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
 import useResourceInviteDefaults from "@/hooks/queries/resource/use-resource-invite-defaults";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
-import {
-  getInvitationEmailMessageKey,
-  useInvitationEmailDelivery,
-} from "@/hooks/use-invitation-email-delivery";
+import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
 import { useRoleChoice } from "@/hooks/use-role-choice";
 import {
   getResourceErrorCode,
@@ -40,9 +37,11 @@ type Props = {
   onClose: () => void;
   /** Offered when the address already belongs to a workspace member. */
   onLinkInstead: (resource: Resource) => void;
+  /** May the caller link a resource to a member (what the API requires)? */
+  canLink: boolean;
 };
 
-type Created = { id: string; email: string; created: boolean };
+type Created = { id: string; message: string };
 
 type ProjectRow = { id: string; name: string; hasAssignments: boolean };
 
@@ -138,6 +137,7 @@ function ResourceInviteDialog({
   workspaceId,
   onClose,
   onLinkInstead,
+  canLink,
 }: Props) {
   const { t } = useTranslation();
   const emailDelivery = useInvitationEmailDelivery();
@@ -155,8 +155,13 @@ function ResourceInviteDialog({
   const [projectRoles, setProjectRoles] = useState<
     Record<string, string | undefined>
   >({});
-  const [errorCode, setErrorCode] = useState<string | null>(null);
-  const [errorText, setErrorText] = useState<string | null>(null);
+  // The last failure, with the inputs it was for: it is shown only while the
+  // inputs are still those, so changing anything clears it.
+  const [failure, setFailure] = useState<{
+    code: string | undefined;
+    text: string;
+    inputs: string;
+  } | null>(null);
   const [created, setCreated] = useState<Created | null>(null);
 
   const isTicked = (projectId: string, hasAssignments: boolean) =>
@@ -183,6 +188,11 @@ function ResourceInviteDialog({
   const everyProjectHasRole = selectedProjects.every(
     (project) => projectRoles[project.id],
   );
+  const inputsKey = JSON.stringify([
+    workspaceRole ?? null,
+    selectedProjects.map((project) => [project.id, projectRoles[project.id]]),
+  ]);
+  const shownFailure = failure?.inputs === inputsKey ? failure : null;
   const canSubmit =
     Boolean(workspaceRole) &&
     selectedProjects.length > 0 &&
@@ -191,8 +201,7 @@ function ResourceInviteDialog({
 
   const submit = async () => {
     if (!workspaceRole) return;
-    setErrorCode(null);
-    setErrorText(null);
+    setFailure(null);
     const body = selectedProjects.flatMap((project) => {
       const role = projectRoles[project.id];
       return role ? [{ projectId: project.id, role }] : [];
@@ -203,25 +212,33 @@ function ResourceInviteDialog({
         workspaceRole,
         projects: body,
       });
-      toast.success(
-        invitation.created
-          ? t(getInvitationEmailMessageKey("created", emailDelivery))
-          : t("settings:workspaceResources.invite.addedToExisting"),
-      );
-      setCreated({
-        id: invitation.id,
-        email: invitation.email,
-        created: invitation.created,
-      });
+      // The API says what happened to the email. An extended invitation was
+      // mailed before, so no second email goes out.
+      const email = invitation.email;
+      const message = !invitation.created
+        ? t("settings:workspaceResources.invite.addedToExisting")
+        : invitation.emailSent
+          ? t("projectInvitations:invite.createdSent", { email })
+          : invitation.emailAttempted
+            ? t("projectInvitations:invite.createdSendFailed", { email })
+            : t("projectInvitations:invite.createdNotSent", { email });
+      toast.success(message);
+      setCreated({ id: invitation.id, message });
     } catch (error) {
-      setErrorCode(getResourceErrorCode(error) ?? null);
-      setErrorText(
-        getResourceErrorMessage(
-          error,
-          t,
-          "settings:workspaceResources.invite.error",
-        ),
-      );
+      const code = getResourceErrorCode(error);
+      setFailure({
+        code,
+        // Somebody who cannot link is not sent to a link they cannot use.
+        text:
+          code === "ALREADY_WORKSPACE_MEMBER" && !canLink
+            ? t("settings:workspaceResources.errors.alreadyWorkspaceMemberOnly")
+            : getResourceErrorMessage(
+                error,
+                t,
+                "settings:workspaceResources.invite.error",
+              ),
+        inputs: inputsKey,
+      });
     }
   };
 
@@ -248,14 +265,7 @@ function ResourceInviteDialog({
         {created ? (
           <>
             <DialogPanel className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {created.created
-                  ? t(
-                      getInvitationEmailMessageKey("shareLink", emailDelivery),
-                      { email: created.email },
-                    )
-                  : t("settings:workspaceResources.invite.addedToExisting")}
-              </p>
+              <p className="text-sm text-muted-foreground">{created.message}</p>
               <InvitationLinkField invitationId={created.id} />
             </DialogPanel>
             <DialogFooter>
@@ -363,11 +373,12 @@ function ResourceInviteDialog({
                 ) : null}
               </fieldset>
 
-              {errorText ? (
+              {shownFailure ? (
                 <Alert variant="error" role="alert">
                   <AlertDescription className="space-y-2">
-                    <p>{errorText}</p>
-                    {errorCode === "ALREADY_WORKSPACE_MEMBER" ? (
+                    <p>{shownFailure.text}</p>
+                    {shownFailure.code === "ALREADY_WORKSPACE_MEMBER" &&
+                    canLink ? (
                       <Button
                         type="button"
                         size="xs"

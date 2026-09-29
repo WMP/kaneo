@@ -1942,8 +1942,8 @@
 				"noProjectRoles": "Nie możesz nadać żadnej roli",
 				"pickProject": "Wybierz co najmniej jeden projekt.",
 				"createdTitle": "Zaproszenie utworzone",
-				"addedToExisting": "Projekty dodano do oczekującego zaproszenia na ten adres.",
-				"error": "Nie udało się wysłać zaproszenia"
+				"error": "Nie udało się wysłać zaproszenia",
+				"addedToExisting": "Projekty dodano do oczekującego zaproszenia na ten adres."
 			},
 			"link": {
 				"title": "Powiąż zasób {{name}} z członkiem",
@@ -1984,7 +1984,8 @@
 				"resourceChanged": "Zasób się zmienił. Spróbuj ponownie.",
 				"duplicateProject": "Projekt można podać tylko raz.",
 				"emailNotAllowed": "Tylko osoba może mieć adres e-mail.",
-				"notFound": "Nie znaleziono zasobu."
+				"notFound": "Nie znaleziono zasobu.",
+				"alreadyWorkspaceMemberOnly": "Ten adres należy do członka przestrzeni roboczej."
 			}
 		},
 		"workspaceRoles": {

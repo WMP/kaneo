@@ -85,14 +85,15 @@ const KIND_ICONS: Record<ResourceKind, typeof Wrench> = {
 
 function RouteComponent() {
   const { t } = useTranslation();
-  const { workspace, canUpdateProjects, canManageTeam } =
+  const { workspace, canUpdateProjects, canLinkResources } =
     useWorkspacePermission();
   // Gated the same as POST/PATCH/DELETE /resource (project:update) — see
   // resource/index.ts.
   const canManage = canUpdateProjects();
-  // Linking a resource to a member also needs member:update (see the link
-  // route); inviting is decided per project by the API, which the dialog shows.
-  const canLink = canManage && canManageTeam();
+  // Linking is gated by exactly what the link route requires (project:update
+  // and member:update); inviting is decided per project by the API, which the
+  // dialog shows.
+  const canLink = canLinkResources();
   const workspaceId = workspace?.id ?? "";
 
   const {
@@ -604,6 +605,7 @@ function RouteComponent() {
           resource={inviting}
           workspaceId={workspaceId}
           onClose={() => setInviting(null)}
+          canLink={canLink}
           onLinkInstead={(resource) => {
             setInviting(null);
             setLinking(resource);

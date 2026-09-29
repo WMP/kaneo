@@ -20,7 +20,7 @@ const m = vi.hoisted(() => ({
   success: vi.fn(),
   error: vi.fn(),
   canManage: true,
-  canManageTeam: true,
+  canLink: true,
   resources: [] as unknown[],
 }));
 
@@ -38,7 +38,7 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
     workspace: { id: "workspace-1" },
     canUpdateProjects: () => m.canManage,
-    canManageTeam: () => m.canManageTeam,
+    canLinkResources: () => m.canLink,
   }),
 }));
 vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
@@ -62,12 +62,14 @@ vi.mock("@/components/resource/resource-invite-dialog", () => ({
   default: ({
     resource,
     onLinkInstead,
+    canLink,
   }: {
     resource: Resource;
     onLinkInstead: (resource: Resource) => void;
+    canLink: boolean;
   }) => (
     <div role="dialog" aria-label="invite-dialog">
-      invite:{resource.id}
+      invite:{resource.id}:{canLink ? "can-link" : "no-link"}
       <button type="button" onClick={() => onLinkInstead(resource)}>
         switch-to-link
       </button>
@@ -119,7 +121,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   m.createPending = false;
   m.canManage = true;
-  m.canManageTeam = true;
+  m.canLink = true;
   m.resources = makeResources();
 });
 
@@ -336,8 +338,8 @@ describe("person resource statuses and actions", () => {
     );
   });
 
-  it("hides Link and Unlink from somebody who cannot manage members", () => {
-    m.canManageTeam = false;
+  it("hides Link and Unlink from somebody who cannot link resources", () => {
+    m.canLink = false;
     m.resources = [
       { ...makeResources()[0], email: "carl@example.com" },
       {
@@ -353,6 +355,11 @@ describe("person resource statuses and actions", () => {
     expect(invite()).toBeEnabled();
     expect(link()).toBeNull();
     expect(unlink()).toBeNull();
+    // The invite dialog is told, so it does not offer a link that would fail.
+    fireEvent.click(invite() as HTMLElement);
+    expect(
+      screen.getByRole("dialog", { name: "invite-dialog" }),
+    ).toHaveTextContent("invite:r1:no-link");
   });
 
   it("offers none of the actions to somebody who cannot manage resources", () => {

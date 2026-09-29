@@ -133,7 +133,9 @@ const roles = (...names: string[]) => ({
   roles: names.map((role) => ({ role, isDefault: false })),
 });
 
-function renderDialog(overrides: { onLinkInstead?: () => void } = {}) {
+function renderDialog(
+  overrides: { onLinkInstead?: () => void; canLink?: boolean } = {},
+) {
   const onClose = vi.fn();
   const onLinkInstead = overrides.onLinkInstead ?? vi.fn();
   render(
@@ -142,6 +144,7 @@ function renderDialog(overrides: { onLinkInstead?: () => void } = {}) {
       workspaceId="ws-1"
       onClose={onClose}
       onLinkInstead={onLinkInstead}
+      canLink={overrides.canLink ?? true}
     />,
   );
   return { onClose, onLinkInstead };
@@ -323,16 +326,42 @@ describe("ResourceInviteDialog", () => {
     expect(screen.getByText("team:inviteModal.noSmtpNotice")).toBeVisible();
   });
 
-  it("shows the accept link after sending", async () => {
-    renderDialog();
-    fireEvent.click(send());
+  it.each([
+    [
+      "the email was handed to the relay",
+      { emailAttempted: true, emailSent: true },
+      "projectInvitations:invite.createdSent|alice@example.com",
+    ],
+    [
+      "the relay refused the email",
+      { emailAttempted: true, emailSent: false },
+      "projectInvitations:invite.createdSendFailed|alice@example.com",
+    ],
+    [
+      "no email was attempted",
+      { emailAttempted: false, emailSent: false },
+      "projectInvitations:invite.createdNotSent|alice@example.com",
+    ],
+  ])(
+    "shows the accept link and says what happened to the email when %s",
+    async (_label, delivery, message) => {
+      m.mutateAsync.mockResolvedValue({
+        id: "inv-1",
+        created: true,
+        email: "alice@example.com",
+        ...delivery,
+      });
+      renderDialog();
+      fireEvent.click(send());
 
-    expect(await screen.findByText("link:inv-1")).toBeVisible();
-    expect(
-      screen.getByText("settings:workspaceResources.invite.createdTitle"),
-    ).toBeVisible();
-    expect(m.success).toHaveBeenCalledWith("team:inviteModal.success");
-  });
+      expect(await screen.findByText("link:inv-1")).toBeVisible();
+      expect(
+        screen.getByText("settings:workspaceResources.invite.createdTitle"),
+      ).toBeVisible();
+      expect(screen.getByText(message)).toBeVisible();
+      expect(m.success).toHaveBeenCalledWith(message);
+    },
+  );
 
   it("says the projects were added when a pending invitation existed", async () => {
     m.mutateAsync.mockResolvedValue({
@@ -347,6 +376,44 @@ describe("ResourceInviteDialog", () => {
     expect(m.success).toHaveBeenCalledWith(
       "settings:workspaceResources.invite.addedToExisting",
     );
+  });
+
+  it("does not offer to link, and says so, when the caller cannot link", async () => {
+    m.mutateAsync.mockRejectedValue(
+      new ProjectMemberError("raw", {
+        status: 409,
+        code: "ALREADY_WORKSPACE_MEMBER",
+      }),
+    );
+    renderDialog({ canLink: false });
+    fireEvent.click(send());
+
+    const alert = await screen.findByRole("alert");
+    expect(
+      within(alert).getByText(
+        "settings:workspaceResources.errors.alreadyWorkspaceMemberOnly",
+      ),
+    ).toBeVisible();
+    expect(
+      within(alert).queryByRole("button", {
+        name: "settings:workspaceResources.linkAction",
+      }),
+    ).toBeNull();
+  });
+
+  it("clears the failure as soon as an input changes", async () => {
+    m.mutateAsync.mockRejectedValue(
+      new ProjectMemberError("raw", {
+        status: 403,
+        code: "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+      }),
+    );
+    renderDialog();
+    fireEvent.click(send());
+    expect(await screen.findByRole("alert")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Beta" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
   });
 
   it("translates the error code and offers to link when the address is a member's", async () => {

@@ -1084,8 +1084,8 @@
 				"noProjectRoles": "No role you can assign",
 				"pickProject": "Choose at least one project.",
 				"createdTitle": "Invitation created",
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"error": "Failed to send the invitation"
+				"error": "Failed to send the invitation",
+				"addedToExisting": "The projects were added to the pending invitation for this address."
 			},
 			"link": {
 				"title": "Link {{name}} to a member",
@@ -1126,7 +1126,8 @@
 				"resourceChanged": "The resource changed. Please try again.",
 				"duplicateProject": "A project can only be listed once.",
 				"emailNotAllowed": "Only a person can have an email address.",
-				"notFound": "Resource not found."
+				"notFound": "Resource not found.",
+				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace."
 			}
 		},
 		"workspaceCalendar": {

@@ -33,6 +33,8 @@ const CAPABILITIES = {
   cancelInvitations: { invitation: ["cancel"] },
   manageTeam: { member: ["update", "delete"] },
   removeMembers: { member: ["delete"] },
+  // Exactly what POST /api/resource/{id}/link requires (workspace role).
+  linkResources: { project: ["update"], member: ["update"] },
 } as const satisfies Record<string, Record<string, string[]>>;
 
 type Capability = keyof typeof CAPABILITIES;
@@ -114,6 +116,7 @@ export function useWorkspacePermission() {
       canCancelInvitations: () => can.cancelInvitations,
       canManageTeam: () => can.manageTeam,
       canRemoveMembers: () => can.removeMembers,
+      canLinkResources: () => can.linkResources,
       // Escape hatch for ad-hoc permission checks (uncached). Prefer adding
       // a capability above.
       hasPermission: async (permissions: Record<string, string[]>) => {

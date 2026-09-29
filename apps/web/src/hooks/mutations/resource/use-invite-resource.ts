@@ -15,6 +15,9 @@ function useInviteResource(workspaceId: string) {
       void queryClient.invalidateQueries({
         queryKey: ["workspace-members", workspaceId],
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["workspace-invites", workspaceId],
+      });
       void queryClient.invalidateQueries({ queryKey: ["project-invitations"] });
     },
   });
