@@ -2960,7 +2960,9 @@
 			"rolesLoading": "Loading roles...",
 			"sending": "Sending...",
 			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email."
+			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
+			"rolePlaceholder": "Select a role",
+			"roleUnavailable": "The role you chose is no longer available. Pick another one."
 		},
 		"membersTable": {
 			"emptyTitle": "Нема членови на тим засега",
@@ -2987,7 +2989,9 @@
 			"ariaInvitationActions": "Акции за поканата",
 			"roleUpdateSuccess": "Улогата е ажурирана",
 			"roleUpdateError": "Неуспешно ажурирање на улогата",
-			"ariaChangeRole": "Change role for {{name}}"
+			"ariaChangeRole": "Change role for {{name}}",
+			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
+			"rolesRetry": "Retry"
 		},
 		"errors": {
 			"alreadyInvited": "This person already has a pending invitation.",

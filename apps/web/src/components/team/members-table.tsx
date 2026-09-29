@@ -7,7 +7,7 @@ import {
   ShieldIcon,
   TrashIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useCancelInvitation from "@/hooks/mutations/workspace-user/use-cancel-invitation";
 import useDeleteWorkspaceUser from "@/hooks/mutations/workspace-user/use-delete-workspace-user";
@@ -84,11 +84,6 @@ function toneFor(value: string): string {
   return AVATAR_TONES[Math.abs(hash) % AVATAR_TONES.length];
 }
 
-function capitalize(value: string): string {
-  if (!value) return value;
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 function MembersTable({ workspaceId, invitations, users }: Props) {
   const { t } = useTranslation();
   const [memberToDelete, setMemberToDelete] = useState<WorkspaceUser | null>(
@@ -109,14 +104,29 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   const { copy: copyInvitationLink } = useCopyInvitationLink();
   // Roles the current user may grant. Undefined until loaded, in which case no
   // role Select is offered rather than one that may list the wrong choices.
-  const { data: assignableRoles } = useGetAssignableRoles(workspaceId);
+  const {
+    data: assignableRoles,
+    isError: assignableRolesFailed,
+    refetch: refetchAssignableRoles,
+  } = useGetAssignableRoles(workspaceId);
   const { canManageTeam, canRemoveMembers, canInviteUsers, isOwner } =
     useWorkspacePermission();
   const canChangeRoles = Boolean(canManageTeam());
   const canRemove = Boolean(canRemoveMembers());
   const canInvite = Boolean(canInviteUsers());
 
-  const assignableRoleNames = (assignableRoles ?? []).map((r) => r.role);
+  const assignableRoleNames = useMemo(
+    () => (assignableRoles ?? []).map((r) => r.role),
+    [assignableRoles],
+  );
+  const assignableRoleSet = useMemo(
+    () => new Set(assignableRoleNames),
+    [assignableRoleNames],
+  );
+  // No data at all (not merely a failed background refetch): every role Select
+  // would silently degrade to a badge, so say so and offer a retry.
+  const showRolesLoadError =
+    canChangeRoles && assignableRolesFailed && assignableRoles === undefined;
 
   // Owner first, then everyone else (stable on ties so the original
   // listMembers order is preserved within each group).
@@ -250,6 +260,23 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
 
   return (
     <>
+      {showRolesLoadError ? (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 border-b px-6 py-3 text-sm text-destructive"
+        >
+          <span>{t("team:membersTable.rolesLoadError")}</span>
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => {
+              void refetchAssignableRoles();
+            }}
+          >
+            {t("team:membersTable.rolesRetry")}
+          </Button>
+        </div>
+      ) : null}
       <Table>
         <TableHeader>
           <TableRow>
@@ -275,15 +302,16 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
             // Owners may manage every non-owner member. Anyone else may only
             // touch members whose current role they could grant themselves,
             // and never their own row; the API enforces the same rules.
+            const canAssignCurrent = assignableRoleSet.has(member.role);
             const showRoleSelect =
               canChangeRoles &&
               assignableRoles !== undefined &&
               !isSelf &&
               member.role !== "owner" &&
-              (isOwner || assignableRoleNames.includes(member.role));
+              (isOwner || canAssignCurrent);
             // The current role is always an option so it can be displayed as
             // the selected value even when the caller could not assign it.
-            const roleOptions = assignableRoleNames.includes(member.role)
+            const roleOptions = canAssignCurrent
               ? assignableRoleNames
               : [member.role, ...assignableRoleNames];
             const tone = toneFor(member.user.email);
@@ -326,7 +354,10 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                   ) : showRoleSelect ? (
                     <Select
                       value={member.role}
-                      onValueChange={(value) => {
+                      onValueChange={(value, details) => {
+                        // Ignore Base UI's programmatic resets (reason "none");
+                        // only a user's choice may change a member's role.
+                        if (details.reason === "none") return;
                         if (typeof value === "string" && value) {
                           handleChangeRole(member, value);
                         }
@@ -355,10 +386,8 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant="secondary" className="capitalize">
-                      {t(`team:roles.${member.role}`, {
-                        defaultValue: capitalize(member.role),
-                      })}
+                    <Badge variant="secondary">
+                      {getWorkspaceRoleLabel(member.role, t)}
                     </Badge>
                   )}
                 </TableCell>
@@ -432,10 +461,8 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                 </div>
               </TableCell>
               <TableCell className="py-3">
-                <Badge variant="outline" className="capitalize">
-                  {t(`team:roles.${invitation.role}`, {
-                    defaultValue: capitalize(invitation.role),
-                  })}
+                <Badge variant="outline">
+                  {getWorkspaceRoleLabel(invitation.role, t)}
                 </Badge>
               </TableCell>
               <TableCell className="py-3 text-sm text-muted-foreground">
@@ -467,21 +494,25 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                             <CopyIcon className="size-4" />
                             {t("team:invitations.copyLink")}
                           </MenuItem>
-                          <MenuItem
-                            disabled={isResending}
-                            onClick={() => handleResendInvitation(invitation)}
-                          >
-                            {emailDelivery === "sent" ? (
-                              <SendIcon className="size-4" />
-                            ) : (
-                              <RefreshCwIcon className="size-4" />
-                            )}
-                            {emailDelivery === "sent"
-                              ? t("team:invitations.resend")
-                              : t("team:invitations.renew")}
-                          </MenuItem>
+                          {/* Resending re-sends the invitation's own role, which
+                              the API rejects unless the caller could grant it. */}
+                          {assignableRoleSet.has(invitation.role) ? (
+                            <MenuItem
+                              disabled={isResending}
+                              onClick={() => handleResendInvitation(invitation)}
+                            >
+                              {emailDelivery === "sent" ? (
+                                <SendIcon className="size-4" />
+                              ) : (
+                                <RefreshCwIcon className="size-4" />
+                              )}
+                              {emailDelivery === "sent"
+                                ? t("team:invitations.resend")
+                                : t("team:invitations.renew")}
+                            </MenuItem>
+                          ) : null}
                         </>
-                      ) : (
+                      ) : assignableRoleSet.has(invitation.role) ? (
                         <MenuItem
                           disabled={isResending || isCancelling}
                           onClick={() => handleInviteAgain(invitation)}
@@ -489,7 +520,7 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                           <SendIcon className="size-4" />
                           {t("team:invitations.inviteAgain")}
                         </MenuItem>
-                      )}
+                      ) : null}
                       <MenuItem
                         onClick={() => setInvitationToCancel(invitation)}
                       >

@@ -70,21 +70,29 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   const roleFieldId = useId();
   const {
     data: assignableRoles,
-    isPending: rolesLoading,
+    isLoading: rolesLoading,
     isError: rolesFailed,
   } = useGetAssignableRoles(workspaceId);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  // Data can outlive a failed background refetch (isError with data): keep
+  // using it. Only "no data at all" blocks the picker.
+  const hasRoleData = assignableRoles !== undefined;
   const roleOptions = assignableRoles ?? [];
   const defaultRole = roleOptions.some((r) => r.role === PREFERRED_INVITE_ROLE)
     ? PREFERRED_INVITE_ROLE
     : roleOptions[0]?.role;
-  // A stale pick (the list changed under us) falls back to the default.
-  const role =
-    selectedRole && roleOptions.some((r) => r.role === selectedRole)
-      ? selectedRole
-      : defaultRole;
-  const hasNoAssignableRoles =
-    !rolesLoading && !rolesFailed && roleOptions.length === 0;
+  // A pick that vanished from a refetched list is not silently replaced: the
+  // selection is emptied and the user must choose again.
+  const selectedRoleUnavailable =
+    hasRoleData &&
+    selectedRole !== null &&
+    !roleOptions.some((r) => r.role === selectedRole);
+  const role = !hasRoleData
+    ? undefined
+    : selectedRoleUnavailable
+      ? undefined
+      : (selectedRole ?? defaultRole);
+  const hasNoAssignableRoles = hasRoleData && roleOptions.length === 0;
   const [createdInvitation, setCreatedInvitation] = useState<{
     id: string;
     email: string;
@@ -250,11 +258,11 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                   <Label htmlFor={roleFieldId}>
                     {t("team:inviteModal.roleLabel")}
                   </Label>
-                  {rolesLoading ? (
+                  {!workspaceId ? null : !hasRoleData && rolesLoading ? (
                     <p className="text-sm text-muted-foreground" role="status">
                       {t("team:inviteModal.rolesLoading")}
                     </p>
-                  ) : rolesFailed ? (
+                  ) : !hasRoleData && rolesFailed ? (
                     <p className="text-sm text-destructive" role="alert">
                       {t("team:inviteModal.rolesError")}
                     </p>
@@ -262,30 +270,44 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                     <p className="text-sm text-muted-foreground" role="status">
                       {t("team:inviteModal.noAssignableRoles")}
                     </p>
-                  ) : (
-                    <Select
-                      id={roleFieldId}
-                      value={role}
-                      onValueChange={(value) => {
-                        if (typeof value === "string" && value) {
-                          setSelectedRole(value);
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue>
-                          {role ? getWorkspaceRoleLabel(role, t) : null}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roleOptions.map((option) => (
-                          <SelectItem key={option.role} value={option.role}>
-                            {getWorkspaceRoleLabel(option.role, t)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  ) : hasRoleData ? (
+                    <>
+                      <Select
+                        id={roleFieldId}
+                        value={role ?? null}
+                        onValueChange={(value, details) => {
+                          // Base UI also emits a change with reason "none" when
+                          // the selected item leaves the list, resetting to its
+                          // initial value. That is the silent fallback we
+                          // avoid: only a user's choice counts.
+                          if (details.reason === "none") return;
+                          if (typeof value === "string" && value) {
+                            setSelectedRole(value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t("team:inviteModal.rolePlaceholder")}
+                          >
+                            {role ? getWorkspaceRoleLabel(role, t) : null}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleOptions.map((option) => (
+                            <SelectItem key={option.role} value={option.role}>
+                              {getWorkspaceRoleLabel(option.role, t)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedRoleUnavailable ? (
+                        <p className="text-sm text-destructive" role="alert">
+                          {t("team:inviteModal.roleUnavailable")}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null}
                 </div>
               </DialogPanel>
 

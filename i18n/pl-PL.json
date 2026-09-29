@@ -761,6 +761,8 @@
 			"rolesError": "Nie udało się wczytać ról, które możesz nadać. Spróbuj ponownie później.",
 			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia.",
 			"sending": "Wysyłanie...",
+			"rolePlaceholder": "Wybierz rolę",
+			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
 			"successUnknownEmail": "Zaproszenie zostało utworzone. Jeśli osoba nie dostała e-maila, udostępnij jej link.",
 			"shareLinkDescriptionUnknownEmail": "Jeśli adres {{email}} nie dostał e-maila, udostępnij mu ten link, aby mógł dołączyć do obszaru roboczego."
 		},
@@ -778,6 +780,8 @@
 			"ariaInvitationActions": "Działania związane z zaproszeniem",
 			"ariaRemoveMember": "Usuń członka",
 			"ariaChangeRole": "Zmień rolę: {{name}}",
+			"rolesLoadError": "Nie udało się wczytać ról, które możesz nadać, więc teraz nie można zmieniać ról.",
+			"rolesRetry": "Ponów",
 			"removeDialogTitle": "Usunąć członka zespołu?",
 			"removeDialogDescription": "Czy na pewno chcesz usunąć {{name}} z obszaru roboczego? Nie można tego cofnąć.",
 			"cancelDialogTitle": "Anulować zaproszenie?",

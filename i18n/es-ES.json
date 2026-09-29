@@ -2971,7 +2971,9 @@
 			"rolesLoading": "Loading roles...",
 			"sending": "Sending...",
 			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email."
+			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
+			"rolePlaceholder": "Select a role",
+			"roleUnavailable": "The role you chose is no longer available. Pick another one."
 		},
 		"membersTable": {
 			"emptyTitle": "No hay miembros en el equipo aún",
@@ -2998,7 +3000,9 @@
 			"cancelInviteError": "Error al cancelar invitación",
 			"roleUpdateSuccess": "Rol actualizado",
 			"roleUpdateError": "Error al actualizar el rol",
-			"ariaChangeRole": "Change role for {{name}}"
+			"ariaChangeRole": "Change role for {{name}}",
+			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
+			"rolesRetry": "Retry"
 		},
 		"errors": {
 			"alreadyInvited": "This person already has a pending invitation.",

@@ -16,7 +16,7 @@ let config: { hasSmtp: boolean } | undefined = { hasSmtp: true };
 
 type RolesState = {
   data: { role: string; isDefault: boolean }[] | undefined;
-  isPending: boolean;
+  isLoading: boolean;
   isError: boolean;
 };
 const DEFAULT_ROLES = [
@@ -27,7 +27,7 @@ const DEFAULT_ROLES = [
 ];
 let rolesState: RolesState = {
   data: DEFAULT_ROLES,
-  isPending: false,
+  isLoading: false,
   isError: false,
 };
 
@@ -58,8 +58,10 @@ vi.mock("@/hooks/queries/config/use-get-config", () => ({
   default: () => ({ data: config }),
 }));
 
+let activeWorkspace: { id: string } | undefined = { id: "workspace-1" };
+
 vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
-  default: () => ({ data: { id: "workspace-1" } }),
+  default: () => ({ data: activeWorkspace }),
 }));
 
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
@@ -78,7 +80,8 @@ vi.mock("./invitation-link-field", () => ({
 
 beforeEach(() => {
   config = { hasSmtp: true };
-  rolesState = { data: DEFAULT_ROLES, isPending: false, isError: false };
+  activeWorkspace = { id: "workspace-1" };
+  rolesState = { data: DEFAULT_ROLES, isLoading: false, isError: false };
   mutateAsync.mockResolvedValue({ id: "invite-9" });
 });
 
@@ -288,7 +291,7 @@ describe("InviteTeamMemberModal", () => {
           { role: "viewer", isDefault: true },
           { role: "qa-lead", isDefault: false },
         ],
-        isPending: false,
+        isLoading: false,
         isError: false,
       };
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
@@ -305,7 +308,7 @@ describe("InviteTeamMemberModal", () => {
     });
 
     it("disables submit and sends nothing while the roles load", async () => {
-      rolesState = { data: undefined, isPending: true, isError: false };
+      rolesState = { data: undefined, isLoading: true, isError: false };
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 
       expect(screen.getByText("team:inviteModal.rolesLoading")).toBeVisible();
@@ -313,7 +316,7 @@ describe("InviteTeamMemberModal", () => {
     });
 
     it("shows a message and disables submit when no role is assignable", async () => {
-      rolesState = { data: [], isPending: false, isError: false };
+      rolesState = { data: [], isLoading: false, isError: false };
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 
       expect(
@@ -324,13 +327,83 @@ describe("InviteTeamMemberModal", () => {
     });
 
     it("shows an error and disables submit when the roles fail to load", async () => {
-      rolesState = { data: undefined, isPending: false, isError: true };
+      rolesState = { data: undefined, isLoading: false, isError: true };
       render(<InviteTeamMemberModal open onClose={vi.fn()} />);
 
       expect(screen.getByRole("alert")).toHaveTextContent(
         "team:inviteModal.rolesError",
       );
       expect(submitButton()).toBeDisabled();
+    });
+
+    it("keeps the picker and submit usable when a background refetch fails but data exists", async () => {
+      rolesState = { data: DEFAULT_ROLES, isLoading: false, isError: true };
+      render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+      expect(roleTrigger()).toHaveTextContent("team:roles.member");
+      expect(screen.queryByText("team:inviteModal.rolesError")).toBeNull();
+
+      await submitEmail("a@example.com");
+
+      await waitFor(() =>
+        expect(mutateAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ role: "member" }),
+        ),
+      );
+    });
+
+    it("shows neither a spinner nor a picker without a workspace, and disables submit", () => {
+      activeWorkspace = undefined;
+      rolesState = { data: undefined, isLoading: false, isError: false };
+      render(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+      expect(screen.queryByText("team:inviteModal.rolesLoading")).toBeNull();
+      expect(screen.queryByRole("combobox")).toBeNull();
+      expect(submitButton()).toBeDisabled();
+    });
+
+    it("empties the selection and blocks submit when the picked role disappears", async () => {
+      const { rerender } = render(
+        <InviteTeamMemberModal open onClose={vi.fn()} />,
+      );
+      fireEvent.click(roleTrigger());
+      const option = await screen.findByRole("option", { name: "Qa-lead" });
+      fireEvent.pointerDown(option);
+      fireEvent.click(option, { detail: 1 });
+      await waitFor(() => expect(roleTrigger()).toHaveTextContent("Qa-lead"));
+
+      rolesState = {
+        data: DEFAULT_ROLES.filter((r) => r.role !== "qa-lead"),
+        isLoading: false,
+        isError: false,
+      };
+      rerender(<InviteTeamMemberModal open onClose={vi.fn()} />);
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "team:inviteModal.roleUnavailable",
+      );
+      expect(roleTrigger()).not.toHaveTextContent("team:roles.member");
+      expect(roleTrigger()).toHaveTextContent(
+        "team:inviteModal.rolePlaceholder",
+      );
+      expect(submitButton()).toBeDisabled();
+
+      // Choosing again clears the message and re-enables submit.
+      fireEvent.click(roleTrigger());
+      const viewer = await screen.findByRole("option", {
+        name: "team:roles.viewer",
+      });
+      fireEvent.pointerDown(viewer);
+      fireEvent.click(viewer, { detail: 1 });
+      await waitFor(() => expect(submitButton()).toBeEnabled());
+      expect(screen.queryByText("team:inviteModal.roleUnavailable")).toBeNull();
+
+      await submitEmail("a@example.com");
+      await waitFor(() =>
+        expect(mutateAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ role: "viewer" }),
+        ),
+      );
     });
   });
 });

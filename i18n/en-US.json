@@ -2975,6 +2975,8 @@
 			"rolesError": "Couldn't load the roles you can assign. Try again later.",
 			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
 			"sending": "Sending...",
+			"rolePlaceholder": "Select a role",
+			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
 			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
 			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace."
 		},
@@ -2992,6 +2994,8 @@
 			"ariaInvitationActions": "Invitation actions",
 			"ariaRemoveMember": "Remove member",
 			"ariaChangeRole": "Change role for {{name}}",
+			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
+			"rolesRetry": "Retry",
 			"removeDialogTitle": "Remove Team Member?",
 			"removeDialogDescription": "Are you sure you want to remove {{name}} from the workspace? This action cannot be undone.",
 			"cancelDialogTitle": "Cancel Invitation?",

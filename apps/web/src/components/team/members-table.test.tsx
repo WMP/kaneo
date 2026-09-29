@@ -66,8 +66,11 @@ vi.mock(
   }),
 );
 
+const refetchAssignableRoles = vi.fn();
+
 type AssignableRolesState = {
   data: { role: string; isDefault: boolean }[] | undefined;
+  isError?: boolean;
 };
 const DEFAULT_ASSIGNABLE_ROLES = [
   { role: "viewer", isDefault: true },
@@ -79,7 +82,7 @@ let assignableRoles: AssignableRolesState = {
 };
 
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
-  default: () => assignableRoles,
+  default: () => ({ ...assignableRoles, refetch: refetchAssignableRoles }),
 }));
 
 const canInviteUsers = vi.fn(() => true);
@@ -443,19 +446,21 @@ describe("MembersTable resend invitation", () => {
   });
 });
 
+const makeMember = (
+  id: string,
+  role: string,
+  name: string = id,
+): WorkspaceUser =>
+  ({
+    id: `member-${id}`,
+    userId: id,
+    role,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    user: { name, email: `${id}@example.com`, image: null },
+  }) as unknown as WorkspaceUser;
+
 describe("MembersTable role select", () => {
-  const makeUser = (
-    id: string,
-    role: string,
-    name: string = id,
-  ): WorkspaceUser =>
-    ({
-      id: `member-${id}`,
-      userId: id,
-      role,
-      createdAt: "2026-01-01T00:00:00.000Z",
-      user: { name, email: `${id}@example.com`, image: null },
-    }) as unknown as WorkspaceUser;
+  const makeUser = makeMember;
 
   const renderUsers = (users: WorkspaceUser[]) =>
     render(
@@ -553,5 +558,122 @@ describe("MembersTable role select", () => {
 
     expect(screen.queryByRole("combobox")).toBeNull();
     expect(screen.getByText("team:roles.member")).toBeVisible();
+  });
+});
+
+describe("MembersTable and the assignable roles list", () => {
+  const renderInvitation = (invitation: WorkspaceUserInvitation) =>
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[invitation]}
+        users={[] as WorkspaceUser[]}
+      />,
+    );
+  const openMenu = () =>
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "team:membersTable.ariaInvitationActions",
+      }),
+    );
+  const adminInvitation = {
+    ...pendingInvitation,
+    id: "invite-admin",
+    role: "admin",
+  } as unknown as WorkspaceUserInvitation;
+  const expiredAdminInvitation = {
+    ...expiredInvitation,
+    id: "invite-admin-old",
+    role: "admin",
+  } as unknown as WorkspaceUserInvitation;
+
+  it("hides resend and renew when the caller could not grant the invitation's role", async () => {
+    renderInvitation(adminInvitation);
+    openMenu();
+
+    expect(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.copyLink",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.resend" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.renew" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("menuitem", {
+        name: "team:membersTable.cancelInvitation",
+      }),
+    ).toBeVisible();
+  });
+
+  it("hides 'Invite again' when the caller could not grant the invitation's role", async () => {
+    renderInvitation(expiredAdminInvitation);
+    openMenu();
+
+    await screen.findByRole("menuitem", {
+      name: "team:membersTable.cancelInvitation",
+    });
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.inviteAgain" }),
+    ).toBeNull();
+  });
+
+  it("hides the role-based invitation actions until the assignable roles are loaded", async () => {
+    assignableRoles = { data: undefined };
+    renderInvitation(pendingInvitation);
+    openMenu();
+
+    await screen.findByRole("menuitem", { name: "team:invitations.copyLink" });
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.resend" }),
+    ).toBeNull();
+  });
+
+  it("shows an error with a retry when the list failed and there is no data", () => {
+    assignableRoles = { data: undefined, isError: true };
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[]}
+        users={[makeMember("ada", "member")]}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "team:membersTable.rolesLoadError",
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "team:membersTable.rolesRetry" }),
+    );
+    expect(refetchAssignableRoles).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays quiet when a background refetch failed but data exists", () => {
+    assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES, isError: true };
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[]}
+        users={[makeMember("ada", "member")]}
+      />,
+    );
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("combobox")).toBeVisible();
+  });
+
+  it("labels a custom role by its capitalized name in the badge", () => {
+    render(
+      <MembersTable
+        workspaceId="workspace-1"
+        invitations={[]}
+        users={[makeMember("root", "release-manager")]}
+      />,
+    );
+
+    expect(screen.getByText("Release-manager")).toBeVisible();
   });
 });
