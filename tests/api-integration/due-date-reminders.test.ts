@@ -13,6 +13,13 @@ const { sendDueDateReminder } = vi.hoisted(() => ({
   >(async () => true),
 }));
 
+// Creating a reminder notification starts a delivery in the background. It is not
+// under test here, and left running it can hold locks while the next test
+// truncates the tables (a deadlock), so it is replaced.
+vi.mock("../../apps/api/src/notification-preferences/delivery", () => ({
+  deliverNotification: vi.fn(async () => undefined),
+}));
+
 vi.mock(
   "../../apps/api/src/plugins/generic-webhook/events",
   async (importOriginal) => {
