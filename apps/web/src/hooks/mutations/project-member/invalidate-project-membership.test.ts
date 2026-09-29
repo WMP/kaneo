@@ -17,12 +17,14 @@ describe("invalidateProjectMembership", () => {
     const keys = spy.mock.calls.map(([filters]) => filters?.queryKey);
     expect(keys).toEqual(
       expect.arrayContaining([
+        ["project-members", "project-1", "rows"],
+        // The prefix that also covers the pickers' people.
         ["project-members", "project-1"],
         ["project-member-candidates", "project-1"],
         ["project-assignable-roles", "project-1"],
         ["project-invitations", "project-1"],
         ["projects"],
-        ["workspace-users"],
+        ["workspace-members"],
         ["project-access", "project-1"],
         ["workspace", "full", "workspace-1"],
         ["workspace-invites", "workspace-1"],

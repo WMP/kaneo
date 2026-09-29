@@ -26,6 +26,8 @@ const CAPABILITIES = {
   updateLabels: { label: ["update"] },
   deleteLabels: { label: ["delete"] },
   manageWorkspace: { workspace: ["update", "manage_settings"] },
+  // The "full access" privilege: what lets a role reach every project.
+  manageSettings: { workspace: ["manage_settings"] },
   deleteWorkspace: { workspace: ["delete"] },
   inviteUsers: { invitation: ["create"] },
   cancelInvitations: { invitation: ["cancel"] },
@@ -106,6 +108,7 @@ export function useWorkspacePermission() {
       canUpdateLabels: () => can.updateLabels,
       canDeleteLabels: () => can.deleteLabels,
       canManageWorkspace: () => can.manageWorkspace,
+      canManageSettings: () => can.manageSettings,
       canDeleteWorkspace: () => can.deleteWorkspace,
       canInviteUsers: () => can.inviteUsers,
       canCancelInvitations: () => can.cancelInvitations,

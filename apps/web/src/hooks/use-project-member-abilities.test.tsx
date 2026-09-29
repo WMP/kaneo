@@ -3,79 +3,96 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HttpError } from "@/lib/http-error";
 import { useProjectMemberAbilities } from "./use-project-member-abilities";
 
-type Q = {
-  data?: unknown;
-  error?: unknown;
-  isPending: boolean;
-  isSuccess: boolean;
+type Permission = {
+  addMembers: boolean;
+  inviteToProject: boolean;
+  manageMembers: boolean;
+  cancelProjectInvitations: boolean;
+  isCheckingPermissions: boolean;
   isError: boolean;
-  refetch: () => void;
+  error: unknown;
 };
 
-const ok = (data: unknown): Q => ({
-  data,
-  isPending: false,
-  isSuccess: true,
+const ALLOWED: Permission = {
+  addMembers: true,
+  inviteToProject: true,
+  manageMembers: true,
+  cancelProjectInvitations: true,
+  isCheckingPermissions: false,
   isError: false,
-  refetch: vi.fn(),
-});
-const forbidden = (): Q => ({
-  data: undefined,
-  error: new HttpError(403, "No access"),
-  isPending: false,
-  isSuccess: false,
-  isError: true,
-  refetch: vi.fn(),
-});
-const broken = (): Q => ({
-  data: undefined,
-  error: new HttpError(500, "boom"),
-  isPending: false,
-  isSuccess: false,
-  isError: true,
-  refetch: vi.fn(),
-});
-const pending = (): Q => ({
-  data: undefined,
-  isPending: true,
-  isSuccess: false,
+  error: null,
+};
+const DENIED: Permission = {
+  addMembers: false,
+  inviteToProject: false,
+  manageMembers: false,
+  cancelProjectInvitations: false,
+  isCheckingPermissions: false,
   isError: false,
-  refetch: vi.fn(),
-});
+  error: null,
+};
 
-let roles: Q;
-let candidates: Q;
-let invitations: Q;
+let permission: Permission;
+const invalidateQueries = vi.fn();
+const rolesOptions = vi.fn();
+
+type RolesQuery = {
+  data?: { role: string; isDefault: boolean }[];
+  isPending: boolean;
+  isError: boolean;
+  refetch: ReturnType<typeof vi.fn>;
+};
+let roles: RolesQuery;
+
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries }),
+}));
+
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({
+    canAddMembers: () => permission.addMembers,
+    canInviteToProject: () => permission.inviteToProject,
+    canManageMembers: () => permission.manageMembers,
+    canCancelProjectInvitations: () => permission.cancelProjectInvitations,
+    isCheckingPermissions: permission.isCheckingPermissions,
+    isError: permission.isError,
+    error: permission.error,
+  }),
+}));
 
 vi.mock(
   "@/hooks/queries/project-member/use-get-project-assignable-roles",
-  () => ({ default: () => roles }),
-);
-vi.mock("@/hooks/queries/project-member/use-get-member-candidates", () => ({
-  default: () => candidates,
-}));
-vi.mock(
-  "@/hooks/queries/project-invitation/use-get-project-invitations",
   () => ({
-    default: () => invitations,
+    default: (projectId: string, options: unknown) => {
+      rolesOptions(projectId, options);
+      return roles;
+    },
   }),
 );
 
 const ROLES = [{ role: "member", isDefault: true }];
+const loaded = (): RolesQuery => ({
+  data: ROLES,
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+});
 
 beforeEach(() => {
-  roles = ok(ROLES);
-  candidates = ok([]);
-  invitations = ok([]);
+  permission = { ...ALLOWED };
+  roles = loaded();
+  invalidateQueries.mockReset();
+  rolesOptions.mockReset();
 });
 
 const abilities = () =>
   renderHook(() => useProjectMemberAbilities("project-1")).result.current;
 
 describe("useProjectMemberAbilities", () => {
-  it("allows everything when the API answers everything", () => {
+  it("allows what the project capabilities allow", () => {
     expect(abilities()).toMatchObject({
       isLoading: false,
+      hasError: false,
       canAdd: true,
       canInvite: true,
       canManage: true,
@@ -84,9 +101,8 @@ describe("useProjectMemberAbilities", () => {
     });
   });
 
-  it("offers nothing to a caller the API refuses everywhere", () => {
-    candidates = forbidden();
-    invitations = forbidden();
+  it("offers nothing when the capabilities are all false", () => {
+    permission = { ...DENIED };
 
     expect(abilities()).toMatchObject({
       canAdd: false,
@@ -97,8 +113,22 @@ describe("useProjectMemberAbilities", () => {
     });
   });
 
+  it("asks for the assignable roles only when a capability needs them", () => {
+    permission = { ...DENIED };
+    abilities();
+    expect(rolesOptions).toHaveBeenLastCalledWith("project-1", {
+      enabled: false,
+    });
+
+    permission = { ...DENIED, inviteToProject: true };
+    abilities();
+    expect(rolesOptions).toHaveBeenLastCalledWith("project-1", {
+      enabled: true,
+    });
+  });
+
   it("cannot add or invite without an assignable role, but can still manage and cancel", () => {
-    roles = ok([]);
+    roles = { ...loaded(), data: [] };
 
     expect(abilities()).toMatchObject({
       canAdd: false,
@@ -108,8 +138,8 @@ describe("useProjectMemberAbilities", () => {
     });
   });
 
-  it("can add but not invite when only the invitation list is refused", () => {
-    invitations = forbidden();
+  it("can add but not invite when only member:create is granted", () => {
+    permission = { ...DENIED, addMembers: true };
 
     expect(abilities()).toMatchObject({
       canAdd: true,
@@ -118,55 +148,63 @@ describe("useProjectMemberAbilities", () => {
     });
   });
 
-  it("is loading, and offers nothing, until every answer is known", () => {
-    candidates = pending();
+  it("can view the invitation list with either invitation right", () => {
+    permission = { ...DENIED, cancelProjectInvitations: true };
+    expect(abilities().canViewInvitations).toBe(true);
+
+    permission = { ...DENIED, inviteToProject: true };
+    expect(abilities().canViewInvitations).toBe(true);
+  });
+
+  it("is loading, and offers nothing, until the capabilities are known", () => {
+    permission = { ...DENIED, isCheckingPermissions: true };
 
     expect(abilities()).toMatchObject({ isLoading: true, canAdd: false });
   });
 
-  it("reports a failed role list so the UI can offer a retry", () => {
-    roles = forbidden();
+  it("is loading while a needed role list is still pending", () => {
+    roles = { ...loaded(), data: undefined, isPending: true };
 
-    const result = abilities();
-    expect(result.assignableRoles).toBeUndefined();
-    expect(result.assignableRolesFailed).toBe(true);
+    expect(abilities().isLoading).toBe(true);
   });
 
-  it("does not call a 403 an error: it is the answer", () => {
-    candidates = forbidden();
-    invitations = forbidden();
+  it("does not call a 403 an error: the project answers all false", () => {
+    permission = {
+      ...DENIED,
+      isError: true,
+      error: new HttpError(403, "No access"),
+    };
 
     expect(abilities().hasError).toBe(false);
   });
 
-  it("treats a failure that is not a 403 as unknown, with an error and a retry, not as no rights", () => {
-    candidates = broken();
-    invitations = broken();
-    roles = ok(ROLES);
-    const failedRoles = roles;
+  it("treats a failed capability answer that is not a 403 as unknown, with an error and a retry, not as no rights", () => {
+    permission = {
+      ...DENIED,
+      isError: true,
+      error: new HttpError(500, "boom"),
+    };
 
     const result = abilities();
     expect(result.hasError).toBe(true);
     expect(result.canAdd).toBe(false);
-    expect(result.canViewInvitations).toBe(false);
 
     result.retry();
-    expect((candidates as Q).refetch).toHaveBeenCalledTimes(1);
-    expect((invitations as Q).refetch).toHaveBeenCalledTimes(1);
-    // The role list did not fail, so it is not asked again.
-    expect(failedRoles.refetch).not.toHaveBeenCalled();
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["project-access", "project-1"],
+    });
   });
 
-  it("retries only what failed, including the role list", () => {
-    roles = broken();
-    candidates = ok([]);
-    invitations = forbidden();
+  it("reports a failed role list and retries only that", () => {
+    roles = { ...loaded(), data: undefined, isError: true };
 
     const result = abilities();
     expect(result.hasError).toBe(true);
+    expect(result.assignableRoles).toBeUndefined();
+    expect(result.assignableRolesFailed).toBe(true);
+
     result.retry();
     expect(roles.refetch).toHaveBeenCalledTimes(1);
-    expect(candidates.refetch).not.toHaveBeenCalled();
-    expect(invitations.refetch).not.toHaveBeenCalled();
+    expect(invalidateQueries).not.toHaveBeenCalled();
   });
 });

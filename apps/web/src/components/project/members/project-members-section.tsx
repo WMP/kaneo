@@ -39,8 +39,12 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
     isLoading: membersLoading,
     refetch: refetchMembers,
   } = useGetProjectMembers(projectId);
-  const { data: invitations } = useGetProjectInvitations(projectId);
-  const { data: candidates } = useGetMemberCandidates(projectId);
+  const { data: invitations } = useGetProjectInvitations(projectId, {
+    enabled: abilities.canViewInvitations,
+  });
+  const { data: candidates } = useGetMemberCandidates(projectId, {
+    enabled: abilities.canAdd,
+  });
   const {
     data: workspaceRoles,
     isError: workspaceRolesFailed,

@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import getProject from "@/fetchers/project/get-project";
-import { isForbiddenError } from "@/lib/http-error";
+import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
+import {
+  isProjectAccessDenied,
+  projectAccessQueryOptions,
+} from "@/lib/project-access-query";
 import ProjectNoAccess from "./project-no-access";
 
 type Props = {
@@ -11,26 +14,27 @@ type Props = {
 };
 
 /**
- * Wraps the pages of one project. When the project itself answers 403 (the
+ * Wraps the pages of one project. When the project's access answer is 403 (the
  * person was removed, or never added) the pages give way to a translated
  * "no access" state with a link back, instead of each view failing with its
  * own generic error. Every other outcome renders the pages as before.
  *
- * The app keeps queries cached and does not refetch on mount, so a project that
- * was fetched before the person lost access would look fine. The gate reads the
- * project (same key as `useGetProject`, so it shares the cache entry) afresh
- * every time the project pages mount.
+ * The answer is `GET /api/project/{id}/access`, the query the project
+ * capabilities read (`useProjectPermission`, same key, one cache entry). The
+ * app keeps queries cached and does not refetch on mount, so an answer from
+ * before the person lost access would look fine: the gate asks afresh every
+ * time the project pages mount.
  */
 function ProjectAccessGate({ projectId, workspaceId, children }: Props) {
+  const { user } = useAuth();
   const { error } = useQuery({
-    queryKey: ["projects", workspaceId, projectId],
-    queryFn: () => getProject({ id: projectId, workspaceId }),
-    enabled: !!projectId,
+    ...projectAccessQueryOptions(projectId, user?.id),
+    enabled: Boolean(projectId && user?.id),
     refetchOnMount: "always",
     // A 403 is the answer here, not a failure to report.
     meta: { expectForbidden: true },
   });
-  if (isForbiddenError(error)) {
+  if (isProjectAccessDenied(error)) {
     return <ProjectNoAccess workspaceId={workspaceId} />;
   }
   return children;

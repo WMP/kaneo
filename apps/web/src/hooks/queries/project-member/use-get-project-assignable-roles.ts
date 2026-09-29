@@ -7,11 +7,14 @@ import { projectAssignableRolesKey } from "@/lib/project-member-keys";
  * a caller may grant depends on their own role there, which can change without
  * this client hearing about it, so every mount reads it again.
  */
-function useGetProjectAssignableRoles(projectId: string | undefined) {
+function useGetProjectAssignableRoles(
+  projectId: string | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: projectAssignableRolesKey(projectId),
     queryFn: () => getProjectAssignableRoles(projectId ?? ""),
-    enabled: !!projectId,
+    enabled: !!projectId && enabled,
     staleTime: 0,
     refetchOnMount: "always",
   });

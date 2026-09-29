@@ -64,14 +64,24 @@ let membersState: {
 vi.mock("@/hooks/queries/project-member/use-get-project-members", () => ({
   default: () => ({ ...membersState, refetch: refetchMembers }),
 }));
+const useGetProjectInvitations = vi.fn(
+  (_projectId: string, _options: { enabled?: boolean }) => ({ data: [] }),
+);
 vi.mock(
   "@/hooks/queries/project-invitation/use-get-project-invitations",
   () => ({
-    default: () => ({ data: [] }),
+    default: (projectId: string, options: { enabled?: boolean }) =>
+      useGetProjectInvitations(projectId, options),
+  }),
+);
+const useGetMemberCandidates = vi.fn(
+  (_projectId: string, _options: { enabled?: boolean }) => ({
+    data: [{ id: "u-7", email: "carol@example.com" }],
   }),
 );
 vi.mock("@/hooks/queries/project-member/use-get-member-candidates", () => ({
-  default: () => ({ data: [{ id: "u-7", email: "carol@example.com" }] }),
+  default: (projectId: string, options: { enabled?: boolean }) =>
+    useGetMemberCandidates(projectId, options),
 }));
 const useGetAssignableRoles = vi.fn((_workspaceId: string | undefined) => ({
   data: [],
@@ -274,5 +284,31 @@ describe("ProjectMembersSection", () => {
     renderSection();
 
     expect(screen.queryByText("projectMembers:abilitiesError")).toBeNull();
+  });
+
+  it("reads the candidates and the invitation list only when the capabilities allow it", () => {
+    abilities = {
+      ...ALL,
+      canAdd: false,
+      canInvite: false,
+      canViewInvitations: false,
+    };
+    renderSection();
+    expect(useGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
+      enabled: false,
+    });
+    expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
+      enabled: false,
+    });
+
+    cleanup();
+    abilities = { ...ALL };
+    renderSection();
+    expect(useGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
+      enabled: true,
+    });
+    expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
+      enabled: true,
+    });
   });
 });

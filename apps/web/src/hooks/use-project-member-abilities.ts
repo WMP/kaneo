@@ -1,7 +1,8 @@
-import useGetProjectInvitations from "@/hooks/queries/project-invitation/use-get-project-invitations";
-import useGetMemberCandidates from "@/hooks/queries/project-member/use-get-member-candidates";
+import { useQueryClient } from "@tanstack/react-query";
 import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { isForbiddenError } from "@/lib/http-error";
+import { projectAccessQueryKey } from "@/lib/project-access-query";
 
 export type ProjectMemberAbilities = {
   /** True until the answers below are known; show no controls meanwhile. */
@@ -30,65 +31,66 @@ export type ProjectMemberAbilities = {
 };
 
 /**
- * What the current user may do with the members of one project, derived from
- * what the API answers for them, in this one place:
+ * What the current user may do with the members of one project. The answer is
+ * the project capabilities of `GET /api/project/{id}/access`
+ * (`useProjectPermission`), which the API evaluates with the logic of the
+ * routes themselves; only the assignable roles (an empty list means no role can
+ * be handed out) are asked separately, and only when a capability needs them.
  *
- * - project assignable roles: an empty list means no role can be handed out;
- * - member candidates: the route needs `member:create` in the caller's project
- *   role, so a 403 there means the member controls are not offered (the
- *   built-in roles grant `member:create|update|delete` together, so it also
- *   stands for changing roles and removing);
- * - the pending invitations list: it needs `invitation:create` or
- *   `invitation:cancel`, so a 403 there means no invitation controls.
- *
- * "No rights" comes from a 403 only. Any other failure leaves the answer
- * unknown and is reported through `hasError`.
+ * "No rights" comes from the capability being false, and a refused (403)
+ * project answers all false. Any other failure leaves the answer unknown and is
+ * reported through `hasError`, never turned into hidden controls.
  *
  * These are hints for what to show. The API decides every action, and a
- * refusal (for a custom role that grants only part of a bundle) is reported
- * to the user by the error mapping, never left as a silent failure.
- * Swapping the source for a dedicated capabilities answer changes this file
- * only.
+ * refusal is reported to the user by the error mapping, never left as a silent
+ * failure.
  */
 export function useProjectMemberAbilities(
   projectId: string | undefined,
 ): ProjectMemberAbilities {
-  const roles = useGetProjectAssignableRoles(projectId);
-  const candidates = useGetMemberCandidates(projectId);
-  const invitations = useGetProjectInvitations(projectId);
+  const queryClient = useQueryClient();
+  const permission = useProjectPermission(projectId);
 
+  const mayAdd = permission.canAddMembers();
+  const mayInvite = permission.canInviteToProject();
+  const canManage = permission.canManageMembers();
+  const canCancelInvitations = permission.canCancelProjectInvitations();
+
+  // Roles are needed to add, invite or change a role, and only then.
+  const needsRoles = mayAdd || mayInvite || canManage;
+  const roles = useGetProjectAssignableRoles(projectId, {
+    enabled: needsRoles,
+  });
   const assignableRoles = roles.data;
   const canAssignRoles = (assignableRoles?.length ?? 0) > 0;
-  const memberRights = candidates.isSuccess;
-  const invitationRights = invitations.isSuccess;
 
-  const failedUnexpectedly = (query: {
-    isError: boolean;
-    error: unknown;
-  }): boolean => query.isError && !isForbiddenError(query.error);
-  const rolesFailed = roles.isError && assignableRoles === undefined;
-  const hasError =
-    rolesFailed ||
-    failedUnexpectedly(candidates) ||
-    failedUnexpectedly(invitations);
+  const permissionFailed =
+    permission.isError && !isForbiddenError(permission.error);
+  const rolesFailed =
+    needsRoles && roles.isError && assignableRoles === undefined;
 
   return {
-    isLoading: roles.isPending || candidates.isPending || invitations.isPending,
-    hasError,
+    isLoading:
+      permission.isCheckingPermissions || (needsRoles && roles.isPending),
+    hasError: permissionFailed || rolesFailed,
     retry: () => {
+      if (permissionFailed && projectId) {
+        void queryClient.invalidateQueries({
+          queryKey: projectAccessQueryKey(projectId),
+        });
+      }
       if (rolesFailed) void roles.refetch();
-      if (failedUnexpectedly(candidates)) void candidates.refetch();
-      if (failedUnexpectedly(invitations)) void invitations.refetch();
     },
     assignableRoles,
     assignableRolesFailed: rolesFailed,
     refetchAssignableRoles: () => {
       void roles.refetch();
     },
-    canAdd: memberRights && canAssignRoles,
-    canInvite: invitationRights && canAssignRoles,
-    canManage: memberRights,
-    canCancelInvitations: invitationRights,
-    canViewInvitations: invitationRights,
+    canAdd: mayAdd && canAssignRoles,
+    canInvite: mayInvite && canAssignRoles,
+    canManage,
+    canCancelInvitations,
+    // Listing needs invitation:create or invitation:cancel.
+    canViewInvitations: mayInvite || canCancelInvitations,
   };
 }
