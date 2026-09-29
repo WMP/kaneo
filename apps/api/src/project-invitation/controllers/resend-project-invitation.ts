@@ -1,6 +1,7 @@
 import { and, eq, gt } from "drizzle-orm";
 import db, { schema } from "../../database";
 import type { ProjectAccess } from "../../utils/project-access";
+import { assertCloudInvitationAllowed } from "../cloud-gates";
 import { newInvitationExpiry } from "../constants";
 import {
   assertCanManageInvitation,
@@ -25,15 +26,20 @@ async function resendProjectInvitation({
   actorUserId: string;
   invitationId: string;
 }) {
-  const invitation = await requirePendingProjectInvitation(
-    access,
-    invitationId,
-  );
-  await assertCanManageInvitation(access, actorUserId, invitation);
+  const first = await requirePendingProjectInvitation(access, invitationId);
+  await assertCloudInvitationAllowed(actorUserId, first.email);
 
   const expiresAt = newInvitationExpiry();
-  const updated = await db.transaction(async (tx) => {
-    await lockInvitationEmail(tx, access.workspaceId, invitation.email);
+  // Read and checked again under the lock: the roles the caller is judged on
+  // are the ones the email is sent for.
+  const extended = await db.transaction(async (tx) => {
+    await lockInvitationEmail(tx, access.workspaceId, first.email);
+    const current = await requirePendingProjectInvitation(
+      access,
+      invitationId,
+      tx,
+    );
+    await assertCanManageInvitation(access, actorUserId, current);
     const rows = await tx
       .update(schema.invitationTable)
       .set({ expiresAt })
@@ -45,9 +51,9 @@ async function resendProjectInvitation({
         ),
       )
       .returning({ id: schema.invitationTable.id });
-    return rows.length > 0;
+    return rows.length > 0 ? current : null;
   });
-  if (!updated) {
+  if (!extended) {
     throw invitationError(
       409,
       INVITATION_ERROR_CODES.expired,
@@ -57,12 +63,12 @@ async function resendProjectInvitation({
 
   const delivery = await deliverInvitationEmail({
     invitationId,
-    email: invitation.email,
+    email: first.email,
     workspaceId: access.workspaceId,
     inviterUserId: actorUserId,
   });
 
-  return { id: invitation.id, email: invitation.email, expiresAt, ...delivery };
+  return { id: invitationId, email: first.email, expiresAt, ...delivery };
 }
 
 export default resendProjectInvitation;

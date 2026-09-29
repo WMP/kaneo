@@ -7,6 +7,7 @@ import { auth } from "../../apps/api/src/auth";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { upsertInvitationProject } from "../../apps/api/src/project-invitation/invitation-projects";
+import { lockInvitationEmail } from "../../apps/api/src/project-invitation/queries";
 import { mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import {
@@ -920,6 +921,73 @@ describe("DELETE /project/{id}/invitations/{invitationId}", () => {
     expect(await statusOf(workspaceInvitation.id)).toBe("pending");
   });
 
+  it("lets a caller with invitation:cancel remove an invitation whose roles no longer exist", async () => {
+    const w = await buildWorld();
+    const inert = await seedInvitation(w, {
+      email: "inert@example.com",
+      role: "deleted-workspace-role",
+      projects: [[w.project.id, "deleted-project-role"]],
+    });
+    // A role that still exists above the caller's stays out of reach, and so
+    // does a name with an owner part that would still resolve.
+    const stillHigh = await seedInvitation(w, {
+      email: "high@example.com",
+      role: "admin",
+      projects: [[w.project.id, "deleted-project-role"]],
+    });
+    const ownerPart = await seedInvitation(w, {
+      email: "ownerpart@example.com",
+      role: "deleted-workspace-role,owner",
+      projects: [[w.project.id, "deleted-project-role"]],
+    });
+    as(w.canceler);
+    await expectCode(
+      await cancel(w, stillHigh.id),
+      403,
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    await expectCode(
+      await cancel(w, ownerPart.id),
+      403,
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    const response = await cancel(w, inert.id);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ canceled: true });
+    expect(await statusOf(inert.id)).toBe("canceled");
+    expect(await statusOf(stillHigh.id)).toBe("pending");
+  });
+
+  it("checks the roles under the lock, not on an earlier read", async () => {
+    const w = await buildWorld();
+    const invitation = await seedInvitation(w, {
+      email: "race@example.com",
+      role: "viewer",
+      projects: [[w.project.id, "reader"]],
+    });
+    as(w.canceler);
+    let pending: Promise<Response> | undefined;
+    // While the lock is held, the invitation is raised above the caller.
+    await db.transaction(async (tx) => {
+      await lockInvitationEmail(tx, w.workspaceId, "race@example.com");
+      pending = cancel(w, invitation.id);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await tx
+        .update(schema.invitationProjectTable)
+        .set({ role: "member" })
+        .where(eq(schema.invitationProjectTable.invitationId, invitation.id));
+    });
+    await expectCode(
+      (await pending) as Response,
+      403,
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(await projectRows(invitation.id)).toMatchObject([
+      { role: "member" },
+    ]);
+    expect(await statusOf(invitation.id)).toBe("pending");
+  });
+
   it("does not confirm invitations of other projects, states or workspaces", async () => {
     const w = await buildWorld();
     const elsewhere = await seedInvitation(w, {
@@ -1044,6 +1112,74 @@ describe("POST /project/{id}/invitations/{invitationId}/resend", () => {
       .from(schema.invitationTable)
       .where(eq(schema.invitationTable.id, expired.id));
     expect(row.expiresAt.getTime()).toBeLessThan(Date.now());
+  });
+
+  it("applies the cloud gates to a re-send", async () => {
+    const w = await buildWorld();
+    const disposable = await seedInvitation(w, {
+      email: "someone@mailinator.com",
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    const ordinary = await seedInvitation(w, {
+      email: "ordinary@example.com",
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    const sendSpy = vi.spyOn(email, "sendWorkspaceInvitationEmail");
+    const expiryOf = async (id: string) =>
+      (
+        await db
+          .select({ expiresAt: schema.invitationTable.expiresAt })
+          .from(schema.invitationTable)
+          .where(eq(schema.invitationTable.id, id))
+      )[0]?.expiresAt.getTime();
+    const before = await expiryOf(disposable.id);
+
+    vi.stubEnv("KANEO_CLOUD", "true");
+    as(w.owner.user);
+    await expectCode(
+      await resend(w, disposable.id),
+      400,
+      "DISPOSABLE_EMAIL_NOT_ALLOWED",
+    );
+    expect(await expiryOf(disposable.id)).toBe(before);
+
+    await db
+      .update(schema.userTable)
+      .set({ isAnonymous: true })
+      .where(eq(schema.userTable.id, w.owner.user.id));
+    await expectCode(await resend(w, ordinary.id), 403, "GUEST_CANNOT_INVITE");
+    expect(sendSpy).not.toHaveBeenCalled();
+
+    // Self-hosted: neither gate applies.
+    vi.unstubAllEnvs();
+    expect((await resend(w, disposable.id)).status).toBe(200);
+  });
+
+  it("checks the roles under the lock, not on an earlier read", async () => {
+    const w = await buildWorld();
+    const invitation = await seedInvitation(w, {
+      email: "race@example.com",
+      role: "viewer",
+      projects: [[w.project.id, "reader"]],
+    });
+    const sendSpy = vi.spyOn(email, "sendWorkspaceInvitationEmail");
+    as(w.inviter);
+    let pending: Promise<Response> | undefined;
+    await db.transaction(async (tx) => {
+      await lockInvitationEmail(tx, w.workspaceId, "race@example.com");
+      pending = resend(w, invitation.id);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await tx
+        .update(schema.invitationTable)
+        .set({ role: "admin" })
+        .where(eq(schema.invitationTable.id, invitation.id));
+    });
+    await expectCode(
+      (await pending) as Response,
+      403,
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(sendSpy).not.toHaveBeenCalled();
   });
 
   it("needs invitation:create and roles within the caller's permissions", async () => {

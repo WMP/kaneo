@@ -31,8 +31,9 @@ export type ProjectInvitationRow = {
 export async function requirePendingProjectInvitation(
   access: ProjectAccess,
   invitationId: string,
+  executor: Pick<typeof db, "select"> = db,
 ): Promise<ProjectInvitationRow> {
-  const [row] = await db
+  const [row] = await executor
     .select({
       id: schema.invitationTable.id,
       email: schema.invitationTable.email,
