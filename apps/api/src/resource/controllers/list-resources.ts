@@ -2,11 +2,12 @@ import { and, asc, eq } from "drizzle-orm";
 import db from "../../database";
 import { resourceTable } from "../../database/schema";
 import { describeResources } from "../describe-resources";
+import type { ResourceViewer } from "../resource-viewer";
 import type { ResourceKind } from "../schema";
 
 async function listResources(
   workspaceId: string,
-  viewerUserId: string,
+  viewer: ResourceViewer,
   kind?: ResourceKind,
 ) {
   const rows = await db
@@ -21,7 +22,11 @@ async function listResources(
         : eq(resourceTable.workspaceId, workspaceId),
     )
     .orderBy(asc(resourceTable.createdAt), asc(resourceTable.id));
-  return describeResources(rows, { userId: viewerUserId, workspaceId });
+  return describeResources(rows, {
+    userId: viewer.userId,
+    canSeeInvitations: viewer.canSeeInvitations,
+    workspaceId,
+  });
 }
 
 export default listResources;

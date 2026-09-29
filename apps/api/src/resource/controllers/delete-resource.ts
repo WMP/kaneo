@@ -5,13 +5,14 @@ import { resourceTable, taskAssignmentTable } from "../../database/schema";
 import { recomputeTaskPrimaryAssignees } from "../../task/assignments";
 import { describeResources } from "../describe-resources";
 import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
+import type { ResourceViewer } from "../resource-viewer";
 
 // Deleting a resource cascades away its assignment rows (FK onDelete:
 // cascade), but a task's primary-assignee mirror only ever mirrors a USER
 // target, so no task's `userId` needs recomputing here. This still reads the
 // affected task ids first — a resource can be assigned to several tasks — in
 // case a later phase adds a resource-aware mirror.
-async function deleteResource(id: string, viewerUserId: string) {
+async function deleteResource(id: string, viewer: ResourceViewer) {
   const affectedTasks = await db
     .select({ taskId: taskAssignmentTable.taskId })
     .from(taskAssignmentTable)
@@ -39,7 +40,8 @@ async function deleteResource(id: string, viewerUserId: string) {
   );
 
   const [described] = await describeResources([deleted], {
-    userId: viewerUserId,
+    userId: viewer.userId,
+    canSeeInvitations: viewer.canSeeInvitations,
     workspaceId: deleted.workspaceId,
   });
   if (!described) {

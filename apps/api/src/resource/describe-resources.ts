@@ -3,15 +3,18 @@ import db from "../database";
 import { invitationTable, type resourceTable } from "../database/schema";
 import { accessibleProjectIds } from "../utils/project-access";
 import getWorkspaceMembers from "../workspace/controllers/get-workspace-members";
+import type { ResourceViewer } from "./resource-viewer";
 
 type ResourceRow = typeof resourceTable.$inferSelect;
 
 export type ResourceInvitationStatus = "pending" | "expired";
 
 export type DescribedResource = Omit<ResourceRow, "invitationId"> & {
-  // The linked account, when the caller may see that member (the same list
-  // `GET /workspace/{id}/members` answers with). `userId` is set for every
-  // linked resource; `user` is null for a caller who cannot see the member.
+  // True when the resource is linked to an account, whoever the caller is.
+  // `userId` and `user` name the account only for a caller who may see that
+  // member (the same list `GET /workspace/{id}/members` answers with); for
+  // anybody else both are null and only `linked` tells.
+  linked: boolean;
   user: {
     id: string;
     name: string;
@@ -20,7 +23,9 @@ export type DescribedResource = Omit<ResourceRow, "invitationId"> & {
   } | null;
   // The invitation sent from the resource, while it can still be accepted
   // (`pending`) or is past its expiry (`expired`). Canceled, rejected and
-  // accepted invitations count as none. The invitation id is not exposed.
+  // accepted invitations count as none. The invitation id is not exposed, and
+  // only a caller who may invite (`ResourceViewer.canSeeInvitations`) sees the
+  // state at all.
   invitation: { status: ResourceInvitationStatus; expiresAt: Date } | null;
 };
 
@@ -29,7 +34,9 @@ export type DescribedResource = Omit<ResourceRow, "invitationId"> & {
 // members the caller cannot see.
 export async function describeResources(
   rows: ResourceRow[],
-  viewer: { userId: string; workspaceId: string },
+  viewer: Pick<ResourceViewer, "userId" | "canSeeInvitations"> & {
+    workspaceId: string;
+  },
 ): Promise<DescribedResource[]> {
   const linkedIds = [
     ...new Set(rows.flatMap((row) => (row.userId ? [row.userId] : []))),
@@ -57,9 +64,14 @@ export async function describeResources(
     ]),
   );
 
-  const invitationIds = rows.flatMap((row) =>
-    row.invitationId && !row.userId ? [row.invitationId] : [],
-  );
+  const wantsInvitations = rows.some((row) => row.invitationId && !row.userId);
+  const mayShowInvitations =
+    wantsInvitations && (await viewer.canSeeInvitations());
+  const invitationIds = mayShowInvitations
+    ? rows.flatMap((row) =>
+        row.invitationId && !row.userId ? [row.invitationId] : [],
+      )
+    : [];
   const invitationsById = new Map<
     string,
     { status: string; expiresAt: Date }
@@ -88,9 +100,13 @@ export async function describeResources(
     const invitation = invitationId
       ? invitationsById.get(invitationId)
       : undefined;
+    const user = row.userId ? (membersById.get(row.userId) ?? null) : null;
     return {
       ...row,
-      user: row.userId ? (membersById.get(row.userId) ?? null) : null,
+      linked: row.userId !== null,
+      // Not visible to this caller: no identity, not even the id.
+      userId: user ? row.userId : null,
+      user,
       invitation:
         invitation && invitation.status === "pending" && !row.userId
           ? {

@@ -1086,11 +1086,79 @@ describe("linking a resource to a member", () => {
     // manages no members.
     const reader = await addMember("viewer", [{ project: P, role: "viewer" }]);
     const listed = (await listResources(reader)).find((r) => r.id === alice.id);
-    expect(listed?.userId).toBe(hidden.id);
+    // The link is known ("linked"), the account is not: no id, no identity.
+    expect(listed?.linked).toBe(true);
+    expect(listed?.userId).toBeNull();
     expect(listed?.user).toBeNull();
+    expect(JSON.stringify(listed)).not.toContain(hidden.id);
+    expect(JSON.stringify(listed)).not.toContain(hidden.email);
 
     const asOwner = (await listResources(owner)).find((r) => r.id === alice.id);
+    expect(asOwner?.linked).toBe(true);
+    expect(asOwner?.userId).toBe(hidden.id);
     expect(asOwner?.user).toMatchObject({ id: hidden.id, email: hidden.email });
+  });
+
+  it("says an unlinked resource is not linked", async () => {
+    const listed = (await listResources(owner)).find((r) => r.id === alice.id);
+    expect(listed?.linked).toBe(false);
+    expect(listed?.userId).toBeNull();
+  });
+
+  it("does not reveal the link in the single-resource responses either", async () => {
+    const hidden = await addMember("member", [{ project: R, role: "member" }]);
+    await db
+      .update(schema.resourceTable)
+      .set({ userId: hidden.id })
+      .where(eq(schema.resourceTable.id, alice.id));
+    // Manages resources (project:update) but sees no member of R.
+    const manager = await addMember(
+      "resource_manager",
+      [{ project: P, role: "viewer" }],
+      "manager",
+    );
+    const response = await request(
+      manager.cookie,
+      "PATCH",
+      `/api/resource/${alice.id}`,
+      { name: "Alice again" },
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.linked).toBe(true);
+    expect(body.userId).toBeNull();
+    expect(body.user).toBeNull();
+  });
+});
+
+describe("who sees the invitation state of a resource", () => {
+  async function invited() {
+    expect((await invite(owner)).status).toBe(201);
+  }
+  const stateFor = async (actor: Actor) =>
+    (await listResources(actor)).find((r) => r.id === alice.id)?.invitation;
+
+  it("shows it to somebody who can invite in the workspace role", async () => {
+    await invited();
+    expect(await stateFor(owner)).toMatchObject({ status: "pending" });
+    const admin = await addMember("admin", [], "admin");
+    expect(await stateFor(admin)).toMatchObject({ status: "pending" });
+  });
+
+  it("shows it to somebody who can invite in at least one project", async () => {
+    await invited();
+    const inviter = await addMember("viewer", [
+      { project: P, role: "inviter" },
+    ]);
+    expect(await stateFor(inviter)).toMatchObject({ status: "pending" });
+  });
+
+  it("hides it from somebody who can invite nowhere", async () => {
+    await invited();
+    const reader = await addMember("viewer", [{ project: P, role: "viewer" }]);
+    expect(await stateFor(reader)).toBeNull();
+    const manager = await addMember("resource_manager", [], "manager");
+    expect(await stateFor(manager)).toBeNull();
   });
 });
 

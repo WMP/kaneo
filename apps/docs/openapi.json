@@ -5232,12 +5232,16 @@
               "null"
             ]
           },
+          "linked": {
+            "type": "boolean",
+            "description": "True when the resource is linked to a Kaneo account (the person accepted an invitation sent from it, or it was linked to a member). Assignments of the resource in projects the account can open were moved to the account. True for every caller, even one who may not see who the account is."
+          },
           "userId": {
             "type": [
               "string",
               "null"
             ],
-            "description": "The linked Kaneo account, if any. Set when the person accepts an invitation sent from the resource, or by linking the resource to a member. Assignments of the resource in projects the account can open were moved to the account."
+            "description": "The linked account's id, only for a caller who may see that member (the members list rules). Null when the resource is not linked, and also when it is linked to somebody the caller cannot see: `linked` tells."
           },
           "user": {
             "type": [
@@ -5291,7 +5295,7 @@
               "status",
               "expiresAt"
             ],
-            "description": "The invitation sent from the resource, while it can still be accepted (pending) or is past its expiry (expired). Null when there is none, or it was canceled or rejected."
+            "description": "The invitation sent from the resource, while it can still be accepted (pending) or is past its expiry (expired). Null when there is none, or it was canceled or rejected, and for a caller who may not invite (no invitation:create in the workspace role or in any project they can open)."
           },
           "createdAt": {
             "type": "string",
@@ -5308,6 +5312,7 @@
           "kind",
           "name",
           "email",
+          "linked",
           "userId",
           "user",
           "invitation",
@@ -21514,7 +21519,7 @@
           "Resources"
         ],
         "summary": "List workspace resources",
-        "description": "List a workspace's assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind. A person resource can be linked to a Kaneo account: `userId` is that account and `user` its name, email and image when the caller may see that member; `invitation` is the state of the invitation sent from the resource.",
+        "description": "List a workspace's assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind. A person resource can be linked to a Kaneo account: `linked` says so for every caller, while `userId` and `user` (name, email, image) name the account only when the caller may see that member (otherwise both are null). `invitation` is the state of the invitation sent from the resource, only for a caller who may invite (invitation:create in the workspace role or in at least one project), else null.",
         "parameters": [
           {
             "schema": {

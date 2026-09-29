@@ -4,11 +4,12 @@ import db from "../../database";
 import { resourceTable, workspaceTable } from "../../database/schema";
 import { describeResources } from "../describe-resources";
 import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
+import type { ResourceViewer } from "../resource-viewer";
 import type { ResourceKind } from "../schema";
 
 async function createResource(
   workspaceId: string,
-  viewerUserId: string,
+  viewer: ResourceViewer,
   kind: ResourceKind,
   name: string,
   email?: string,
@@ -60,7 +61,8 @@ async function createResource(
   }
 
   const [described] = await describeResources([created], {
-    userId: viewerUserId,
+    userId: viewer.userId,
+    canSeeInvitations: viewer.canSeeInvitations,
     workspaceId,
   });
   if (!described) {

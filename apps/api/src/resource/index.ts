@@ -16,6 +16,7 @@ import listResources from "./controllers/list-resources";
 import updateResource from "./controllers/update-resource";
 import { describeResources } from "./describe-resources";
 import { linkResourceToMember, unlinkResource } from "./link-resource";
+import { resourceViewer } from "./resource-viewer";
 import {
   codedErrorResponse,
   resourceInvitationSchema,
@@ -54,7 +55,7 @@ const listResourcesRoute = createRoute({
   tags: ["Resources"],
   summary: "List workspace resources",
   description:
-    "List a workspace's assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind. A person resource can be linked to a Kaneo account: `userId` is that account and `user` its name, email and image when the caller may see that member; `invitation` is the state of the invitation sent from the resource.",
+    "List a workspace's assignable resources (people, equipment, material). Pass ?kind= to restrict to one kind. A person resource can be linked to a Kaneo account: `linked` says so for every caller, while `userId` and `user` (name, email, image) name the account only when the caller may see that member (otherwise both are null). `invitation` is the state of the invitation sent from the resource, only for a caller who may invite (invitation:create in the workspace role or in at least one project), else null.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ project: ["read"] }),
@@ -267,23 +268,32 @@ const resource = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(listResourcesRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     const { kind } = c.req.valid("query");
-    return c.json(await listResources(workspaceId, c.get("userId"), kind), 200);
+    return c.json(
+      await listResources(workspaceId, resourceViewer(c), kind),
+      200,
+    );
   })
   .openapi(createResourceRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     const { kind, name, email } = c.req.valid("json");
     return c.json(
-      await createResource(workspaceId, c.get("userId"), kind, name, email),
+      await createResource(workspaceId, resourceViewer(c), kind, name, email),
       200,
     );
   })
   .openapi(updateResourceRoute, async (c) => {
     const { id } = c.req.valid("param");
     const { name, email } = c.req.valid("json");
-    return c.json(await updateResource(id, c.get("userId"), name, email), 200);
+    return c.json(
+      await updateResource(id, resourceViewer(c), name, email),
+      200,
+    );
   })
   .openapi(deleteResourceRoute, async (c) =>
-    c.json(await deleteResource(c.req.valid("param").id, c.get("userId")), 200),
+    c.json(
+      await deleteResource(c.req.valid("param").id, resourceViewer(c)),
+      200,
+    ),
   )
   .openapi(inviteResourceRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -324,7 +334,7 @@ const resource = apiRouter<BaseVariables & { workspaceId: string }>()
         actorUserId: c.get("userId"),
       });
     const [described] = await describeResources([resource], {
-      userId: c.get("userId"),
+      ...resourceViewer(c),
       workspaceId,
     });
     if (!described) throw new Error("Failed to describe the linked resource");
@@ -338,7 +348,7 @@ const resource = apiRouter<BaseVariables & { workspaceId: string }>()
     const workspaceId = c.get("workspaceId");
     const unlinked = await unlinkResource({ resourceId: id, workspaceId });
     const [described] = await describeResources([unlinked], {
-      userId: c.get("userId"),
+      ...resourceViewer(c),
       workspaceId,
     });
     if (!described) throw new Error("Failed to describe the resource");

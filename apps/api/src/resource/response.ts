@@ -12,9 +12,13 @@ export const resourceSchema = z
     }),
     name: z.string(),
     email: z.string().nullable(),
+    linked: z.boolean().openapi({
+      description:
+        "True when the resource is linked to a Kaneo account (the person accepted an invitation sent from it, or it was linked to a member). Assignments of the resource in projects the account can open were moved to the account. True for every caller, even one who may not see who the account is.",
+    }),
     userId: z.string().nullable().openapi({
       description:
-        "The linked Kaneo account, if any. Set when the person accepts an invitation sent from the resource, or by linking the resource to a member. Assignments of the resource in projects the account can open were moved to the account.",
+        "The linked account's id, only for a caller who may see that member (the members list rules). Null when the resource is not linked, and also when it is linked to somebody the caller cannot see: `linked` tells.",
     }),
     user: z
       .object({
@@ -36,7 +40,7 @@ export const resourceSchema = z
       .nullable()
       .openapi({
         description:
-          "The invitation sent from the resource, while it can still be accepted (pending) or is past its expiry (expired). Null when there is none, or it was canceled or rejected.",
+          "The invitation sent from the resource, while it can still be accepted (pending) or is past its expiry (expired). Null when there is none, or it was canceled or rejected, and for a caller who may not invite (no invitation:create in the workspace role or in any project they can open).",
       }),
     createdAt: responseTimestamp,
     updatedAt: responseTimestamp,

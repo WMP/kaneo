@@ -4,13 +4,14 @@ import db from "../../database";
 import { resourceTable } from "../../database/schema";
 import { describeResources } from "../describe-resources";
 import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
+import type { ResourceViewer } from "../resource-viewer";
 
 // Kind is immutable after creation — changing what a resource *is* (person vs
 // equipment vs material) would retroactively change how it counts in the
 // workload split, so it isn't offered here.
 async function updateResource(
   id: string,
-  viewerUserId: string,
+  viewer: ResourceViewer,
   name?: string,
   email?: string | null,
 ) {
@@ -68,7 +69,8 @@ async function updateResource(
   }
 
   const [described] = await describeResources([updated], {
-    userId: viewerUserId,
+    userId: viewer.userId,
+    canSeeInvitations: viewer.canSeeInvitations,
     workspaceId: updated.workspaceId,
   });
   if (!described) {
