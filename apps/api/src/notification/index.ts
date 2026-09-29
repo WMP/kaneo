@@ -8,6 +8,7 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
+import type { AssigneeChangeSource } from "../task/assignments";
 import clearNotifications from "./controllers/clear-notifications";
 import createNotification from "./controllers/create-notification";
 import getNotifications from "./controllers/get-notifications";
@@ -232,7 +233,7 @@ export type TaskAssigneeChangedEventData = {
   // it: "resource_link" (a resource's assignments moved to the account it was
   // linked to). Such a change reaches the activity feed, realtime clients and
   // integrations like any assignee change, but nobody is notified about it.
-  source?: string;
+  source?: AssigneeChangeSource;
   title: string;
 };
 

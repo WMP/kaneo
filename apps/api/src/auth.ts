@@ -54,6 +54,7 @@ import {
   INVITATION_EXPIRES_IN_SECONDS,
   PENDING_INVITATION_LIMIT,
 } from "./project-invitation/constants";
+import { unlinkUserResources } from "./resource/link-resource";
 import deleteAccountData from "./user/controllers/delete-account-data";
 import { resolveAuthSecret } from "./utils/auth-secret";
 import {
@@ -571,6 +572,9 @@ export const auth = betterAuth({
         // no organization hook and is handled in `hooks.after`.
         beforeRemoveMember: async ({ member, organization }) => {
           await removeUserProjectMemberships(member.userId, organization.id);
+          // The resources linked to this account stop being linked (nothing
+          // moves back).
+          await unlinkUserResources(member.userId, organization.id);
         },
         afterRemoveMember: async ({ member }) => {
           if (member?.userId && member.organizationId) {
@@ -913,6 +917,7 @@ export const auth = betterAuth({
             typeof organizationId === "string"
           ) {
             await removeUserProjectMemberships(userId, organizationId);
+            await unlinkUserResources(userId, organizationId);
             await closeUserWorkspaceConnections(userId, organizationId);
           }
         }

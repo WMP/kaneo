@@ -201,3 +201,26 @@ export async function unlinkResource({
   }
   return updated;
 }
+
+// A person who leaves a workspace (or is removed) takes their link with them:
+// the resources linked to that account in that workspace become plain resources
+// again (own workload row, can be invited or linked anew). Nothing moves back:
+// what was moved stays with the account, and what stayed on the resource is
+// still there. Account deletion needs no call: the column is `ON DELETE SET
+// NULL`.
+export async function unlinkUserResources(
+  userId: string,
+  workspaceId: string,
+): Promise<number> {
+  const unlinked = await db
+    .update(resourceTable)
+    .set({ userId: null })
+    .where(
+      and(
+        eq(resourceTable.userId, userId),
+        eq(resourceTable.workspaceId, workspaceId),
+      ),
+    )
+    .returning({ id: resourceTable.id });
+  return unlinked.length;
+}

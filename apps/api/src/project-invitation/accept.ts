@@ -1,7 +1,10 @@
 import { APIError } from "better-auth/api";
 import { and, eq } from "drizzle-orm";
 import db, { schema } from "../database";
-import { linkInvitedResources } from "../resource/link-resource";
+import {
+  linkInvitedResources,
+  unlinkUserResources,
+} from "../resource/link-resource";
 import { publishMovedAssignments } from "../resource/transfer-assignments";
 import {
   isFullAccess,
@@ -25,7 +28,7 @@ import { applyInvitationProjects } from "./apply-invitation-projects";
 // project memberships.
 
 type AcceptInput = {
-  invitation: { id: string; organizationId: string; inviterId?: string };
+  invitation: { id: string; organizationId: string };
   user: { id: string };
 };
 
@@ -72,6 +75,8 @@ export async function beforeAcceptProjectInvitation({
     });
   }
   await removeUserProjectMemberships(user.id, invitation.organizationId);
+  // Likewise a link an earlier membership left behind on a resource.
+  await unlinkUserResources(user.id, invitation.organizationId);
 }
 
 // Runs after Better Auth accepted the invitation and created the member. Turns
@@ -125,7 +130,9 @@ export async function afterAcceptProjectInvitation({
     await publishMovedAssignments({
       moves,
       userId: user.id,
-      actorUserId: invitation.inviterId ?? user.id,
+      // The account itself: it is the one whose assignments were re-attributed
+      // (an extended invitation can have been sent by somebody else).
+      actorUserId: user.id,
     });
   } catch (error) {
     console.error(

@@ -11,6 +11,11 @@ import {
 // resource (person/equipment/material) from `ganttpro_resource`. Exactly one
 // of the two keys is present, mirroring the `ganttpro_assignment_target`
 // check constraint on the row this becomes.
+// Why an assignee change was published, when it is not an ordinary assignment:
+// "resource_link" is a resource's assignments moving to the account it was
+// linked to (the account's own tasks re-attributed, not new work).
+export type AssigneeChangeSource = "resource_link";
+
 export type AssigneeTarget = { userId: string } | { resourceId: string };
 
 function isUserTarget(target: AssigneeTarget): target is { userId: string } {

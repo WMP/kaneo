@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import db from "../database";
 import {
   projectTable,
@@ -7,7 +7,10 @@ import {
   userTable,
 } from "../database/schema";
 import { publishEvent } from "../events";
-import { recomputeTaskPrimaryAssignees } from "../task/assignments";
+import {
+  type AssigneeChangeSource,
+  recomputeTaskPrimaryAssignees,
+} from "../task/assignments";
 import { projectScopeCondition } from "../utils/project-scope-filters";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -74,91 +77,84 @@ export async function moveResourceAssignmentsToUser(
   if (resourceIds.length === 0) return [];
 
   const scope = projectScopeCondition(projectTable.id, projectScope);
-  const rows = await tx
-    .select({
-      id: taskAssignmentTable.id,
-      taskId: taskAssignmentTable.taskId,
-      units: taskAssignmentTable.units,
-      work: taskAssignmentTable.work,
-      projectId: taskTable.projectId,
-      title: taskTable.title,
-      primaryId: taskTable.userId,
-    })
-    .from(taskAssignmentTable)
-    .innerJoin(taskTable, eq(taskAssignmentTable.taskId, taskTable.id))
-    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+  const readOwnRows = () =>
+    tx
+      .select({
+        id: taskAssignmentTable.id,
+        taskId: taskAssignmentTable.taskId,
+        units: taskAssignmentTable.units,
+        work: taskAssignmentTable.work,
+        createdAt: taskAssignmentTable.createdAt,
+        projectId: taskTable.projectId,
+        title: taskTable.title,
+        primaryId: taskTable.userId,
+      })
+      .from(taskAssignmentTable)
+      .innerJoin(taskTable, eq(taskAssignmentTable.taskId, taskTable.id))
+      .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+      .where(
+        and(
+          inArray(taskAssignmentTable.resourceId, resourceIds),
+          eq(projectTable.workspaceId, workspaceId),
+          ...(scope ? [scope] : []),
+        ),
+      )
+      .orderBy(asc(taskAssignmentTable.createdAt), asc(taskAssignmentTable.id));
+
+  // Lock the affected tasks first (in id order, so two transfers cannot
+  // deadlock; `FOR NO KEY UPDATE` still lets an assignment insert through), then
+  // read the rows that will move. The write below does not depend on what else
+  // is on the task: it is an upsert.
+  const candidates = await readOwnRows();
+  if (candidates.length === 0) return [];
+  await tx
+    .select({ id: taskTable.id })
+    .from(taskTable)
     .where(
-      and(
-        inArray(taskAssignmentTable.resourceId, resourceIds),
-        eq(projectTable.workspaceId, workspaceId),
-        ...(scope ? [scope] : []),
-      ),
+      inArray(taskTable.id, [...new Set(candidates.map((row) => row.taskId))]),
     )
-    .orderBy(asc(taskAssignmentTable.createdAt), asc(taskAssignmentTable.id))
-    .for("update", { of: taskAssignmentTable });
+    .orderBy(asc(taskTable.id))
+    .for("no key update");
+  const rows = await readOwnRows().for("update", { of: taskAssignmentTable });
   if (rows.length === 0) return [];
 
   const taskIds = [...new Set(rows.map((row) => row.taskId))];
-  const existingRows = await tx
-    .select({
-      id: taskAssignmentTable.id,
-      taskId: taskAssignmentTable.taskId,
-      units: taskAssignmentTable.units,
-      work: taskAssignmentTable.work,
-    })
-    .from(taskAssignmentTable)
-    .where(
-      and(
-        eq(taskAssignmentTable.userId, userId),
-        inArray(taskAssignmentTable.taskId, taskIds),
-      ),
-    )
-    .for("update");
-  const existingByTask = new Map(existingRows.map((row) => [row.taskId, row]));
-
   const moved: MovedAssignment[] = [];
   for (const taskId of taskIds) {
     const own = rows.filter((row) => row.taskId === taskId);
     const [head] = own;
     if (!head) continue;
-    const existing = existingByTask.get(taskId);
-    const merged = mergeAssignmentAllocation([
-      ...(existing ? [existing] : []),
-      ...own,
-    ]);
+    const merged = mergeAssignmentAllocation(own);
 
-    if (existing) {
-      if (existing.units !== merged.units || existing.work !== merged.work) {
-        await tx
-          .update(taskAssignmentTable)
-          .set({ units: merged.units, work: merged.work })
-          .where(eq(taskAssignmentTable.id, existing.id));
-      }
-      await tx.delete(taskAssignmentTable).where(
-        inArray(
-          taskAssignmentTable.id,
-          own.map((row) => row.id),
-        ),
-      );
-    } else {
-      // The oldest resource row becomes the account's row; the others (another
-      // resource linked to the same account) are folded into it.
-      await tx
-        .update(taskAssignmentTable)
-        .set({
-          userId,
-          resourceId: null,
-          units: merged.units,
-          work: merged.work,
-        })
-        .where(eq(taskAssignmentTable.id, head.id));
-      const rest = own.slice(1).map((row) => row.id);
-      if (rest.length > 0) {
-        await tx
-          .delete(taskAssignmentTable)
-          .where(inArray(taskAssignmentTable.id, rest));
-      }
-    }
+    // The oldest resource row's creation time is kept, so the order of the
+    // task's assignees (and with it the primary mirror) stays stable. When the
+    // account is on the task already, possibly added a moment ago by somebody
+    // else, the conflict clause merges into that row with the same rule
+    // (`mergeAssignmentAllocation`, a tie keeps the account's row) and no unique
+    // violation can abort the transfer.
+    const [written] = await tx
+      .insert(taskAssignmentTable)
+      .values({
+        taskId,
+        userId,
+        units: merged.units,
+        work: merged.work,
+        createdAt: head.createdAt,
+      })
+      .onConflictDoUpdate({
+        target: [taskAssignmentTable.taskId, taskAssignmentTable.userId],
+        set: {
+          units: sql`GREATEST("ganttpro_task_assignment"."units", excluded."units")`,
+          work: sql`CASE WHEN excluded."units" > "ganttpro_task_assignment"."units" THEN COALESCE(excluded."work", "ganttpro_task_assignment"."work") ELSE COALESCE("ganttpro_task_assignment"."work", excluded."work") END`,
+        },
+      })
+      .returning({ inserted: sql<boolean>`(xmax = 0)` });
+    await tx.delete(taskAssignmentTable).where(
+      inArray(
+        taskAssignmentTable.id,
+        own.map((row) => row.id),
+      ),
+    );
 
     moved.push({
       taskId,
@@ -166,7 +162,7 @@ export async function moveResourceAssignmentsToUser(
       title: head.title,
       previousPrimaryId: head.primaryId,
       newPrimaryId: head.primaryId,
-      userAdded: !existing,
+      userAdded: written?.inserted ?? true,
     });
   }
 
@@ -243,7 +239,7 @@ export async function publishMovedAssignments({
         removedAssigneeIds: [],
         title: move.title,
         type: "assignee_changed",
-        source: "resource_link",
+        source: "resource_link" satisfies AssigneeChangeSource,
       });
     }
   } catch (error) {
