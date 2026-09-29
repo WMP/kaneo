@@ -14,6 +14,7 @@ import {
 import { shortcuts } from "@/constants/shortcuts";
 import useGetProject from "@/hooks/queries/project/use-get-project";
 import useGetTask from "@/hooks/queries/task/use-get-task";
+import { useProjectAccessRevoked } from "@/hooks/use-project-access-revoked";
 import { useProjectWebSocket } from "@/hooks/use-project-websocket";
 
 type TaskLayoutProps = {
@@ -38,7 +39,8 @@ export default function TaskLayout({
   const { data: project } = useGetProject({ id: projectId, workspaceId });
   const { data: task } = useGetTask(taskId);
 
-  useProjectWebSocket(projectId);
+  const handleAccessRevoked = useProjectAccessRevoked(workspaceId);
+  useProjectWebSocket(projectId, { onAccessRevoked: handleAccessRevoked });
 
   const taskLabel =
     project?.slug && task?.number != null

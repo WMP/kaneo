@@ -60,6 +60,10 @@
 			"checking": "Sprawdzanie…",
 			"restored": "Połączenie przywrócone. Dane odświeżone."
 		},
+		"projectAccess": {
+			"changed": "Twoje uprawnienia w tym projekcie zostały zmienione.",
+			"lost": "Nie masz już dostępu do tego projektu."
+		},
 		"error": {
 			"title": "Coś poszło nie tak",
 			"description": "Strona niespodziewanie się zawiesiła. Odświeżenie powinno pomóc.",

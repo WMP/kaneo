@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { shortcuts } from "@/constants/shortcuts";
 import useGetProject from "@/hooks/queries/project/use-get-project";
+import { useProjectAccessRevoked } from "@/hooks/use-project-access-revoked";
 import { useProjectWebSocket } from "@/hooks/use-project-websocket";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
@@ -53,7 +54,8 @@ export default function ProjectLayout({
     useState(false);
   const { background } = useBackgroundStore();
 
-  useProjectWebSocket(projectId);
+  const handleAccessRevoked = useProjectAccessRevoked(workspaceId);
+  useProjectWebSocket(projectId, { onAccessRevoked: handleAccessRevoked });
   // Gated once here; the header components render "Add project" only when
   // they receive a handler.
   const { canCreateProjects } = useWorkspacePermission();

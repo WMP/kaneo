@@ -66,6 +66,10 @@
 			"checking": "Checking…",
 			"restored": "Connection restored. Data refreshed."
 		},
+		"projectAccess": {
+			"changed": "Your permissions in this project changed.",
+			"lost": "You no longer have access to this project."
+		},
 		"error": {
 			"title": "Something went wrong",
 			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",

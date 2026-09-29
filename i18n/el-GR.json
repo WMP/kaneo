@@ -171,6 +171,10 @@
 			"retry": "Retry now",
 			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
 			"serverUnreachableTitle": "Can't reach the Kaneo server"
+		},
+		"projectAccess": {
+			"changed": "Your permissions in this project changed.",
+			"lost": "You no longer have access to this project."
 		}
 	},
 	"auth": {

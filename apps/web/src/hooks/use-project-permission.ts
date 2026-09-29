@@ -1,18 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
-import getProjectAccess, {
-  type ProjectCapabilities,
-} from "@/fetchers/project/get-project-access";
-import { HttpError } from "@/lib/http-error";
+import type { ProjectCapabilities } from "@/fetchers/project/get-project-access";
+import {
+  isProjectAccessDenied,
+  projectAccessQueryKey,
+  projectAccessQueryOptions,
+} from "@/lib/project-access-query";
 
-// Prefix that matches every cached access of a project (all users). Project
-// member and invitation mutations invalidate it.
-export const projectAccessQueryKey = (projectId: string) =>
-  ["project-access", projectId] as const;
-
-const accessKey = (projectId: string, userId: string | undefined) =>
-  [...projectAccessQueryKey(projectId), userId] as const;
+// Project member and invitation mutations invalidate this prefix.
+export { projectAccessQueryKey };
 
 const NO_CAPABILITIES: ProjectCapabilities = {
   createTasks: false,
@@ -42,15 +39,13 @@ export function useProjectPermission(projectId: string | undefined) {
   const userId = user?.id;
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: accessKey(projectId ?? "", userId),
-    queryFn: () => getProjectAccess(projectId ?? ""),
+    ...projectAccessQueryOptions(projectId ?? "", userId),
     enabled: Boolean(projectId && userId),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
     // Losing access answers 403: do not retry it.
     retry: (failureCount, failure) =>
-      !(failure instanceof HttpError && failure.status === 403) &&
-      failureCount < 2,
+      !isProjectAccessDenied(failure) && failureCount < 2,
   });
 
   const can = data?.capabilities ?? NO_CAPABILITIES;

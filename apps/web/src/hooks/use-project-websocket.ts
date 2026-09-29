@@ -1,8 +1,13 @@
 import { windowId } from "@kaneo/libs";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getApiUrl } from "@/fetchers/get-api-url";
 import { authClient } from "@/lib/auth-client";
+import {
+  isProjectAccessDenied,
+  projectAccessQueryKey,
+  projectAccessQueryOptions,
+} from "@/lib/project-access-query";
 
 export function getWsUrl(projectId: string) {
   const base = getApiUrl("ws");
@@ -17,9 +22,24 @@ const BASE_DELAY = 1000; // 1 second
 // We send a lightweight ping every 30 seconds to keep the connection alive.
 const WS_PING_INTERVAL_MS = 30_000;
 
-export function useProjectWebSocket(projectId: string) {
+// The API closes a project socket with 1008 when the caller's access to the
+// project ended or changed ("Project access revoked", session or API key gone).
+export const PROJECT_ACCESS_REVOKED_CLOSE_CODE = 1008;
+
+export type ProjectAccessRevoked = {
+  // False when the project can no longer be opened (403 on a fresh check).
+  accessible: boolean;
+};
+
+export function useProjectWebSocket(
+  projectId: string,
+  options?: { onAccessRevoked?: (event: ProjectAccessRevoked) => void },
+) {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+  // Read through a ref so a new callback identity never reconnects the socket.
+  const onAccessRevokedRef = useRef(options?.onAccessRevoked);
+  onAccessRevokedRef.current = options?.onAccessRevoked;
 
   useEffect(() => {
     if (!projectId || !session?.user?.id) return;
@@ -168,17 +188,49 @@ export function useProjectWebSocket(projectId: string) {
         }
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         if (disposed || activeSocket !== ws) return;
         clearPing();
         activeSocket = null;
 
-        if (retries < MAX_RETRIES) {
-          const delay = BASE_DELAY * 2 ** retries; // 1s, 2s, 4s, 8s, 16s
-          retries += 1;
-          retryTimeout = setTimeout(connect, delay);
+        if (event?.code === PROJECT_ACCESS_REVOKED_CLOSE_CODE) {
+          void handleAccessRevoked();
+          return;
         }
+        scheduleReconnect();
       };
+    }
+
+    function scheduleReconnect() {
+      if (disposed || retries >= MAX_RETRIES) return;
+      const delay = BASE_DELAY * 2 ** retries; // 1s, 2s, 4s, 8s, 16s
+      retries += 1;
+      retryTimeout = setTimeout(connect, delay);
+    }
+
+    // Access changed: drop the cached capabilities and project list, then ask
+    // the API where the caller stands now. Still 200: the role changed, so
+    // reconnect with the new access. 403: stop reconnecting (it would only be
+    // refused again) and let the page leave the project.
+    async function handleAccessRevoked() {
+      queryClient.invalidateQueries({
+        queryKey: projectAccessQueryKey(projectId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      let accessible = true;
+      try {
+        await queryClient.fetchQuery({
+          ...projectAccessQueryOptions(projectId, session?.user?.id),
+          staleTime: 0,
+        });
+      } catch (error) {
+        // Anything but a refusal (network, 5xx) says nothing about access:
+        // keep the project open and reconnect.
+        accessible = !isProjectAccessDenied(error);
+      }
+      if (disposed) return;
+      onAccessRevokedRef.current?.({ accessible });
+      if (accessible) scheduleReconnect();
     }
     connect();
 
