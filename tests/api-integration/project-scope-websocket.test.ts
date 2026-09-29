@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { publishEvent } from "../../apps/api/src/events";
+import { resolveProjectAccess } from "../../apps/api/src/utils/project-access";
 import {
   ACCESS_REVALIDATE_MS,
   addConnection,
@@ -24,6 +25,17 @@ import {
 // stripped from relation events, and a socket whose membership ended is closed
 // (explicitly, or on delivery once its access was last confirmed
 // ACCESS_REVALIDATE_MS ago). See docs/plans/project-membership.md.
+
+// Delivery revalidation goes through resolveProjectAccess; wrap it so tests can
+// count, delay and fail those checks while the real decision still runs.
+vi.mock("../../apps/api/src/utils/project-access", async (original) => {
+  const actual =
+    await original<typeof import("../../apps/api/src/utils/project-access")>();
+  return {
+    ...actual,
+    resolveProjectAccess: vi.fn(actual.resolveProjectAccess),
+  };
+});
 
 type Fake = { send: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> };
 const opened: Array<{ projectId: string; conn: unknown }> = [];
@@ -346,5 +358,243 @@ describe("closing sockets when access ends", () => {
     expect(second.close).toHaveBeenCalled();
     expect(otherUser.close).not.toHaveBeenCalled();
     expect(foreignSocket.close).not.toHaveBeenCalled();
+  });
+});
+
+describe("revalidating the credential that opened the socket", () => {
+  const later = () =>
+    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+  const update = (w: Awaited<ReturnType<typeof buildWorld>>) =>
+    publishEvent("task.updated", {
+      taskId: w.t1.id,
+      projectId: w.p1.project.id,
+      userId: w.a.id,
+    });
+
+  async function apiKeyFor(userId: string, overrides = {}) {
+    const [key] = await db
+      .insert(schema.apikeyTable)
+      .values({
+        id: `key-${Math.random().toString(36).slice(2)}`,
+        referenceId: userId,
+        userId,
+        key: "hashed",
+        enabled: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...overrides,
+      })
+      .returning();
+    return key;
+  }
+
+  function connectWith(
+    w: Awaited<ReturnType<typeof buildWorld>>,
+    userId: string,
+    credential: Record<string, unknown>,
+  ) {
+    const ws: Fake = { send: vi.fn(), close: vi.fn() };
+    const conn = addConnection(
+      w.p1.project.id,
+      ws as never,
+      userId,
+      `${userId}-window`,
+      w.workspaceId,
+      credential,
+    );
+    opened.push({ projectId: w.p1.project.id, conn });
+    return ws;
+  }
+
+  it("closes an API-key socket once the key is disabled, deleted or expired", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const live = await apiKeyFor(w.u.id);
+    const disabled = await apiKeyFor(w.u.id);
+    const deleted = await apiKeyFor(w.u.id);
+    const expired = await apiKeyFor(w.u.id, {
+      expiresAt: new Date(Date.now() + 30_000),
+    });
+    const sockets = {
+      live: connectWith(w, w.u.id, { apiKeyId: live.id }),
+      disabled: connectWith(w, w.u.id, { apiKeyId: disabled.id }),
+      deleted: connectWith(w, w.u.id, { apiKeyId: deleted.id }),
+      expired: connectWith(w, w.u.id, { apiKeyId: expired.id }),
+    };
+    await db
+      .update(schema.apikeyTable)
+      .set({ enabled: false })
+      .where(eq(schema.apikeyTable.id, disabled.id));
+    await db
+      .delete(schema.apikeyTable)
+      .where(eq(schema.apikeyTable.id, deleted.id));
+
+    later();
+    await update(w);
+    await vi.waitFor(() => expect(sockets.live.send).toHaveBeenCalled());
+    expect(sockets.live.close).not.toHaveBeenCalled();
+    for (const key of ["disabled", "deleted", "expired"] as const) {
+      expect(sockets[key].close).toHaveBeenCalledWith(
+        1008,
+        "Session or API key is no longer valid",
+      );
+      expect(sockets[key].send).not.toHaveBeenCalled();
+    }
+  });
+
+  it("closes a session socket once the session is revoked or has expired", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const session = (id: string, expiresAt: Date) =>
+      db
+        .insert(schema.sessionTable)
+        .values({
+          id,
+          token: `token-${id}`,
+          userId: w.u.id,
+          expiresAt,
+          updatedAt: new Date(),
+        })
+        .returning();
+    const farOff = new Date(Date.now() + 24 * 3600 * 1000);
+    await session("s-live", farOff);
+    await session("s-revoked", farOff);
+    await session("s-expired", new Date(Date.now() + 30_000));
+    const live = connectWith(w, w.u.id, {
+      sessionId: "s-live",
+      expiresAt: farOff.getTime(),
+    });
+    const revoked = connectWith(w, w.u.id, {
+      sessionId: "s-revoked",
+      expiresAt: farOff.getTime(),
+    });
+    const expired = connectWith(w, w.u.id, {
+      sessionId: "s-expired",
+      expiresAt: Date.now() + 30_000,
+    });
+    await db
+      .delete(schema.sessionTable)
+      .where(eq(schema.sessionTable.id, "s-revoked"));
+
+    later();
+    await update(w);
+    await vi.waitFor(() => expect(live.send).toHaveBeenCalled());
+    expect(live.close).not.toHaveBeenCalled();
+    for (const socket of [revoked, expired]) {
+      expect(socket.close).toHaveBeenCalledWith(
+        1008,
+        "Session or API key is no longer valid",
+      );
+      expect(socket.send).not.toHaveBeenCalled();
+    }
+  });
+
+  it("re-reads a session whose expiry passed before the revalidation window, and keeps one that was extended", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const soon = Date.now() + 10_000;
+    await db.insert(schema.sessionTable).values({
+      id: "s-extended",
+      token: "token-extended",
+      userId: w.u.id,
+      // Better Auth pushed the expiry out after the socket opened.
+      expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
+      updatedAt: new Date(),
+    });
+    const socket = connectWith(w, w.u.id, {
+      sessionId: "s-extended",
+      expiresAt: soon,
+    });
+    // Well inside the 60 s window, but past the expiry known at the upgrade.
+    vi.setSystemTime(Date.now() + 20_000);
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(1));
+    expect(socket.close).not.toHaveBeenCalled();
+    // The new expiry was read back, so the next delivery needs no new check.
+    vi.mocked(resolveProjectAccess).mockClear();
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(2));
+    expect(resolveProjectAccess).not.toHaveBeenCalled();
+  });
+});
+
+describe("how revalidation behaves under load and failure", () => {
+  const update = (
+    w: Awaited<ReturnType<typeof buildWorld>>,
+    taskId = w.t1.id,
+  ) =>
+    publishEvent("task.updated", {
+      taskId,
+      projectId: w.p1.project.id,
+      userId: w.a.id,
+    });
+
+  it("shares one check per user and project between sockets and concurrent deliveries", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const first = connect(w.p1.project.id, w.u.id, w.workspaceId, "win-1");
+    const second = connect(w.p1.project.id, w.u.id, w.workspaceId, "win-2");
+    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+    vi.mocked(resolveProjectAccess).mockClear();
+    // Two different messages, so both flush together and deliver concurrently.
+    await update(w, w.t1.id);
+    await update(w, "another-task");
+    await vi.waitFor(() => {
+      expect(first.send).toHaveBeenCalledTimes(2);
+      expect(second.send).toHaveBeenCalledTimes(2);
+    });
+    expect(resolveProjectAccess).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not close a socket when the check fails, skips that message and asks again next time", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const socket = connect(w.p1.project.id, w.u.id, w.workspaceId);
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
+    vi.mocked(resolveProjectAccess).mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
+    await update(w);
+    await vi.waitFor(() => expect(error).toHaveBeenCalled());
+    // Give the (skipped) delivery time to finish.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(socket.send).not.toHaveBeenCalled();
+    expect(socket.close).not.toHaveBeenCalled();
+
+    // The next delivery checks again, succeeds, and reaches the socket.
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(1));
+    expect(socket.close).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it("dates a confirmation from the start of the check, not its end", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const w = await buildWorld();
+    const socket = connect(w.p1.project.id, w.u.id, w.workspaceId);
+    const start = Date.now();
+    vi.setSystemTime(start + ACCESS_REVALIDATE_MS + 1000);
+    const actual = await vi.importActual<
+      typeof import("../../apps/api/src/utils/project-access")
+    >("../../apps/api/src/utils/project-access");
+    vi.mocked(resolveProjectAccess).mockClear();
+    // The check takes 50 s of (fake) time.
+    vi.mocked(resolveProjectAccess).mockImplementationOnce(
+      async (userId, projectId) => {
+        vi.setSystemTime(Date.now() + 50_000);
+        return actual.resolveProjectAccess(userId, projectId);
+      },
+    );
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(1));
+    expect(resolveProjectAccess).toHaveBeenCalledTimes(1);
+
+    // 70 s after the check began, 20 s after it ended: still due, because the
+    // confirmation is dated from its start.
+    vi.setSystemTime(start + ACCESS_REVALIDATE_MS + 1000 + 70_000);
+    await update(w);
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(2));
+    expect(resolveProjectAccess).toHaveBeenCalledTimes(2);
   });
 });

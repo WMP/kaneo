@@ -875,6 +875,22 @@ export function createApp() {
       const initiatorId = windowId ? `${userId}:${windowId}` : userId;
       let conn: ReturnType<typeof addConnection> | null = null;
 
+      // What authenticated the upgrade, so delivery can tell when it stops being
+      // valid (a revoked session, a disabled or deleted API key).
+      const apiKeyId = c.get("apiKey")?.id;
+      const session = c.get("session") as
+        | { id?: string; expiresAt?: Date | string }
+        | null
+        | undefined;
+      const credential = apiKeyId
+        ? { apiKeyId }
+        : {
+            sessionId: session?.id,
+            expiresAt: session?.expiresAt
+              ? new Date(session.expiresAt).getTime()
+              : undefined,
+          };
+
       return {
         onOpen(_evt, ws) {
           if (projectId && workspaceId) {
@@ -884,6 +900,7 @@ export function createApp() {
               userId,
               initiatorId,
               workspaceId,
+              credential,
             );
           }
         },

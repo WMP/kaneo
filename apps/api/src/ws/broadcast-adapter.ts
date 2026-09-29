@@ -1,20 +1,34 @@
+// What a browser receives on a project socket. Nothing else may be put here:
+// control messages between instances have their own type below.
 export type ProjectBroadcastMessage = {
   type: string;
   projectId: string;
   taskId?: string;
   sourceTaskId?: string;
   targetTaskId?: string;
-  /** `ACCESS_REVOKED` only: whose connections to close. */
-  userId?: string;
-  /** `ACCESS_REVOKED` with an empty `projectId`: close the user's connections in this workspace. */
-  workspaceId?: string;
 };
 
-export type BroadcastMessage = {
-  projectId: string;
-  message: ProjectBroadcastMessage;
-  excludeInitiatorId?: string;
+// Instance-to-instance instruction, never sent to a browser: close a user's
+// sockets because their access ended. With an empty `projectId` on the
+// envelope, every project socket of the user inside `workspaceId` is closed.
+export type AccessRevokedControl = {
+  kind: "access-revoked";
+  userId: string;
+  workspaceId?: string;
+  /** The instance that issued it, which has already closed its own sockets. */
+  origin?: string;
 };
+
+export type BroadcastMessage =
+  | {
+      projectId: string;
+      message: ProjectBroadcastMessage;
+      excludeInitiatorId?: string;
+    }
+  | {
+      projectId: string;
+      control: AccessRevokedControl;
+    };
 
 export type UserBroadcastMessage = {
   type: string;

@@ -14,19 +14,30 @@ const CHANNEL_PATTERN = `${CHANNEL_PREFIX}*${CHANNEL_SUFFIX}`;
 const USER_CHANNEL_PREFIX = "kaneo:ws-user:";
 const USER_CHANNEL_PATTERN = `${USER_CHANNEL_PREFIX}*${CHANNEL_SUFFIX}`;
 
-const broadcastMessageSchema = v.object({
-  projectId: v.string(),
-  message: v.object({
-    type: v.string(),
+const broadcastMessageSchema = v.union([
+  v.object({
     projectId: v.string(),
-    taskId: v.optional(v.string()),
-    sourceTaskId: v.optional(v.string()),
-    targetTaskId: v.optional(v.string()),
-    userId: v.optional(v.string()),
-    workspaceId: v.optional(v.string()),
+    message: v.object({
+      type: v.string(),
+      projectId: v.string(),
+      taskId: v.optional(v.string()),
+      sourceTaskId: v.optional(v.string()),
+      targetTaskId: v.optional(v.string()),
+    }),
+    excludeInitiatorId: v.optional(v.string()),
   }),
-  excludeInitiatorId: v.optional(v.string()),
-});
+  // Control envelope: kept apart from `message`, so what a browser receives is
+  // built only from the client payload shape above.
+  v.object({
+    projectId: v.string(),
+    control: v.object({
+      kind: v.literal("access-revoked"),
+      userId: v.string(),
+      workspaceId: v.optional(v.string()),
+      origin: v.optional(v.string()),
+    }),
+  }),
+]);
 
 const userBroadcastSchema = v.object({
   userId: v.string(),

@@ -14,7 +14,17 @@ const m = vi.hoisted(() => ({
   publish: vi.fn(),
   on: vi.fn(),
 }));
-vi.mock("../../../apps/api/src/database", () => ({ default: {}, schema: {} }));
+vi.mock("../../../apps/api/src/database", () => ({
+  default: {
+    // The delivery path looks up the project's workspace.
+    select: () => ({
+      from: () => ({
+        where: () => ({ limit: async () => [{ workspaceId: "ws-1" }] }),
+      }),
+    }),
+  },
+  schema: {},
+}));
 vi.mock("../../../apps/api/src/events", () => ({ subscribeToEvent: vi.fn() }));
 vi.mock("../../../apps/api/src/redis", () => ({
   isRedisConfigured: () => m.redis,
@@ -44,6 +54,22 @@ function connect(projectId: string, userId: string, workspaceId = "ws-1") {
   return ws;
 }
 
+// The Redis subscriber callback the adapter registered.
+function redisHandler() {
+  return m.on.mock.calls[0][1] as (
+    pattern: string,
+    channel: string,
+    data: string,
+  ) => void;
+}
+function receive(envelope: unknown, channel = "kaneo:ws:p1:broadcast") {
+  redisHandler()("kaneo:ws:*:broadcast", channel, JSON.stringify(envelope));
+}
+function published(index = 0) {
+  const [channel, data] = m.publish.mock.calls[index];
+  return { channel, envelope: JSON.parse(data as string) };
+}
+
 beforeEach(() => {
   m.redis = false;
   m.publish.mockResolvedValue(1);
@@ -61,9 +87,13 @@ describe("access revocation without Redis", () => {
     const otherProject = connect("p2", "alice");
     const otherUser = connect("p1", "bob");
     await closeUserProjectConnections("alice", "p1");
+    expect(target.close).toHaveBeenCalledTimes(1);
     expect(target.close).toHaveBeenCalledWith(1008, "Project access revoked");
     expect(otherProject.close).not.toHaveBeenCalled();
     expect(otherUser.close).not.toHaveBeenCalled();
+    // Control messages are not client payloads: nothing is ever sent.
+    expect(target.send).not.toHaveBeenCalled();
+    expect(otherUser.send).not.toHaveBeenCalled();
   });
 
   it("works before the adapter is initialised", async () => {
@@ -76,77 +106,88 @@ describe("access revocation without Redis", () => {
 });
 
 describe("access revocation through Redis", () => {
-  it("publishes the user id so other instances can close their sockets", async () => {
+  it("publishes a control envelope, apart from the client payload, naming the issuing instance", async () => {
     m.redis = true;
     await initializeWebSocketAdapter();
     const local = connect("p1", "alice");
     await closeUserProjectConnections("alice", "p1");
-    expect(local.close).toHaveBeenCalled();
-    expect(m.publish).toHaveBeenCalledWith(
-      "kaneo:ws:p1:broadcast",
-      JSON.stringify({
-        projectId: "p1",
-        message: { type: "ACCESS_REVOKED", projectId: "p1", userId: "alice" },
-      }),
-    );
+    expect(local.close).toHaveBeenCalledTimes(1);
+    const { channel, envelope } = published();
+    expect(channel).toBe("kaneo:ws:p1:broadcast");
+    expect(envelope).toEqual({
+      projectId: "p1",
+      control: {
+        kind: "access-revoked",
+        userId: "alice",
+        origin: expect.any(String),
+      },
+    });
+    expect(envelope).not.toHaveProperty("message");
   });
 
-  it("closes matching sockets when a revocation arrives from another instance", async () => {
+  it("ignores its own echo but applies a peer's message", async () => {
+    m.redis = true;
+    await initializeWebSocketAdapter();
+    connect("p1", "alice");
+    await closeUserProjectConnections("alice", "p1");
+    const { envelope } = published();
+
+    // A socket opened after the local pass survives the echo of our own message.
+    const late = connect("p1", "alice");
+    receive(envelope);
+    expect(late.close).not.toHaveBeenCalled();
+
+    // The same instruction from another instance closes it.
+    receive({
+      projectId: "p1",
+      control: { ...envelope.control, origin: "another-instance" },
+    });
+    expect(late.close).toHaveBeenCalledWith(1008, "Project access revoked");
+  });
+
+  it("closes only the named user's sockets for a peer's message", async () => {
     m.redis = true;
     await initializeWebSocketAdapter();
     const target = connect("p1", "alice");
     const otherUser = connect("p1", "bob");
-    const handler = m.on.mock.calls[0][1];
-    handler(
-      "kaneo:ws:*:broadcast",
-      "kaneo:ws:p1:broadcast",
-      JSON.stringify({
-        projectId: "p1",
-        message: { type: "ACCESS_REVOKED", projectId: "p1", userId: "alice" },
-      }),
-    );
+    receive({
+      projectId: "p1",
+      control: {
+        kind: "access-revoked",
+        userId: "alice",
+        origin: "another-instance",
+      },
+    });
     expect(target.close).toHaveBeenCalledWith(1008, "Project access revoked");
     expect(otherUser.close).not.toHaveBeenCalled();
   });
 
-  it("closes every project socket of a user in a workspace when the revocation names the workspace", async () => {
+  it("closes every project socket of a user in a workspace when the control names the workspace", async () => {
     m.redis = true;
     await initializeWebSocketAdapter();
     const first = connect("p1", "alice");
     const second = connect("p2", "alice");
     const foreign = connect("p9", "alice", "ws-2");
     await closeUserWorkspaceConnections("alice", "ws-1");
-    expect(first.close).toHaveBeenCalled();
-    expect(second.close).toHaveBeenCalled();
+    expect(first.close).toHaveBeenCalledTimes(1);
+    expect(second.close).toHaveBeenCalledTimes(1);
     expect(foreign.close).not.toHaveBeenCalled();
-    expect(m.publish).toHaveBeenCalledWith(
-      "kaneo:ws::broadcast",
-      JSON.stringify({
-        projectId: "",
-        message: {
-          type: "ACCESS_REVOKED",
-          projectId: "",
-          userId: "alice",
-          workspaceId: "ws-1",
-        },
-      }),
-    );
+    const { channel, envelope } = published();
+    expect(channel).toBe("kaneo:ws::broadcast");
+    expect(envelope.projectId).toBe("");
+    expect(envelope.control).toMatchObject({
+      kind: "access-revoked",
+      userId: "alice",
+      workspaceId: "ws-1",
+    });
 
-    // The same message arriving from a peer closes the local sockets too.
     const late = connect("p3", "alice");
-    const handler = m.on.mock.calls[0][1];
-    handler(
-      "kaneo:ws:*:broadcast",
-      "kaneo:ws::broadcast",
-      JSON.stringify({
+    receive(
+      {
         projectId: "",
-        message: {
-          type: "ACCESS_REVOKED",
-          projectId: "",
-          userId: "alice",
-          workspaceId: "ws-1",
-        },
-      }),
+        control: { ...envelope.control, origin: "another-instance" },
+      },
+      "kaneo:ws::broadcast",
     );
     expect(late.close).toHaveBeenCalled();
   });
@@ -160,5 +201,28 @@ describe("access revocation through Redis", () => {
       closeUserProjectConnections("alice", "p1"),
     ).resolves.toBeUndefined();
     expect(target.close).toHaveBeenCalled();
+  });
+
+  it("strips control-like fields from a client message that arrives through Redis", async () => {
+    m.redis = true;
+    await initializeWebSocketAdapter();
+    const socket = connect("p1", "alice");
+    // A fresh socket is not revalidated, so no access lookup is needed here.
+    receive({
+      projectId: "p1",
+      message: {
+        type: "TASK_UPDATED",
+        projectId: "p1",
+        taskId: "t1",
+        userId: "alice",
+        workspaceId: "ws-1",
+      },
+    });
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalled());
+    expect(JSON.parse(socket.send.mock.calls[0][0] as string)).toEqual({
+      type: "TASK_UPDATED",
+      projectId: "p1",
+      taskId: "t1",
+    });
   });
 });

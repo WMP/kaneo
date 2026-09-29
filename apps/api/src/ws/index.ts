@@ -11,12 +11,17 @@ import {
 } from "../task/get-subtask-parent-projects";
 import { resolveProjectAccess } from "../utils/project-access";
 import type {
+  AccessRevokedControl,
   BroadcastAdapter,
   BroadcastMessage,
   ProjectBroadcastMessage,
   UserBroadcast,
   UserBroadcastMessage,
 } from "./broadcast-adapter";
+import {
+  type ConnectionCredential,
+  readCredentialStatus,
+} from "./connection-credentials";
 import { InMemoryBroadcastAdapter } from "./in-memory-broadcast-adapter";
 import { RedisBroadcastAdapter } from "./redis-broadcast-adapter";
 
@@ -27,21 +32,24 @@ type ProjectConnection = {
   userId: string;
   initiatorId: string;
   workspaceId: string;
-  // When the user's access to the project was last confirmed: at the upgrade,
-  // then again on delivery once `ACCESS_REVALIDATE_MS` has passed.
+  // When the user's access to the project (and the credential that opened the
+  // socket) was last confirmed: at the upgrade, then again on delivery once
+  // `ACCESS_REVALIDATE_MS` has passed. It is the time a check STARTED, so a slow
+  // check never makes a connection look fresher than it is.
   validatedAt: number;
-};
+} & ConnectionCredential;
 
-// A socket is authorized once, at the upgrade. Membership can be removed while
-// it is open, so delivery re-checks a connection's access when its last check is
-// this old. This bounds how long a removed member keeps receiving events when
+// A socket is authorized once, at the upgrade. Membership can be removed, and a
+// session or API key revoked, while it is open, so delivery re-checks a
+// connection when its last check is this old (or its session's expiry has
+// passed). This bounds how long a removed member keeps receiving events when
 // nothing closed the socket explicitly (`closeUserProjectConnections`).
 export const ACCESS_REVALIDATE_MS = 60_000;
 
 export const ACCESS_REVOKED_CLOSE_CODE = 1008;
 export const ACCESS_REVOKED_CLOSE_REASON = "Project access revoked";
-const ACCESS_CHECK_FAILED_CLOSE_CODE = 1011;
-const ACCESS_CHECK_FAILED_CLOSE_REASON = "Project access could not be verified";
+export const CREDENTIAL_REVOKED_CLOSE_REASON =
+  "Session or API key is no longer valid";
 
 type UserConnection = {
   ws: WSContext;
@@ -136,6 +144,10 @@ export async function initializeWebSocketAdapter() {
 
   try {
     await nextAdapter.subscribe((msg: BroadcastMessage) => {
+      if ("control" in msg) {
+        applyAccessRevoked(msg.projectId, msg.control);
+        return;
+      }
       return deliverToLocalConnections(
         msg.projectId,
         msg.message,
@@ -252,6 +264,29 @@ function closeLocalUserConnections(
   }
 }
 
+// A control message from another instance. The instance that issued it has
+// already closed its own sockets, so an echo of its own message is ignored
+// instead of walking the connections a second time.
+function applyAccessRevoked(projectId: string, control: AccessRevokedControl) {
+  if (control.origin === INSTANCE_ID) return;
+  closeLocalUserConnections(control.userId, projectId, control.workspaceId);
+}
+
+async function publishAccessRevoked(
+  projectId: string,
+  control: Omit<AccessRevokedControl, "kind" | "origin">,
+) {
+  try {
+    await adapter?.publish({
+      projectId,
+      control: { kind: "access-revoked", ...control, origin: INSTANCE_ID },
+    });
+  } catch (error) {
+    // Local sockets are already closed, and delivery revalidates the rest.
+    console.error("Failed to publish access revocation:", error);
+  }
+}
+
 /**
  * Closes a user's sockets on a project on every API instance. Call it wherever
  * the user's access to the project ends: removing them from the project, changing
@@ -264,14 +299,7 @@ export async function closeUserProjectConnections(
   projectId: string,
 ) {
   closeLocalUserConnections(userId, projectId);
-  try {
-    await adapter?.publish({
-      projectId,
-      message: { type: "ACCESS_REVOKED", projectId, userId },
-    });
-  } catch (error) {
-    console.error("Failed to publish access revocation:", error);
-  }
+  await publishAccessRevoked(projectId, { userId });
 }
 
 /** Same, for every project socket of the user inside one workspace. */
@@ -280,66 +308,109 @@ export async function closeUserWorkspaceConnections(
   workspaceId: string,
 ) {
   closeLocalUserConnections(userId, "", workspaceId);
+  await publishAccessRevoked("", { userId, workspaceId });
+}
+
+// Checks in flight, shared by everyone who asks for the same thing at once
+// (many sockets of one user, several deliveries in a burst).
+const inFlightChecks = new Map<string, Promise<unknown>>();
+function shared<T>(key: string, run: () => Promise<T>): Promise<T> {
+  let pending = inFlightChecks.get(key) as Promise<T> | undefined;
+  if (!pending) {
+    pending = run().finally(() => inFlightChecks.delete(key));
+    inFlightChecks.set(key, pending);
+  }
+  return pending;
+}
+
+type Verdict =
+  | { ok: true; checkedAt: number; expiresAt?: number }
+  | { ok: false; reason: string }
+  | { ok: null }; // could not be decided: try again on the next delivery
+
+async function checkProjectAccess(userId: string, projectId: string) {
+  return shared(`access\u0000${userId}\u0000${projectId}`, async () => {
+    const checkedAt = Date.now();
+    return {
+      checkedAt,
+      allowed: Boolean(await resolveProjectAccess(userId, projectId)),
+    };
+  });
+}
+
+async function checkCredential(conn: ProjectConnection) {
+  const id = conn.apiKeyId ?? conn.sessionId;
+  if (!id) return { valid: true } as const;
+  return shared(
+    `credential\u0000${conn.apiKeyId ? "key" : "session"}\u0000${id}`,
+    () => readCredentialStatus(conn.userId, conn),
+  );
+}
+
+async function verdictFor(
+  projectId: string,
+  conn: ProjectConnection,
+): Promise<Verdict> {
   try {
-    await adapter?.publish({
-      projectId: "",
-      message: { type: "ACCESS_REVOKED", projectId: "", userId, workspaceId },
-    });
+    const [access, credential] = await Promise.all([
+      checkProjectAccess(conn.userId, projectId),
+      checkCredential(conn),
+    ]);
+    if (!credential.valid) {
+      return { ok: false, reason: CREDENTIAL_REVOKED_CLOSE_REASON };
+    }
+    if (!access.allowed) {
+      return { ok: false, reason: ACCESS_REVOKED_CLOSE_REASON };
+    }
+    return {
+      ok: true,
+      checkedAt: access.checkedAt,
+      expiresAt: "expiresAt" in credential ? credential.expiresAt : undefined,
+    };
   } catch (error) {
-    console.error("Failed to publish access revocation:", error);
+    console.error("Failed to revalidate project socket access:", error);
+    return { ok: null };
   }
 }
 
-// Users whose access was last confirmed too long ago are checked once each per
-// delivery, not once per socket. Returns the connections that must not receive
-// the message (their sockets are already closed).
-async function revalidateStaleConnections(
+// Re-checks the connections whose last confirmation is too old, or whose
+// session expiry has passed (the session may have been extended since, which the
+// check reads back). Returns the connections that must not receive THIS message:
+// those that were closed, and those whose check could not be decided. A check
+// that failed does not close anything (a database blip must not disconnect
+// everyone); the connection is simply asked again on the next delivery.
+async function revalidateConnections(
   projectId: string,
   recipients: ProjectConnection[],
 ) {
   const now = Date.now();
-  const stale = recipients.filter(
-    (conn) => now - conn.validatedAt >= ACCESS_REVALIDATE_MS,
+  const due = recipients.filter(
+    (conn) =>
+      now - conn.validatedAt >= ACCESS_REVALIDATE_MS ||
+      (conn.expiresAt !== undefined && now >= conn.expiresAt),
   );
-  const rejected = new Set<ProjectConnection>();
-  if (stale.length === 0) return rejected;
+  const withheld = new Set<ProjectConnection>();
 
-  const outcomes = new Map<string, boolean | null>();
   await Promise.all(
-    [...new Set(stale.map((conn) => conn.userId))].map(async (userId) => {
-      try {
-        outcomes.set(
-          userId,
-          Boolean(await resolveProjectAccess(userId, projectId)),
+    due.map(async (conn) => {
+      const verdict = await verdictFor(projectId, conn);
+      if (verdict.ok === true) {
+        conn.validatedAt = verdict.checkedAt;
+        if (verdict.expiresAt !== undefined) conn.expiresAt = verdict.expiresAt;
+        return;
+      }
+      withheld.add(conn);
+      if (verdict.ok === false) {
+        dropConnection(
+          projectId,
+          conn,
+          ACCESS_REVOKED_CLOSE_CODE,
+          verdict.reason,
         );
-      } catch (error) {
-        console.error("Failed to revalidate project socket access:", error);
-        outcomes.set(userId, null);
       }
     }),
   );
-
-  for (const conn of stale) {
-    const outcome = outcomes.get(conn.userId);
-    if (outcome) {
-      conn.validatedAt = now;
-      continue;
-    }
-    rejected.add(conn);
-    // A failed check closes the socket too: the client reconnects and refetches,
-    // which is safer than streaming to a connection whose access is unknown.
-    dropConnection(
-      projectId,
-      conn,
-      outcome === null
-        ? ACCESS_CHECK_FAILED_CLOSE_CODE
-        : ACCESS_REVOKED_CLOSE_CODE,
-      outcome === null
-        ? ACCESS_CHECK_FAILED_CLOSE_REASON
-        : ACCESS_REVOKED_CLOSE_REASON,
-    );
-  }
-  return rejected;
+  return withheld;
 }
 
 const workspaceLookups = new Map<string, Promise<string | null>>();
@@ -367,12 +438,6 @@ async function deliverToLocalConnections(
     closeLocalProjectConnections(projectId);
     return;
   }
-  if (message.type === "ACCESS_REVOKED") {
-    if (message.userId) {
-      closeLocalUserConnections(message.userId, projectId, message.workspaceId);
-    }
-    return;
-  }
   const connections = projectConnections.get(projectId);
   if (!connections) return;
   const recipients = [...connections];
@@ -384,9 +449,9 @@ async function deliverToLocalConnections(
     workspaceId = null;
   }
   const payload = JSON.stringify(message);
-  // Sockets of users whose access could not be confirmed again are closed here
-  // and skipped below.
-  const rejected = await revalidateStaleConnections(
+  // Sockets whose access is gone are closed here, and ones that could not be
+  // checked are skipped for this message; both are left out below.
+  const rejected = await revalidateConnections(
     projectId,
     recipients.filter(
       (conn) => workspaceId !== null && conn.workspaceId === workspaceId,
@@ -420,6 +485,7 @@ export function addConnection(
   userId: string,
   initiatorId: string,
   workspaceId: string,
+  credential: ConnectionCredential = {},
 ) {
   if (!projectConnections.has(projectId)) {
     projectConnections.set(projectId, new Set());
@@ -430,6 +496,7 @@ export function addConnection(
     initiatorId,
     workspaceId,
     validatedAt: Date.now(),
+    ...credential,
   };
   projectConnections.get(projectId)?.add(conn);
   return conn;
