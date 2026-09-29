@@ -496,7 +496,13 @@ export default function TaskRelations({
                             <TaskRelationDependencyPopover
                               relationId={item.id}
                               taskId={taskId}
-                              projectId={projectId}
+                              // The edge belongs to its source task: the related
+                              // task for a blocked_by row, this task for blocks.
+                              projectId={
+                                type === "blocked_by"
+                                  ? item.task.projectId
+                                  : projectId
+                              }
                               dependencyType={item.dependencyType}
                               lagDays={item.lagDays}
                             >

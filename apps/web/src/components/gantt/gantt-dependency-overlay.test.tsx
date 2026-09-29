@@ -1,7 +1,23 @@
 import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
 import { GanttDependencyOverlay } from "./gantt-dependency-overlay";
+
+vi.mock("@/components/task/task-relation-dependency-popover", () => ({
+  default: (props: {
+    taskId: string;
+    projectId: string | undefined;
+    children: React.ReactNode;
+  }) => (
+    <div
+      data-testid="popover"
+      data-task={props.taskId}
+      data-project={props.projectId}
+    >
+      {props.children}
+    </div>
+  ),
+}));
 
 function edge(overrides: Partial<DependencyEdgeGeometry> = {}) {
   return {
@@ -51,5 +67,38 @@ describe("GanttDependencyOverlay", () => {
       />,
     );
     expect(container.querySelector("svg")).toBeNull();
+  });
+
+  it("edits each dependency with the rights of its SOURCE task's own project", () => {
+    const { getAllByTestId } = render(
+      <GanttDependencyOverlay
+        edges={[
+          edge({
+            id: "own",
+            sourceTaskId: "own-task",
+            typeLabelPoint: { x: 1, y: 1 },
+          }),
+          edge({
+            id: "cross",
+            sourceTaskId: "external-task",
+            typeLabelPoint: { x: 2, y: 2 },
+          }),
+        ]}
+        hoveredTaskId={null}
+        clipLeftPx={0}
+        resolveProjectId={(taskId) =>
+          taskId === "external-task" ? "project-other" : "project-here"
+        }
+      />,
+    );
+
+    const byTask = new Map(
+      getAllByTestId("popover").map((node) => [
+        node.getAttribute("data-task"),
+        node.getAttribute("data-project"),
+      ]),
+    );
+    expect(byTask.get("own-task")).toBe("project-here");
+    expect(byTask.get("external-task")).toBe("project-other");
   });
 });

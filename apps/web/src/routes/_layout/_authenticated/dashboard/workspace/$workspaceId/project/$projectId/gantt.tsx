@@ -942,6 +942,19 @@ function RouteComponent() {
   // own still shows, right after its predecessor, rather than vanishing with
   // its dependency line. A dateless far end with no dated predecessor still
   // can't be positioned and is left out.
+  // Which project each relation endpoint belongs to. A dependency on the chart
+  // is edited with the rights of its SOURCE task's own project, which for a
+  // cross-project edge is not this one.
+  const projectIdByRelatedTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const relation of taskRelations ?? []) {
+      for (const task of [relation.sourceTask, relation.targetTask]) {
+        if (task) map.set(task.id, task.projectId);
+      }
+    }
+    return map;
+  }, [taskRelations]);
+
   const externalRelatedTasks = useMemo<ExternalScheduledTask[]>(() => {
     const external = new Map<string, ExternalScheduledTask>();
 
@@ -2326,7 +2339,9 @@ function RouteComponent() {
                     hoveredTaskId={hoveredTaskId}
                     criticalEdgeIds={criticalPath?.criticalEdgeIds}
                     clipLeftPx={barsLeftPx}
-                    resolveProjectId={() => projectId}
+                    resolveProjectId={(taskId) =>
+                      projectIdByRelatedTaskId.get(taskId) ?? projectId
+                    }
                     preview={
                       linkDrag
                         ? {

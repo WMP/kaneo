@@ -67,6 +67,16 @@ vi.mock("./subtask-status-popover", () => ({
     </div>
   ),
 }));
+vi.mock("./task-relation-dependency-popover", () => ({
+  default: (props: {
+    projectId: string | undefined;
+    children: React.ReactNode;
+  }) => (
+    <div data-testid="dependency-popover" data-project-id={props.projectId}>
+      {props.children}
+    </div>
+  ),
+}));
 vi.mock("./subtask-assignee-popover", () => ({
   default: (props: { children: React.ReactNode }) => <>{props.children}</>,
 }));
@@ -150,6 +160,64 @@ function renderRelations() {
     />,
   );
 }
+
+function blockingRelation(direction: "blocks" | "blocked_by") {
+  const current = {
+    id: "task-current",
+    title: "Current task",
+    status: "to-do",
+    priority: null,
+    number: 1,
+    projectId: CURRENT_PROJECT_ID,
+    projectSlug: "CUR",
+    userId: null,
+    assigneeName: null,
+  };
+  const other = {
+    id: "task-other",
+    title: "Other project's task",
+    status: "to-do",
+    priority: null,
+    number: 7,
+    projectId: "project-other",
+    projectSlug: "OTHER",
+    userId: null,
+    assigneeName: null,
+  };
+  const blocks = direction === "blocks";
+  return {
+    id: "relation-blocking",
+    relationType: "blocks",
+    dependencyType: "fs",
+    lagDays: 0,
+    sourceTaskId: blocks ? current.id : other.id,
+    targetTaskId: blocks ? other.id : current.id,
+    sourceTask: blocks ? current : other,
+    targetTask: blocks ? other : current,
+  };
+}
+
+describe("TaskRelations dependency editing", () => {
+  it("edits a blocks dependency with the rights of this task's project", () => {
+    mocks.taskRelations.mockReturnValue({ data: [blockingRelation("blocks")] });
+    renderRelations();
+    expect(screen.getByTestId("dependency-popover")).toHaveAttribute(
+      "data-project-id",
+      CURRENT_PROJECT_ID,
+    );
+  });
+
+  it("edits a blocked_by dependency with the rights of the related task's project, the source of the relation", () => {
+    mocks.taskRelations.mockReturnValue({
+      data: [blockingRelation("blocked_by")],
+    });
+    renderRelations();
+    expect(screen.getByTestId("dependency-popover")).toHaveAttribute(
+      "data-project-id",
+      "project-other",
+    );
+  });
+});
 
 describe("TaskRelations cross-project correctness", () => {
   it("navigates using the related task's own project id, not the current one", () => {
