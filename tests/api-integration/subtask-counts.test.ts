@@ -55,7 +55,7 @@ async function relate(
 }
 
 async function countsFor(projectId: string, taskId: string) {
-  const { data } = await getTasks(projectId);
+  const { data } = await getTasks(projectId, {}, "all");
   return [
     ...data.columns.flatMap((c) => c.tasks),
     ...data.plannedTasks,
@@ -131,7 +131,7 @@ describe("API integration: subtask counters", () => {
     const relations = await getTaskRelations(
       parent.id,
       member.workspace.id,
-      member.user.id,
+      null,
     );
     expect(
       relations.filter((relation) => relation.targetTask?.isCompleted),
@@ -156,7 +156,7 @@ describe("API integration: subtask counters", () => {
       workspaceId: member.workspace.id,
     });
     expect(
-      (await getTasks(project.id)).data.columns.every(
+      (await getTasks(project.id, {}, "all")).data.columns.every(
         (c) => c.tasks.length === 0,
       ),
     ).toBe(true);

@@ -102,7 +102,7 @@ describe("manual external resource links", () => {
     });
     expect(created.status).toBe(200);
     const entry = (await created.json()) as { id: string };
-    const board = await getTasks(own.project.id);
+    const board = await getTasks(own.project.id, {}, "all");
     const tasks = [
       ...board.data.columns.flatMap((column) => column.tasks),
       ...board.data.plannedTasks,

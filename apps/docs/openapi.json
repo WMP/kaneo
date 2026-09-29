@@ -251,7 +251,7 @@
               "completed",
               "total"
             ],
-            "description": "Direct subtasks in the workspace; completed means a final column in the child project. Public boards count only children in public projects."
+            "description": "Direct subtasks in the workspace that the caller can open; completed means a final column in the child project. Children in projects the caller is not a member of (without full access) are not counted, and public boards count only children in public projects."
           },
           "labels": {
             "type": "array",
@@ -10912,7 +10912,7 @@
           "Tasks"
         ],
         "summary": "Export tasks",
-        "description": "Export a project's tasks, with their labels, Gantt scheduling fields, and relations, as a JSON document.",
+        "description": "Export a project's tasks, with their labels, Gantt scheduling fields, and relations, as a JSON document. A relation whose other task is in a project the caller cannot access is left out.",
         "parameters": [
           {
             "schema": {
@@ -12427,7 +12427,7 @@
           "Activity"
         ],
         "summary": "Get task activity",
-        "description": "Get a task's full activity feed, newest first: comments alongside system events such as status and assignee changes.",
+        "description": "Get a task's full activity feed, newest first: comments alongside system events such as status and assignee changes. Relation events whose other task is in a project the caller cannot access are left out.",
         "parameters": [
           {
             "schema": {
@@ -18208,7 +18208,7 @@
           "Task Relations"
         ],
         "summary": "Update task relation",
-        "description": "Change a 'blocks' relation's dependency type and/or lag. Rejected for a 'related'/'subtask' relation, which has no dependency type/lag to edit.",
+        "description": "Change a 'blocks' relation's dependency type and/or lag. Rejected for a 'related'/'subtask' relation, which has no dependency type/lag to edit. Answers 404 when the relation does not exist or when either of its tasks is in a project the caller cannot access.",
         "parameters": [
           {
             "schema": {
@@ -18280,7 +18280,7 @@
             }
           },
           "404": {
-            "description": "Task relation not found, or its source task is gone",
+            "description": "Task relation not found, or a task of it is in a project the caller cannot access",
             "content": {
               "text/plain": {
                 "schema": {
@@ -18297,7 +18297,7 @@
           "Task Relations"
         ],
         "summary": "Delete task relation",
-        "description": "Remove a link between two tasks. Returns the deleted relation.",
+        "description": "Remove a link between two tasks. Returns the deleted relation. Answers 404 when the relation does not exist or when either of its tasks is in a project the caller cannot access.",
         "parameters": [
           {
             "schema": {
@@ -18333,7 +18333,7 @@
             }
           },
           "404": {
-            "description": "Task relation not found, or its source task is gone",
+            "description": "Task relation not found, or a task of it is in a project the caller cannot access",
             "content": {
               "text/plain": {
                 "schema": {
@@ -18829,7 +18829,7 @@
           "Workspaces"
         ],
         "summary": "Get workspace members",
-        "description": "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them.",
+        "description": "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member).",
         "parameters": [
           {
             "schema": {

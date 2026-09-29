@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
 import db from "../database";
-import { projectTable, taskTable } from "../database/schema";
+import { projectTable } from "../database/schema";
 import { subscribeToEvent } from "../events";
 import { isRedisConfigured } from "../redis";
 import {
@@ -504,6 +504,9 @@ type TaskEvent = {
   taskId: string;
   sourceTaskId: string | undefined;
   targetTaskId: string | undefined;
+  // Relation events only: which of the relation's tasks live in `projectId`.
+  projectTaskIds?: string[];
+  secondaryNotification?: boolean;
 };
 
 // Include the initiating window: its local mutation refreshes the child project,
@@ -649,26 +652,6 @@ const relationEvents = new Set([
   "task-relation.deleted",
 ]);
 
-// A relation can join tasks of two projects, and the event is delivered to the
-// subscribers of each project. A project's subscribers may only learn ids of
-// tasks IN that project: an id from the other side would reveal a task they
-// cannot open. Ids not found in `projectId` (or of a task deleted meanwhile)
-// are dropped; the client then refreshes its project-scoped caches instead.
-async function taskIdsInProject(
-  projectId: string,
-  ids: (string | undefined)[],
-) {
-  const unique = [...new Set(ids.filter((id): id is string => Boolean(id)))];
-  if (unique.length === 0) return new Set<string>();
-  const rows = await db
-    .select({ id: taskTable.id })
-    .from(taskTable)
-    .where(
-      and(inArray(taskTable.id, unique), eq(taskTable.projectId, projectId)),
-    );
-  return new Set(rows.map((row) => row.id));
-}
-
 for (const eventName of taskUpdateEvents) {
   subscribeToEvent<TaskEvent>(eventName, async (data) => {
     const { projectId, initiatorId } = data;
@@ -679,11 +662,14 @@ for (const eventName of taskUpdateEvents) {
     if (!projectId || !taskId) return;
 
     if (relationEvents.has(eventName)) {
-      const inProject = await taskIdsInProject(projectId, [
-        taskId,
-        sourceTaskId,
-        targetTaskId,
-      ]);
+      // A relation event reaches the subscribers of both projects, so a project
+      // only gets ids of tasks IN that project. The publisher lists them in
+      // `projectTaskIds`; when it did not (a caller that predates the field), the
+      // safe default is the primary event's source task and nothing on the
+      // secondary one. No lookup happens here.
+      const inProject = new Set(
+        data.projectTaskIds ?? (data.secondaryNotification ? [] : [taskId]),
+      );
       if (!inProject.has(taskId)) taskId = "";
       if (sourceTaskId && !inProject.has(sourceTaskId)) {
         sourceTaskId = undefined;
@@ -692,6 +678,7 @@ for (const eventName of taskUpdateEvents) {
         targetTaskId = undefined;
       }
     }
+
     let type: string;
     switch (eventName) {
       case "task.created":

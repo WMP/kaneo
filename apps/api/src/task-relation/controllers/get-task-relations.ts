@@ -6,7 +6,7 @@ import resolveRelationsWithTasks from "./resolve-relations-with-tasks";
 async function getTaskRelations(
   taskId: string,
   workspaceId: string,
-  userId: string,
+  visibleProjectIds: string[] | null,
 ) {
   const relations = await db
     .select({
@@ -26,7 +26,7 @@ async function getTaskRelations(
       ),
     );
 
-  return resolveRelationsWithTasks(relations, workspaceId, userId);
+  return resolveRelationsWithTasks(relations, workspaceId, visibleProjectIds);
 }
 
 export default getTaskRelations;

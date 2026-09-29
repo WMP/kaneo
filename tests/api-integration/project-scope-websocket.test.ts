@@ -123,14 +123,17 @@ describe("what a project socket receives", () => {
       userId: w.a.id,
     };
 
-    // The event a cross-project relation publishes once per project.
+    // The events a cross-project relation publishes once per project; the
+    // publisher lists the relation's tasks that live in the event's project.
     await publishEvent("task-relation.created", {
       ...relation,
       projectId: w.p1.project.id,
+      projectTaskIds: [w.t1.id],
     });
     await publishEvent("task-relation.created", {
       ...relation,
       projectId: w.p2.project.id,
+      projectTaskIds: [w.t2.id],
       secondaryNotification: true,
     });
     await vi.waitFor(() => {
@@ -159,6 +162,42 @@ describe("what a project socket receives", () => {
     expect(JSON.stringify(messages(onP2))).not.toContain(w.t1.id);
   });
 
+  it("without projectTaskIds a relation event carries no foreign or unlisted id", async () => {
+    const w = await buildWorld();
+    const onP1 = connect(w.p1.project.id, w.u.id, w.workspaceId);
+    const onP2 = connect(w.p2.project.id, w.a.id, w.workspaceId);
+    const relation = {
+      id: "rel-3",
+      sourceTaskId: w.t1.id,
+      targetTaskId: w.t2.id,
+      relationType: "blocks",
+      taskId: w.t1.id,
+      userId: w.a.id,
+    };
+    await publishEvent("task-relation.created", {
+      ...relation,
+      projectId: w.p1.project.id,
+    });
+    await publishEvent("task-relation.created", {
+      ...relation,
+      projectId: w.p2.project.id,
+      secondaryNotification: true,
+    });
+    await vi.waitFor(() => {
+      expect(onP1.send).toHaveBeenCalled();
+      expect(onP2.send).toHaveBeenCalled();
+    });
+    const [forP1] = messages(onP1);
+    // The primary event's own source task is the one id known to be local.
+    expect(forP1.taskId).toBe(w.t1.id);
+    expect(forP1.sourceTaskId).toBe(w.t1.id);
+    expect(forP1.targetTaskId).toBeUndefined();
+    const [forP2] = messages(onP2);
+    expect(forP2.taskId).toBe("");
+    expect(forP2.sourceTaskId).toBeUndefined();
+    expect(forP2.targetTaskId).toBeUndefined();
+  });
+
   it("a same-project relation keeps both ids", async () => {
     const w = await buildWorld();
     const [t1b] = await db
@@ -178,6 +217,7 @@ describe("what a project socket receives", () => {
       relationType: "related",
       taskId: w.t1.id,
       projectId: w.p1.project.id,
+      projectTaskIds: [w.t1.id, t1b.id],
       userId: w.a.id,
     });
     await vi.waitFor(() => expect(onP1.send).toHaveBeenCalled());

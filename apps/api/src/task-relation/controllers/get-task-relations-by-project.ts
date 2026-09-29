@@ -11,7 +11,7 @@ import resolveRelationsWithTasks from "./resolve-relations-with-tasks";
 async function getTaskRelationsByProject(
   projectId: string,
   workspaceId: string,
-  userId: string,
+  visibleProjectIds: string[] | null,
 ) {
   // A subquery rather than a materialized ID list: `inArray` with tens of
   // thousands of literal values can overflow Postgres's bind-parameter
@@ -40,7 +40,7 @@ async function getTaskRelationsByProject(
       ),
     );
 
-  return resolveRelationsWithTasks(relations, workspaceId, userId);
+  return resolveRelationsWithTasks(relations, workspaceId, visibleProjectIds);
 }
 
 export default getTaskRelationsByProject;

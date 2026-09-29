@@ -7,6 +7,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { relationTaskIdsInProject } from "../event-task-ids";
 
 async function deleteTaskRelation(
   id: string,
@@ -50,26 +51,6 @@ async function deleteTaskRelation(
     )
     .limit(1);
 
-  if (sourceTask) {
-    // waitForHandlers: the activity module logs this deletion off the
-    // event, and that write should be visible by the time this request
-    // returns rather than racing the response.
-    await publishEvent(
-      "task-relation.deleted",
-      {
-        ...relation,
-        taskId: relation.sourceTaskId,
-        projectId: sourceTask.projectId,
-        userId,
-      },
-      { waitForHandlers: true },
-    );
-  }
-
-  // A relation can link tasks across two projects in the same workspace.
-  // Notify the target project's subscribers too (when it differs from the
-  // source project), so their Gantt/dependency views refresh without a
-  // manual reload.
   const [targetTask] = await db
     .select({ projectId: taskTable.projectId })
     .from(taskTable)
@@ -81,7 +62,36 @@ async function deleteTaskRelation(
       ),
     )
     .limit(1);
+  const projects = {
+    sourceProjectId: sourceTask?.projectId,
+    targetProjectId: targetTask?.projectId,
+  };
 
+  if (sourceTask) {
+    // waitForHandlers: the activity module logs this deletion off the
+    // event, and that write should be visible by the time this request
+    // returns rather than racing the response.
+    await publishEvent(
+      "task-relation.deleted",
+      {
+        ...relation,
+        taskId: relation.sourceTaskId,
+        projectId: sourceTask.projectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          sourceTask.projectId,
+        ),
+        userId,
+      },
+      { waitForHandlers: true },
+    );
+  }
+
+  // A relation can link tasks across two projects in the same workspace.
+  // Notify the target project's subscribers too (when it differs from the
+  // source project), so their Gantt/dependency views refresh without a
+  // manual reload.
   if (targetTask && targetTask.projectId !== sourceTask?.projectId) {
     // Same relation, same (source) taskId — published again only so the
     // target project's own WS subscribers refresh. Marked so the activity
@@ -92,6 +102,11 @@ async function deleteTaskRelation(
         ...relation,
         taskId: relation.sourceTaskId,
         projectId: targetTask.projectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          targetTask.projectId,
+        ),
         userId,
         secondaryNotification: true,
       },

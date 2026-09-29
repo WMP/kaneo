@@ -28,7 +28,7 @@ export async function getPublicProject(
     });
   }
 
-  const result = await getTasks(id, { ...options, publicOnly: true });
+  const result = await getTasks(id, { ...options, publicOnly: true }, "all");
 
   if (!result.data) {
     throw new HTTPException(404, {

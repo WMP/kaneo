@@ -7,6 +7,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { relationTaskIdsInProject } from "../event-task-ids";
 
 // Only a "blocks" relation carries a scheduling dependency type/lag; editing
 // either field on a "related"/"subtask" row would just be silently ignored by
@@ -73,6 +74,17 @@ async function updateTaskRelation(
     .where(eq(taskTable.id, relation.sourceTaskId))
     .limit(1);
 
+  const [targetTask] = await db
+    .select({ projectId: taskTable.projectId })
+    .from(taskTable)
+    .where(eq(taskTable.id, relation.targetTaskId))
+    .limit(1);
+
+  const projects = {
+    sourceProjectId: sourceTask?.projectId,
+    targetProjectId: targetTask?.projectId,
+  };
+
   if (sourceTask) {
     // waitForHandlers: the activity module logs this update off the event,
     // and that write should be visible by the time this request returns
@@ -83,17 +95,16 @@ async function updateTaskRelation(
         ...relation,
         taskId: relation.sourceTaskId,
         projectId: sourceTask.projectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          sourceTask.projectId,
+        ),
         userId,
       },
       { waitForHandlers: true },
     );
   }
-
-  const [targetTask] = await db
-    .select({ projectId: taskTable.projectId })
-    .from(taskTable)
-    .where(eq(taskTable.id, relation.targetTaskId))
-    .limit(1);
 
   if (targetTask && targetTask.projectId !== sourceTask?.projectId) {
     // Same relation, same (source) taskId — published again only so the
@@ -105,6 +116,11 @@ async function updateTaskRelation(
         ...relation,
         taskId: relation.sourceTaskId,
         projectId: targetTask.projectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          targetTask.projectId,
+        ),
         userId,
         secondaryNotification: true,
       },

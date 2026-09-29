@@ -172,7 +172,7 @@ export const boardTaskSchema = z
       })
       .openapi({
         description:
-          "Direct subtasks in the workspace; completed means a final column in the child project. Public boards count only children in public projects.",
+          "Direct subtasks in the workspace that the caller can open; completed means a final column in the child project. Children in projects the caller is not a member of (without full access) are not counted, and public boards count only children in public projects.",
       }),
     labels: z.array(taskLabelSchema),
     externalLinks: z.array(taskExternalLinkSchema),

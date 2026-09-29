@@ -8,7 +8,10 @@ import {
   userTable,
 } from "../../database/schema";
 import { accessibleProjectIds } from "../../utils/project-access";
-import { projectScopeCondition } from "../../utils/project-scope-filters";
+import {
+  projectScopeCondition,
+  relationActivityExclusionForIds,
+} from "../../utils/project-scope-filters";
 
 // `from`/`to` arrive as free-form strings, so an unparseable value would
 // otherwise reach Drizzle and throw when it serializes an Invalid Date to
@@ -58,6 +61,8 @@ export function buildWorkspaceActivityWhereClause(
   );
   const conditions = [
     or(taskScoped, eq(activityTable.workspaceId, workspaceId)),
+    // A relation event that names a task of an inaccessible project is dropped.
+    relationActivityExclusionForIds(visibleProjectIds),
   ];
 
   if (options.userId) {

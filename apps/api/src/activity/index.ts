@@ -7,6 +7,7 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
+import { visibleProjectIdsFor } from "../utils/project-scope-filters";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import createActivity from "./controllers/create-activity";
@@ -31,7 +32,7 @@ const getActivitiesRoute = createRoute({
   tags: ["Activity"],
   summary: "Get task activity",
   description:
-    "Get a task's full activity feed, newest first: comments alongside system events such as status and assignee changes.",
+    "Get a task's full activity feed, newest first: comments alongside system events such as status and assignee changes. Relation events whose other task is in a project the caller cannot access are left out.",
   middleware: [workspaceAccess.fromTaskId()] as const,
   request: { params: taskIdParam },
   responses: {
@@ -150,7 +151,17 @@ const deleteCommentRoute = createRoute({
 
 const activity = apiRouter()
   .openapi(getActivitiesRoute, async (c) =>
-    c.json(await getActivities(c.req.valid("param").taskId), 200),
+    c.json(
+      await getActivities(
+        c.req.valid("param").taskId,
+        await visibleProjectIdsFor(
+          c.get("projectAccess"),
+          c.get("userId"),
+          c.get("workspaceId"),
+        ),
+      ),
+      200,
+    ),
   )
   .openapi(createActivityRoute, async (c) => {
     const { taskId, message, type, eventData } = c.req.valid("json");

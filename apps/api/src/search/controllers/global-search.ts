@@ -9,6 +9,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import {
+  relationActivityExclusion,
   resolveUserProjectScope,
   sqlIn,
   userProjectScopeSql,
@@ -499,6 +500,17 @@ async function globalSearch(params: SearchParams): Promise<{
             ilike(taskTable.title, searchPattern),
           ),
           type === "comments" ? eq(activityTable.type, "comment") : undefined,
+          // Relation events that name a task of an inaccessible project.
+          scope && !scope.instanceAdmin
+            ? relationActivityExclusion((projectRef, workspaceRef) =>
+                userProjectScopeSql(
+                  resolvedUserId,
+                  scope,
+                  projectRef,
+                  workspaceRef,
+                ),
+              )
+            : undefined,
         ),
       )
       .orderBy(desc(activityRelevanceScore), desc(activityTable.createdAt))

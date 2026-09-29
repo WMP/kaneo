@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db from "../database";
-import { taskRelationTable } from "../database/schema";
+import { projectTable, taskRelationTable, taskTable } from "../database/schema";
 import {
   apiRouter,
   type BaseVariables,
@@ -11,6 +12,7 @@ import {
   jsonResponse,
 } from "../openapi";
 import { resolveProjectAccess } from "../utils/project-access";
+import { visibleProjectIdsFor } from "../utils/project-scope-filters";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
 import {
@@ -68,46 +70,62 @@ async function scopeToSourceTask(c: Context, next: Next) {
   return next();
 }
 
+const RELATION_NOT_FOUND = "Task relation not found";
+
+// An update or delete acts on a relation, whose response carries both of its
+// ends. The caller needs access to BOTH projects, and any shortfall answers 404
+// (never 403), so the route cannot tell "no such relation" from "a relation you
+// may not see". Both ends are loaded in one query, and the second access
+// decision is skipped when they share a project.
 async function scopeToRelation(c: Context, next: Next) {
   const userId = requireUserId(c);
 
+  const target = alias(taskTable, "relation_target_task");
+  const targetProject = alias(projectTable, "relation_target_project");
   const id = c.req.param("id");
   const [rel] = await db
     .select({
-      sourceTaskId: taskRelationTable.sourceTaskId,
-      targetTaskId: taskRelationTable.targetTaskId,
+      workspaceId: projectTable.workspaceId,
+      sourceProjectId: taskTable.projectId,
+      targetProjectId: target.projectId,
+      targetWorkspaceId: targetProject.workspaceId,
     })
     .from(taskRelationTable)
+    .innerJoin(taskTable, eq(taskRelationTable.sourceTaskId, taskTable.id))
+    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .innerJoin(target, eq(taskRelationTable.targetTaskId, target.id))
+    .innerJoin(targetProject, eq(target.projectId, targetProject.id))
     .where(eq(taskRelationTable.id, id ?? ""))
     .limit(1);
   if (!rel) {
-    throw new HTTPException(404, { message: "Task relation not found" });
+    throw new HTTPException(404, { message: RELATION_NOT_FOUND });
   }
 
-  const scope = await lookupScope("task", rel.sourceTaskId);
-  if (!scope) {
-    throw new HTTPException(404, { message: "Task not found" });
+  try {
+    await validateWorkspaceAccess(userId, rel.workspaceId, c.get("apiKey")?.id);
+  } catch (error) {
+    if (error instanceof HTTPException && error.status === 403) {
+      throw new HTTPException(404, { message: RELATION_NOT_FOUND });
+    }
+    throw error;
   }
 
-  await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
-  await assertProjectAccess(c, userId, { projectId: scope.projectId });
-
-  // The response of an update or delete carries the far end of the relation, so
-  // a relation whose target sits in a project the caller cannot open does not
-  // exist for them (the reads drop it the same way).
-  const targetScope =
-    rel.targetTaskId === rel.sourceTaskId
-      ? null
-      : await scopeOfTask(rel.targetTaskId);
+  const sourceAccess = await resolveProjectAccess(userId, rel.sourceProjectId);
+  if (!sourceAccess) {
+    throw new HTTPException(404, { message: RELATION_NOT_FOUND });
+  }
   if (
-    targetScope &&
-    targetScope.workspaceId === scope.workspaceId &&
-    !(await resolveProjectAccess(userId, targetScope.projectId))
+    rel.targetProjectId !== rel.sourceProjectId &&
+    // A legacy row across workspaces is refused by the controller itself.
+    rel.targetWorkspaceId === rel.workspaceId &&
+    !(await resolveProjectAccess(userId, rel.targetProjectId))
   ) {
-    throw new HTTPException(404, { message: "Task relation not found" });
+    throw new HTTPException(404, { message: RELATION_NOT_FOUND });
   }
 
-  c.set("workspaceId", scope.workspaceId);
+  c.set("projectId", rel.sourceProjectId);
+  c.set("projectAccess", sourceAccess);
+  c.set("workspaceId", rel.workspaceId);
   return next();
 }
 
@@ -196,7 +214,7 @@ const updateTaskRelationRoute = createRoute({
   tags: ["Task Relations"],
   summary: "Update task relation",
   description:
-    "Change a 'blocks' relation's dependency type and/or lag. Rejected for a 'related'/'subtask' relation, which has no dependency type/lag to edit.",
+    "Change a 'blocks' relation's dependency type and/or lag. Rejected for a 'related'/'subtask' relation, which has no dependency type/lag to edit. Answers 404 when the relation does not exist or when either of its tasks is in a project the caller cannot access.",
   middleware: [
     scopeToRelation,
     requireWorkspacePermission({ task: ["update"] }),
@@ -214,7 +232,9 @@ const updateTaskRelationRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing task:update permission",
     ),
-    404: errorResponse("Task relation not found, or its source task is gone"),
+    404: errorResponse(
+      "Task relation not found, or a task of it is in a project the caller cannot access",
+    ),
   },
 });
 
@@ -224,7 +244,8 @@ const deleteTaskRelationRoute = createRoute({
   path: "/{id}",
   tags: ["Task Relations"],
   summary: "Delete task relation",
-  description: "Remove a link between two tasks. Returns the deleted relation.",
+  description:
+    "Remove a link between two tasks. Returns the deleted relation. Answers 404 when the relation does not exist or when either of its tasks is in a project the caller cannot access.",
   middleware: [
     scopeToRelation,
     requireWorkspacePermission({ task: ["update"] }),
@@ -235,7 +256,9 @@ const deleteTaskRelationRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing task:update permission",
     ),
-    404: errorResponse("Task relation not found, or its source task is gone"),
+    404: errorResponse(
+      "Task relation not found, or a task of it is in a project the caller cannot access",
+    ),
   },
 });
 
@@ -245,7 +268,11 @@ const taskRelation = apiRouter<BaseVariables & { workspaceId: string }>()
       await getTaskRelations(
         c.req.valid("param").taskId,
         c.get("workspaceId"),
-        c.get("userId"),
+        await visibleProjectIdsFor(
+          c.get("projectAccess"),
+          c.get("userId"),
+          c.get("workspaceId"),
+        ),
       ),
       200,
     ),
@@ -255,7 +282,11 @@ const taskRelation = apiRouter<BaseVariables & { workspaceId: string }>()
       await getTaskRelationsByProject(
         c.req.valid("param").projectId,
         c.get("workspaceId"),
-        c.get("userId"),
+        await visibleProjectIdsFor(
+          c.get("projectAccess"),
+          c.get("userId"),
+          c.get("workspaceId"),
+        ),
       ),
       200,
     ),

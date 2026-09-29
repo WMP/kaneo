@@ -120,7 +120,7 @@ describe("bounded board related pages", () => {
         .update(schema.externalLinkTable)
         .set({ metadata })
         .where(eq(schema.externalLinkTable.id, "link-000"));
-      const response = await getTasks(project.id);
+      const response = await getTasks(project.id, {}, "all");
       expect(
         response.data.columns
           .flatMap((column) => column.tasks)
@@ -162,11 +162,15 @@ describe("bounded board related pages", () => {
       number: 2,
       status: "planned",
     });
-    const page = await getTasks(project.id, {
-      page: 2,
-      limit: 1,
-      sortBy: "number",
-    });
+    const page = await getTasks(
+      project.id,
+      {
+        page: 2,
+        limit: 1,
+        sortBy: "number",
+      },
+      "all",
+    );
     expect(page.data.plannedTasks).toHaveLength(1);
     expect(page.data.plannedTasks[0].labels).toEqual([]);
     expect(page.data.plannedTasks[0].externalLinks).toEqual([]);
@@ -178,7 +182,7 @@ describe("bounded board related pages", () => {
     try {
       await lock.query("BEGIN");
       await lock.query('LOCK TABLE "task" IN ACCESS EXCLUSIVE MODE');
-      await expect(getTasks(project.id)).rejects.toMatchObject({
+      await expect(getTasks(project.id, {}, "all")).rejects.toMatchObject({
         status: 503,
         message: "Task list request took too long; retry later",
       });

@@ -2,6 +2,7 @@ import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
+import { publishEvent } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";
 import createNotification from "../../apps/api/src/notification/controllers/create-notification";
 import { mockAnonymousSession, mockAuthenticatedSession } from "./helpers/auth";
@@ -1208,5 +1209,178 @@ describe("notification list scope", () => {
     actAs(w.u);
     const listed = await json<Array<any>>(await call("/notification"));
     expect(listed.map((n) => n.id)).toEqual([w.nGeneral.id]);
+  });
+});
+
+describe("relation activity", () => {
+  async function seedRelationActivity(w: World) {
+    const [hiddenEnd] = await db
+      .insert(schema.activityTable)
+      .values({
+        taskId: w.t1.id,
+        type: "relation_created",
+        userId: w.owner.user.id,
+        eventData: {
+          relationId: w.blocksAcross.id,
+          sourceTaskId: w.t1.id,
+          targetTaskId: w.t2.id,
+        },
+      })
+      .returning();
+    const [visibleEnd] = await db
+      .insert(schema.activityTable)
+      .values({
+        taskId: w.t1.id,
+        type: "relation_created",
+        userId: w.owner.user.id,
+        eventData: {
+          relationId: w.relatedSame.id,
+          sourceTaskId: w.t1.id,
+          targetTaskId: w.t1b.id,
+        },
+      })
+      .returning();
+    return { hiddenEnd, visibleEnd };
+  }
+
+  it("the task activity feed drops relation events that name a hidden task", async () => {
+    const w = await buildWorld();
+    const { hiddenEnd, visibleEnd } = await seedRelationActivity(w);
+    actAs(w.u);
+    const own = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    expect(own.map((row) => row.id)).toContain(visibleEnd.id);
+    expect(own.map((row) => row.id)).not.toContain(hiddenEnd.id);
+    expect(JSON.stringify(own)).not.toContain(w.t2.id);
+
+    actAs(w.w);
+    const both = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    expect(both.map((row) => row.id)).toContain(hiddenEnd.id);
+
+    actAs(w.a);
+    const all = await json<Array<any>>(await call(`/activity/${w.t1.id}`));
+    expect(all.map((row) => row.id)).toContain(hiddenEnd.id);
+  });
+
+  it("workspace activity, its export and search apply the same rule", async () => {
+    const w = await buildWorld();
+    const { hiddenEnd, visibleEnd } = await seedRelationActivity(w);
+    actAs(w.u);
+    const feed = await json<any>(
+      await call(`/workspace/${w.workspaceId}/activity?limit=100`),
+    );
+    expect(feed.data.map((row: any) => row.id)).toContain(visibleEnd.id);
+    expect(feed.data.map((row: any) => row.id)).not.toContain(hiddenEnd.id);
+    const exported = await json<any>(
+      await call(`/workspace/${w.workspaceId}/activity/export?format=json`),
+    );
+    expect(exported.data.map((row: any) => row.id)).not.toContain(hiddenEnd.id);
+    expect(JSON.stringify(exported)).not.toContain(w.t2.id);
+    // Searching for the hidden task's id finds nothing either.
+    const found = await json<{ results: any[] }>(
+      await call(
+        `/search?workspaceId=${w.workspaceId}&q=${w.t2.id}&type=activities`,
+      ),
+    );
+    expect(found.results).toEqual([]);
+
+    actAs(w.a);
+    const all = await json<any>(
+      await call(`/workspace/${w.workspaceId}/activity?limit=100`),
+    );
+    expect(all.data.map((row: any) => row.id)).toContain(hiddenEnd.id);
+    const foundByAdmin = await json<{ results: any[] }>(
+      await call(
+        `/search?workspaceId=${w.workspaceId}&q=${w.t2.id}&type=activities`,
+      ),
+    );
+    expect(foundByAdmin.results.map((r) => r.id)).toContain(hiddenEnd.id);
+  });
+});
+
+describe("relation update and delete", () => {
+  it("answer 404 when either end is inaccessible, never 403", async () => {
+    const w = await buildWorld();
+    // U reaches the source (P1) but not the target (P2).
+    actAs(w.u);
+    expect(
+      (await call(`/task-relation/${w.blocksAcross.id}`, "DELETE")).status,
+    ).toBe(404);
+    // V reaches the target (P2) but not the source (P1).
+    actAs(w.v);
+    expect(
+      (
+        await call(`/task-relation/${w.blocksAcross.id}`, "PATCH", {
+          lagDays: 2,
+        })
+      ).status,
+    ).toBe(404);
+    // X reaches neither, and so does a user of another workspace.
+    actAs(w.x);
+    expect(
+      (await call(`/task-relation/${w.blocksAcross.id}`, "DELETE")).status,
+    ).toBe(404);
+    actAs(w.outsider.user);
+    expect(
+      (await call(`/task-relation/${w.blocksAcross.id}`, "DELETE")).status,
+    ).toBe(404);
+    const unknown = await call("/task-relation/no-such-relation", "DELETE");
+    expect(unknown.status).toBe(404);
+    const [still] = await db
+      .select()
+      .from(schema.taskRelationTable)
+      .where(eq(schema.taskRelationTable.id, w.blocksAcross.id));
+    expect(still).toBeTruthy();
+  });
+
+  it("a caller who reaches both projects can edit it and only the event's own tasks are listed per project", async () => {
+    const w = await buildWorld();
+    actAs(w.w);
+    const updated = await call(`/task-relation/${w.blocksAcross.id}`, "PATCH", {
+      lagDays: 4,
+    });
+    expect(updated.status).toBe(200);
+    const events = vi
+      .mocked(publishEvent)
+      .mock.calls.filter(([name]) => name === "task-relation.updated");
+    expect(events).toHaveLength(2);
+    const [primary, secondary] = events.map(([, payload]) => payload as any);
+    expect(primary).toMatchObject({
+      projectId: w.p1.project.id,
+      projectTaskIds: [w.t1.id],
+    });
+    expect(secondary).toMatchObject({
+      projectId: w.p2.project.id,
+      projectTaskIds: [w.t2.id],
+      secondaryNotification: true,
+    });
+
+    vi.mocked(publishEvent).mockClear();
+    expect(
+      (await call(`/task-relation/${w.blocksAcross.id}`, "DELETE")).status,
+    ).toBe(200);
+    const deleted = vi
+      .mocked(publishEvent)
+      .mock.calls.filter(([name]) => name === "task-relation.deleted")
+      .map(([, payload]) => payload as any);
+    expect(deleted.map((e) => [e.projectId, e.projectTaskIds])).toEqual([
+      [w.p1.project.id, [w.t1.id]],
+      [w.p2.project.id, [w.t2.id]],
+    ]);
+  });
+
+  it("a same-project relation lists both tasks in its single event", async () => {
+    const w = await buildWorld();
+    actAs(w.u);
+    expect(
+      (await call(`/task-relation/${w.relatedSame.id}`, "DELETE")).status,
+    ).toBe(200);
+    const deleted = vi
+      .mocked(publishEvent)
+      .mock.calls.filter(([name]) => name === "task-relation.deleted")
+      .map(([, payload]) => payload as any);
+    expect(deleted).toHaveLength(1);
+    expect([...deleted[0].projectTaskIds].sort()).toEqual(
+      [w.t1.id, w.t1b.id].sort(),
+    );
   });
 });

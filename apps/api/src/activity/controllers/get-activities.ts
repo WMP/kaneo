@@ -1,10 +1,19 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import db from "../../database";
 import { activityTable } from "../../database/schema";
+import { relationActivityExclusionForIds } from "../../utils/project-scope-filters";
 
-async function getActivitiesFromTaskId(taskId: string) {
+// `visibleProjectIds` is the viewer's project scope (`null`: full access).
+// Relation activity that names a task of a project they cannot open is left out.
+async function getActivitiesFromTaskId(
+  taskId: string,
+  visibleProjectIds: string[] | null,
+) {
   const activities = await db.query.activityTable.findMany({
-    where: eq(activityTable.taskId, taskId),
+    where: and(
+      eq(activityTable.taskId, taskId),
+      relationActivityExclusionForIds(visibleProjectIds),
+    ),
     orderBy: [desc(activityTable.createdAt)],
   });
 

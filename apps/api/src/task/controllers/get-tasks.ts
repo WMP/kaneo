@@ -19,6 +19,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import type { ProjectScope } from "../../utils/project-scope-filters";
 import { readTaskAssignees } from "../assignments";
 import { boundedTaskRead, type TaskReadDatabase } from "../bounded-read";
 import {
@@ -32,13 +33,6 @@ import { MAX_TASK_LIST_LIMIT } from "../schema";
 
 export type GetTasksOptions = {
   publicOnly?: boolean;
-  /**
-   * The viewer's project scope (`accessibleProjectIds`), used to count only the
-   * subtasks they may open. Set by the authenticated route; `undefined` (the
-   * public board, which uses `publicOnly`, and internal callers) applies no
-   * project scope.
-   */
-  visibleProjectIds?: string[] | null;
   assigneeId?: string;
   dueAfter?: string;
   dueBefore?: string;
@@ -91,6 +85,7 @@ async function getTasksPage(
   db: TaskReadDatabase,
   projectId: string,
   options: GetTasksOptions,
+  projectScope: ProjectScope,
 ) {
   const [project] = await db
     .select({
@@ -199,7 +194,7 @@ async function getTasksPage(
     taskIds,
     project.workspaceId,
     options.publicOnly ?? false,
-    options.visibleProjectIds ?? null,
+    projectScope,
   );
 
   const labelsData =
@@ -409,12 +404,16 @@ function parseMetadata(raw: string | null): Record<string, unknown> | null {
   }
 }
 
+// `projectScope` is required on purpose: it limits the subtasks counted on the
+// board to projects the viewer may open. Pass `"all"` explicitly for full
+// access and for the public board (which is limited by `publicOnly` instead).
 export default function getTasks(
   projectId: string,
-  options: GetTasksOptions = {},
+  options: GetTasksOptions,
+  projectScope: ProjectScope,
 ) {
   return boundedTaskRead(
-    (db) => getTasksPage(db, projectId, options),
+    (db) => getTasksPage(db, projectId, options, projectScope),
     "Task list request took too long; retry later",
   );
 }

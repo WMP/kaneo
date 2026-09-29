@@ -29,6 +29,16 @@ export function projectScopeCondition(
   return projectIds === null ? undefined : sqlIn(column, projectIds);
 }
 
+// A scope that cannot be left out by accident: `"all"` (full access, or a
+// public board that is limited by `isPublic` instead) or the only projects that
+// may be read. Prefer it to `string[] | null` in signatures where forgetting the
+// scope would silently widen a read.
+export type ProjectScope = "all" | string[];
+
+export function toProjectScope(projectIds: string[] | null): ProjectScope {
+  return projectIds ?? "all";
+}
+
 // The project scope of a request that already resolved access to one project
 // (`workspaceAccess.from*` set `projectAccess`). Full access to one project is
 // full access to the whole workspace, so no second resolution is needed then.
@@ -161,6 +171,44 @@ export function userProjectScopeSql(
             )})
         )`;
   return sql`(${sqlIn(workspaceRef, scope.fullWorkspaceIds)} OR ${memberOfProject})`;
+}
+
+// Relation activity ("relation_created" and friends) is logged on the source
+// task but names the OTHER task of the relation in its data. A row whose
+// other task lives in a project the viewer cannot open must not be listed, or
+// the id (and, through it, the existence) of that task would leak. The whole
+// row is dropped rather than redacted. `isVisible` receives references to the
+// related task's project and workspace and says whether the viewer may open
+// them; pass `null` for full access (no condition).
+export function relationActivityExclusion(
+  isVisible: ((projectRef: SQLWrapper, workspaceRef: SQLWrapper) => SQL) | null,
+): SQL | undefined {
+  if (!isVisible) return undefined;
+  const projectRef = sql.raw("relation_task.project_id");
+  const workspaceRef = sql.raw("relation_project.workspace_id");
+  return sql`NOT (
+    ${schema.activityTable.type} IN ('relation_created', 'relation_updated', 'relation_deleted')
+    AND EXISTS (
+      SELECT 1 FROM task AS relation_task
+      JOIN project AS relation_project ON relation_project.id = relation_task.project_id
+      WHERE relation_task.id IN (
+        ${schema.activityTable.eventData}->>'sourceTaskId',
+        ${schema.activityTable.eventData}->>'targetTaskId'
+      )
+      AND NOT (${isVisible(projectRef, workspaceRef)})
+    )
+  )`;
+}
+
+// The same, for a viewer whose scope is a list of project ids (`null`: all).
+export function relationActivityExclusionForIds(
+  visibleProjectIds: string[] | null,
+): SQL | undefined {
+  return relationActivityExclusion(
+    visibleProjectIds === null
+      ? null
+      : (projectRef) => sqlIn(projectRef, visibleProjectIds),
+  );
 }
 
 // Which of these users can reach the project? Same decision as

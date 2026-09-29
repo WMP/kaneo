@@ -105,7 +105,9 @@ describe("task relation tenant boundaries", () => {
     const foreign = await context();
     const relation = await seedRelation(foreign.task.id, own.task.id);
     mockAuthenticatedSession(own.user);
-    expect((await request(`/${relation.id}`, "DELETE")).status).toBe(403);
+    // 404 rather than 403: a relation the caller may not see does not exist
+    // for them, so the route is not an oracle for relation ids.
+    expect((await request(`/${relation.id}`, "DELETE")).status).toBe(404);
     expect(await db.query.taskRelationTable.findMany()).toHaveLength(1);
     expect(m.publish).not.toHaveBeenCalled();
   });
