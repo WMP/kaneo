@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { assignableRolesQueryKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
 import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
@@ -47,6 +48,10 @@ function useUpdateWorkspaceUserRole() {
       // by (workspaceId, role) so we drop the per-workspace cache.
       queryClient.invalidateQueries({
         queryKey: ["workspace-capabilities", variables.workspaceId],
+      });
+      // What the current user may assign depends on their own role.
+      queryClient.invalidateQueries({
+        queryKey: assignableRolesQueryKey(variables.workspaceId),
       });
     },
   });

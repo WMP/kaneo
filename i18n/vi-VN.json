@@ -2937,7 +2937,11 @@
 			"invalidEmail": "Enter a valid email address",
 			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
 			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent."
+			"successNoEmail": "Invitation created. No email was sent.",
+			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
+			"roleLabel": "Role",
+			"rolesError": "Couldn't load the roles you can assign. Try again later.",
+			"rolesLoading": "Loading roles..."
 		},
 		"membersTable": {
 			"emptyTitle": "Chưa có thành viên nhóm nào",
@@ -2963,7 +2967,8 @@
 			"cancelInviteSuccess": "Hủy lời mời thành công",
 			"cancelInviteError": "Không thể hủy lời mời",
 			"roleUpdateSuccess": "Đã cập nhật vai trò",
-			"roleUpdateError": "Không thể cập nhật vai trò"
+			"roleUpdateError": "Không thể cập nhật vai trò",
+			"ariaChangeRole": "Change role for {{name}}"
 		},
 		"errors": {
 			"alreadyInvited": "This person already has a pending invitation.",

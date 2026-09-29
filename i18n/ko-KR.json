@@ -2937,7 +2937,11 @@
 			"invalidEmail": "Enter a valid email address",
 			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
 			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent."
+			"successNoEmail": "Invitation created. No email was sent.",
+			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
+			"roleLabel": "Role",
+			"rolesError": "Couldn't load the roles you can assign. Try again later.",
+			"rolesLoading": "Loading roles..."
 		},
 		"membersTable": {
 			"emptyTitle": "아직 팀 멤버가 없습니다",
@@ -2963,7 +2967,8 @@
 			"cancelInviteError": "초대 취소에 실패했습니다",
 			"ariaInvitationActions": "초대 작업",
 			"roleUpdateSuccess": "역할이 업데이트되었습니다",
-			"roleUpdateError": "역할 업데이트에 실패했습니다"
+			"roleUpdateError": "역할 업데이트에 실패했습니다",
+			"ariaChangeRole": "Change role for {{name}}"
 		},
 		"errors": {
 			"alreadyInvited": "This person already has a pending invitation.",

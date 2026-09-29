@@ -55,24 +55,40 @@ vi.mock("@/hooks/mutations/workspace-user/use-delete-workspace-user", () => ({
   default: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+const updateMemberRole = vi.fn();
+
 vi.mock(
   "@/hooks/mutations/workspace-user/use-update-workspace-user-role",
   () => ({
-    default: () => ({ mutateAsync: vi.fn() }),
+    default: () => ({ mutateAsync: updateMemberRole }),
   }),
 );
 
-vi.mock("@/hooks/queries/workspace/use-workspace-roles", () => ({
-  default: () => ({ data: [] }),
+type AssignableRolesState = {
+  data: { role: string; isDefault: boolean }[] | undefined;
+};
+const DEFAULT_ASSIGNABLE_ROLES = [
+  { role: "viewer", isDefault: true },
+  { role: "member", isDefault: true },
+  { role: "qa-lead", isDefault: false },
+];
+let assignableRoles: AssignableRolesState = {
+  data: DEFAULT_ASSIGNABLE_ROLES,
+};
+
+vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
+  default: () => assignableRoles,
 }));
 
 const canInviteUsers = vi.fn(() => true);
+let isOwner = false;
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
     canManageTeam: () => true,
     canRemoveMembers: () => true,
     canInviteUsers: () => canInviteUsers(),
+    isOwner,
   }),
 }));
 
@@ -81,6 +97,9 @@ vi.mock("../providers/auth-provider/hooks/use-auth", () => ({
 }));
 
 beforeEach(() => {
+  isOwner = false;
+  assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
+  updateMemberRole.mockResolvedValue({});
   canInviteUsers.mockReturnValue(true);
   config = { hasSmtp: true };
   inviteMember.mockResolvedValue({ id: "invite-1" });
@@ -282,5 +301,118 @@ describe("MembersTable resend invitation", () => {
     await waitFor(() =>
       expect(error).toHaveBeenCalledWith("team:invitations.resendError"),
     );
+  });
+});
+
+describe("MembersTable role select", () => {
+  const makeUser = (
+    id: string,
+    role: string,
+    name: string = id,
+  ): WorkspaceUser =>
+    ({
+      id: `member-${id}`,
+      userId: id,
+      role,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      user: { name, email: `${id}@example.com`, image: null },
+    }) as unknown as WorkspaceUser;
+
+  const renderUsers = (users: WorkspaceUser[]) =>
+    render(
+      <MembersTable workspaceId="workspace-1" invitations={[]} users={users} />,
+    );
+
+  it("offers only the assignable roles", async () => {
+    renderUsers([makeUser("ada", "member")]);
+
+    fireEvent.click(
+      screen.getByRole("combobox", {
+        name: "team:membersTable.ariaChangeRole",
+      }),
+    );
+
+    const options = (await screen.findAllByRole("option")).map(
+      (option) => option.textContent,
+    );
+    expect(options).toEqual([
+      "team:roles.viewer",
+      "team:roles.member",
+      "Qa-lead",
+    ]);
+  });
+
+  it("changes the role to the picked assignable role", async () => {
+    renderUsers([makeUser("ada", "member")]);
+
+    fireEvent.click(
+      screen.getByRole("combobox", {
+        name: "team:membersTable.ariaChangeRole",
+      }),
+    );
+    const option = await screen.findByRole("option", { name: "Qa-lead" });
+    fireEvent.pointerDown(option);
+    fireEvent.click(option, { detail: 1 });
+
+    await waitFor(() =>
+      expect(updateMemberRole).toHaveBeenCalledWith({
+        workspaceId: "workspace-1",
+        memberId: "member-ada",
+        role: "qa-lead",
+      }),
+    );
+  });
+
+  it("does not let a non-owner edit their own row", () => {
+    renderUsers([makeUser("current-user", "member")]);
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByText("team:roles.member")).toBeVisible();
+  });
+
+  it("shows a badge for a member whose role the caller cannot assign", () => {
+    renderUsers([makeUser("root", "admin"), makeUser("ada", "member")]);
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(screen.getByText("team:roles.admin")).toBeVisible();
+  });
+
+  it("lets an owner change a member even when the role is not in the list", async () => {
+    isOwner = true;
+    assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
+    renderUsers([makeUser("root", "admin")]);
+
+    const trigger = screen.getByRole("combobox", {
+      name: "team:membersTable.ariaChangeRole",
+    });
+    // The current role stays visible as the selected value.
+    expect(trigger).toHaveTextContent("team:roles.admin");
+
+    fireEvent.click(trigger);
+    const options = (await screen.findAllByRole("option")).map(
+      (option) => option.textContent,
+    );
+    expect(options).toEqual([
+      "team:roles.admin",
+      "team:roles.viewer",
+      "team:roles.member",
+      "Qa-lead",
+    ]);
+  });
+
+  it("keeps the owner row a badge, even for an owner viewer", () => {
+    isOwner = true;
+    renderUsers([makeUser("current-user", "owner")]);
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByText("team:roles.owner")).toBeVisible();
+  });
+
+  it("offers no select until the assignable roles are loaded", () => {
+    assignableRoles = { data: undefined };
+    renderUsers([makeUser("ada", "member")]);
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByText("team:roles.member")).toBeVisible();
   });
 });

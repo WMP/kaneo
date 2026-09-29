@@ -2964,7 +2964,11 @@
 			"invalidEmail": "Enter a valid email address",
 			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
 			"successNoEmail": "Invitation created. No email was sent.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace."
+			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
+			"roleLabel": "Role",
+			"rolesLoading": "Loading roles...",
+			"rolesError": "Couldn't load the roles you can assign. Try again later.",
+			"noAssignableRoles": "You can't assign any role, so you can't invite people."
 		},
 		"membersTable": {
 			"emptyTitle": "No team members yet",
@@ -2979,6 +2983,7 @@
 			"ariaCancelInvitation": "Cancel invitation",
 			"ariaInvitationActions": "Invitation actions",
 			"ariaRemoveMember": "Remove member",
+			"ariaChangeRole": "Change role for {{name}}",
 			"removeDialogTitle": "Remove Team Member?",
 			"removeDialogDescription": "Are you sure you want to remove {{name}} from the workspace? This action cannot be undone.",
 			"cancelDialogTitle": "Cancel Invitation?",

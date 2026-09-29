@@ -1,4 +1,3 @@
-import { DEFAULT_ROLE_NAMES } from "@kaneo/permissions";
 import {
   CopyIcon,
   EllipsisIcon,
@@ -15,7 +14,7 @@ import useDeleteWorkspaceUser from "@/hooks/mutations/workspace-user/use-delete-
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useUpdateWorkspaceUserRole from "@/hooks/mutations/workspace-user/use-update-workspace-user-role";
 import useGetConfig from "@/hooks/queries/config/use-get-config";
-import useWorkspaceRoles from "@/hooks/queries/workspace/use-workspace-roles";
+import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
@@ -23,6 +22,7 @@ import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
+import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 import type {
   WorkspaceUser,
   WorkspaceUserInvitation,
@@ -75,12 +75,6 @@ const AVATAR_TONES = [
   "bg-indigo-500/15 text-indigo-600 dark:text-indigo-300",
 ] as const;
 
-// Names that are NOT "truly custom": viewer/member/admin are seeded as
-// editable workspace_role rows on every workspace creation, and owner is a
-// static built-in. The Select already lists them as built-ins, so we filter
-// them out of the custom-roles tail to avoid duplicate options.
-const RESERVED_ROLE_NAMES = new Set<string>([...DEFAULT_ROLE_NAMES, "owner"]);
-
 function toneFor(value: string): string {
   let hash = 0;
   for (let i = 0; i < value.length; i += 1) {
@@ -116,16 +110,16 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   // link's expiry. Only an explicit `true` may promise an email.
   const emailsAreSent = config?.hasSmtp === true;
   const { copy: copyInvitationLink } = useCopyInvitationLink();
-  const { data: allWorkspaceRoles = [] } = useWorkspaceRoles(workspaceId);
-  const { canManageTeam, canRemoveMembers, canInviteUsers } =
+  // Roles the current user may grant. Undefined until loaded, in which case no
+  // role Select is offered rather than one that may list the wrong choices.
+  const { data: assignableRoles } = useGetAssignableRoles(workspaceId);
+  const { canManageTeam, canRemoveMembers, canInviteUsers, isOwner } =
     useWorkspacePermission();
   const canChangeRoles = Boolean(canManageTeam());
   const canRemove = Boolean(canRemoveMembers());
   const canInvite = Boolean(canInviteUsers());
 
-  const customRoles = allWorkspaceRoles.filter(
-    (role) => !RESERVED_ROLE_NAMES.has(role.role),
-  );
+  const assignableRoleNames = (assignableRoles ?? []).map((r) => r.role);
 
   // Owner first, then everyone else (stable on ties so the original
   // listMembers order is preserved within each group).
@@ -246,8 +240,20 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
         <TableBody>
           {sortedUsers.map((member) => {
             const isSelf = currentUser?.id === member.userId;
+            // Owners may manage every non-owner member. Anyone else may only
+            // touch members whose current role they could grant themselves,
+            // and never their own row; the API enforces the same rules.
             const showRoleSelect =
-              canChangeRoles && !isSelf && member.role !== "owner";
+              canChangeRoles &&
+              assignableRoles !== undefined &&
+              !isSelf &&
+              member.role !== "owner" &&
+              (isOwner || assignableRoleNames.includes(member.role));
+            // The current role is always an option so it can be displayed as
+            // the selected value even when the caller could not assign it.
+            const roleOptions = assignableRoleNames.includes(member.role)
+              ? assignableRoleNames
+              : [member.role, ...assignableRoleNames];
             const tone = toneFor(member.user.email);
             return (
               <TableRow key={member.user.email}>
@@ -294,30 +300,24 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                         }
                       }}
                     >
-                      <SelectTrigger size="sm" className="h-8 w-32">
+                      <SelectTrigger
+                        size="sm"
+                        className="h-8 w-32"
+                        aria-label={t("team:membersTable.ariaChangeRole", {
+                          name: member.user.name || member.user.email,
+                        })}
+                      >
                         <SelectValue>
-                          {t(`team:roles.${member.role}`, {
-                            defaultValue: capitalize(member.role),
-                          })}
+                          {getWorkspaceRoleLabel(member.role, t)}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="viewer">
-                          {t("team:roles.viewer", { defaultValue: "Viewer" })}
-                        </SelectItem>
-                        <SelectItem value="member">
-                          {t("team:roles.member", { defaultValue: "Member" })}
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          {t("team:roles.admin", { defaultValue: "Admin" })}
-                        </SelectItem>
-                        {/* Owner is intentionally NOT offered here: the better-auth
-                            organization plugin requires an explicit ownership
-                            transfer flow (a workspace must have exactly one owner).
-                            That UI lives in workspace settings (TODO). */}
-                        {customRoles.map((r) => (
-                          <SelectItem key={r.id} value={r.role}>
-                            {capitalize(r.role)}
+                        {/* Owner is never offered: a workspace must have exactly
+                            one owner, so it changes only through ownership
+                            transfer in workspace settings. */}
+                        {roleOptions.map((roleName) => (
+                          <SelectItem key={roleName} value={roleName}>
+                            {getWorkspaceRoleLabel(roleName, t)}
                           </SelectItem>
                         ))}
                       </SelectContent>

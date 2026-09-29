@@ -1,16 +1,18 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
+import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import {
@@ -31,6 +33,14 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import InvitationLinkField from "./invitation-link-field";
 
 type Props = {
@@ -38,9 +48,9 @@ type Props = {
   onClose: () => void;
 };
 
-// Role sent with every invitation until the role picker exists. Kept as a
-// string because custom workspace roles are valid invitation roles.
-const DEFAULT_INVITE_ROLE = "member";
+// Preferred role for a new invitation. The API decides which roles the caller
+// may grant, so this only applies when it is in that list.
+const PREFERRED_INVITE_ROLE = "member";
 
 type TeamMemberFormValues = { email: string };
 
@@ -57,7 +67,24 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   // or failed we do not know, so the copy must not claim one was sent.
   const emailsAreSent = config?.hasSmtp === true;
   const showNoSmtpNotice = config?.hasSmtp === false;
-  const role: string = DEFAULT_INVITE_ROLE;
+  const roleFieldId = useId();
+  const {
+    data: assignableRoles,
+    isPending: rolesLoading,
+    isError: rolesFailed,
+  } = useGetAssignableRoles(workspaceId);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const roleOptions = assignableRoles ?? [];
+  const defaultRole = roleOptions.some((r) => r.role === PREFERRED_INVITE_ROLE)
+    ? PREFERRED_INVITE_ROLE
+    : roleOptions[0]?.role;
+  // A stale pick (the list changed under us) falls back to the default.
+  const role =
+    selectedRole && roleOptions.some((r) => r.role === selectedRole)
+      ? selectedRole
+      : defaultRole;
+  const hasNoAssignableRoles =
+    !rolesLoading && !rolesFailed && roleOptions.length === 0;
   const [createdInvitation, setCreatedInvitation] = useState<{
     id: string;
     email: string;
@@ -94,6 +121,10 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       toast.error(t("team:inviteModal.error"));
       return;
     }
+    if (!role) {
+      toast.error(t("team:inviteModal.error"));
+      return;
+    }
     try {
       const invitation = await mutateAsync({
         email,
@@ -116,6 +147,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       if (invitation?.id) {
         setCreatedInvitation({ id: invitation.id, email });
         form.reset();
+        setSelectedRole(null);
         return;
       }
 
@@ -135,6 +167,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
       });
     }
     form.reset();
+    setSelectedRole(null);
   };
 
   const resetAndCloseModal = () => {
@@ -203,6 +236,47 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                     </FormItem>
                   )}
                 />
+                <div className="space-y-2">
+                  <Label htmlFor={roleFieldId}>
+                    {t("team:inviteModal.roleLabel")}
+                  </Label>
+                  {rolesLoading ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      {t("team:inviteModal.rolesLoading")}
+                    </p>
+                  ) : rolesFailed ? (
+                    <p className="text-sm text-destructive" role="alert">
+                      {t("team:inviteModal.rolesError")}
+                    </p>
+                  ) : hasNoAssignableRoles ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      {t("team:inviteModal.noAssignableRoles")}
+                    </p>
+                  ) : (
+                    <Select
+                      id={roleFieldId}
+                      value={role}
+                      onValueChange={(value) => {
+                        if (typeof value === "string" && value) {
+                          setSelectedRole(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue>
+                          {role ? getWorkspaceRoleLabel(role, t) : null}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roleOptions.map((option) => (
+                          <SelectItem key={option.role} value={option.role}>
+                            {getWorkspaceRoleLabel(option.role, t)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
               </DialogPanel>
 
               <DialogFooter>
@@ -214,7 +288,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!workspaceId || !canInvite}
+                  disabled={!workspaceId || !canInvite || !role}
                 >
                   {t("team:inviteModal.sendInvitation")}
                 </Button>

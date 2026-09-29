@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { assignableRolesQueryKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
 
 type CreateWorkspaceRoleRequest = {
@@ -28,6 +29,9 @@ function useCreateWorkspaceRole() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["workspace-roles", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: assignableRolesQueryKey(variables.workspaceId),
       });
     },
   });

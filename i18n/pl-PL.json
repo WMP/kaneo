@@ -750,7 +750,11 @@
 			"invalidEmail": "Wpisz poprawny adres e-mail",
 			"noSmtpNotice": "Ten serwer nie ma skonfigurowanej poczty. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
 			"successNoEmail": "Zaproszenie zostało utworzone. E-mail nie został wysłany.",
-			"shareLinkDescriptionNoEmail": "E-mail nie został wysłany. Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego."
+			"shareLinkDescriptionNoEmail": "E-mail nie został wysłany. Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego.",
+			"roleLabel": "Rola",
+			"rolesLoading": "Wczytywanie ról...",
+			"rolesError": "Nie udało się wczytać ról, które możesz nadać. Spróbuj ponownie później.",
+			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia."
 		},
 		"membersTable": {
 			"emptyTitle": "Brak członków zespołu",
@@ -765,6 +769,7 @@
 			"ariaCancelInvitation": "Anuluj zaproszenie",
 			"ariaInvitationActions": "Działania związane z zaproszeniem",
 			"ariaRemoveMember": "Usuń członka",
+			"ariaChangeRole": "Zmień rolę: {{name}}",
 			"removeDialogTitle": "Usunąć członka zespołu?",
 			"removeDialogDescription": "Czy na pewno chcesz usunąć {{name}} z obszaru roboczego? Nie można tego cofnąć.",
 			"cancelDialogTitle": "Anulować zaproszenie?",
