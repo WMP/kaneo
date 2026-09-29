@@ -7,9 +7,13 @@ import {
 } from "../../database/schema";
 import {
   createFullAccessChecker,
+  singleWorkspaceRole,
   workspaceMemberStanding,
 } from "../../utils/project-access";
-import { createUsableProjectRoleChecker } from "../../utils/project-scope-filters";
+import {
+  createUsableProjectRoleChecker,
+  groupRows,
+} from "../../utils/project-scope-filters";
 
 const MEMBER_MANAGEMENT_ACTIONS = ["create", "update", "delete"];
 
@@ -40,7 +44,7 @@ async function getWorkspaceMembers(
   viewerUserId: string,
   viewerProjectIds: string[] | null,
 ) {
-  const members = await db
+  const memberRows = await db
     .select({
       id: userTable.id,
       name: userTable.name,
@@ -52,6 +56,17 @@ async function getWorkspaceMembers(
     .from(workspaceUserTable)
     .innerJoin(userTable, eq(workspaceUserTable.userId, userTable.id))
     .where(eq(workspaceUserTable.workspaceId, workspaceId));
+
+  // One entry per user. Duplicate membership rows follow the rule of
+  // `resolveProjectAccess` (`singleWorkspaceRole`): equal rows are one
+  // membership, rows that disagree on the role are ambiguous and count as no
+  // membership, so that user is not listed.
+  const members: Array<(typeof memberRows)[number]> = [];
+  for (const group of groupRows(memberRows, (row) => row.id).values()) {
+    const [first] = group;
+    const role = singleWorkspaceRole(group.map((row) => row.role));
+    if (first && role) members.push({ ...first, role });
+  }
 
   const withoutInstanceRole = ({
     instanceRole: _instanceRole,

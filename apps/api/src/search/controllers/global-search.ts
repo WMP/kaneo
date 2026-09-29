@@ -152,16 +152,24 @@ async function globalSearch(params: SearchParams): Promise<{
     .map((w) => w.workspaceId)
     .filter(Boolean);
 
+  // Nothing to search: no workspace was named and the user belongs to none (an
+  // instance administrator only searches the workspaces they belong to unless
+  // one is named), so no scope needs resolving.
+  if (!workspaceId && accessibleWorkspaceIds.length === 0) {
+    return { results: [], totalCount: 0, searchQuery: query };
+  }
+
   // Workspace results depend on membership only. Everything else depends on the
   // caller's PROJECT scope: a caller without full access searches only the
   // projects they are a member of. Resolved once per search, and not at all for
   // a workspace-only search. `projectId` / `excludeProjectId` can only narrow
   // the scope, never widen it. An instance administrator who is not a member
-  // has full access (as in `accessibleProjectIds`).
+  // has full access (as in `accessibleProjectIds`). With `workspaceId` the scope
+  // covers that workspace only.
   const scope =
     type === "workspaces"
       ? null
-      : await resolveUserProjectScope(resolvedUserId);
+      : await resolveUserProjectScope(resolvedUserId, workspaceId);
 
   if (accessibleWorkspaceIds.length === 0 && !scope?.instanceAdmin) {
     return { results: [], totalCount: 0, searchQuery: query };

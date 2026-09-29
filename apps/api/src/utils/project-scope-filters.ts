@@ -22,6 +22,23 @@ export function sqlIn(ref: SQLWrapper, values: string[]): SQL {
   return values.length === 0 ? sql`false` : inArray(ref as never, values);
 }
 
+// Groups rows by a key, pushing into one array per key. Queries that join a
+// user to their workspace membership rows repeat the user once per row; grouping
+// is the first step of collapsing them under `singleWorkspaceRole`.
+export function groupRows<T>(
+  rows: T[],
+  keyOf: (row: T) => string,
+): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
+  for (const row of rows) {
+    const key = keyOf(row);
+    const group = groups.get(key);
+    if (group) group.push(row);
+    else groups.set(key, [row]);
+  }
+  return groups;
+}
+
 // `null` (full access) adds no condition; an EMPTY list matches nothing.
 export function projectScopeCondition(
   column: SQLWrapper,
@@ -84,8 +101,11 @@ export type UserProjectScope = {
   memberRoles: Array<{ workspaceId: string; role: string }>;
 };
 
+// With `workspaceId` only that workspace is resolved (a search inside one
+// workspace does not need the user's other workspaces).
 export async function resolveUserProjectScope(
   userId: string,
+  workspaceId?: string,
 ): Promise<UserProjectScope> {
   const [user] = await db
     .select({ role: schema.userTable.role })
@@ -105,24 +125,28 @@ export async function resolveUserProjectScope(
       workspaceRole: schema.workspaceUserTable.role,
     })
     .from(schema.workspaceUserTable)
-    .where(eq(schema.workspaceUserTable.userId, userId));
+    .where(
+      and(
+        eq(schema.workspaceUserTable.userId, userId),
+        workspaceId
+          ? eq(schema.workspaceUserTable.workspaceId, workspaceId)
+          : undefined,
+      ),
+    );
 
   // One role per workspace, with the rule `resolveProjectAccess` applies:
   // equal duplicate rows are one membership, rows that disagree on the role are
   // ambiguous and count as no membership, so the workspace is left out of the
   // scope entirely (fail closed).
-  const rolesByWorkspace = new Map<string, string[]>();
-  for (const membership of memberships) {
-    rolesByWorkspace.set(membership.workspaceId, [
-      ...(rolesByWorkspace.get(membership.workspaceId) ?? []),
-      membership.workspaceRole,
-    ]);
-  }
-
   const fullWorkspaceIds: string[] = [];
   const restrictedWorkspaceIds: string[] = [];
-  for (const [workspaceId, roles] of rolesByWorkspace) {
-    const workspaceRole = singleWorkspaceRole(roles);
+  for (const [workspaceId, group] of groupRows(
+    memberships,
+    (membership) => membership.workspaceId,
+  )) {
+    const workspaceRole = singleWorkspaceRole(
+      group.map((membership) => membership.workspaceRole),
+    );
     if (!workspaceRole) continue;
     const isFull = await createFullAccessChecker(workspaceId)(
       user.role,
@@ -271,11 +295,7 @@ export async function filterUsersWithProjectAccess(
   const isUsable = createUsableProjectRoleChecker();
   // The join repeats a user for each of their workspace membership rows; collapse
   // them with the same rule as `resolveProjectAccess` (ambiguous roles: none).
-  const byUser = new Map<string, typeof rows>();
-  for (const row of rows) {
-    byUser.set(row.userId, [...(byUser.get(row.userId) ?? []), row]);
-  }
-  for (const [userId, group] of byUser) {
+  for (const [userId, group] of groupRows(rows, (row) => row.userId)) {
     const [first] = group;
     if (!first) continue;
     if (first.userRole === "admin") {
