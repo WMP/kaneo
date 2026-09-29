@@ -8,16 +8,19 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import type { ProjectAccess } from "../../utils/project-access";
-import { hasWorkspacePermission } from "../../utils/require-workspace-permission";
+import { satisfies } from "../../utils/role-statements";
 import {
   assertCanManageRole,
   assertNotFullAccess,
+  assertProjectMemberPermission,
+  isInertRole,
   PROJECT_MEMBER_ERRORS,
 } from "../delegation";
 
 // Removes a member, or lets a member leave the project. Removing somebody else
 // needs `member:delete` in the project and a target role within the caller's
-// own statements; leaving needs neither.
+// own statements (an inert role, which grants nothing, needs no such check);
+// leaving needs neither, but an API key still has to allow `member:delete`.
 async function removeProjectMember({
   c,
   access,
@@ -32,10 +35,20 @@ async function removeProjectMember({
   const { workspaceId, projectId } = access;
   const isSelf = userId === actorUserId;
 
-  if (!isSelf && !(await hasWorkspacePermission(c, { member: ["delete"] }))) {
-    throw new HTTPException(403, {
-      message: PROJECT_MEMBER_ERRORS.insufficient,
-    });
+  if (isSelf) {
+    const apiKey = c.get("apiKey") as
+      | { permissions?: Record<string, string[]> | null }
+      | undefined;
+    if (
+      apiKey?.permissions &&
+      !satisfies(apiKey.permissions, { member: ["delete"] })
+    ) {
+      throw new HTTPException(403, {
+        message: PROJECT_MEMBER_ERRORS.apiKeyScope,
+      });
+    }
+  } else {
+    assertProjectMemberPermission(c, access, "delete");
   }
 
   await assertNotFullAccess(access, userId);
@@ -69,18 +82,25 @@ async function removeProjectMember({
     });
   }
 
-  if (!isSelf) {
+  if (!isSelf && !(await isInertRole(access, existing.role))) {
     await assertCanManageRole(access, existing.role);
   }
 
-  await db
+  // Only delete the row that was checked: a concurrent role change may have
+  // given the member permissions beyond the caller's.
+  const deleted = await db
     .delete(projectMemberTable)
     .where(
       and(
         eq(projectMemberTable.projectId, projectId),
         eq(projectMemberTable.userId, userId),
+        eq(projectMemberTable.role, existing.role),
       ),
-    );
+    )
+    .returning({ id: projectMemberTable.id });
+  if (deleted.length === 0) {
+    throw new HTTPException(409, { message: PROJECT_MEMBER_ERRORS.changed });
+  }
 
   return {
     userId,
@@ -89,6 +109,7 @@ async function removeProjectMember({
     image: existing.image,
     role: existing.role,
     source: "project" as const,
+    active: !(await isInertRole(access, existing.role)),
   };
 }
 

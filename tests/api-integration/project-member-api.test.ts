@@ -1,9 +1,11 @@
+import { createHash, randomUUID } from "node:crypto";
 import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
-import { mockAuthenticatedSession } from "./helpers/auth";
+import * as delegation from "../../apps/api/src/project-member/delegation";
+import { mockAnonymousSession, mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import {
   addProjectMember,
@@ -25,6 +27,7 @@ type Member = {
   email: string;
   role: string;
   source: "project" | "full-access";
+  active: boolean;
 };
 
 async function buildWorld() {
@@ -158,6 +161,9 @@ describe("GET /project/{id}/members", () => {
     expect(byId.has(w.workspaceOnly.id)).toBe(false);
     expect(byId.has(stale.id)).toBe(false);
     expect(byId.get(w.projectAdmin.id)).toHaveProperty("email");
+    expect(list.every((entry) => entry.active)).toBe(true);
+    // Each person appears once, even the owner who also has a project row.
+    expect(new Set(list.map((entry) => entry.userId)).size).toBe(list.length);
   });
 
   it("refuses callers without project access", async () => {
@@ -523,5 +529,143 @@ describe("GET /project/{id}/assignable-roles", () => {
     expect(await rolesFor(w, w.projectViewer)).toEqual(
       expect.arrayContaining(["viewer", "reader"]),
     );
+  });
+});
+
+describe("memberships whose role grants nothing", () => {
+  async function withInertMember() {
+    const w = await buildWorld();
+    const inert = await addWorkspaceMember(w.workspaceId, "member");
+    await addProjectMember(w.project.id, inert.id, "deleted-role");
+    return { w, inert };
+  }
+
+  it("are listed as inactive", async () => {
+    const { w, inert } = await withInertMember();
+    as(w.projectAdmin);
+    const list = (await (await call(members(w), "GET")).json()) as Member[];
+    expect(list.find((entry) => entry.userId === inert.id)).toMatchObject({
+      role: "deleted-role",
+      source: "project",
+      active: false,
+    });
+    expect(
+      list.find((entry) => entry.userId === w.projectAdmin.id)?.active,
+    ).toBe(true);
+    // The inert member has no access.
+    as(inert);
+    await expectError(
+      await call(`/project/${w.project.id}`, "GET"),
+      403,
+      "You don't have access to this project",
+    );
+  });
+
+  it("can be removed by anybody with member:delete, whatever the role held", async () => {
+    const { w, inert } = await withInertMember();
+    // inviter cannot reach `deleted-role` (it resolves to nothing) but holds
+    // member:delete, which is all cleaning up needs.
+    as(w.inviter);
+    expect((await call(member(w, inert.id), "DELETE")).status).toBe(200);
+    expect(await rowOf(w, inert.id)).toBeUndefined();
+  });
+
+  it("need member:delete to be removed and can be re-assigned", async () => {
+    const { w, inert } = await withInertMember();
+    as(w.projectViewer);
+    await expectError(
+      await call(member(w, inert.id), "DELETE"),
+      403,
+      "Insufficient permissions",
+    );
+    as(w.projectAdmin);
+    const reassigned = await call(member(w, inert.id), "PATCH", {
+      role: "member",
+    });
+    expect(reassigned.status).toBe(200);
+    expect(await reassigned.json()).toMatchObject({
+      role: "member",
+      active: true,
+    });
+  });
+});
+
+describe("changes racing with the delegation checks", () => {
+  it("answers 409 when the member's role changed after it was checked", async () => {
+    const w = await buildWorld();
+    as(w.inviter);
+    await addProjectMember(w.project.id, w.candidate.id, "reader");
+    // Between the reach check and the write, somebody promotes the member.
+    const spy = vi
+      .spyOn(delegation, "assertCanManageRole")
+      .mockImplementationOnce(async () => {
+        await db
+          .update(schema.projectMemberTable)
+          .set({ role: "admin" })
+          .where(eq(schema.projectMemberTable.userId, w.candidate.id));
+      });
+    await expectError(
+      await call(member(w, w.candidate.id), "DELETE"),
+      409,
+      "The project membership changed, please retry",
+    );
+    expect((await rowOf(w, w.candidate.id))?.role).toBe("admin");
+    spy.mockRestore();
+
+    const patchSpy = vi
+      .spyOn(delegation, "assertCanManageRole")
+      .mockImplementationOnce(async () => {
+        await db
+          .update(schema.projectMemberTable)
+          .set({ role: "viewer" })
+          .where(eq(schema.projectMemberTable.userId, w.candidate.id));
+      });
+    as(w.projectAdmin);
+    await expectError(
+      await call(member(w, w.candidate.id), "PATCH", { role: "member" }),
+      409,
+      "The project membership changed, please retry",
+    );
+    expect((await rowOf(w, w.candidate.id))?.role).toBe("viewer");
+    patchSpy.mockRestore();
+  });
+});
+
+describe("API keys", () => {
+  async function bearerFor(userId: string, permissions: object) {
+    mockAnonymousSession();
+    const key = `test_${randomUUID()}`;
+    await db.insert(schema.apikeyTable).values({
+      referenceId: userId,
+      userId,
+      key: createHash("sha256").update(key).digest("base64url"),
+      enabled: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      permissions: JSON.stringify(permissions),
+    });
+    return key;
+  }
+
+  const withKey = (path: string, method: string, key: string) =>
+    app.request(`/api${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${key}` },
+    });
+
+  it("leaving a project still needs member:delete in the key's scope", async () => {
+    const w = await buildWorld();
+    const narrow = await bearerFor(w.projectViewer.id, { task: ["read"] });
+    await expectError(
+      await withKey(member(w, w.projectViewer.id), "DELETE", narrow),
+      403,
+      "Insufficient API key scope",
+    );
+    expect(await rowOf(w, w.projectViewer.id)).toBeDefined();
+
+    const wide = await bearerFor(w.projectViewer.id, { member: ["delete"] });
+    expect(
+      (await withKey(member(w, w.projectViewer.id), "DELETE", wide)).status,
+    ).toBe(200);
   });
 });

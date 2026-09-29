@@ -1,76 +1,95 @@
-import { asc, eq } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import db from "../../database";
 import {
   projectMemberTable,
   userTable,
   workspaceUserTable,
 } from "../../database/schema";
-import { createFullAccessChecker } from "../../utils/project-access";
+import {
+  fullAccessRoleNames,
+  projectRoleStatements,
+} from "../../utils/project-access";
 
-// Every workspace member who can reach the project: full-access members
-// (listed with their workspace role) and members of this project (listed with
-// their project role). A project row of a user who is no longer a workspace
-// member is stale and never listed.
+type ListedMember = {
+  userId: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: string;
+  source: "project" | "full-access";
+  active: boolean;
+};
+
+// Everybody who can reach the project: members of this project (with their
+// project role) and full-access members (with their workspace role). Only these
+// two groups are read, not the whole workspace. A project row of a user who is
+// no longer a workspace member is stale and never listed; a project row whose
+// role grants nothing is listed with `active: false` so it can be cleaned up.
 async function listProjectMembers(projectId: string, workspaceId: string) {
-  const [workspaceMembers, projectRows] = await Promise.all([
+  const fullRoles = await fullAccessRoleNames(workspaceId);
+
+  const [fullAccessRows, projectRows] = await Promise.all([
     db
       .select({
         userId: userTable.id,
         name: userTable.name,
         email: userTable.email,
         image: userTable.image,
-        instanceRole: userTable.role,
-        workspaceRole: workspaceUserTable.role,
+        role: workspaceUserTable.role,
       })
       .from(workspaceUserTable)
       .innerJoin(userTable, eq(workspaceUserTable.userId, userTable.id))
-      .where(eq(workspaceUserTable.workspaceId, workspaceId))
-      .orderBy(asc(userTable.name), asc(userTable.id)),
+      .where(
+        and(
+          eq(workspaceUserTable.workspaceId, workspaceId),
+          or(
+            eq(userTable.role, "admin"),
+            inArray(workspaceUserTable.role, fullRoles),
+            sql`'owner' = ANY (string_to_array(replace(${workspaceUserTable.role}, ' ', ''), ','))`,
+          ),
+        ),
+      ),
     db
       .select({
-        userId: projectMemberTable.userId,
+        userId: userTable.id,
+        name: userTable.name,
+        email: userTable.email,
+        image: userTable.image,
         role: projectMemberTable.role,
       })
       .from(projectMemberTable)
+      .innerJoin(
+        workspaceUserTable,
+        and(
+          eq(workspaceUserTable.userId, projectMemberTable.userId),
+          eq(workspaceUserTable.workspaceId, workspaceId),
+        ),
+      )
+      .innerJoin(userTable, eq(projectMemberTable.userId, userTable.id))
       .where(eq(projectMemberTable.projectId, projectId)),
   ]);
 
-  const projectRoles = new Map(
-    projectRows.map((row) => [row.userId, row.role]),
-  );
-  const hasFullAccess = createFullAccessChecker(workspaceId);
+  const members: ListedMember[] = fullAccessRows.map((row) => ({
+    ...row,
+    source: "full-access",
+    active: true,
+  }));
+  const fullAccessIds = new Set(fullAccessRows.map((row) => row.userId));
 
-  const members: {
-    userId: string;
-    name: string;
-    email: string;
-    image: string | null;
-    role: string;
-    source: "project" | "full-access";
-  }[] = [];
-
-  for (const member of workspaceMembers) {
-    const base = {
-      userId: member.userId,
-      name: member.name,
-      email: member.email,
-      image: member.image,
-    };
-    if (await hasFullAccess(member.instanceRole, member.workspaceRole)) {
-      members.push({
-        ...base,
-        role: member.workspaceRole,
-        source: "full-access",
-      });
-      continue;
+  const active = new Map<string, boolean>();
+  for (const row of projectRows) {
+    if (fullAccessIds.has(row.userId)) continue;
+    let usable = active.get(row.role);
+    if (usable === undefined) {
+      usable = (await projectRoleStatements(workspaceId, row.role)) !== null;
+      active.set(row.role, usable);
     }
-    const role = projectRoles.get(member.userId);
-    if (role) {
-      members.push({ ...base, role, source: "project" });
-    }
+    members.push({ ...row, source: "project", active: usable });
   }
 
-  return members;
+  return members.sort(
+    (a, b) => a.name.localeCompare(b.name) || a.userId.localeCompare(b.userId),
+  );
 }
 
 export default listProjectMembers;

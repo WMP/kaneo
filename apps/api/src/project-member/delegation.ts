@@ -1,7 +1,14 @@
+import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { isFullAccess, type ProjectAccess } from "../utils/project-access";
+import {
+  isFullAccess,
+  isOwnerRole,
+  type ProjectAccess,
+  projectAccessSatisfies,
+  projectRoleStatements,
+} from "../utils/project-access";
 import { rolesWithin, splitRoles } from "../utils/role-delegation";
-import { resolveRoleStatements } from "../utils/role-statements";
+import { satisfies } from "../utils/role-statements";
 
 // Stable error messages of the project member API. They are part of the API
 // contract (documented in the route descriptions) and asserted by tests.
@@ -18,9 +25,9 @@ export const PROJECT_MEMBER_ERRORS = {
     "Members with full access cannot be changed or removed at project level",
   notProjectMember: "User is not a member of this project",
   insufficient: "Insufficient permissions",
+  apiKeyScope: "Insufficient API key scope",
+  changed: "The project membership changed, please retry",
 } as const;
-
-const OWNER_ROLE = "owner";
 
 // The caller's effective access, set by `workspaceAccess.fromProject`.
 export function requireProjectAccess(
@@ -41,11 +48,11 @@ export async function assertAssignableProjectRole(
   access: ProjectAccess,
   role: string,
 ): Promise<void> {
-  if (splitRoles(role).includes(OWNER_ROLE)) {
+  if (isOwnerRole(role)) {
     throw new HTTPException(400, { message: PROJECT_MEMBER_ERRORS.ownerRole });
   }
   // A composite name such as "a,b" resolves as one unknown role.
-  if (!(await resolveRoleStatements(access.workspaceId, role))) {
+  if (!(await projectRoleStatements(access.workspaceId, role))) {
     throw new HTTPException(400, {
       message: PROJECT_MEMBER_ERRORS.unknownRole,
     });
@@ -91,4 +98,50 @@ export async function assertNotFullAccess(
       message: PROJECT_MEMBER_ERRORS.fullAccessTarget,
     });
   }
+}
+
+// Member management is decided by the caller's PROJECT role, not by their
+// workspace role (the `member` resource is workspace-level for
+// `hasWorkspacePermission`). An API key's scope still has to allow the action.
+export function hasProjectMemberPermission(
+  c: Context,
+  access: ProjectAccess,
+  action: "create" | "update" | "delete",
+): boolean {
+  const required = { member: [action] };
+  const apiKey = c.get("apiKey") as
+    | { permissions?: Record<string, string[]> | null }
+    | undefined;
+  if (apiKey?.permissions && !satisfies(apiKey.permissions, required)) {
+    return false;
+  }
+  return projectAccessSatisfies(access, required);
+}
+
+export function assertProjectMemberPermission(
+  c: Context,
+  access: ProjectAccess,
+  action: "create" | "update" | "delete",
+): void {
+  if (hasProjectMemberPermission(c, access, action)) return;
+  const apiKey = c.get("apiKey") as
+    | { permissions?: Record<string, string[]> | null }
+    | undefined;
+  const scopeDenied =
+    apiKey?.permissions && !satisfies(apiKey.permissions, { member: [action] });
+  throw new HTTPException(403, {
+    message: scopeDenied
+      ? PROJECT_MEMBER_ERRORS.apiKeyScope
+      : PROJECT_MEMBER_ERRORS.insufficient,
+  });
+}
+
+// A membership whose role grants nothing (deleted role, or moved from another
+// workspace) is inert. Whoever may manage members can still remove or replace
+// it, whatever the role once contained.
+export async function isInertRole(
+  access: ProjectAccess,
+  role: string,
+): Promise<boolean> {
+  return (await projectRoleStatements(access.workspaceId, role)) === null;
 }

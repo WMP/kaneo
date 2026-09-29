@@ -1,3 +1,4 @@
+import type { Context, Next } from "hono";
 import {
   apiRouter,
   type BaseVariables,
@@ -5,7 +6,6 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
-import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import { assignableRolesSchema } from "../workspace/response";
 import addProjectMember from "./controllers/add-project-member";
@@ -13,7 +13,10 @@ import getAssignableProjectRoles from "./controllers/get-assignable-project-role
 import listProjectMembers from "./controllers/list-project-members";
 import removeProjectMember from "./controllers/remove-project-member";
 import updateProjectMember from "./controllers/update-project-member";
-import { requireProjectAccess } from "./delegation";
+import {
+  assertProjectMemberPermission,
+  requireProjectAccess,
+} from "./delegation";
 import { projectMemberListSchema, projectMemberSchema } from "./response";
 import {
   addProjectMemberBody,
@@ -21,6 +24,20 @@ import {
   projectMemberParam,
   updateProjectMemberBody,
 } from "./schema";
+
+// Member management is decided by the caller's PROJECT role: the `member`
+// resource is workspace-level for requireWorkspacePermission, so this checks
+// the effective project statements (and the API key scope) itself.
+function requireProjectMemberPermission(action: "create" | "update") {
+  return async (c: Context, next: Next) => {
+    assertProjectMemberPermission(
+      c,
+      requireProjectAccess(c.get("projectAccess")),
+      action,
+    );
+    return next();
+  };
+}
 
 const listProjectMembersRoute = createRoute({
   method: "get",
@@ -48,10 +65,10 @@ const addProjectMemberRoute = createRoute({
   tags: ["Project members"],
   summary: "Add a project member",
   description:
-    "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions. The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). Errors: 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot assign a role with permissions you do not have', 404 'User is not a member of this workspace', 409 'User is already a member of this project', 409 'User already has full access to this project'.",
+    "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions (the project role, or the workspace role for a full-access user; an API key must allow it too). The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). Errors: 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot assign a role with permissions you do not have', 404 'User is not a member of this workspace', 409 'User is already a member of this project', 409 'User already has full access to this project'.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
-    requireWorkspacePermission({ member: ["create"] }),
+    requireProjectMemberPermission("create"),
   ] as const,
   request: {
     params: projectIdParam,
@@ -80,10 +97,10 @@ const updateProjectMemberRoute = createRoute({
   tags: ["Project members"],
   summary: "Change a project member's role",
   description:
-    "Change the project role of a project member. Requires member:update in the caller's effective project permissions. Both the member's current role and the new role must be within the caller's own permissions, and only owners and instance administrators may change their own row. Errors: 400 'Members with full access cannot be changed or removed at project level', 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot change your own project role', 403 'You cannot assign a role with permissions you do not have', 403 'You cannot manage a member with permissions you do not have', 404 'User is not a member of this project'.",
+    "Change the project role of a project member. Requires member:update in the caller's effective project permissions. Both the member's current role (unless it grants nothing) and the new role must be within the caller's own permissions, and nobody may change their own row. Errors: 400 'Members with full access cannot be changed or removed at project level', 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot change your own project role', 403 'You cannot assign a role with permissions you do not have', 403 'You cannot manage a member with permissions you do not have', 404 'User is not a member of this project'.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
-    requireWorkspacePermission({ member: ["update"] }),
+    requireProjectMemberPermission("update"),
   ] as const,
   request: {
     params: projectMemberParam,
@@ -101,6 +118,7 @@ const updateProjectMemberRoute = createRoute({
       "No access to the project, missing member:update permission, own role, or a role beyond the caller's permissions",
     ),
     404: errorResponse("The user is not a member of the project"),
+    409: errorResponse("The membership changed while it was being checked"),
   },
 });
 
@@ -111,7 +129,7 @@ const removeProjectMemberRoute = createRoute({
   tags: ["Project members"],
   summary: "Remove a project member or leave the project",
   description:
-    "Remove a member from the project, or leave it by passing your own user id (no extra permission needed). Removing somebody else requires member:delete in the caller's effective project permissions and a target role within the caller's own permissions. Errors: 400 'Members with full access cannot be changed or removed at project level', 403 'Insufficient permissions', 403 'You cannot manage a member with permissions you do not have', 404 'User is not a member of this project'.",
+    "Remove a member from the project, or leave it by passing your own user id (no extra permission needed). Removing somebody else requires member:delete in the caller's effective project permissions and a target role within the caller's own permissions (a role that grants nothing needs no such reach, so inert memberships can be cleaned up); leaving is subject to the API key scope only. Errors: 409 'The project membership changed, please retry', 400 'Members with full access cannot be changed or removed at project level', 403 'Insufficient permissions', 403 'You cannot manage a member with permissions you do not have', 404 'User is not a member of this project'.",
   middleware: [workspaceAccess.fromProject("projectId")] as const,
   request: { params: projectMemberParam },
   responses: {
@@ -121,6 +139,7 @@ const removeProjectMemberRoute = createRoute({
       "No access to the project, missing member:delete permission, or a member beyond the caller's permissions",
     ),
     404: errorResponse("The user is not a member of the project"),
+    409: errorResponse("The membership changed while it was being checked"),
   },
 });
 

@@ -67,7 +67,7 @@ async function addProjectMember({
     });
   }
 
-  return { ...target, role, source: "project" as const };
+  return { ...target, role, source: "project" as const, active: true };
 }
 
 export default addProjectMember;
