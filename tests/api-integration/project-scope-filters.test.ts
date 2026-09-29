@@ -1083,3 +1083,130 @@ describe("MCP tools call the filtered routes", () => {
     expect(source).toContain("`/api/label/workspace/");
   });
 });
+
+describe("search scope details", () => {
+  const search = (w: World, q: string, extra = "") =>
+    call(`/search?workspaceId=${w.workspaceId}&q=${q}${extra}`);
+
+  it("returns workspace results to a caller who has no project scope at all", async () => {
+    const w = await buildWorld();
+    actAs(w.x);
+    const all = await json<{ results: any[] }>(
+      await search(w, "Integration", "&limit=50"),
+    );
+    // (The workspace query joins members, so the same workspace can repeat.)
+    expect(new Set(all.results.map((r) => r.type))).toEqual(
+      new Set(["workspace"]),
+    );
+    expect(new Set(all.results.map((r) => r.id))).toEqual(
+      new Set([w.workspaceId]),
+    );
+    const workspacesOnly = await json<{ results: any[] }>(
+      await search(w, "Integration", "&type=workspaces"),
+    );
+    expect(new Set(workspacesOnly.results.map((r) => r.id))).toEqual(
+      new Set([w.workspaceId]),
+    );
+    // Project-scoped types stay empty for them.
+    expect(
+      (await json<{ results: any[] }>(await search(w, "alpha", "&type=tasks")))
+        .results,
+    ).toEqual([]);
+  });
+
+  it("an instance administrator who is not a workspace member searches everything", async () => {
+    const w = await buildWorld();
+    const [instanceAdmin] = await db
+      .insert(schema.userTable)
+      .values({
+        id: "instance-admin",
+        email: "instance-admin@example.com",
+        emailVerified: true,
+        name: "Instance admin",
+        role: "admin",
+      })
+      .returning();
+    actAs(instanceAdmin);
+    const tasks = await json<{ results: any[] }>(
+      await search(w, "alpha", "&type=tasks"),
+    );
+    expect(tasks.results.map((r) => r.id).sort()).toEqual(
+      [w.t1.id, w.t2.id].sort(),
+    );
+    const projects = await json<{ results: any[] }>(
+      await search(w, "project", "&type=projects"),
+    );
+    expect(projects.results).toHaveLength(2);
+  });
+});
+
+describe("member list for member managers", () => {
+  it("a caller whose workspace role can manage members sees everyone", async () => {
+    const w = await buildWorld();
+    await db.insert(schema.workspaceRoleTable).values({
+      workspaceId: w.workspaceId,
+      role: "people-manager",
+      permission: JSON.stringify({
+        member: ["update"],
+        project: ["read"],
+        task: ["read"],
+        workspace: ["read"],
+      }),
+    });
+    const manager = await addWorkspaceMember(w.workspaceId, "people-manager");
+    await addProjectMember(w.p1.project.id, manager.id, "member");
+    actAs(manager);
+    const ids = (
+      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+    ).map((member) => member.id);
+    for (const user of [w.u, w.v, w.w, w.x, w.r, w.a]) {
+      expect(ids).toContain(user.id);
+    }
+  });
+
+  it("a role without any member permission does not", async () => {
+    const w = await buildWorld();
+    await db.insert(schema.workspaceRoleTable).values({
+      workspaceId: w.workspaceId,
+      role: "reader",
+      permission: JSON.stringify({ member: ["read"], project: ["read"] }),
+    });
+    const reader = await addWorkspaceMember(w.workspaceId, "reader");
+    await addProjectMember(w.p1.project.id, reader.id, "member");
+    actAs(reader);
+    const ids = (
+      await json<Array<any>>(await call(`/workspace/${w.workspaceId}/members`))
+    ).map((member) => member.id);
+    expect(ids).not.toContain(w.v.id);
+    expect(ids).not.toContain(w.x.id);
+  });
+});
+
+describe("notification list scope", () => {
+  it("a full-access user lists notifications about every project", async () => {
+    const w = await buildWorld();
+    const [forAdmin] = await db
+      .insert(schema.notificationTable)
+      .values({
+        userId: w.a.id,
+        title: "hidden-project notification",
+        resourceId: w.t2.id,
+        resourceType: "task",
+      })
+      .returning();
+    actAs(w.a);
+    const listed = await json<Array<any>>(await call("/notification"));
+    expect(listed.map((n) => n.id)).toContain(forAdmin.id);
+  });
+
+  it("a project role that can no longer be exercised hides the notification", async () => {
+    const w = await buildWorld();
+    await db
+      .update(schema.projectMemberTable)
+      .set({ role: "deleted-role" })
+      .where(eq(schema.projectMemberTable.userId, w.u.id));
+    actAs(w.u);
+    const listed = await json<Array<any>>(await call("/notification"));
+    expect(listed.map((n) => n.id)).toEqual([w.nGeneral.id]);
+  });
+});

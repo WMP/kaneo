@@ -2,17 +2,10 @@ import { and, eq, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import db from "../database";
 import { taskTable, userTable } from "../database/schema";
 import { resolveProjectAccess } from "../utils/project-access";
-import type { UserProjectScope } from "../utils/project-scope-filters";
-
-function idList(ids: string[]) {
-  // `IN (NULL)` matches nothing, which is what an empty scope must do.
-  return ids.length === 0
-    ? sql`NULL`
-    : sql.join(
-        ids.map((id) => sql`${id}`),
-        sql`, `,
-      );
-}
+import {
+  type UserProjectScope,
+  userProjectScopeSql,
+} from "../utils/project-scope-filters";
 
 function resourceAccessSql(
   userId: string,
@@ -42,11 +35,12 @@ function resourceAccessSql(
 // who may be subscribed to private task activity. Use the same predicate when
 // reading notifications, including historical rows. Workspace membership is
 // necessary but not enough for a task: the user also needs access to the task's
-// PROJECT. `scope` (from `resolveUserProjectScope`) lists the workspaces where
-// the user has full access and the projects they are a member of elsewhere, so
-// a notification about a task they can no longer open is neither listed nor
-// markable. Creation and delivery use `canReceiveResourceNotification`, which
-// applies the same rule through `resolveProjectAccess`.
+// PROJECT. `scope` (from `resolveUserProjectScope`) names the workspaces where
+// the user has full access and the project roles they hold; the predicate joins
+// them to `ganttpro_project_member`, so a notification about a task they can no
+// longer open is neither listed nor markable, however many projects they have.
+// Creation and delivery use `canReceiveResourceNotification`, which applies the
+// same rule through `resolveProjectAccess`.
 export function notificationResourceAccess(
   userId: string,
   resourceId: string | null | SQLWrapper,
@@ -57,10 +51,12 @@ export function notificationResourceAccess(
     userId,
     resourceId,
     resourceType,
-    sql`(
-      notification_project.workspace_id IN (${idList(scope.fullWorkspaceIds)})
-      OR notification_task.project_id IN (${idList(scope.projectIds)})
-    )`,
+    userProjectScopeSql(
+      userId,
+      scope,
+      sql.raw("notification_task.project_id"),
+      sql.raw("notification_project.workspace_id"),
+    ),
   );
 }
 

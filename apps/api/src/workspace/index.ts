@@ -6,6 +6,7 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
+import { accessibleProjectIds } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { toCsv } from "../utils/to-csv";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
@@ -56,7 +57,7 @@ const getWorkspaceMembersRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Get workspace members",
   description:
-    "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them.",
+    "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member).",
   middleware: [workspaceAccess.fromParam("workspaceId")] as const,
   request: { params: workspaceIdParam },
   responses: {
@@ -206,7 +207,11 @@ const updateWorkspaceActivityRetentionRoute = createRoute({
 const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getWorkspaceMembersRoute, async (c) =>
     c.json(
-      await getWorkspaceMembersCtrl(c.get("workspaceId"), c.get("userId")),
+      await getWorkspaceMembersCtrl(
+        c.get("workspaceId"),
+        c.get("userId"),
+        await accessibleProjectIds(c.get("userId"), c.get("workspaceId")),
+      ),
       200,
     ),
   )

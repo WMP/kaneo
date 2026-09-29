@@ -1,9 +1,9 @@
-import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
-import type { PgColumn } from "drizzle-orm/pg-core";
+import { and, eq, inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import db, { schema } from "../database";
 import {
   accessibleProjectIds,
   createFullAccessChecker,
+  type ProjectAccess,
   projectRoleStatements,
 } from "./project-access";
 
@@ -15,69 +15,106 @@ import {
 // turns that decision into SQL and answers the "who" questions that need the
 // same rules for many users at once. See docs/plans/project-membership.md.
 
-// `null` (full access) adds no condition. An EMPTY list must match nothing,
-// never "no filter": `sql\`false\`` makes that explicit instead of trusting the
-// driver's handling of an empty `IN ()`.
+// The one convention for an empty scope: no values match nothing. It is spelled
+// out (`false`) instead of trusting the driver's handling of an empty `IN ()`.
+export function sqlIn(ref: SQLWrapper, values: string[]): SQL {
+  return values.length === 0 ? sql`false` : inArray(ref as never, values);
+}
+
+// `null` (full access) adds no condition; an EMPTY list matches nothing.
 export function projectScopeCondition(
-  column: PgColumn,
+  column: SQLWrapper,
   projectIds: string[] | null,
 ): SQL | undefined {
-  if (projectIds === null) return undefined;
-  if (projectIds.length === 0) return sql`false`;
-  return inArray(column, projectIds);
+  return projectIds === null ? undefined : sqlIn(column, projectIds);
 }
 
-// The projects a caller may read in one workspace, or `null` for all of them.
-export function callerProjectScope(userId: string, workspaceId: string) {
-  return accessibleProjectIds(userId, workspaceId);
+// The project scope of a request that already resolved access to one project
+// (`workspaceAccess.from*` set `projectAccess`). Full access to one project is
+// full access to the whole workspace, so no second resolution is needed then.
+export async function visibleProjectIdsFor(
+  access: ProjectAccess | undefined,
+  userId: string,
+  workspaceId: string,
+): Promise<string[] | null> {
+  return access?.mode === "full"
+    ? null
+    : accessibleProjectIds(userId, workspaceId);
 }
 
-// A user's reach across every workspace they belong to, for predicates that
-// span workspaces (notifications). `fullWorkspaceIds` are workspaces where the
-// user has full access; `projectIds` are the projects they are a member of in
-// all the other workspaces.
+// Memoised: does this project role resolve in the workspace's role catalog (it
+// is not `owner`, and it still exists)? A membership whose role cannot be
+// exercised grants nothing, exactly as in `resolveProjectAccess`.
+export function createUsableProjectRoleChecker() {
+  const cache = new Map<string, Promise<boolean>>();
+  return (workspaceId: string, role: string): Promise<boolean> => {
+    const key = `${workspaceId}\u0000${role}`;
+    let result = cache.get(key);
+    if (!result) {
+      result = projectRoleStatements(workspaceId, role).then(
+        (statements) => statements !== null,
+      );
+      cache.set(key, result);
+    }
+    return result;
+  };
+}
+
+// A user's reach across every workspace, for predicates that span workspaces
+// (search, notifications) and are expressed in SQL rather than as id lists:
+// - `instanceAdmin`: reaches every project,
+// - `fullWorkspaceIds`: workspaces where the user has full access,
+// - `memberRoles`: the distinct (workspace, project role) pairs of the user's
+//   project memberships whose role can be exercised. The predicate joins these
+//   to `ganttpro_project_member`, so the number of projects never grows a list.
 export type UserProjectScope = {
+  instanceAdmin: boolean;
   fullWorkspaceIds: string[];
-  projectIds: string[];
+  memberRoles: Array<{ workspaceId: string; role: string }>;
 };
 
 export async function resolveUserProjectScope(
   userId: string,
 ): Promise<UserProjectScope> {
+  const [user] = await db
+    .select({ role: schema.userTable.role })
+    .from(schema.userTable)
+    .where(eq(schema.userTable.id, userId))
+    .limit(1);
+  if (!user) {
+    return { instanceAdmin: false, fullWorkspaceIds: [], memberRoles: [] };
+  }
+  if (user.role === "admin") {
+    return { instanceAdmin: true, fullWorkspaceIds: [], memberRoles: [] };
+  }
+
   const memberships = await db
     .select({
       workspaceId: schema.workspaceUserTable.workspaceId,
       workspaceRole: schema.workspaceUserTable.role,
-      userRole: schema.userTable.role,
     })
     .from(schema.workspaceUserTable)
-    .innerJoin(
-      schema.userTable,
-      eq(schema.userTable.id, schema.workspaceUserTable.userId),
-    )
     .where(eq(schema.workspaceUserTable.userId, userId));
 
   const fullWorkspaceIds: string[] = [];
   const restrictedWorkspaceIds: string[] = [];
   for (const membership of memberships) {
     const isFull = await createFullAccessChecker(membership.workspaceId)(
-      membership.userRole,
+      user.role,
       membership.workspaceRole,
     );
     (isFull ? fullWorkspaceIds : restrictedWorkspaceIds).push(
       membership.workspaceId,
     );
   }
-
   if (restrictedWorkspaceIds.length === 0) {
-    return { fullWorkspaceIds, projectIds: [] };
+    return { instanceAdmin: false, fullWorkspaceIds, memberRoles: [] };
   }
 
-  const rows = await db
-    .select({
-      projectId: schema.projectMemberTable.projectId,
-      role: schema.projectMemberTable.role,
+  const pairs = await db
+    .selectDistinct({
       workspaceId: schema.projectTable.workspaceId,
+      role: schema.projectMemberTable.role,
     })
     .from(schema.projectMemberTable)
     .innerJoin(
@@ -91,18 +128,39 @@ export async function resolveUserProjectScope(
       ),
     );
 
-  const projectIds: string[] = [];
-  const usable = new Map<string, boolean>();
-  for (const row of rows) {
-    const key = `${row.workspaceId}|${row.role}`;
-    let ok = usable.get(key);
-    if (ok === undefined) {
-      ok = (await projectRoleStatements(row.workspaceId, row.role)) !== null;
-      usable.set(key, ok);
-    }
-    if (ok) projectIds.push(row.projectId);
+  const isUsable = createUsableProjectRoleChecker();
+  const memberRoles: UserProjectScope["memberRoles"] = [];
+  for (const pair of pairs) {
+    if (await isUsable(pair.workspaceId, pair.role)) memberRoles.push(pair);
   }
-  return { fullWorkspaceIds, projectIds };
+  return { instanceAdmin: false, fullWorkspaceIds, memberRoles };
+}
+
+// SQL for "the user may open the project `projectRef` of workspace
+// `workspaceRef`", from a scope resolved above. Pass column references, or raw
+// identifiers when the surrounding query aliases its tables.
+export function userProjectScopeSql(
+  userId: string,
+  scope: UserProjectScope,
+  projectRef: SQLWrapper,
+  workspaceRef: SQLWrapper,
+): SQL {
+  if (scope.instanceAdmin) return sql`true`;
+  const memberOfProject =
+    scope.memberRoles.length === 0
+      ? sql`false`
+      : sql`EXISTS (
+          SELECT 1 FROM ganttpro_project_member AS scope_member
+          WHERE scope_member.project_id = ${projectRef}
+            AND scope_member.user_id = ${userId}
+            AND (${workspaceRef}, scope_member.role) IN (${sql.join(
+              scope.memberRoles.map(
+                (pair) => sql`(${pair.workspaceId}, ${pair.role})`,
+              ),
+              sql`, `,
+            )})
+        )`;
+  return sql`(${sqlIn(workspaceRef, scope.fullWorkspaceIds)} OR ${memberOfProject})`;
 }
 
 // Which of these users can reach the project? Same decision as
@@ -149,7 +207,7 @@ export async function filterUsersWithProjectAccess(
     .where(inArray(schema.userTable.id, userIds));
 
   const isFullAccess = createFullAccessChecker(workspaceId);
-  const usableRoles = new Map<string, boolean>();
+  const isUsable = createUsableProjectRoleChecker();
   for (const row of rows) {
     if (row.userRole === "admin") {
       allowed.add(row.userId);
@@ -157,17 +215,12 @@ export async function filterUsersWithProjectAccess(
     }
     // A stale project row never grants access without workspace membership.
     if (!row.workspaceRole) continue;
-    if (await isFullAccess(row.userRole, row.workspaceRole)) {
+    if (
+      (await isFullAccess(row.userRole, row.workspaceRole)) ||
+      (row.projectRole && (await isUsable(workspaceId, row.projectRole)))
+    ) {
       allowed.add(row.userId);
-      continue;
     }
-    if (!row.projectRole) continue;
-    let ok = usableRoles.get(row.projectRole);
-    if (ok === undefined) {
-      ok = (await projectRoleStatements(workspaceId, row.projectRole)) !== null;
-      usableRoles.set(row.projectRole, ok);
-    }
-    if (ok) allowed.add(row.userId);
   }
   return allowed;
 }

@@ -148,7 +148,11 @@ async function getWorkspaceWorkload({
   // zero matching tasks, so absence of load is visible instead of silently
   // disappearing from the table. The unassigned row (`null`) is left as-is:
   // it only appears when at least one unassigned task matched.
-  const members = await getWorkspaceMembers(workspaceId, userId);
+  const members = await getWorkspaceMembers(
+    workspaceId,
+    userId,
+    visibleProjectIds,
+  );
   const personResources = await db
     .select({
       id: resourceTable.id,

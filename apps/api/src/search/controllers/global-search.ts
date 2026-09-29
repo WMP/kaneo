@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
 import db from "../../database";
 import {
   activityTable,
@@ -8,7 +8,11 @@ import {
   workspaceTable,
   workspaceUserTable,
 } from "../../database/schema";
-import { accessibleProjectIds } from "../../utils/project-access";
+import {
+  resolveUserProjectScope,
+  sqlIn,
+  userProjectScopeSql,
+} from "../../utils/project-scope-filters";
 import { escapeLikePattern } from "../like-pattern";
 import { TASK_SHORT_ID_PATTERN } from "../task-short-id";
 
@@ -147,37 +151,26 @@ async function globalSearch(params: SearchParams): Promise<{
     .map((w) => w.workspaceId)
     .filter(Boolean);
 
-  if (accessibleWorkspaceIds.length === 0) {
+  // Workspace results depend on membership only. Everything else depends on the
+  // caller's PROJECT scope: a caller without full access searches only the
+  // projects they are a member of. Resolved once per search, and not at all for
+  // a workspace-only search. `projectId` / `excludeProjectId` can only narrow
+  // the scope, never widen it. An instance administrator who is not a member
+  // has full access (as in `accessibleProjectIds`).
+  const scope =
+    type === "workspaces"
+      ? null
+      : await resolveUserProjectScope(resolvedUserId);
+
+  if (accessibleWorkspaceIds.length === 0 && !scope?.instanceAdmin) {
     return { results: [], totalCount: 0, searchQuery: query };
   }
 
-  // A workspace the caller does not belong to yields nothing, whatever the
-  // route in front of this controller did.
-  if (workspaceId && !accessibleWorkspaceIds.includes(workspaceId)) {
-    return { results: [], totalCount: 0, searchQuery: query };
-  }
-
-  // Membership of the workspace is not enough: a caller without full access
-  // searches only the projects they are a member of. Whole workspaces where
-  // the caller has full access are matched by workspace id, the others by the
-  // caller's project ids, so `projectId` / `excludeProjectId` can only narrow
-  // this set and never widen it.
-  const searchedWorkspaceIds = workspaceId
-    ? [workspaceId]
-    : accessibleWorkspaceIds;
-  const scopes = await Promise.all(
-    searchedWorkspaceIds.map(
-      async (id) =>
-        [id, await accessibleProjectIds(resolvedUserId, id)] as const,
-    ),
-  );
-  const fullAccessWorkspaceIds = scopes
-    .filter(([, projectIds]) => projectIds === null)
-    .map(([id]) => id);
-  const memberProjectIds = scopes.flatMap(([, projectIds]) => projectIds ?? []);
-  if (fullAccessWorkspaceIds.length === 0 && memberProjectIds.length === 0) {
-    return { results: [], totalCount: 0, searchQuery: query };
-  }
+  const searchesProjects =
+    scope !== null &&
+    (scope.instanceAdmin ||
+      scope.fullWorkspaceIds.length > 0 ||
+      scope.memberRoles.length > 0);
 
   const results: SearchResult[] = [];
   const searchPattern = `%${query.toLowerCase()}%`;
@@ -185,15 +178,15 @@ async function globalSearch(params: SearchParams): Promise<{
   const workspaceFilter = and(
     workspaceId
       ? eq(projectTable.workspaceId, workspaceId)
-      : inArray(projectTable.workspaceId, accessibleWorkspaceIds),
-    or(
-      fullAccessWorkspaceIds.length > 0
-        ? inArray(projectTable.workspaceId, fullAccessWorkspaceIds)
-        : undefined,
-      memberProjectIds.length > 0
-        ? inArray(projectTable.id, memberProjectIds)
-        : undefined,
-    ),
+      : sqlIn(projectTable.workspaceId, accessibleWorkspaceIds),
+    scope
+      ? userProjectScopeSql(
+          resolvedUserId,
+          scope,
+          projectTable.id,
+          projectTable.workspaceId,
+        )
+      : undefined,
   );
 
   // Check if query matches short-id pattern (e.g. "DEP-23"). `generateProjectSlug`
@@ -203,7 +196,7 @@ async function globalSearch(params: SearchParams): Promise<{
 
   const shortIdNumber = Number(shortIdMatch?.[2]);
 
-  if (type === "all" || type === "tasks") {
+  if (searchesProjects && (type === "all" || type === "tasks")) {
     const seenTaskIds = new Set<string>();
 
     // If query matches short-id pattern, look up by project slug + task number first
@@ -352,7 +345,7 @@ async function globalSearch(params: SearchParams): Promise<{
     }
   }
 
-  if (type === "all" || type === "projects") {
+  if (searchesProjects && (type === "all" || type === "projects")) {
     const projectRelevanceScore = sql<number>`
       CASE
         WHEN LOWER(${projectTable.name}) LIKE ${searchPattern} THEN 3
@@ -431,7 +424,7 @@ async function globalSearch(params: SearchParams): Promise<{
       )
       .where(
         and(
-          inArray(workspaceTable.id, accessibleWorkspaceIds),
+          sqlIn(workspaceTable.id, accessibleWorkspaceIds),
           or(
             ilike(workspaceTable.name, searchPattern),
             ilike(workspaceTable.description, searchPattern),
@@ -457,7 +450,10 @@ async function globalSearch(params: SearchParams): Promise<{
     }
   }
 
-  if (type === "all" || type === "comments" || type === "activities") {
+  if (
+    searchesProjects &&
+    (type === "all" || type === "comments" || type === "activities")
+  ) {
     const searchableActivityText = sql<string>`COALESCE(${activityTable.content}, CAST(${activityTable.eventData} AS text), '')`;
     const activityRelevanceScore = sql<number>`
       CASE

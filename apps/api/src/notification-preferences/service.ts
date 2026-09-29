@@ -10,7 +10,6 @@ import {
 } from "../database/schema";
 import { assertPublicWebhookDestination } from "../plugins/generic-webhook/config";
 import { accessibleProjectIds } from "../utils/project-access";
-import { resolveUserProjectScope } from "../utils/project-scope-filters";
 import { decryptSecret, encryptSecret } from "./secrets";
 
 export type NotificationPreferenceProjectMode = "all" | "selected";
@@ -205,10 +204,19 @@ export async function getNotificationPreferences(
 
   // A stored selection can name a project the user has since lost access to;
   // the response lists only the ones they can still open.
-  const scope = await resolveUserProjectScope(userId);
-  const canSee = (workspaceId: string, projectId: string) =>
-    scope.fullWorkspaceIds.includes(workspaceId) ||
-    scope.projectIds.includes(projectId);
+  const visibleByWorkspace = new Map<string, string[] | null>();
+  for (const rule of rules) {
+    if (rule.selectedProjects.length > 0) {
+      visibleByWorkspace.set(
+        rule.workspaceId,
+        await accessibleProjectIds(userId, rule.workspaceId),
+      );
+    }
+  }
+  const canSee = (workspaceId: string, projectId: string) => {
+    const visible = visibleByWorkspace.get(workspaceId);
+    return visible === null || Boolean(visible?.includes(projectId));
+  };
 
   return {
     emailAddress,
