@@ -70,7 +70,7 @@ const createProjectInvitationRoute = createRoute({
   tags: ["Project invitations"],
   summary: "Invite a person to a project",
   description:
-    "Invite somebody who is not in the workspace yet to this project, with a workspace role and a project role. The invitee accepts through the usual invitation link (`/invitation/accept/{id}`, Better Auth accept-invitation, email must match); acceptance creates the project membership. Requires invitation:create in the caller's effective project permissions (the project role for a project member, the workspace role for a full-access user; an API key must allow it too). The workspace role must be within the caller's own workspace role, the project role within the caller's effective permissions in this project, and owner is never allowed as either (owners and instance administrators are otherwise unrestricted). Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 409 ALREADY_WORKSPACE_MEMBER (add the person to the project instead), 409 INVITATION_ROLE_CONFLICT (a live pending invitation for this email has another workspace role), 403 INVITATION_LIMIT_REACHED, and on cloud 403 GUEST_CANNOT_INVITE and 400 DISPOSABLE_EMAIL_NOT_ALLOWED. When a live pending invitation with the same workspace role exists, this project is added to it (200, no second email) instead of creating another invitation (201).",
+    "Invite somebody who is not in the workspace yet to this project, with a workspace role and a project role. The invitee accepts through the usual invitation link (`/invitation/accept/{id}`, Better Auth accept-invitation, email must match); acceptance creates the project membership. Requires invitation:create in the caller's effective project permissions (the project role for a project member, the workspace role for a full-access user; an API key must allow it too). Explicit exception to the workspace-level rule for invitations: the permission is evaluated on the caller's effective PROJECT statements (invite within your own scope); the workspace role granted is still capped by the inviter's own workspace role. The workspace role must be within the caller's own workspace role, the project role within the caller's effective permissions in this project, and owner is never allowed as either (owners and instance administrators are otherwise unrestricted). Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 409 ALREADY_WORKSPACE_MEMBER (add the person to the project instead), 409 INVITATION_ROLE_CONFLICT (a live pending invitation for this email has another workspace role), 403 INVITATION_LIMIT_REACHED, and on cloud 403 GUEST_CANNOT_INVITE and 400 DISPOSABLE_EMAIL_NOT_ALLOWED. When a live pending invitation with the same workspace role exists, this project is added to it (200, no second email) instead of creating another invitation (201); if that invitation is a plain workspace invitation, the caller also needs invitation:create in their workspace role, otherwise 409 WORKSPACE_INVITATION_EXISTS. On cloud, 5 creations or re-sends per user per minute (429 RATE_LIMITED).",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireInvitationPermission("create"),
@@ -111,7 +111,7 @@ const listProjectInvitationsRoute = createRoute({
   tags: ["Project invitations"],
   summary: "List pending project invitations",
   description:
-    "Pending invitations that grant this project, live and expired. Requires invitation:create or invitation:cancel in the caller's effective project permissions.",
+    "Pending invitations that grant this project, live and expired. Requires invitation:create or invitation:cancel in the caller's effective project permissions (the explicit exception to the workspace-level rule for invitations).",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireMayListInvitations,
@@ -132,7 +132,7 @@ const cancelProjectInvitationRoute = createRoute({
   tags: ["Project invitations"],
   summary: "Cancel a project invitation",
   description:
-    "Remove this project from a pending invitation. Requires invitation:cancel in the caller's effective project permissions, and both roles of the invitation (workspace role and project role) within the caller's own permissions unless the caller is an owner or instance administrator. When no project is left on the invitation it is canceled as a whole (status canceled, the link stops working); the invitation table does not record how it was created, so a plain workspace invitation to which this project was added is canceled too. Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 404 INVITATION_NOT_FOUND.",
+    "Remove this project from a pending invitation. Requires invitation:cancel in the caller's effective project permissions (the explicit exception to the workspace-level rule for invitations), and both roles of the invitation (workspace role and project role) within the caller's own permissions unless the caller is an owner or instance administrator. When no project is left on an invitation created through these routes it is canceled as a whole (status canceled, the link stops working); a plain workspace invitation to which this project was added only loses the project. A role that no longer exists needs no reach to cancel. Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 404 INVITATION_NOT_FOUND.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireInvitationPermission("cancel"),
@@ -157,7 +157,7 @@ const resendProjectInvitationRoute = createRoute({
   tags: ["Project invitations"],
   summary: "Resend a project invitation",
   description:
-    "Extend a live pending invitation by the default lifetime (48 hours) and send the email again. Requires invitation:create and both roles of the invitation within the caller's own permissions. An expired invitation cannot be re-sent (409 INVITATION_EXPIRED): invite the person again. `emailAttempted` is false when SMTP is not configured.",
+    "Extend a live pending invitation by the default lifetime (48 hours) and send the email again. Requires invitation:create (evaluated on the caller's effective project permissions, like creating) and both roles of the invitation within the caller's own permissions. The cloud guest and disposable-address gates apply. An expired invitation cannot be re-sent (409 INVITATION_EXPIRED): invite the person again. `emailAttempted` is false when SMTP is not configured.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireInvitationPermission("create"),
