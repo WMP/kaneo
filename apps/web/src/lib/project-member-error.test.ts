@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { HttpError } from "@/lib/http-error";
+import {
+  indicatesServerUnreachable,
+  isConnectivityError,
+} from "@/lib/connectivity";
+import { HttpError, isUnauthorizedError } from "@/lib/http-error";
 import {
   getProjectMemberErrorMessage,
   ProjectMemberError,
@@ -26,25 +30,12 @@ describe("readProjectApiError", () => {
     });
   });
 
-  it("maps the stable plain-text messages of the member API to codes", async () => {
+  it("keeps a plain-text 403 from the access middleware without a code, and never guesses one from English", async () => {
     const error = await readProjectApiError(
       new Response(
         "You cannot manage a member with permissions you do not have",
-        {
-          status: 403,
-        },
+        { status: 403 },
       ),
-    );
-
-    expect(error).toMatchObject({
-      code: "YOU_CANNOT_MANAGE_THIS_MEMBER",
-      status: 403,
-    });
-  });
-
-  it("keeps a plain-text 403 from the access middleware without a code", async () => {
-    const error = await readProjectApiError(
-      new Response("No access to the project", { status: 403 }),
     );
 
     expect(error).toMatchObject({ status: 403, code: undefined });
@@ -73,13 +64,30 @@ describe("readProjectApiError", () => {
     expect(error.retryAfterSeconds).toBeUndefined();
   });
 
-  it("keeps a 401 an HttpError so the query cache redirects to sign-in", async () => {
+  it("is an HttpError with its status, so the sign-in redirect works on a 401", async () => {
     const error = await readProjectApiError(
       new Response("Unauthorized", { status: 401 }),
     );
 
     expect(error).toBeInstanceOf(HttpError);
-    expect((error as HttpError).status).toBe(401);
+    expect(isUnauthorizedError(error)).toBe(true);
+  });
+
+  it("keeps HTTP status semantics: a gateway 503 still reads as an unreachable API", async () => {
+    const error = await readProjectApiError(
+      new Response("Service Unavailable", { status: 503 }),
+    );
+
+    expect(indicatesServerUnreachable(error)).toBe(true);
+    expect(isConnectivityError(error)).toBe(false);
+  });
+
+  it("does not read an ordinary API error as unreachable", async () => {
+    const error = await readProjectApiError(
+      Response.json({ code: "UNKNOWN_ROLE", message: "x" }, { status: 400 }),
+    );
+
+    expect(indicatesServerUnreachable(error)).toBe(false);
   });
 });
 

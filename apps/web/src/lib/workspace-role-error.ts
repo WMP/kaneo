@@ -1,3 +1,5 @@
+import { HttpError } from "@/lib/http-error";
+
 // Better Auth client errors carry a machine-readable `code`. The invite and
 // role-change flows map the ones users can act on to translated copy; anything
 // else falls back to the API message and finally to a generic key.
@@ -58,7 +60,7 @@ export function toWorkspaceMemberError(
   });
 }
 
-function readCode(error: unknown): string | undefined {
+export function readCode(error: unknown): string | undefined {
   if (typeof error !== "object" || error === null) return undefined;
   const code = (error as { code?: unknown }).code;
   return typeof code === "string" && code ? code : undefined;
@@ -66,7 +68,10 @@ function readCode(error: unknown): string | undefined {
 
 /**
  * Picks the text to show for a failed invite or role change: a translated
- * message for a known code, else the API message, else `fallbackKey`.
+ * message for a known code, else the API message, else `fallbackKey`. An error
+ * of the project member routes (an HttpError) never shows its English message:
+ * those go through `getProjectMemberErrorMessage`, and reaching this mapper with
+ * one means the generic text is the honest answer.
  */
 export function getWorkspaceMemberErrorMessage(
   error: unknown,
@@ -77,6 +82,12 @@ export function getWorkspaceMemberErrorMessage(
   const knownKey = code ? ERROR_KEYS_BY_CODE[code] : undefined;
   if (knownKey) return t(knownKey);
 
-  if (error instanceof Error && error.message.trim()) return error.message;
+  if (
+    error instanceof Error &&
+    !(error instanceof HttpError) &&
+    error.message.trim()
+  ) {
+    return error.message;
+  }
   return t(fallbackKey);
 }

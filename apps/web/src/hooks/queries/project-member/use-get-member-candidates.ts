@@ -9,6 +9,8 @@ function useGetMemberCandidates(projectId: string | undefined) {
     queryKey: projectMemberCandidatesKey(projectId),
     queryFn: () => getMemberCandidates(projectId ?? ""),
     enabled: !!projectId,
+    // A 403 is the answer to "may I?": not reported as a failure.
+    meta: { expectForbidden: true },
     staleTime: 0,
     refetchOnMount: "always",
   });

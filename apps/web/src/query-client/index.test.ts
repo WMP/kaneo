@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HttpError } from "@/lib/http-error";
 import { useConnectivityStore } from "@/store/connectivity";
@@ -7,6 +8,7 @@ vi.mock("@sentry/react", () => ({ captureException: vi.fn() }));
 const { default: queryClient } = await import("./index");
 
 afterEach(() => {
+  vi.mocked(Sentry.captureException).mockClear();
   queryClient.clear();
   useConnectivityStore.setState({
     browserOffline: false,
@@ -66,5 +68,38 @@ describe("queryClient connectivity handling", () => {
       }),
     ).rejects.toThrow("Not found");
     expect(useConnectivityStore.getState().serverUnreachable).toBe(false);
+  });
+
+  it("does not report the 403 of a probe that expects it, but still reports other failures of it", async () => {
+    await expect(
+      queryClient.fetchQuery({
+        queryKey: ["probe", "forbidden"],
+        queryFn: () => Promise.reject(new HttpError(403, "No access")),
+        meta: { expectForbidden: true },
+        retry: false,
+      }),
+    ).rejects.toThrow("No access");
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+
+    await expect(
+      queryClient.fetchQuery({
+        queryKey: ["probe", "broken"],
+        queryFn: () => Promise.reject(new HttpError(500, "boom")),
+        meta: { expectForbidden: true },
+        retry: false,
+      }),
+    ).rejects.toThrow("boom");
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports an unexpected 403", async () => {
+    await expect(
+      queryClient.fetchQuery({
+        queryKey: ["other", "forbidden"],
+        queryFn: () => Promise.reject(new HttpError(403, "No access")),
+        retry: false,
+      }),
+    ).rejects.toThrow("No access");
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
   });
 });

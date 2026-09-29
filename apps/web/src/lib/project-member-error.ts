@@ -1,51 +1,36 @@
 import { HttpError, isForbiddenError } from "@/lib/http-error";
-import { WorkspaceMemberError } from "@/lib/workspace-role-error";
+import { readCode } from "@/lib/workspace-role-error";
 
-// Errors of the project member and project invitation routes. The invitation
-// routes answer JSON `{ code, message }`; the member routes and the shared
-// access middleware answer the message as plain text. Both are read here into
-// one error with a `code`, so the UI branches on a code and never on English.
+// Errors of the project member and project invitation routes. They answer JSON
+// `{ code, message }`; the shared access middleware answers the message as plain
+// text, which has no code. The UI branches on the code and never on English.
 
 type ProjectMemberErrorInit = {
+  status: number;
   code?: string;
-  status?: number;
   retryAfterSeconds?: number;
 };
 
-export class ProjectMemberError extends WorkspaceMemberError {
+/**
+ * An HttpError, so everything that reads HTTP semantics (the sign-in redirect on
+ * 401, connectivity tracking and the unreachable banner on 502/503/504, the
+ * retry policy) treats it like any other failed request. It also keeps the API
+ * `code` and the `Retry-After` of a rate limit.
+ */
+export class ProjectMemberError extends HttpError {
+  code?: string;
   retryAfterSeconds?: number;
 
   constructor(
     message: string,
-    { code, status, retryAfterSeconds }: ProjectMemberErrorInit = {},
+    { status, code, retryAfterSeconds }: ProjectMemberErrorInit,
   ) {
-    super(message, { code, status });
+    super(status, message);
     this.name = "ProjectMemberError";
+    this.code = code;
     this.retryAfterSeconds = retryAfterSeconds;
   }
 }
-
-// The stable plain-text messages of the member API (see PROJECT_MEMBER_ERRORS
-// in apps/api/src/project-member/delegation.ts, part of its documented
-// contract) mapped to the codes the invitation API uses where one exists.
-const CODES_BY_MESSAGE: Record<string, string> = {
-  "The owner role cannot be a project role": "OWNER_ROLE_NOT_ALLOWED",
-  "Unknown role": "UNKNOWN_ROLE",
-  "You cannot assign a role with permissions you do not have":
-    "ROLE_EXCEEDS_YOUR_PERMISSIONS",
-  "You cannot manage a member with permissions you do not have":
-    "YOU_CANNOT_MANAGE_THIS_MEMBER",
-  "You cannot change your own project role": "YOU_CANNOT_CHANGE_YOUR_OWN_ROLE",
-  "Members with full access cannot be changed or removed at project level":
-    "MEMBER_HAS_FULL_ACCESS",
-  "User already has full access to this project": "USER_HAS_FULL_ACCESS",
-  "User is already a member of this project": "ALREADY_PROJECT_MEMBER",
-  "User is not a member of this workspace": "NOT_WORKSPACE_MEMBER",
-  "User is not a member of this project": "NOT_PROJECT_MEMBER",
-  "The project membership changed, please retry": "PROJECT_MEMBERSHIP_CHANGED",
-  "Insufficient permissions": "INSUFFICIENT_PERMISSIONS",
-  "Insufficient API key scope": "INSUFFICIENT_API_KEY_SCOPE",
-};
 
 function parseBody(text: string): { code?: string; message: string } {
   const trimmed = text.trim();
@@ -59,24 +44,23 @@ function parseBody(text: string): { code?: string; message: string } {
       };
     }
   } catch {
-    // Plain text: the message itself.
+    // Plain text: the shared access middleware's message, which has no code.
   }
   return { message: trimmed };
 }
 
 /** Turns a failed response into the error a fetcher throws. */
-export async function readProjectApiError(response: Response): Promise<Error> {
+export async function readProjectApiError(
+  response: Response,
+): Promise<ProjectMemberError> {
   const text = await response.text().catch(() => "");
-  // A 401 keeps its HttpError shape: the query cache redirects to sign-in.
-  if (response.status === 401) return new HttpError(401, text);
-
   const { code, message } = parseBody(text);
   const retryAfter = Number.parseInt(
     response.headers.get("Retry-After") ?? "",
     10,
   );
   return new ProjectMemberError(message, {
-    code: code ?? CODES_BY_MESSAGE[message],
+    code,
     status: response.status,
     retryAfterSeconds:
       Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
@@ -113,12 +97,6 @@ const ERROR_KEYS_BY_CODE: Record<string, string> = {
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-export function getErrorCode(error: unknown): string | undefined {
-  if (typeof error !== "object" || error === null) return undefined;
-  const code = (error as { code?: unknown }).code;
-  return typeof code === "string" && code ? code : undefined;
-}
-
 /**
  * The text for a failed project member or invitation request: a translated
  * message for a known code, for a rate limit (with the wait when the API sent
@@ -130,7 +108,7 @@ export function getProjectMemberErrorMessage(
   t: Translate,
   fallbackKey: string,
 ): string {
-  const code = getErrorCode(error);
+  const code = readCode(error);
   if (code === "RATE_LIMITED") {
     const seconds = (error as ProjectMemberError).retryAfterSeconds;
     return seconds

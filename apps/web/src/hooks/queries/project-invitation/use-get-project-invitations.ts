@@ -9,6 +9,8 @@ function useGetProjectInvitations(projectId: string | undefined) {
     queryKey: projectInvitationsKey(projectId),
     queryFn: () => getProjectInvitations(projectId ?? ""),
     enabled: !!projectId,
+    // A 403 is the answer to "may I?": not reported as a failure.
+    meta: { expectForbidden: true },
     staleTime: 0,
     refetchOnMount: "always",
   });
