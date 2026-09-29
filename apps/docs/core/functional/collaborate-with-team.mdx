@@ -14,7 +14,22 @@ In your workspace:
 3. Send invitations to teammates.
 4. Track active and pending members in the members table.
 
-## 2. Assign clear ownership
+## 2. Control who can see which project
+
+Access to a project comes from being a member of that project:
+
+- Workspace **owners** and roles that can manage workspace settings (the built-in **admin** role) see every project in the workspace and act with their workspace role.
+- Everyone else (built-in **member** and **viewer**, and custom roles) only sees the projects they were added to. Inside a project, the permissions of their project role apply, which can differ from their workspace role. `owner` is never a project role.
+- The person who creates a project becomes its admin.
+- A project member with the right permission can add other workspace members to the same project, but never with a role that has more permissions than their own.
+
+<Warning>
+  **Upgrading an existing installation:** the upgrade gives every workspace owner and admin membership in all existing projects. Workspace members with any other role lose access to all projects until an administrator adds them to the projects they need.
+</Warning>
+
+Project members are managed through the API for now (`GET`, `POST`, `PATCH` and `DELETE` on `/api/project/{projectId}/members`, and `GET /api/project/{projectId}/assignable-roles` for the roles you may hand out); the web interface for it is still to come.
+
+## 3. Assign clear ownership
 
 For each active task:
 
@@ -22,7 +37,7 @@ For each active task:
 - Use due dates for time-sensitive work
 - Set priority to support tradeoff decisions
 
-## 3. Standardize labels
+## 4. Standardize labels
 
 Use labels to create a shared language across the team. Manage them at the workspace level in **Settings -> Workspace -> Labels** (see [Manage workspace labels](/core/functional/manage-workspace-labels)).
 
@@ -32,7 +47,7 @@ Examples:
 - Domain: `api`, `web`, `infra`
 - Risk/impact: `critical`, `customer-impact`
 
-## 4. Use views intentionally
+## 5. Use views intentionally
 
 - **Board** for daily execution
 - **List** for compact review and cleanup
@@ -40,7 +55,7 @@ Examples:
 
 Switch views depending on the meeting or decision you are making.
 
-## 5. Keep communication in the task
+## 6. Keep communication in the task
 
 When scope, ownership, or timing changes, update the task directly so project history remains visible.
 

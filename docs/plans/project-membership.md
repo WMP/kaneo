@@ -1,6 +1,6 @@
 # Plan: project-level membership (model B)
 
-Status: accepted by the product owner on 2026-09-29; implementation in progress. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: accepted by the product owner on 2026-09-29; stage 2a (single-project gate, member API, lifecycle) implemented on `claude/rbac-stage2a-core`, stages 2b to 2d pending. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 
@@ -12,7 +12,7 @@ A workspace admin creates projects and invites people to a specific project with
 | --- | --- |
 | Model | B: access to project data always comes from a project membership, except for full-access users (below). |
 | Full access | Workspace owner, instance administrator, and any workspace role that grants `workspace:manage_settings` (the built-in `admin` has it). They see every project in the workspace and act with their workspace role. |
-| Upgrade of existing installations | A migration creates project memberships only for workspace members whose role is `owner` or `admin`, with the same role. **Other existing members lose access to all projects after the upgrade until an administrator adds them.** Release notes and user documentation must say this. |
+| Upgrade of existing installations | A migration creates project memberships only for workspace members whose role is `owner` or `admin`, stored as project role `admin` (owner is never a project role). **Other existing members lose access to all projects after the upgrade until an administrator adds them.** Release notes and user documentation must say this. |
 | Project creator | Becomes a project member with the project role `admin`. |
 | Project role | A name from the workspace role catalog (built-in `viewer`, `member`, `admin`, or a custom `workspace_role`). Its statements apply only inside that project. `owner` is never a project role. |
 | Invitation to a project | The inviter chooses the workspace role and the project role. Both must be a subset of the inviter's own permissions: workspace role against the inviter's workspace role, project role against the inviter's effective role in that project. |
@@ -36,9 +36,20 @@ New additive migration after `0055_ganttpro_resources`:
 - `ganttpro_project_member(id, project_id → project cascade, user_id → user cascade, role, created_at)`, unique `(project_id, user_id)`, index on `user_id`.
 - `ganttpro_invitation_project(id, invitation_id → invitation cascade, project_id → project cascade, role)`, unique `(invitation_id, project_id)`.
 - `ganttpro_calendar_feed.ganttpro_created_by` (nullable user id) so a feed stops serving when its creator loses project access. Legacy feeds without a creator keep working and are listed as a known gap.
-- Backfill: one project membership per existing project for each workspace member with role `owner` or `admin`.
+- Backfill: one project membership per existing project for each workspace member with role `owner` (also inside a composite role such as `admin,owner`) or `admin`, always with project role `admin`.
 
 Removing a workspace member (remove, leave, account deletion) deletes that user's memberships in the workspace's projects. Moving a project to another workspace drops memberships of users who are not members of the target workspace.
+
+## Stage 2a decisions and current state
+
+- Project role that cannot be exercised (`owner`, or a name that no longer resolves in the workspace catalog) grants no access instead of read access without permissions. Moving a project to another workspace drops members who are not in the target workspace and members whose custom role does not exist there.
+- Full-access users are listed by `GET /api/project/{id}/members` with `source: "full-access"` and their workspace role. They cannot be changed or removed at project level (400) and cannot be added as project members (409). Their own project row (owners and admins get one from the migration and from project creation) is inert.
+- A workspace role that a project membership or a pending project invitation still names cannot be deleted; renaming it is refused as well (rename is blocked rather than synchronised). Both are enforced in `hooks.before` for `/organization/delete-role` and `/organization/update-role`, since Better Auth has no role hook.
+- Removing a workspace member deletes their project memberships in that workspace in `beforeRemoveMember`; `/organization/leave` runs no organization hook and is handled in `hooks.after`. Account deletion cascades by foreign key.
+- Also gated in 2a because they are single-project writes: creating a task label on a task (`POST /api/label` with `taskId`), creating a relation whose target lives in another project, moving a task into another project (access plus `task:create` there), project move source and bulk task updates (every project).
+- Events: no existing event type describes a membership change, so `POST/PATCH/DELETE /api/project/{id}/members` publish none. Realtime refresh and closing sockets of removed members belong to stage 2b.
+- MCP and the typed client: no new MCP tools in 2a. MCP tools call the same HTTP routes and inherit the gate, but they cannot yet list or change project members; add tools together with the web UI in 2d if agents need them. The web client needs no change for the gate itself.
+- Not yet covered (stage 2b): list, portfolio, search, workload and workspace activity filters, workspace member list for restricted users, relation targets and subtask counts, assignee validation, notifications, WebSocket delivery and close on removal, calendar feeds, project reorder.
 
 ## Enforcement surfaces
 
