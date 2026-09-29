@@ -55,11 +55,16 @@ export function statementsFromCatalogRow(
   );
 }
 
+// The database, or a transaction of it: callers that hold locks look roles up
+// on their own connection instead of asking the pool for a second one.
+export type SelectExecutor = Pick<typeof db, "select">;
+
 async function catalogPermission(
   workspaceId: string,
   role: string,
+  executor: SelectExecutor,
 ): Promise<string | null> {
-  const [row] = await db
+  const [row] = await executor
     .select({ permission: schema.workspaceRoleTable.permission })
     .from(schema.workspaceRoleTable)
     .where(
@@ -96,10 +101,11 @@ export function satisfies(
 export async function resolveRoleStatements(
   workspaceId: string,
   role: string,
+  executor: SelectExecutor = db,
 ): Promise<RoleStatements | null> {
   return statementsFromCatalogRow(
     role,
-    await catalogPermission(workspaceId, role),
+    await catalogPermission(workspaceId, role, executor),
   );
 }
 
