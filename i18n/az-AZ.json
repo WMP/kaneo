@@ -1847,7 +1847,8 @@
 				"rateLimited": "Too many invitations. Try again in a minute.",
 				"resourceChanged": "The resource changed. Please try again.",
 				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one."
+				"unknownRole": "One of the roles no longer exists. Pick another one.",
+				"notFound": "Resource not found."
 			},
 			"invite": {
 				"addedToExisting": "The projects were added to the pending invitation for this address.",

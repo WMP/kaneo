@@ -1,6 +1,6 @@
 import { client } from "@kaneo/libs";
 import type { InferRequestType } from "hono/client";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 export type DeleteResourceRequest = InferRequestType<
   (typeof client)["resource"][":id"]["$delete"]
@@ -10,7 +10,7 @@ async function deleteResource({ id }: DeleteResourceRequest) {
   const response = await client.resource[":id"].$delete({ param: { id } });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   return response.json();

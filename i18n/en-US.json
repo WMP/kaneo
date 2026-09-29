@@ -1125,7 +1125,8 @@
 				"notMember": "This user is not a member of the workspace.",
 				"resourceChanged": "The resource changed. Please try again.",
 				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address."
+				"emailNotAllowed": "Only a person can have an email address.",
+				"notFound": "Resource not found."
 			}
 		},
 		"workspaceCalendar": {

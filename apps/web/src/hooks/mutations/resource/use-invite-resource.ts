@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import inviteResource from "@/fetchers/resource/invite-resource";
 
-// The invitation shows on the resource (status badge): the resource list is
-// refreshed. Project invitation lists are read when their page opens.
+// The invitation shows on the resource (status badge) and in the invitations
+// of the projects it names, so both lists are refreshed.
 function useInviteResource(workspaceId: string) {
   const queryClient = useQueryClient();
 
@@ -15,6 +15,7 @@ function useInviteResource(workspaceId: string) {
       void queryClient.invalidateQueries({
         queryKey: ["workspace-members", workspaceId],
       });
+      void queryClient.invalidateQueries({ queryKey: ["project-invitations"] });
     },
   });
 }

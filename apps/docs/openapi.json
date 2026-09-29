@@ -21625,6 +21625,11 @@
           "400": {
             "description": "Invalid body, or unknown workspace",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -21648,6 +21653,11 @@
           "404": {
             "description": "Workspace not found",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -21713,6 +21723,11 @@
           "400": {
             "description": "Invalid body, or unknown resource",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -21736,6 +21751,11 @@
           "404": {
             "description": "Resource not found",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -21789,6 +21809,11 @@
           "404": {
             "description": "Resource not found",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -21888,7 +21913,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -21906,7 +21931,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -21921,7 +21946,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -21936,7 +21961,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -21951,7 +21976,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -22009,6 +22034,11 @@
           "404": {
             "description": "Resource not found",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -22073,7 +22103,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -22101,7 +22131,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -22116,7 +22146,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -22176,7 +22206,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {
@@ -22191,7 +22221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectInvitationError"
+                  "$ref": "#/components/schemas/CodedError"
                 }
               },
               "text/plain": {

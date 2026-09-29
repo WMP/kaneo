@@ -1,5 +1,5 @@
 import { client } from "@kaneo/libs";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 export type LinkResourceRequest = { id: string; userId: string };
 
@@ -12,7 +12,7 @@ async function linkResource({ id, userId }: LinkResourceRequest) {
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   return response.json();

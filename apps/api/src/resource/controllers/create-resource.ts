@@ -15,7 +15,11 @@ async function createResource(
 ) {
   const trimmedName = name.trim();
   if (!trimmedName) {
-    throw new HTTPException(400, { message: "Name cannot be empty" });
+    throw resourceError(
+      400,
+      RESOURCE_ERROR_CODES.nameRequired,
+      "Name cannot be empty",
+    );
   }
 
   const normalizedEmail = email?.trim().toLowerCase() || null;
@@ -34,7 +38,11 @@ async function createResource(
     .limit(1);
 
   if (!workspace) {
-    throw new HTTPException(404, { message: "Workspace not found" });
+    throw resourceError(
+      404,
+      RESOURCE_ERROR_CODES.workspaceNotFound,
+      "Workspace not found",
+    );
   }
 
   const [created] = await db

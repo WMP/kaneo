@@ -1,5 +1,5 @@
 import { client } from "@kaneo/libs";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 export type ResourceInviteProject = {
   id: string;
@@ -18,7 +18,7 @@ async function getResourceInviteDefaults(
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   const { projects } = await response.json();

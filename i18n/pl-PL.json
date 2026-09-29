@@ -1983,7 +1983,8 @@
 				"notMember": "Ten użytkownik nie jest członkiem przestrzeni roboczej.",
 				"resourceChanged": "Zasób się zmienił. Spróbuj ponownie.",
 				"duplicateProject": "Projekt można podać tylko raz.",
-				"emailNotAllowed": "Tylko osoba może mieć adres e-mail."
+				"emailNotAllowed": "Tylko osoba może mieć adres e-mail.",
+				"notFound": "Nie znaleziono zasobu."
 			}
 		},
 		"workspaceRoles": {

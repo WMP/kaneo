@@ -1,5 +1,5 @@
 import { responseTimestamp, z } from "../openapi";
-import { codedErrorResponse } from "../project-invitation/response";
+import { codedErrorResponse } from "../utils/coded-error";
 
 export { codedErrorResponse };
 

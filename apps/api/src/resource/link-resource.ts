@@ -133,7 +133,11 @@ export async function linkResourceToMember({
       )
       .for("update");
     if (!current) {
-      throw resourceError(404, "RESOURCE_NOT_FOUND", "Resource not found");
+      throw resourceError(
+        404,
+        RESOURCE_ERROR_CODES.notFound,
+        "Resource not found",
+      );
     }
     if (current.kind !== "person") {
       throw resourceError(

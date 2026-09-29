@@ -4,6 +4,7 @@ import db from "../../database";
 import { resourceTable, taskAssignmentTable } from "../../database/schema";
 import { recomputeTaskPrimaryAssignees } from "../../task/assignments";
 import { describeResources } from "../describe-resources";
+import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
 
 // Deleting a resource cascades away its assignment rows (FK onDelete:
 // cascade), but a task's primary-assignee mirror only ever mirrors a USER
@@ -22,7 +23,11 @@ async function deleteResource(id: string, viewerUserId: string) {
     .returning();
 
   if (!deleted) {
-    throw new HTTPException(404, { message: "Resource not found" });
+    throw resourceError(
+      404,
+      RESOURCE_ERROR_CODES.notFound,
+      "Resource not found",
+    );
   }
 
   // Defensive no-op today (see comment above); kept so a future change that

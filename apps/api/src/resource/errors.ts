@@ -1,4 +1,4 @@
-import { invitationError } from "../project-invitation/delegation";
+import { codedError } from "../utils/coded-error";
 
 // Errors of the resource invitation and link routes: JSON `{ code, message }`
 // like the project invitation routes, so the web client can branch on `code`.
@@ -11,6 +11,9 @@ export const RESOURCE_ERROR_CODES = {
   changed: "RESOURCE_CHANGED",
   duplicateProject: "DUPLICATE_PROJECT",
   emailNotAllowed: "RESOURCE_EMAIL_NOT_ALLOWED",
+  nameRequired: "RESOURCE_NAME_REQUIRED",
+  notFound: "RESOURCE_NOT_FOUND",
+  workspaceNotFound: "WORKSPACE_NOT_FOUND",
 } as const;
 
-export const resourceError = invitationError;
+export const resourceError = codedError;

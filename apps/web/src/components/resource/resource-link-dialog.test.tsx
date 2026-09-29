@@ -7,7 +7,7 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { HttpError } from "@/lib/http-error";
+import { ProjectMemberError } from "@/lib/project-member-error";
 import type Resource from "@/types/resource";
 import ResourceLinkDialog from "./resource-link-dialog";
 
@@ -153,10 +153,10 @@ describe("ResourceLinkDialog", () => {
 
   it("keeps the dialog open with a translated message when linking fails", async () => {
     m.mutateAsync.mockRejectedValue(
-      new HttpError(
-        409,
-        JSON.stringify({ code: "RESOURCE_ALREADY_LINKED", message: "raw" }),
-      ),
+      new ProjectMemberError("raw", {
+        status: 409,
+        code: "RESOURCE_ALREADY_LINKED",
+      }),
     );
     const { onClose } = renderDialog();
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "u1" } });

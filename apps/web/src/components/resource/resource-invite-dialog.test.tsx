@@ -7,7 +7,7 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { HttpError } from "@/lib/http-error";
+import { ProjectMemberError } from "@/lib/project-member-error";
 import type Resource from "@/types/resource";
 import ResourceInviteDialog from "./resource-invite-dialog";
 
@@ -53,19 +53,23 @@ vi.mock("@/hooks/mutations/resource/use-invite-resource", () => ({
 vi.mock("@/hooks/queries/resource/use-resource-invite-defaults", () => ({
   default: () => m.projects,
 }));
-vi.mock("@/hooks/queries/resource/use-project-assignable-roles", () => ({
-  default: (ids: string[]) =>
-    Object.fromEntries(
-      ids.map((id) => [
-        id,
-        m.projectRoles[id] ?? {
-          isLoading: true,
-          isError: false,
-          roles: undefined,
-        },
-      ]),
-    ),
-}));
+vi.mock(
+  "@/hooks/queries/project-member/use-get-project-assignable-roles",
+  () => ({
+    default: (id: string) => {
+      const state = m.projectRoles[id] ?? {
+        isLoading: true,
+        isError: false,
+        roles: undefined,
+      };
+      return {
+        data: state.roles,
+        isLoading: state.isLoading,
+        isError: state.isError,
+      };
+    },
+  }),
+);
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
   default: () => m.workspaceRoles,
 }));
@@ -347,10 +351,10 @@ describe("ResourceInviteDialog", () => {
 
   it("translates the error code and offers to link when the address is a member's", async () => {
     m.mutateAsync.mockRejectedValue(
-      new HttpError(
-        409,
-        JSON.stringify({ code: "ALREADY_WORKSPACE_MEMBER", message: "raw" }),
-      ),
+      new ProjectMemberError("raw", {
+        status: 409,
+        code: "ALREADY_WORKSPACE_MEMBER",
+      }),
     );
     const { onLinkInstead } = renderDialog();
     fireEvent.click(send());
@@ -385,7 +389,7 @@ describe("ResourceInviteDialog", () => {
     [429, "RATE_LIMITED", "settings:workspaceResources.errors.rateLimited"],
   ])("maps %s %s to translated copy", async (status, code, key) => {
     m.mutateAsync.mockRejectedValue(
-      new HttpError(status, JSON.stringify({ code, message: "raw" })),
+      new ProjectMemberError("raw", { status, code }),
     );
     renderDialog();
     fireEvent.click(send());
@@ -403,7 +407,7 @@ describe("ResourceInviteDialog", () => {
 
   it("falls back to a generic message for an error without a known code", async () => {
     m.mutateAsync.mockRejectedValue(
-      new HttpError(500, "Internal Server Error"),
+      new ProjectMemberError("Internal Server Error", { status: 500 }),
     );
     renderDialog();
     fireEvent.click(send());

@@ -1,5 +1,5 @@
 import { client } from "@kaneo/libs";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 import type { Resource, ResourceKind } from "@/types/resource";
 
 export type GetWorkspaceResourcesRequest = {
@@ -17,7 +17,7 @@ async function getWorkspaceResources({
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   // The API response schema types `kind` as a plain string; narrow it to the

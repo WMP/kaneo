@@ -56,7 +56,11 @@ async function inviteResource({
     )
     .limit(1);
   if (!resource) {
-    throw resourceError(404, "RESOURCE_NOT_FOUND", "Resource not found");
+    throw resourceError(
+      404,
+      RESOURCE_ERROR_CODES.notFound,
+      "Resource not found",
+    );
   }
   if (resource.kind !== "person") {
     throw resourceError(

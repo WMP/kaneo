@@ -1,5 +1,5 @@
 import { client } from "@kaneo/libs";
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 export type UnlinkResourceRequest = { id: string };
 
@@ -9,7 +9,7 @@ async function unlinkResource({ id }: UnlinkResourceRequest) {
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   return response.json();

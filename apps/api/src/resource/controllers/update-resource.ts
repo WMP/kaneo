@@ -21,11 +21,19 @@ async function updateResource(
     .limit(1);
 
   if (!existing) {
-    throw new HTTPException(404, { message: "Resource not found" });
+    throw resourceError(
+      404,
+      RESOURCE_ERROR_CODES.notFound,
+      "Resource not found",
+    );
   }
 
   if (name !== undefined && !name.trim()) {
-    throw new HTTPException(400, { message: "Name cannot be empty" });
+    throw resourceError(
+      400,
+      RESOURCE_ERROR_CODES.nameRequired,
+      "Name cannot be empty",
+    );
   }
 
   const normalizedEmail =

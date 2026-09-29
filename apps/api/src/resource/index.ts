@@ -87,11 +87,11 @@ const createResourceRoute = createRoute({
   },
   responses: {
     200: jsonResponse("The created resource", resourceSchema),
-    400: errorResponse("Invalid body, or unknown workspace"),
+    400: codedErrorResponse("Invalid body, or unknown workspace"),
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    404: errorResponse("Workspace not found"),
+    404: codedErrorResponse("Workspace not found"),
   },
 });
 
@@ -116,11 +116,11 @@ const updateResourceRoute = createRoute({
   },
   responses: {
     200: jsonResponse("The updated resource", resourceSchema),
-    400: errorResponse("Invalid body, or unknown resource"),
+    400: codedErrorResponse("Invalid body, or unknown resource"),
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    404: errorResponse("Resource not found"),
+    404: codedErrorResponse("Resource not found"),
   },
 });
 
@@ -142,7 +142,7 @@ const deleteResourceRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    404: errorResponse("Resource not found"),
+    404: codedErrorResponse("Resource not found"),
   },
 });
 
@@ -206,7 +206,7 @@ const inviteDefaultsRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    404: errorResponse("Resource not found"),
+    404: codedErrorResponse("Resource not found"),
   },
 });
 

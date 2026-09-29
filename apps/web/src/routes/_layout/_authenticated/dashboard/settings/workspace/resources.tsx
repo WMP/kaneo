@@ -183,9 +183,11 @@ function RouteComponent() {
       resetCreate();
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("settings:workspaceResources.createError"),
+        getResourceErrorMessage(
+          error,
+          t,
+          "settings:workspaceResources.createError",
+        ),
       );
     }
   };
@@ -221,9 +223,11 @@ function RouteComponent() {
       setEditingResource(null);
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("settings:workspaceResources.updateError"),
+        getResourceErrorMessage(
+          error,
+          t,
+          "settings:workspaceResources.updateError",
+        ),
       );
     }
   };
@@ -243,9 +247,11 @@ function RouteComponent() {
       setDeletingResource(null);
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("settings:workspaceResources.deleteError"),
+        getResourceErrorMessage(
+          error,
+          t,
+          "settings:workspaceResources.deleteError",
+        ),
       );
     }
   };

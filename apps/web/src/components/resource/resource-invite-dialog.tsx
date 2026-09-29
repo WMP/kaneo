@@ -1,5 +1,5 @@
 import { InfoIcon } from "lucide-react";
-import { useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InvitationLinkField from "@/components/team/invitation-link-field";
 import RoleSelect from "@/components/team/role-select";
@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import useInviteResource from "@/hooks/mutations/resource/use-invite-resource";
-import useProjectAssignableRoles from "@/hooks/queries/resource/use-project-assignable-roles";
+import useGetProjectAssignableRoles from "@/hooks/queries/project-member/use-get-project-assignable-roles";
 import useResourceInviteDefaults from "@/hooks/queries/resource/use-resource-invite-defaults";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import {
   getInvitationEmailMessageKey,
   useInvitationEmailDelivery,
 } from "@/hooks/use-invitation-email-delivery";
+import { useRoleChoice } from "@/hooks/use-role-choice";
 import {
   getResourceErrorCode,
   getResourceErrorMessage,
@@ -41,13 +42,89 @@ type Props = {
   onLinkInstead: (resource: Resource) => void;
 };
 
-// Preferred role for a new invitation, in the workspace and in a project. The
-// API decides which roles the caller may grant, so this only applies when it is
-// in that list; anything else needs an explicit pick (a silent fallback to the
-// first listed role could invite an admin).
-const PREFERRED_ROLE = "member";
-
 type Created = { id: string; email: string; created: boolean };
+
+type ProjectRow = { id: string; name: string; hasAssignments: boolean };
+
+type RowProps = {
+  project: ProjectRow;
+  checked: boolean;
+  checkboxId: string;
+  onCheckedChange: (checked: boolean) => void;
+  /** The role that will be sent for this project (undefined until valid). */
+  onRoleChange: (projectId: string, role: string | undefined) => void;
+};
+
+// One project of the invitation: its own list of grantable roles (the caller's
+// permissions in THAT project) and its own role choice (`useRoleChoice`, shared
+// with the other invite dialogs: only `member` is ever picked for the user).
+function ProjectInviteRow({
+  project,
+  checked,
+  checkboxId,
+  onCheckedChange,
+  onRoleChange,
+}: RowProps) {
+  const { t } = useTranslation();
+  const rolesQuery = useGetProjectAssignableRoles(project.id, {
+    enabled: checked,
+  });
+  const options = rolesQuery.data?.map((option) => option.role);
+  const choice = useRoleChoice(options);
+  const role = checked ? choice.role : undefined;
+
+  useEffect(() => {
+    onRoleChange(project.id, role);
+  }, [onRoleChange, project.id, role]);
+
+  return (
+    <li className="flex flex-wrap items-center gap-2 px-3 py-2">
+      <Checkbox
+        id={checkboxId}
+        checked={checked}
+        onCheckedChange={(next) => onCheckedChange(next === true)}
+      />
+      <Label htmlFor={checkboxId} className="min-w-0 flex-1 truncate">
+        {project.name}
+      </Label>
+      {project.hasAssignments ? (
+        <Badge variant="outline" size="sm">
+          {t("settings:workspaceResources.invite.hasTasks")}
+        </Badge>
+      ) : null}
+      {checked ? (
+        rolesQuery.isLoading && !options ? (
+          <span className="text-xs text-muted-foreground" role="status">
+            {t("settings:workspaceResources.invite.projectRolesLoading")}
+          </span>
+        ) : !options ? (
+          <span className="text-xs text-destructive" role="alert">
+            {t("settings:workspaceResources.invite.projectRolesError")}
+          </span>
+        ) : choice.isEmpty ? (
+          <span className="text-xs text-muted-foreground">
+            {t("settings:workspaceResources.invite.noProjectRoles")}
+          </span>
+        ) : (
+          <RoleSelect
+            size="sm"
+            className="w-36"
+            roles={options}
+            value={choice.unavailable ? choice.selected : choice.role}
+            onChange={choice.select}
+            placeholder={t("team:inviteModal.rolePlaceholder")}
+            ariaLabel={t(
+              "settings:workspaceResources.invite.projectRoleLabel",
+              {
+                project: project.name,
+              },
+            )}
+          />
+        )
+      ) : null}
+    </li>
+  );
+}
 
 /**
  * "Invite" on a person resource: one invitation to the resource's email
@@ -72,13 +149,11 @@ function ResourceInviteDialog({
   const projects = projectsQuery.data ?? [];
 
   // What the user changed; everything else follows the defaults (the projects
-  // the resource has tasks in are ticked, `member` is the preferred role).
+  // the resource has tasks in are ticked).
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
-  const [workspaceRoleChoice, setWorkspaceRoleChoice] = useState<string | null>(
-    null,
-  );
-  const [projectRoleChoice, setProjectRoleChoice] = useState<
-    Record<string, string>
+  // The role each ticked project will get, reported by its row.
+  const [projectRoles, setProjectRoles] = useState<
+    Record<string, string | undefined>
   >({});
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -89,33 +164,24 @@ function ResourceInviteDialog({
   const selectedProjects = projects.filter((project) =>
     isTicked(project.id, project.hasAssignments),
   );
-  const rolesByProject = useProjectAssignableRoles(
-    selectedProjects.map((project) => project.id),
-    true,
+  const onProjectRole = useCallback(
+    (projectId: string, role: string | undefined) =>
+      setProjectRoles((current) =>
+        current[projectId] === role
+          ? current
+          : { ...current, [projectId]: role },
+      ),
+    [],
   );
 
-  const workspaceRoleOptions = (workspaceRoles.data ?? []).map(
+  const workspaceRoleOptions = workspaceRoles.data?.map(
     (option) => option.role,
   );
-  const workspaceRole =
-    workspaceRoleChoice && workspaceRoleOptions.includes(workspaceRoleChoice)
-      ? workspaceRoleChoice
-      : workspaceRoleChoice === null &&
-          workspaceRoleOptions.includes(PREFERRED_ROLE)
-        ? PREFERRED_ROLE
-        : undefined;
+  const workspaceChoice = useRoleChoice(workspaceRoleOptions);
+  const workspaceRole = workspaceChoice.role;
 
-  const projectRoleOf = (projectId: string): string | undefined => {
-    const options = (rolesByProject[projectId]?.roles ?? []).map(
-      (option) => option.role,
-    );
-    const choice = projectRoleChoice[projectId];
-    if (choice) return options.includes(choice) ? choice : undefined;
-    return options.includes(PREFERRED_ROLE) ? PREFERRED_ROLE : undefined;
-  };
-
-  const everyProjectHasRole = selectedProjects.every((project) =>
-    projectRoleOf(project.id),
+  const everyProjectHasRole = selectedProjects.every(
+    (project) => projectRoles[project.id],
   );
   const canSubmit =
     Boolean(workspaceRole) &&
@@ -128,7 +194,7 @@ function ResourceInviteDialog({
     setErrorCode(null);
     setErrorText(null);
     const body = selectedProjects.flatMap((project) => {
-      const role = projectRoleOf(project.id);
+      const role = projectRoles[project.id];
       return role ? [{ projectId: project.id, role }] : [];
     });
     try {
@@ -158,9 +224,6 @@ function ResourceInviteDialog({
       );
     }
   };
-
-  const rolesBlocked =
-    workspaceRoles.data !== undefined && workspaceRoleOptions.length === 0;
 
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -225,7 +288,7 @@ function ResourceInviteDialog({
                   <p className="text-sm text-destructive" role="alert">
                     {t("team:inviteModal.rolesError")}
                   </p>
-                ) : rolesBlocked ? (
+                ) : workspaceChoice.isEmpty ? (
                   <p className="text-sm text-muted-foreground" role="status">
                     {t("team:inviteModal.noAssignableRoles")}
                   </p>
@@ -233,12 +296,20 @@ function ResourceInviteDialog({
                   <>
                     <RoleSelect
                       id={roleFieldId}
-                      roles={workspaceRoleOptions}
-                      value={workspaceRole}
-                      onChange={setWorkspaceRoleChoice}
+                      roles={workspaceRoleOptions ?? []}
+                      value={
+                        workspaceChoice.unavailable
+                          ? workspaceChoice.selected
+                          : workspaceRole
+                      }
+                      onChange={workspaceChoice.select}
                       placeholder={t("team:inviteModal.rolePlaceholder")}
                     />
-                    {!workspaceRole ? (
+                    {workspaceChoice.unavailable ? (
+                      <p className="text-sm text-destructive" role="alert">
+                        {t("team:inviteModal.roleUnavailable")}
+                      </p>
+                    ) : workspaceChoice.needsExplicit ? (
                       <p className="text-sm text-muted-foreground">
                         {t("team:inviteModal.rolePickRequired")}
                       </p>
@@ -268,92 +339,21 @@ function ResourceInviteDialog({
                   </p>
                 ) : (
                   <ul className="divide-y divide-border rounded-md border">
-                    {projects.map((project) => {
-                      const checked = isTicked(
-                        project.id,
-                        project.hasAssignments,
-                      );
-                      const state = rolesByProject[project.id];
-                      const options = (state?.roles ?? []).map(
-                        (option) => option.role,
-                      );
-                      const checkboxId = `${roleFieldId}-${project.id}`;
-                      return (
-                        <li
-                          key={project.id}
-                          className="flex flex-wrap items-center gap-2 px-3 py-2"
-                        >
-                          <Checkbox
-                            id={checkboxId}
-                            checked={checked}
-                            onCheckedChange={(next) =>
-                              setTicked((current) => ({
-                                ...current,
-                                [project.id]: next === true,
-                              }))
-                            }
-                          />
-                          <Label
-                            htmlFor={checkboxId}
-                            className="min-w-0 flex-1 truncate"
-                          >
-                            {project.name}
-                          </Label>
-                          {project.hasAssignments ? (
-                            <Badge variant="outline" size="sm">
-                              {t("settings:workspaceResources.invite.hasTasks")}
-                            </Badge>
-                          ) : null}
-                          {checked ? (
-                            state?.isLoading && !state.roles ? (
-                              <span
-                                className="text-xs text-muted-foreground"
-                                role="status"
-                              >
-                                {t(
-                                  "settings:workspaceResources.invite.projectRolesLoading",
-                                )}
-                              </span>
-                            ) : !state?.roles ? (
-                              <span
-                                className="text-xs text-destructive"
-                                role="alert"
-                              >
-                                {t(
-                                  "settings:workspaceResources.invite.projectRolesError",
-                                )}
-                              </span>
-                            ) : options.length === 0 ? (
-                              <span className="text-xs text-muted-foreground">
-                                {t(
-                                  "settings:workspaceResources.invite.noProjectRoles",
-                                )}
-                              </span>
-                            ) : (
-                              <RoleSelect
-                                size="sm"
-                                className="w-36"
-                                roles={options}
-                                value={projectRoleOf(project.id)}
-                                onChange={(role) =>
-                                  setProjectRoleChoice((current) => ({
-                                    ...current,
-                                    [project.id]: role,
-                                  }))
-                                }
-                                placeholder={t(
-                                  "team:inviteModal.rolePlaceholder",
-                                )}
-                                ariaLabel={t(
-                                  "settings:workspaceResources.invite.projectRoleLabel",
-                                  { project: project.name },
-                                )}
-                              />
-                            )
-                          ) : null}
-                        </li>
-                      );
-                    })}
+                    {projects.map((project) => (
+                      <ProjectInviteRow
+                        key={project.id}
+                        project={project}
+                        checked={isTicked(project.id, project.hasAssignments)}
+                        checkboxId={`${roleFieldId}-${project.id}`}
+                        onCheckedChange={(next) =>
+                          setTicked((current) => ({
+                            ...current,
+                            [project.id]: next,
+                          }))
+                        }
+                        onRoleChange={onProjectRole}
+                      />
+                    ))}
                   </ul>
                 )}
                 {projects.length > 0 && selectedProjects.length === 0 ? (
