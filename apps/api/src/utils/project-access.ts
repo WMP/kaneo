@@ -66,7 +66,7 @@ function splitRoles(role: string): string[] {
 // duplicates are one membership; duplicates that disagree on the role are
 // ambiguous, and picking one arbitrarily could pick the wider one, so the user
 // counts as having no workspace membership until an administrator fixes it.
-function singleWorkspaceRole(roles: (string | null)[]): string | null {
+export function singleWorkspaceRole(roles: (string | null)[]): string | null {
   const distinct = new Set(roles.filter((role): role is string => !!role));
   if (distinct.size !== 1) return null;
   return [...distinct][0] ?? null;

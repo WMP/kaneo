@@ -1,34 +1,30 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import db from "../../database";
 import {
   projectMemberTable,
   userTable,
   workspaceUserTable,
 } from "../../database/schema";
-import { createFullAccessChecker } from "../../utils/project-access";
+import {
+  createFullAccessChecker,
+  workspaceMemberStanding,
+} from "../../utils/project-access";
 import { createUsableProjectRoleChecker } from "../../utils/project-scope-filters";
-import { resolveRoleStatements } from "../../utils/role-statements";
 
 const MEMBER_MANAGEMENT_ACTIONS = ["create", "update", "delete"];
 
 // Does the caller's WORKSPACE role manage workspace members? Such a caller
 // invites and changes members, so hiding people from them would only get in
-// the way.
+// the way. `owner` holds everything; ambiguous duplicate membership rows count
+// as no membership (`workspaceMemberStanding`).
 async function managesWorkspaceMembers(workspaceId: string, userId: string) {
-  const [membership] = await db
-    .select({ role: workspaceUserTable.role })
-    .from(workspaceUserTable)
-    .where(
-      and(
-        eq(workspaceUserTable.workspaceId, workspaceId),
-        eq(workspaceUserTable.userId, userId),
-      ),
+  const standing = await workspaceMemberStanding(userId, workspaceId);
+  if (!standing) return false;
+  return (
+    standing.owner ||
+    MEMBER_MANAGEMENT_ACTIONS.some((action) =>
+      standing.statements?.member?.includes(action),
     )
-    .limit(1);
-  if (!membership) return false;
-  const statements = await resolveRoleStatements(workspaceId, membership.role);
-  return MEMBER_MANAGEMENT_ACTIONS.some((action) =>
-    statements?.member?.includes(action),
   );
 }
 

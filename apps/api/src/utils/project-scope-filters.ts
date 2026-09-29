@@ -5,6 +5,7 @@ import {
   createFullAccessChecker,
   type ProjectAccess,
   projectRoleStatements,
+  singleWorkspaceRole,
 } from "./project-access";
 
 // Filters for endpoints that return data of MANY projects (lists, search,
@@ -106,16 +107,28 @@ export async function resolveUserProjectScope(
     .from(schema.workspaceUserTable)
     .where(eq(schema.workspaceUserTable.userId, userId));
 
+  // One role per workspace, with the rule `resolveProjectAccess` applies:
+  // equal duplicate rows are one membership, rows that disagree on the role are
+  // ambiguous and count as no membership, so the workspace is left out of the
+  // scope entirely (fail closed).
+  const rolesByWorkspace = new Map<string, string[]>();
+  for (const membership of memberships) {
+    rolesByWorkspace.set(membership.workspaceId, [
+      ...(rolesByWorkspace.get(membership.workspaceId) ?? []),
+      membership.workspaceRole,
+    ]);
+  }
+
   const fullWorkspaceIds: string[] = [];
   const restrictedWorkspaceIds: string[] = [];
-  for (const membership of memberships) {
-    const isFull = await createFullAccessChecker(membership.workspaceId)(
+  for (const [workspaceId, roles] of rolesByWorkspace) {
+    const workspaceRole = singleWorkspaceRole(roles);
+    if (!workspaceRole) continue;
+    const isFull = await createFullAccessChecker(workspaceId)(
       user.role,
-      membership.workspaceRole,
+      workspaceRole,
     );
-    (isFull ? fullWorkspaceIds : restrictedWorkspaceIds).push(
-      membership.workspaceId,
-    );
+    (isFull ? fullWorkspaceIds : restrictedWorkspaceIds).push(workspaceId);
   }
   if (restrictedWorkspaceIds.length === 0) {
     return { instanceAdmin: false, fullWorkspaceIds, memberRoles: [] };
@@ -256,18 +269,29 @@ export async function filterUsersWithProjectAccess(
 
   const isFullAccess = createFullAccessChecker(workspaceId);
   const isUsable = createUsableProjectRoleChecker();
+  // The join repeats a user for each of their workspace membership rows; collapse
+  // them with the same rule as `resolveProjectAccess` (ambiguous roles: none).
+  const byUser = new Map<string, typeof rows>();
   for (const row of rows) {
-    if (row.userRole === "admin") {
-      allowed.add(row.userId);
+    byUser.set(row.userId, [...(byUser.get(row.userId) ?? []), row]);
+  }
+  for (const [userId, group] of byUser) {
+    const [first] = group;
+    if (!first) continue;
+    if (first.userRole === "admin") {
+      allowed.add(userId);
       continue;
     }
     // A stale project row never grants access without workspace membership.
-    if (!row.workspaceRole) continue;
+    const workspaceRole = singleWorkspaceRole(
+      group.map((row) => row.workspaceRole),
+    );
+    if (!workspaceRole) continue;
     if (
-      (await isFullAccess(row.userRole, row.workspaceRole)) ||
-      (row.projectRole && (await isUsable(workspaceId, row.projectRole)))
+      (await isFullAccess(first.userRole, workspaceRole)) ||
+      (first.projectRole && (await isUsable(workspaceId, first.projectRole)))
     ) {
-      allowed.add(row.userId);
+      allowed.add(userId);
     }
   }
   return allowed;
