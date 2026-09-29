@@ -402,24 +402,35 @@ export async function accessibleProjectIds(
   return ids;
 }
 
-// Resolves several projects at once (bulk operations) with one query. Returns
-// `null` as soon as one of them is unknown or not accessible.
+// Resolves several projects at once with one query, each on its own: the map
+// holds the projects the user can reach and leaves out unknown ones and those
+// without access.
+export async function resolveProjectAccessMap(
+  userId: string,
+  projectIds: string[],
+): Promise<Map<string, ProjectAccess>> {
+  const ids = [...new Set(projectIds)];
+  const accesses = new Map<string, ProjectAccess>();
+  if (ids.length === 0) return accesses;
+  const byProject = collapseAccessRows(await queryAccessRows(userId, ids));
+  const resolve = memoizedResolver();
+  for (const row of byProject.values()) {
+    const access = await decide(row, resolve);
+    if (access) accesses.set(row.projectId, access);
+  }
+  return accesses;
+}
+
+// Resolves several projects at once (bulk operations). Returns `null` as soon
+// as one of them is unknown or not accessible.
 export async function resolveProjectAccesses(
   userId: string,
   projectIds: string[],
 ): Promise<ProjectAccess[] | null> {
   const ids = [...new Set(projectIds)];
-  if (ids.length === 0) return [];
-  const byProject = collapseAccessRows(await queryAccessRows(userId, ids));
-  if (byProject.size !== ids.length) return null;
-  const resolve = memoizedResolver();
-  const accesses: ProjectAccess[] = [];
-  for (const row of byProject.values()) {
-    const access = await decide(row, resolve);
-    if (!access) return null;
-    accesses.push(access);
-  }
-  return accesses;
+  const accesses = await resolveProjectAccessMap(userId, ids);
+  if (accesses.size !== ids.length) return null;
+  return [...accesses.values()];
 }
 
 export const PROJECT_ACCESS_DENIED_MESSAGE =

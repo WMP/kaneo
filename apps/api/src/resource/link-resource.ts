@@ -168,7 +168,11 @@ export async function linkResourceToMember({
   });
 
   await publishMovedAssignments({ moves, userId, actorUserId });
-  return { resource, movedTaskCount: moves.length };
+  return {
+    resource,
+    movedTaskCount: moves.length,
+    movedProjectIds: [...new Set(moves.map((move) => move.projectId))],
+  };
 }
 
 // Removes the link. Assignments that were moved to the account stay with it

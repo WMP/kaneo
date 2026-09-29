@@ -92,5 +92,9 @@ export const resourceLinkSchema = z
       description:
         "The number of tasks whose assignment moved from the resource to the account.",
     }),
+    movedProjectIds: z.array(z.string()).openapi({
+      description:
+        "The projects those tasks are in, so a client refreshes just those.",
+    }),
   })
   .openapi("ResourceLink");

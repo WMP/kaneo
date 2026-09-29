@@ -9,7 +9,7 @@ import {
 import {
   accessibleProjectIds,
   projectAccessSatisfies,
-  resolveProjectAccesses,
+  resolveProjectAccessMap,
 } from "../../utils/project-access";
 import { projectScopeCondition } from "../../utils/project-scope-filters";
 import { apiKeyAllows } from "../../utils/require-workspace-permission";
@@ -58,16 +58,15 @@ async function getInviteDefaults({
     ).map((row) => row.projectId),
   );
 
-  // The listed projects are the ones the caller can open, resolved in one query
-  // (`null` only if one of them stopped being accessible meanwhile: then
-  // nothing is offered rather than a guess).
-  const accesses =
-    (await resolveProjectAccesses(
-      actorUserId,
-      projects.map((project) => project.id),
-    )) ?? [];
+  // The listed projects are the ones the caller can open, resolved in one
+  // query. A project that stopped being accessible meanwhile is left out on its
+  // own; the others are still offered.
+  const accesses = await resolveProjectAccessMap(
+    actorUserId,
+    projects.map((project) => project.id),
+  );
   const mayInvite = new Set(
-    accesses
+    [...accesses.values()]
       .filter((access) => projectAccessSatisfies(access, INVITE))
       .map((access) => access.projectId),
   );

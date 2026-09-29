@@ -916,9 +916,14 @@ export const auth = betterAuth({
             typeof userId === "string" &&
             typeof organizationId === "string"
           ) {
-            await removeUserProjectMemberships(userId, organizationId);
-            await unlinkUserResources(userId, organizationId);
-            await closeUserWorkspaceConnections(userId, organizationId);
+            // The leaver is out of the workspace already: their sockets close
+            // whatever the cleanup does.
+            try {
+              await removeUserProjectMemberships(userId, organizationId);
+              await unlinkUserResources(userId, organizationId);
+            } finally {
+              await closeUserWorkspaceConnections(userId, organizationId);
+            }
           }
         }
       }

@@ -316,18 +316,22 @@ const resource = apiRouter<BaseVariables & { workspaceId: string }>()
     const { id } = c.req.valid("param");
     const { userId } = c.req.valid("json");
     const workspaceId = c.get("workspaceId");
-    const { resource, movedTaskCount } = await linkResourceToMember({
-      resourceId: id,
-      workspaceId,
-      userId,
-      actorUserId: c.get("userId"),
-    });
+    const { resource, movedTaskCount, movedProjectIds } =
+      await linkResourceToMember({
+        resourceId: id,
+        workspaceId,
+        userId,
+        actorUserId: c.get("userId"),
+      });
     const [described] = await describeResources([resource], {
       userId: c.get("userId"),
       workspaceId,
     });
     if (!described) throw new Error("Failed to describe the linked resource");
-    return c.json({ resource: described, movedTaskCount }, 200);
+    return c.json(
+      { resource: described, movedTaskCount, movedProjectIds },
+      200,
+    );
   })
   .openapi(unlinkResourceRoute, async (c) => {
     const { id } = c.req.valid("param");

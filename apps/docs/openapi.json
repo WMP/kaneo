@@ -5414,11 +5414,19 @@
           "movedTaskCount": {
             "type": "integer",
             "description": "The number of tasks whose assignment moved from the resource to the account."
+          },
+          "movedProjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The projects those tasks are in, so a client refreshes just those."
           }
         },
         "required": [
           "resource",
-          "movedTaskCount"
+          "movedTaskCount",
+          "movedProjectIds"
         ]
       },
       "CurrentUser": {

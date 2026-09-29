@@ -1,10 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
+import type { WSContext } from "hono/ws";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { subscribeToEvent } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";
+import * as linkModule from "../../apps/api/src/resource/link-resource";
 import * as transferModule from "../../apps/api/src/resource/transfer-assignments";
+import * as accessModule from "../../apps/api/src/utils/project-access";
+import { addConnection, removeConnection } from "../../apps/api/src/ws";
 import { defaultRolePayloads } from "../../packages/permissions/src";
 import { resetTestDatabase } from "./helpers/database";
 import { createProjectFixture } from "./helpers/fixtures";
@@ -1383,5 +1387,105 @@ describe("resource email limits", () => {
       { kind: "person", name: "Long", email: long },
     );
     expect(response.status).toBe(400);
+  });
+});
+
+describe("the rows the transfer writes", () => {
+  it("converts a resource row in place: same id and creation time", async () => {
+    const [before] = await db
+      .select()
+      .from(schema.taskAssignmentTable)
+      .where(eq(schema.taskAssignmentTable.taskId, t2));
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    expect((await link(owner, member.id)).status).toBe(200);
+    const [after] = await db
+      .select()
+      .from(schema.taskAssignmentTable)
+      .where(eq(schema.taskAssignmentTable.taskId, t2));
+    expect(after.id).toBe(before.id);
+    expect(after.createdAt).toEqual(before.createdAt);
+    expect(after.userId).toBe(member.id);
+    expect(after.resourceId).toBeNull();
+  });
+
+  it("merges into the account's own row and drops the resource row when both exist", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    await assign(t1, { userId: member.id }, 30);
+    const [own] = await db
+      .select()
+      .from(schema.taskAssignmentTable)
+      .where(eq(schema.taskAssignmentTable.userId, member.id));
+    expect((await link(owner, member.id)).status).toBe(200);
+    const rows = await db
+      .select()
+      .from(schema.taskAssignmentTable)
+      .where(eq(schema.taskAssignmentTable.taskId, t1));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.id).toBe(own.id);
+    expect(rows[0]?.units).toBe(80);
+  });
+
+  it("reports the projects whose tasks moved", async () => {
+    const member = await addMember("member", [
+      { project: P, role: "member" },
+      { project: Q, role: "member" },
+    ]);
+    const response = await link(owner, member.id);
+    const body = (await response.json()) as { movedProjectIds: string[] };
+    expect([...body.movedProjectIds].sort()).toEqual([P.id, Q.id].sort());
+  });
+});
+
+describe("leaving the workspace when the cleanup fails", () => {
+  it("still closes the leaver's sockets", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    expect((await link(owner, member.id)).status).toBe(200);
+    const socket = { send: vi.fn(), close: vi.fn() };
+    const connection = addConnection(
+      P.id,
+      socket as unknown as WSContext,
+      member.id,
+      "window",
+      workspaceId,
+    );
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(linkModule, "unlinkUserResources").mockRejectedValueOnce(
+      new Error("database went away"),
+    );
+    try {
+      await request(member.cookie, "POST", "/api/auth/organization/leave", {
+        organizationId: workspaceId,
+      });
+      await vi.waitFor(() => expect(socket.close).toHaveBeenCalledTimes(1));
+    } finally {
+      removeConnection(P.id, connection);
+    }
+  });
+});
+
+describe("invite defaults when a project stops being accessible meanwhile", () => {
+  it("leaves out just that project", async () => {
+    const actor = await addMember(
+      "resource_manager",
+      [
+        { project: P, role: "inviter" },
+        { project: Q, role: "inviter" },
+      ],
+      "manager",
+    );
+    // The scope was resolved when R was still open to them; it is not any more.
+    vi.spyOn(accessModule, "accessibleProjectIds").mockResolvedValue(null);
+    const response = await request(
+      actor.cookie,
+      "GET",
+      `/api/resource/${alice.id}/invite-defaults`,
+    );
+    expect(response.status).toBe(200);
+    const ids = (
+      (await response.json()) as { projects: { id: string }[] }
+    ).projects
+      .map((project) => project.id)
+      .sort();
+    expect(ids).toEqual([P.id, Q.id].sort());
   });
 });

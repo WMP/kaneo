@@ -31,6 +31,17 @@ export type MovedAssignment = {
 
 type Candidate = { units: number; work: number | null };
 
+// A unique violation (`23505`), whether the driver error is thrown as is or
+// wrapped (`cause`).
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 3 && current; depth++) {
+    if ((current as { code?: unknown }).code === "23505") return true;
+    current = (current as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
 // The allocation of a task that the resource and the account both had a share
 // in: the higher `units` win (the sum is deliberately not taken), and `work` is
 // kept when either side has it (the winner's first). A tie goes to the row that
@@ -55,9 +66,11 @@ export function mergeAssignmentAllocation(candidates: Candidate[]): Candidate {
 //   the account can open; `null` is every project of the workspace). An
 //   assignment in another project stays on the resource, and the workload view
 //   still counts it in the account's row.
-// - An assignment the account does not have yet is converted in place (same
-//   row, so its creation order is kept); when the account is assigned to that
-//   task already, the two are merged into one row with `mergeAssignmentAllocation`.
+// - An assignment the account does not have yet is converted in place (an
+//   UPDATE of the same row: id and creation time stay, so the order of the
+//   task's assignees and the primary mirror stay stable). When the account is on
+//   the task already, the resource's allocation is merged into the account's row
+//   with `mergeAssignmentAllocation` and the resource row is deleted.
 // - Several resources linked to one account merge the same way.
 // - `task.userId` (the primary mirror) is recomputed for every touched task.
 export async function moveResourceAssignmentsToUser(
@@ -77,84 +90,126 @@ export async function moveResourceAssignmentsToUser(
   if (resourceIds.length === 0) return [];
 
   const scope = projectScopeCondition(projectTable.id, projectScope);
-  const readOwnRows = () =>
-    tx
-      .select({
-        id: taskAssignmentTable.id,
-        taskId: taskAssignmentTable.taskId,
-        units: taskAssignmentTable.units,
-        work: taskAssignmentTable.work,
-        createdAt: taskAssignmentTable.createdAt,
-        projectId: taskTable.projectId,
-        title: taskTable.title,
-        primaryId: taskTable.userId,
-      })
-      .from(taskAssignmentTable)
-      .innerJoin(taskTable, eq(taskAssignmentTable.taskId, taskTable.id))
-      .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
-      .where(
-        and(
-          inArray(taskAssignmentTable.resourceId, resourceIds),
-          eq(projectTable.workspaceId, workspaceId),
-          ...(scope ? [scope] : []),
-        ),
-      )
-      .orderBy(asc(taskAssignmentTable.createdAt), asc(taskAssignmentTable.id));
 
-  // Lock the affected tasks first (in id order, so two transfers cannot
-  // deadlock; `FOR NO KEY UPDATE` still lets an assignment insert through), then
-  // read the rows that will move. The write below does not depend on what else
-  // is on the task: it is an upsert.
-  const candidates = await readOwnRows();
-  if (candidates.length === 0) return [];
-  await tx
-    .select({ id: taskTable.id })
-    .from(taskTable)
+  // Locking order: the assignment rows first (in id order), then, at the end,
+  // the task rows that `recomputeTaskPrimaryAssignees` updates. That is the
+  // order the assignee routes take (`setTaskAssignees` deletes and inserts
+  // assignment rows before it updates `task.userId`), so a transfer and an
+  // assignee change on one task cannot deadlock. No lock on the task row up
+  // front: what could race is the account being added to a task meanwhile, and
+  // the write below survives that on its own (the in-place UPDATE falls back to
+  // the upsert on a unique violation).
+  const rows = await tx
+    .select({
+      id: taskAssignmentTable.id,
+      taskId: taskAssignmentTable.taskId,
+      units: taskAssignmentTable.units,
+      work: taskAssignmentTable.work,
+      createdAt: taskAssignmentTable.createdAt,
+      projectId: taskTable.projectId,
+      title: taskTable.title,
+      primaryId: taskTable.userId,
+    })
+    .from(taskAssignmentTable)
+    .innerJoin(taskTable, eq(taskAssignmentTable.taskId, taskTable.id))
+    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(
-      inArray(taskTable.id, [...new Set(candidates.map((row) => row.taskId))]),
+      and(
+        inArray(taskAssignmentTable.resourceId, resourceIds),
+        eq(projectTable.workspaceId, workspaceId),
+        ...(scope ? [scope] : []),
+      ),
     )
-    .orderBy(asc(taskTable.id))
-    .for("no key update");
-  const rows = await readOwnRows().for("update", { of: taskAssignmentTable });
+    .orderBy(asc(taskAssignmentTable.id))
+    .for("update", { of: taskAssignmentTable });
   if (rows.length === 0) return [];
 
-  const taskIds = [...new Set(rows.map((row) => row.taskId))];
+  const taskIds = [...new Set(rows.map((row) => row.taskId))].sort();
+  const existingRows = await tx
+    .select({ taskId: taskAssignmentTable.taskId })
+    .from(taskAssignmentTable)
+    .where(
+      and(
+        eq(taskAssignmentTable.userId, userId),
+        inArray(taskAssignmentTable.taskId, taskIds),
+      ),
+    )
+    .orderBy(asc(taskAssignmentTable.id))
+    .for("update");
+  const hasRow = new Set(existingRows.map((row) => row.taskId));
+
   const moved: MovedAssignment[] = [];
   for (const taskId of taskIds) {
-    const own = rows.filter((row) => row.taskId === taskId);
+    // Oldest first: the head is the row that is converted (or whose creation
+    // time a merge keeps).
+    const own = rows
+      .filter((row) => row.taskId === taskId)
+      .sort(
+        (a, b) =>
+          a.createdAt.getTime() - b.createdAt.getTime() ||
+          a.id.localeCompare(b.id),
+      );
     const [head] = own;
     if (!head) continue;
     const merged = mergeAssignmentAllocation(own);
 
-    // The oldest resource row's creation time is kept, so the order of the
-    // task's assignees (and with it the primary mirror) stays stable. When the
-    // account is on the task already, possibly added a moment ago by somebody
-    // else, the conflict clause merges into that row with the same rule
-    // (`mergeAssignmentAllocation`, a tie keeps the account's row) and no unique
-    // violation can abort the transfer.
-    const [written] = await tx
-      .insert(taskAssignmentTable)
-      .values({
-        taskId,
-        userId,
-        units: merged.units,
-        work: merged.work,
-        createdAt: head.createdAt,
-      })
-      .onConflictDoUpdate({
-        target: [taskAssignmentTable.taskId, taskAssignmentTable.userId],
-        set: {
-          units: sql`GREATEST("ganttpro_task_assignment"."units", excluded."units")`,
-          work: sql`CASE WHEN excluded."units" > "ganttpro_task_assignment"."units" THEN COALESCE(excluded."work", "ganttpro_task_assignment"."work") ELSE COALESCE("ganttpro_task_assignment"."work", excluded."work") END`,
-        },
-      })
-      .returning({ inserted: sql<boolean>`(xmax = 0)` });
-    await tx.delete(taskAssignmentTable).where(
-      inArray(
-        taskAssignmentTable.id,
-        own.map((row) => row.id),
-      ),
-    );
+    let converted = false;
+    if (!hasRow.has(taskId)) {
+      // The common case: the account is not on the task. Convert the head row
+      // in place, in a savepoint, so that a row the account got meanwhile (a
+      // unique violation) falls through to the merge below instead of aborting
+      // the transaction.
+      try {
+        await tx.transaction((savepoint) =>
+          savepoint
+            .update(taskAssignmentTable)
+            .set({
+              userId,
+              resourceId: null,
+              units: merged.units,
+              work: merged.work,
+            })
+            .where(eq(taskAssignmentTable.id, head.id)),
+        );
+        converted = true;
+      } catch (error) {
+        if (!isUniqueViolation(error)) throw error;
+      }
+    }
+
+    let userAdded = converted;
+    const toDelete = converted ? own.slice(1) : own;
+    if (!converted) {
+      // The account is on the task (already, or since a moment ago): merge into
+      // its row with the same rule (`mergeAssignmentAllocation`, a tie keeps the
+      // account's row). The upsert also inserts when there is no row after all.
+      const [written] = await tx
+        .insert(taskAssignmentTable)
+        .values({
+          taskId,
+          userId,
+          units: merged.units,
+          work: merged.work,
+          createdAt: head.createdAt,
+        })
+        .onConflictDoUpdate({
+          target: [taskAssignmentTable.taskId, taskAssignmentTable.userId],
+          set: {
+            units: sql`GREATEST("ganttpro_task_assignment"."units", excluded."units")`,
+            work: sql`CASE WHEN excluded."units" > "ganttpro_task_assignment"."units" THEN COALESCE(excluded."work", "ganttpro_task_assignment"."work") ELSE COALESCE("ganttpro_task_assignment"."work", excluded."work") END`,
+          },
+        })
+        .returning({ inserted: sql<boolean>`(xmax = 0)` });
+      userAdded = written?.inserted ?? true;
+    }
+    if (toDelete.length > 0) {
+      await tx.delete(taskAssignmentTable).where(
+        inArray(
+          taskAssignmentTable.id,
+          toDelete.map((row) => row.id),
+        ),
+      );
+    }
 
     moved.push({
       taskId,
@@ -162,7 +217,7 @@ export async function moveResourceAssignmentsToUser(
       title: head.title,
       previousPrimaryId: head.primaryId,
       newPrimaryId: head.primaryId,
-      userAdded: written?.inserted ?? true,
+      userAdded,
     });
   }
 
