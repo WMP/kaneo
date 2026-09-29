@@ -1,5 +1,23 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { useConnectivityStore } from "@/store/connectivity";
 import { parseApiError } from "./error-handler";
+import { HttpError } from "./http-error";
+
+function setConnectivity(state: {
+  browserOffline?: boolean;
+  hasReachedServer?: boolean;
+}) {
+  useConnectivityStore.setState({
+    browserOffline: state.browserOffline ?? false,
+    serverUnreachable: false,
+    hasReachedServer: state.hasReachedServer ?? false,
+  });
+}
+
+afterEach(() => {
+  setConnectivity({});
+  vi.restoreAllMocks();
+});
 
 describe("parseApiError", () => {
   it("returns a generic message key for unknown Error instances instead of leaking error.message", () => {
@@ -36,5 +54,41 @@ describe("parseApiError", () => {
     expect(result.message).toBe("common:error.messages.network");
     expect(result.originalError).toBe(error);
     expect(result.originalError?.message).toBe(originalMessage);
+  });
+
+  it("classifies an API error by its HTTP status, not by a 'Failed to fetch …' message", () => {
+    const result = parseApiError(new HttpError(500, "Failed to fetch tasks"));
+    expect(result.type).toBe("server");
+    expect(result.message).toBe("common:error.messages.server");
+    expect(result.status).toBe(500);
+  });
+
+  it("reports a proxy's gateway error as the server being unreachable", () => {
+    const result = parseApiError(new HttpError(503, "Service Unavailable"));
+    expect(result.type).toBe("network");
+    expect(result.message).toBe("common:error.messages.serverUnreachable");
+  });
+
+  it("keeps the CORS/setup hint for a first-contact failure (the API never answered this session)", () => {
+    setConnectivity({ hasReachedServer: false });
+    const result = parseApiError(new TypeError("Failed to fetch"));
+    expect(result.type).toBe("cors");
+    expect(result.message).toBe("common:error.messages.cors");
+  });
+
+  it("reports a lost connection, not CORS, once the API has answered earlier in the session", () => {
+    // The reported case: working normally, Wi-Fi drops, then opening a task
+    // showed a CORS error although nothing about CORS had changed.
+    setConnectivity({ hasReachedServer: true });
+    const result = parseApiError(new TypeError("Failed to fetch"));
+    expect(result.type).toBe("network");
+    expect(result.message).toBe("common:error.messages.serverUnreachable");
+  });
+
+  it("reports a network error while the browser is offline", () => {
+    setConnectivity({ browserOffline: true, hasReachedServer: false });
+    const result = parseApiError(new TypeError("Failed to fetch"));
+    expect(result.type).toBe("network");
+    expect(result.message).toBe("common:error.messages.network");
   });
 });

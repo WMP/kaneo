@@ -63,7 +63,8 @@
 				"network": "网络异常，请检查网络连接后重试。",
 				"auth": "身份验证失败，请重新登录。",
 				"server": "服务器错误，请稍后重试。",
-				"unknown": "发生未知错误。"
+				"unknown": "发生未知错误。",
+				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
 			},
 			"troubleshootingSteps": {
 				"cors": {
@@ -161,6 +162,15 @@
 			"notSet": "Not Set",
 			"true": "True",
 			"undefined": "Undefined"
+		},
+		"connection": {
+			"checking": "Checking…",
+			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
+			"offlineTitle": "You're offline",
+			"restored": "Connection restored. Data refreshed.",
+			"retry": "Retry now",
+			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
+			"serverUnreachableTitle": "Can't reach the Kaneo server"
 		}
 	},
 	"auth": {

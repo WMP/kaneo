@@ -51,6 +51,15 @@
 			"someone": "Ktoś",
 			"unknown": "Nieznany"
 		},
+		"connection": {
+			"offlineTitle": "Brak połączenia z internetem",
+			"offlineDescription": "Sprawdź połączenie sieciowe. Dane na ekranie mogą być nieaktualne, a zmian nie można zapisać do czasu powrotu połączenia.",
+			"serverUnreachableTitle": "Brak połączenia z serwerem Kaneo",
+			"serverUnreachableDescription": "Dane na ekranie mogą być nieaktualne, a zmiany nie zostaną zapisane. Trwa automatyczne ponawianie…",
+			"retry": "Ponów teraz",
+			"checking": "Sprawdzanie…",
+			"restored": "Połączenie przywrócone. Dane odświeżone."
+		},
 		"error": {
 			"title": "Coś poszło nie tak",
 			"description": "Strona niespodziewanie się zawiesiła. Odświeżenie powinno pomóc.",
@@ -63,7 +72,8 @@
 				"network": "Błąd sieci. Sprawdź połączenie z internetem i spróbuj ponownie.",
 				"auth": "Nie udało się uwierzytelnić. Zaloguj się ponownie.",
 				"server": "Błąd serwera. Spróbuj ponownie później.",
-				"unknown": "Wystąpił nieoczekiwany błąd."
+				"unknown": "Wystąpił nieoczekiwany błąd.",
+				"serverUnreachable": "Brak połączenia z serwerem. Sprawdź połączenie; dane wczytają się ponownie, gdy serwer będzie dostępny."
 			},
 			"troubleshootingSteps": {
 				"cors": {

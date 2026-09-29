@@ -57,6 +57,15 @@
 			"someone": "Someone",
 			"unknown": "Unknown"
 		},
+		"connection": {
+			"offlineTitle": "You're offline",
+			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
+			"serverUnreachableTitle": "Can't reach the Kaneo server",
+			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
+			"retry": "Retry now",
+			"checking": "Checking…",
+			"restored": "Connection restored. Data refreshed."
+		},
 		"error": {
 			"title": "Something went wrong",
 			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
@@ -69,7 +78,8 @@
 				"network": "Network error. Please check your internet connection and try again.",
 				"auth": "Authentication failed. Please sign in again.",
 				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred."
+				"unknown": "An unexpected error occurred.",
+				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
 			},
 			"troubleshootingSteps": {
 				"cors": {

@@ -1,18 +1,38 @@
 import * as Sentry from "@sentry/react";
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
-import { handleUnauthorized, isUnauthorizedError } from "@/lib/http-error";
+import {
+  indicatesServerUnreachable,
+  isConnectivityError,
+} from "@/lib/connectivity";
+import {
+  HttpError,
+  handleUnauthorized,
+  isUnauthorizedError,
+} from "@/lib/http-error";
+import { useConnectivityStore } from "@/store/connectivity";
 
-// TanStack raises these before any fetcher-level message exists; CORS rejections
-// from the browser also surface here. Used both to skip auto-retry and to tag
-// the captured event so offline-tab reloads don't drown the queue.
-function isNetworkError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  return (
-    error.message.includes("Failed to fetch") ||
-    error.message.includes("NetworkError") ||
-    error.message.includes("Load failed") ||
-    error.message.includes("CORS")
-  );
+// A request that got no HTTP response (offline, server down, or a CORS
+// rejection — the browser reports all three the same way). Used both to skip
+// auto-retry and to tag the captured event so offline-tab reloads don't drown
+// the queue. Matched on the browser's exact messages (see isConnectivityError):
+// a substring check also caught API errors like HttpError(500, "Failed to fetch
+// tasks"), where the server DID answer, and wrongly disabled their retries.
+const isNetworkError = isConnectivityError;
+
+// Feeds the connection banner (ConnectionStatusBanner) from every settled
+// request: no response / a gateway error means the API is unreachable; any
+// other HTTP answer (even an error status) proves it is reachable again.
+function trackReachability(error: unknown) {
+  const store = useConnectivityStore.getState();
+  if (indicatesServerUnreachable(error)) {
+    store.markServerUnreachable();
+  } else if (error instanceof HttpError || isUnauthorizedError(error)) {
+    store.markServerReachable();
+  }
+}
+
+function markReachable() {
+  useConnectivityStore.getState().markServerReachable();
 }
 
 // Cancellation surfaces as AbortError from the fetch signal and from TanStack's
@@ -55,7 +75,9 @@ function captureCacheError(error: unknown, context: "query" | "mutation") {
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
+    onSuccess: markReachable,
     onError: (error) => {
+      trackReachability(error);
       if (isUnauthorizedError(error)) {
         // Keep the 401 in query state so polling guards stay stopped while
         // navigation completes. Better Auth's session is a separate store.
@@ -66,7 +88,9 @@ const queryClient = new QueryClient({
     },
   }),
   mutationCache: new MutationCache({
+    onSuccess: markReachable,
     onError: (error) => {
+      trackReachability(error);
       if (isUnauthorizedError(error)) {
         handleUnauthorized();
         return;

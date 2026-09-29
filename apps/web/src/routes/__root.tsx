@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { ConnectionStatusBanner } from "@/components/connection-status-banner";
 import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast";
 import type { User } from "@/types/user";
 
@@ -20,6 +21,8 @@ function RootComponent() {
     // element instead.
     <AnchoredToastProvider>
       <ToastProvider position="bottom-right">
+        {/* Inside ToastProvider so its "connection restored" toast renders. */}
+        <ConnectionStatusBanner />
         <div className="flex h-svh w-full flex-row overflow-x-hidden overflow-y-hidden bg-background scrollbar-thin scrollbar-thumb-border scrollbar-track-muted">
           <Outlet />
         </div>

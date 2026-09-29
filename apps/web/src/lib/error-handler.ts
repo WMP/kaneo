@@ -1,3 +1,10 @@
+import {
+  isConnectivityError,
+  isGatewayUnavailableStatus,
+} from "@/lib/connectivity";
+import { HttpError } from "@/lib/http-error";
+import { useConnectivityStore } from "@/store/connectivity";
+
 export type ApiError = {
   message: string;
   type: "network" | "cors" | "auth" | "server" | "unknown";
@@ -5,10 +12,88 @@ export type ApiError = {
   originalError?: Error;
 };
 
+function httpStatusOf(error: Error): number | null {
+  if (!(error instanceof HttpError) && error.name !== "HttpError") return null;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : null;
+}
+
+function isBrowserOffline(): boolean {
+  return (
+    useConnectivityStore.getState().browserOffline ||
+    (typeof navigator !== "undefined" && navigator.onLine === false)
+  );
+}
+
 export function parseApiError(error: unknown): ApiError {
   if (error instanceof Error) {
+    // The server answered: classify by its status, never by message text —
+    // fetchers word their errors like "Failed to fetch tasks", which the
+    // substring checks below would otherwise misread as a lost connection.
+    const status = httpStatusOf(error);
+    if (status !== null) {
+      if (status === 401) {
+        return {
+          message: "common:error.messages.auth",
+          type: "auth",
+          status,
+          originalError: error,
+        };
+      }
+      if (isGatewayUnavailableStatus(status)) {
+        // A proxy answered for an API that is down or unreachable.
+        return {
+          message: "common:error.messages.serverUnreachable",
+          type: "network",
+          status,
+          originalError: error,
+        };
+      }
+      if (status >= 500) {
+        return {
+          message: "common:error.messages.server",
+          type: "server",
+          status,
+          originalError: error,
+        };
+      }
+      return {
+        message: "common:error.messages.unknown",
+        type: "unknown",
+        status,
+        originalError: error,
+      };
+    }
+
+    // No response at all. The browser reports "offline", "server down" and a
+    // CORS rejection identically, so use what this session already knows:
+    // offline means a network problem; if the API answered earlier in this
+    // session, the connection was lost (not a CORS misconfiguration, which
+    // would have failed from the very first request); only a first-contact
+    // failure keeps the CORS/setup hint for self-hosters.
+    if (isConnectivityError(error)) {
+      if (isBrowserOffline()) {
+        return {
+          message: "common:error.messages.network",
+          type: "network",
+          originalError: error,
+        };
+      }
+      if (useConnectivityStore.getState().hasReachedServer) {
+        return {
+          message: "common:error.messages.serverUnreachable",
+          type: "network",
+          originalError: error,
+        };
+      }
+      return {
+        message: "common:error.messages.cors",
+        type: "cors",
+        originalError: error,
+      };
+    }
+
     if (
-      error.message.includes("Failed to fetch") ||
       error.message.includes("NetworkError") ||
       error.message.includes("CORS")
     ) {
@@ -21,7 +106,6 @@ export function parseApiError(error: unknown): ApiError {
 
     if (
       error.message.includes("Load failed") ||
-      error.message.includes("fetch") ||
       error.message.includes("network") ||
       error.message.includes("connection")
     ) {
