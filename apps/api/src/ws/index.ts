@@ -1,14 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
 import db from "../database";
-import { projectTable } from "../database/schema";
+import { projectTable, taskTable } from "../database/schema";
 import { subscribeToEvent } from "../events";
 import { isRedisConfigured } from "../redis";
 import {
   getRelationSourceProject,
   getSubtaskParentProjects,
 } from "../task/get-subtask-parent-projects";
+import { resolveProjectAccess } from "../utils/project-access";
 import type {
   BroadcastAdapter,
   BroadcastMessage,
@@ -26,7 +27,21 @@ type ProjectConnection = {
   userId: string;
   initiatorId: string;
   workspaceId: string;
+  // When the user's access to the project was last confirmed: at the upgrade,
+  // then again on delivery once `ACCESS_REVALIDATE_MS` has passed.
+  validatedAt: number;
 };
+
+// A socket is authorized once, at the upgrade. Membership can be removed while
+// it is open, so delivery re-checks a connection's access when its last check is
+// this old. This bounds how long a removed member keeps receiving events when
+// nothing closed the socket explicitly (`closeUserProjectConnections`).
+export const ACCESS_REVALIDATE_MS = 60_000;
+
+export const ACCESS_REVOKED_CLOSE_CODE = 1008;
+export const ACCESS_REVOKED_CLOSE_REASON = "Project access revoked";
+const ACCESS_CHECK_FAILED_CLOSE_CODE = 1011;
+const ACCESS_CHECK_FAILED_CLOSE_REASON = "Project access could not be verified";
 
 type UserConnection = {
   ws: WSContext;
@@ -201,6 +216,132 @@ export async function closeProjectConnections(projectId: string) {
   }
 }
 
+function dropConnection(
+  projectId: string,
+  conn: ProjectConnection,
+  code: number,
+  reason: string,
+) {
+  removeConnection(projectId, conn);
+  try {
+    conn.ws.close(code, reason);
+  } catch {
+    /* Already closed. */
+  }
+}
+
+// Closes this instance's sockets of one user for one project (or, with an empty
+// `projectId`, for every project of `workspaceId`).
+function closeLocalUserConnections(
+  userId: string,
+  projectId: string,
+  workspaceId?: string,
+) {
+  for (const [connectedProjectId, connections] of [...projectConnections]) {
+    if (projectId ? connectedProjectId !== projectId : false) continue;
+    for (const conn of [...connections]) {
+      if (conn.userId !== userId) continue;
+      if (!projectId && conn.workspaceId !== workspaceId) continue;
+      dropConnection(
+        connectedProjectId,
+        conn,
+        ACCESS_REVOKED_CLOSE_CODE,
+        ACCESS_REVOKED_CLOSE_REASON,
+      );
+    }
+  }
+}
+
+/**
+ * Closes a user's sockets on a project on every API instance. Call it wherever
+ * the user's access to the project ends: removing them from the project, changing
+ * their project role to one that cannot be exercised, deleting their workspace
+ * membership. Delivery would also close such a socket, but only within
+ * `ACCESS_REVALIDATE_MS` and only when an event arrives.
+ */
+export async function closeUserProjectConnections(
+  userId: string,
+  projectId: string,
+) {
+  closeLocalUserConnections(userId, projectId);
+  try {
+    await adapter?.publish({
+      projectId,
+      message: { type: "ACCESS_REVOKED", projectId, userId },
+    });
+  } catch (error) {
+    console.error("Failed to publish access revocation:", error);
+  }
+}
+
+/** Same, for every project socket of the user inside one workspace. */
+export async function closeUserWorkspaceConnections(
+  userId: string,
+  workspaceId: string,
+) {
+  closeLocalUserConnections(userId, "", workspaceId);
+  try {
+    await adapter?.publish({
+      projectId: "",
+      message: { type: "ACCESS_REVOKED", projectId: "", userId, workspaceId },
+    });
+  } catch (error) {
+    console.error("Failed to publish access revocation:", error);
+  }
+}
+
+// Users whose access was last confirmed too long ago are checked once each per
+// delivery, not once per socket. Returns the connections that must not receive
+// the message (their sockets are already closed).
+async function revalidateStaleConnections(
+  projectId: string,
+  recipients: ProjectConnection[],
+) {
+  const now = Date.now();
+  const stale = recipients.filter(
+    (conn) => now - conn.validatedAt >= ACCESS_REVALIDATE_MS,
+  );
+  const rejected = new Set<ProjectConnection>();
+  if (stale.length === 0) return rejected;
+
+  const outcomes = new Map<string, boolean | null>();
+  await Promise.all(
+    [...new Set(stale.map((conn) => conn.userId))].map(async (userId) => {
+      try {
+        outcomes.set(
+          userId,
+          Boolean(await resolveProjectAccess(userId, projectId)),
+        );
+      } catch (error) {
+        console.error("Failed to revalidate project socket access:", error);
+        outcomes.set(userId, null);
+      }
+    }),
+  );
+
+  for (const conn of stale) {
+    const outcome = outcomes.get(conn.userId);
+    if (outcome) {
+      conn.validatedAt = now;
+      continue;
+    }
+    rejected.add(conn);
+    // A failed check closes the socket too: the client reconnects and refetches,
+    // which is safer than streaming to a connection whose access is unknown.
+    dropConnection(
+      projectId,
+      conn,
+      outcome === null
+        ? ACCESS_CHECK_FAILED_CLOSE_CODE
+        : ACCESS_REVOKED_CLOSE_CODE,
+      outcome === null
+        ? ACCESS_CHECK_FAILED_CLOSE_REASON
+        : ACCESS_REVOKED_CLOSE_REASON,
+    );
+  }
+  return rejected;
+}
+
 const workspaceLookups = new Map<string, Promise<string | null>>();
 function currentProjectWorkspace(projectId: string) {
   let pending = workspaceLookups.get(projectId);
@@ -226,6 +367,12 @@ async function deliverToLocalConnections(
     closeLocalProjectConnections(projectId);
     return;
   }
+  if (message.type === "ACCESS_REVOKED") {
+    if (message.userId) {
+      closeLocalUserConnections(message.userId, projectId, message.workspaceId);
+    }
+    return;
+  }
   const connections = projectConnections.get(projectId);
   if (!connections) return;
   const recipients = [...connections];
@@ -237,9 +384,18 @@ async function deliverToLocalConnections(
     workspaceId = null;
   }
   const payload = JSON.stringify(message);
+  // Sockets of users whose access could not be confirmed again are closed here
+  // and skipped below.
+  const rejected = await revalidateStaleConnections(
+    projectId,
+    recipients.filter(
+      (conn) => workspaceId !== null && conn.workspaceId === workspaceId,
+    ),
+  );
   for (const conn of recipients) {
     // A move may have closed these connections while the lookup was in flight.
     if (!projectConnections.get(projectId)?.has(conn)) continue;
+    if (rejected.has(conn)) continue;
     if (conn.workspaceId !== workspaceId) {
       removeConnection(projectId, conn);
       try {
@@ -268,7 +424,13 @@ export function addConnection(
   if (!projectConnections.has(projectId)) {
     projectConnections.set(projectId, new Set());
   }
-  const conn: ProjectConnection = { ws, userId, initiatorId, workspaceId };
+  const conn: ProjectConnection = {
+    ws,
+    userId,
+    initiatorId,
+    workspaceId,
+    validatedAt: Date.now(),
+  };
   projectConnections.get(projectId)?.add(conn);
   return conn;
 }
@@ -481,12 +643,55 @@ subscribeToEvent<{
   );
 });
 
+const relationEvents = new Set([
+  "task-relation.created",
+  "task-relation.updated",
+  "task-relation.deleted",
+]);
+
+// A relation can join tasks of two projects, and the event is delivered to the
+// subscribers of each project. A project's subscribers may only learn ids of
+// tasks IN that project: an id from the other side would reveal a task they
+// cannot open. Ids not found in `projectId` (or of a task deleted meanwhile)
+// are dropped; the client then refreshes its project-scoped caches instead.
+async function taskIdsInProject(
+  projectId: string,
+  ids: (string | undefined)[],
+) {
+  const unique = [...new Set(ids.filter((id): id is string => Boolean(id)))];
+  if (unique.length === 0) return new Set<string>();
+  const rows = await db
+    .select({ id: taskTable.id })
+    .from(taskTable)
+    .where(
+      and(inArray(taskTable.id, unique), eq(taskTable.projectId, projectId)),
+    );
+  return new Set(rows.map((row) => row.id));
+}
+
 for (const eventName of taskUpdateEvents) {
   subscribeToEvent<TaskEvent>(eventName, async (data) => {
     const { projectId, initiatorId } = data;
-    const taskId = data.taskId;
+    let taskId = data.taskId;
+    let sourceTaskId = data.sourceTaskId;
+    let targetTaskId = data.targetTaskId;
 
     if (!projectId || !taskId) return;
+
+    if (relationEvents.has(eventName)) {
+      const inProject = await taskIdsInProject(projectId, [
+        taskId,
+        sourceTaskId,
+        targetTaskId,
+      ]);
+      if (!inProject.has(taskId)) taskId = "";
+      if (sourceTaskId && !inProject.has(sourceTaskId)) {
+        sourceTaskId = undefined;
+      }
+      if (targetTaskId && !inProject.has(targetTaskId)) {
+        targetTaskId = undefined;
+      }
+    }
     let type: string;
     switch (eventName) {
       case "task.created":
@@ -531,9 +736,9 @@ for (const eventName of taskUpdateEvents) {
       {
         type,
         projectId,
-        taskId: taskId,
-        sourceTaskId: data.sourceTaskId,
-        targetTaskId: data.targetTaskId,
+        taskId,
+        sourceTaskId,
+        targetTaskId,
       },
       initiatorId,
     );

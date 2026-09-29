@@ -4,6 +4,10 @@ export type ProjectBroadcastMessage = {
   taskId?: string;
   sourceTaskId?: string;
   targetTaskId?: string;
+  /** `ACCESS_REVOKED` only: whose connections to close. */
+  userId?: string;
+  /** `ACCESS_REVOKED` with an empty `projectId`: close the user's connections in this workspace. */
+  workspaceId?: string;
 };
 
 export type BroadcastMessage = {

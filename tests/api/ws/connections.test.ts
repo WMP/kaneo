@@ -60,6 +60,7 @@ describe("addConnection / removeConnection", () => {
       userId: "user-1",
       initiatorId: "init-1",
       workspaceId: "workspace",
+      validatedAt: expect.any(Number),
     });
   });
 
