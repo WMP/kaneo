@@ -741,7 +741,7 @@
 			"expired": "Wygasło {{date}}",
 			"inviteAgain": "Zaproś ponownie",
 			"inviteAgainError": "Nie udało się ponownie zaprosić",
-			"inviteAgainCancelError": "Nowe zaproszenie zostało wysłane, ale nie udało się anulować starego. Anuluj je ręcznie.",
+			"inviteAgainCancelError": "Nie udało się anulować starego zaproszenia. Anuluj je ręcznie.",
 			"expiredBadge": "wygasłe",
 			"rejectedBadge": "odrzucone"
 		},

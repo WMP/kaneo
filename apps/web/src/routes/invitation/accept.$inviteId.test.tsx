@@ -289,25 +289,64 @@ describe("AcceptInvitation", () => {
       expect(toast.error).not.toHaveBeenCalled();
     });
 
-    it("sends the user on, and never shows the manual accept, when navigating fails after joining", async () => {
-      navigate.mockImplementationOnce(() => {
-        throw new Error("router exploded");
-      });
+    it("offers no manual action or link between joining and the navigation", async () => {
+      let resolveSetActive: (value: unknown) => void = () => {};
+      setActive.mockReturnValue(
+        new Promise((resolve) => {
+          resolveSetActive = resolve;
+        }),
+      );
       writeAutoAcceptMarker("invitation-1");
 
       renderSignedInInvitation();
 
-      await waitFor(() =>
-        expect(navigate).toHaveBeenLastCalledWith({ to: "/dashboard" }),
-      );
+      await waitFor(() => expect(setActive).toHaveBeenCalledTimes(1));
+      // Joined, activation still pending: nothing clickable yet.
+      expect(navigate).not.toHaveBeenCalled();
+      expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull();
       expect(
         screen.queryByRole("button", {
           name: "auth:invitation.acceptInvitation",
         }),
       ).toBeNull();
-      // The success state stays as a fallback with a way on.
-      expect(screen.getByText("auth:invitation.goToDashboard")).toBeVisible();
-      expect(toast.error).not.toHaveBeenCalled();
+      expect(screen.getByText("auth:invitation.autoAccepting")).toBeVisible();
+
+      resolveSetActive({});
+      await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
+      // Once navigation has been issued, the success view is the fallback.
+      expect(
+        await screen.findByText("auth:invitation.goToDashboard"),
+      ).toBeVisible();
+      expect(
+        screen.queryByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      ).toBeNull();
+    });
+
+    it("keeps a manual accept's actions hidden until navigation is issued", async () => {
+      let resolveSetActive: (value: unknown) => void = () => {};
+      setActive.mockReturnValue(
+        new Promise((resolve) => {
+          resolveSetActive = resolve;
+        }),
+      );
+      renderSignedInInvitation();
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "auth:invitation.acceptInvitation",
+        }),
+      );
+
+      await waitFor(() => expect(setActive).toHaveBeenCalledTimes(1));
+      expect(screen.queryByText("auth:invitation.goToDashboard")).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "auth:invitation.accepting" }),
+      ).toBeDisabled();
+
+      resolveSetActive({});
+      await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
     });
   });
 });

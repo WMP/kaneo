@@ -45,13 +45,6 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "../ui/menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -59,6 +52,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import RoleSelect from "./role-select";
 
 type Props = {
   workspaceId: string;
@@ -112,11 +106,19 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
     isError: assignableRolesFailed,
     refetch: refetchAssignableRoles,
   } = useGetAssignableRoles(workspaceId);
-  const { canManageTeam, canRemoveMembers, canInviteUsers, isOwner } =
-    useWorkspacePermission();
+  const {
+    canManageTeam,
+    canRemoveMembers,
+    canInviteUsers,
+    canCancelInvitations,
+    isOwner,
+  } = useWorkspacePermission();
   const canChangeRoles = Boolean(canManageTeam());
   const canRemove = Boolean(canRemoveMembers());
   const canInvite = Boolean(canInviteUsers());
+  // "Invite again" creates one invitation and cancels another, and Better Auth
+  // checks the two permissions separately.
+  const canInviteAgain = canInvite && Boolean(canCancelInvitations());
 
   const assignableRoleNames = useMemo(
     () => (assignableRoles ?? []).map((r) => r.role),
@@ -165,7 +167,9 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
 
   // Better Auth renews an invitation only while it is pending and unexpired.
   // Any other row cannot be resent: inviting again would leave the old row
-  // behind, so those get "Invite again", which replaces it.
+  // behind, so those get "Invite again", which replaces it. Expiry is judged
+  // with the browser clock; a skewed clock can at worst offer the wrong action
+  // near the boundary, and the API decides the outcome either way.
   const isInvitationLive = (invitation: WorkspaceUserInvitation) =>
     invitation.status === "pending" &&
     new Date(invitation.expiresAt).getTime() > Date.now();
@@ -215,9 +219,11 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
       );
       return;
     }
+    // The new invitation exists from here on, so say so the way email
+    // delivery allows, whatever happens to the cleanup below.
+    toast.success(t(getInvitationEmailMessageKey("created", emailDelivery)));
     try {
       await cancelInvitation({ invitationId: invitation.id, workspaceId });
-      toast.success(t(getInvitationEmailMessageKey("created", emailDelivery)));
     } catch {
       toast.error(t("team:invitations.inviteAgainCancelError"));
     }
@@ -355,46 +361,16 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                       {t("team:roles.owner", { defaultValue: "Owner" })}
                     </Badge>
                   ) : showRoleSelect ? (
-                    // Keyed by the option set: a mounted Base UI Select resets
-                    // its value (reported as an ordinary change) when items
-                    // leave, and a fresh instance never does.
-                    <Select
-                      key={roleOptions.join("|")}
+                    <RoleSelect
+                      roles={roleOptions}
                       value={member.role}
-                      onValueChange={(value) => {
-                        // Any change counts, whatever its reason (typeahead on
-                        // the closed trigger reports "none" too), as long as
-                        // it names a role this row actually offers.
-                        if (
-                          typeof value === "string" &&
-                          roleOptions.includes(value)
-                        ) {
-                          handleChangeRole(member, value);
-                        }
-                      }}
-                    >
-                      <SelectTrigger
-                        size="sm"
-                        className="h-8 w-32"
-                        aria-label={t("team:membersTable.ariaChangeRole", {
-                          name: member.user.name || member.user.email,
-                        })}
-                      >
-                        <SelectValue>
-                          {getWorkspaceRoleLabel(member.role, t)}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* Owner is never offered: a workspace must have exactly
-                            one owner, so it changes only through ownership
-                            transfer in workspace settings. */}
-                        {roleOptions.map((roleName) => (
-                          <SelectItem key={roleName} value={roleName}>
-                            {getWorkspaceRoleLabel(roleName, t)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onChange={(role) => handleChangeRole(member, role)}
+                      size="sm"
+                      className="h-8 w-32"
+                      ariaLabel={t("team:membersTable.ariaChangeRole", {
+                        name: member.user.name || member.user.email,
+                      })}
+                    />
                   ) : (
                     <Badge variant="secondary">
                       {getWorkspaceRoleLabel(member.role, t)}
@@ -526,7 +502,8 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                             </MenuItem>
                           ) : null}
                         </>
-                      ) : assignableRoleSet.has(invitation.role) ? (
+                      ) : canInviteAgain &&
+                        assignableRoleSet.has(invitation.role) ? (
                         <MenuItem
                           disabled={isResending || isCancelling}
                           onClick={() => handleInviteAgain(invitation)}

@@ -88,11 +88,13 @@ vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
 
 const canInviteUsers = vi.fn(() => true);
 const canManageTeam = vi.fn(() => true);
+const canCancelInvitations = vi.fn(() => true);
 let isOwner = false;
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
     canManageTeam: () => canManageTeam(),
+    canCancelInvitations: () => canCancelInvitations(),
     canRemoveMembers: () => true,
     canInviteUsers: () => canInviteUsers(),
     isOwner,
@@ -106,6 +108,7 @@ vi.mock("../providers/auth-provider/hooks/use-auth", () => ({
 beforeEach(() => {
   cancelInvitation.mockResolvedValue({});
   canManageTeam.mockReturnValue(true);
+  canCancelInvitations.mockReturnValue(true);
   isOwner = false;
   assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
   updateMemberRole.mockResolvedValue({});
@@ -289,7 +292,7 @@ describe("MembersTable expired invitations", () => {
     );
   });
 
-  it("keeps the new invitation and says so when cancelling the old one fails", async () => {
+  it("keeps the new invitation and still follows email delivery when cancelling the old one fails", async () => {
     cancelInvitation.mockRejectedValue(new Error("cancel failed"));
     renderRow(expiredInvitation);
     openMenu();
@@ -306,6 +309,41 @@ describe("MembersTable expired invitations", () => {
       ),
     );
     expect(inviteMember).toHaveBeenCalledTimes(1);
+    expect(success).toHaveBeenCalledWith("team:inviteModal.success");
+  });
+
+  it("never claims an email was sent without SMTP, even when the cancel fails", async () => {
+    config = { hasSmtp: false };
+    cancelInvitation.mockRejectedValue(new Error("cancel failed"));
+    renderRow(expiredInvitation);
+    openMenu();
+
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: "team:invitations.inviteAgain",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(error).toHaveBeenCalledWith(
+        "team:invitations.inviteAgainCancelError",
+      ),
+    );
+    expect(success).toHaveBeenCalledWith("team:inviteModal.successNoEmail");
+    expect(success).not.toHaveBeenCalledWith("team:inviteModal.success");
+  });
+
+  it("hides 'Invite again' without the right to cancel invitations", async () => {
+    canCancelInvitations.mockReturnValue(false);
+    renderRow(expiredInvitation);
+    openMenu();
+
+    await screen.findByRole("menuitem", {
+      name: "team:membersTable.cancelInvitation",
+    });
+    expect(
+      screen.queryByRole("menuitem", { name: "team:invitations.inviteAgain" }),
+    ).toBeNull();
   });
 
   it("does not cancel the old invitation when creating the new one fails", async () => {

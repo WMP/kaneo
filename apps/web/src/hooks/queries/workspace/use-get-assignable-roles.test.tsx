@@ -20,7 +20,8 @@ vi.mock("@/components/providers/auth-provider/hooks/use-auth", () => ({
 
 function setup() {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    // Mirrors the app's own default (see query-client/index.ts).
+    defaultOptions: { queries: { retry: false, refetchOnMount: false } },
   });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -102,7 +103,7 @@ describe("useGetAssignableRoles", () => {
     expect(getAssignableRoles).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps the previous list while a new user's list loads, but only within a workspace", async () => {
+  it("never carries a list over to another user or workspace", async () => {
     const { wrapper } = setup();
     const { result, rerender } = renderHook(
       ({ workspaceId }: { workspaceId: string }) =>
@@ -114,10 +115,29 @@ describe("useGetAssignableRoles", () => {
     getAssignableRoles.mockReturnValue(new Promise(() => {}));
     auth = { user: { id: "user-2" }, isLoading: false };
     rerender({ workspaceId: "ws-1" });
-    expect(result.current.data).toEqual([{ role: "viewer", isDefault: true }]);
+    expect(result.current.data).toBeUndefined();
 
     rerender({ workspaceId: "ws-2" });
     expect(result.current.data).toBeUndefined();
+  });
+
+  it("refetches on every mount, even though the app defaults to refetchOnMount: false", async () => {
+    const { wrapper } = setup();
+    const first = renderHook(() => useGetAssignableRoles("ws-1"), { wrapper });
+    await waitFor(() => expect(first.result.current.data).toBeDefined());
+    expect(getAssignableRoles).toHaveBeenCalledTimes(1);
+    first.unmount();
+
+    // A caller whose role changed elsewhere sees the new list on reopening.
+    getAssignableRoles.mockResolvedValue([{ role: "member", isDefault: true }]);
+    const second = renderHook(() => useGetAssignableRoles("ws-1"), { wrapper });
+
+    await waitFor(() => expect(getAssignableRoles).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(second.result.current.data).toEqual([
+        { role: "member", isDefault: true },
+      ]),
+    );
   });
 
   it("the workspace prefix key invalidates the cached entry", async () => {

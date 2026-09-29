@@ -2955,7 +2955,7 @@
 			"expired": "Expired {{date}}",
 			"inviteAgain": "Invite again",
 			"inviteAgainError": "Failed to invite again",
-			"inviteAgainCancelError": "The new invitation was sent, but the old one could not be cancelled. Cancel it manually.",
+			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
 			"expiredBadge": "expired",
 			"rejectedBadge": "rejected"
 		},

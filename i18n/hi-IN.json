@@ -2940,7 +2940,7 @@
 			"inviteAgainError": "Failed to invite again",
 			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
 			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The new invitation was sent, but the old one could not be cancelled. Cancel it manually.",
+			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
 			"rejectedBadge": "rejected"
 		},
 		"inviteModal": {

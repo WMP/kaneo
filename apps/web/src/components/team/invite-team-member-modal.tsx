@@ -15,7 +15,6 @@ import {
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import { getWorkspaceMemberErrorMessage } from "@/lib/workspace-role-error";
-import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import {
@@ -37,14 +36,8 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import InvitationLinkField from "./invitation-link-field";
+import RoleSelect from "./role-select";
 
 type Props = {
   open: boolean;
@@ -258,49 +251,13 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
                     </p>
                   ) : hasRoleData ? (
                     <>
-                      {/* Keyed by the option set. When items leave a mounted
-                          Base UI Select it resets its value on its own (and
-                          reports it as an ordinary change), which would
-                          silently pick a role. A fresh instance never does. */}
-                      <Select
-                        key={roleOptions.map((option) => option.role).join("|")}
+                      <RoleSelect
                         id={roleFieldId}
-                        value={
-                          selectedRoleUnavailable
-                            ? selectedRole
-                            : (role ?? null)
-                        }
-                        onValueChange={(value) => {
-                          // Any change counts, whatever its reason (typeahead
-                          // on the closed trigger reports "none" too), as long
-                          // as it names a role in the current list.
-                          if (
-                            typeof value === "string" &&
-                            isAssignable(value)
-                          ) {
-                            setSelectedRole(value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={t("team:inviteModal.rolePlaceholder")}
-                          >
-                            {role
-                              ? getWorkspaceRoleLabel(role, t)
-                              : selectedRoleUnavailable && selectedRole
-                                ? getWorkspaceRoleLabel(selectedRole, t)
-                                : null}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roleOptions.map((option) => (
-                            <SelectItem key={option.role} value={option.role}>
-                              {getWorkspaceRoleLabel(option.role, t)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        roles={roleOptions.map((option) => option.role)}
+                        value={selectedRoleUnavailable ? selectedRole : role}
+                        onChange={setSelectedRole}
+                        placeholder={t("team:inviteModal.rolePlaceholder")}
+                      />
                       {selectedRoleUnavailable ? (
                         <p className="text-sm text-destructive" role="alert">
                           {t("team:inviteModal.roleUnavailable")}

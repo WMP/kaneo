@@ -28,6 +28,7 @@ const CAPABILITIES = {
   manageWorkspace: { workspace: ["update", "manage_settings"] },
   deleteWorkspace: { workspace: ["delete"] },
   inviteUsers: { invitation: ["create"] },
+  cancelInvitations: { invitation: ["cancel"] },
   manageTeam: { member: ["update", "delete"] },
   removeMembers: { member: ["delete"] },
 } as const satisfies Record<string, Record<string, string[]>>;
@@ -107,6 +108,7 @@ export function useWorkspacePermission() {
       canManageWorkspace: () => can.manageWorkspace,
       canDeleteWorkspace: () => can.deleteWorkspace,
       canInviteUsers: () => can.inviteUsers,
+      canCancelInvitations: () => can.cancelInvitations,
       canManageTeam: () => can.manageTeam,
       canRemoveMembers: () => can.removeMembers,
       // Escape hatch for ad-hoc permission checks (uncached). Prefer adding

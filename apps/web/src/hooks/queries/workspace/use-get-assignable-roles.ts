@@ -33,11 +33,12 @@ function useGetAssignableRoles(workspaceId: string | undefined) {
     queryKey: assignableRolesQueryKey(workspaceId, userId),
     queryFn:
       workspaceId && userId ? () => getAssignableRoles(workspaceId) : skipToken,
-    // Keep showing the previous list while a new key loads (for example when
-    // the session refreshes) so every Select does not flicker to a badge. Never
-    // carry a list over to a different workspace.
-    placeholderData: (previousData, previousQuery) =>
-      previousQuery?.queryKey[1] === workspaceId ? previousData : undefined,
+    // The app defaults to refetchOnMount: false, but this list depends on the
+    // caller's own role, which can change without this client hearing about it
+    // (another session, a role edit elsewhere). The endpoint is cheap, so every
+    // mount of the members page or the invite modal fetches it afresh.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   return {

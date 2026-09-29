@@ -65,64 +65,59 @@ function AcceptInvitation() {
 
   const handleAcceptInvitation = useCallback(async () => {
     setIsAccepting(true);
-    let accepted = false;
+
+    let result: Awaited<
+      ReturnType<typeof authClient.organization.acceptInvitation>
+    >;
     try {
-      const { data, error } = await authClient.organization.acceptInvitation({
+      result = await authClient.organization.acceptInvitation({
         invitationId: inviteId,
       });
-
-      if (error) {
-        toast.error(error.message || t("auth:invitation.toast.acceptFailed"));
-        setIsAutoAccepting(false);
-        return;
-      }
-
-      // From here on the user is a member. Whatever fails below must never
-      // bring the manual "Accept" UI back: a second accept would only error.
-      accepted = true;
-      setHasAccepted(true);
-      clearAutoAcceptMarker(inviteId);
-
-      try {
-        await authClient.organization.setActive({
-          organizationId: data?.invitation.organizationId,
-        });
-      } catch {
-        // Making it the active workspace is a convenience; the dashboard
-        // resolves a workspace on its own.
-      }
-
-      toast.success(t("auth:invitation.toast.acceptSuccess"));
-
-      if (!sessionUserName) {
-        navigate({ to: "/profile-setup" });
-        return;
-      }
-
-      navigate({
-        to: "/dashboard/workspace/$workspaceId",
-        params: { workspaceId: data?.invitation.organizationId || "" },
-      });
     } catch (error) {
-      if (accepted) {
-        // Joined, but a later step threw: send the user on instead of
-        // reporting a failure. The success view below is the fallback.
-        try {
-          navigate({ to: "/dashboard" });
-        } catch {
-          // The success view already offers a link to the dashboard.
-        }
-        return;
-      }
       toast.error(
         error instanceof Error
           ? error.message
           : t("auth:invitation.toast.acceptFailed"),
       );
-      setIsAutoAccepting(false);
-    } finally {
       setIsAccepting(false);
+      setIsAutoAccepting(false);
+      return;
     }
+
+    const { data, error } = result;
+    if (error) {
+      toast.error(error.message || t("auth:invitation.toast.acceptFailed"));
+      setIsAccepting(false);
+      setIsAutoAccepting(false);
+      return;
+    }
+
+    // From here on the user is a member, so the manual "Accept" never returns.
+    // Every action stays hidden (isAccepting) until navigation has been issued,
+    // and only then does the success view take over as a fallback.
+    clearAutoAcceptMarker(inviteId);
+
+    try {
+      await authClient.organization.setActive({
+        organizationId: data?.invitation.organizationId,
+      });
+    } catch {
+      // Making it the active workspace is a convenience; the dashboard
+      // resolves a workspace on its own.
+    }
+
+    toast.success(t("auth:invitation.toast.acceptSuccess"));
+
+    if (sessionUserName) {
+      void navigate({
+        to: "/dashboard/workspace/$workspaceId",
+        params: { workspaceId: data?.invitation.organizationId || "" },
+      });
+    } else {
+      void navigate({ to: "/profile-setup" });
+    }
+    setHasAccepted(true);
+    setIsAccepting(false);
   }, [inviteId, navigate, sessionUserName, t]);
 
   // Joins the workspace without another click, but only for a user who just
