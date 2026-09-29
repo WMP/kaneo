@@ -2326,6 +2326,7 @@ function RouteComponent() {
                     hoveredTaskId={hoveredTaskId}
                     criticalEdgeIds={criticalPath?.criticalEdgeIds}
                     clipLeftPx={barsLeftPx}
+                    resolveProjectId={() => projectId}
                     preview={
                       linkDrag
                         ? {

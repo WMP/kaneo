@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
@@ -19,7 +19,7 @@ export function ColumnHeader({ column }: ColumnHeaderProps) {
   const { t } = useTranslation();
   const { project, setProject } = useProjectStore();
   const { mutate: updateTask } = useUpdateTask();
-  const { canUpdateTasks, canCreateTasks } = useWorkspacePermission();
+  const { canUpdateTasks, canCreateTasks } = useProjectPermission(project?.id);
   const canTask = canUpdateTasks();
   const canCreate = canCreateTasks();
 

@@ -89,9 +89,10 @@ import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-a
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
@@ -245,9 +246,6 @@ function CreateTaskModalContent({
   );
   const location = useLocation();
   const { data: workspace } = useActiveWorkspace();
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    workspace?.id || "",
-  );
   const { data: workspaceResources } = useGetWorkspaceResources(
     workspace?.id || "",
   );
@@ -255,11 +253,9 @@ function CreateTaskModalContent({
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id || "",
   );
-  const { canCreateTasks, canCreateLabels, canUpdateProjects } =
-    useWorkspacePermission();
-  const canCreateTaskCapability = canCreateTasks();
-  const canCreateLabelCapability = canCreateLabels();
-  // Gated the same as POST /resource (project:update) — see resource/index.ts.
+  // Resources are workspace-level: POST /resource is gated by project:update in
+  // the WORKSPACE role (no project is resolved for it) — see resource/index.ts.
+  const { canUpdateProjects } = useWorkspacePermission();
   const canCreateResourceCapability = canUpdateProjects();
 
   const [title, setTitle] = useState("");
@@ -299,6 +295,18 @@ function CreateTaskModalContent({
     (candidate) => candidate.id === (explicitProjectId || selectedProjectId),
   );
   const resolvedProjectId = resolvedProject?.id ?? "";
+
+  // Task and label rights and the people to assign are those of the project
+  // the task is created in, not of the workspace role.
+  const { data: workspaceUsers } = useProjectMembers(resolvedProjectId);
+  const {
+    canCreateTasks,
+    canCreateLabels,
+    isCheckingPermissions: isCheckingProjectPermissions,
+  } = useProjectPermission(resolvedProjectId);
+  // Submitting needs a project and the right to create tasks in it.
+  const canCreateTaskCapability = canCreateTasks();
+  const canCreateLabelCapability = canCreateLabels();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const draftCreationPromiseRef = useRef<Promise<Task | null> | null>(null);
@@ -1121,7 +1129,14 @@ function CreateTaskModalContent({
   // Defense-in-depth: if the user lacks task-create permission, don't render
   // the modal even if a stale trigger somehow opens it (e.g., keyboard
   // shortcut after the capability has changed).
-  if (!canCreateTaskCapability) return null;
+  // Without a project yet the picker must stay reachable, and while the
+  // project's permissions load the dialog stays up (submitting is guarded).
+  if (
+    resolvedProjectId &&
+    !isCheckingProjectPermissions &&
+    !canCreateTaskCapability
+  )
+    return null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -1173,6 +1188,7 @@ function CreateTaskModalContent({
                   "common:modals.createTask.descriptionPlaceholder",
                 )}
                 taskId={draftTask?.id}
+                projectId={resolvedProjectId}
                 ensureTaskId={ensureDraftTask}
               />
             </div>

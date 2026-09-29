@@ -48,12 +48,11 @@ import {
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useDeleteTaskRelation from "@/hooks/mutations/task-relation/use-delete-task-relation";
 import useGetProject from "@/hooks/queries/project/use-get-project";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGlobalSearch from "@/hooks/queries/search/use-global-search";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-relations";
-import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
@@ -107,13 +106,10 @@ export default function TaskRelations({
   const { data: relations = [] } = useGetTaskRelations(taskId);
   const { data: projectData } = useGetTasks(projectId);
   const { data: project } = useGetProject({ id: projectId, workspaceId });
-  const { data: workspace } = useActiveWorkspace();
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    workspace?.id ?? "",
-  );
+  const { data: workspaceUsers } = useProjectMembers(projectId);
   const createRelation = useCreateTaskRelation();
   const deleteRelation = useDeleteTaskRelation(taskId);
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
 
   const trimmedSearchQuery = searchQuery.trim();
@@ -500,6 +496,7 @@ export default function TaskRelations({
                             <TaskRelationDependencyPopover
                               relationId={item.id}
                               taskId={taskId}
+                              projectId={projectId}
                               dependencyType={item.dependencyType}
                               lagDays={item.lagDays}
                             >
@@ -528,10 +525,7 @@ export default function TaskRelations({
                             </TaskRelationDependencyPopover>
                           )}
 
-                          <SubtaskAssigneePopover
-                            tasks={[taskObj]}
-                            workspaceId={workspaceId}
-                          >
+                          <SubtaskAssigneePopover tasks={[taskObj]}>
                             <button
                               type="button"
                               className="shrink-0 flex items-center justify-center rounded p-0.5 transition-colors outline-none"

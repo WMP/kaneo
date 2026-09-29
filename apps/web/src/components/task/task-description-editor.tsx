@@ -6,6 +6,7 @@ type TaskDescriptionEditorProps = {
   onChange: (value: string) => void;
   placeholder?: string;
   taskId?: string;
+  projectId?: string;
   ensureTaskId?: () => Promise<string | null>;
 };
 
@@ -14,6 +15,7 @@ export default function TaskDescriptionEditor({
   onChange,
   placeholder,
   taskId,
+  projectId,
   ensureTaskId,
 }: TaskDescriptionEditorProps) {
   const { t } = useTranslation();
@@ -24,6 +26,7 @@ export default function TaskDescriptionEditor({
       onChange={onChange}
       placeholder={placeholder ?? t("tasks:detail.addDescription")}
       taskId={taskId}
+      projectId={projectId}
       ensureTaskId={ensureTaskId}
       uploadSurface="description"
       className="[&_.kaneo-comment-editor-content_.ProseMirror]:min-h-[11rem] [&_.kaneo-comment-editor-content_.ProseMirror]:max-h-none [&_.kaneo-comment-editor-content_.ProseMirror]:overflow-visible [&_.kaneo-comment-editor-content_.ProseMirror]:px-0 [&_.kaneo-comment-editor-content_.ProseMirror]:pt-1 [&_.kaneo-comment-editor-content_.ProseMirror]:pb-2"

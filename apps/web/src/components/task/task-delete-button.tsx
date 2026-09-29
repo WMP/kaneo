@@ -13,24 +13,27 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { toast } from "@/lib/toast";
 
 type TaskDeleteButtonProps = {
   taskId: string;
+  projectId: string;
   onDeleted: () => void;
   className?: string;
 };
 
 export default function TaskDeleteButton({
   taskId,
+  projectId,
   onDeleted,
   className,
 }: TaskDeleteButtonProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const { canDeleteTasks, isCheckingPermissions } = useWorkspacePermission();
+  const { canDeleteTasks, isCheckingPermissions } =
+    useProjectPermission(projectId);
   const { mutateAsync: deleteTask, isPending } = useDeleteTask();
 
   if (isCheckingPermissions || !canDeleteTasks()) {

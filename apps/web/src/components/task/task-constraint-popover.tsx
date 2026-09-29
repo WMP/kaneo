@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { formatDateShort } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
@@ -43,7 +43,7 @@ export default function TaskConstraintPopover({
     null,
   );
   const { mutateAsync: updateTask } = useUpdateTask();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
 
   const committedType: TaskConstraintType =

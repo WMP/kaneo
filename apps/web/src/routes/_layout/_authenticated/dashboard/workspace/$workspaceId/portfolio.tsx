@@ -318,6 +318,16 @@ function RouteComponent() {
     return () => observer.disconnect();
   }, [measureTaskBoxes]);
 
+  // Which project each task belongs to: editing a dependency needs the
+  // permission in the source task's own project.
+  const projectIdByTaskId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const project of projects) {
+      for (const task of project.tasks) map.set(task.id, project.id);
+    }
+    return map;
+  }, [projects]);
+
   const dependencyEdgeGeometry = useMemo(
     () => buildDependencyEdges(dependencyEdges, taskBoxes),
     [dependencyEdges, taskBoxes],
@@ -524,6 +534,7 @@ function RouteComponent() {
                     edges={dependencyEdgeGeometry}
                     hoveredTaskId={null}
                     clipLeftPx={railWidthRem * getRootFontSizePx()}
+                    resolveProjectId={(taskId) => projectIdByTaskId.get(taskId)}
                   />
                   {rows.map((row) => {
                     const collapsed = collapsedProjectIds.has(row.id);

@@ -29,11 +29,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useCreateExternalLink from "@/hooks/mutations/external-link/use-create-external-link";
 import useDeleteExternalLink from "@/hooks/mutations/external-link/use-delete-external-link";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import type { ExternalLink } from "@/types/external-link";
 
 interface ExternalLinksAccordionProps {
   taskId: string;
+  projectId: string;
   externalLinks: ExternalLink[];
   isLoading?: boolean;
 }
@@ -57,11 +58,12 @@ function isGitlabResourceLink(link: ExternalLink) {
 
 export function ExternalLinksAccordion({
   taskId,
+  projectId,
   externalLinks,
   isLoading,
 }: ExternalLinksAccordionProps) {
   const { t } = useTranslation();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(projectId);
   const canAddResource = canUpdateTasks();
   const [isOpen, setIsOpen] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

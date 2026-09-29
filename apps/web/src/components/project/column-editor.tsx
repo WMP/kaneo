@@ -17,7 +17,7 @@ import { useDeleteColumn } from "@/hooks/mutations/column/use-delete-column";
 import { useReorderColumns } from "@/hooks/mutations/column/use-reorder-columns";
 import { useUpdateColumn } from "@/hooks/mutations/column/use-update-column";
 import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -33,8 +33,8 @@ export default function ColumnEditor({ projectId }: ColumnEditorProps) {
   const { mutateAsync: updateColumn } = useUpdateColumn();
   const { mutateAsync: deleteColumn } = useDeleteColumn();
   const { mutateAsync: reorderColumns } = useReorderColumns();
-  const { canManageProjects } = useWorkspacePermission();
-  const canEdit = canManageProjects();
+  const { canUpdateProject } = useProjectPermission(projectId);
+  const canEdit = canUpdateProject();
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnIcon, setNewColumnIcon] = useState("Circle");
   const [iconPickerColumnId, setIconPickerColumnId] = useState<string | null>(

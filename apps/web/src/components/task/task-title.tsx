@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Form, FormField } from "@/components/ui/form";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
 import useGetTask from "@/hooks/queries/task/use-get-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import debounce from "@/lib/debounce";
 
 type TaskTitleProps = {
@@ -16,7 +16,7 @@ export default function TaskTitle({ taskId }: TaskTitleProps) {
   const { t } = useTranslation();
   const { data: task } = useGetTask(taskId);
   const { mutateAsync: updateTaskTitle } = useUpdateTaskTitle();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task?.projectId);
   const canEdit = canUpdateTasks();
   const isInitializedRef = useRef(false);
   const taskRef = useRef(task);

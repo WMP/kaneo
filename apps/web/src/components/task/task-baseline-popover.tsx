@@ -10,7 +10,7 @@ import {
   useClearTaskBaseline,
   useSetTaskBaseline,
 } from "@/hooks/mutations/task/use-set-task-baseline";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { formatDateShort } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
@@ -30,7 +30,7 @@ export default function TaskBaselinePopover({
     useSetTaskBaseline();
   const { mutateAsync: clearBaseline, isPending: isClearing } =
     useClearTaskBaseline();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
 
   const hasBaseline = Boolean(task.baselineStartDate || task.baselineDueDate);

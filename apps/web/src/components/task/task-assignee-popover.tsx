@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/popover";
 import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-assignees";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
@@ -40,11 +41,13 @@ export default function TaskAssigneePopover({
     INITIAL_VISIBLE_USERS,
   );
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(workspaceId);
+  const { data: workspaceUsers } = useProjectMembers(task.projectId);
   const { data: workspaceResources } = useGetWorkspaceResources(workspaceId);
-  const { canAssignTasks, canUpdateProjects } = useWorkspacePermission();
+  const { canAssignTasks } = useProjectPermission(task.projectId);
   const canAssign = canAssignTasks();
-  // Gated the same as POST /resource (project:update) — see resource/index.ts.
+  // Resources are workspace-level: POST /resource is gated by project:update in
+  // the WORKSPACE role (no project is resolved for it) — see resource/index.ts.
+  const { canUpdateProjects } = useWorkspacePermission();
   const canCreateResource = canUpdateProjects();
 
   const resolvedAssigneeIds = useMemo(

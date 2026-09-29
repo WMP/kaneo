@@ -22,6 +22,10 @@ type GanttDependencyOverlayProps = {
    * live and gone once it ends (dropped, cancelled, or completed — the real
    * edge then appears via the usual relations refetch). */
   preview?: { source: Point; pointer: Point } | null;
+  /** The project a task belongs to. Editing an edge's dependency type needs
+   * task:update in the SOURCE task's project, which differs per edge on the
+   * cross-project portfolio. */
+  resolveProjectId: (taskId: string) => string | undefined;
 };
 
 // Resting/emphasized/dimmed visual states for the connector lines. Hovering
@@ -40,6 +44,7 @@ export function GanttDependencyOverlay({
   criticalEdgeIds,
   clipLeftPx,
   preview = null,
+  resolveProjectId,
 }: GanttDependencyOverlayProps) {
   const { t } = useTranslation();
   if (edges.length === 0 && !preview) return null;
@@ -174,6 +179,7 @@ export function GanttDependencyOverlay({
                 <TaskRelationDependencyPopover
                   relationId={edge.id}
                   taskId={edge.sourceTaskId}
+                  projectId={resolveProjectId(edge.sourceTaskId)}
                   dependencyType={edge.dependencyType ?? "fs"}
                   lagDays={edge.lagDays ?? 0}
                 >

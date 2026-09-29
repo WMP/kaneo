@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 
@@ -23,7 +23,7 @@ export default function TaskMilestonePopover({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { mutateAsync: updateTask } = useUpdateTask();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
 
   const handleToggle = async (checked: boolean) => {

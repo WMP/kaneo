@@ -31,8 +31,8 @@ import useGetCachedCustomFieldValues from "@/hooks/queries/custom-field/use-get-
 import useGetCustomFieldFilterValues from "@/hooks/queries/custom-field/use-get-custom-field-filter-values";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { DUE_DATE_FILTER_VALUES } from "@/hooks/use-task-filters";
 import { getInitials } from "@/lib/get-initials";
@@ -73,7 +73,7 @@ function RouteComponent() {
     direction: "asc",
   });
 
-  const { data: users } = useGetActiveWorkspaceUsers(workspaceId);
+  const { data: users } = useProjectMembers(projectId);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
   const queryClient = useQueryClient();
 

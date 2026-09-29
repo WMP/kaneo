@@ -77,7 +77,11 @@ export default function TaskDetailsSheet({
           </div>
           <div className="flex items-center gap-1">
             {currentTaskId && (
-              <TaskDeleteButton taskId={currentTaskId} onDeleted={onClose} />
+              <TaskDeleteButton
+                taskId={currentTaskId}
+                projectId={projectId}
+                onDeleted={onClose}
+              />
             )}
             <TooltipProvider>
               <Tooltip>

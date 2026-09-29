@@ -29,8 +29,8 @@ import useGetGitlabIntegration from "@/hooks/queries/gitlab-integration/use-get-
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
 import useGetProject from "@/hooks/queries/project/use-get-project";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGetTask from "@/hooks/queries/task/use-get-task";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { getApprovalStatusIcon } from "@/lib/approval";
 import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
@@ -227,7 +227,7 @@ export default function TaskPropertiesSidebar({
   const { data: project } = useGetProject({ id: projectId, workspaceId });
   const { data: columns = [] } = useGetColumns(projectId);
   const taskIsCompleted = isTaskCompleted(task?.status ?? "", columns);
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(workspaceId);
+  const { data: workspaceUsers } = useProjectMembers(projectId);
   const { data: taskLabels = [] } = useGetLabelsByTask(taskId ?? "");
   const { data: githubIntegration } = useGetGithubIntegration(projectId);
   const { data: giteaIntegration } = useGetGiteaIntegration(projectId);

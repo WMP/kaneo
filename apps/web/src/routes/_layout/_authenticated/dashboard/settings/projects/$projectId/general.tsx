@@ -62,7 +62,7 @@ import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetWorkspaces from "@/hooks/queries/workspace/use-get-workspaces";
 import { useWorkspacesWithPermission } from "@/hooks/queries/workspace/use-workspaces-with-permission";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project.ts";
@@ -75,8 +75,6 @@ export const Route = createFileRoute(
 
 // Module-level so their identity stays stable across renders.
 const PROJECT_CREATE = { project: ["create"] };
-// Asked as one check: the endpoint requires both in the source workspace.
-const PROJECT_UPDATE_AND_DELETE = { project: ["update", "delete"] };
 
 type ProjectFormValues = {
   name: string;
@@ -188,30 +186,25 @@ function RouteComponent() {
     () => moveCandidates.filter((item) => canCreateIn.has(item.id)),
     [moveCandidates, canCreateIn],
   );
-  // The API authorizes the move against the project's own workspace, which
-  // isn't necessarily the active one `useWorkspacePermission` answers for. It
-  // requires `delete` there on top of `update`, since a move takes the project
-  // out of that workspace.
-  const sourceWorkspaceIds = useMemo(
-    () => (project?.workspaceId ? [project.workspaceId] : []),
-    [project?.workspaceId],
-  );
-  const { allowed: canMoveOutOfSource } = useWorkspacesWithPermission(
-    sourceWorkspaceIds,
-    PROJECT_UPDATE_AND_DELETE,
-  );
-  const canMoveFromSource = Boolean(
-    project?.workspaceId && canMoveOutOfSource.has(project.workspaceId),
-  );
+  // Moving takes the project out of its workspace: the API requires `update`
+  // and `delete` in the caller's effective access IN THIS PROJECT (project role
+  // for a project member), and `project:create` in the target workspace (the
+  // caller's workspace role there, checked above).
+  const {
+    canUpdateProject,
+    canDeleteProject,
+    isCheckingPermissions: isCheckingProjectPermissions,
+  } = useProjectPermission(projectId);
+  const canMoveFromSource =
+    !isCheckingProjectPermissions && canUpdateProject() && canDeleteProject();
   // Kept visible when the target lookup failed: an empty list would otherwise
   // read as "you have nowhere to move this", which is a different answer.
   const canShowMove =
     canMoveFromSource &&
     isCurrentProject &&
     (moveTargets.length > 0 || moveTargetsFailed);
-  const { canManageProjects, canDeleteProjects } = useWorkspacePermission();
-  const canEdit = canManageProjects();
-  const canDelete = canDeleteProjects();
+  const canEdit = canUpdateProject();
+  const canDelete = canDeleteProject();
 
   const projectForm = useForm<ProjectFormValues>({
     resolver: standardSchemaResolver(projectSchema),

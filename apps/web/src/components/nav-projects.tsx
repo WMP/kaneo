@@ -58,6 +58,7 @@ import useDeleteProject from "@/hooks/mutations/project/use-delete-project";
 import useReorderProjects from "@/hooks/mutations/project/use-reorder-projects";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 import type { ProjectWithTasks } from "@/types/project";
@@ -113,6 +114,33 @@ function SortableProjectItem({
   );
 }
 
+// Deleting a project is decided per project (the project role for a member),
+// so the menu item asks for its own project. It only mounts, and so only asks,
+// while the row's menu is open.
+function DeleteProjectMenuItem({
+  projectId,
+  onSelect,
+}: {
+  projectId: string;
+  onSelect: () => void;
+}) {
+  const { t } = useTranslation();
+  const { canDeleteProject } = useProjectPermission(projectId);
+  if (!canDeleteProject()) return null;
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className="h-7 items-start text-destructive cursor-pointer text-sm"
+        onClick={onSelect}
+      >
+        <Trash2 className="text-destructive" />
+        <span>{t("navigation:projectList.deleteProject")}</span>
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 export function NavProjects() {
   const { t } = useTranslation();
   const { isMobile } = useSidebar();
@@ -123,10 +151,8 @@ export function NavProjects() {
   const queryClient = useQueryClient();
   const { mutateAsync: deleteProject } = useDeleteProject();
   const reorderProjects = useReorderProjects();
-  const { canCreateProjects, canDeleteProjects, canUpdateProjects } =
-    useWorkspacePermission();
+  const { canCreateProjects, canUpdateProjects } = useWorkspacePermission();
   const canCreate = canCreateProjects();
-  const canDeleteProject = canDeleteProjects();
   // Matches the API, which gates /project/reorder on `project: ["update"]`
   // alone — not the create+update+delete bundle.
   const canReorder = canUpdateProjects();
@@ -321,25 +347,13 @@ export function NavProjects() {
                                   {t("navigation:projectList.projectSettings")}
                                 </span>
                               </DropdownMenuItem>
-                              {canDeleteProject && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="h-7 items-start text-destructive cursor-pointer text-sm"
-                                    onClick={() => {
-                                      setProjectToDeleteID(project.id);
-                                      setIsDeleteProjectModalOpen(true);
-                                    }}
-                                  >
-                                    <Trash2 className="text-destructive" />
-                                    <span>
-                                      {t(
-                                        "navigation:projectList.deleteProject",
-                                      )}
-                                    </span>
-                                  </DropdownMenuItem>
-                                </>
-                              )}
+                              <DeleteProjectMenuItem
+                                projectId={project.id}
+                                onSelect={() => {
+                                  setProjectToDeleteID(project.id);
+                                  setIsDeleteProjectModalOpen(true);
+                                }}
+                              />
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </SortableProjectItem>

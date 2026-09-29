@@ -15,9 +15,9 @@ import { shortcuts } from "@/constants/shortcuts";
 import useGetCustomFieldFilterValues from "@/hooks/queries/custom-field/use-get-custom-field-filter-values";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import { useDescriptionMatches } from "@/hooks/queries/task/use-description-matches";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useTaskFiltersWithLabelsSupport } from "@/hooks/use-task-filters-with-labels-support";
@@ -97,7 +97,7 @@ function RouteComponent() {
   const { sort, setSort } = useBoardSort(projectId);
   const { background } = useBackgroundStore();
 
-  const { data: users } = useGetActiveWorkspaceUsers(workspaceId);
+  const { data: users } = useProjectMembers(projectId);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
 
   const { data: rawCustomFields = [] } = useGetCustomFieldsByProject(projectId);

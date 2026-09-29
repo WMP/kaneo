@@ -1,3 +1,4 @@
+import { skipToken, useQuery } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -60,8 +61,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
-import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import { cn } from "@/lib/cn";
 import { parseTaskListMarkdownToNodes } from "@/lib/editor-task-list-paste";
 import {
@@ -90,6 +90,9 @@ type CommentEditorProps = {
   onSubmitShortcut?: () => void;
   onCancelShortcut?: () => void;
   taskId?: string;
+  /** The project whose people can be mentioned. Without it, the project of
+   * `taskId` is read from the task cache. */
+  projectId?: string;
   uploadSurface?: "description" | "comment";
   ensureTaskId?: () => Promise<string | null>;
   showQuickAttachButton?: boolean;
@@ -175,6 +178,7 @@ export default function CommentEditor({
   onSubmitShortcut,
   onCancelShortcut,
   taskId,
+  projectId,
   uploadSurface = "comment",
   ensureTaskId,
   showQuickAttachButton = true,
@@ -183,9 +187,19 @@ export default function CommentEditor({
   const { t } = useTranslation();
   const resolvedPlaceholder =
     placeholder ?? t("activity:comment.leavePlaceholder");
-  const { data: activeWorkspace } = useActiveWorkspace();
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    activeWorkspace?.id ?? "",
+  // Mentions offer the people of the task's project only. The task is read
+  // from the cache the task views already fill (skipToken: no request here).
+  const { data: cachedTaskProjectId } = useQuery<
+    { projectId: string } | undefined,
+    Error,
+    string | undefined
+  >({
+    queryKey: ["task", taskId ?? ""],
+    queryFn: skipToken,
+    select: (task) => task?.projectId,
+  });
+  const { data: workspaceUsers } = useProjectMembers(
+    projectId ?? cachedTaskProjectId,
   );
   const mentionMembersRef = useRef<MentionMember[]>([]);
   mentionMembersRef.current = useMemo(

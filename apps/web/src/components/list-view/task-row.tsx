@@ -28,8 +28,8 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/preview-card";
 import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { cn } from "@/lib/cn";
 import {
   dueDateStatusColors,
@@ -83,9 +83,7 @@ function TaskRow({ task, projectSlug }: TaskRowProps) {
   const isTaskSelected = isSelected(task.id);
   const isTaskFocused = isFocused(task.id);
 
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    workspace?.id ?? "",
-  );
+  const { data: workspaceUsers } = useProjectMembers(task.projectId);
 
   const assignee = useMemo(() => {
     return workspaceUsers?.members?.find(

@@ -34,8 +34,8 @@ import {
 } from "@/components/ui/preview-card";
 import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
 import useGetCustomFieldValuesByProject from "@/hooks/queries/custom-field/use-get-custom-field-values-by-project";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import {
   dueDateStatusColors,
   getDueDateStatus,
@@ -157,9 +157,7 @@ function TaskCard({ task, disableDragDrop = false }: TaskCardProps) {
     zIndex: isDragging ? 999 : "auto",
   };
 
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    workspace?.id ?? "",
-  );
+  const { data: workspaceUsers } = useProjectMembers(task.projectId);
 
   const assignee = useMemo(() => {
     return workspaceUsers?.members?.find(

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 
@@ -43,7 +43,7 @@ export default function TaskProgressPopover({
   // duplicate success toast in that window. This ref updates synchronously.
   const lastCommittedRef = useRef(task.progress ?? 0);
   const { mutateAsync: updateTask } = useUpdateTask();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
 
   useEffect(() => {

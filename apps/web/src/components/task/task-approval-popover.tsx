@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateTaskApproval } from "@/hooks/mutations/task/use-update-task-approval";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getApprovalStatusIcon } from "@/lib/approval";
 import { getApprovalStatusLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
@@ -52,7 +52,7 @@ export default function TaskApprovalPopover({
     toApprovalOption(task.approvalStatus),
   );
   const { mutateAsync: updateApproval, isPending } = useUpdateTaskApproval();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
 
   const handleStatusChange = useCallback(

@@ -76,7 +76,11 @@ function RouteComponent() {
       workspaceId={workspaceId}
       headerActions={
         !isLoading && task ? (
-          <TaskDeleteButton taskId={taskId} onDeleted={handleDeleted} />
+          <TaskDeleteButton
+            taskId={taskId}
+            projectId={projectId}
+            onDeleted={handleDeleted}
+          />
         ) : null
       }
       rightSidebar={

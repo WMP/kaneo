@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/popover";
 import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskAssignee } from "@/hooks/mutations/task/use-update-task-assignee";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
@@ -22,13 +22,11 @@ const VISIBLE_USERS_STEP = 40;
 
 type SubtaskAssigneePopoverProps = {
   tasks: Task[];
-  workspaceId: string;
   children: React.ReactNode;
 };
 
 export default function SubtaskAssigneePopover({
   tasks,
-  workspaceId,
   children,
 }: SubtaskAssigneePopoverProps) {
   const { t } = useTranslation();
@@ -37,8 +35,8 @@ export default function SubtaskAssigneePopover({
     INITIAL_VISIBLE_USERS,
   );
   const { mutateAsync: updateTaskAssignee } = useUpdateTaskAssignee();
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(workspaceId);
-  const { canAssignTasks } = useWorkspacePermission();
+  const { data: workspaceUsers } = useProjectMembers(tasks[0]?.projectId);
+  const { canAssignTasks } = useProjectPermission(tasks[0]?.projectId);
   const canAssign = canAssignTasks();
 
   const usersOptions = useMemo(() => {

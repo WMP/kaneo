@@ -22,6 +22,7 @@ import {
   revokeCalendarFeed,
 } from "@/fetchers/calendar-feed";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { toast } from "@/lib/toast";
 
@@ -29,9 +30,10 @@ type LabelOption = { value: string; label: string };
 
 export function CalendarFeedSettings({ projectId }: { projectId: string }) {
   const { t } = useTranslation();
-  const { workspace, canShareProjects, isCheckingPermissions } =
-    useWorkspacePermission();
-  const canShare = canShareProjects();
+  const { workspace } = useWorkspacePermission();
+  const { canShareProject, isCheckingPermissions } =
+    useProjectPermission(projectId);
+  const canShare = canShareProject();
   const labelsQuery = useGetLabelsByWorkspace(workspace?.id ?? "");
   const labels = labelsQuery.data ?? [];
   // Labels have separate IDs for the workspace definition and each task copy.

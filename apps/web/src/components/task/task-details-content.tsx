@@ -54,7 +54,7 @@ import useExternalLinks from "@/hooks/queries/external-link/use-external-links";
 import useGetProject from "@/hooks/queries/project/use-get-project";
 import useGetTask from "@/hooks/queries/task/use-get-task";
 import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-relations";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -133,7 +133,7 @@ export default function TaskDetailsContent({
   );
 
   const { mutateAsync: setCustomFieldValue } = useSetCustomFieldValue();
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
 
   const [localValues, setLocalValues] = useState<CustomFieldValueMap>({});
@@ -652,6 +652,7 @@ export default function TaskDetailsContent({
       <div className="mt-4">
         <ExternalLinksAccordion
           taskId={taskId}
+          projectId={projectId}
           externalLinks={externalLinks as ExternalLink[]}
           isLoading={isLoadingExternalLinks}
         />

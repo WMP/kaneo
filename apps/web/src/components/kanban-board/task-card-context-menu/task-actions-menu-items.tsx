@@ -13,8 +13,8 @@ import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-stat
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
 import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
-import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { generateLink } from "@/lib/generate-link";
 import { getInitials } from "@/lib/get-initials";
@@ -115,9 +115,7 @@ export default function TaskActionsMenuItems({
           icon: col.icon,
           isFinal: col.isFinal,
         }));
-  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
-    taskCardContext.worskpaceId,
-  );
+  const { data: workspaceUsers } = useProjectMembers(task.projectId);
   const { mutateAsync: updateTask } = useUpdateTask();
   const { mutateAsync: updateTaskPriority } = useUpdateTaskPriority();
   const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
@@ -127,7 +125,7 @@ export default function TaskActionsMenuItems({
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
   const { mutate: duplicateTask } = useDuplicateTask();
   const { canCreateTasks, canUpdateTasks, canDeleteTasks, canAssignTasks } =
-    useWorkspacePermission();
+    useProjectPermission(task.projectId);
   const canCreate = canCreateTasks();
   const canEdit = canUpdateTasks();
   const canDelete = canDeleteTasks();

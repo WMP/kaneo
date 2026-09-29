@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useUpdateTaskRelation from "@/hooks/mutations/task-relation/use-update-task-relation";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { toast } from "@/lib/toast";
 
 export type GanttDependencyType = "fs" | "ss" | "ff" | "sf";
@@ -28,6 +28,8 @@ type TaskRelationDependencyPopoverProps = {
   /** The task whose relation list this popover was opened from — used only
    * to invalidate that task's own cache on save. */
   taskId: string;
+  /** The project of `taskId`: editing a relation needs task:update there. */
+  projectId: string | undefined;
   dependencyType: string;
   lagDays: number;
   children: React.ReactNode;
@@ -40,6 +42,7 @@ type TaskRelationDependencyPopoverProps = {
 export default function TaskRelationDependencyPopover({
   relationId,
   taskId,
+  projectId,
   dependencyType,
   lagDays,
   children,
@@ -51,7 +54,7 @@ export default function TaskRelationDependencyPopover({
   );
   const [lagInput, setLagInput] = useState(String(lagDays));
   const updateRelation = useUpdateTaskRelation(taskId);
-  const { canUpdateTasks } = useWorkspacePermission();
+  const { canUpdateTasks } = useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
 
   // Reset the draft to the current values every time the popover opens,

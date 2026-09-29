@@ -44,7 +44,7 @@ import {
 import useImportGitlabIssues from "@/hooks/mutations/gitlab-integration/use-import-gitlab-issues";
 import { useUpdateGitlabIntegration } from "@/hooks/mutations/gitlab-integration/use-update-gitlab-integration";
 import useGetGitlabIntegration from "@/hooks/queries/gitlab-integration/use-get-gitlab-integration";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { toast } from "@/lib/toast";
 
@@ -100,7 +100,7 @@ export function GitlabIntegrationSettings({
   projectId: string;
 }) {
   const { t } = useTranslation();
-  const { canCreateTasks, canUpdateTasks } = useWorkspacePermission();
+  const { canCreateTasks, canUpdateTasks } = useProjectPermission(projectId);
 
   const gitlabIntegrationSchema = React.useMemo(
     () =>

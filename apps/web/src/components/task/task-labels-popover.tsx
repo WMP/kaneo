@@ -13,7 +13,7 @@ import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useDetachLabelFromTask from "@/hooks/mutations/label/use-detach-label-from-task";
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
-import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { getTaskLabelOptions } from "@/lib/get-task-label-options";
 import { resolveLabelColor } from "@/lib/label-color";
@@ -71,7 +71,9 @@ export default function TaskLabelsPopover({
   const { mutateAsync: attachLabel } = useAttachLabelToTask();
   const { mutateAsync: createLabel } = useCreateLabel();
   const { mutateAsync: detachLabel } = useDetachLabelFromTask();
-  const { canCreateLabels, canUpdateLabels } = useWorkspacePermission();
+  const { canCreateLabels, canUpdateLabels } = useProjectPermission(
+    task.projectId,
+  );
   const canCreate = canCreateLabels();
   const canEdit = canUpdateLabels();
 
