@@ -10,6 +10,7 @@ import { workspaceAccess } from "../utils/workspace-access-middleware";
 import { assignableRolesSchema } from "../workspace/response";
 import addProjectMember from "./controllers/add-project-member";
 import getAssignableProjectRoles from "./controllers/get-assignable-project-roles";
+import getProjectAccess from "./controllers/get-project-access";
 import listProjectMembers from "./controllers/list-project-members";
 import removeProjectMember from "./controllers/remove-project-member";
 import updateProjectMember from "./controllers/update-project-member";
@@ -17,7 +18,11 @@ import {
   assertProjectMemberPermission,
   requireProjectAccess,
 } from "./delegation";
-import { projectMemberListSchema, projectMemberSchema } from "./response";
+import {
+  projectAccessSchema,
+  projectMemberListSchema,
+  projectMemberSchema,
+} from "./response";
 import {
   addProjectMemberBody,
   projectIdParam,
@@ -162,6 +167,25 @@ const getProjectAssignableRolesRoute = createRoute({
   },
 });
 
+const getProjectAccessRoute = createRoute({
+  method: "get",
+  operationId: "getProjectAccess",
+  path: "/{projectId}/access",
+  tags: ["Projects"],
+  summary: "Get the caller's access to a project",
+  description:
+    "How the caller reaches the project (full: through workspace privileges, member: through a project membership), the role that applies and a fixed set of capabilities for the UI. Capabilities are evaluated with the logic of the routes that perform the actions, including the API key scope. This is a hint for the UI: the API enforces every action itself.",
+  middleware: [workspaceAccess.fromProject("projectId")] as const,
+  request: { params: projectIdParam },
+  responses: {
+    200: jsonResponse("The caller's access", projectAccessSchema),
+    400: errorResponse(
+      "Unknown project, or its workspace could not be determined",
+    ),
+    403: errorResponse("No access to the project"),
+  },
+});
+
 const projectMember = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(listProjectMembersRoute, async (c) => {
     const access = requireProjectAccess(c.get("projectAccess"));
@@ -201,6 +225,10 @@ const projectMember = apiRouter<BaseVariables & { workspaceId: string }>()
       }),
       200,
     );
+  })
+  .openapi(getProjectAccessRoute, async (c) => {
+    const access = requireProjectAccess(c.get("projectAccess"));
+    return c.json(await getProjectAccess(c, access), 200);
   })
   .openapi(getProjectAssignableRolesRoute, async (c) => {
     const access = requireProjectAccess(c.get("projectAccess"));

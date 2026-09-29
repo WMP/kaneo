@@ -1173,6 +1173,104 @@
           "active"
         ]
       },
+      "ProjectAccess": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "member"
+            ],
+            "description": "full: the caller reaches every project of the workspace (instance administrator, workspace owner, or a role granting workspace:manage_settings) and acts with their workspace role. member: access comes from a project membership and the project role applies."
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The project role for mode member, the workspace role for mode full (null for an instance administrator who is not a workspace member)."
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "createTasks": {
+                "type": "boolean"
+              },
+              "updateTasks": {
+                "type": "boolean"
+              },
+              "deleteTasks": {
+                "type": "boolean"
+              },
+              "assignTasks": {
+                "type": "boolean"
+              },
+              "createLabels": {
+                "type": "boolean"
+              },
+              "updateLabels": {
+                "type": "boolean"
+              },
+              "deleteLabels": {
+                "type": "boolean"
+              },
+              "updateProject": {
+                "type": "boolean"
+              },
+              "deleteProject": {
+                "type": "boolean"
+              },
+              "shareProject": {
+                "type": "boolean"
+              },
+              "manageMembers": {
+                "type": "boolean",
+                "description": "member:create, member:update or member:delete."
+              },
+              "addMembers": {
+                "type": "boolean",
+                "description": "member:create."
+              },
+              "inviteToProject": {
+                "type": "boolean",
+                "description": "invitation:create."
+              },
+              "cancelProjectInvitations": {
+                "type": "boolean",
+                "description": "invitation:cancel."
+              },
+              "manageIntegrations": {
+                "type": "boolean",
+                "description": "workspace:manage_settings in the caller's workspace role."
+              }
+            },
+            "required": [
+              "createTasks",
+              "updateTasks",
+              "deleteTasks",
+              "assignTasks",
+              "createLabels",
+              "updateLabels",
+              "deleteLabels",
+              "updateProject",
+              "deleteProject",
+              "shareProject",
+              "manageMembers",
+              "addMembers",
+              "inviteToProject",
+              "cancelProjectInvitations",
+              "manageIntegrations"
+            ],
+            "description": "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; integrations from the workspace role). The API key scope is intersected."
+          }
+        },
+        "required": [
+          "mode",
+          "role",
+          "capabilities"
+        ]
+      },
       "AssignableRoles": {
         "type": "object",
         "properties": {
@@ -9745,6 +9843,61 @@
           },
           "409": {
             "description": "The membership changed while it was being checked",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectId}/access": {
+      "get": {
+        "operationId": "getProjectAccess",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get the caller's access to a project",
+        "description": "How the caller reaches the project (full: through workspace privileges, member: through a project membership), the role that applies and a fixed set of capabilities for the UI. Capabilities are evaluated with the logic of the routes that perform the actions, including the API key scope. This is a hint for the UI: the API enforces every action itself.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAccess"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown project, or its workspace could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project",
             "content": {
               "text/plain": {
                 "schema": {

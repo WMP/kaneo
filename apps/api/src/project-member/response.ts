@@ -22,3 +22,47 @@ export const projectMemberSchema = z
   .openapi("ProjectMember");
 
 export const projectMemberListSchema = z.array(projectMemberSchema);
+
+export const projectAccessSchema = z
+  .object({
+    mode: z.enum(["full", "member"]).openapi({
+      description:
+        "full: the caller reaches every project of the workspace (instance administrator, workspace owner, or a role granting workspace:manage_settings) and acts with their workspace role. member: access comes from a project membership and the project role applies.",
+    }),
+    role: z.string().nullable().openapi({
+      description:
+        "The project role for mode member, the workspace role for mode full (null for an instance administrator who is not a workspace member).",
+    }),
+    capabilities: z
+      .object({
+        createTasks: z.boolean(),
+        updateTasks: z.boolean(),
+        deleteTasks: z.boolean(),
+        assignTasks: z.boolean(),
+        createLabels: z.boolean(),
+        updateLabels: z.boolean(),
+        deleteLabels: z.boolean(),
+        updateProject: z.boolean(),
+        deleteProject: z.boolean(),
+        shareProject: z.boolean(),
+        manageMembers: z.boolean().openapi({
+          description: "member:create, member:update or member:delete.",
+        }),
+        addMembers: z.boolean().openapi({ description: "member:create." }),
+        inviteToProject: z
+          .boolean()
+          .openapi({ description: "invitation:create." }),
+        cancelProjectInvitations: z
+          .boolean()
+          .openapi({ description: "invitation:cancel." }),
+        manageIntegrations: z.boolean().openapi({
+          description:
+            "workspace:manage_settings in the caller's workspace role.",
+        }),
+      })
+      .openapi({
+        description:
+          "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; integrations from the workspace role). The API key scope is intersected.",
+      }),
+  })
+  .openapi("ProjectAccess");
