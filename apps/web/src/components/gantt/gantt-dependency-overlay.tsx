@@ -58,10 +58,11 @@ export function GanttDependencyOverlay({
       className="pointer-events-none absolute inset-0 z-[9] h-full w-full overflow-visible"
       // Only the left edge is meant to protect the sticky task rail; top and
       // bottom stay wide open (a large negative inset, rather than 0) so a
-      // backward or looping connector that routes above the first row or
-      // below the last row (see buildElbowPoints's "above"/"below" lanes)
-      // still renders in full instead of being cut off at the overlay's own
-      // vertical bounds.
+      // backward or looping connector whose detour lane runs past the
+      // overlay's own vertical bounds (see buildElbowPoints's "below" lane,
+      // which can sit under the last row) still renders in full. An "above"
+      // lane is never placed above the first row: that area is under the
+      // opaque sticky timeline header, which would hide it.
       style={{
         clipPath: `inset(-2000px 0 -2000px ${Math.max(clipLeftPx, 0)}px)`,
       }}

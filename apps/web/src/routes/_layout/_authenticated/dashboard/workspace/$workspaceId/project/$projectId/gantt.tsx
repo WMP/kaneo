@@ -31,7 +31,10 @@ import type {
   DependencyEdgeInput,
   TaskBarBox,
 } from "@/components/gantt/dependency-lines";
-import { buildDependencyEdges } from "@/components/gantt/dependency-lines";
+import {
+  buildDependencyEdges,
+  DEPENDENCY_LANE_CLEARANCE_PX,
+} from "@/components/gantt/dependency-lines";
 import type {
   CriticalPathEdgeInput,
   CriticalPathTaskInput,
@@ -2308,8 +2311,15 @@ function RouteComponent() {
                   // rows happen to be mounted: virtualization only windows
                   // WHICH rows render, never how tall the scrollable area or
                   // the dependency-line overlay below (which is `h-full` of
-                  // this container) reads as a whole.
-                  style={{ height: rowsTotalHeightPx }}
+                  // this container) reads as a whole. Plus a small empty band
+                  // after the last row: a backward connector routes its detour
+                  // lane under the bottom row (never above the first one, which
+                  // the sticky header would hide), so that lane needs to stay
+                  // inside the scrollable area — see
+                  // DEPENDENCY_LANE_CLEARANCE_PX.
+                  style={{
+                    height: rowsTotalHeightPx + DEPENDENCY_LANE_CLEARANCE_PX,
+                  }}
                 >
                   <GanttDependencyOverlay
                     edges={dependencyEdgeGeometry}

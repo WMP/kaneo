@@ -60,6 +60,13 @@ type AnchorSide = "start" | "end";
 const EXIT_GAP = 14;
 // Corner rounding radius for the elbow's turns.
 const CORNER_RADIUS = 8;
+// Vertical room a "below" detour lane needs under the LAST row: the lane sits
+// EXIT_GAP past that row's bottom, plus a little for the stroke, arrowhead and
+// rounded corners. Charts reserve this much empty space after their last row
+// (see the Gantt and Portfolio row containers) so a backward connector routed
+// under the bottom row stays inside the scrollable area instead of being
+// clipped by the scroll container's own bottom edge.
+export const DEPENDENCY_LANE_CLEARANCE_PX = EXIT_GAP + 10;
 // Vertical spacing between two "blocks" edges' type labels when they fan out
 // from the same source task (see the fan-out index in buildDependencyEdges),
 // in the same pixel space the rest of this module's geometry is in — sized
@@ -203,7 +210,8 @@ function pickClearMidX(
 //  - target behind the source (a backward-scheduled edge) or too close to
 //    fit a clean step: leave the source to the right, drop into a
 //    horizontal lane that clears both bars entirely (above whichever box is
-//    higher, or below whichever is lower — whichever is the shorter detour),
+//    higher, or below whichever is lower — whichever is the shorter detour,
+//    except that a lane above the first row is never used: see laneY below),
 //    travel the length of that lane, then approach the target's start edge
 //    from the left, the same direction every other edge arrives from.
 export function buildElbowPoints(
@@ -277,7 +285,16 @@ export function buildElbowPoints(
   const above = Math.min(source.top, target.top) - EXIT_GAP;
   const belowTravel = Math.abs(below - sourceY) + Math.abs(below - targetY);
   const aboveTravel = Math.abs(above - sourceY) + Math.abs(above - targetY);
-  const laneY = belowTravel <= aboveTravel ? below : above;
+  // Box coordinates are relative to the overlay's top edge, which is the top
+  // of the FIRST row: anything above y=0 lies under the chart's opaque sticky
+  // timeline header, so a lane there renders but is hidden — the connector
+  // looks cut off at the header. Whenever either endpoint sits in the first
+  // row the "above" lane would be negative, so take the "below" lane instead;
+  // the space under the last row is kept free for it (see
+  // DEPENDENCY_LANE_CLEARANCE_PX). Otherwise keep the shorter detour, with a
+  // tie still going below.
+  const aboveIsVisible = above >= 0;
+  const laneY = !aboveIsVisible || belowTravel <= aboveTravel ? below : above;
 
   return [
     sourcePoint,

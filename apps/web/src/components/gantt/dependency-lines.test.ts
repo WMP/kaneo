@@ -136,6 +136,39 @@ describe("buildElbowPoints", () => {
     expect(points[points.length - 1]).toEqual({ x: 100, y: 66 });
     expect(points.length).toBeGreaterThan(2);
   });
+
+  it("never routes a backward detour above the first row, where the sticky header would hide it, even when that detour is shorter", () => {
+    // Mirrors the reported chart: the source (an own task, in a slightly
+    // taller bottom row) finishes after the target (a cross-project task in
+    // the FIRST row, top 0) starts. The "above" lane is the shorter detour
+    // here (217.5 vs 222.5px of vertical travel), but it would sit at y=-14 —
+    // under the opaque timeline header — so the connector looked cut off.
+    const source: TaskBarBox = { left: 900, right: 960, top: 125, height: 67 };
+    const target: TaskBarBox = { left: 440, right: 830, top: 0, height: 62 };
+
+    const points = buildElbowPoints(source, target);
+
+    // Every point stays inside the overlay (at or below the first row's top).
+    for (const point of points) expect(point.y).toBeGreaterThanOrEqual(0);
+    // The detour takes the lane under the lower box instead.
+    expect(points[2].y).toBe(125 + 67 + 14);
+    expect(points[3].y).toBe(points[2].y);
+    // Endpoints are unchanged: source end to target start.
+    expect(points[0]).toEqual({ x: 960, y: 125 + 67 / 2 });
+    expect(points[points.length - 1]).toEqual({ x: 440, y: 31 });
+  });
+
+  it("still takes a shorter above lane when that lane stays below the first row", () => {
+    // Neither box is in the first row, so the lane above the higher box (y=48)
+    // is inside the overlay and, being the shorter detour, is still used.
+    const source: TaskBarBox = { left: 900, right: 960, top: 200, height: 70 };
+    const target: TaskBarBox = { left: 440, right: 830, top: 62, height: 62 };
+
+    const points = buildElbowPoints(source, target);
+
+    expect(points[2].y).toBe(62 - 14);
+    expect(points[3].y).toBe(points[2].y);
+  });
 });
 
 describe("buildElbowPoints — dependency type anchoring", () => {

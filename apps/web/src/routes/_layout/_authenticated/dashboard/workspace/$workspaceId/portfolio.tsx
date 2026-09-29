@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import WorkspaceLayout from "@/components/common/workspace-layout";
 import {
   buildDependencyEdges,
+  DEPENDENCY_LANE_CLEARANCE_PX,
   type TaskBarBox,
 } from "@/components/gantt/dependency-lines";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
@@ -510,7 +511,15 @@ function RouteComponent() {
                   </div>
                 </div>
 
-                <div ref={rowsContainerRef} className="relative">
+                <div
+                  ref={rowsContainerRef}
+                  className="relative"
+                  // Empty band after the last row so a backward connector's
+                  // detour lane (routed under the bottom row, never above the
+                  // sticky header) stays inside the scrollable area — see
+                  // DEPENDENCY_LANE_CLEARANCE_PX.
+                  style={{ paddingBottom: DEPENDENCY_LANE_CLEARANCE_PX }}
+                >
                   <GanttDependencyOverlay
                     edges={dependencyEdgeGeometry}
                     hoveredTaskId={null}
