@@ -14,8 +14,8 @@ import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gi
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
 import { removeLabelFromGitlab } from "../../plugins/gitlab/utils/sync-label-to-gitlab";
 import {
-  assertAssignableUser,
-  assertProjectAssignableUser,
+  filterProjectAssignableUsers,
+  NOT_PROJECT_ASSIGNABLE,
 } from "../../utils/assert-assignable-user";
 import {
   PROJECT_ACCESS_DENIED_MESSAGE,
@@ -26,7 +26,7 @@ import {
   validateAndParseDate,
   validateDateRange,
 } from "../../utils/validate-dates";
-import { setTaskAssignees } from "../assignments";
+import { readTaskAssignees, setTaskAssignees } from "../assignments";
 import { buildScheduleChanges } from "../diff-schedule-fields";
 import { getSubtaskParentProjects } from "../get-subtask-parent-projects";
 import {
@@ -281,20 +281,30 @@ async function bulkUpdateTasks({
 
       if (assigneeId) {
         // Before anything is written, so one task that cannot take the assignee
-        // refuses the whole request. A task that already has them as its
-        // assignee keeps them if they are still a workspace member; on every
-        // other task they must be able to open that task's project.
-        const carriedOver = tasks.some((task) => task.userId === assigneeId);
-        if (carriedOver) await assertAssignableUser(assigneeId, workspaceId);
-        const newProjectIds = [
+        // refuses the whole request. A task that already has them in its
+        // assignee list (not only as primary) keeps them without any check; on
+        // every other task they must be able to open that task's project.
+        const assigneesByTask = await readTaskAssignees(db, foundIds);
+        const projectsNeedingCheck = [
           ...new Set(
             tasks
-              .filter((task) => task.userId !== assigneeId)
+              .filter(
+                (task) =>
+                  task.userId !== assigneeId &&
+                  !(assigneesByTask.get(task.id) ?? []).some(
+                    (assignee) => assignee.userId === assigneeId,
+                  ),
+              )
               .map((task) => task.projectId),
           ),
         ];
-        for (const projectId of newProjectIds) {
-          await assertProjectAssignableUser(assigneeId, projectId);
+        const checks = await Promise.all(
+          projectsNeedingCheck.map((projectId) =>
+            filterProjectAssignableUsers([assigneeId], projectId),
+          ),
+        );
+        if (checks.some((allowed) => !allowed.has(assigneeId))) {
+          throw new HTTPException(403, { message: NOT_PROJECT_ASSIGNABLE });
         }
       }
 

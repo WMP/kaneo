@@ -3,7 +3,7 @@ import db, { schema } from "../database";
 
 /**
  * Which of the given resource ids belong to this workspace. Mirrors
- * `filterAssignableUsers` in `utils/assert-assignable-user.ts` (filter, not
+ * `filterProjectAssignableUsers` in `utils/assert-assignable-user.ts` (filter, not
  * throw) so a caller can either drop invalid ids or turn the gap into its own
  * 403/404.
  */
