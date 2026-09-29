@@ -273,6 +273,10 @@ export default function TaskAssigneePopover({
           <AssigneeResourceSection
             workspaceId={workspaceId}
             resources={workspaceResources ?? []}
+            projectUserIds={
+              workspaceUsers?.members?.map((member) => member.userId) ?? []
+            }
+            assignedResourceIds={resolvedResourceIds}
             selectedResourceIds={selectedResourceIds}
             onToggleResource={handleToggleResource}
             canCreateResource={canCreateResource}

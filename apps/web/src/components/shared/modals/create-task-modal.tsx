@@ -1519,6 +1519,11 @@ function CreateTaskModalContent({
                       <AssigneeResourceSection
                         workspaceId={workspace.id}
                         resources={workspaceResources ?? []}
+                        projectUserIds={
+                          workspaceUsers?.members?.map(
+                            (member) => member.userId,
+                          ) ?? []
+                        }
                         selectedResourceIds={resourceAssigneeIds}
                         onToggleResource={(resourceId) =>
                           setResourceAssigneeIds((current) =>

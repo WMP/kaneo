@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useCreateResource from "@/hooks/mutations/resource/use-create-resource";
+import { getResourceErrorMessage } from "@/lib/resource-error";
 import { getResourceKindIcon } from "@/lib/resource-kind-icon";
 import { toast } from "@/lib/toast";
 import type Resource from "@/types/resource";
@@ -18,9 +19,35 @@ import type { ResourceKind } from "@/types/resource";
 
 const RESOURCE_KINDS: ResourceKind[] = ["person", "equipment", "material"];
 
+/**
+ * The resources the picker offers. A resource linked to an account is that
+ * account, so it is left out where the account is listed as a person (a member
+ * of the project) - the person is picked there. Where the account is not a
+ * project member the resource stays, so the person can still be assigned. A
+ * resource that is on the task (`assignedResourceIds`: what the task really
+ * has, not what was toggled in the open popover) always stays, so it can be
+ * removed and a toggle never makes a row vanish under the pointer.
+ */
+export function getPickableResources(
+  resources: Resource[],
+  projectUserIds: ReadonlySet<string>,
+  assignedResourceIds: ReadonlySet<string>,
+): Resource[] {
+  return resources.filter(
+    (resource) =>
+      !resource.userId ||
+      !projectUserIds.has(resource.userId) ||
+      assignedResourceIds.has(resource.id),
+  );
+}
+
 type AssigneeResourceSectionProps = {
   workspaceId: string;
   resources: Resource[];
+  /** The people listed next to the resources (the project's members). */
+  projectUserIds: string[];
+  /** The resources the task has now; none for a task that is being created. */
+  assignedResourceIds?: string[];
   selectedResourceIds: string[];
   onToggleResource: (resourceId: string) => void;
   /** Whether the signed-in member may create a new workspace resource
@@ -38,6 +65,8 @@ type AssigneeResourceSectionProps = {
 export function AssigneeResourceSection({
   workspaceId,
   resources,
+  projectUserIds,
+  assignedResourceIds,
   selectedResourceIds,
   onToggleResource,
   canCreateResource,
@@ -52,17 +81,16 @@ export function AssigneeResourceSection({
   const [email, setEmail] = useState("");
 
   const groupedResources = useMemo(() => {
-    // A resource linked to an account is that account: it is picked as the
-    // member. One that is still on the task stays listed, so it can be removed.
-    const pickable = resources.filter(
-      (resource) =>
-        !resource.userId || selectedResourceIds.includes(resource.id),
+    const pickable = getPickableResources(
+      resources,
+      new Set(projectUserIds),
+      new Set(assignedResourceIds ?? []),
     );
     return RESOURCE_KINDS.map((resourceKind) => ({
       kind: resourceKind,
       items: pickable.filter((resource) => resource.kind === resourceKind),
     })).filter((group) => group.items.length > 0);
-  }, [resources, selectedResourceIds]);
+  }, [resources, projectUserIds, assignedResourceIds]);
 
   const resetForm = () => {
     setName("");
@@ -79,16 +107,19 @@ export function AssigneeResourceSection({
         workspaceId,
         kind,
         name: trimmedName,
-        email: email.trim() || undefined,
+        // Only a person has an email.
+        email: kind === "person" ? email.trim() || undefined : undefined,
       });
       onToggleResource(created.id);
       setFormOpen(false);
       resetForm();
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("tasks:popover.assignee.createResourceError"),
+        getResourceErrorMessage(
+          error,
+          t,
+          "tasks:popover.assignee.createResourceError",
+        ),
       );
     }
   };
@@ -186,18 +217,20 @@ export function AssigneeResourceSection({
                   ))}
                 </SelectContent>
               </Select>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t(
-                  "tasks:popover.assignee.newResourceEmailPlaceholder",
-                )}
-                className="h-8 text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !creating) handleCreate();
-                }}
-              />
+              {kind === "person" && (
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t(
+                    "tasks:popover.assignee.newResourceEmailPlaceholder",
+                  )}
+                  className="h-8 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !creating) handleCreate();
+                  }}
+                />
+              )}
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
