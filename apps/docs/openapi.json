@@ -21600,6 +21600,7 @@
                   },
                   "email": {
                     "type": "string",
+                    "maxLength": 254,
                     "description": "Only for a person. Stored in lower case; not verified. It is the address an invitation sent from the resource goes to."
                   }
                 },
@@ -21702,6 +21703,7 @@
                       "string",
                       "null"
                     ],
+                    "maxLength": 254,
                     "description": "Only for a person. Stored in lower case. Changing or clearing it detaches an invitation sent from the resource (that invitation stays valid for its old address)."
                   }
                 }

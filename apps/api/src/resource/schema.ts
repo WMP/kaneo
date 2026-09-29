@@ -23,7 +23,7 @@ export const listResourcesQuery = z.object({
 export const createResourceBody = z.object({
   kind: resourceKindSchema,
   name: z.string().min(1).openapi({ description: "Display name." }),
-  email: z.string().trim().pipe(z.email()).optional().openapi({
+  email: z.string().trim().max(254).pipe(z.email()).optional().openapi({
     description:
       "Only for a person. Stored in lower case; not verified. It is the address an invitation sent from the resource goes to.",
   }),
@@ -32,10 +32,17 @@ export const createResourceBody = z.object({
 export const updateResourceBody = z.object({
   name: z.string().min(1).optional(),
   // null clears a stored email; omit to leave it unchanged.
-  email: z.string().trim().pipe(z.email()).nullable().optional().openapi({
-    description:
-      "Only for a person. Stored in lower case. Changing or clearing it detaches an invitation sent from the resource (that invitation stays valid for its old address).",
-  }),
+  email: z
+    .string()
+    .trim()
+    .max(254)
+    .pipe(z.email())
+    .nullable()
+    .optional()
+    .openapi({
+      description:
+        "Only for a person. Stored in lower case. Changing or clearing it detaches an invitation sent from the resource (that invitation stays valid for its old address).",
+    }),
 });
 
 export const inviteResourceBody = z.object({

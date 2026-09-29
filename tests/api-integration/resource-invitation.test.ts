@@ -813,8 +813,10 @@ describe("accepting an invitation sent from a resource", () => {
       );
     });
     for (const event of published) {
+      // The account is the actor of its own re-attribution, whoever sent the
+      // invitation.
       expect(event).toMatchObject({
-        userId: owner.id,
+        userId: invitee.id,
         newAssigneeId: invitee.id,
         addedAssigneeIds: [invitee.id],
         removedAssigneeIds: [],
@@ -1183,5 +1185,203 @@ describe("assignments moved by a link", () => {
         (assignee) => assignee.userId === member.id && !assignee.resourceId,
       ),
     ).toBe(true);
+  });
+});
+
+describe("privacy of the fold in the workload", () => {
+  type WorkloadRow = {
+    userId: string | null;
+    name: string | null;
+    counts: number[];
+  };
+  async function workload(actor: Actor) {
+    const response = await request(
+      actor.cookie,
+      "GET",
+      `/api/workload/${workspaceId}?from=2030-01-01&to=2030-01-07`,
+    );
+    expect(response.status).toBe(200);
+    return ((await response.json()) as { assignees: WorkloadRow[] }).assignees;
+  }
+
+  // The account is in project R only, the viewer in P only: they share nothing,
+  // so the viewer may not learn who the resource is linked to.
+  async function hiddenAccount() {
+    const hidden = await addMember("member", [{ project: R, role: "member" }]);
+    await db
+      .update(schema.resourceTable)
+      .set({ userId: hidden.id })
+      .where(eq(schema.resourceTable.id, alice.id));
+    const viewer = await addMember("viewer", [{ project: P, role: "viewer" }]);
+    return { hidden, viewer };
+  }
+
+  it("keeps a row of its own for a caller who cannot see the account", async () => {
+    const { hidden, viewer } = await hiddenAccount();
+    const rows = await workload(viewer);
+    const own = rows.find((row) => row.userId === alice.id);
+    expect(own?.name).toBe("A person");
+    expect(own?.counts[0]).toBe(2);
+    // Nothing of the account leaks: no row, no name, no id.
+    expect(rows.find((row) => row.userId === hidden.id)).toBeUndefined();
+    expect(JSON.stringify(rows)).not.toContain(hidden.id);
+    expect(JSON.stringify(rows)).not.toContain(hidden.email);
+  });
+
+  it("folds it for a caller who can see the account", async () => {
+    const { hidden } = await hiddenAccount();
+    const rows = await workload(owner);
+    expect(rows.find((row) => row.userId === alice.id)).toBeUndefined();
+    expect(rows.find((row) => row.userId === hidden.id)?.counts[0]).toBe(4);
+  });
+
+  it("does not let the drill-through of an account confirm a hidden link", async () => {
+    const { hidden, viewer } = await hiddenAccount();
+    const tasksOf = async (actor: Actor, assigneeId: string) => {
+      const response = await request(
+        actor.cookie,
+        "GET",
+        `/api/workload/${workspaceId}/tasks?from=2030-01-01&to=2030-01-07&assigneeId=${assigneeId}`,
+      );
+      expect(response.status).toBe(200);
+      return ((await response.json()) as { tasks: { id: string }[] }).tasks
+        .map((task) => task.id)
+        .sort();
+    };
+    // The hidden account's id finds nothing of the resource for the viewer...
+    expect(await tasksOf(viewer, hidden.id)).toEqual([]);
+    // ...their row is the resource's own, which drills through as before.
+    expect(await tasksOf(viewer, alice.id)).toEqual([t1, t2].sort());
+    // The owner sees the account's row with the resource's tasks in it.
+    expect(await tasksOf(owner, hidden.id)).toEqual([t1, t2, t3, t4].sort());
+  });
+});
+
+describe("leaving the workspace unlinks the resources of the account", () => {
+  async function linked(role = "member") {
+    const member = await addMember(role, [{ project: P, role: "member" }]);
+    expect((await link(owner, member.id)).status).toBe(200);
+    const [row] = await db
+      .select({ id: schema.workspaceUserTable.id })
+      .from(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.userId, member.id));
+    return { member, memberId: row.id };
+  }
+
+  it("removing the member clears the link and moves nothing back", async () => {
+    const { member, memberId } = await linked();
+    const response = await request(
+      owner.cookie,
+      "POST",
+      "/api/auth/organization/remove-member",
+      { organizationId: workspaceId, memberIdOrEmail: memberId },
+    );
+    expect(response.status).toBe(200);
+    expect((await resourceRow()).userId).toBeNull();
+    // What moved stays with the account, what stayed stays on the resource.
+    expect((await assignmentsOf(t2))[0]?.userId).toBe(member.id);
+    expect((await assignmentsOf(t3))[0]?.resourceId).toBe(alice.id);
+    // The resource is a plain resource again: it can be linked anew.
+    const other = await addMember("member", [{ project: P, role: "member" }]);
+    expect((await link(owner, other.id)).status).toBe(200);
+  });
+
+  it("leaving clears the link", async () => {
+    const { member } = await linked();
+    const response = await request(
+      member.cookie,
+      "POST",
+      "/api/auth/organization/leave",
+      { organizationId: workspaceId },
+    );
+    expect(response.status).toBe(200);
+    expect((await resourceRow()).userId).toBeNull();
+  });
+
+  it("deleting the account clears the link", async () => {
+    const { member } = await linked();
+    await db.delete(schema.userTable).where(eq(schema.userTable.id, member.id));
+    expect((await resourceRow()).userId).toBeNull();
+  });
+
+  it("clears only the links in that workspace", async () => {
+    const { member, memberId } = await linked();
+    const other = await makeWorkspace("Elsewhere");
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: other.id,
+      userId: member.id,
+      role: "member",
+      joinedAt: new Date(),
+    });
+    const [elsewhere] = await db
+      .insert(schema.resourceTable)
+      .values({
+        workspaceId: other.id,
+        kind: "person",
+        name: "Elsewhere",
+        userId: member.id,
+      })
+      .returning();
+    await request(
+      owner.cookie,
+      "POST",
+      "/api/auth/organization/remove-member",
+      { organizationId: workspaceId, memberIdOrEmail: memberId },
+    );
+    expect((await resourceRow()).userId).toBeNull();
+    expect((await resourceRow(elsewhere.id)).userId).toBe(member.id);
+  });
+});
+
+describe("the transfer under a concurrent change", () => {
+  it("merges into a row of the account that is added while it runs", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    // Somebody assigns the account to t1 in a transaction that is still open
+    // when the link starts: the link's insert waits for it, then merges into
+    // the committed row instead of failing on the unique key.
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let inserted: () => void = () => undefined;
+    const insertedRow = new Promise<void>((resolve) => {
+      inserted = resolve;
+    });
+    const concurrent = db.transaction(async (tx) => {
+      await tx.insert(schema.taskAssignmentTable).values({
+        taskId: t1,
+        userId: member.id,
+        units: 90,
+        work: 7,
+      });
+      inserted();
+      await held;
+    });
+    await insertedRow;
+    const linking = link(owner, member.id);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    release();
+    await concurrent;
+
+    const response = await linking;
+    expect(response.status).toBe(200);
+    // t1: the account's 90 beats the resource's 80, its work is kept.
+    expect(await assignmentsOf(t1)).toEqual([
+      { userId: member.id, resourceId: null, units: 90, work: 7 },
+    ]);
+    expect((await assignmentsOf(t2))[0]?.userId).toBe(member.id);
+  });
+});
+
+describe("resource email limits", () => {
+  it("refuses an address longer than an email can be", async () => {
+    const long = `${"a".repeat(250)}@example.com`;
+    const response = await request(
+      owner.cookie,
+      "POST",
+      `/api/resource/workspace/${workspaceId}`,
+      { kind: "person", name: "Long", email: long },
+    );
+    expect(response.status).toBe(400);
   });
 });

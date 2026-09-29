@@ -9,7 +9,7 @@ import {
 import {
   accessibleProjectIds,
   projectAccessSatisfies,
-  resolveProjectAccess,
+  resolveProjectAccesses,
 } from "../../utils/project-access";
 import { projectScopeCondition } from "../../utils/project-scope-filters";
 import { apiKeyAllows } from "../../utils/require-workspace-permission";
@@ -58,22 +58,20 @@ async function getInviteDefaults({
     ).map((row) => row.projectId),
   );
 
-  // Full access to one project is full access to the whole workspace with the
-  // same statements, so one decision covers every project; anybody else holds a
-  // role per project and is asked per project (a restricted person has few).
-  const allowed: typeof projects = [];
-  let fullDecision: boolean | null = null;
-  for (const project of projects) {
-    if (fullDecision !== null) {
-      if (fullDecision) allowed.push(project);
-      continue;
-    }
-    const access = await resolveProjectAccess(actorUserId, project.id);
-    if (!access) continue;
-    const may = projectAccessSatisfies(access, INVITE);
-    if (access.mode === "full") fullDecision = may;
-    if (may) allowed.push(project);
-  }
+  // The listed projects are the ones the caller can open, resolved in one query
+  // (`null` only if one of them stopped being accessible meanwhile: then
+  // nothing is offered rather than a guess).
+  const accesses =
+    (await resolveProjectAccesses(
+      actorUserId,
+      projects.map((project) => project.id),
+    )) ?? [];
+  const mayInvite = new Set(
+    accesses
+      .filter((access) => projectAccessSatisfies(access, INVITE))
+      .map((access) => access.projectId),
+  );
+  const allowed = projects.filter((project) => mayInvite.has(project.id));
 
   return {
     projects: allowed

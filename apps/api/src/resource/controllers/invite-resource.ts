@@ -6,7 +6,7 @@ import { createInvitationForProjects } from "../../project-invitation/controller
 import { assertInvitationPermission } from "../../project-invitation/delegation";
 import {
   PROJECT_ACCESS_DENIED_MESSAGE,
-  resolveProjectAccess,
+  resolveProjectAccesses,
 } from "../../utils/project-access";
 import { RESOURCE_ERROR_CODES, resourceError } from "../errors";
 
@@ -87,9 +87,13 @@ async function inviteResource({
 
   // The caller's access to EACH project, and their right to invite there. A
   // project of another workspace answers like a project without access.
-  const grants = [];
-  for (const { projectId, role } of projects) {
-    const access = await resolveProjectAccess(actorUserId, projectId);
+  // One query for all of them: an unknown or inaccessible project is `null`.
+  const accesses = await resolveProjectAccesses(actorUserId, projectIds);
+  const byProject = new Map(
+    (accesses ?? []).map((access) => [access.projectId, access]),
+  );
+  const grants = projects.map(({ projectId, role }) => {
+    const access = byProject.get(projectId);
     if (!access || access.workspaceId !== workspaceId) {
       throw resourceError(
         403,
@@ -98,8 +102,8 @@ async function inviteResource({
       );
     }
     assertInvitationPermission(c, access, "create");
-    grants.push({ access, projectRole: role });
-  }
+    return { access, projectRole: role };
+  });
 
   const result = await createInvitationForProjects({
     c,
