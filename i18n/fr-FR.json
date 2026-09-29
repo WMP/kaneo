@@ -2398,7 +2398,8 @@
 					"material": "Material",
 					"person": "Person"
 				},
-				"resourcesHeading": "Resources"
+				"resourcesHeading": "Resources",
+				"notInProject": "No longer in this project"
 			},
 			"status": {
 				"updateError": "Échec de la mise à jour du statut de la tâche"

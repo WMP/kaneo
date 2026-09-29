@@ -87,13 +87,30 @@ export default function TaskAssigneePopover({
   }, [resolvedResourceIds]);
 
   const usersOptions = useMemo(() => {
-    return workspaceUsers?.members?.map((member) => ({
+    const members = workspaceUsers?.members;
+    if (!members) return undefined;
+    const options = members.map((member) => ({
       label: member?.user?.name ?? member.userId,
       value: member.userId,
       image: member?.user?.image ?? "",
       name: member?.user?.name ?? "",
+      notInProject: false,
     }));
-  }, [workspaceUsers]);
+    // Somebody already assigned who is no longer a project member stays in the
+    // list, marked, so they can be unassigned.
+    const listed = new Set(members.map((member) => member.userId));
+    for (const assignee of resolveTaskAssignees(task)) {
+      if (!assignee.userId || listed.has(assignee.userId)) continue;
+      options.push({
+        label: assignee.name || assignee.userId,
+        value: assignee.userId,
+        image: assignee.image ?? "",
+        name: assignee.name,
+        notInProject: true,
+      });
+    }
+    return options;
+  }, [workspaceUsers, task]);
 
   const commitAssignees = useCallback(
     async (nextIds: string[], nextResourceIds: string[]) => {
@@ -236,7 +253,16 @@ export default function TaskAssigneePopover({
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm truncate">{user.label}</span>
+              <span className="flex min-w-0 flex-col items-start text-left">
+                <span className="max-w-full truncate text-sm">
+                  {user.label}
+                </span>
+                {user.notInProject && (
+                  <span className="max-w-full truncate text-[11px] text-muted-foreground">
+                    {t("tasks:popover.assignee.notInProject")}
+                  </span>
+                )}
+              </span>
               {selectedIds.includes(user.value) ? (
                 <Check className="ml-auto h-4 w-4 shrink-0" />
               ) : index < 8 ? (

@@ -2835,6 +2835,7 @@
 			"assignee": {
 				"unassigned": "Nieprzypisane",
 				"unassignAll": "Cofnij przypisanie wszystkim",
+				"notInProject": "Nie należy już do tego projektu",
 				"updateError": "Nie udało się zmienić osoby przypisanej do zadania",
 				"resourcesHeading": "Zasoby",
 				"resourceKind": {

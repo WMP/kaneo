@@ -36,6 +36,7 @@ import {
   getDueDateStatus,
   isTaskCompleted,
 } from "@/lib/due-date-status";
+import { findAssignee } from "@/lib/find-assignee";
 import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
@@ -94,10 +95,11 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
   const { data: workspaceUsers } = useProjectMembers(task.projectId);
 
   const assignee = useMemo(() => {
-    return workspaceUsers?.members?.find(
-      (member) => member.userId === task.userId,
-    );
-  }, [workspaceUsers, task.userId]);
+    return findAssignee(workspaceUsers?.members, task.userId, {
+      name: task.assigneeName,
+      image: task.assigneeImage,
+    });
+  }, [workspaceUsers, task.userId, task.assigneeName, task.assigneeImage]);
 
   const { data: projectCustomFieldValues = [] } =
     useGetCustomFieldValuesByProject(task.projectId);

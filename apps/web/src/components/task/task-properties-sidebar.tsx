@@ -39,6 +39,7 @@ import {
   getDueDateStatus,
   isTaskCompleted,
 } from "@/lib/due-date-status";
+import { findAssignee } from "@/lib/find-assignee";
 import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import {
@@ -253,9 +254,11 @@ export default function TaskPropertiesSidebar({
     gitlabIntegration?.branchPattern ||
     "{slug}-{number}";
 
-  const assignee = workspaceUsers?.members?.find(
-    (member) => member.userId === task?.userId,
-  );
+  const assignee = findAssignee(workspaceUsers?.members, task?.userId, {
+    name: task?.assigneeName,
+    image: task?.assignees?.find((entry) => entry.userId === task.userId)
+      ?.image,
+  });
 
   const handleCopyTaskLink = () => {
     navigator.clipboard.writeText(

@@ -2381,6 +2381,7 @@
 			"assignee": {
 				"unassigned": "Unassigned",
 				"unassignAll": "Unassign all",
+				"notInProject": "No longer in this project",
 				"updateError": "Failed to update task assignee",
 				"resourcesHeading": "Resources",
 				"resourceKind": {

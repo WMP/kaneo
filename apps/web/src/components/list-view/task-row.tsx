@@ -37,6 +37,7 @@ import {
   isTaskCompleted,
 } from "@/lib/due-date-status";
 import { getExternalWebUrl, openExternalWebUrl } from "@/lib/external-url";
+import { findAssignee } from "@/lib/find-assignee";
 import { formatDateShort } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
@@ -86,10 +87,11 @@ function TaskRow({ task, projectSlug }: TaskRowProps) {
   const { data: workspaceUsers } = useProjectMembers(task.projectId);
 
   const assignee = useMemo(() => {
-    return workspaceUsers?.members?.find(
-      (member) => member.userId === task.userId,
-    );
-  }, [workspaceUsers, task.userId]);
+    return findAssignee(workspaceUsers?.members, task.userId, {
+      name: task.assigneeName,
+      image: task.assigneeImage,
+    });
+  }, [workspaceUsers, task.userId, task.assigneeName, task.assigneeImage]);
 
   const pullRequests = useMemo(() => {
     return (task.externalLinks ?? []).filter(

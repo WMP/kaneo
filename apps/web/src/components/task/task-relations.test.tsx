@@ -241,6 +241,24 @@ describe("TaskRelations cross-project correctness", () => {
     );
   });
 
+  it("shows the assignee of a related task from another project by the name the relation carries", () => {
+    const base = otherProjectRelation();
+    const relation = {
+      ...base,
+      targetTask: {
+        ...base.targetTask,
+        userId: "user-elsewhere" as string | null,
+        assigneeName: "Carol Smith" as string | null,
+      },
+    };
+    mocks.taskRelations.mockReturnValue({ data: [relation] });
+
+    renderRelations();
+
+    // The project member list is empty: the initials come from the relation.
+    expect(screen.getByText("CS")).toBeInTheDocument();
+  });
+
   it("navigates using the current project id for a same-project relation", () => {
     mocks.taskRelations.mockReturnValue({ data: [sameProjectRelation()] });
 

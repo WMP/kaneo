@@ -30,6 +30,7 @@ import { useProjectMembers } from "@/hooks/queries/project-member/use-project-me
 import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-relations";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useProjectPermission } from "@/hooks/use-project-permission";
+import { findAssignee } from "@/lib/find-assignee";
 import { toast } from "@/lib/toast";
 import queryClient from "@/query-client";
 import type Task from "@/types/task";
@@ -164,12 +165,9 @@ export default function TaskSubtasks({
     }
   };
 
-  const getAssignee = (userId: string | null) => {
-    if (!userId || !workspaceUsers?.members) return null;
-    return (
-      workspaceUsers.members.find((member) => member.userId === userId) ?? null
-    );
-  };
+  const getAssignee = (userId: string | null, assigneeName: string | null) =>
+    findAssignee(workspaceUsers?.members, userId, { name: assigneeName }) ??
+    null;
 
   const getSelectionRadius = (index: number, isSelected: boolean) => {
     if (!isSelected) return "rounded-md";
@@ -385,7 +383,10 @@ export default function TaskSubtasks({
                     isCompleted={subtask.task.isCompleted}
                     canEdit={canEdit}
                     selectionRadius={getSelectionRadius(index, isSelected)}
-                    assignee={getAssignee(subtask.task.userId)}
+                    assignee={getAssignee(
+                      subtask.task.userId,
+                      subtask.task.assigneeName,
+                    )}
                     onToggleComplete={() => handleToggleComplete(taskObj)}
                     onNavigate={() =>
                       navigate({

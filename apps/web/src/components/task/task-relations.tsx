@@ -54,6 +54,7 @@ import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-relations";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
+import { findAssignee } from "@/lib/find-assignee";
 import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { toast } from "@/lib/toast";
@@ -322,10 +323,10 @@ export default function TaskRelations({
     });
   };
 
-  const getAssignee = (userId: string | null) => {
-    if (!userId || !workspaceUsers?.members) return null;
-    return workspaceUsers.members.find((member) => member.userId === userId);
-  };
+  // A related task may live in another project, where its assignee is not a
+  // member of this one: fall back to the name the relation carries.
+  const getAssignee = (userId: string | null, assigneeName: string | null) =>
+    findAssignee(workspaceUsers?.members, userId, { name: assigneeName });
 
   const buildTaskObject = (item: {
     task: NonNullable<(typeof nonSubtaskRelations)[number]["sourceTask"]>;
@@ -400,7 +401,10 @@ export default function TaskRelations({
               </span>
               <div className="flex flex-col mt-0.5">
                 {items.map((item) => {
-                  const assignee = getAssignee(item.task.userId);
+                  const assignee = getAssignee(
+                    item.task.userId,
+                    item.task.assigneeName,
+                  );
                   const taskObj = buildTaskObject(item);
                   // Column ids/slugs and "final" status are specific to one
                   // project's board, so a related task from another project

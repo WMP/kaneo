@@ -2391,7 +2391,8 @@
 					"material": "Material",
 					"person": "Person"
 				},
-				"resourcesHeading": "Resources"
+				"resourcesHeading": "Resources",
+				"notInProject": "No longer in this project"
 			},
 			"status": {
 				"updateError": "Αποτυχία ενημέρωσης κατάστασης εργασίας"

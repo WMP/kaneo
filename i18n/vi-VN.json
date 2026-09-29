@@ -2384,7 +2384,8 @@
 					"material": "Material",
 					"person": "Person"
 				},
-				"resourcesHeading": "Resources"
+				"resourcesHeading": "Resources",
+				"notInProject": "No longer in this project"
 			},
 			"status": {
 				"updateError": "Không thể cập nhật trạng thái công việc"

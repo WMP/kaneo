@@ -131,6 +131,40 @@ describe("TaskAssigneePopover", () => {
     expect(permissions.membersProjectId).toBe("project-1");
   });
 
+  it("keeps an assignee who is no longer a project member in the list, marked, so they can be unassigned", async () => {
+    updateTaskAssignees.mockResolvedValue(undefined);
+    const task: Task = {
+      ...baseTask,
+      userId: "gone",
+      assigneeId: "gone",
+      assigneeName: "Carol",
+      assignees: [
+        { userId: "gone", name: "Carol", image: null, units: 100, work: null },
+      ],
+    };
+
+    render(
+      <TaskAssigneePopover task={task} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+
+    const carol = await screen.findByRole("button", { name: /Carol/ });
+    expect(carol).toHaveTextContent("tasks:popover.assignee.notInProject");
+    // Current project members carry no such hint.
+    expect(screen.getByRole("button", { name: /Alice/ })).not.toHaveTextContent(
+      "notInProject",
+    );
+
+    fireEvent.click(carol);
+    await waitFor(() =>
+      expect(updateTaskAssignees).toHaveBeenCalledWith(
+        expect.objectContaining({ userIds: [] }),
+      ),
+    );
+  });
+
   it("renders only the trigger when the project does not allow assigning", () => {
     permissions.canAssign = false;
 
