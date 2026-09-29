@@ -69,10 +69,7 @@ import { isDisposableEmail } from "./utils/is-disposable-email";
 import { isLocalSignInPath } from "./utils/is-local-sign-in-path";
 import { trackPasswordResetDelivery } from "./utils/password-reset-delivery";
 import { removeUserProjectMemberships } from "./utils/project-access";
-import {
-  assertRoleNotUsedByProjects,
-  findRoleName,
-} from "./utils/project-role-guard";
+import { guardRoleChange } from "./utils/project-role-guard";
 import {
   assertGuestRegistrationAllowed,
   assertUserRegistrationAllowed,
@@ -542,9 +539,12 @@ export const auth = betterAuth({
         },
         // Project memberships must not outlive workspace membership: they
         // would come back to life if the person joined again. Runs before the
-        // removal so a failure aborts it instead of leaving stale rows. The
-        // `/organization/leave` route runs no organization hook and is handled
-        // in `hooks.after`.
+        // removal, so a failure here aborts it instead of leaving stale rows.
+        // It is not atomic with the removal: if Better Auth's own member
+        // delete fails afterwards, the user stays in the workspace without
+        // their project memberships, which only ever narrows access (an
+        // administrator adds them again). The `/organization/leave` route runs
+        // no organization hook and is handled in `hooks.after`.
         beforeRemoveMember: async ({ member, organization }) => {
           await removeUserProjectMemberships(member.userId, organization.id);
         },
@@ -751,50 +751,34 @@ export const auth = betterAuth({
       }
 
       // A project role is a workspace role name. Refuse to delete or rename a
-      // role that project members (or pending project invitations) still use.
-      // Better Auth has no organization hook for role changes, and this check
-      // needs no actor, so it can run here. The organization is resolved like
-      // Better Auth does (`??`, body first, then the active organization).
+      // role that project members (or pending project invitations) still use,
+      // but only for a caller Better Auth would let do it (see
+      // `project-role-guard.ts`): this hook runs before Better Auth
+      // authorizes the request. Fail closed: a failing session lookup rejects
+      // the request; without a session Better Auth answers 401 itself.
       if (
         ctx.path === "/organization/delete-role" ||
-        ctx.path === "/organization/update-role"
-      ) {
-        const isRename =
-          ctx.path === "/organization/update-role" &&
+        (ctx.path === "/organization/update-role" &&
           typeof ctx.body?.data?.roleName === "string" &&
-          ctx.body.data.roleName !== "";
-        if (ctx.path === "/organization/delete-role" || isRename) {
-          let workspaceId: unknown = ctx.body?.organizationId;
-          if (workspaceId === undefined || workspaceId === null) {
-            // Fail closed: a failing lookup propagates. Without a session
-            // Better Auth answers 401 itself.
-            const session = await auth.api.getSession({
-              headers: ctx.headers ?? new Headers(),
-              query: { disableRefresh: true },
-            });
-            workspaceId = (
-              session?.session as
-                | { activeOrganizationId?: string | null }
-                | undefined
-            )?.activeOrganizationId;
-          }
-          if (typeof workspaceId === "string" && workspaceId) {
-            const role = await findRoleName(workspaceId, {
-              roleName: ctx.body?.roleName,
-              roleId: ctx.body?.roleId,
-            });
-            if (role) {
-              await assertRoleNotUsedByProjects({
-                workspaceId,
-                role,
-                action:
-                  ctx.path === "/organization/delete-role"
-                    ? "delete"
-                    : "rename",
-              });
-            }
-          }
-        }
+          ctx.body.data.roleName !== "")
+      ) {
+        const session = await auth.api.getSession({
+          headers: ctx.headers ?? new Headers(),
+          query: { disableRefresh: true },
+        });
+        await guardRoleChange({
+          action:
+            ctx.path === "/organization/delete-role" ? "delete" : "rename",
+          body: ctx.body,
+          actor: session
+            ? {
+                userId: session.user.id,
+                activeOrganizationId: (
+                  session.session as { activeOrganizationId?: string | null }
+                ).activeOrganizationId,
+              }
+            : null,
+        });
       }
 
       // Role delegation for an invitation re-send, which returns before any

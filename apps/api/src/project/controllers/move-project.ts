@@ -13,6 +13,7 @@ import createActivities from "../../activity/controllers/create-activities";
 import db from "../../database";
 import {
   assetTable,
+  invitationProjectTable,
   labelTable,
   projectMemberTable,
   projectTable,
@@ -23,7 +24,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
-import { projectRoleStatements } from "../../utils/project-access";
+import { unusableProjectRoles } from "../../utils/project-access";
 import { closeProjectConnections } from "../../ws";
 
 async function moveProject(
@@ -236,29 +237,30 @@ async function moveProject(
           ),
         ),
       );
-    const remainingMembers = await tx
-      .select({
-        id: projectMemberTable.id,
-        role: projectMemberTable.role,
-      })
+    const remainingRoles = await tx
+      .selectDistinct({ role: projectMemberTable.role })
       .from(projectMemberTable)
       .where(eq(projectMemberTable.projectId, id));
-    const unusableRoles = new Set<string>();
-    for (const role of new Set(remainingMembers.map((row) => row.role))) {
-      if (!(await projectRoleStatements(targetWorkspaceId, role))) {
-        unusableRoles.add(role);
-      }
-    }
-    if (unusableRoles.size > 0) {
+    const unusableRoles = await unusableProjectRoles(
+      tx,
+      targetWorkspaceId,
+      remainingRoles.map((row) => row.role),
+    );
+    if (unusableRoles.length > 0) {
       await tx
         .delete(projectMemberTable)
         .where(
           and(
             eq(projectMemberTable.projectId, id),
-            inArray(projectMemberTable.role, [...unusableRoles]),
+            inArray(projectMemberTable.role, unusableRoles),
           ),
         );
     }
+    // Pending project invitations named this project in the source workspace's
+    // terms (roles, inviter): they cannot follow it.
+    await tx
+      .delete(invitationProjectTable)
+      .where(eq(invitationProjectTable.projectId, id));
 
     // Assets and task labels denormalize the project's workspace.
     await tx

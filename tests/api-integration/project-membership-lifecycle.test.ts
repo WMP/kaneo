@@ -327,6 +327,86 @@ describe("a workspace role used as a project role cannot be deleted or renamed",
     );
   });
 
+  it("scopes a pending invitation to the workspace of the invited project", async () => {
+    await createRole("triager");
+    const [invitation] = await db
+      .insert(schema.invitationTable)
+      .values({
+        workspaceId: s.first.id,
+        email: "other@example.com",
+        role: "member",
+        status: "pending",
+        expiresAt: new Date(Date.now() + 86_400_000),
+        inviterId: s.owner.id,
+      })
+      .returning();
+    // The invitation belongs to `first`, but the project it names is in
+    // `second`: the role would be granted there, not here.
+    await db.insert(schema.invitationProjectTable).values({
+      invitationId: invitation.id,
+      projectId: s.p3.project.id,
+      role: "triager",
+    });
+    const deleted = await authPost(
+      "/organization/delete-role",
+      { organizationId: s.first.id, roleName: "triager" },
+      s.owner.cookie,
+    );
+    expect(deleted.status).toBe(200);
+  });
+
+  it("does not answer for callers Better Auth would refuse", async () => {
+    await createRole("triager");
+    await useRole("triager");
+    const stranger = await signUp("stranger");
+    // guest is a plain member of the workspace: no ac:delete / ac:update.
+    for (const actor of [stranger, s.guest]) {
+      for (const [path, body] of [
+        [
+          "/organization/delete-role",
+          { organizationId: s.first.id, roleName: "triager" },
+        ],
+        [
+          "/organization/update-role",
+          {
+            organizationId: s.first.id,
+            roleName: "triager",
+            data: { roleName: "sorter" },
+          },
+        ],
+      ] as const) {
+        const response = await authPost(path, body, actor.cookie);
+        expect(response.status).toBe(403);
+        const code = ((await response.json()) as { code?: string }).code;
+        expect(code).not.toBe("ROLE_IS_ASSIGNED_TO_PROJECT_MEMBERS");
+      }
+    }
+    // Nobody logged in: Better Auth's own 401.
+    const anonymous = await app.request("/api/auth/organization/delete-role", {
+      method: "POST",
+      headers: { "content-type": "application/json", Origin: origin },
+      body: JSON.stringify({
+        organizationId: s.first.id,
+        roleName: "triager",
+      }),
+    });
+    expect(anonymous.status).toBe(401);
+    expect(await roleExists("triager")).toBe(true);
+  });
+
+  it("leaves predefined roles to Better Auth", async () => {
+    await useRole("member");
+    const deleted = await authPost(
+      "/organization/delete-role",
+      { organizationId: s.first.id, roleName: "owner" },
+      s.owner.cookie,
+    );
+    expect(deleted.status).toBe(400);
+    expect(((await deleted.json()) as { code?: string }).code).toBe(
+      "CANNOT_DELETE_A_PRE_DEFINED_ROLE",
+    );
+  });
+
   it("blocks a rename while used, but not permission edits", async () => {
     await createRole("triager");
     await useRole("triager");
