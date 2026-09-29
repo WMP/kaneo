@@ -7,8 +7,8 @@ import {
   projectAccessSatisfies,
   projectRoleStatements,
 } from "../utils/project-access";
+import { apiKeyAllows } from "../utils/require-workspace-permission";
 import { rolesWithin, splitRoles } from "../utils/role-delegation";
-import { satisfies } from "../utils/role-statements";
 
 // Stable error messages of the project member API. They are part of the API
 // contract (documented in the route descriptions) and asserted by tests.
@@ -103,37 +103,22 @@ export async function assertNotFullAccess(
 // Member management is decided by the caller's PROJECT role, not by their
 // workspace role (the `member` resource is workspace-level for
 // `hasWorkspacePermission`). An API key's scope still has to allow the action.
-export function hasProjectMemberPermission(
-  c: Context,
-  access: ProjectAccess,
-  action: "create" | "update" | "delete",
-): boolean {
-  const required = { member: [action] };
-  const apiKey = c.get("apiKey") as
-    | { permissions?: Record<string, string[]> | null }
-    | undefined;
-  if (apiKey?.permissions && !satisfies(apiKey.permissions, required)) {
-    return false;
-  }
-  return projectAccessSatisfies(access, required);
-}
-
 export function assertProjectMemberPermission(
   c: Context,
   access: ProjectAccess,
   action: "create" | "update" | "delete",
 ): void {
-  if (hasProjectMemberPermission(c, access, action)) return;
-  const apiKey = c.get("apiKey") as
-    | { permissions?: Record<string, string[]> | null }
-    | undefined;
-  const scopeDenied =
-    apiKey?.permissions && !satisfies(apiKey.permissions, { member: [action] });
-  throw new HTTPException(403, {
-    message: scopeDenied
-      ? PROJECT_MEMBER_ERRORS.apiKeyScope
-      : PROJECT_MEMBER_ERRORS.insufficient,
-  });
+  const required = { member: [action] };
+  if (!apiKeyAllows(c, required)) {
+    throw new HTTPException(403, {
+      message: PROJECT_MEMBER_ERRORS.apiKeyScope,
+    });
+  }
+  if (!projectAccessSatisfies(access, required)) {
+    throw new HTTPException(403, {
+      message: PROJECT_MEMBER_ERRORS.insufficient,
+    });
+  }
 }
 
 // A membership whose role grants nothing (deleted role, or moved from another

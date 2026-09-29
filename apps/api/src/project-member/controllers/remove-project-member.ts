@@ -8,7 +8,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import type { ProjectAccess } from "../../utils/project-access";
-import { satisfies } from "../../utils/role-statements";
+import { apiKeyAllows } from "../../utils/require-workspace-permission";
 import {
   assertCanManageRole,
   assertNotFullAccess,
@@ -36,13 +36,7 @@ async function removeProjectMember({
   const isSelf = userId === actorUserId;
 
   if (isSelf) {
-    const apiKey = c.get("apiKey") as
-      | { permissions?: Record<string, string[]> | null }
-      | undefined;
-    if (
-      apiKey?.permissions &&
-      !satisfies(apiKey.permissions, { member: ["delete"] })
-    ) {
+    if (!apiKeyAllows(c, { member: ["delete"] })) {
       throw new HTTPException(403, {
         message: PROJECT_MEMBER_ERRORS.apiKeyScope,
       });
@@ -82,7 +76,9 @@ async function removeProjectMember({
     });
   }
 
-  if (!isSelf && !(await isInertRole(access, existing.role))) {
+  // An inert role grants nothing, so removing it needs no reach over it.
+  const inert = isSelf ? false : await isInertRole(access, existing.role);
+  if (!isSelf && !inert) {
     await assertCanManageRole(access, existing.role);
   }
 
@@ -109,7 +105,7 @@ async function removeProjectMember({
     image: existing.image,
     role: existing.role,
     source: "project" as const,
-    active: !(await isInertRole(access, existing.role)),
+    active: !inert,
   };
 }
 

@@ -46,7 +46,7 @@ const listProjectMembersRoute = createRoute({
   tags: ["Project members"],
   summary: "List project members",
   description:
-    "List who can reach the project: members of the project (source project, with their project role) and workspace members with full access (source full-access, with their workspace role). Any project access is enough.",
+    "List who can reach the project: members of the project (source project, with their project role) and workspace members with full access (source full-access, with their workspace role). Any project access is enough. Full-access members are the workspace owner, instance administrators and roles that grant workspace:manage_settings.",
   middleware: [workspaceAccess.fromProject("projectId")] as const,
   request: { params: projectIdParam },
   responses: {
@@ -65,7 +65,7 @@ const addProjectMemberRoute = createRoute({
   tags: ["Project members"],
   summary: "Add a project member",
   description:
-    "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions (the project role, or the workspace role for a full-access user; an API key must allow it too). The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). Errors: 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot assign a role with permissions you do not have', 404 'User is not a member of this workspace', 409 'User is already a member of this project', 409 'User already has full access to this project'.",
+    "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions, which this endpoint checks explicitly: the project role for a project member, the workspace role for a full-access user (the workspace-level resources member, invitation, workspace, organization, ac and team are otherwise always decided by the workspace role). An API key must allow it too. The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). Errors: 400 'The owner role cannot be a project role', 400 'Unknown role', 403 'You cannot assign a role with permissions you do not have', 404 'User is not a member of this workspace', 409 'User is already a member of this project', 409 'User already has full access to this project'.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireProjectMemberPermission("create"),

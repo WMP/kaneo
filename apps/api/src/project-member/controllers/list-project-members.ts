@@ -7,7 +7,7 @@ import {
 } from "../../database/schema";
 import {
   fullAccessRoleNames,
-  projectRoleStatements,
+  unusableProjectRoles,
 } from "../../utils/project-access";
 
 type ListedMember = {
@@ -26,9 +26,33 @@ type ListedMember = {
 // no longer a workspace member is stale and never listed; a project row whose
 // role grants nothing is listed with `active: false` so it can be cleaned up.
 async function listProjectMembers(projectId: string, workspaceId: string) {
-  const fullRoles = await fullAccessRoleNames(workspaceId);
+  const projectRowsQuery = db
+    .select({
+      userId: userTable.id,
+      name: userTable.name,
+      email: userTable.email,
+      image: userTable.image,
+      role: projectMemberTable.role,
+    })
+    .from(projectMemberTable)
+    .innerJoin(
+      workspaceUserTable,
+      and(
+        eq(workspaceUserTable.userId, projectMemberTable.userId),
+        eq(workspaceUserTable.workspaceId, workspaceId),
+      ),
+    )
+    .innerJoin(userTable, eq(projectMemberTable.userId, userTable.id))
+    .where(eq(projectMemberTable.projectId, projectId));
 
-  const [fullAccessRows, projectRows] = await Promise.all([
+  // The full-access query needs the role names, so those are read first; the
+  // project rows do not depend on them.
+  const [fullRoles, projectRows] = await Promise.all([
+    fullAccessRoleNames(workspaceId),
+    projectRowsQuery,
+  ]);
+
+  const [fullAccessRows, unusableRoles] = await Promise.all([
     db
       .select({
         userId: userTable.id,
@@ -49,24 +73,9 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
           ),
         ),
       ),
-    db
-      .select({
-        userId: userTable.id,
-        name: userTable.name,
-        email: userTable.email,
-        image: userTable.image,
-        role: projectMemberTable.role,
-      })
-      .from(projectMemberTable)
-      .innerJoin(
-        workspaceUserTable,
-        and(
-          eq(workspaceUserTable.userId, projectMemberTable.userId),
-          eq(workspaceUserTable.workspaceId, workspaceId),
-        ),
-      )
-      .innerJoin(userTable, eq(projectMemberTable.userId, userTable.id))
-      .where(eq(projectMemberTable.projectId, projectId)),
+    unusableProjectRoles(db, workspaceId, [
+      ...new Set(projectRows.map((row) => row.role)),
+    ]),
   ]);
 
   const members: ListedMember[] = fullAccessRows.map((row) => ({
@@ -75,16 +84,11 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
     active: true,
   }));
   const fullAccessIds = new Set(fullAccessRows.map((row) => row.userId));
+  const inert = new Set(unusableRoles);
 
-  const active = new Map<string, boolean>();
   for (const row of projectRows) {
     if (fullAccessIds.has(row.userId)) continue;
-    let usable = active.get(row.role);
-    if (usable === undefined) {
-      usable = (await projectRoleStatements(workspaceId, row.role)) !== null;
-      active.set(row.role, usable);
-    }
-    members.push({ ...row, source: "project", active: usable });
+    members.push({ ...row, source: "project", active: !inert.has(row.role) });
   }
 
   return members.sort(
