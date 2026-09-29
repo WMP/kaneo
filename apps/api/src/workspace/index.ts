@@ -10,11 +10,13 @@ import { requireWorkspacePermission } from "../utils/require-workspace-permissio
 import { toCsv } from "../utils/to-csv";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import exportWorkspaceActivities from "./controllers/export-workspace-activities";
+import getAssignableRolesCtrl from "./controllers/get-assignable-roles";
 import getWorkspaceActivities from "./controllers/get-workspace-activities";
 import getWorkspaceActivityRetention from "./controllers/get-workspace-activity-retention";
 import getWorkspaceMembersCtrl from "./controllers/get-workspace-members";
 import updateWorkspaceActivityRetention from "./controllers/update-workspace-activity-retention";
 import {
+  assignableRolesSchema,
   workspaceActivityExportSchema,
   workspaceActivityListSchema,
   workspaceActivityRetentionSchema,
@@ -58,6 +60,23 @@ const getWorkspaceMembersRoute = createRoute({
   request: { params: workspaceIdParam },
   responses: {
     200: jsonResponse("List of workspace members", workspaceMemberListSchema),
+    400: errorResponse("Workspace ID could not be determined"),
+    403: errorResponse("No access to the workspace"),
+  },
+});
+
+const getAssignableRolesRoute = createRoute({
+  method: "get",
+  operationId: "getAssignableRoles",
+  path: "/{workspaceId}/assignable-roles",
+  tags: ["Workspaces"],
+  summary: "Get assignable roles",
+  description:
+    "List the workspace roles the caller may grant when inviting a member or changing a member's role. A role is assignable only when every permission it carries is also held by the caller; owners and instance administrators can assign every role except owner.",
+  middleware: [workspaceAccess.fromParam("workspaceId")] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse("Roles the caller may assign", assignableRolesSchema),
     400: errorResponse("Workspace ID could not be determined"),
     403: errorResponse("No access to the workspace"),
   },
@@ -186,6 +205,12 @@ const updateWorkspaceActivityRetentionRoute = createRoute({
 const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getWorkspaceMembersRoute, async (c) =>
     c.json(await getWorkspaceMembersCtrl(c.get("workspaceId")), 200),
+  )
+  .openapi(getAssignableRolesRoute, async (c) =>
+    c.json(
+      await getAssignableRolesCtrl(c.get("workspaceId"), c.get("userId")),
+      200,
+    ),
   )
   .openapi(getWorkspaceActivityRoute, async (c) =>
     c.json(

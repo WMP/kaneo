@@ -35,7 +35,7 @@ import {
 import type { AccessControl } from "better-auth/plugins/access";
 import type { UserWithAnonymous } from "better-auth/plugins/anonymous";
 import { config } from "dotenv-mono";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   findBillableWorkspaces,
   formatBillableWorkspacesMessage,
@@ -71,6 +71,7 @@ import {
   assertUserRegistrationAllowed,
   normalizeInvitationId,
 } from "./utils/registration-policy";
+import { assertCanAssignRole } from "./utils/role-delegation";
 import { queueSignInEmail } from "./utils/sign-in-email-tasks";
 import { authCaptchaPaths, verifyTurnstile } from "./utils/verify-turnstile";
 
@@ -480,6 +481,20 @@ export const auth = betterAuth({
             ownerId: user.id,
           });
         },
+        // Invitations may not carry a role beyond the inviter's own
+        // permissions. Re-sends skip this hook and are checked in
+        // `hooks.before`; role changes are checked there as well.
+        beforeCreateInvitation: async ({
+          invitation,
+          inviter,
+          organization,
+        }) => {
+          await assertCanAssignRole({
+            workspaceId: organization.id,
+            actorUserId: inviter.id,
+            targetRole: invitation.role,
+          });
+        },
         beforeDeleteOrganization: async ({ organization }) => {
           const billable = await findBillableWorkspaces([organization.id]);
           if (billable.length > 0) {
@@ -506,7 +521,7 @@ export const auth = betterAuth({
         },
       },
       async sendInvitationEmail(data) {
-        const inviteLink = `${process.env.KANEO_CLIENT_URL}/invitation/accept/${data.id}`;
+        const inviteLink = `${clientUrl.replace(/\/+$/, "")}/invitation/accept/${data.id}`;
         const locale = await getUserLocale(data.email);
         const copy = getWorkspaceInvitationEmailCopy(locale);
 
@@ -697,6 +712,90 @@ export const auth = betterAuth({
               "Invitations to disposable-email addresses are not allowed.",
           });
         }
+      }
+
+      // Role delegation for the two routes the `organizationHooks` cannot
+      // cover. `beforeUpdateMemberRole` is not told who is acting, and an
+      // invitation re-send returns before `beforeCreateInvitation` runs and
+      // re-sends the EXISTING invitation's role.
+      if (
+        ctx.path === "/organization/update-member-role" ||
+        (ctx.path === "/organization/invite-member" &&
+          ctx.body?.resend === true)
+      ) {
+        const session = await getSessionFromCtx(ctx, {
+          disableRefresh: true,
+        }).catch(() => null);
+        // Unauthenticated: let Better Auth produce its own 401.
+        if (!session) {
+          return;
+        }
+        const activeOrganizationId = (
+          session.session as { activeOrganizationId?: string | null }
+        ).activeOrganizationId;
+        const workspaceId: unknown =
+          ctx.body?.organizationId ?? activeOrganizationId;
+        if (typeof workspaceId !== "string" || !workspaceId) {
+          return;
+        }
+
+        if (ctx.path === "/organization/update-member-role") {
+          const rawRole: unknown = ctx.body?.role;
+          const targetRole = (Array.isArray(rawRole) ? rawRole : [rawRole])
+            .filter((role): role is string => typeof role === "string")
+            .join(",");
+          const memberId: unknown = ctx.body?.memberId;
+          if (typeof memberId !== "string") {
+            return;
+          }
+          const [targetMember] = await db
+            .select({
+              userId: schema.workspaceUserTable.userId,
+              role: schema.workspaceUserTable.role,
+              workspaceId: schema.workspaceUserTable.workspaceId,
+            })
+            .from(schema.workspaceUserTable)
+            .where(eq(schema.workspaceUserTable.id, memberId))
+            .limit(1);
+          // Unknown member or one in another workspace: Better Auth owns
+          // the error for those.
+          if (!targetMember || targetMember.workspaceId !== workspaceId) {
+            return;
+          }
+          await assertCanAssignRole({
+            workspaceId,
+            actorUserId: session.user.id,
+            targetRole,
+            targetMember: {
+              userId: targetMember.userId,
+              role: targetMember.role,
+            },
+          });
+          return;
+        }
+
+        const inviteeEmail: unknown = ctx.body?.email;
+        if (typeof inviteeEmail !== "string") {
+          return;
+        }
+        const pending = await db
+          .select({ role: schema.invitationTable.role })
+          .from(schema.invitationTable)
+          .where(
+            and(
+              eq(schema.invitationTable.workspaceId, workspaceId),
+              eq(schema.invitationTable.email, inviteeEmail.toLowerCase()),
+              eq(schema.invitationTable.status, "pending"),
+            ),
+          );
+        for (const invitation of pending) {
+          await assertCanAssignRole({
+            workspaceId,
+            actorUserId: session.user.id,
+            targetRole: invitation.role ?? "",
+          });
+        }
+        return;
       }
 
       const isSignUpPath =

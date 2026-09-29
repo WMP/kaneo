@@ -4276,6 +4276,35 @@
           "role"
         ]
       },
+      "AssignableRoles": {
+        "type": "object",
+        "properties": {
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "description": "Role name to pass when inviting a member or changing a role."
+                },
+                "isDefault": {
+                  "type": "boolean",
+                  "description": "True for the built-in viewer, member and admin roles; false for custom roles."
+                }
+              },
+              "required": [
+                "role",
+                "isDefault"
+              ]
+            }
+          }
+        },
+        "required": [
+          "roles"
+        ],
+        "description": "Roles the caller may grant through invitations or role changes: those whose permissions the caller also holds. Never includes owner."
+      },
       "WorkspaceActivityList": {
         "type": "object",
         "properties": {
@@ -18380,6 +18409,61 @@
                   "items": {
                     "$ref": "#/components/schemas/WorkspaceMember"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/{workspaceId}/assignable-roles": {
+      "get": {
+        "operationId": "getAssignableRoles",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Get assignable roles",
+        "description": "List the workspace roles the caller may grant when inviting a member or changing a member's role. A role is assignable only when every permission it carries is also held by the caller; owners and instance administrators can assign every role except owner.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles the caller may assign",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignableRoles"
                 }
               }
             }

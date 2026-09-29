@@ -15,6 +15,26 @@ export const workspaceMemberSchema = z
 
 export const workspaceMemberListSchema = z.array(workspaceMemberSchema);
 
+export const assignableRolesSchema = z
+  .object({
+    roles: z.array(
+      z.object({
+        role: z.string().openapi({
+          description:
+            "Role name to pass when inviting a member or changing a role.",
+        }),
+        isDefault: z.boolean().openapi({
+          description:
+            "True for the built-in viewer, member and admin roles; false for custom roles.",
+        }),
+      }),
+    ),
+  })
+  .openapi("AssignableRoles", {
+    description:
+      "Roles the caller may grant through invitations or role changes: those whose permissions the caller also holds. Never includes owner.",
+  });
+
 const activityTypeDescription =
   "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted.";
 
