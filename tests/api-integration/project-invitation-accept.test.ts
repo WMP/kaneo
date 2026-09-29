@@ -277,36 +277,58 @@ describe("accepting a project invitation", () => {
     expect((await getProject(returning, R.id)).status).toBe(403);
   });
 
-  it("keeps the memberships of somebody who already is a workspace member", async () => {
-    const email = newEmail("member");
-    const existing = await signUp(email);
-    await join(existing, workspaceId, "member");
-    await db
-      .insert(schema.projectMemberTable)
-      .values({ projectId: R.id, userId: existing.id, role: "member" });
-    // The project routes refuse to invite a member, so seed what an earlier
-    // invitation (sent before they joined) would hold.
-    const [invitation] = await db
-      .insert(schema.invitationTable)
-      .values({
-        workspaceId,
-        email,
-        role: "member",
-        status: "pending",
-        expiresAt: new Date(Date.now() + 3_600_000),
-        inviterId: owner.id,
-      })
-      .returning();
-    await db
-      .insert(schema.invitationProjectTable)
-      .values({ invitationId: invitation.id, projectId: P.id, role: "viewer" });
+  it.each([
+    ["a project invitation", true],
+    ["a plain workspace invitation", false],
+  ])(
+    "refuses %s for somebody who already is a workspace member",
+    async (_label, withProject) => {
+      const email = newEmail("member");
+      const existing = await signUp(email);
+      await join(existing, workspaceId, "member");
+      await db
+        .insert(schema.projectMemberTable)
+        .values({ projectId: R.id, userId: existing.id, role: "member" });
+      // The routes refuse to invite a member, so seed what an invitation sent
+      // before they joined would hold.
+      const [invitation] = await db
+        .insert(schema.invitationTable)
+        .values({
+          workspaceId,
+          email,
+          role: "admin",
+          status: "pending",
+          expiresAt: new Date(Date.now() + 3_600_000),
+          inviterId: owner.id,
+        })
+        .returning();
+      if (withProject) {
+        await db.insert(schema.invitationProjectTable).values({
+          invitationId: invitation.id,
+          projectId: P.id,
+          role: "viewer",
+        });
+      }
 
-    expect((await accept(existing, invitation.id)).status).toBe(200);
-    expect(await roleMap(existing.id)).toEqual({
-      [R.id]: "member",
-      [P.id]: "viewer",
-    });
-  });
+      const response = await accept(existing, invitation.id);
+      expect(response.status).toBe(409);
+      expect(((await response.json()) as { code?: string }).code).toBe(
+        "ALREADY_WORKSPACE_MEMBER",
+      );
+      // Nothing changed: still pending, rows intact, one membership row with
+      // the role they had, no project row added and the existing one kept.
+      expect(await invitationStatus(invitation.id)).toBe("pending");
+      expect(await invitationProjectRows(invitation.id)).toHaveLength(
+        withProject ? 1 : 0,
+      );
+      const memberRows = await db
+        .select({ role: schema.workspaceUserTable.role })
+        .from(schema.workspaceUserTable)
+        .where(eq(schema.workspaceUserTable.userId, existing.id));
+      expect(memberRows).toEqual([{ role: "member" }]);
+      expect(await roleMap(existing.id)).toEqual({ [R.id]: "member" });
+    },
+  );
 
   it("stores no project row for somebody who reaches every project anyway", async () => {
     const email = newEmail("admin");
@@ -353,6 +375,15 @@ describe("accepting a project invitation", () => {
       new Error("database went away"),
     );
 
+    const activeWorkspaceOf = async (userId: string) =>
+      (
+        await db
+          .select({ id: schema.sessionTable.activeOrganizationId })
+          .from(schema.sessionTable)
+          .where(eq(schema.sessionTable.userId, userId))
+      ).map((row) => row.id);
+    expect(await activeWorkspaceOf(invitee.id)).toEqual([null]);
+
     const failed = await accept(invitee, invitationId);
     expect(failed.status).toBe(500);
     expect(((await failed.json()) as { code?: string }).code).toBe(
@@ -363,9 +394,13 @@ describe("accepting a project invitation", () => {
     expect(await invitationStatus(invitationId)).toBe("pending");
     expect(await invitationProjectRows(invitationId)).toHaveLength(1);
     expect(await projectMemberRows(invitee.id)).toEqual([]);
+    // Better Auth made the workspace the active one; the revert takes that
+    // back so the client does not land in a workspace it is not a member of.
+    expect(await activeWorkspaceOf(invitee.id)).toEqual([null]);
 
     // The same link works once the failure is gone.
     expect((await accept(invitee, invitationId)).status).toBe(200);
+    expect(await activeWorkspaceOf(invitee.id)).toEqual([workspaceId]);
     expect(await roleMap(invitee.id)).toEqual({ [P.id]: "member" });
     expect(await isWorkspaceMember(invitee.id)).toBe(true);
   });

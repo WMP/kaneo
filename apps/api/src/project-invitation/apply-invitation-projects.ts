@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import db, { schema } from "../database";
 import { unusableProjectRoles } from "../utils/project-access";
 
@@ -12,9 +12,10 @@ import { unusableProjectRoles } from "../utils/project-access";
 //   target workspace).
 // - A role that no longer resolves in the workspace (deleted meanwhile) is
 //   skipped: it would be an inert row.
-// - `ON CONFLICT (project_id, user_id) DO UPDATE SET role`: the role written is
-//   exactly the one the inviter was allowed to grant, so it never exceeds what
-//   the invitation granted.
+// - `ON CONFLICT (project_id, user_id) DO NOTHING`: acceptance is refused for
+//   somebody who already is a workspace member and stale rows were dropped
+//   before they joined, so a conflict can only come from a concurrent write,
+//   and an invitation never overwrites an existing membership.
 // - Every invitation row is deleted afterwards, granted or skipped: nothing of
 //   a used invitation is left to be applied a second time.
 export async function applyInvitationProjects({
@@ -67,12 +68,11 @@ export async function applyInvitationProjects({
             role: row.role,
           })),
         )
-        .onConflictDoUpdate({
+        .onConflictDoNothing({
           target: [
             schema.projectMemberTable.projectId,
             schema.projectMemberTable.userId,
           ],
-          set: { role: sql`excluded.role` },
         });
     }
 
