@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
 import { toWorkspaceMemberError } from "@/lib/workspace-role-error";
 
 type UpdateWorkspaceUserRoleRequest = {
@@ -36,7 +37,7 @@ function useUpdateWorkspaceUserRole() {
         queryKey: ["workspace", "full", variables.workspaceId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["workspace-users", variables.workspaceId],
+        queryKey: ["workspace-members", variables.workspaceId],
       });
       // useGetActiveWorkspaceUser is keyed ["workspace-user", "active", ...]
       // and drives sidebar/role badges for the current user.
@@ -48,6 +49,8 @@ function useUpdateWorkspaceUserRole() {
       queryClient.invalidateQueries({
         queryKey: ["workspace-capabilities", variables.workspaceId],
       });
+      // The person's capabilities in every project change with their role.
+      void invalidateAccessQueries(queryClient);
       // No assignable-roles invalidation here: what the caller may grant
       // depends only on the caller's own role and the workspace's roles.
       // Changing another member's role affects neither, and the API rejects a

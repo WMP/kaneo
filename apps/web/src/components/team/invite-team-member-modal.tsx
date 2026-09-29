@@ -146,7 +146,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
         role,
       });
       await queryClient.refetchQueries({
-        queryKey: ["workspace-users", workspaceId],
+        queryKey: ["workspace-members", workspaceId],
       });
 
       toast.success(t(getInvitationEmailMessageKey("created", emailDelivery)));
@@ -173,7 +173,7 @@ function InviteTeamMemberModal({ open, onClose }: Props) {
   const resetInviteTeamMember = async () => {
     if (workspaceId) {
       await queryClient.invalidateQueries({
-        queryKey: ["workspace-users", workspaceId],
+        queryKey: ["workspace-members", workspaceId],
       });
     }
     form.reset();

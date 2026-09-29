@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
 import queryClient from "@/query-client";
 
 type DeleteWorkspaceUserRequest = {
@@ -31,8 +32,10 @@ function useDeleteWorkspaceUser() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["workspace-users", workspaceId],
+        queryKey: ["workspace-members", workspaceId],
       });
+      // The member also leaves every project they belonged to.
+      void invalidateAccessQueries(queryClient);
     },
   });
 }

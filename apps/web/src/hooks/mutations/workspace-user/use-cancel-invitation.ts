@@ -31,7 +31,7 @@ function useCancelInvitation() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["workspace-users", workspaceId],
+        queryKey: ["workspace-members", workspaceId],
       });
 
       // Also invalidate the broader workspace query

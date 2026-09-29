@@ -30,7 +30,7 @@ function DeleteTeamMemberModal({
     });
 
     queryClient.invalidateQueries({
-      queryKey: ["workspace-users"],
+      queryKey: ["workspace-members"],
     });
 
     onClose();

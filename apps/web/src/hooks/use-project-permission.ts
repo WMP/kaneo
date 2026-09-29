@@ -8,7 +8,9 @@ import {
   projectAccessQueryOptions,
 } from "@/lib/project-access-query";
 
-// Project member and invitation mutations invalidate this prefix.
+// Invalidated today by a closed project socket (1008) and by workspace role or
+// membership changes (`invalidateAccessQueries`). Mutations that change a
+// project's members must invalidate this prefix as well.
 export { projectAccessQueryKey };
 
 const NO_CAPABILITIES: ProjectCapabilities = {

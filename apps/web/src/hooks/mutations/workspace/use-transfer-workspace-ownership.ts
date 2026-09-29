@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignableRolesWorkspaceKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
+import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
 
 type TransferOwnershipRequest = {
   workspaceId: string;
@@ -54,8 +55,10 @@ function useTransferWorkspaceOwnership() {
         queryKey: ["workspace", "full", variables.workspaceId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["workspace-users", variables.workspaceId],
+        queryKey: ["workspace-members", variables.workspaceId],
       });
+      // Owner and admin act with different rights in every project.
+      void invalidateAccessQueries(queryClient);
       queryClient.invalidateQueries({
         queryKey: ["workspace-user", "active"],
       });

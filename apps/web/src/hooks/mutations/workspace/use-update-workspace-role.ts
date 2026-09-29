@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignableRolesWorkspaceKey } from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { authClient } from "@/lib/auth-client";
+import { invalidateAccessQueries } from "@/lib/invalidate-access-queries";
 
 type UpdateWorkspaceRoleRequest = {
   workspaceId: string;
@@ -33,6 +34,9 @@ function useUpdateWorkspaceRole() {
       queryClient.invalidateQueries({
         queryKey: ["workspace-capabilities", variables.workspaceId],
       });
+      // Members and project members holding this role now act with other
+      // permissions in their projects.
+      void invalidateAccessQueries(queryClient);
       // The permission set decides which callers may assign this role.
       queryClient.invalidateQueries({
         queryKey: assignableRolesWorkspaceKey(variables.workspaceId),

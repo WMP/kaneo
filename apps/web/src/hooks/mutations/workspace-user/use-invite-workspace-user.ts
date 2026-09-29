@@ -42,7 +42,7 @@ function useInviteWorkspaceUser() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["workspace-users", workspaceId],
+        queryKey: ["workspace-members", workspaceId],
       });
     },
   });

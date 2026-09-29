@@ -1,8 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 const USER_PROFILE_QUERY_KEYS = [
-  ["active-workspace-users"],
-  ["workspace-users"],
+  // People lists of the project views and the workspace-level views.
+  ["project-members"],
+  ["workspace-members"],
   ["workspace", "full"],
   ["activities"],
   ["tasks"],
