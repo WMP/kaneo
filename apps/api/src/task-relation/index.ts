@@ -10,6 +10,7 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
+import { resolveProjectAccess } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
 import {
@@ -72,7 +73,10 @@ async function scopeToRelation(c: Context, next: Next) {
 
   const id = c.req.param("id");
   const [rel] = await db
-    .select({ sourceTaskId: taskRelationTable.sourceTaskId })
+    .select({
+      sourceTaskId: taskRelationTable.sourceTaskId,
+      targetTaskId: taskRelationTable.targetTaskId,
+    })
     .from(taskRelationTable)
     .where(eq(taskRelationTable.id, id ?? ""))
     .limit(1);
@@ -87,6 +91,22 @@ async function scopeToRelation(c: Context, next: Next) {
 
   await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
   await assertProjectAccess(c, userId, { projectId: scope.projectId });
+
+  // The response of an update or delete carries the far end of the relation, so
+  // a relation whose target sits in a project the caller cannot open does not
+  // exist for them (the reads drop it the same way).
+  const targetScope =
+    rel.targetTaskId === rel.sourceTaskId
+      ? null
+      : await scopeOfTask(rel.targetTaskId);
+  if (
+    targetScope &&
+    targetScope.workspaceId === scope.workspaceId &&
+    !(await resolveProjectAccess(userId, targetScope.projectId))
+  ) {
+    throw new HTTPException(404, { message: "Task relation not found" });
+  }
+
   c.set("workspaceId", scope.workspaceId);
   return next();
 }
@@ -98,7 +118,7 @@ const getTaskRelationsRoute = createRoute({
   tags: ["Task Relations"],
   summary: "Get task relations",
   description:
-    "Get every relation where the task is the source or the target, each with a summary of both linked tasks. Relations pointing outside the caller's workspace are omitted.",
+    "Get every relation where the task is the source or the target, each with a summary of both linked tasks. Relations pointing outside the caller's workspace, or to a task in a project the caller cannot access, are omitted.",
   middleware: [workspaceAccess.fromTaskId("taskId")] as const,
   request: { params: taskIdParam },
   responses: {
@@ -120,7 +140,7 @@ const getTaskRelationsByProjectRoute = createRoute({
   tags: ["Task Relations"],
   summary: "Get project task relations",
   description:
-    "Get every relation touching one of the project's tasks, each with a summary of both linked tasks, in a single call. Powers the Gantt chart's dependency lines. Relations pointing outside the caller's workspace are omitted.",
+    "Get every relation touching one of the project's tasks, each with a summary of both linked tasks, in a single call. Powers the Gantt chart's dependency lines. Relations pointing outside the caller's workspace, or to a task in a project the caller cannot access, are omitted.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireWorkspacePermission({ task: ["read"] }),
@@ -222,7 +242,11 @@ const deleteTaskRelationRoute = createRoute({
 const taskRelation = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getTaskRelationsRoute, async (c) =>
     c.json(
-      await getTaskRelations(c.req.valid("param").taskId, c.get("workspaceId")),
+      await getTaskRelations(
+        c.req.valid("param").taskId,
+        c.get("workspaceId"),
+        c.get("userId"),
+      ),
       200,
     ),
   )
@@ -231,6 +255,7 @@ const taskRelation = apiRouter<BaseVariables & { workspaceId: string }>()
       await getTaskRelationsByProject(
         c.req.valid("param").projectId,
         c.get("workspaceId"),
+        c.get("userId"),
       ),
       200,
     ),

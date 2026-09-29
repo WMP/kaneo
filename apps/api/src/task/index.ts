@@ -24,6 +24,7 @@ import {
   verifyTaskAssetUpload,
 } from "../storage/s3";
 import { normalizeApiServerUrl } from "../utils/openapi-spec";
+import { accessibleProjectIds } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import {
   normalizeToUtcMidnight,
@@ -758,7 +759,17 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
     const { projectId } = c.req.valid("param");
     const filters = c.req.valid("query") || {};
 
-    const tasks = await getTasks(projectId, filters);
+    // `filters` is the validated query and cannot carry a scope of its own; the
+    // scope always comes from the caller's access.
+    // Full access to this project (`mode: "full"`) is full access to the whole
+    // workspace, so the middleware's decision spares a second resolution.
+    const tasks = await getTasks(projectId, {
+      ...filters,
+      visibleProjectIds:
+        c.get("projectAccess")?.mode === "full"
+          ? null
+          : await accessibleProjectIds(c.get("userId"), c.get("workspaceId")),
+    });
 
     return c.json(tasks, 200);
   })
@@ -945,7 +956,7 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(exportTasksRoute, async (c) => {
     const { projectId } = c.req.valid("param");
 
-    const exportData = await exportTasks(projectId);
+    const exportData = await exportTasks(projectId, c.get("userId"));
 
     return c.json(exportData, 200);
   })

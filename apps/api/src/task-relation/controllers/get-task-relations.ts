@@ -3,7 +3,11 @@ import db from "../../database";
 import { taskRelationTable } from "../../database/schema";
 import resolveRelationsWithTasks from "./resolve-relations-with-tasks";
 
-async function getTaskRelations(taskId: string, workspaceId: string) {
+async function getTaskRelations(
+  taskId: string,
+  workspaceId: string,
+  userId: string,
+) {
   const relations = await db
     .select({
       id: taskRelationTable.id,
@@ -22,7 +26,7 @@ async function getTaskRelations(taskId: string, workspaceId: string) {
       ),
     );
 
-  return resolveRelationsWithTasks(relations, workspaceId);
+  return resolveRelationsWithTasks(relations, workspaceId, userId);
 }
 
 export default getTaskRelations;

@@ -2,6 +2,8 @@ import { and, eq, inArray } from "drizzle-orm";
 import db from "../../database";
 import { projectTable, taskTable, userTable } from "../../database/schema";
 import { taskIsCompleted } from "../../task/task-is-completed";
+import { accessibleProjectIds } from "../../utils/project-access";
+import { projectScopeCondition } from "../../utils/project-scope-filters";
 
 type RelationRow = {
   id: string;
@@ -33,11 +35,13 @@ type TaskSummary = {
 
 // Shared by every task-relation read: expands relation rows with a summary of
 // each linked task, and drops relations whose source or target is not visible
-// in the caller's workspace (a legacy cross-workspace row, or a task the
-// caller otherwise cannot see).
+// in the caller's workspace (a legacy cross-workspace row), or whose task lives
+// in a project the caller cannot access. Such a relation is dropped entirely,
+// not returned with a redacted far end, so its existence is not revealed either.
 async function resolveRelationsWithTasks(
   relations: RelationRow[],
   workspaceId: string,
+  userId: string,
 ) {
   const taskIds = new Set<string>();
   for (const rel of relations) {
@@ -48,6 +52,7 @@ async function resolveRelationsWithTasks(
   const tasks = new Map<string, TaskSummary>();
 
   if (taskIds.size > 0) {
+    const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
     const taskRows = await db
       .select({
         id: taskTable.id,
@@ -73,6 +78,7 @@ async function resolveRelationsWithTasks(
         and(
           inArray(taskTable.id, [...taskIds]),
           eq(projectTable.workspaceId, workspaceId),
+          projectScopeCondition(projectTable.id, visibleProjectIds),
         ),
       );
 

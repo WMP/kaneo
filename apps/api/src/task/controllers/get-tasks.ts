@@ -32,6 +32,13 @@ import { MAX_TASK_LIST_LIMIT } from "../schema";
 
 export type GetTasksOptions = {
   publicOnly?: boolean;
+  /**
+   * The viewer's project scope (`accessibleProjectIds`), used to count only the
+   * subtasks they may open. Set by the authenticated route; `undefined` (the
+   * public board, which uses `publicOnly`, and internal callers) applies no
+   * project scope.
+   */
+  visibleProjectIds?: string[] | null;
   assigneeId?: string;
   dueAfter?: string;
   dueBefore?: string;
@@ -192,6 +199,7 @@ async function getTasksPage(
     taskIds,
     project.workspaceId,
     options.publicOnly ?? false,
+    options.visibleProjectIds ?? null,
   );
 
   const labelsData =

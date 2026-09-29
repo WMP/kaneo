@@ -10,7 +10,7 @@ import {
 import getTaskRelationsByProject from "../../task-relation/controllers/get-task-relations-by-project";
 import { readTaskAssignees } from "../assignments";
 
-async function exportTasks(projectId: string) {
+async function exportTasks(projectId: string, userId: string) {
   const project = await db.query.projectTable.findFirst({
     where: eq(projectTable.id, projectId),
   });
@@ -90,7 +90,7 @@ async function exportTasks(projectId: string) {
   // task's id only (it won't resolve to an entry in this export's tasks array).
   const relationsData =
     taskIds.length > 0
-      ? await getTaskRelationsByProject(projectId, project.workspaceId)
+      ? await getTaskRelationsByProject(projectId, project.workspaceId, userId)
       : [];
 
   // readTaskAssignees already no-ops on an empty id list, so it's safe to
