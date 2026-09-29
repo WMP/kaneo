@@ -1,5 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { codedError } from "../utils/coded-error";
 import {
   isFullAccess,
   isOwnerRole,
@@ -34,6 +36,36 @@ export const PROJECT_MEMBER_ERRORS = {
   changed: "The project membership changed, please retry",
 } as const;
 
+// The machine-readable code of each message. The routes answer JSON
+// `{ code, message }` (like the invitation routes), so a client branches on the
+// code; the messages stay stable and are asserted by tests.
+export const PROJECT_MEMBER_ERROR_CODES = {
+  ownerRole: "OWNER_ROLE_NOT_ALLOWED",
+  unknownRole: "UNKNOWN_ROLE",
+  roleExceeds: "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+  memberExceeds: "YOU_CANNOT_MANAGE_THIS_MEMBER",
+  ownRole: "YOU_CANNOT_CHANGE_YOUR_OWN_ROLE",
+  notWorkspaceMember: "NOT_WORKSPACE_MEMBER",
+  alreadyMember: "ALREADY_PROJECT_MEMBER",
+  alreadyFullAccess: "USER_HAS_FULL_ACCESS",
+  fullAccessTarget: "MEMBER_HAS_FULL_ACCESS",
+  notProjectMember: "NOT_PROJECT_MEMBER",
+  insufficient: "INSUFFICIENT_PERMISSIONS",
+  apiKeyScope: "INSUFFICIENT_API_KEY_SCOPE",
+  changed: "PROJECT_MEMBERSHIP_CHANGED",
+} as const satisfies Record<keyof typeof PROJECT_MEMBER_ERRORS, string>;
+
+export function memberError(
+  status: ContentfulStatusCode,
+  key: keyof typeof PROJECT_MEMBER_ERRORS,
+): HTTPException {
+  return codedError(
+    status,
+    PROJECT_MEMBER_ERROR_CODES[key],
+    PROJECT_MEMBER_ERRORS[key],
+  );
+}
+
 // The caller's effective access, set by `workspaceAccess.fromProject`.
 export function requireProjectAccess(
   access: ProjectAccess | undefined,
@@ -54,22 +86,18 @@ export async function assertAssignableProjectRole(
   role: string,
 ): Promise<void> {
   if (isOwnerRole(role)) {
-    throw new HTTPException(400, { message: PROJECT_MEMBER_ERRORS.ownerRole });
+    throw memberError(400, "ownerRole");
   }
   // A composite name such as "a,b" resolves as one unknown role.
   if (!(await projectRoleStatements(access.workspaceId, role))) {
-    throw new HTTPException(400, {
-      message: PROJECT_MEMBER_ERRORS.unknownRole,
-    });
+    throw memberError(400, "unknownRole");
   }
   if (access.unrestricted) return;
   if (
     !access.statements ||
     !(await rolesWithin(access.workspaceId, [role], access.statements))
   ) {
-    throw new HTTPException(403, {
-      message: PROJECT_MEMBER_ERRORS.roleExceeds,
-    });
+    throw memberError(403, "roleExceeds");
   }
 }
 
@@ -90,9 +118,7 @@ export async function assertCanManageRole(
       executor,
     ))
   ) {
-    throw new HTTPException(403, {
-      message: PROJECT_MEMBER_ERRORS.memberExceeds,
-    });
+    throw memberError(403, "memberExceeds");
   }
 }
 
@@ -101,9 +127,7 @@ export async function assertNotFullAccess(
   userId: string,
 ): Promise<void> {
   if (await isFullAccess(userId, access.workspaceId)) {
-    throw new HTTPException(400, {
-      message: PROJECT_MEMBER_ERRORS.fullAccessTarget,
-    });
+    throw memberError(400, "fullAccessTarget");
   }
 }
 
@@ -142,16 +166,8 @@ export function assertProjectMemberPermission(
   action: "create" | "update" | "delete",
 ): void {
   const decision = projectStatementsDecision(c, access, { member: [action] });
-  if (decision === "apiKeyScope") {
-    throw new HTTPException(403, {
-      message: PROJECT_MEMBER_ERRORS.apiKeyScope,
-    });
-  }
-  if (decision === "insufficient") {
-    throw new HTTPException(403, {
-      message: PROJECT_MEMBER_ERRORS.insufficient,
-    });
-  }
+  if (decision === "apiKeyScope") throw memberError(403, "apiKeyScope");
+  if (decision === "insufficient") throw memberError(403, "insufficient");
 }
 
 // A membership whose role grants nothing (deleted role, or moved from another

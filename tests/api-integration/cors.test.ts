@@ -67,4 +67,23 @@ describe("API integration: CORS origin policy", () => {
     );
     expect(await originHeaderFor("https://c.example")).toBeNull();
   });
+
+  it("exposes Retry-After so a separately hosted web app can read a rate limit wait", async () => {
+    process.env.NODE_ENV = "development";
+    delete process.env.KANEO_CLIENT_URL;
+    delete process.env.CORS_ORIGINS;
+
+    const { app } = createApp();
+    const response = await app.request("/api/health", {
+      headers: { origin: "http://localhost:5173" },
+    });
+
+    const exposed = (
+      response.headers.get("access-control-expose-headers") ?? ""
+    )
+      .split(",")
+      .map((name) => name.trim().toLowerCase());
+    expect(exposed).toContain("retry-after");
+    expect(exposed).toContain("content-disposition");
+  });
 });

@@ -1,4 +1,4 @@
-import { errorResponse, responseTimestamp, z } from "../openapi";
+import { responseTimestamp, z } from "../openapi";
 
 export const projectInvitationSchema = z
   .object({
@@ -69,19 +69,3 @@ export const memberCandidateSchema = z
   .openapi("ProjectMemberCandidate");
 
 export const memberCandidateListSchema = z.array(memberCandidateSchema);
-
-// Errors of this feature carry a machine-readable `code` next to the message
-// (JSON); the shared access middleware still answers with plain text.
-export const projectInvitationErrorSchema = z
-  .object({ code: z.string(), message: z.string() })
-  .openapi("ProjectInvitationError");
-
-export function codedErrorResponse(description: string) {
-  return {
-    description,
-    content: {
-      "application/json": { schema: projectInvitationErrorSchema },
-      ...errorResponse(description).content,
-    },
-  };
-}

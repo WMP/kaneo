@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectMemberTable,
@@ -7,10 +6,7 @@ import {
   workspaceUserTable,
 } from "../../database/schema";
 import { isFullAccess, type ProjectAccess } from "../../utils/project-access";
-import {
-  assertAssignableProjectRole,
-  PROJECT_MEMBER_ERRORS,
-} from "../delegation";
+import { assertAssignableProjectRole, memberError } from "../delegation";
 
 async function addProjectMember({
   access,
@@ -40,17 +36,13 @@ async function addProjectMember({
     )
     .limit(1);
   if (!target) {
-    throw new HTTPException(404, {
-      message: PROJECT_MEMBER_ERRORS.notWorkspaceMember,
-    });
+    throw memberError(404, "notWorkspaceMember");
   }
 
   await assertAssignableProjectRole(access, role);
 
   if (await isFullAccess(userId, workspaceId)) {
-    throw new HTTPException(409, {
-      message: PROJECT_MEMBER_ERRORS.alreadyFullAccess,
-    });
+    throw memberError(409, "alreadyFullAccess");
   }
 
   // The unique (project, user) constraint decides a race between two adds.
@@ -62,9 +54,7 @@ async function addProjectMember({
     })
     .returning({ id: projectMemberTable.id });
   if (!created) {
-    throw new HTTPException(409, {
-      message: PROJECT_MEMBER_ERRORS.alreadyMember,
-    });
+    throw memberError(409, "alreadyMember");
   }
 
   return { ...target, role, source: "project" as const, active: true };

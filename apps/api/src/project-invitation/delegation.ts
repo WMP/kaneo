@@ -10,6 +10,7 @@ import {
   PROJECT_MEMBER_ERRORS,
   projectStatementsDecision,
 } from "../project-member/delegation";
+import { codedError } from "../utils/coded-error";
 import { isOwnerRole, type ProjectAccess } from "../utils/project-access";
 import { assertCanAssignRole, splitRoles } from "../utils/role-delegation";
 import {
@@ -42,10 +43,7 @@ export function invitationError(
   message: string,
   headers?: Record<string, string>,
 ): HTTPException {
-  return new HTTPException(status, {
-    message,
-    res: Response.json({ code, message }, { status, headers }),
-  });
+  return codedError(status, code, message, headers);
 }
 
 // The caller's effective PROJECT statements decide whether they may manage

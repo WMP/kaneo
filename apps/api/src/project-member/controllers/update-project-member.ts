@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectMemberTable,
@@ -13,7 +12,7 @@ import {
   assertCanManageRole,
   assertNotFullAccess,
   isInertRole,
-  PROJECT_MEMBER_ERRORS,
+  memberError,
 } from "../delegation";
 
 async function updateProjectMember({
@@ -60,13 +59,11 @@ async function updateProjectMember({
     .limit(1);
 
   if (!existing) {
-    throw new HTTPException(404, {
-      message: PROJECT_MEMBER_ERRORS.notProjectMember,
-    });
+    throw memberError(404, "notProjectMember");
   }
 
   if (userId === actorUserId) {
-    throw new HTTPException(403, { message: PROJECT_MEMBER_ERRORS.ownRole });
+    throw memberError(403, "ownRole");
   }
 
   // An inert role grants nothing, so replacing it needs no reach over it.
@@ -89,7 +86,7 @@ async function updateProjectMember({
     )
     .returning({ role: projectMemberTable.role });
   if (!updated) {
-    throw new HTTPException(409, { message: PROJECT_MEMBER_ERRORS.changed });
+    throw memberError(409, "changed");
   }
 
   // A role change closes the member's project sockets on every instance; they

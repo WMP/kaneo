@@ -117,9 +117,22 @@ async function rowOf(w: World, userId: string) {
   return row;
 }
 
+// The shared access middleware answers plain text.
 async function expectError(response: Response, status: number, text: string) {
   expect(response.status).toBe(status);
   expect(await response.text()).toBe(text);
+}
+
+// The project member routes answer JSON with a machine-readable code.
+async function expectCoded(
+  response: Response,
+  status: number,
+  code: string,
+  message: string,
+) {
+  expect(response.status).toBe(status);
+  expect(response.headers.get("content-type")).toContain("application/json");
+  expect(await response.json()).toEqual({ code, message });
 }
 
 beforeEach(async () => {
@@ -253,36 +266,40 @@ describe("POST /project/{id}/members", () => {
   it("rejects duplicates, unknown users, unknown roles and owner", async () => {
     const w = await buildWorld();
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.projectViewer.id,
         role: "member",
       }),
       409,
+      "ALREADY_PROJECT_MEMBER",
       "User is already a member of this project",
     );
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.outsider.user.id,
         role: "member",
       }),
       404,
+      "NOT_WORKSPACE_MEMBER",
       "User is not a member of this workspace",
     );
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.candidate.id,
         role: "does-not-exist",
       }),
       400,
+      "UNKNOWN_ROLE",
       "Unknown role",
     );
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.candidate.id,
         role: "owner",
       }),
       400,
+      "OWNER_ROLE_NOT_ALLOWED",
       "The owner role cannot be a project role",
     );
     expect(await rowOf(w, w.candidate.id)).toBeUndefined();
@@ -296,12 +313,13 @@ describe("POST /project/{id}/members", () => {
       .where(eq(schema.projectMemberTable.userId, w.fullAdmin.id))
       .returning();
     expect(row).toBeDefined();
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.fullAdmin.id,
         role: "viewer",
       }),
       409,
+      "USER_HAS_FULL_ACCESS",
       "User already has full access to this project",
     );
   });
@@ -309,12 +327,13 @@ describe("POST /project/{id}/members", () => {
   it("needs member:create in the caller's project role", async () => {
     const w = await buildWorld();
     as(w.projectViewer);
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.candidate.id,
         role: "viewer",
       }),
       403,
+      "INSUFFICIENT_PERMISSIONS",
       "Insufficient permissions",
     );
     as(w.workspaceOnly);
@@ -334,9 +353,10 @@ describe("POST /project/{id}/members", () => {
     // inviter only holds task:read (plus member management): viewer, member
     // and admin all carry more.
     for (const role of ["viewer", "member", "admin"]) {
-      await expectError(
+      await expectCoded(
         await call(members(w), "POST", { userId: w.candidate.id, role }),
         403,
+        "ROLE_EXCEEDS_YOUR_PERMISSIONS",
         "You cannot assign a role with permissions you do not have",
       );
     }
@@ -361,12 +381,13 @@ describe("POST /project/{id}/members", () => {
       ).status,
     ).toBe(200);
     as(w.owner.user);
-    await expectError(
+    await expectCoded(
       await call(members(w), "POST", {
         userId: w.workspaceOnly.id,
         role: "owner",
       }),
       400,
+      "OWNER_ROLE_NOT_ALLOWED",
       "The owner role cannot be a project role",
     );
   });
@@ -391,9 +412,10 @@ describe("PATCH /project/{id}/members/{userId}", () => {
   it("refuses to change your own role unless unrestricted", async () => {
     const w = await buildWorld();
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectAdmin.id), "PATCH", { role: "viewer" }),
       403,
+      "YOU_CANNOT_CHANGE_YOUR_OWN_ROLE",
       "You cannot change your own project role",
     );
     expect((await rowOf(w, w.projectAdmin.id))?.role).toBe("admin");
@@ -409,16 +431,18 @@ describe("PATCH /project/{id}/members/{userId}", () => {
     const w = await buildWorld();
     as(w.inviter);
     // The current role (viewer) is beyond the inviter's permissions.
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectViewer.id), "PATCH", { role: "reader" }),
       403,
+      "YOU_CANNOT_MANAGE_THIS_MEMBER",
       "You cannot manage a member with permissions you do not have",
     );
     // A member within the inviter's reach cannot be promoted past it.
     await addProjectMember(w.project.id, w.candidate.id, "reader");
-    await expectError(
+    await expectCoded(
       await call(member(w, w.candidate.id), "PATCH", { role: "admin" }),
       403,
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
       "You cannot assign a role with permissions you do not have",
     );
     expect((await rowOf(w, w.candidate.id))?.role).toBe("reader");
@@ -427,24 +451,28 @@ describe("PATCH /project/{id}/members/{userId}", () => {
   it("rejects owner, unknown roles, non-members and full-access members", async () => {
     const w = await buildWorld();
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectViewer.id), "PATCH", { role: "owner" }),
       400,
+      "OWNER_ROLE_NOT_ALLOWED",
       "The owner role cannot be a project role",
     );
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectViewer.id), "PATCH", { role: "nope" }),
       400,
+      "UNKNOWN_ROLE",
       "Unknown role",
     );
-    await expectError(
+    await expectCoded(
       await call(member(w, w.candidate.id), "PATCH", { role: "viewer" }),
       404,
+      "NOT_PROJECT_MEMBER",
       "User is not a member of this project",
     );
-    await expectError(
+    await expectCoded(
       await call(member(w, w.fullAdmin.id), "PATCH", { role: "viewer" }),
       400,
+      "MEMBER_HAS_FULL_ACCESS",
       "Members with full access cannot be changed or removed at project level",
     );
   });
@@ -452,9 +480,10 @@ describe("PATCH /project/{id}/members/{userId}", () => {
   it("needs member:update", async () => {
     const w = await buildWorld();
     as(w.projectViewer);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectAdmin.id), "PATCH", { role: "viewer" }),
       403,
+      "INSUFFICIENT_PERMISSIONS",
       "Insufficient permissions",
     );
   });
@@ -492,9 +521,10 @@ describe("DELETE /project/{id}/members/{userId}", () => {
   it("needs member:delete to remove somebody else", async () => {
     const w = await buildWorld();
     as(w.projectViewer);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectAdmin.id), "DELETE"),
       403,
+      "INSUFFICIENT_PERMISSIONS",
       "Insufficient permissions",
     );
     expect(await rowOf(w, w.projectAdmin.id)).toBeDefined();
@@ -503,9 +533,10 @@ describe("DELETE /project/{id}/members/{userId}", () => {
   it("refuses to remove a member with permissions beyond the caller's", async () => {
     const w = await buildWorld();
     as(w.inviter);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.projectAdmin.id), "DELETE"),
       403,
+      "YOU_CANNOT_MANAGE_THIS_MEMBER",
       "You cannot manage a member with permissions you do not have",
     );
     await addProjectMember(w.project.id, w.candidate.id, "reader");
@@ -516,16 +547,19 @@ describe("DELETE /project/{id}/members/{userId}", () => {
     const w = await buildWorld();
     const message =
       "Members with full access cannot be changed or removed at project level";
+    const code = "MEMBER_HAS_FULL_ACCESS";
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.owner.user.id), "DELETE"),
       400,
+      code,
       message,
     );
     as(w.fullAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.fullAdmin.id), "DELETE"),
       400,
+      code,
       message,
     );
     expect(await rowOf(w, w.owner.user.id)).toBeDefined();
@@ -534,9 +568,10 @@ describe("DELETE /project/{id}/members/{userId}", () => {
   it("answers 404 for somebody who is not a member", async () => {
     const w = await buildWorld();
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.candidate.id), "DELETE"),
       404,
+      "NOT_PROJECT_MEMBER",
       "User is not a member of this project",
     );
   });
@@ -624,9 +659,10 @@ describe("memberships whose role grants nothing", () => {
   it("need member:delete to be removed and can be re-assigned", async () => {
     const { w, inert } = await withInertMember();
     as(w.projectViewer);
-    await expectError(
+    await expectCoded(
       await call(member(w, inert.id), "DELETE"),
       403,
+      "INSUFFICIENT_PERMISSIONS",
       "Insufficient permissions",
     );
     as(w.projectAdmin);
@@ -655,9 +691,10 @@ describe("changes racing with the delegation checks", () => {
           .set({ role: "admin" })
           .where(eq(schema.projectMemberTable.userId, w.candidate.id));
       });
-    await expectError(
+    await expectCoded(
       await call(member(w, w.candidate.id), "DELETE"),
       409,
+      "PROJECT_MEMBERSHIP_CHANGED",
       "The project membership changed, please retry",
     );
     expect((await rowOf(w, w.candidate.id))?.role).toBe("admin");
@@ -672,9 +709,10 @@ describe("changes racing with the delegation checks", () => {
           .where(eq(schema.projectMemberTable.userId, w.candidate.id));
       });
     as(w.projectAdmin);
-    await expectError(
+    await expectCoded(
       await call(member(w, w.candidate.id), "PATCH", { role: "member" }),
       409,
+      "PROJECT_MEMBERSHIP_CHANGED",
       "The project membership changed, please retry",
     );
     expect((await rowOf(w, w.candidate.id))?.role).toBe("viewer");
@@ -707,9 +745,10 @@ describe("API keys", () => {
   it("leaving a project still needs member:delete in the key's scope", async () => {
     const w = await buildWorld();
     const narrow = await bearerFor(w.projectViewer.id, { task: ["read"] });
-    await expectError(
+    await expectCoded(
       await withKey(member(w, w.projectViewer.id), "DELETE", narrow),
       403,
+      "INSUFFICIENT_API_KEY_SCOPE",
       "Insufficient API key scope",
     );
     expect(await rowOf(w, w.projectViewer.id)).toBeDefined();

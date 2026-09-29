@@ -10,6 +10,7 @@ import {
   assertProjectMemberPermission,
   requireProjectAccess,
 } from "../project-member/delegation";
+import { codedErrorResponse } from "../utils/coded-error";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import cancelProjectInvitation from "./controllers/cancel-project-invitation";
 import createProjectInvitation from "./controllers/create-project-invitation";
@@ -22,7 +23,6 @@ import {
 } from "./delegation";
 import { requireInvitationRateLimit } from "./rate-limit";
 import {
-  codedErrorResponse,
   memberCandidateListSchema,
   projectInvitationCancelSchema,
   projectInvitationListSchema,

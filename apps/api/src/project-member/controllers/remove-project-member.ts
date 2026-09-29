@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectMemberTable,
@@ -15,7 +14,7 @@ import {
   assertNotFullAccess,
   assertProjectMemberPermission,
   isInertRole,
-  PROJECT_MEMBER_ERRORS,
+  memberError,
 } from "../delegation";
 
 // Removes a member, or lets a member leave the project. Removing somebody else
@@ -38,9 +37,7 @@ async function removeProjectMember({
 
   if (isSelf) {
     if (!apiKeyAllows(c, { member: ["delete"] })) {
-      throw new HTTPException(403, {
-        message: PROJECT_MEMBER_ERRORS.apiKeyScope,
-      });
+      throw memberError(403, "apiKeyScope");
     }
   } else {
     assertProjectMemberPermission(c, access, "delete");
@@ -72,9 +69,7 @@ async function removeProjectMember({
     )
     .limit(1);
   if (!existing) {
-    throw new HTTPException(404, {
-      message: PROJECT_MEMBER_ERRORS.notProjectMember,
-    });
+    throw memberError(404, "notProjectMember");
   }
 
   // An inert role grants nothing, so removing it needs no reach over it.
@@ -96,7 +91,7 @@ async function removeProjectMember({
     )
     .returning({ id: projectMemberTable.id });
   if (deleted.length === 0) {
-    throw new HTTPException(409, { message: PROJECT_MEMBER_ERRORS.changed });
+    throw memberError(409, "changed");
   }
 
   // Their project sockets end now, on every instance, instead of at the next
