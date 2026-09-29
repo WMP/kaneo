@@ -21,16 +21,22 @@ async function cancelProjectInvitation({
   actorUserId: string;
   invitationId: string;
 }) {
-  const invitation = await requirePendingProjectInvitation(
-    access,
-    invitationId,
-  );
-  await assertCanManageInvitation(access, actorUserId, invitation);
+  // The email is needed for the lock; everything that decides the outcome is
+  // read again under it.
+  const { email } = await requirePendingProjectInvitation(access, invitationId);
 
   const canceled = await db.transaction(async (tx) => {
-    // Serializes with a concurrent add of another project to the same
-    // invitation, so an invitation is never canceled while gaining a project.
-    await lockInvitationEmail(tx, access.workspaceId, invitation.email);
+    // Serializes with a concurrent add of another project (or role change) on
+    // the same invitation, so the roles checked below are the ones removed.
+    await lockInvitationEmail(tx, access.workspaceId, email);
+    const invitation = await requirePendingProjectInvitation(
+      access,
+      invitationId,
+      tx,
+    );
+    await assertCanManageInvitation(access, actorUserId, invitation, {
+      allowInert: true,
+    });
 
     await tx
       .delete(schema.invitationProjectTable)
@@ -48,10 +54,17 @@ async function cancelProjectInvitation({
       .select({ status: schema.invitationTable.status })
       .from(schema.invitationTable)
       .where(eq(schema.invitationTable.id, invitationId));
-    return current?.status === "canceled";
+    return {
+      canceled: current?.status === "canceled",
+      email: invitation.email,
+    };
   });
 
-  return { id: invitation.id, email: invitation.email, canceled };
+  return {
+    id: invitationId,
+    email: canceled.email,
+    canceled: canceled.canceled,
+  };
 }
 
 export default cancelProjectInvitation;

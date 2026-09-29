@@ -1,8 +1,7 @@
 import { and, asc, count, eq, gt, sql } from "drizzle-orm";
 import db, { schema } from "../../database";
-import { isCloud } from "../../utils/is-cloud";
-import { isDisposableEmail } from "../../utils/is-disposable-email";
 import type { ProjectAccess } from "../../utils/project-access";
+import { assertCloudInvitationAllowed } from "../cloud-gates";
 import { newInvitationExpiry, PENDING_INVITATION_LIMIT } from "../constants";
 import {
   assertCanManageProjectRole,
@@ -28,35 +27,6 @@ type Created = {
   projectId: string;
   expiresAt: Date;
 } & EmailDelivery;
-
-// The same gates Better Auth's `invite-member` gets on cloud (`hooks.before`
-// in auth.ts): the phishing incident of 2026-05-28 used throwaway accounts and
-// disposable addresses, and this route would otherwise be a way around them.
-async function assertCloudInvitationAllowed(
-  actorUserId: string,
-  email: string,
-): Promise<void> {
-  if (!isCloud()) return;
-  const [actor] = await db
-    .select({ isAnonymous: schema.userTable.isAnonymous })
-    .from(schema.userTable)
-    .where(eq(schema.userTable.id, actorUserId))
-    .limit(1);
-  if (actor?.isAnonymous) {
-    throw invitationError(
-      403,
-      INVITATION_ERROR_CODES.guest,
-      "Guest accounts may not send workspace invitations.",
-    );
-  }
-  if (isDisposableEmail(email)) {
-    throw invitationError(
-      400,
-      INVITATION_ERROR_CODES.disposableEmail,
-      "Invitations to disposable-email addresses are not allowed.",
-    );
-  }
-}
 
 async function isWorkspaceMemberEmail(
   workspaceId: string,

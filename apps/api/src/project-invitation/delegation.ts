@@ -5,6 +5,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import {
   assertAssignableProjectRole,
   assertCanManageRole,
+  isInertRole,
   PROJECT_MEMBER_ERRORS,
 } from "../project-member/delegation";
 import {
@@ -190,19 +191,46 @@ export async function assertInvitableProjectRole(
 
 // Cancelling or re-sending touches an EXISTING invitation: both of its roles
 // must be within the caller's own permissions (owners and instance
-// administrators are unrestricted).
+// administrators are unrestricted). `allowInert` is for cancelling: a role that
+// grants nothing any more (deleted from the catalog) needs no reach, like
+// removing an inert project membership in the member API, so an invitation
+// nobody can act on any longer can still be cleaned up. Re-sending never
+// bypasses the check.
 export async function assertCanManageInvitation(
   access: ProjectAccess,
   actorUserId: string,
   invitation: { workspaceRole: string; projectRole: string },
+  { allowInert = false }: { allowInert?: boolean } = {},
 ): Promise<void> {
   if (access.unrestricted) return;
-  await assertWorkspaceRoleWithinCaller(
-    access,
-    actorUserId,
-    invitation.workspaceRole,
-  );
-  await assertCanManageProjectRole(access, invitation.projectRole);
+  if (
+    !(
+      allowInert &&
+      (await isInertWorkspaceRole(access.workspaceId, invitation.workspaceRole))
+    )
+  ) {
+    await assertWorkspaceRoleWithinCaller(
+      access,
+      actorUserId,
+      invitation.workspaceRole,
+    );
+  }
+  if (!(allowInert && (await isInertRole(access, invitation.projectRole)))) {
+    await assertCanManageProjectRole(access, invitation.projectRole);
+  }
+}
+
+// A workspace role name (possibly a comma-separated list) grants nothing when
+// no part of it resolves in the catalog or the built-in roles (`owner` is a
+// built-in role, so a name with an owner part is never inert).
+async function isInertWorkspaceRole(
+  workspaceId: string,
+  role: string,
+): Promise<boolean> {
+  for (const part of splitRoles(role)) {
+    if (await resolveRoleStatements(workspaceId, part)) return false;
+  }
+  return true;
 }
 
 // A project role that is already stored (an invitation row, or the role an
