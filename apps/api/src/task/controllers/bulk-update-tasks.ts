@@ -14,7 +14,11 @@ import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gi
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
 import { removeLabelFromGitlab } from "../../plugins/gitlab/utils/sync-label-to-gitlab";
 import { assertAssignableUser } from "../../utils/assert-assignable-user";
-import { resolveProjectAccesses } from "../../utils/project-access";
+import {
+  PROJECT_ACCESS_DENIED_MESSAGE,
+  type ProjectAccess,
+  resolveProjectAccesses,
+} from "../../utils/project-access";
 import {
   validateAndParseDate,
   validateDateRange,
@@ -50,12 +54,15 @@ async function bulkUpdateTasks({
   value,
   scheduleUpdates,
   userId,
+  projectAccesses,
 }: {
   taskIds: string[];
   operation: BulkOperation;
   value?: string | null;
   scheduleUpdates?: ScheduleUpdate[];
   userId: string;
+  // Project access the route middleware already resolved for `taskIds`.
+  projectAccesses?: ProjectAccess[];
 }) {
   const tasks = await db
     .select({
@@ -115,11 +122,19 @@ async function bulkUpdateTasks({
 
   // Workspace membership does not open a project: every project the tasks
   // belong to needs a project membership or full access.
-  const accessProjectIds = [...new Set(tasks.map((t) => t.projectId))];
-  if (!(await resolveProjectAccesses(userId, accessProjectIds))) {
-    throw new HTTPException(403, {
-      message: "You don't have access to this project",
-    });
+  // The route middleware already resolved the projects of the requested task
+  // ids; only resolve what it did not cover.
+  const coveredProjectIds = new Set(
+    (projectAccesses ?? []).map((access) => access.projectId),
+  );
+  const uncoveredProjectIds = [
+    ...new Set(tasks.map((t) => t.projectId)),
+  ].filter((projectId) => !coveredProjectIds.has(projectId));
+  if (
+    uncoveredProjectIds.length > 0 &&
+    !(await resolveProjectAccesses(userId, uncoveredProjectIds))
+  ) {
+    throw new HTTPException(403, { message: PROJECT_ACCESS_DENIED_MESSAGE });
   }
 
   const foundIds = tasks.map((t) => t.id);

@@ -179,6 +179,10 @@ type RouteCase = {
   // Status an allowed caller gets. Anything but 403 proves the access gate let
   // the request through; the exact status documents what the handler did.
   ok?: number | "gate";
+  // Status for the project member (workspace role member, project role admin)
+  // when it differs: workspace-level permissions such as
+  // workspace:manage_settings come from the WORKSPACE role.
+  memberStatus?: number;
 };
 
 const ROUTES: RouteCase[] = [
@@ -481,6 +485,9 @@ const ROUTES: RouteCase[] = [
     body: () => ({ webhookUrl: "https://hooks.example.com/kaneo" }),
     // The gate passes; whether the webhook host resolves depends on the network.
     ok: "gate",
+    // Managing integrations needs workspace:manage_settings in the WORKSPACE
+    // role, which a project admin with the member role does not have.
+    memberStatus: 403,
   },
   {
     name: "import gitlab issues (project from body)",
@@ -550,7 +557,10 @@ describe("single-project routes are gated by project membership", () => {
 
       const response = await call(route.path(w), route.method, route.body?.(w));
 
-      if (actor.allowed) {
+      if (actor.key === "member" && route.memberStatus !== undefined) {
+        expect(response.status).toBe(route.memberStatus);
+        expect(await response.text()).toBe("Insufficient permissions");
+      } else if (actor.allowed) {
         const text = await response.clone().text();
         if (route.ok === "gate") {
           expect(response.status, text).not.toBe(403);
@@ -865,7 +875,26 @@ describe("requests that touch several projects", () => {
     expect(denied.status).toBe(403);
     expect(await denied.text()).toBe(DENIED_PROJECT);
 
-    await addProjectMember(w.otherProject.id, user.id, "member");
+    // Read-only in the target project is not enough: the relation is written
+    // into a task there.
+    await addProjectMember(w.otherProject.id, user.id, "viewer");
+    const readOnly = await call("/task-relation", "POST", {
+      sourceTaskId: w.task.id,
+      targetTaskId: foreignTask.id,
+      relationType: "related",
+    });
+    expect(readOnly.status).toBe(403);
+    expect(await readOnly.text()).toBe("Insufficient permissions");
+
+    await db
+      .update(schema.projectMemberTable)
+      .set({ role: "member" })
+      .where(
+        and(
+          eq(schema.projectMemberTable.projectId, w.otherProject.id),
+          eq(schema.projectMemberTable.userId, user.id),
+        ),
+      );
     const allowed = await call("/task-relation", "POST", {
       sourceTaskId: w.task.id,
       targetTaskId: foreignTask.id,
@@ -951,6 +980,23 @@ describe("moving a project cleans its memberships", () => {
     await addProjectMember(project.id, notInTarget.id, "member");
     await addProjectMember(project.id, customRoleInTarget.id, "source-only");
 
+    const [invitation] = await db
+      .insert(schema.invitationTable)
+      .values({
+        workspaceId: source.workspace.id,
+        email: "pending@example.com",
+        role: "member",
+        status: "pending",
+        expiresAt: new Date(Date.now() + 86_400_000),
+        inviterId: source.user.id,
+      })
+      .returning();
+    await db.insert(schema.invitationProjectTable).values({
+      invitationId: invitation.id,
+      projectId: project.id,
+      role: "member",
+    });
+
     mockAuthenticatedSession(target.user as User);
     // The target owner also needs to reach the source project to move it:
     // make the mover a member of the source workspace as well.
@@ -970,6 +1016,175 @@ describe("moving a project cleans its memberships", () => {
       .from(schema.projectMemberTable)
       .where(eq(schema.projectMemberTable.projectId, project.id));
     expect(remaining.map((row) => row.userId).sort()).toEqual([inTarget.id]);
+    // Pending project invitations do not follow the project.
+    expect(
+      await db
+        .select()
+        .from(schema.invitationProjectTable)
+        .where(eq(schema.invitationProjectTable.projectId, project.id)),
+    ).toHaveLength(0);
+  });
+});
+
+describe("workspace-level permissions come from the workspace role", () => {
+  // Project role admin, workspace role viewer: the person may work in the
+  // project, but holds none of the workspace-level permissions.
+  async function projectAdminWithViewerRole() {
+    const w = await buildWorld();
+    const user = await addWorkspaceMember(w.workspaceId, "viewer");
+    await addProjectMember(w.project.id, user.id, "admin");
+    return { w, user };
+  }
+
+  it("does not reveal integration secrets to a project admin", async () => {
+    const { w, user } = await projectAdminWithViewerRole();
+    await db.insert(schema.integrationTable).values([
+      {
+        projectId: w.project.id,
+        type: "gitea",
+        config: JSON.stringify({
+          baseUrl: "https://gitea.example",
+          accessToken: "gitea-access-token",
+          repositoryOwner: "owner",
+          repositoryName: "repo",
+          webhookSecret: "gitea-webhook-secret",
+        }),
+      },
+      {
+        projectId: w.project.id,
+        type: "gitlab",
+        config: JSON.stringify({
+          baseUrl: "https://gitlab.example",
+          projectPath: "group/repo",
+          accessToken: "gitlab-access-token",
+          webhookSecret: "gitlab-webhook-secret",
+        }),
+      },
+    ]);
+    const read = async (path: string) => {
+      const response = await call(path, "GET");
+      expect(response.status).toBe(200);
+      return (await response.json()) as Record<string, string>;
+    };
+    const giteaPath = `/gitea-integration/project/${w.project.id}`;
+    const gitlabPath = `/gitlab-integration/project/${w.project.id}`;
+
+    mockAuthenticatedSession(user as User);
+    expect((await read(giteaPath)).webhookSecret).toBe("");
+    const gitlabRestricted = await read(gitlabPath);
+    expect(gitlabRestricted.webhookSecret).toBe("");
+    expect(gitlabRestricted.maskedAccessToken).toBe("");
+
+    // Full access through the workspace role (manage_settings) sees them.
+    mockAuthenticatedSession(w.fullAdmin as User);
+    expect((await read(giteaPath)).webhookSecret).toBe("gitea-webhook-secret");
+    expect((await read(gitlabPath)).webhookSecret).toBe(
+      "gitlab-webhook-secret",
+    );
+  });
+
+  it("cannot set external comment authors but can still work on tasks", async () => {
+    const { w, user } = await projectAdminWithViewerRole();
+    mockAuthenticatedSession(user as User);
+
+    const external = await call(`/comment/${w.task.id}`, "POST", {
+      content: "Imported as somebody else",
+      externalSource: "planka",
+      externalUserName: "Historical Author",
+    });
+    expect(external.status).toBe(403);
+    const attributed = await db
+      .select()
+      .from(schema.activityTable)
+      .where(eq(schema.activityTable.externalUserName, "Historical Author"));
+    expect(attributed).toHaveLength(0);
+
+    // The project admin role still carries task permissions in this project.
+    expect(
+      (await call(`/comment/${w.task.id}`, "POST", { content: "Plain" }))
+        .status,
+    ).toBe(200);
+    expect(
+      (await call(`/task/title/${w.task.id}`, "PUT", { title: "Renamed" }))
+        .status,
+    ).toBe(200);
+
+    // A full-access user with manage_settings may attribute imports.
+    mockAuthenticatedSession(w.fullAdmin as User);
+    expect(
+      (
+        await call(`/comment/${w.task.id}`, "POST", {
+          content: "Imported",
+          externalSource: "planka",
+          externalUserName: "Historical Author",
+        })
+      ).status,
+    ).toBe(200);
+  });
+
+  it("does not let a project admin manage integrations of the project", async () => {
+    const { w, user } = await projectAdminWithViewerRole();
+    mockAuthenticatedSession(user as User);
+    const response = await call(
+      `/generic-webhook-integration/project/${w.project.id}`,
+      "POST",
+      { webhookUrl: "https://hooks.example.com/kaneo" },
+    );
+    expect(response.status).toBe(403);
+    expect(await response.text()).toBe("Insufficient permissions");
+  });
+});
+
+describe("attaching a label names a task in the body", () => {
+  it("needs access, and label:update, in that task's project", async () => {
+    const w = await buildWorld();
+    const [foreignTask] = await db
+      .insert(schema.taskTable)
+      .values({
+        projectId: w.otherProject.id,
+        title: "Elsewhere",
+        status: "to-do",
+        number: 1,
+        position: 1,
+      })
+      .returning();
+    // A workspace label: belongs to no task and no project.
+    const [workspaceLabel] = await db
+      .insert(schema.labelTable)
+      .values({
+        workspaceId: w.workspaceId,
+        name: "shared",
+        color: "#0000ff",
+      })
+      .returning();
+    const user = await addWorkspaceMember(w.workspaceId, "member");
+    await addProjectMember(w.project.id, user.id, "admin");
+    mockAuthenticatedSession(user as User);
+
+    const attach = (taskId: string) =>
+      call(`/label/${workspaceLabel.id}/task`, "PUT", { taskId });
+
+    const noAccess = await attach(foreignTask.id);
+    expect(noAccess.status).toBe(403);
+    expect(await noAccess.text()).toBe(DENIED_PROJECT);
+
+    // A project viewer may read but not edit labels there.
+    await addProjectMember(w.otherProject.id, user.id, "viewer");
+    const readOnly = await attach(foreignTask.id);
+    expect(readOnly.status).toBe(403);
+    expect(await readOnly.text()).toBe("Insufficient permissions");
+
+    await db
+      .update(schema.projectMemberTable)
+      .set({ role: "member" })
+      .where(
+        and(
+          eq(schema.projectMemberTable.projectId, w.otherProject.id),
+          eq(schema.projectMemberTable.userId, user.id),
+        ),
+      );
+    const allowed = await attach(foreignTask.id);
+    expect(allowed.status, await allowed.clone().text()).toBe(200);
   });
 });
 

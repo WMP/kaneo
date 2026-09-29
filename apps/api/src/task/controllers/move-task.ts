@@ -10,7 +10,7 @@ import {
 import { publishEvent } from "../../events";
 import {
   projectAccessSatisfies,
-  resolveProjectAccess,
+  requireProjectAccessFor,
 } from "../../utils/project-access";
 import { claimTaskNumber } from "./claim-task-numbers";
 import { nextTaskPosition } from "./next-task-position";
@@ -112,15 +112,10 @@ async function moveTask({
 
   // The request was authorized against the source project. Moving a task into
   // another project also needs access there, and the right to create tasks in it.
-  const destinationAccess = await resolveProjectAccess(
+  const destinationAccess = await requireProjectAccessFor(
     currentUserId,
     destinationProjectId,
   );
-  if (!destinationAccess) {
-    throw new HTTPException(403, {
-      message: "You don't have access to this project",
-    });
-  }
   if (!projectAccessSatisfies(destinationAccess, { task: ["create"] })) {
     throw new HTTPException(403, { message: "Insufficient permissions" });
   }

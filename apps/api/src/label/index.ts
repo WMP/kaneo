@@ -121,6 +121,7 @@ const attachLabelToTaskRoute = createRoute({
   description: "Attach an existing label to a task",
   middleware: [
     workspaceAccess.fromLabel(),
+    projectFromBodyTask(),
     requireWorkspacePermission({ label: ["update"] }),
   ] as const,
   request: {

@@ -793,6 +793,7 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       value,
       scheduleUpdates,
       userId,
+      projectAccesses: c.get("projectAccesses"),
     });
 
     return c.json(result, 200);

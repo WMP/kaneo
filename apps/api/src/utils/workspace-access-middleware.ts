@@ -2,7 +2,12 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
-import { resolveProjectAccess, resolveProjectAccesses } from "./project-access";
+import {
+  PROJECT_ACCESS_DENIED_MESSAGE,
+  type ProjectAccess,
+  requireProjectAccessFor,
+  resolveProjectAccesses,
+} from "./project-access";
 import { validateWorkspaceAccess } from "./validate-workspace-access";
 
 type LookupResource =
@@ -37,9 +42,6 @@ type WorkspaceIdSource =
 // resources) leave `projectId` null and are gated by workspace membership.
 type ResolvedScope = { workspaceId: string; projectId: string | null };
 
-export const PROJECT_ACCESS_DENIED_MESSAGE =
-  "You don't have access to this project";
-
 type WorkspaceAccessMiddlewareConfig = {
   sources: WorkspaceIdSource[];
 };
@@ -73,10 +75,7 @@ export async function assertProjectAccess(
   }
 
   if (scope.projectId) {
-    const access = await resolveProjectAccess(userId, scope.projectId);
-    if (!access) {
-      throw new HTTPException(403, { message: PROJECT_ACCESS_DENIED_MESSAGE });
-    }
+    const access = await requireProjectAccessFor(userId, scope.projectId);
     c.set("projectId", scope.projectId);
     c.set("projectAccess", access);
   }
@@ -188,7 +187,7 @@ export function workspaceAccessMiddleware(
   };
 }
 
-async function lookupScope(
+export async function lookupScope(
   resource: LookupResource,
   id: string,
 ): Promise<ResolvedScope | null> {
@@ -433,7 +432,14 @@ export function projectFromBodyTask(key = "taskId") {
     if (userId && workspaceId && typeof taskId === "string" && taskId) {
       const scope = await lookupScope("task", taskId);
       if (scope && scope.workspaceId === workspaceId) {
+        // Keep the project the route already resolved (for example the
+        // label's own task): the permission must then hold in both.
+        const previous = c.get("projectAccess") as ProjectAccess | undefined;
         await assertProjectAccess(c, userId, { projectId: scope.projectId });
+        const current = c.get("projectAccess") as ProjectAccess | undefined;
+        if (previous && current && previous.projectId !== current.projectId) {
+          c.set("projectAccesses", [previous, current]);
+        }
       }
     }
     return next();

@@ -84,7 +84,7 @@ import { migrateSessionColumn } from "./utils/migrate-session-column";
 import { migrateTaskAssignments } from "./utils/migrate-task-assignments";
 import { migrateWorkspaceUserEmail } from "./utils/migrate-workspace-user-email";
 import { normalizeApiServerUrl } from "./utils/openapi-spec";
-import { resolveProjectAccess } from "./utils/project-access";
+import { requireProjectAccessFor } from "./utils/project-access";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
 import { drainSignInEmails } from "./utils/sign-in-email-tasks";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
@@ -867,11 +867,7 @@ export function createApp() {
         );
         // A project socket streams that project's events: it needs a project
         // membership (or full access), not just workspace membership.
-        if (!(await resolveProjectAccess(userId, projectId))) {
-          throw new HTTPException(403, {
-            message: "You don't have access to this project",
-          });
-        }
+        await requireProjectAccessFor(userId, projectId);
         workspaceId = project.workspaceId;
       }
 

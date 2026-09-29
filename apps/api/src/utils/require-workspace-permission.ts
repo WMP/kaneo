@@ -17,18 +17,46 @@ function projectAccessesOf(c: Context): ProjectAccess[] | null {
   return one ? [one] : null;
 }
 
+// Resources that describe the workspace itself (settings, members, invitations,
+// roles, teams). A project role never carries them: they are always evaluated
+// against the caller's WORKSPACE role, even inside a project-scoped request.
+// Everything else (`project`, `task`, `label`, ...) belongs to the project.
+const WORKSPACE_LEVEL_RESOURCES = new Set([
+  "workspace",
+  "member",
+  "invitation",
+  "organization",
+  "ac",
+  "team",
+]);
+
+function splitPermissions(permissions: PermissionMap) {
+  const workspaceLevel: PermissionMap = {};
+  const projectLevel: PermissionMap = {};
+  for (const [resource, actions] of Object.entries(permissions)) {
+    (WORKSPACE_LEVEL_RESOURCES.has(resource) ? workspaceLevel : projectLevel)[
+      resource
+    ] = actions;
+  }
+  return { workspaceLevel, projectLevel };
+}
+
 // Checks a permission for the current request.
 //
-// - When the request resolved a project (`workspaceAccess` set
+// - Workspace-level resources (`workspace`, `member`, `invitation`,
+//   `organization`, `ac`, `team`) are always checked against the caller's
+//   workspace role.
+// - Other resources: when the request resolved a project (`workspaceAccess` set
 //   `projectAccess`), the statements of the user's effective role IN THAT
 //   PROJECT apply: the project role for a project member, the workspace role
 //   for a full-access user. A bulk request that touches several projects must
 //   hold the permission in every one of them.
-// - Without a resolved project the workspace role applies (workspace settings,
-//   roles, invitations, creating projects, workspace-wide lists).
+// - Without a resolved project the workspace role applies to everything
+//   (settings, roles, invitations, creating projects, workspace-wide lists).
 // - With `workspaceIdOverride` the request acts on ANOTHER workspace than the
 //   one it was authorized against, so the workspace role of that workspace
 //   applies, never the statements of the source project.
+// - API-key scope is intersected first in every case.
 export async function hasWorkspacePermission(
   c: Context,
   permissions: PermissionMap,
@@ -55,11 +83,19 @@ export async function hasWorkspacePermission(
   if (!userId) return false;
 
   const projectAccesses = workspaceIdOverride ? null : projectAccessesOf(c);
-  if (projectAccesses) {
-    return projectAccesses.every((access) =>
-      projectAccessSatisfies(access, permissions),
-    );
+  const { workspaceLevel, projectLevel } = projectAccesses
+    ? splitPermissions(permissions)
+    : { workspaceLevel: permissions, projectLevel: {} as PermissionMap };
+
+  if (
+    Object.keys(projectLevel).length > 0 &&
+    !projectAccesses?.every((access) =>
+      projectAccessSatisfies(access, projectLevel),
+    )
+  ) {
+    return false;
   }
+  if (Object.keys(workspaceLevel).length === 0) return true;
 
   const [member] = await db
     .select({ role: schema.workspaceUserTable.role })
@@ -76,7 +112,7 @@ export async function hasWorkspacePermission(
 
   const statements = await resolveRoleStatements(workspaceId, member.role);
 
-  return Boolean(statements && satisfies(statements, permissions));
+  return Boolean(statements && satisfies(statements, workspaceLevel));
 }
 
 export function requireWorkspacePermission(permissions: PermissionMap) {

@@ -7,7 +7,10 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
-import { resolveProjectAccess } from "../../utils/project-access";
+import {
+  projectAccessSatisfies,
+  requireProjectAccessFor,
+} from "../../utils/project-access";
 import { wouldCreateCycle } from "./detect-relation-cycle";
 
 async function createTaskRelation({
@@ -92,14 +95,16 @@ async function createTaskRelation({
       }
 
       // The request was authorized for the source task's project only. Linking
-      // into another project of the workspace needs access to that one too.
-      if (
-        targetTask.projectId !== sourceTask.projectId &&
-        !(await resolveProjectAccess(userId, targetTask.projectId))
-      ) {
-        throw new HTTPException(403, {
-          message: "You don't have access to this project",
-        });
+      // into another project of the workspace needs access to that one too,
+      // and the right to update tasks there (the relation shows on both sides).
+      if (targetTask.projectId !== sourceTask.projectId) {
+        const targetAccess = await requireProjectAccessFor(
+          userId,
+          targetTask.projectId,
+        );
+        if (!projectAccessSatisfies(targetAccess, { task: ["update"] })) {
+          throw new HTTPException(403, { message: "Insufficient permissions" });
+        }
       }
 
       const existing = await tx

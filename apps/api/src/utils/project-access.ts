@@ -1,7 +1,10 @@
 import { and, eq, inArray } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
 import {
+  builtInRoleStatements,
   type PermissionMap,
+  parsePermissionStatements,
   type RoleStatements,
   resolveRoleStatements,
   satisfies,
@@ -47,6 +50,11 @@ export function projectAccessSatisfies(
   );
 }
 
+// True for `owner`, alone or inside a composite name such as "admin,owner".
+export function isOwnerRole(role: string): boolean {
+  return splitRoles(role).includes(OWNER_ROLE);
+}
+
 function splitRoles(role: string): string[] {
   return role
     .split(",")
@@ -87,17 +95,26 @@ export async function projectRoleStatements(
   workspaceId: string,
   role: string,
 ): Promise<RoleStatements | null> {
-  if (splitRoles(role).includes(OWNER_ROLE)) return null;
+  if (isOwnerRole(role)) return null;
   return resolveRoleStatements(workspaceId, role);
 }
 
-export async function resolveProjectAccess(
+type AccessRow = {
+  projectId: string;
+  workspaceId: string;
+  userRole: string | null;
+  workspaceRole: string | null;
+  projectRole: string | null;
+};
+
+// One round trip for everything the decision needs, for one or many projects.
+async function queryAccessRows(
   userId: string,
-  projectId: string,
-): Promise<ProjectAccess | null> {
-  // One round trip for everything the decision needs.
-  const [row] = await db
+  projectIds: string[],
+): Promise<AccessRow[]> {
+  return db
     .select({
+      projectId: schema.projectTable.id,
       workspaceId: schema.projectTable.workspaceId,
       userRole: schema.userTable.role,
       workspaceRole: schema.workspaceUserTable.role,
@@ -122,12 +139,15 @@ export async function resolveProjectAccess(
         eq(schema.projectMemberTable.userId, userId),
       ),
     )
-    .where(eq(schema.projectTable.id, projectId))
-    .limit(1);
+    .where(
+      projectIds.length === 1
+        ? eq(schema.projectTable.id, projectIds[0] as string)
+        : inArray(schema.projectTable.id, projectIds),
+    );
+}
 
-  if (!row) return null;
-
-  const { workspaceId } = row;
+async function decide(row: AccessRow): Promise<ProjectAccess | null> {
+  const { workspaceId, projectId } = row;
   const standing = await standingOf(
     workspaceId,
     row.userRole,
@@ -169,6 +189,14 @@ export async function resolveProjectAccess(
     statements,
     unrestricted: false,
   };
+}
+
+export async function resolveProjectAccess(
+  userId: string,
+  projectId: string,
+): Promise<ProjectAccess | null> {
+  const [row] = await queryAccessRows(userId, [projectId]);
+  return row ? decide(row) : null;
 }
 
 async function readStanding(
@@ -250,19 +278,106 @@ export async function accessibleProjectIds(
   return ids;
 }
 
-// Resolves several projects at once (bulk operations). Returns `null` as soon
-// as one of them is not accessible.
+// Resolves several projects at once (bulk operations) with one query. Returns
+// `null` as soon as one of them is unknown or not accessible.
 export async function resolveProjectAccesses(
   userId: string,
   projectIds: string[],
 ): Promise<ProjectAccess[] | null> {
+  const ids = [...new Set(projectIds)];
+  if (ids.length === 0) return [];
+  const rows = await queryAccessRows(userId, ids);
+  if (rows.length !== ids.length) return null;
   const accesses: ProjectAccess[] = [];
-  for (const projectId of [...new Set(projectIds)]) {
-    const access = await resolveProjectAccess(userId, projectId);
+  for (const row of rows) {
+    const access = await decide(row);
     if (!access) return null;
     accesses.push(access);
   }
   return accesses;
+}
+
+export const PROJECT_ACCESS_DENIED_MESSAGE =
+  "You don't have access to this project";
+
+// Access to one project or a 403 with the shared message. The single place
+// that turns "no access" into an HTTP error.
+export async function requireProjectAccessFor(
+  userId: string,
+  projectId: string,
+): Promise<ProjectAccess> {
+  const access = await resolveProjectAccess(userId, projectId);
+  if (!access) {
+    throw new HTTPException(403, { message: PROJECT_ACCESS_DENIED_MESSAGE });
+  }
+  return access;
+}
+
+// Workspace role names that grant `workspace:manage_settings` (so full access),
+// resolved like `resolveRoleStatements`: an edited catalog row wins over the
+// built-in definition. `owner` is always included; composite names containing
+// `owner` are matched separately by the caller.
+export async function fullAccessRoleNames(
+  workspaceId: string,
+): Promise<string[]> {
+  const rows = await db
+    .select({
+      role: schema.workspaceRoleTable.role,
+      permission: schema.workspaceRoleTable.permission,
+    })
+    .from(schema.workspaceRoleTable)
+    .where(eq(schema.workspaceRoleTable.workspaceId, workspaceId));
+  const names = new Set<string>([OWNER_ROLE]);
+  const seen = new Set<string>();
+  for (const row of rows) {
+    seen.add(row.role);
+    const statements = row.permission
+      ? parsePermissionStatements(row.permission)
+      : null;
+    if (statements?.workspace?.includes("manage_settings")) names.add(row.role);
+  }
+  for (const builtIn of ["viewer", "member", "admin"]) {
+    if (seen.has(builtIn)) continue;
+    if (
+      builtInRoleStatements(builtIn)?.workspace?.includes("manage_settings")
+    ) {
+      names.add(builtIn);
+    }
+  }
+  return [...names];
+}
+
+// Which of `roles` grant nothing in the workspace: `owner`, or a name that is in
+// neither the role catalog nor the built-in roles. One query, on the given
+// executor, so a transaction can use it.
+export async function unusableProjectRoles(
+  executor: Pick<typeof db, "select">,
+  workspaceId: string,
+  roles: string[],
+): Promise<string[]> {
+  if (roles.length === 0) return [];
+  const rows = await executor
+    .select({
+      role: schema.workspaceRoleTable.role,
+      permission: schema.workspaceRoleTable.permission,
+    })
+    .from(schema.workspaceRoleTable)
+    .where(
+      and(
+        eq(schema.workspaceRoleTable.workspaceId, workspaceId),
+        inArray(schema.workspaceRoleTable.role, roles),
+      ),
+    );
+  const catalog = new Map(
+    rows.map((row) => [
+      row.role,
+      row.permission ? parsePermissionStatements(row.permission) : null,
+    ]),
+  );
+  return roles.filter(
+    (role) =>
+      isOwnerRole(role) || !(catalog.get(role) ?? builtInRoleStatements(role)),
+  );
 }
 
 // Decides "full access" for many members of one workspace with one role

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db from "../database";
-import { projectTable, taskRelationTable, taskTable } from "../database/schema";
+import { taskRelationTable } from "../database/schema";
 import {
   apiRouter,
   type BaseVariables,
@@ -14,6 +14,7 @@ import { requireWorkspacePermission } from "../utils/require-workspace-permissio
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
 import {
   assertProjectAccess,
+  lookupScope,
   workspaceAccess,
 } from "../utils/workspace-access-middleware";
 import createTaskRelation from "./controllers/create-task-relation";
@@ -32,19 +33,6 @@ import {
   taskRelationParam,
   updateTaskRelationBody,
 } from "./schema";
-
-async function scopeOfTask(taskId: string) {
-  const [task] = await db
-    .select({
-      workspaceId: projectTable.workspaceId,
-      projectId: taskTable.projectId,
-    })
-    .from(taskTable)
-    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
-    .where(eq(taskTable.id, taskId))
-    .limit(1);
-  return task ?? null;
-}
 
 function requireUserId(c: Context) {
   const userId = c.get("userId");
@@ -68,7 +56,7 @@ async function scopeToSourceTask(c: Context, next: Next) {
     throw new HTTPException(400, { message: "sourceTaskId is required" });
   }
 
-  const scope = await scopeOfTask(sourceTaskId);
+  const scope = await lookupScope("task", sourceTaskId);
   if (!scope) {
     throw new HTTPException(404, { message: "Source task not found" });
   }
@@ -92,7 +80,7 @@ async function scopeToRelation(c: Context, next: Next) {
     throw new HTTPException(404, { message: "Task relation not found" });
   }
 
-  const scope = await scopeOfTask(rel.sourceTaskId);
+  const scope = await lookupScope("task", rel.sourceTaskId);
   if (!scope) {
     throw new HTTPException(404, { message: "Task not found" });
   }
