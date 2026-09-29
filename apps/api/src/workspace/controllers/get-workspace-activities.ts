@@ -7,6 +7,8 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
+import { projectScopeCondition } from "../../utils/project-scope-filters";
 
 // `from`/`to` arrive as free-form strings, so an unparseable value would
 // otherwise reach Drizzle and throw when it serializes an Invalid Date to
@@ -36,19 +38,26 @@ export type GetWorkspaceActivitiesOptions = WorkspaceActivityFilters & {
 
 // Shared by the paginated listing and the export endpoint, so the two
 // surfaces can never drift on what counts as "matching activity".
+//
+// `visibleProjectIds` is the caller's project scope (`accessibleProjectIds`):
+// `null` for full access. Otherwise task-scoped activity is limited to those
+// projects; workspace-level activity (no task, so tied to no project) stays
+// visible, because it describes the workspace and not any project's work.
 export function buildWorkspaceActivityWhereClause(
   workspaceId: string,
+  visibleProjectIds: string[] | null,
   options: WorkspaceActivityFilters = {},
 ) {
   // Task-scoped activity matches via its project's workspace (the join
   // below); workspace-level activity (e.g. calendar changes, no task) sets
   // activityTable.workspaceId directly instead, since there's no project row
   // to join through.
+  const taskScoped = and(
+    eq(projectTable.workspaceId, workspaceId),
+    projectScopeCondition(projectTable.id, visibleProjectIds),
+  );
   const conditions = [
-    or(
-      eq(projectTable.workspaceId, workspaceId),
-      eq(activityTable.workspaceId, workspaceId),
-    ),
+    or(taskScoped, eq(activityTable.workspaceId, workspaceId)),
   ];
 
   if (options.userId) {
@@ -94,9 +103,15 @@ export function normalizeActivityContent<
 
 async function getWorkspaceActivities(
   workspaceId: string,
+  userId: string,
   options: GetWorkspaceActivitiesOptions = {},
 ) {
-  const whereClause = buildWorkspaceActivityWhereClause(workspaceId, options);
+  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
+  const whereClause = buildWorkspaceActivityWhereClause(
+    workspaceId,
+    visibleProjectIds,
+    options,
+  );
 
   const page = options.page && options.page > 0 ? options.page : 1;
   const pageSize =

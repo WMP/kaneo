@@ -73,6 +73,7 @@ const workload = apiRouter<BaseVariables & { workspaceId: string }>()
         from: new Date(from),
         to: new Date(to),
         projectId,
+        userId: c.get("userId"),
       }),
       200,
     );
@@ -88,6 +89,7 @@ const workload = apiRouter<BaseVariables & { workspaceId: string }>()
         to: new Date(to),
         assigneeId,
         projectId,
+        userId: c.get("userId"),
       }),
       200,
     );

@@ -1,12 +1,21 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { projectTable } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
+import { projectScopeCondition } from "../../utils/project-scope-filters";
 
 async function reorderProjects(
   workspaceId: string,
+  userId: string,
   projects: Array<{ id: string; position: number }>,
 ) {
+  // A caller without full access may only order projects they can see, and the
+  // response lists only those too. An inaccessible id is refused exactly like
+  // an unknown one, so the payload cannot be used to probe for projects.
+  const accessible = await accessibleProjectIds(userId, workspaceId);
+  const accessibleSet = accessible === null ? null : new Set(accessible);
+
   const ids = projects.map((project) => project.id);
   const uniqueIds = new Set(ids);
 
@@ -41,7 +50,9 @@ async function reorderProjects(
     // Verify ownership of the whole batch before writing anything, so a
     // smuggled foreign id cannot leave the workspace half-renumbered.
     const ownedIds = new Set(existing.map((project) => project.id));
-    const foreignId = ids.find((id) => !ownedIds.has(id));
+    const foreignId = ids.find(
+      (id) => !ownedIds.has(id) || (accessibleSet && !accessibleSet.has(id)),
+    );
 
     if (foreignId) {
       throw new HTTPException(400, {
@@ -85,7 +96,10 @@ async function reorderProjects(
     }
 
     return tx.query.projectTable.findMany({
-      where: eq(projectTable.workspaceId, workspaceId),
+      where: and(
+        eq(projectTable.workspaceId, workspaceId),
+        projectScopeCondition(projectTable.id, accessible),
+      ),
       orderBy: [
         asc(projectTable.position),
         asc(projectTable.createdAt),

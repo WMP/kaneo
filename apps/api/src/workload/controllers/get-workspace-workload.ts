@@ -8,6 +8,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
 import getWorkspaceMembers from "../../workspace/controllers/get-workspace-members";
 import {
   bucketizeWorkload,
@@ -25,6 +26,8 @@ export type GetWorkspaceWorkloadOptions = {
   from: Date;
   to: Date;
   projectId?: string;
+  /** The caller; a caller without full access only sees their projects and the members they share them with. */
+  userId: string;
 };
 
 async function getWorkspaceWorkload({
@@ -32,6 +35,7 @@ async function getWorkspaceWorkload({
   from,
   to,
   projectId,
+  userId,
 }: GetWorkspaceWorkloadOptions) {
   let buckets: ReturnType<typeof buildWeekBuckets>;
   try {
@@ -64,6 +68,8 @@ async function getWorkspaceWorkload({
     and greatest(${taskTable.startDate}, ${taskTable.dueDate}) >= ${overallStart}
   `;
 
+  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
+
   const matchedTasks = await db
     .select({
       id: taskTable.id,
@@ -73,7 +79,14 @@ async function getWorkspaceWorkload({
     .from(taskTable)
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(
-      and(...notDoneDatedTaskConditions(workspaceId, projectId), rangeOverlap),
+      and(
+        ...notDoneDatedTaskConditions(
+          workspaceId,
+          visibleProjectIds,
+          projectId,
+        ),
+        rangeOverlap,
+      ),
     )
     // Deterministic order so that, when the safety cap truncates the result,
     // the same tasks are kept across identical requests instead of an
@@ -135,7 +148,7 @@ async function getWorkspaceWorkload({
   // zero matching tasks, so absence of load is visible instead of silently
   // disappearing from the table. The unassigned row (`null`) is left as-is:
   // it only appears when at least one unassigned task matched.
-  const members = await getWorkspaceMembers(workspaceId);
+  const members = await getWorkspaceMembers(workspaceId, userId);
   const personResources = await db
     .select({
       id: resourceTable.id,

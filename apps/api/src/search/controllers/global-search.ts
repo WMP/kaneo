@@ -8,6 +8,7 @@ import {
   workspaceTable,
   workspaceUserTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
 import { escapeLikePattern } from "../like-pattern";
 import { TASK_SHORT_ID_PATTERN } from "../task-short-id";
 
@@ -150,12 +151,50 @@ async function globalSearch(params: SearchParams): Promise<{
     return { results: [], totalCount: 0, searchQuery: query };
   }
 
+  // A workspace the caller does not belong to yields nothing, whatever the
+  // route in front of this controller did.
+  if (workspaceId && !accessibleWorkspaceIds.includes(workspaceId)) {
+    return { results: [], totalCount: 0, searchQuery: query };
+  }
+
+  // Membership of the workspace is not enough: a caller without full access
+  // searches only the projects they are a member of. Whole workspaces where
+  // the caller has full access are matched by workspace id, the others by the
+  // caller's project ids, so `projectId` / `excludeProjectId` can only narrow
+  // this set and never widen it.
+  const searchedWorkspaceIds = workspaceId
+    ? [workspaceId]
+    : accessibleWorkspaceIds;
+  const scopes = await Promise.all(
+    searchedWorkspaceIds.map(
+      async (id) =>
+        [id, await accessibleProjectIds(resolvedUserId, id)] as const,
+    ),
+  );
+  const fullAccessWorkspaceIds = scopes
+    .filter(([, projectIds]) => projectIds === null)
+    .map(([id]) => id);
+  const memberProjectIds = scopes.flatMap(([, projectIds]) => projectIds ?? []);
+  if (fullAccessWorkspaceIds.length === 0 && memberProjectIds.length === 0) {
+    return { results: [], totalCount: 0, searchQuery: query };
+  }
+
   const results: SearchResult[] = [];
   const searchPattern = `%${query.toLowerCase()}%`;
 
-  const workspaceFilter = workspaceId
-    ? eq(projectTable.workspaceId, workspaceId)
-    : inArray(projectTable.workspaceId, accessibleWorkspaceIds);
+  const workspaceFilter = and(
+    workspaceId
+      ? eq(projectTable.workspaceId, workspaceId)
+      : inArray(projectTable.workspaceId, accessibleWorkspaceIds),
+    or(
+      fullAccessWorkspaceIds.length > 0
+        ? inArray(projectTable.workspaceId, fullAccessWorkspaceIds)
+        : undefined,
+      memberProjectIds.length > 0
+        ? inArray(projectTable.id, memberProjectIds)
+        : undefined,
+    ),
+  );
 
   // Check if query matches short-id pattern (e.g. "DEP-23"). `generateProjectSlug`
   // normalizes to NFKC before it stores a key, so the query is normalized too,

@@ -6,6 +6,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
 import {
   buildWorkspaceActivityWhereClause,
   normalizeActivityContent,
@@ -19,9 +20,15 @@ export const MAX_EXPORT_ROWS = 10_000;
 
 async function exportWorkspaceActivities(
   workspaceId: string,
+  userId: string,
   filters: WorkspaceActivityFilters = {},
 ) {
-  const whereClause = buildWorkspaceActivityWhereClause(workspaceId, filters);
+  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
+  const whereClause = buildWorkspaceActivityWhereClause(
+    workspaceId,
+    visibleProjectIds,
+    filters,
+  );
 
   const rows = await db
     .select({

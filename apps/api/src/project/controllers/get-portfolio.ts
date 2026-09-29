@@ -6,6 +6,8 @@ import {
   taskRelationTable,
   taskTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
+import { projectScopeCondition } from "../../utils/project-scope-filters";
 
 export type PortfolioTask = {
   id: string;
@@ -51,17 +53,23 @@ const HIDDEN_TASK_STATUS = "archived";
 // per project: a portfolio can span many projects, and a route that fans out
 // N paginated task-list calls to build one screen would scale with project
 // count instead of staying flat.
+//
+// A caller without full access sees only the projects they are a member of, and
+// a dependency only when BOTH of its projects are among them, so the other end
+// of a cross-project `blocks` edge never reveals a task they cannot open.
 async function getPortfolio(
   workspaceId: string,
+  userId: string,
   includeArchived = false,
 ): Promise<Portfolio> {
+  const accessible = await accessibleProjectIds(userId, workspaceId);
+
   const projects = await db.query.projectTable.findMany({
-    where: includeArchived
-      ? eq(projectTable.workspaceId, workspaceId)
-      : and(
-          eq(projectTable.workspaceId, workspaceId),
-          isNull(projectTable.archivedAt),
-        ),
+    where: and(
+      eq(projectTable.workspaceId, workspaceId),
+      includeArchived ? undefined : isNull(projectTable.archivedAt),
+      projectScopeCondition(projectTable.id, accessible),
+    ),
     orderBy: (project, { asc }) => [
       asc(project.position),
       asc(project.createdAt),

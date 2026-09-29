@@ -460,6 +460,7 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { includeArchived } = c.req.valid("query");
     const projects = await getProjectsCtrl(
       workspaceId,
+      c.get("userId"),
       includeArchived === "true",
     );
     return c.json(projects.map(toPublicProject), 200);
@@ -469,6 +470,7 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { includeArchived } = c.req.valid("query");
     const portfolio = await getPortfolioCtrl(
       workspaceId,
+      c.get("userId"),
       includeArchived === "true",
     );
     return c.json(portfolio, 200);
@@ -559,7 +561,11 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(reorderProjectsRoute, async (c) => {
     const workspaceId = c.get("workspaceId");
     const { projects } = c.req.valid("json");
-    const reordered = await reorderProjectsCtrl(workspaceId, projects);
+    const reordered = await reorderProjectsCtrl(
+      workspaceId,
+      c.get("userId"),
+      projects,
+    );
     return c.json(reordered.map(toPublicProject), 200);
   })
   .openapi(updateProjectRoute, async (c) => {

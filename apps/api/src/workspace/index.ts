@@ -55,7 +55,8 @@ const getWorkspaceMembersRoute = createRoute({
   path: "/{workspaceId}/members",
   tags: ["Workspaces"],
   summary: "Get workspace members",
-  description: "Get all members of a workspace, with their role.",
+  description:
+    "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them.",
   middleware: [workspaceAccess.fromParam("workspaceId")] as const,
   request: { params: workspaceIdParam },
   responses: {
@@ -204,7 +205,10 @@ const updateWorkspaceActivityRetentionRoute = createRoute({
 
 const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getWorkspaceMembersRoute, async (c) =>
-    c.json(await getWorkspaceMembersCtrl(c.get("workspaceId")), 200),
+    c.json(
+      await getWorkspaceMembersCtrl(c.get("workspaceId"), c.get("userId")),
+      200,
+    ),
   )
   .openapi(getAssignableRolesRoute, async (c) =>
     c.json(
@@ -214,7 +218,11 @@ const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
   )
   .openapi(getWorkspaceActivityRoute, async (c) =>
     c.json(
-      await getWorkspaceActivities(c.get("workspaceId"), c.req.valid("query")),
+      await getWorkspaceActivities(
+        c.get("workspaceId"),
+        c.get("userId"),
+        c.req.valid("query"),
+      ),
       200,
     ),
   )
@@ -222,6 +230,7 @@ const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
     const { format, ...filters } = c.req.valid("query");
     const { data, truncated } = await exportWorkspaceActivities(
       c.get("workspaceId"),
+      c.get("userId"),
       filters,
     );
 

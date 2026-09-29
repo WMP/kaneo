@@ -6,6 +6,7 @@ import {
   taskAssignmentTable,
   taskTable,
 } from "../../database/schema";
+import { accessibleProjectIds } from "../../utils/project-access";
 import { startOfUtcDay } from "../bucket-workload";
 import { notDoneDatedTaskConditions } from "../matched-task-conditions";
 import { WORKLOAD_UNASSIGNED_ASSIGNEE } from "../schema";
@@ -23,6 +24,8 @@ export type GetWorkspaceWorkloadTasksOptions = {
   to: Date;
   assigneeId: string;
   projectId?: string;
+  /** The caller; a caller without full access only drills into their projects. */
+  userId: string;
 };
 
 async function getWorkspaceWorkloadTasks({
@@ -31,6 +34,7 @@ async function getWorkspaceWorkloadTasks({
   to,
   assigneeId,
   projectId,
+  userId,
 }: GetWorkspaceWorkloadTasksOptions) {
   if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
     throw new HTTPException(400, {
@@ -80,6 +84,8 @@ async function getWorkspaceWorkloadTasks({
     and greatest(${taskTable.startDate}, ${taskTable.dueDate}) >= ${rangeStart}
   `;
 
+  const visibleProjectIds = await accessibleProjectIds(userId, workspaceId);
+
   const rows = await db
     .select({
       id: taskTable.id,
@@ -97,7 +103,11 @@ async function getWorkspaceWorkloadTasks({
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(
       and(
-        ...notDoneDatedTaskConditions(workspaceId, projectId),
+        ...notDoneDatedTaskConditions(
+          workspaceId,
+          visibleProjectIds,
+          projectId,
+        ),
         assigneeCondition,
         rangeOverlap,
       ),
