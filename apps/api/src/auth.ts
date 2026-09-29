@@ -521,6 +521,17 @@ export const auth = betterAuth({
             targetMember: { userId: member.userId, role: member.role },
           });
         },
+        // A changed workspace role can end access (a demoted full-access user),
+        // so their open project sockets are closed and reconnect with fresh access.
+        afterUpdateMemberRole: async ({
+          member,
+          previousRole,
+          organization,
+        }) => {
+          if (member.role !== previousRole) {
+            await closeUserWorkspaceConnections(member.userId, organization.id);
+          }
+        },
         beforeDeleteOrganization: async ({ organization }) => {
           const billable = await findBillableWorkspaces([organization.id]);
           if (billable.length > 0) {

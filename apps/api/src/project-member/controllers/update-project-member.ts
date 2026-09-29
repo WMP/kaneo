@@ -93,10 +93,12 @@ async function updateProjectMember({
   }
 
   // A role change closes the member's project sockets on every instance; they
-  // reconnect with the access the new role gives. The old role's access must not
-  // linger on an open socket, and an assignable role never grants less than
-  // "some access", so reconnecting is always safe.
-  await closeUserProjectConnections(userId, projectId);
+  // reconnect with the access the new role gives, so the old role's access does
+  // not linger on an open socket. Re-saving the same role changes nothing and
+  // closes nothing.
+  if (updated.role !== existing.role) {
+    await closeUserProjectConnections(userId, projectId);
+  }
 
   return {
     userId,
