@@ -47,6 +47,7 @@ const workspaceResources: Resource[] = [
     name: "Drill",
     email: null,
     userId: null,
+    linked: false,
     createdAt: "2026-07-17T00:00:00.000Z",
     updatedAt: "2026-07-17T00:00:00.000Z",
   },
@@ -325,6 +326,7 @@ describe("TaskAssigneePopover", () => {
       name: "Contractor",
       email: null,
       userId: null,
+      linked: false,
       createdAt: "2026-07-17T00:00:00.000Z",
       updatedAt: "2026-07-17T00:00:00.000Z",
     });

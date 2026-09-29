@@ -85,6 +85,7 @@ const resource: Resource = {
   name: "Alice",
   email: "alice@example.com",
   userId: null,
+  linked: false,
   createdAt: "2026-09-19T12:00:00Z",
   updatedAt: "2026-09-19T12:00:00Z",
 };

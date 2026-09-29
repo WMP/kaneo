@@ -31,10 +31,12 @@ export type Resource = {
   kind: ResourceKind;
   name: string;
   email: string | null;
-  // Linked Kaneo account, if any.
+  // Linked to a Kaneo account, for every caller.
+  linked: boolean;
+  // The account's id and details, only for a caller who may see that member;
+  // null for an unlinked resource, and for a linked one whose member the caller
+  // cannot see (`linked` still says it is linked).
   userId: string | null;
-  // The linked account when the caller may see that member; null for an
-  // unlinked resource, and for a linked one whose member the caller cannot see.
   user?: ResourceLinkedUser | null;
   invitation?: ResourceInvitation | null;
   createdAt: string;

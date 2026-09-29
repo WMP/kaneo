@@ -345,7 +345,7 @@ function RouteComponent() {
                         </div>
                         {canManage && (
                           <div className="flex items-center gap-1 flex-shrink-0">
-                            {resource.kind === "person" && !resource.userId && (
+                            {resource.kind === "person" && !resource.linked && (
                               <>
                                 <Button
                                   variant="outline"
@@ -382,7 +382,7 @@ function RouteComponent() {
                               </>
                             )}
                             {resource.kind === "person" &&
-                              resource.userId &&
+                              resource.linked &&
                               canLink && (
                                 <Button
                                   variant="outline"

@@ -104,6 +104,7 @@ function makeResources(): Resource[] {
       name: "Contractor Carl",
       email: null,
       userId: null,
+      linked: false,
     },
     {
       ...base,
@@ -112,6 +113,7 @@ function makeResources(): Resource[] {
       name: "Drill",
       email: null,
       userId: null,
+      linked: false,
     },
   ];
 }
@@ -141,6 +143,7 @@ describe("workspace resources settings", () => {
       name: "New Person",
       email: null,
       userId: null,
+      linked: false,
       createdAt: "2026-09-19T12:00:00Z",
       updatedAt: "2026-09-19T12:00:00Z",
     });
@@ -284,6 +287,7 @@ describe("person resource statuses and actions", () => {
         ...makeResources()[0],
         email: "carl@example.com",
         userId: "u1",
+        linked: true,
         user: {
           id: "u1",
           name: "Carl Member",
@@ -306,7 +310,7 @@ describe("person resource statuses and actions", () => {
 
   it("says only 'linked' when the caller cannot see the member", () => {
     m.resources = [
-      { ...makeResources()[0], userId: "u1", user: null },
+      { ...makeResources()[0], userId: null, linked: true, user: null },
     ] as Resource[];
     render(<Component />);
     expect(
@@ -317,7 +321,7 @@ describe("person resource statuses and actions", () => {
   it("unlinks after a confirmation", async () => {
     m.unlink.mockResolvedValue({ id: "r1" });
     m.resources = [
-      { ...makeResources()[0], userId: "u1", user: null },
+      { ...makeResources()[0], userId: null, linked: true, user: null },
     ] as Resource[];
     render(<Component />);
 
@@ -347,6 +351,7 @@ describe("person resource statuses and actions", () => {
         id: "r9",
         name: "Linked Lena",
         userId: "u1",
+        linked: true,
         user: null,
       },
     ] as Resource[];

@@ -59,6 +59,7 @@ const make = (id: string, name: string, userId: string | null): Resource => ({
   name,
   email: null,
   userId,
+  linked: userId !== null,
   createdAt: "2026-09-19T12:00:00Z",
   updatedAt: "2026-09-19T12:00:00Z",
 });

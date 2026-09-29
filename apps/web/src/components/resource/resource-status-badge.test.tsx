@@ -20,6 +20,7 @@ const person: Resource = {
   name: "Alice",
   email: "alice@example.com",
   userId: null,
+  linked: false,
   createdAt: "2026-09-19T12:00:00Z",
   updatedAt: "2026-09-19T12:00:00Z",
 };
@@ -37,6 +38,7 @@ describe("getResourceStatus", () => {
       getResourceStatus({
         ...person,
         userId: "u1",
+        linked: true,
         user: { id: "u1", name: "Ann", email: "a@example.com", image: null },
         invitation: { status: "pending", expiresAt: "2026-10-01T00:00:00Z" },
       }),
@@ -44,7 +46,9 @@ describe("getResourceStatus", () => {
   });
 
   it("does not know the name when the caller cannot see the member", () => {
-    expect(getResourceStatus({ ...person, userId: "u1", user: null })).toEqual({
+    expect(
+      getResourceStatus({ ...person, userId: "u1", linked: true, user: null }),
+    ).toEqual({
       kind: "linked",
       name: null,
     });
@@ -95,6 +99,7 @@ describe("ResourceStatusBadge", () => {
         resource={{
           ...person,
           userId: "u1",
+          linked: true,
           user: { id: "u1", name: "Ann", email: "a@example.com", image: null },
         }}
       />,

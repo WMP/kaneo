@@ -12,7 +12,7 @@ export type ResourceStatus =
  * status. */
 export function getResourceStatus(resource: Resource): ResourceStatus | null {
   if (resource.kind !== "person") return null;
-  if (resource.userId) {
+  if (resource.linked) {
     return { kind: "linked", name: resource.user?.name ?? null };
   }
   if (resource.invitation) {
