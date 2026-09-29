@@ -26,12 +26,20 @@ type AcceptInput = {
   user: { id: string };
 };
 
-// Runs before anything of the acceptance is written. A person who is not in
-// the workspace yet must not get project memberships back that an earlier
-// membership left behind (a removal whose cleanup failed, direct database
-// edits): every project role of a workspace member comes from an invitation or
-// an explicit add. A person who already is a member (they joined by another
-// route since the invitation was sent) keeps what they have.
+// Runs before anything of the acceptance is written.
+//
+// Somebody who already is a member of the workspace cannot accept: Better Auth
+// would add a second member row (nothing makes the pair unique), and a person
+// with disagreeing duplicate rows counts as having no membership at all (see
+// `singleWorkspaceRole` in `utils/project-access.ts`). This holds for every
+// invitation, plain workspace invitations included; the invitation stays
+// pending and can be rejected or canceled.
+//
+// A person who is not in the workspace yet must not get project memberships
+// back that an earlier membership left behind (a removal whose cleanup failed,
+// direct database edits): every project role of a workspace member comes from
+// an invitation or an explicit add. So their rows in this workspace's projects
+// are dropped before they join.
 export async function beforeAcceptProjectInvitation({
   invitation,
   user,
@@ -46,7 +54,12 @@ export async function beforeAcceptProjectInvitation({
       ),
     )
     .limit(1);
-  if (member) return;
+  if (member) {
+    throw new APIError("CONFLICT", {
+      code: "ALREADY_WORKSPACE_MEMBER",
+      message: "You are already a member of this workspace.",
+    });
+  }
   await removeUserProjectMemberships(user.id, invitation.organizationId);
 }
 
@@ -58,8 +71,11 @@ export async function beforeAcceptProjectInvitation({
 // answer 200. Leaving the person in the workspace with no projects would be a
 // silent half state (and the retry impossible, the invitation being accepted),
 // so the acceptance is reverted the way Better Auth reverts its own failure:
-// the member row this request created is deleted and the invitation is pending
-// again, then the request fails loudly and can simply be repeated. Only if
+// the member row this request created is deleted, the invitation is pending
+// again and the sessions Better Auth pointed at the workspace (its accept
+// flow makes it the active one) no longer name it, so a client does not land
+// in a workspace it is not a member of; then the request fails loudly and can
+// simply be repeated. Only if
 // that revert fails as well does the half state remain (member without
 // project access, invitation accepted, its project rows kept): it is logged and
 // reported in the error, and an administrator can add the person to the
@@ -97,6 +113,18 @@ export async function afterAcceptProjectInvitation({
             and(
               eq(schema.invitationTable.id, invitation.id),
               eq(schema.invitationTable.status, "accepted"),
+            ),
+          );
+        await tx
+          .update(schema.sessionTable)
+          .set({ activeOrganizationId: null })
+          .where(
+            and(
+              eq(schema.sessionTable.userId, user.id),
+              eq(
+                schema.sessionTable.activeOrganizationId,
+                invitation.organizationId,
+              ),
             ),
           );
       });
