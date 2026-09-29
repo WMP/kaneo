@@ -4,7 +4,7 @@ CREATE TABLE "ganttpro_invitation_project" (
 	"project_id" text NOT NULL,
 	"role" text NOT NULL,
 	CONSTRAINT "ganttpro_invitation_project_invitation_project_unique" UNIQUE("invitation_id","project_id"),
-	CONSTRAINT "ganttpro_invitation_project_role_not_owner" CHECK (NOT ('owner' = ANY (string_to_array(replace("ganttpro_invitation_project"."role", ' ', ''), ','))))
+	CONSTRAINT "ganttpro_invitation_project_role_not_owner" CHECK (NOT ("ganttpro_invitation_project"."role" ~ '(^|,)\s*owner\s*(,|$)'))
 );
 --> statement-breakpoint
 CREATE TABLE "ganttpro_project_member" (
@@ -14,7 +14,7 @@ CREATE TABLE "ganttpro_project_member" (
 	"role" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "ganttpro_project_member_project_user_unique" UNIQUE("project_id","user_id"),
-	CONSTRAINT "ganttpro_project_member_role_not_owner" CHECK (NOT ('owner' = ANY (string_to_array(replace("ganttpro_project_member"."role", ' ', ''), ','))))
+	CONSTRAINT "ganttpro_project_member_role_not_owner" CHECK (NOT ("ganttpro_project_member"."role" ~ '(^|,)\s*owner\s*(,|$)'))
 );
 --> statement-breakpoint
 ALTER TABLE "ganttpro_invitation_project" ADD CONSTRAINT "ganttpro_invitation_project_invitation_id_invitation_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitation"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint

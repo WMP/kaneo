@@ -11,7 +11,16 @@ import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 // Proves migration 0056 on a populated database: a scratch database is
 // migrated to 0055, populated with workspaces holding every kind of member and
@@ -77,11 +86,9 @@ describe("migration 0056 project membership", () => {
     return scratch;
   }
 
-  beforeEach(async () => {
-    await dropScratch();
-    await withAdmin((admin) => admin.query(`CREATE DATABASE "${scratchName}"`));
-
-    // A copy of the migrations folder whose journal stops before 0056.
+  // The prior-migrations folder is prepared once; only the database is
+  // recreated for every test.
+  beforeAll(() => {
     priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-0055-"));
     cpSync(migrationsFolder, priorFolder, { recursive: true });
     const journalPath = join(priorFolder, "meta", "_journal.json");
@@ -92,6 +99,15 @@ describe("migration 0056 project membership", () => {
     expect(cut).toBeGreaterThan(0);
     journal.entries = journal.entries.slice(0, cut);
     writeFileSync(journalPath, JSON.stringify(journal));
+  });
+
+  afterAll(() => {
+    if (priorFolder) rmSync(priorFolder, { recursive: true, force: true });
+  });
+
+  beforeEach(async () => {
+    await dropScratch();
+    await withAdmin((admin) => admin.query(`CREATE DATABASE "${scratchName}"`));
   }, 120_000);
 
   afterEach(async () => {
@@ -99,7 +115,6 @@ describe("migration 0056 project membership", () => {
     vi.resetModules();
     await pool?.end();
     pool = null;
-    if (priorFolder) rmSync(priorFolder, { recursive: true, force: true });
     await dropScratch();
   });
 
@@ -168,8 +183,16 @@ describe("migration 0056 project membership", () => {
       ),
     ).rejects.toThrow(/ganttpro_project_member_project_user_unique/);
 
-    // owner is never a project role, alone or inside a composite name.
-    for (const role of ["owner", "admin,owner", "member, owner"]) {
+    // owner is never a project role, alone or inside a composite name, with
+    // the same whitespace tolerance as the role parser.
+    for (const role of [
+      "owner",
+      "admin,owner",
+      "member, owner",
+      " owner ",
+      "admin,\towner",
+      "owner,\nadmin",
+    ]) {
       await expect(
         db.query(
           `INSERT INTO ganttpro_project_member (id, project_id, user_id, role)
@@ -178,6 +201,11 @@ describe("migration 0056 project membership", () => {
         ),
       ).rejects.toThrow(/ganttpro_project_member_role_not_owner/);
     }
+    // Names that merely contain the word are ordinary roles.
+    await db.query(
+      `INSERT INTO ganttpro_project_member (id, project_id, user_id, role)
+       VALUES ('ok', 'p2', 'u-viewer', 'coowner')`,
+    );
     await db.query(
       `INSERT INTO invitation (id, workspace_id, email, role, status, expires_at, inviter_id)
        VALUES ('i1', 'w1', 'x@example.com', 'member', 'pending', $1, 'u-owner')`,
@@ -200,16 +228,38 @@ describe("migration 0056 project membership", () => {
       ),
     ).rejects.toThrow(/ganttpro_invitation_project_invitation_project_unique/);
 
-    // Rows follow their project and user.
+    // Rows follow their project, user and invitation.
+    await db.query(
+      `INSERT INTO ganttpro_project_member (id, project_id, user_id, role)
+       VALUES ('m2', 'p2', 'u-member', 'member')`,
+    );
+    await db.query(
+      `INSERT INTO ganttpro_invitation_project (id, invitation_id, project_id, role)
+       VALUES ('ip4', 'i1', 'p2', 'member')`,
+    );
+    const count = async (table: string, column: string, value: string) =>
+      (await db.query(`SELECT 1 FROM ${table} WHERE ${column} = $1`, [value]))
+        .rowCount;
+
     await db.query("DELETE FROM project WHERE id = 'p1'");
-    const cascaded = await db.query(
-      "SELECT 1 FROM ganttpro_project_member WHERE project_id = 'p1'",
+    expect(await count("ganttpro_project_member", "project_id", "p1")).toBe(0);
+    expect(await count("ganttpro_invitation_project", "project_id", "p1")).toBe(
+      0,
     );
-    expect(cascaded.rowCount).toBe(0);
-    const cascadedInvites = await db.query(
-      "SELECT 1 FROM ganttpro_invitation_project WHERE project_id = 'p1'",
+
+    await db.query("DELETE FROM \"user\" WHERE id = 'u-member'");
+    expect(await count("ganttpro_project_member", "user_id", "u-member")).toBe(
+      0,
     );
-    expect(cascadedInvites.rowCount).toBe(0);
+
+    await db.query("DELETE FROM invitation WHERE id = 'i1'");
+    expect(
+      await count("ganttpro_invitation_project", "invitation_id", "i1"),
+    ).toBe(0);
+    // The other rows of the surviving project and user are untouched.
+    expect(await count("ganttpro_project_member", "user_id", "u-viewer")).toBe(
+      1,
+    );
   }, 120_000);
 
   it("keeps existing projects reachable for full-access users only", async () => {

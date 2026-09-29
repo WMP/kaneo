@@ -2331,7 +2331,7 @@
       "checkConstraints": {
         "ganttpro_invitation_project_role_not_owner": {
           "name": "ganttpro_invitation_project_role_not_owner",
-          "value": "NOT ('owner' = ANY (string_to_array(replace(\"ganttpro_invitation_project\".\"role\", ' ', ''), ',')))"
+          "value": "NOT (\"ganttpro_invitation_project\".\"role\" ~ '(^|,)\\s*owner\\s*(,|$)')"
         }
       },
       "isRLSEnabled": false
@@ -3057,7 +3057,7 @@
       "checkConstraints": {
         "ganttpro_project_member_role_not_owner": {
           "name": "ganttpro_project_member_role_not_owner",
-          "value": "NOT ('owner' = ANY (string_to_array(replace(\"ganttpro_project_member\".\"role\", ' ', ''), ',')))"
+          "value": "NOT (\"ganttpro_project_member\".\"role\" ~ '(^|,)\\s*owner\\s*(,|$)')"
         }
       },
       "isRLSEnabled": false
