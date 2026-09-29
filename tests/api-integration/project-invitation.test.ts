@@ -1311,6 +1311,29 @@ describe("GET /project/{id}/member-candidates", () => {
     expect(after.map((entry) => entry.id)).toContain(w.workspaceOnly.id);
   });
 
+  it("does not offer somebody whose duplicate membership rows disagree", async () => {
+    const w = await buildWorld();
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId: w.candidate.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    // Equal duplicates are one membership.
+    await db.insert(schema.workspaceUserTable).values({
+      workspaceId: w.workspaceId,
+      userId: w.workspaceOnly.id,
+      role: "member",
+      joinedAt: new Date(),
+    });
+    as(w.owner.user);
+    const ids = ((await (await candidates(w)).json()) as { id: string }[]).map(
+      (entry) => entry.id,
+    );
+    expect(ids).not.toContain(w.candidate.id);
+    expect(ids.filter((id) => id === w.workspaceOnly.id)).toHaveLength(1);
+  });
+
   it("answers 403 without member:create in the project", async () => {
     const w = await buildWorld();
     for (const user of [

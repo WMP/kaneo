@@ -38,6 +38,17 @@ async function listMemberCandidates(access: ProjectAccess) {
     )
     .orderBy(asc(schema.userTable.name), asc(schema.userTable.id));
 
+  // Duplicate workspace membership rows repeat a person. Rows that disagree on
+  // the role make the membership ambiguous, which counts as no membership at
+  // all (see `singleWorkspaceRole` in `utils/project-access.ts`): not offered.
+  const rolesById = new Map<string, Set<string>>();
+  for (const row of rows) {
+    rolesById.set(
+      row.id,
+      (rolesById.get(row.id) ?? new Set()).add(row.workspaceRole),
+    );
+  }
+
   const isFullAccess = createFullAccessChecker(access.workspaceId);
   const seen = new Set<string>();
   const candidates: {
@@ -47,9 +58,9 @@ async function listMemberCandidates(access: ProjectAccess) {
     image: string | null;
   }[] = [];
   for (const row of rows) {
-    // Duplicate workspace membership rows repeat a person.
     if (seen.has(row.id)) continue;
     seen.add(row.id);
+    if ((rolesById.get(row.id)?.size ?? 0) > 1) continue;
     if (await isFullAccess(row.instanceRole, row.workspaceRole)) continue;
     candidates.push({
       id: row.id,
