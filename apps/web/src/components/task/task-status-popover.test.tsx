@@ -23,8 +23,8 @@ vi.mock("@/hooks/use-numbered-shortcuts", () => ({
   useNumberedShortcuts: vi.fn(),
 }));
 
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateTasks: () => true }),
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({ canUpdateTasks: () => true }),
 }));
 
 vi.mock("react-i18next", () => ({

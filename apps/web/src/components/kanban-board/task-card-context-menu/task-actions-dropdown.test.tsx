@@ -132,14 +132,11 @@ vi.mock("@/hooks/queries/column/use-get-columns", () => ({
   }),
 }));
 
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({
-      data: { members: [] },
-    }),
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: () => ({
+    data: { members: [] },
   }),
-);
+}));
 
 vi.mock("@/hooks/mutations/task/use-update-task", () => ({
   useUpdateTask: () => ({ mutateAsync: vi.fn() }),
@@ -169,8 +166,8 @@ vi.mock("@/hooks/mutations/task/use-update-task-title", () => ({
   useUpdateTaskTitle: () => ({ mutateAsync: vi.fn() }),
 }));
 
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({
     canCreateTasks,
     canUpdateTasks: () => true,
     canDeleteTasks,

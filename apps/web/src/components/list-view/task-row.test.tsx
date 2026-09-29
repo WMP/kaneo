@@ -34,12 +34,9 @@ vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
 }));
 
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: { members: [] } }),
-  }),
-);
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: () => ({ data: { members: [] } }),
+}));
 
 vi.mock(
   "../kanban-board/task-card-context-menu/task-card-context-menu-content",

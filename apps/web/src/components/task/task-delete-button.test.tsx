@@ -10,6 +10,7 @@ import TaskDeleteButton from "./task-delete-button";
 
 const mocks = vi.hoisted(() => ({
   canDeleteTasks: vi.fn(),
+  permissionProject: vi.fn(),
   deleteTask: vi.fn(),
   error: vi.fn(),
   success: vi.fn(),
@@ -24,11 +25,14 @@ vi.mock("@/hooks/mutations/task/use-delete-task", () => ({
     isPending: false,
   }),
 }));
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({
-    canDeleteTasks: mocks.canDeleteTasks,
-    isCheckingPermissions: false,
-  }),
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: (projectId: string) => {
+    mocks.permissionProject(projectId);
+    return {
+      canDeleteTasks: mocks.canDeleteTasks,
+      isCheckingPermissions: false,
+    };
+  },
 }));
 vi.mock("@/lib/toast", () => ({
   toast: { error: mocks.error, success: mocks.success },
@@ -47,17 +51,31 @@ describe("TaskDeleteButton", () => {
   it("is only shown to users with task deletion permission", () => {
     mocks.canDeleteTasks.mockReturnValue(false);
 
-    render(<TaskDeleteButton taskId="task-1" onDeleted={vi.fn()} />);
+    render(
+      <TaskDeleteButton
+        taskId="task-1"
+        projectId="project-1"
+        onDeleted={vi.fn()}
+      />,
+    );
 
     expect(
       screen.queryByRole("button", { name: "tasks:delete.action" }),
     ).toBeNull();
+    // Deleting is decided by the task's own project, not the workspace role.
+    expect(mocks.permissionProject).toHaveBeenCalledWith("project-1");
   });
 
   it("deletes after confirmation and reports success", async () => {
     const onDeleted = vi.fn();
     mocks.deleteTask.mockResolvedValue({ id: "task-1" });
-    render(<TaskDeleteButton taskId="task-1" onDeleted={onDeleted} />);
+    render(
+      <TaskDeleteButton
+        taskId="task-1"
+        projectId="project-1"
+        onDeleted={onDeleted}
+      />,
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:delete.action" }),
@@ -77,7 +95,13 @@ describe("TaskDeleteButton", () => {
   it("keeps the current view open and reports a failed deletion", async () => {
     const onDeleted = vi.fn();
     mocks.deleteTask.mockRejectedValue(new Error("Delete denied"));
-    render(<TaskDeleteButton taskId="task-1" onDeleted={onDeleted} />);
+    render(
+      <TaskDeleteButton
+        taskId="task-1"
+        projectId="project-1"
+        onDeleted={onDeleted}
+      />,
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:delete.action" }),

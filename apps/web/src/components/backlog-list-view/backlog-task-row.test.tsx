@@ -30,12 +30,9 @@ vi.mock("@/hooks/mutations/task/use-delete-task", () => ({
 vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
 }));
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: { members: [] } }),
-  }),
-);
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: () => ({ data: { members: [] } }),
+}));
 vi.mock(
   "@/hooks/queries/custom-field/use-get-custom-field-values-by-project",
   () => ({

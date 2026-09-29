@@ -12,6 +12,9 @@ import type Task from "@/types/task";
 import TaskAssigneePopover from "./task-assignee-popover";
 
 afterEach(() => {
+  permissions.canAssign = true;
+  permissions.projectId = undefined;
+  permissions.membersProjectId = undefined;
   cleanup();
   document.body.innerHTML = "";
   vi.clearAllMocks();
@@ -49,12 +52,12 @@ const workspaceResources: Resource[] = [
   },
 ];
 
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: workspaceUsers }),
-  }),
-);
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: (projectId: string) => {
+    permissions.membersProjectId = projectId;
+    return { data: workspaceUsers };
+  },
+}));
 
 vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
   default: () => ({ data: workspaceResources }),
@@ -64,11 +67,21 @@ vi.mock("@/hooks/use-numbered-shortcuts", () => ({
   useNumberedShortcuts: vi.fn(),
 }));
 
+// Assigning is decided by the task's project; creating a resource is a
+// workspace-level action and stays with the workspace role.
+const permissions = vi.hoisted(() => ({
+  canAssign: true,
+  projectId: undefined as string | undefined,
+  membersProjectId: undefined as string | undefined,
+}));
 vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({
-    canAssignTasks: () => true,
-    canUpdateProjects: () => true,
-  }),
+  useWorkspacePermission: () => ({ canUpdateProjects: () => true }),
+}));
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: (projectId: string) => {
+    permissions.projectId = projectId;
+    return { canAssignTasks: () => permissions.canAssign };
+  },
 }));
 
 vi.mock("@/lib/toast", () => ({
@@ -107,6 +120,30 @@ const baseTask: Task = {
 };
 
 describe("TaskAssigneePopover", () => {
+  it("asks the task's own project for the right to assign and for the people to pick", () => {
+    render(
+      <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+
+    expect(permissions.projectId).toBe("project-1");
+    expect(permissions.membersProjectId).toBe("project-1");
+  });
+
+  it("renders only the trigger when the project does not allow assigning", () => {
+    permissions.canAssign = false;
+
+    render(
+      <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+    expect(screen.queryByRole("button", { name: /Alice/ })).toBeNull();
+  });
+
   it("shows a check on every currently assigned member, falling back to the primary assignee", async () => {
     updateTaskAssignees.mockResolvedValue(undefined);
 

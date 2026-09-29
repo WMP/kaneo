@@ -21,9 +21,11 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({
-    workspace: { id: "workspace-1" },
-    canShareProjects: () => canShare,
+  useWorkspacePermission: () => ({ workspace: { id: "workspace-1" } }),
+}));
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({
+    canShareProject: () => canShare,
     isCheckingPermissions: false,
   }),
 }));

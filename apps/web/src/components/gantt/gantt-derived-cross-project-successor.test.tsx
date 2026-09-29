@@ -168,8 +168,8 @@ vi.mock("@/lib/toast", () => ({ toast: { error: vi.fn() } }));
 vi.mock("@/hooks/mutations/task-relation/use-update-task-relation", () => ({
   default: () => ({ mutateAsync: vi.fn() }),
 }));
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({
     canUpdateTasks: () => true,
     canUpdateProjects: () => true,
   }),

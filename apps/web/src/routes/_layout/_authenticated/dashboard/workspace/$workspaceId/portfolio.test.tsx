@@ -58,8 +58,8 @@ vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 // GanttDependencyOverlay) reads workspace permission via a route param this
 // mocked router doesn't provide -- mocked out directly, same as the
 // per-project Gantt's own dependency-line tests.
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateTasks: () => true }),
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({ canUpdateTasks: () => true }),
 }));
 vi.mock("@/store/user-preferences", () => ({
   useUserPreferencesStore: (

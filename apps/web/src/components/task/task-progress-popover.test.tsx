@@ -18,8 +18,8 @@ vi.mock("@/hooks/mutations/task/use-update-task", () => ({
   useUpdateTask: () => ({ mutateAsync: updateTask }),
 }));
 
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateTasks: () => true }),
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({ canUpdateTasks: () => true }),
 }));
 
 vi.mock("@/lib/toast", () => ({

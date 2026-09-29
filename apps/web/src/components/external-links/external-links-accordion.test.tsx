@@ -18,8 +18,8 @@ vi.mock("@/fetchers/external-link/delete-external-link", () => ({
 }));
 
 const canUpdateTasks = vi.fn(() => true);
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateTasks }),
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({ canUpdateTasks }),
 }));
 vi.mock("@/fetchers/external-link/create-external-link", () => ({
   default: vi.fn(),
@@ -43,7 +43,11 @@ function renderResources(externalLinks: ExternalLink[] = []) {
   const invalidate = vi.spyOn(client, "invalidateQueries");
   render(
     <QueryClientProvider client={client}>
-      <ExternalLinksAccordion taskId="task-1" externalLinks={externalLinks} />
+      <ExternalLinksAccordion
+        taskId="task-1"
+        projectId="project-1"
+        externalLinks={externalLinks}
+      />
     </QueryClientProvider>,
   );
   return invalidate;

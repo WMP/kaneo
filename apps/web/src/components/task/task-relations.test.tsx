@@ -51,14 +51,11 @@ vi.mock("@/hooks/queries/task-relation/use-get-task-relations", () => ({
 vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
 }));
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: { members: [] } }),
-  }),
-);
-vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateTasks: mocks.canUpdateTasks }),
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: () => ({ data: { members: [] } }),
+}));
+vi.mock("@/hooks/use-project-permission", () => ({
+  useProjectPermission: () => ({ canUpdateTasks: mocks.canUpdateTasks }),
 }));
 vi.mock("@/lib/toast", () => ({
   toast: { error: mocks.toastError, success: vi.fn() },

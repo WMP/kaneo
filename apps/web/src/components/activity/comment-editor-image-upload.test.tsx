@@ -58,15 +58,14 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: mocks.t }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
-  default: () => ({ data: undefined }),
+// The editor reads the task's project from the query cache for mentions.
+vi.mock("@tanstack/react-query", async (original) => ({
+  ...(await original<object>()),
+  useQuery: () => ({ data: undefined }),
 }));
-vi.mock(
-  "@/hooks/queries/workspace-users/use-get-active-workspace-users",
-  () => ({
-    useGetActiveWorkspaceUsers: () => ({ data: undefined }),
-  }),
-);
+vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
+  useProjectMembers: () => ({ data: undefined }),
+}));
 vi.mock("@/lib/toast", () => ({
   toast: {
     error: vi.fn(),

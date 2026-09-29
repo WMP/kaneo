@@ -25,6 +25,7 @@ describe("GanttDependencyOverlay", () => {
         edges={[edge()]}
         hoveredTaskId={null}
         clipLeftPx={320}
+        resolveProjectId={() => "project-1"}
       />,
     );
 
@@ -42,7 +43,12 @@ describe("GanttDependencyOverlay", () => {
 
   it("renders nothing when there are no edges", () => {
     const { container } = render(
-      <GanttDependencyOverlay edges={[]} hoveredTaskId={null} clipLeftPx={0} />,
+      <GanttDependencyOverlay
+        edges={[]}
+        hoveredTaskId={null}
+        clipLeftPx={0}
+        resolveProjectId={() => undefined}
+      />,
     );
     expect(container.querySelector("svg")).toBeNull();
   });
