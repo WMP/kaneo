@@ -1202,6 +1202,178 @@
         ],
         "description": "Roles the caller may grant through invitations or role changes: those whose permissions the caller also holds. Never includes owner."
       },
+      "ProjectInvitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "workspaceRole": {
+            "type": "string"
+          },
+          "projectRole": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "emailAttempted": {
+            "type": "boolean",
+            "description": "True when the API tried to send the invitation email. False when SMTP is not configured on this instance (share the accept link yourself) and when nothing was sent because the invitation already existed."
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "True when the email was handed to the SMTP relay. False when it was not attempted or the relay refused it (the failure is logged); use the resend route to try again. Delivery to the inbox is not confirmed."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "workspaceRole",
+          "projectRole",
+          "projectId",
+          "expiresAt",
+          "emailAttempted",
+          "emailSent"
+        ]
+      },
+      "ProjectInvitationError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ProjectInvitationListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "workspaceRole": {
+            "type": "string"
+          },
+          "projectRole": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "inviterName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "live",
+              "expired"
+            ],
+            "description": "live: can still be accepted. expired: pending but past its expiry; resend is refused, invite the person again."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "workspaceRole",
+          "projectRole",
+          "expiresAt",
+          "inviterName",
+          "status"
+        ]
+      },
+      "ProjectInvitationCancel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "canceled": {
+            "type": "boolean",
+            "description": "True when the invitation had no other project left and was canceled as a whole (its link stops working). False when it still grants other projects."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "canceled"
+        ]
+      },
+      "ProjectInvitationResend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "emailAttempted": {
+            "type": "boolean"
+          },
+          "emailSent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "expiresAt",
+          "emailAttempted",
+          "emailSent"
+        ]
+      },
+      "ProjectMemberCandidate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image"
+        ]
+      },
       "CalendarFeed": {
         "type": "object",
         "properties": {
@@ -4253,6 +4425,13 @@
           "status": {
             "type": "string",
             "description": "Always `pending` here; expired and accepted ones are filtered out."
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationProject"
+            },
+            "description": "Projects that accepting the invitation adds the person to, with their project role, for invitations created through the project invitation routes. Empty or omitted for a plain workspace invitation, in which case the person sees no project until they are added."
           }
         },
         "required": [
@@ -4264,6 +4443,26 @@
           "expiresAt",
           "createdAt",
           "status"
+        ]
+      },
+      "InvitationProject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "description": "The project role the invitation grants in this project."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role"
         ]
       },
       "InvitationDetails": {
@@ -4297,6 +4496,13 @@
               },
               "expired": {
                 "type": "boolean"
+              },
+              "projects": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InvitationProject"
+                },
+                "description": "Projects that accepting the invitation adds the person to, with their project role, for invitations created through the project invitation routes. Empty or omitted for a plain workspace invitation, in which case the person sees no project until they are added."
               }
             },
             "required": [
@@ -9594,6 +9800,388 @@
           },
           "403": {
             "description": "No access to the project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectId}/invitations": {
+      "post": {
+        "operationId": "createProjectInvitation",
+        "tags": [
+          "Project invitations"
+        ],
+        "summary": "Invite a person to a project",
+        "description": "Invite somebody who is not in the workspace yet to this project, with a workspace role and a project role. The invitee accepts through the usual invitation link (`/invitation/accept/{id}`, Better Auth accept-invitation, email must match); acceptance creates the project membership. Requires invitation:create in the caller's effective project permissions (the project role for a project member, the workspace role for a full-access user; an API key must allow it too). The workspace role must be within the caller's own workspace role, the project role within the caller's effective permissions in this project, and owner is never allowed as either (owners and instance administrators are otherwise unrestricted). Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 409 ALREADY_WORKSPACE_MEMBER (add the person to the project instead), 409 INVITATION_ROLE_CONFLICT (a live pending invitation for this email has another workspace role), 403 INVITATION_LIMIT_REACHED, and on cloud 403 GUEST_CANNOT_INVITE and 400 DISPOSABLE_EMAIL_NOT_ALLOWED. When a live pending invitation with the same workspace role exists, this project is added to it (200, no second email) instead of creating another invitation (201).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "description": "The invitee's email address. It is lower-cased; Better Auth matches it against the account's email when the invitation is accepted."
+                  },
+                  "workspaceRole": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The workspace role the invitee gets when they join: the built-in viewer, member or admin, or a custom role. Every permission it carries must also be held by the caller, and owner is never allowed."
+                  },
+                  "projectRole": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The project role the invitee gets in this project once they accept: a role of the workspace catalog whose permissions the caller also holds in this project. owner is never a project role."
+                  }
+                },
+                "required": [
+                  "email",
+                  "workspaceRole",
+                  "projectRole"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "An existing pending invitation now also grants this project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitation"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "The new invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, owner role, or unknown role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, missing invitation:create, a role beyond the caller's permissions, or the invitation limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The person is already a workspace member, or a pending invitation has a different workspace role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listProjectInvitations",
+        "tags": [
+          "Project invitations"
+        ],
+        "summary": "List pending project invitations",
+        "description": "Pending invitations that grant this project, live and expired. Requires invitation:create or invitation:cancel in the caller's effective project permissions.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending invitations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectInvitationListItem"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or neither invitation:create nor invitation:cancel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectId}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "cancelProjectInvitation",
+        "tags": [
+          "Project invitations"
+        ],
+        "summary": "Cancel a project invitation",
+        "description": "Remove this project from a pending invitation. Requires invitation:cancel in the caller's effective project permissions, and both roles of the invitation (workspace role and project role) within the caller's own permissions unless the caller is an owner or instance administrator. When no project is left on the invitation it is canceled as a whole (status canceled, the link stops working); the invitation table does not record how it was created, so a plain workspace invitation to which this project was added is canceled too. Errors carry a `code`: 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 404 INVITATION_NOT_FOUND.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "invitationId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation was updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationCancel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, missing invitation:cancel, or a role beyond the caller's permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending invitation of this project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectId}/invitations/{invitationId}/resend": {
+      "post": {
+        "operationId": "resendProjectInvitation",
+        "tags": [
+          "Project invitations"
+        ],
+        "summary": "Resend a project invitation",
+        "description": "Extend a live pending invitation by the default lifetime (48 hours) and send the email again. Requires invitation:create and both roles of the invitation within the caller's own permissions. An expired invitation cannot be re-sent (409 INVITATION_EXPIRED): invite the person again. `emailAttempted` is false when SMTP is not configured.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "invitationId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The extended invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationResend"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, missing invitation:create, or a role beyond the caller's permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending invitation of this project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The invitation has expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvitationError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectId}/member-candidates": {
+      "get": {
+        "operationId": "listProjectMemberCandidates",
+        "tags": [
+          "Project invitations"
+        ],
+        "summary": "List workspace members who can be added to the project",
+        "description": "Workspace members who are not project members yet and do not have full access, for the add-to-project picker. Requires member:create in the caller's effective project permissions, like adding a member.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectMemberCandidate"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing member:create",
             "content": {
               "text/plain": {
                 "schema": {

@@ -46,6 +46,10 @@ import db, { schema } from "./database";
 import { authDatabaseAdapter } from "./database/auth-adapter";
 import { publishEvent } from "./events";
 import { sendInvitationEmail } from "./invitation/send-invitation-email";
+import {
+  afterAcceptProjectInvitation,
+  beforeAcceptProjectInvitation,
+} from "./project-invitation/accept";
 import deleteAccountData from "./user/controllers/delete-account-data";
 import { resolveAuthSecret } from "./utils/auth-secret";
 import {
@@ -539,6 +543,16 @@ export const auth = betterAuth({
               ),
             });
           }
+        },
+        // Project invitations: purge the leftovers of an earlier membership
+        // before a fresh join, then create the project memberships the
+        // invitation grants. See `project-invitation/accept.ts` for the order
+        // Better Auth runs things in and what a failure leaves behind.
+        beforeAcceptInvitation: async ({ invitation, user }) => {
+          await beforeAcceptProjectInvitation({ invitation, user });
+        },
+        afterAcceptInvitation: async ({ invitation, member, user }) => {
+          await afterAcceptProjectInvitation({ invitation, member, user });
         },
         afterAddMember: async ({ member }) => {
           if (member?.organizationId) {
