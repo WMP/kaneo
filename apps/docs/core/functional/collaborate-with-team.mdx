@@ -28,7 +28,55 @@ Access to a project comes from being a member of that project:
   **Upgrading an existing installation:** workspace owners and roles that can manage workspace settings (such as the built-in admin) keep access to every existing project. All other existing workspace members (member, viewer and custom roles) lose access to all projects until an administrator adds them to the projects they need. If your workspace removed the permission to manage workspace settings from its admin role, those admins lose access as well until they are added.
 </Warning>
 
-Project members are managed through the API for now (`GET`, `POST`, `PATCH` and `DELETE` on `/api/project/{projectId}/members`, and `GET /api/project/{projectId}/assignable-roles` for the roles you may hand out); the web interface for it is still to come.
+### Project members and invitations
+
+Manage who is in a project under **Settings -> Projects -> (choose the project) -> Members**.
+
+**See who has access**
+
+- The table lists everyone who can open the project and their role in the project.
+- People with the **Full access** badge reach every project through their workspace role. You cannot change or remove them here. Change their workspace role under **Members** in the workspace.
+- A member marked **inactive** has a role that gives no access any more, for example because the role was deleted. Choose a new role for them or remove them.
+
+**Add a person who is already in the workspace**
+
+1. Click **Add member**.
+2. Search for the person and select them.
+3. Choose their role in the project.
+4. Click **Add member**.
+
+**Invite a person who is not in the workspace yet**
+
+1. Click **Invite by email**.
+2. Enter the email address.
+3. Choose the role in the workspace. It applies to the whole workspace.
+4. Choose the role in the project. It applies only to this project.
+5. Click **Send invitation**.
+
+If your server sends email, the person gets a message. If it does not, copy the invitation link from the window and send it yourself. The person opens the link, signs in or creates an account, and accepts. The invitation page shows the project and the role.
+
+If the person is already in the workspace, Kaneo says so and offers **Add as member** instead.
+
+**Follow up on invitations**
+
+Pending invitations are listed below the members. For each one you can:
+
+- copy the link;
+- send it again, which also extends it by 48 hours;
+- invite again, if it has expired (an expired invitation cannot be sent again);
+- cancel it.
+
+**Change or remove a member, or leave a project**
+
+- Use the role menu in the table to change a role, and the actions menu to remove a person.
+- To leave a project yourself, open your own row, click the actions menu and choose **Leave project**.
+
+**Limits to know about**
+
+- You can only give roles with the same permissions as yours or fewer. Roles you may not give do not appear in the lists.
+- You only see the buttons your role allows. If Kaneo still refuses an action, it tells you why.
+- A role cannot be deleted or renamed while project members or pending project invitations still use it. Give those people another role first.
+- Someone who is in the workspace but not in any project sees the message "You do not have access to any project yet. Ask a workspace admin to add you to a project."
 
 ## 3. Assign clear ownership
 
