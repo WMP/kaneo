@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import db, { schema } from "../../database";
 import type { ProjectAccess } from "../../utils/project-access";
 import { assertCanManageInvitation } from "../delegation";
@@ -7,12 +7,11 @@ import {
   requirePendingProjectInvitation,
 } from "../queries";
 
-// Removes THIS project from an invitation. When no project is left the
-// invitation is canceled as a whole (status `canceled`, like Better Auth's
-// cancel-invitation). The invitation table does not record how an invitation
-// was created, so this also cancels a plain workspace invitation to which a
-// project was added and then removed again: nothing else is stored to tell the
-// two apart.
+// Removes THIS project from an invitation. An invitation created through the
+// project routes (it has a `ganttpro_invitation_origin` row) is canceled as a
+// whole (status `canceled`, like Better Auth's cancel-invitation) when no
+// project is left. A plain workspace invitation to which a project was added
+// only loses that project.
 async function cancelProjectInvitation({
   access,
   actorUserId,
@@ -33,33 +32,23 @@ async function cancelProjectInvitation({
     // invitation, so an invitation is never canceled while gaining a project.
     await lockInvitationEmail(tx, access.workspaceId, invitation.email);
 
-    const removed = await tx
+    await tx
       .delete(schema.invitationProjectTable)
       .where(
         and(
           eq(schema.invitationProjectTable.invitationId, invitationId),
           eq(schema.invitationProjectTable.projectId, access.projectId),
         ),
-      )
-      .returning({ id: schema.invitationProjectTable.id });
-    if (removed.length === 0) return false;
-
-    const [remaining] = await tx
-      .select({ value: count() })
-      .from(schema.invitationProjectTable)
-      .where(eq(schema.invitationProjectTable.invitationId, invitationId));
-    if ((remaining?.value ?? 0) > 0) return false;
-
-    await tx
-      .update(schema.invitationTable)
-      .set({ status: "canceled" })
-      .where(
-        and(
-          eq(schema.invitationTable.id, invitationId),
-          eq(schema.invitationTable.status, "pending"),
-        ),
       );
-    return true;
+
+    // The database cancels a project-origin invitation whose last project is
+    // gone (trigger of migration 0057), whatever removed the row. A workspace
+    // invitation that only had a project attached keeps its status.
+    const [current] = await tx
+      .select({ status: schema.invitationTable.status })
+      .from(schema.invitationTable)
+      .where(eq(schema.invitationTable.id, invitationId));
+    return current?.status === "canceled";
   });
 
   return { id: invitation.id, email: invitation.email, canceled };

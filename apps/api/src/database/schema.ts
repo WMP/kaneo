@@ -540,6 +540,30 @@ export const invitationProjectTable = pgTable(
   ],
 );
 
+// How an invitation came to be. Written for a NEW invitation created through
+// the project invitation routes (`source = 'project'`); invitations made by
+// Better Auth's `invite-member` have no row and count as workspace invitations.
+// Only a project-origin invitation is canceled when its last project goes away
+// (removed, deleted or moved): see the trigger in migration 0057.
+export const invitationOriginTable = pgTable(
+  "ganttpro_invitation_origin",
+  {
+    invitationId: text("invitation_id")
+      .primaryKey()
+      .references(() => invitationTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    source: text("source").notNull(),
+  },
+  (table) => [
+    check(
+      "ganttpro_invitation_origin_source_check",
+      sql`${table.source} IN ('project')`,
+    ),
+  ],
+);
+
 export const taskTable = pgTable(
   "task",
   {
