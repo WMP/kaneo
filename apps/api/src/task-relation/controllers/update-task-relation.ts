@@ -6,8 +6,10 @@ import {
   taskRelationTable,
   taskTable,
 } from "../../database/schema";
-import { publishEvent } from "../../events";
-import { relationTaskIdsInProject } from "../event-task-ids";
+import {
+  publishRelationEvent,
+  relationTaskIdsInProject,
+} from "../event-task-ids";
 
 // Only a "blocks" relation carries a scheduling dependency type/lag; editing
 // either field on a "related"/"subtask" row would just be silently ignored by
@@ -89,7 +91,7 @@ async function updateTaskRelation(
     // waitForHandlers: the activity module logs this update off the event,
     // and that write should be visible by the time this request returns
     // rather than racing the response.
-    await publishEvent(
+    await publishRelationEvent(
       "task-relation.updated",
       {
         ...relation,
@@ -110,7 +112,7 @@ async function updateTaskRelation(
     // Same relation, same (source) taskId — published again only so the
     // target project's own WS subscribers refresh. Marked so the activity
     // module (which logs by taskId) doesn't record this update twice.
-    await publishEvent(
+    await publishRelationEvent(
       "task-relation.updated",
       {
         ...relation,

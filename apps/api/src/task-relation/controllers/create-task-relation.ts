@@ -6,12 +6,14 @@ import {
   taskRelationTable,
   taskTable,
 } from "../../database/schema";
-import { publishEvent } from "../../events";
 import {
   projectAccessSatisfies,
   requireProjectAccessFor,
 } from "../../utils/project-access";
-import { relationTaskIdsInProject } from "../event-task-ids";
+import {
+  publishRelationEvent,
+  relationTaskIdsInProject,
+} from "../event-task-ids";
 import { wouldCreateCycle } from "./detect-relation-cycle";
 
 async function createTaskRelation({
@@ -189,7 +191,7 @@ async function createTaskRelation({
   // waitForHandlers: the activity module logs this creation off the event,
   // and that write should be visible by the time this request returns
   // rather than racing the response.
-  await publishEvent(
+  await publishRelationEvent(
     "task-relation.created",
     {
       ...relation,
@@ -213,7 +215,7 @@ async function createTaskRelation({
     // Same relation, same (source) taskId — published again only so the
     // target project's own WS subscribers refresh. Marked so the activity
     // module (which logs by taskId) doesn't record this creation twice.
-    await publishEvent(
+    await publishRelationEvent(
       "task-relation.created",
       {
         ...relation,

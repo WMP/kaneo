@@ -16,6 +16,10 @@ import {
 import { publishEvent } from "../../events";
 import { contentReferencesAsset } from "../../storage/cleanup-assets";
 import { copyTaskAssetObject, deleteS3Object } from "../../storage/s3";
+import {
+  publishRelationEvent,
+  relationTaskIdsInProject,
+} from "../../task-relation/event-task-ids";
 import { filterUsersWithProjectAccess } from "../../utils/project-scope-filters";
 import { setTaskAssignees } from "../assignments";
 import {
@@ -363,10 +367,22 @@ async function duplicateTask({
       (parentRelation) => parentRelation.parentTaskId === relation.sourceTaskId,
     )?.parentProjectId;
 
-    await publishEvent("task-relation.created", {
+    // The parent may live in another project; the copy lives in the source
+    // task's project. The event goes to the parent's project and lists only the
+    // tasks that live there.
+    const eventProjectId = parentProjectId ?? sourceTask.projectId;
+    await publishRelationEvent("task-relation.created", {
       ...relation,
       taskId: relation.sourceTaskId,
-      projectId: parentProjectId ?? sourceTask.projectId,
+      projectId: eventProjectId,
+      projectTaskIds: relationTaskIdsInProject(
+        relation,
+        {
+          sourceProjectId: eventProjectId,
+          targetProjectId: sourceTask.projectId,
+        },
+        eventProjectId,
+      ),
       userId: currentUserId,
     });
   }

@@ -8,6 +8,10 @@ import {
 } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { deleteS3Keys, getTaskAssetKeys } from "../../storage/cleanup-assets";
+import {
+  publishRelationEvent,
+  relationTaskIdsInProject,
+} from "../../task-relation/event-task-ids";
 import getTask from "./get-task";
 
 async function deleteTask(taskId: string, currentUserId: string) {
@@ -86,9 +90,23 @@ async function deleteTask(taskId: string, currentUserId: string) {
     title: task.title,
   });
 
+  // Which project each end of a relation lives in, so each project's event lists
+  // only its own tasks: the deleted task's id never reaches the OTHER project.
+  const projectOfTask = (id: string) =>
+    id === taskId ? task.projectId : otherProjectIdByTaskId.get(id);
+
   for (const relation of relations) {
-    await publishEvent("task-relation.deleted", {
+    const projects = {
+      sourceProjectId: projectOfTask(relation.sourceTaskId),
+      targetProjectId: projectOfTask(relation.targetTaskId),
+    };
+    await publishRelationEvent("task-relation.deleted", {
       projectId: task.projectId,
+      projectTaskIds: relationTaskIdsInProject(
+        relation,
+        projects,
+        task.projectId,
+      ),
       userId: currentUserId,
       taskId: taskId,
       sourceTaskId: relation.sourceTaskId,
@@ -101,8 +119,13 @@ async function deleteTask(taskId: string, currentUserId: string) {
         : relation.sourceTaskId;
     const otherProjectId = otherProjectIdByTaskId.get(otherTaskId);
     if (otherProjectId && otherProjectId !== task.projectId) {
-      await publishEvent("task-relation.deleted", {
+      await publishRelationEvent("task-relation.deleted", {
         projectId: otherProjectId,
+        projectTaskIds: relationTaskIdsInProject(
+          relation,
+          projects,
+          otherProjectId,
+        ),
         userId: currentUserId,
         taskId: taskId,
         sourceTaskId: relation.sourceTaskId,
