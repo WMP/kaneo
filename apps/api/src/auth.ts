@@ -16,7 +16,11 @@ import {
 } from "@kaneo/permissions";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import {
   admin as adminPlugin,
   anonymous,
@@ -704,52 +708,21 @@ export const auth = betterAuth({
           throw new APIError("FORBIDDEN", { message: verdict.reason });
       }
 
-      // Better Auth runs this hook before its plugin hooks and hands every
-      // hook the ORIGINAL context, so `getSessionFromCtx` here cannot see
-      // sessions the bearer and API-key plugins resolve from the
-      // `Authorization` / `x-api-key` headers. Resolve the session through
-      // `auth.api.getSession`, which dispatches through all plugins, exactly
-      // like `authenticateApiRequest` does. Loaded lazily, at most once.
-      type HookSession = {
-        userId: string;
-        isAnonymous: boolean;
-        activeOrganizationId: string | null;
-      };
-      let sessionLookup: Promise<HookSession | null> | null = null;
-      const loadSession = () => {
-        sessionLookup ??= auth.api
-          .getSession({
-            headers: ctx.headers ?? new Headers(),
-            query: { disableRefresh: true },
-          })
-          .then((result): HookSession | null =>
-            result
-              ? {
-                  userId: result.user.id,
-                  isAnonymous: Boolean(
-                    (result.user as { isAnonymous?: boolean | null })
-                      .isAnonymous,
-                  ),
-                  activeOrganizationId:
-                    (
-                      result.session as {
-                        activeOrganizationId?: string | null;
-                      }
-                    ).activeOrganizationId ?? null,
-                }
-              : null,
-          )
-          .catch(() => null);
-        return sessionLookup;
-      };
-
       // Block invite-member calls on cloud from anonymous users or to
       // disposable-email addresses. The 2026-05-28 incident saw ~14k phishing
       // invites sent from throwaway disposable-email signups; gating here
       // shuts that path off without affecting self-hosted instances.
       if (ctx.path === "/organization/invite-member" && isCloud()) {
-        const session = await loadSession();
-        if (session?.isAnonymous) {
+        // `before` hooks don't auto-populate ctx.context.session; load it
+        // explicitly. `disableRefresh` keeps this gate cheap: we only need
+        // the user record, not a session refresh side-effect.
+        const session = await getSessionFromCtx(ctx, {
+          disableRefresh: true,
+        }).catch(() => null);
+        const sessionUser = session?.user as
+          | { isAnonymous?: boolean | null }
+          | undefined;
+        if (sessionUser?.isAnonymous) {
           throw new APIError("FORBIDDEN", {
             message: "Guest accounts may not send workspace invitations.",
           });
@@ -766,19 +739,37 @@ export const auth = betterAuth({
       // Role delegation for an invitation re-send, which returns before any
       // organization hook runs (new invitations: `beforeCreateInvitation`,
       // role changes: `beforeUpdateMemberRole`).
+      //
+      // Better Auth runs this hook before its plugin hooks and hands every
+      // hook the ORIGINAL context, so `getSessionFromCtx` cannot see sessions
+      // the bearer and API-key plugins resolve from `Authorization` /
+      // `x-api-key`. `auth.api.getSession` dispatches through all plugins, like
+      // `authenticateApiRequest` does.
+      //
+      // Known limitation: that lookup re-runs the api-key plugin's
+      // `validateApiKey`, which claims usage (rate-limit counter and
+      // `remaining`), so a re-send authenticated with `x-api-key` counts twice
+      // against the key.
       if (
         ctx.path === "/organization/invite-member" &&
         ctx.body?.resend === true
       ) {
-        const session = await loadSession();
-        // Unauthenticated: let Better Auth produce its own 401.
+        // Fail closed: a failing lookup propagates and rejects the request.
+        // Only a lookup that succeeds without a session returns early, and
+        // Better Auth then answers 401 itself.
+        const session = await auth.api.getSession({
+          headers: ctx.headers ?? new Headers(),
+          query: { disableRefresh: true },
+        });
         if (!session) {
           return;
         }
         // `||`, as in Better Auth: an empty `organizationId` falls back to the
         // active organization.
         const workspaceId: unknown =
-          ctx.body?.organizationId || session.activeOrganizationId;
+          ctx.body?.organizationId ||
+          (session.session as { activeOrganizationId?: string | null })
+            .activeOrganizationId;
         const inviteeEmail: unknown = ctx.body?.email;
         if (
           typeof workspaceId !== "string" ||
@@ -789,7 +780,7 @@ export const auth = betterAuth({
         }
         await assertCanResendInvitation({
           workspaceId,
-          actorUserId: session.userId,
+          actorUserId: session.user.id,
           email: inviteeEmail,
         });
         return;

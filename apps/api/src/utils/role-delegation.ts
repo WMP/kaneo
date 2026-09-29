@@ -1,6 +1,6 @@
 import { DEFAULT_ROLE_NAMES } from "@kaneo/permissions";
 import { APIError } from "better-auth/api";
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import db, { schema } from "../database";
 import {
   builtInRoleStatements,
@@ -84,6 +84,20 @@ async function resolveActor(
   };
 }
 
+async function requireActor(
+  workspaceId: string,
+  actorUserId: string,
+): Promise<Actor> {
+  const actor = await resolveActor(workspaceId, actorUserId);
+  if (!actor) {
+    throw new APIError("FORBIDDEN", {
+      code: "YOU_ARE_NOT_A_MEMBER_OF_THIS_WORKSPACE",
+      message: "You are not a member of this workspace.",
+    });
+  }
+  return actor;
+}
+
 function exceedsPermissions(): APIError {
   return new APIError("FORBIDDEN", {
     code: "ROLE_EXCEEDS_YOUR_PERMISSIONS",
@@ -118,13 +132,7 @@ export async function assertCanAssignRole({
   targetRole: string;
   targetMember?: { userId: string; role: string };
 }): Promise<void> {
-  const actor = await resolveActor(workspaceId, actorUserId);
-  if (!actor) {
-    throw new APIError("FORBIDDEN", {
-      code: "YOU_ARE_NOT_A_MEMBER_OF_THIS_WORKSPACE",
-      message: "You are not a member of this workspace.",
-    });
-  }
+  const actor = await requireActor(workspaceId, actorUserId);
   if (actor.unrestricted) return;
 
   if (targetMember && targetMember.userId === actorUserId) {
@@ -180,15 +188,25 @@ export async function assertCanResendInvitation({
         eq(schema.invitationTable.status, "pending"),
         gt(schema.invitationTable.expiresAt, new Date()),
       ),
-    )
-    .orderBy(desc(schema.invitationTable.expiresAt));
+    );
+  // Nothing to re-send: Better Auth creates a new invitation instead.
+  if (pending.length === 0) return;
+
+  const actor = await requireActor(workspaceId, actorUserId);
+  if (actor.unrestricted) return;
+  const granted = actor.statements;
+  if (!granted) throw exceedsPermissions();
 
   for (const invitation of pending) {
-    await assertCanAssignRole({
-      workspaceId,
-      actorUserId,
-      targetRole: invitation.role ?? "",
-    });
+    if (
+      !(await rolesWithin(
+        workspaceId,
+        splitRoles(invitation.role ?? ""),
+        granted,
+      ))
+    ) {
+      throw exceedsPermissions();
+    }
   }
 }
 

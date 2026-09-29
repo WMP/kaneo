@@ -312,6 +312,75 @@ describe("role delegation holds for every way of authenticating", () => {
     expect(await storedRole(viewer)).toBe("member");
   });
 
+  it("blocks an API-key-authenticated manager from escalating a role", async () => {
+    const { manager, viewer } = actors;
+
+    const created = await post(
+      "/api-key/create",
+      { name: "delegation" },
+      manager.cookie,
+    );
+    expect(created.status).toBe(200);
+    const { key } = (await created.json()) as { key: string };
+    expect(key).toBeTruthy();
+
+    // `x-api-key` only: no cookie and no Authorization header.
+    const withKey = (role: string) =>
+      app.request("/api/auth/organization/update-member-role", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Origin: origin,
+          "x-api-key": key,
+        },
+        body: JSON.stringify({
+          organizationId: workspaceId,
+          memberId: viewer.memberId,
+          role,
+        }),
+      });
+
+    await expectForbidden(
+      await withKey("admin"),
+      "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+    );
+    expect(await storedRole(viewer)).toBe("viewer");
+
+    expect((await withKey("member")).status).toBe(200);
+    expect(await storedRole(viewer)).toBe("member");
+  });
+
+  it("blocks an API-key-authenticated inviter from re-sending an admin invitation", async () => {
+    const { owner, inviter } = actors;
+
+    const created = await post(
+      "/api-key/create",
+      { name: "delegation-resend" },
+      inviter.cookie,
+    );
+    expect(created.status).toBe(200);
+    const { key } = (await created.json()) as { key: string };
+
+    expect((await invite(owner, "keyed@example.com", "admin")).status).toBe(
+      200,
+    );
+    const response = await app.request("/api/auth/organization/invite-member", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Origin: origin,
+        "x-api-key": key,
+      },
+      body: JSON.stringify({
+        organizationId: workspaceId,
+        email: "keyed@example.com",
+        role: "viewer",
+        resend: true,
+      }),
+    });
+    await expectForbidden(response, "ROLE_EXCEEDS_YOUR_PERMISSIONS");
+  });
+
   it("blocks a bearer-authenticated inviter from re-sending an admin invitation", async () => {
     const { owner, inviter } = actors;
 
