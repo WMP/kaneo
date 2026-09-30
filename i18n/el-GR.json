@@ -2274,6 +2274,12 @@
 				"baselineStartDate": "Ημερομηνία έναρξης (γραμμή βάσης)",
 				"baselineDueDate": "Προθεσμία (γραμμή βάσης)"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

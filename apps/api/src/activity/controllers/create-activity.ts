@@ -1,5 +1,6 @@
 import db from "../../database";
 import { activityTable } from "../../database/schema";
+import { currentActorSource } from "../actor-source";
 
 async function createActivity(
   taskId: string,
@@ -16,6 +17,7 @@ async function createActivity(
       userId,
       content,
       eventData: eventData ?? null,
+      ...currentActorSource(),
     })
     .returning();
   // taskId is a required parameter here (this is always task-scoped

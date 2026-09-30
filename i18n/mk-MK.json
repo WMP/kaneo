@@ -2274,6 +2274,12 @@
 				"baselineStartDate": "Датум на почеток (базна линија)",
 				"baselineDueDate": "Краен рок (базна линија)"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

@@ -2274,6 +2274,12 @@
 				"baselineStartDate": "Referans başlangıç tarihi",
 				"baselineDueDate": "Referans bitiş tarihi"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

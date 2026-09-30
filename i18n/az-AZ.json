@@ -2274,6 +2274,12 @@
 				"baselineStartDate": "Əsas başlama tarixi",
 				"baselineDueDate": "Əsas son tarix"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

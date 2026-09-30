@@ -2274,6 +2274,12 @@
 				"baselineStartDate": "आधार रेखा प्रारंभ तिथि",
 				"baselineDueDate": "आधार रेखा नियत तिथि"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

@@ -1,6 +1,7 @@
 import { OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Session, User } from "better-auth/types";
 import { HTTPException } from "hono/http-exception";
+import type { AuthSource } from "./utils/auth-source";
 import type { ProjectAccess } from "./utils/project-access";
 
 export { createRoute } from "@hono/zod-openapi";
@@ -19,6 +20,9 @@ export type BaseVariables = {
   user: User | null;
   session: Session | null;
   apiKey?: ApiKey;
+  // How the request authenticated (web UI, MCP session, API key); set by
+  // `authenticateApiRequest`.
+  authSource?: AuthSource;
   // Set by `workspaceAccess` when the request is scoped to one project, or to
   // several (`projectAccesses`, bulk task requests).
   projectId?: string;
