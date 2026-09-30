@@ -212,7 +212,9 @@ export function AssigneeResourceSection({
                 onValueChange={(value) => setKind(value as ResourceKind)}
               >
                 <SelectTrigger size="sm" className="h-8 text-sm">
-                  <SelectValue />
+                  <SelectValue>
+                    {t(`tasks:popover.assignee.resourceKind.${kind}`)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {RESOURCE_KINDS.map((resourceKind) => (
