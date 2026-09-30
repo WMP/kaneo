@@ -806,7 +806,13 @@
 			"automationTitle": "Aturan Otomatisasi",
 			"automationDescription": "Petakan event integrasi ke kolom. Saat event terjadi, tugas tertaut berpindah ke kolom yang ditentukan.",
 			"customFieldsDescription": "Kelola kolom kustom untuk proyek ini. Seret  untuk mengurutkan ulang.",
-			"customFieldsTitle": "Kolom Kustom"
+			"customFieldsTitle": "Kolom Kustom",
+			"enforced": {
+				"description": "This workspace enforces its columns, so every project has exactly the workspace columns and they cannot be changed here. Change them in the workspace workflow settings.",
+				"descriptionNoAccess": "This workspace enforces its columns, so every project has exactly the workspace columns and they cannot be changed here. Ask a workspace administrator to change them.",
+				"manageLink": "Open workspace workflow settings",
+				"title": "Columns are managed by the workspace"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Pilih proyek",
@@ -832,7 +838,11 @@
 			"on": "Aktif",
 			"off": "Nonaktif",
 			"newColumnPlaceholder": "Nama kolom baru...",
-			"add": "Tambah"
+			"add": "Tambah",
+			"deleteAria": "Delete column {{name}}",
+			"moveDownAria": "Move column {{name}} down",
+			"moveUpAria": "Move column {{name}} up",
+			"nameAria": "Name of column {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -1905,6 +1915,72 @@
 		},
 		"workspaceBilling": {
 			"title": "Billing"
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "New projects start with these columns. Drag a column or use the arrow buttons to reorder. Turn on \"Done column\" for stages that represent completed work.",
+			"columnsEnforcedHint": "Enforcement is on: every change here is applied to all projects of the workspace right away.",
+			"columnsTitle": "Columns",
+			"deleteDialog": {
+				"confirm": "Delete column",
+				"description": "The column is removed from the workspace columns. Existing projects keep their own columns.",
+				"descriptionEnforced": "The column is removed from every project. Tasks in it move to the column you choose, and workflow rules on it are deleted.",
+				"moveTasksTo": "Move tasks to",
+				"needsTarget": "Tasks still use this column. Choose where they go.",
+				"title": "Delete column \"{{name}}\"?"
+			},
+			"disableDialog": {
+				"confirm": "Stop enforcing",
+				"description": "Projects keep their current columns and can change them again. The columns stay linked to the workspace columns, so enforcing again restores them exactly.",
+				"title": "Stop enforcing workspace columns?"
+			},
+			"empty": "No workspace columns yet. Until you add some, new projects start with the default columns.",
+			"enableDialog": {
+				"columnsCreated": "Columns created: {{created}}",
+				"columnsRemoved": "Columns removed: {{removed}}",
+				"columnsUpdated": "Columns renamed or updated: {{updated}}",
+				"confirm": "Enforce columns",
+				"confirming": "Enforcing...",
+				"description": "Every project will get exactly the workspace columns. A project column is matched to a workspace column by its link, then its slug, then its name. Missing columns are created; columns without a match are removed.",
+				"fallbackHelp": "Tasks in a project column that matches no workspace column are moved to this column before the project column is deleted.",
+				"fallbackLabel": "Move tasks of removed columns to",
+				"movedTasksNote": "Moved tasks get no activity entry and no integration event. Only projects you can see are listed.",
+				"noChanges": "Every project already has exactly the workspace columns.",
+				"previewError": "Could not work out what would change.",
+				"previewLoading": "Checking what will change...",
+				"projectsAria": "Projects that will change",
+				"rulesDeleted": "Workflow rules deleted: {{rules}}",
+				"rulesWarningDescription": "{{rules}} workflow rules are attached to columns that will be removed. They are deleted together with those columns and cannot be restored.",
+				"rulesWarningTitle": "Workflow rules will be deleted",
+				"summary": "{{changed}} of {{total}} projects will change",
+				"tasksMoved": "Tasks moved: {{moved}}",
+				"title": "Enforce workspace columns?"
+			},
+			"enforcement": {
+				"description": "When on, every project of this workspace has exactly these columns and cannot add, rename, reorder or delete them. Workflow rules stay per project.",
+				"disabledToast": "Workspace columns are no longer enforced",
+				"disableError": "Failed to stop enforcing the workspace columns",
+				"enabledToast": "Workspace columns are now enforced in every project",
+				"enableError": "Failed to enforce the workspace columns",
+				"noColumnsHint": "Add at least one column before you can enforce them.",
+				"noPermission": "Only people who can manage workspace settings can change enforcement.",
+				"statusOff": "Not enforced",
+				"statusOn": "Enforced",
+				"switchLabel": "Enforce workspace columns",
+				"title": "Enforcement"
+			},
+			"errors": {
+				"empty": "Add at least one workspace column first.",
+				"enforced": "This workspace enforces its columns. Change them in the workspace workflow settings.",
+				"last": "The last column cannot be deleted while columns are enforced.",
+				"notEmpty": "Tasks still use this column. Choose a column to move them to.",
+				"reservedSlug": "This name is reserved. Choose another name.",
+				"slugConflict": "A column with this name already exists in the workspace."
+			},
+			"loadError": "Could not load the workspace columns.",
+			"pageTitle": "Workspace Workflow Settings",
+			"retry": "Try again",
+			"subtitle": "Define the board columns once for the whole workspace and, if you want, enforce them in every project.",
+			"title": "Workflow"
 		}
 	},
 	"navigation": {

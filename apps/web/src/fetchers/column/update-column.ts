@@ -1,6 +1,6 @@
 import { client } from "@kaneo/libs";
 
-import { HttpError } from "@/lib/http-error";
+import { readProjectApiError } from "@/lib/project-member-error";
 
 async function updateColumn(
   id: string,
@@ -17,7 +17,7 @@ async function updateColumn(
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await readProjectApiError(response);
   }
 
   return response.json();

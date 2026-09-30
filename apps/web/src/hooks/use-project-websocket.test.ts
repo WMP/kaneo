@@ -43,6 +43,37 @@ it("refreshes resource links when another client updates a task", () => {
   }
 });
 
+it("refreshes the project's columns and the enforced flag on PROJECT_UPDATED", () => {
+  const sockets: FakeWebSocket[] = [];
+  class FakeWebSocket {
+    onmessage: ((event: { data: string }) => void) | null = null;
+    close = vi.fn();
+    constructor() {
+      sockets.push(this);
+    }
+  }
+  vi.stubGlobal("WebSocket", FakeWebSocket);
+  invalidateQueries.mockClear();
+  try {
+    renderHook(() => useProjectWebSocket("project-1"));
+    sockets[0].onmessage?.({
+      data: JSON.stringify({ type: "PROJECT_UPDATED", projectId: "project-1" }),
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["columns", "project-1"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["workspace-columns"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["tasks", "project-1"],
+    });
+  } finally {
+    cleanup();
+    vi.unstubAllGlobals();
+  }
+});
+
 describe("getWsUrl", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_API_URL", "http://localhost:1337");

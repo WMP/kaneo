@@ -1093,7 +1093,11 @@
 			"toastIconUpdated": "Zaktualizowano ikonę kolumny",
 			"toastRenamed": "Zmieniono nazwę kolumny",
 			"toastRenameError": "Nie udało się zmienić nazwy kolumny",
-			"toastUpdateError": "Nie udało się zaktualizować kolumny"
+			"toastUpdateError": "Nie udało się zaktualizować kolumny",
+			"nameAria": "Nazwa kolumny {{name}}",
+			"moveUpAria": "Przesuń kolumnę {{name}} w górę",
+			"moveDownAria": "Przesuń kolumnę {{name}} w dół",
+			"deleteAria": "Usuń kolumnę {{name}}"
 		},
 		"developer": "Deweloper",
 		"developerPage": {
@@ -1645,7 +1649,13 @@
 			"subtitle": "Skonfiguruj kolumny tablicy i reguły automatyzacji dla tego projektu.",
 			"title": "Obieg pracy",
 			"customFieldsDescription": "Zarządzaj polami własnymi tego projektu. Przeciągnij, aby zmienić kolejność.",
-			"customFieldsTitle": "Pola własne"
+			"customFieldsTitle": "Pola własne",
+			"enforced": {
+				"title": "Kolumnami zarządza przestrzeń robocza",
+				"description": "Ta przestrzeń robocza wymusza swoje kolumny, więc każdy projekt ma dokładnie kolumny przestrzeni i nie można ich tu zmieniać. Zmień je w ustawieniach przepływu pracy przestrzeni roboczej.",
+				"descriptionNoAccess": "Ta przestrzeń robocza wymusza swoje kolumny, więc każdy projekt ma dokładnie kolumny przestrzeni i nie można ich tu zmieniać. Poproś administratora przestrzeni roboczej o zmianę.",
+				"manageLink": "Otwórz ustawienia przepływu pracy przestrzeni"
+			}
 		},
 		"repositoryBrowser": {
 			"description": "Wybierz repozytorium, w którym zainstalowano aplikację GitHub, aby włączyć synchronizację zgłoszeń.",
@@ -1877,6 +1887,72 @@
 			"subtitle": "Zarządzaj polami własnymi na poziomie przestrzeni roboczej. Każdy projekt w tej przestrzeni je dziedziczy.",
 			"sectionTitle": "Pola własne",
 			"sectionDescription": "Pola zdefiniowane tutaj są dodawane do każdego projektu w przestrzeni roboczej. Administrator projektu może jedynie ukryć lub pokazać pole dla swojego projektu — pola wymaganego nie można ukryć."
+		},
+		"workspaceWorkflow": {
+			"pageTitle": "Ustawienia przepływu pracy przestrzeni",
+			"title": "Przepływ pracy",
+			"subtitle": "Zdefiniuj kolumny tablicy raz dla całej przestrzeni roboczej i, jeśli chcesz, wymuś je w każdym projekcie.",
+			"columnsTitle": "Kolumny",
+			"columnsDescription": "Nowe projekty zaczynają z tymi kolumnami. Przeciągnij kolumnę lub użyj przycisków strzałek, aby zmienić kolejność. Włącz „Kolumna ukończona” dla etapów oznaczających ukończoną pracę.",
+			"columnsEnforcedHint": "Wymuszanie jest włączone: każda zmiana tutaj jest od razu stosowana we wszystkich projektach przestrzeni roboczej.",
+			"empty": "Brak kolumn przestrzeni roboczej. Dopóki ich nie dodasz, nowe projekty zaczynają z kolumnami domyślnymi.",
+			"loadError": "Nie udało się wczytać kolumn przestrzeni roboczej.",
+			"retry": "Spróbuj ponownie",
+			"enforcement": {
+				"title": "Wymuszanie",
+				"switchLabel": "Wymuszaj kolumny przestrzeni roboczej",
+				"description": "Gdy włączone, każdy projekt tej przestrzeni roboczej ma dokładnie te kolumny i nie może ich dodawać, zmieniać nazw, zmieniać kolejności ani usuwać. Reguły przepływu pracy pozostają per projekt.",
+				"statusOn": "Wymuszane",
+				"statusOff": "Niewymuszane",
+				"noColumnsHint": "Dodaj co najmniej jedną kolumnę, aby móc je wymuszać.",
+				"noPermission": "Wymuszanie mogą zmieniać tylko osoby z uprawnieniem do zarządzania ustawieniami przestrzeni roboczej.",
+				"enabledToast": "Kolumny przestrzeni roboczej są teraz wymuszane w każdym projekcie",
+				"enableError": "Nie udało się włączyć wymuszania kolumn przestrzeni roboczej",
+				"disabledToast": "Kolumny przestrzeni roboczej nie są już wymuszane",
+				"disableError": "Nie udało się wyłączyć wymuszania kolumn przestrzeni roboczej"
+			},
+			"enableDialog": {
+				"title": "Wymusić kolumny przestrzeni roboczej?",
+				"description": "Każdy projekt dostanie dokładnie kolumny przestrzeni roboczej. Kolumna projektu jest dopasowywana do kolumny przestrzeni po powiązaniu, potem po identyfikatorze (slug), a potem po nazwie. Brakujące kolumny są tworzone, a kolumny bez dopasowania usuwane.",
+				"fallbackLabel": "Przenieś zadania z usuwanych kolumn do",
+				"fallbackHelp": "Zadania z kolumny projektu, która nie pasuje do żadnej kolumny przestrzeni, są przenoszone do tej kolumny, zanim kolumna projektu zostanie usunięta.",
+				"previewLoading": "Sprawdzanie, co się zmieni...",
+				"previewError": "Nie udało się ustalić, co by się zmieniło.",
+				"rulesWarningTitle": "Reguły przepływu pracy zostaną usunięte",
+				"rulesWarningDescription": "Liczba reguł przepływu pracy powiązanych z kolumnami, które zostaną usunięte: {{rules}}. Reguły są usuwane razem z tymi kolumnami i nie można ich przywrócić.",
+				"noChanges": "Każdy projekt ma już dokładnie kolumny przestrzeni roboczej.",
+				"summary": "Zmieni się projektów: {{changed}} z {{total}}",
+				"projectsAria": "Projekty, które się zmienią",
+				"columnsCreated": "Utworzone kolumny: {{created}}",
+				"columnsRemoved": "Usunięte kolumny: {{removed}}",
+				"columnsUpdated": "Kolumny ze zmienioną nazwą lub ustawieniami: {{updated}}",
+				"tasksMoved": "Przeniesione zadania: {{moved}}",
+				"rulesDeleted": "Usunięte reguły przepływu pracy: {{rules}}",
+				"movedTasksNote": "Przeniesione zadania nie dostają wpisu w aktywności ani zdarzenia integracji. Na liście są tylko projekty, które widzisz.",
+				"confirm": "Wymuś kolumny",
+				"confirming": "Wymuszanie..."
+			},
+			"disableDialog": {
+				"title": "Przestać wymuszać kolumny przestrzeni roboczej?",
+				"description": "Projekty zachowują swoje obecne kolumny i znów mogą je zmieniać. Kolumny pozostają powiązane z kolumnami przestrzeni, więc ponowne wymuszenie przywróci je dokładnie.",
+				"confirm": "Przestań wymuszać"
+			},
+			"deleteDialog": {
+				"title": "Usunąć kolumnę „{{name}}”?",
+				"description": "Kolumna zostanie usunięta z kolumn przestrzeni roboczej. Istniejące projekty zachowają własne kolumny.",
+				"descriptionEnforced": "Kolumna zostanie usunięta z każdego projektu. Zadania w niej trafią do wybranej kolumny, a reguły przepływu pracy powiązane z nią zostaną usunięte.",
+				"moveTasksTo": "Przenieś zadania do",
+				"needsTarget": "Zadania nadal używają tej kolumny. Wybierz, dokąd trafią.",
+				"confirm": "Usuń kolumnę"
+			},
+			"errors": {
+				"enforced": "Ta przestrzeń robocza wymusza swoje kolumny. Zmień je w ustawieniach przepływu pracy przestrzeni roboczej.",
+				"empty": "Najpierw dodaj co najmniej jedną kolumnę przestrzeni roboczej.",
+				"notEmpty": "Zadania nadal używają tej kolumny. Wybierz kolumnę, do której mają trafić.",
+				"last": "Ostatniej kolumny nie można usunąć, gdy kolumny są wymuszane.",
+				"slugConflict": "Kolumna o tej nazwie już istnieje w przestrzeni roboczej.",
+				"reservedSlug": "Ta nazwa jest zarezerwowana. Wybierz inną nazwę."
+			}
 		},
 		"workspaceResources": {
 			"pageTitle": "Ustawienia zasobów",

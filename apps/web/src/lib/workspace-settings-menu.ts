@@ -6,6 +6,7 @@ import {
   Shield,
   Tag,
   Users,
+  Workflow,
   Wrench,
 } from "lucide-react";
 
@@ -62,6 +63,13 @@ export function getWorkspaceSettingsMenuItems({
       }),
       url: "/dashboard/settings/workspace/custom-fields",
       icon: ListChecks,
+    },
+    {
+      title: t("settings:workspaceWorkflow.title", {
+        defaultValue: "Workflow",
+      }),
+      url: "/dashboard/settings/workspace/workflow",
+      icon: Workflow,
     },
     {
       title: t("settings:workspaceResources.title", {

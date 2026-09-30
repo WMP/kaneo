@@ -1024,6 +1024,72 @@
 			"sectionTitle": "Custom Fields",
 			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden."
 		},
+		"workspaceWorkflow": {
+			"pageTitle": "Workspace Workflow Settings",
+			"title": "Workflow",
+			"subtitle": "Define the board columns once for the whole workspace and, if you want, enforce them in every project.",
+			"columnsTitle": "Columns",
+			"columnsDescription": "New projects start with these columns. Drag a column or use the arrow buttons to reorder. Turn on \"Done column\" for stages that represent completed work.",
+			"columnsEnforcedHint": "Enforcement is on: every change here is applied to all projects of the workspace right away.",
+			"empty": "No workspace columns yet. Until you add some, new projects start with the default columns.",
+			"loadError": "Could not load the workspace columns.",
+			"retry": "Try again",
+			"enforcement": {
+				"title": "Enforcement",
+				"switchLabel": "Enforce workspace columns",
+				"description": "When on, every project of this workspace has exactly these columns and cannot add, rename, reorder or delete them. Workflow rules stay per project.",
+				"statusOn": "Enforced",
+				"statusOff": "Not enforced",
+				"noColumnsHint": "Add at least one column before you can enforce them.",
+				"noPermission": "Only people who can manage workspace settings can change enforcement.",
+				"enabledToast": "Workspace columns are now enforced in every project",
+				"enableError": "Failed to enforce the workspace columns",
+				"disabledToast": "Workspace columns are no longer enforced",
+				"disableError": "Failed to stop enforcing the workspace columns"
+			},
+			"enableDialog": {
+				"title": "Enforce workspace columns?",
+				"description": "Every project will get exactly the workspace columns. A project column is matched to a workspace column by its link, then its slug, then its name. Missing columns are created; columns without a match are removed.",
+				"fallbackLabel": "Move tasks of removed columns to",
+				"fallbackHelp": "Tasks in a project column that matches no workspace column are moved to this column before the project column is deleted.",
+				"previewLoading": "Checking what will change...",
+				"previewError": "Could not work out what would change.",
+				"rulesWarningTitle": "Workflow rules will be deleted",
+				"rulesWarningDescription": "{{rules}} workflow rules are attached to columns that will be removed. They are deleted together with those columns and cannot be restored.",
+				"noChanges": "Every project already has exactly the workspace columns.",
+				"summary": "{{changed}} of {{total}} projects will change",
+				"projectsAria": "Projects that will change",
+				"columnsCreated": "Columns created: {{created}}",
+				"columnsRemoved": "Columns removed: {{removed}}",
+				"columnsUpdated": "Columns renamed or updated: {{updated}}",
+				"tasksMoved": "Tasks moved: {{moved}}",
+				"rulesDeleted": "Workflow rules deleted: {{rules}}",
+				"movedTasksNote": "Moved tasks get no activity entry and no integration event. Only projects you can see are listed.",
+				"confirm": "Enforce columns",
+				"confirming": "Enforcing..."
+			},
+			"disableDialog": {
+				"title": "Stop enforcing workspace columns?",
+				"description": "Projects keep their current columns and can change them again. The columns stay linked to the workspace columns, so enforcing again restores them exactly.",
+				"confirm": "Stop enforcing"
+			},
+			"deleteDialog": {
+				"title": "Delete column \"{{name}}\"?",
+				"description": "The column is removed from the workspace columns. Existing projects keep their own columns.",
+				"descriptionEnforced": "The column is removed from every project. Tasks in it move to the column you choose, and workflow rules on it are deleted.",
+				"moveTasksTo": "Move tasks to",
+				"needsTarget": "Tasks still use this column. Choose where they go.",
+				"confirm": "Delete column"
+			},
+			"errors": {
+				"enforced": "This workspace enforces its columns. Change them in the workspace workflow settings.",
+				"empty": "Add at least one workspace column first.",
+				"notEmpty": "Tasks still use this column. Choose a column to move them to.",
+				"last": "The last column cannot be deleted while columns are enforced.",
+				"slugConflict": "A column with this name already exists in the workspace.",
+				"reservedSlug": "This name is reserved. Choose another name."
+			}
+		},
 		"workspaceResources": {
 			"pageTitle": "Resource Settings",
 			"title": "Resources",
@@ -1267,7 +1333,13 @@
 			"customFieldsTitle": "Custom Fields",
 			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
 			"automationTitle": "Automation Rules",
-			"automationDescription": "Map integration events to columns. When an event occurs, the linked task moves to the specified column."
+			"automationDescription": "Map integration events to columns. When an event occurs, the linked task moves to the specified column.",
+			"enforced": {
+				"title": "Columns are managed by the workspace",
+				"description": "This workspace enforces its columns, so every project has exactly the workspace columns and they cannot be changed here. Change them in the workspace workflow settings.",
+				"descriptionNoAccess": "This workspace enforces its columns, so every project has exactly the workspace columns and they cannot be changed here. Ask a workspace administrator to change them.",
+				"manageLink": "Open workspace workflow settings"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Select project",
@@ -1293,7 +1365,11 @@
 			"on": "On",
 			"off": "Off",
 			"newColumnPlaceholder": "New column name...",
-			"add": "Add"
+			"add": "Add",
+			"nameAria": "Name of column {{name}}",
+			"moveUpAria": "Move column {{name}} up",
+			"moveDownAria": "Move column {{name}} down",
+			"deleteAria": "Delete column {{name}}"
 		},
 		"customFields": {
 			"namePlaceholder": "Field name",
