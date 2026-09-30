@@ -28,11 +28,10 @@ the previous image. It runs the MinIO binary directly with temporary test data.
   example a release commit containing `[skip ci]`), dispatch **CI** on main before
   dispatching **Release**. Dry runs don't wait or publish.
 
-The separate PR title check uses the base branch's commitlint policy and reruns
-when the title changes. Helm validation also executes the existing secret and
-upgrade-rendering regression checks. Configure the new job checks as required in
-GitHub if they should block merging; editing workflows alone does not change
-branch protection.
+Helm validation also executes the existing secret and upgrade-rendering
+regression checks. Configure the new job checks as required in GitHub if they
+should block merging; editing workflows alone does not change branch
+protection.
 
 ## Local runtime checks
 
