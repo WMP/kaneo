@@ -4743,6 +4743,45 @@
           "joinedAt"
         ]
       },
+      "WorkspaceInvitationProjects": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "invitationId": {
+              "type": "string"
+            },
+            "projects": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "The project role the invitation grants there."
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "role"
+                ]
+              }
+            }
+          },
+          "required": [
+            "invitationId",
+            "projects"
+          ]
+        },
+        "description": "Per pending invitation of the workspace that grants projects: those projects with the project role, limited to the projects the caller can open. Invitations that grant none are left out."
+      },
       "AddedWorkspaceMember": {
         "type": "object",
         "properties": {
@@ -20229,6 +20268,61 @@
                   "$ref": "#/components/schemas/CodedError"
                 }
               },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/{workspaceId}/invitation-projects": {
+      "get": {
+        "operationId": "getWorkspaceInvitationProjects",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Get the projects of the pending invitations",
+        "description": "For the pending invitations list: per pending invitation that was made for projects (through the project invitation routes), the projects it grants with the project role. Only for a caller who holds invitation:create or invitation:cancel in their workspace role (anybody else gets an empty list), and only projects the caller can open are named.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects per pending invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitationProjects"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
               "text/plain": {
                 "schema": {
                   "type": "string"

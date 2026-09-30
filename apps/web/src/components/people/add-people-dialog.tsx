@@ -559,9 +559,13 @@ function AddPeopleDialog({
 
   const showSearching =
     searchable && directoryPending && directorySuggestions.length === 0;
+  // A search that failed (switched off, a guest account, too many searches) did
+  // not find that nobody matches: its own message is all that is shown.
+  const searchFailed = mayUseDirectory && searchable && directory.isError;
   const showNoMatches =
     searchable &&
     !hasOptions &&
+    !searchFailed &&
     !directoryPending &&
     !(isProject && canAdd && candidatesLoading && candidates === undefined);
   const showTypeHint =

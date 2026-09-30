@@ -743,6 +743,42 @@ describe("AddPeopleDialog directory errors", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(message);
   });
 
+  it("shows only the guest message to a guest, without 'no one matches' or an invitation it cannot send", async () => {
+    directory = {
+      data: undefined,
+      isFetching: false,
+      isError: true,
+      error: new ProjectMemberError("raw", {
+        code: "GUEST_NOT_ALLOWED",
+        status: 403,
+      }),
+    };
+    renderWorkspace({ canInvite: false });
+    await type("new.person@example.com");
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "people:errors.guestNotAllowed",
+    );
+    expect(screen.queryByText("people:add.noMatches")).toBeNull();
+    expect(screen.queryByText("people:add.noMatchesInvite")).toBeNull();
+    expect(screen.queryByRole("option")).toBeNull();
+  });
+
+  it("does not claim that nobody matches when the search failed", async () => {
+    directory = {
+      data: undefined,
+      isFetching: false,
+      isError: true,
+      error: new ProjectMemberError("raw", { status: 500 }),
+    };
+    renderWorkspace();
+    await type("zzz");
+
+    expect(screen.getByRole("alert")).toBeVisible();
+    expect(screen.queryByText("people:add.noMatchesInvite")).toBeNull();
+    expect(screen.queryByText("people:add.noMatches")).toBeNull();
+  });
+
   it("still offers the invitation after a refused search", async () => {
     directory = {
       data: undefined,

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import useCancelInvitation from "@/hooks/mutations/workspace-user/use-cancel-invitation";
 import useInviteWorkspaceUser from "@/hooks/mutations/workspace-user/use-invite-workspace-user";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
+import useGetWorkspaceInvitationProjects from "@/hooks/queries/workspace/use-get-workspace-invitation-projects";
 import {
   getInvitationEmailMessageKey,
   useInvitationEmailDelivery,
@@ -25,7 +26,10 @@ type Props = {
 // those get "Invite again", which replaces it. Expiry is judged with the
 // browser clock; a skewed clock can at worst offer the wrong action near the
 // boundary, and the API decides the outcome either way.
-function toPending(invitation: WorkspaceUserInvitation): PendingInvitation {
+function toPending(
+  invitation: WorkspaceUserInvitation,
+  projects: PendingInvitation["projects"],
+): PendingInvitation {
   const isLive =
     invitation.status === "pending" &&
     new Date(invitation.expiresAt).getTime() > Date.now();
@@ -40,6 +44,7 @@ function toPending(invitation: WorkspaceUserInvitation): PendingInvitation {
           : "expired",
     expiresAt: invitation.expiresAt,
     workspaceRole: invitation.role,
+    projects,
   };
 }
 
@@ -59,6 +64,15 @@ function WorkspacePendingInvitations({ workspaceId, invitations }: Props) {
     isError: assignableRolesFailed,
     refetch: refetchAssignableRoles,
   } = useGetAssignableRoles(workspaceId);
+  // What a project invitation grants (Better Auth's list knows nothing of it).
+  const { data: invitationProjects } =
+    useGetWorkspaceInvitationProjects(workspaceId);
+  const projectsByInvitation = new Map(
+    (invitationProjects ?? []).map((entry) => [
+      entry.invitationId,
+      entry.projects,
+    ]),
+  );
   const { canInviteUsers, canCancelInvitations } = useWorkspacePermission();
   const canInvite = Boolean(canInviteUsers());
   // Cancelling is its own permission in Better Auth, and "Invite again" needs
@@ -76,7 +90,9 @@ function WorkspacePendingInvitations({ workspaceId, invitations }: Props) {
       (invitation) =>
         invitation.status !== "accepted" && invitation.status !== "canceled",
     )
-    .map(toPending);
+    .map((invitation) =>
+      toPending(invitation, projectsByInvitation.get(invitation.id)),
+    );
 
   const handleResend = async (invitation: PendingInvitation) => {
     try {

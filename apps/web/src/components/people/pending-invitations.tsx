@@ -43,6 +43,11 @@ export type PendingInvitation = {
   workspaceRole: string;
   /** Only for an invitation to a project. */
   projectRole?: string;
+  /**
+   * The projects (and project role in each) the invitation grants, for a list
+   * that is not about one project.
+   */
+  projects?: { id: string; name: string; role: string }[];
 };
 
 /** What the caller may do with one invitation; the context decides. */
@@ -183,6 +188,20 @@ function PendingInvitations({
                         })}
                       </Badge>
                     ) : null}
+                    {invitation.projects?.map((project) => (
+                      <Badge
+                        key={project.id}
+                        variant="outline"
+                        className="gap-1"
+                      >
+                        <span className="max-w-32 truncate">
+                          {project.name}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {getWorkspaceRoleLabel(project.role, t)}
+                        </span>
+                      </Badge>
+                    ))}
                   </div>
                 </TableCell>
                 <TableCell className="pe-6 py-3 text-right">

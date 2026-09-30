@@ -50,6 +50,17 @@ vi.mock("@/hooks/queries/config/use-get-config", () => ({
   default: () => ({ data: config }),
 }));
 
+let invitationProjects: {
+  invitationId: string;
+  projects: { id: string; name: string; role: string }[];
+}[] = [];
+vi.mock(
+  "@/hooks/queries/workspace/use-get-workspace-invitation-projects",
+  () => ({
+    default: () => ({ data: invitationProjects }),
+  }),
+);
+
 const refetchAssignableRoles = vi.fn();
 
 type AssignableRolesState = {
@@ -80,6 +91,7 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
 }));
 
 beforeEach(() => {
+  invitationProjects = [];
   cancelInvitation.mockResolvedValue({});
   canCancelInvitations.mockReturnValue(true);
   assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
@@ -228,6 +240,42 @@ describe("WorkspacePendingInvitations row menu", () => {
     );
 
     expect(screen.getByText("projectInvitations:empty")).toBeVisible();
+  });
+
+  it("names the projects a project invitation grants, with the project role in each", () => {
+    invitationProjects = [
+      {
+        invitationId: "invite-1",
+        projects: [
+          { id: "p1", name: "Alpha", role: "member" },
+          { id: "p2", name: "Beta", role: "qa-lead" },
+        ],
+      },
+      {
+        invitationId: "invite-other",
+        projects: [{ id: "p3", name: "Elsewhere", role: "viewer" }],
+      },
+    ];
+    renderRow(pendingInvitation);
+
+    expect(screen.getByText("Alpha")).toBeVisible();
+    expect(screen.getByText("team:roles.member")).toBeVisible();
+    expect(screen.getByText("Beta")).toBeVisible();
+    expect(screen.getByText("Qa-Lead")).toBeVisible();
+    // Only what belongs to this invitation.
+    expect(screen.queryByText("Elsewhere")).toBeNull();
+  });
+
+  it("shows no project for a plain workspace invitation", () => {
+    invitationProjects = [
+      {
+        invitationId: "invite-other",
+        projects: [{ id: "p3", name: "Elsewhere", role: "viewer" }],
+      },
+    ];
+    renderRow(pendingInvitation);
+
+    expect(screen.queryByText("Elsewhere")).toBeNull();
   });
 
   it("shows the workspace role of the invitation, and no project role", () => {

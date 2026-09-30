@@ -51,6 +51,26 @@ export const addedWorkspaceMemberSchema = workspaceMemberSchema
   })
   .openapi("AddedWorkspaceMember");
 
+export const workspaceInvitationProjectsSchema = z
+  .array(
+    z.object({
+      invitationId: z.string(),
+      projects: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          role: z.string().openapi({
+            description: "The project role the invitation grants there.",
+          }),
+        }),
+      ),
+    }),
+  )
+  .openapi("WorkspaceInvitationProjects", {
+    description:
+      "Per pending invitation of the workspace that grants projects: those projects with the project role, limited to the projects the caller can open. Invitations that grant none are left out.",
+  });
+
 export const userDirectoryEntrySchema = z
   .object({
     id: z.string(),

@@ -8,7 +8,10 @@ import {
 } from "../openapi";
 import { codedErrorResponse } from "../utils/coded-error";
 import { accessibleProjectIds } from "../utils/project-access";
-import { requireWorkspacePermission } from "../utils/require-workspace-permission";
+import {
+  hasWorkspacePermission,
+  requireWorkspacePermission,
+} from "../utils/require-workspace-permission";
 import { toCsv } from "../utils/to-csv";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import addWorkspaceMemberCtrl from "./controllers/add-workspace-member";
@@ -17,6 +20,7 @@ import getAssignableRolesCtrl from "./controllers/get-assignable-roles";
 import getWorkspaceActivities from "./controllers/get-workspace-activities";
 import getWorkspaceActivityRetention from "./controllers/get-workspace-activity-retention";
 import getWorkspaceMembersCtrl from "./controllers/get-workspace-members";
+import listInvitationProjectsCtrl from "./controllers/list-invitation-projects";
 import searchUserDirectoryCtrl, {
   assertUserDirectoryEnabled,
 } from "./controllers/search-user-directory";
@@ -33,6 +37,7 @@ import {
   workspaceActivityExportSchema,
   workspaceActivityListSchema,
   workspaceActivityRetentionSchema,
+  workspaceInvitationProjectsSchema,
   workspaceMemberListSchema,
 } from "./response";
 import {
@@ -151,6 +156,26 @@ const addWorkspaceMemberRoute = createRoute({
     429: codedErrorResponse(
       "Too many adds from this user (30 per 10 minutes; on cloud also the invitation limit)",
     ),
+  },
+});
+
+const getInvitationProjectsRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceInvitationProjects",
+  path: "/{workspaceId}/invitation-projects",
+  tags: ["Workspaces"],
+  summary: "Get the projects of the pending invitations",
+  description:
+    "For the pending invitations list: per pending invitation that was made for projects (through the project invitation routes), the projects it grants with the project role. Only for a caller who holds invitation:create or invitation:cancel in their workspace role (anybody else gets an empty list), and only projects the caller can open are named.",
+  middleware: [workspaceAccess.fromParam("workspaceId")] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse(
+      "Projects per pending invitation",
+      workspaceInvitationProjectsSchema,
+    ),
+    400: errorResponse("Workspace ID could not be determined"),
+    403: errorResponse("No access to the workspace"),
   },
 });
 
@@ -300,6 +325,21 @@ const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
         await accessibleProjectIds(c.get("userId"), c.get("workspaceId")),
         { withProjects: c.req.valid("query").include === "projects" },
       ),
+      200,
+    ),
+  )
+  .openapi(getInvitationProjectsRoute, async (c) =>
+    c.json(
+      await listInvitationProjectsCtrl({
+        workspaceId: c.get("workspaceId"),
+        viewerProjectIds: await accessibleProjectIds(
+          c.get("userId"),
+          c.get("workspaceId"),
+        ),
+        mayManageInvitations:
+          (await hasWorkspacePermission(c, { invitation: ["create"] })) ||
+          (await hasWorkspacePermission(c, { invitation: ["cancel"] })),
+      }),
       200,
     ),
   )

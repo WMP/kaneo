@@ -292,3 +292,106 @@ describe("project members with the workspace role", () => {
     );
   });
 });
+
+describe("projects of the pending invitations", () => {
+  type InvitationProjects = {
+    invitationId: string;
+    projects: { id: string; name: string; role: string }[];
+  }[];
+
+  async function invite(
+    w: Awaited<ReturnType<typeof buildWorld>>,
+    projectId: string,
+    email: string,
+    projectRole: string,
+  ) {
+    as(w.owner.user);
+    const response = await app.request(
+      `/api/project/${projectId}/invitations`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, workspaceRole: "viewer", projectRole }),
+      },
+    );
+    expect([200, 201]).toContain(response.status);
+    return ((await response.json()) as { id: string }).id;
+  }
+
+  async function read(workspaceId: string) {
+    const response = await app.request(
+      `/api/workspace/${workspaceId}/invitation-projects`,
+    );
+    expect(response.status).toBe(200);
+    return (await response.json()) as InvitationProjects;
+  }
+
+  it("names the projects and roles of project invitations, and leaves plain workspace invitations out", async () => {
+    const w = await buildWorld();
+    const alphaInvite = await invite(w, w.alpha.id, "a@example.com", "member");
+    // The same person invited to a second project: one invitation, two projects.
+    await invite(w, w.beta.id, "a@example.com", "viewer");
+    const gammaInvite = await invite(w, w.gamma.id, "g@example.com", "admin");
+    await db.insert(schema.invitationTable).values({
+      id: "plain-invite",
+      workspaceId: w.workspaceId,
+      email: "plain@example.com",
+      role: "viewer",
+      status: "pending",
+      expiresAt: new Date(Date.now() + 86_400_000),
+      inviterId: w.owner.user.id,
+    });
+
+    as(w.owner.user);
+    const rows = await read(w.workspaceId);
+    const byId = new Map(rows.map((row) => [row.invitationId, row.projects]));
+    expect(byId.get(alphaInvite)).toEqual([
+      { id: w.alpha.id, name: "Alpha", role: "member" },
+      { id: w.beta.id, name: "Beta", role: "viewer" },
+    ]);
+    expect(byId.get(gammaInvite)).toEqual([
+      { id: w.gamma.id, name: "Gamma", role: "admin" },
+    ]);
+    expect(byId.has("plain-invite")).toBe(false);
+  });
+
+  it("names only projects the caller can open, and only to somebody who manages invitations", async () => {
+    const w = await buildWorld();
+    await db.insert(schema.workspaceRoleTable).values({
+      workspaceId: w.workspaceId,
+      role: "invite-manager",
+      permission: JSON.stringify({
+        invitation: ["create", "cancel"],
+        project: ["read"],
+        task: ["read"],
+      }),
+    });
+    const invitationManager = await addWorkspaceMember(
+      w.workspaceId,
+      "invite-manager",
+    );
+    await addProjectMember(w.alpha.id, invitationManager.id, "admin");
+    const both = await invite(w, w.alpha.id, "a@example.com", "member");
+    await invite(w, w.beta.id, "a@example.com", "viewer");
+    const betaOnly = await invite(w, w.beta.id, "b@example.com", "member");
+
+    // Only Alpha is visible to the invitation manager: Beta is not named and an
+    // invitation that grants nothing visible is left out.
+    as(invitationManager);
+    const rows = await read(w.workspaceId);
+    expect(rows).toEqual([
+      {
+        invitationId: both,
+        projects: [{ id: w.alpha.id, name: "Alpha", role: "member" }],
+      },
+    ]);
+    expect(rows.some((row) => row.invitationId === betaOnly)).toBe(false);
+    expect(JSON.stringify(rows)).not.toContain("Beta");
+
+    // Nobody without invitation rights learns anything.
+    as(w.plain);
+    expect(await read(w.workspaceId)).toEqual([]);
+    as(w.manager);
+    expect(await read(w.workspaceId)).toEqual([]);
+  });
+});
