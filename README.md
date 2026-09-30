@@ -1,7 +1,12 @@
 <!--
-  Screenshots live in docs/images/kaneo-pro/. Keep them consistent when you update them:
-  dark theme, a 1440 CSS px viewport at 2x, cropped to their content, fictional demo data only
-  (Northwind Robotics, @example.com). Never show real people, logins, tokens or other secrets.
+  readme-baseline: 0ecbbf738995e4a90adf78fb16f8fc11221245b5
+  This README covers main up to the commit above. To bring it up to date, follow
+  .claude/skills/update-readme/SKILL.md, which also moves this marker.
+
+  Screenshots live in docs/images/kaneo-pro/ and come from the demo tool in scripts/demo/.
+  Keep them consistent: dark theme, a 1440 CSS px viewport at 2x, cropped to their content,
+  fictional demo data only (Northwind Robotics, international names, @example.com), and a
+  public-looking host instead of localhost. Never show real people, logins, tokens or other secrets.
 -->
 
 <div align="center">
