@@ -64,7 +64,7 @@
 				"auth": "身份验证失败，请重新登录。",
 				"server": "服务器错误，请稍后重试。",
 				"unknown": "发生未知错误。",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"serverUnreachable": "无法连接服务器。请检查网络连接；服务器恢复后数据将自动重新加载。"
 			},
 			"troubleshootingSteps": {
 				"cors": {
@@ -155,29 +155,29 @@
 					"rose": "玫红",
 					"crimson": "深红"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "你无权在此项目中创建任务，请选择其他项目。",
+				"permissionsUnavailable": "无法检查你在此项目中的权限。请重试或选择其他项目。",
 				"selectOptionPlaceholder": "选择一个选项"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "否",
+			"notSet": "未设置",
+			"true": "是",
+			"undefined": "未定义"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "检查中…",
+			"offlineDescription": "请检查网络连接。屏幕上的数据可能已过期，恢复联网前更改无法保存。",
+			"offlineTitle": "你已离线",
+			"restored": "连接已恢复，数据已刷新。",
+			"retry": "立即重试",
+			"serverUnreachableDescription": "屏幕上的数据可能已过期，更改不会被保存。正在自动重试…",
+			"serverUnreachableTitle": "无法连接 Kaneo 服务器"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "你在此项目中的权限已变更。",
+			"lost": "你已无权访问此项目。"
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "接受邀请失败",
 				"acceptSuccess": "邀请已接受，欢迎加入团队！"
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "正在接受邀请..."
 		},
 		"onboarding": {
 			"pageTitle": "欢迎使用 Kaneo",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "忘记密码？",
+			"requestTitle": "重置密码",
+			"requestSubtitle": "输入你的邮箱，我们会发送密码重置链接。",
+			"sendLink": "发送重置链接",
+			"sending": "发送中…",
+			"sent": "如果该邮箱对应的账户存在，你将收到密码重置链接。请检查收件箱和垃圾邮件文件夹。",
+			"requestError": "无法请求重置链接，请重试。",
+			"unavailable": "密码重置不可用，请联系实例管理员。",
+			"configError": "无法连接服务器，请刷新页面后重试。",
+			"resetTitle": "设置新密码",
+			"resetSubtitle": "新密码长度为 8–128 个字符。",
+			"newPassword": "新密码",
+			"confirmPassword": "确认新密码",
+			"passwordMismatch": "两次输入的密码不一致。",
+			"passwordLength": "请使用 8 到 128 个字符。",
+			"resetPassword": "重置密码",
+			"resetting": "重置中…",
+			"invalidLink": "此重置链接无效或已过期，请重新申请链接后继续。",
+			"requestNewLink": "重新申请链接",
+			"resetError": "无法重置密码，请重试。",
+			"success": "密码已重置，请使用新密码登录。",
+			"backToSignIn": "返回登录"
 		}
 	},
 	"settings": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "显示任务的标签和标记",
 			"priority": "优先级",
 			"priorityDescription": "显示优先级指示",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "项目背景",
+			"projectBackgroundsDescription": "在看板上显示项目背景图片"
 		},
 		"developerPage": {
 			"pageTitle": "开发者设置",
@@ -737,11 +737,11 @@
 				"task": "任务",
 				"label": "标签",
 				"workspace": "工作区",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "工作区管理",
+				"member": "成员",
+				"invitation": "邀请",
+				"team": "团队",
+				"ac": "角色和权限"
 			},
 			"permissions": {
 				"project": {
@@ -826,68 +826,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "编辑工作区管理",
+						"description": "通过账户服务更改工作区设置。"
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "删除工作区",
+						"description": "通过账户服务永久删除工作区。"
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "添加成员",
+						"description": "将用户添加到此工作区。"
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "更改成员角色",
+						"description": "更改分配给工作区成员的角色。"
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "移除成员",
+						"description": "将用户从此工作区移除。"
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "邀请成员",
+						"description": "发送工作区邀请。"
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "取消邀请",
+						"description": "撤销待处理的工作区邀请。"
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "创建团队",
+						"description": "在此工作区中创建团队。"
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "编辑团队",
+						"description": "更改团队及团队成员。"
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "删除团队",
+						"description": "删除此工作区中的团队。"
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "创建角色",
+						"description": "创建工作区角色并分配其权限。"
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "查看角色",
+						"description": "查看工作区角色及其权限。"
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "更改角色权限",
+						"description": "更改角色权限，包括管理访问权限。"
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "删除角色",
+						"description": "删除自定义工作区角色。"
 					}
 				}
 			},
@@ -933,8 +933,8 @@
 			"updateError": "更新标签失败",
 			"deleteError": "删除标签失败",
 			"nameRequired": "标签名称不能为空",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "等待删除",
+			"resumeDeletion": "继续删除"
 		},
 		"projectGeneral": {
 			"pageTitle": "项目设置",
@@ -974,15 +974,15 @@
 			},
 			"importExportTasks": "导入/导出",
 			"importExportTasksDescription": "导入和导出任务。",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "选择显示在此项目看板后面的图片。",
+			"backgroundLabel": "看板背景",
+			"backgroundRemove": "移除图片",
+			"backgroundRemoveError": "移除项目背景失败",
+			"backgroundRemoveSuccess": "项目背景已移除",
+			"backgroundReplace": "替换图片",
+			"backgroundUpload": "上传图片",
+			"backgroundUploadError": "更新项目背景失败",
+			"backgroundUploadSuccess": "项目背景已更新",
 			"moveModalConfirm": "移动项目",
 			"moveModalDescription": "这将把项目 \"{{name}}\" 及其所有任务移动到 \"{{workspace}}\"。分配给非该工作区成员的任务将被取消分配，此项目的通知订阅也会被清除。",
 			"moveModalTitle": "移动项目？",
@@ -1013,8 +1013,8 @@
 			"mattermostSectionSubtitle": "借助 Incoming Webhook，把项目任务动态推送到 Mattermost 频道。",
 			"telegramSectionTitle": "Telegram 集成",
 			"telegramSectionSubtitle": "通过 Bot 将项目任务更新发送到 Telegram 聊天或话题。",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"gitlabSectionSubtitle": "与 GitLab.com 或自托管实例同步任务（Issues、合并请求、Webhook）。",
+			"gitlabSectionTitle": "GitLab 集成"
 		},
 		"projectVisibility": {
 			"pageTitle": "项目可见性",
@@ -1039,8 +1039,8 @@
 			"columnsDescription": "管理看板上显示的列，可拖拽排序。打开“完成列”以表示已完成阶段。",
 			"automationTitle": "自动化规则",
 			"automationDescription": "将集成事件映射到列。当事件发生时，关联的任务会移动到指定的列。",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "管理此项目的自定义字段。拖动可重新排序。",
+			"customFieldsTitle": "自定义字段"
 		},
 		"projectSwitcher": {
 			"selectProject": "选择项目",
@@ -1131,9 +1131,9 @@
 			"accountVerificationHint": "连接你的 GitHub 账户，以验证你拥有此仓库的管理员权限。",
 			"enableGithubSignInHint": "请联系实例管理员启用 GitHub 登录。",
 			"reverifyHint": "重新连接此仓库，以验证访问权限并恢复同步。",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "继续导入",
+			"importPaused": "此次导入已保存进度，可以继续。",
+			"importSummary": "已创建：{{imported}} · 已更新：{{updated}} · 已跳过：{{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -1228,7 +1228,7 @@
 			"connectionHint": "粘贴 Slack Incoming Webhook URL 并选择应发布的任务事件。",
 			"connected": "已连接",
 			"paused": "已暂停",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookLabel": "Incoming Webhook URL",
 			"webhookPlaceholder": "https://hooks.slack.com/services/...",
 			"webhookHint": "在 Slack 中创建 Incoming Webhook，然后粘贴生成的 URL。",
 			"channelLabel": "频道名称",
@@ -1304,7 +1304,7 @@
 			"connectionHint": "粘贴 Mattermost 的 Incoming Webhook URL，再勾选要推送哪些任务动态。",
 			"connected": "已连接",
 			"paused": "已暂停",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookLabel": "Incoming Webhook URL",
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/...",
 			"webhookHint": "先在 Mattermost 中创建 Incoming Webhook，再把生成的 URL 粘贴到此处。",
 			"channelLabel": "频道名称",
@@ -1472,7 +1472,7 @@
 				"issue_closed": "Issue 已关闭"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "发生 GitLab Webhook 事件时，将关联的任务移动到某一列。"
 		},
 		"externalLinks": {
 			"resources": "资源",
@@ -1481,142 +1481,142 @@
 			"merged": "已合并",
 			"draft": "草稿",
 			"open": "打开",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "添加中...",
+			"addResource": "添加资源",
+			"cancel": "取消",
+			"empty": "此任务未关联任何资源。",
+			"titleOptional": "标题（可选）",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "移除 {{title}}",
+			"removeError": "移除资源链接失败。"
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "添加",
+			"createError": "创建自定义字段失败。",
+			"createSuccess": "自定义字段已创建。",
+			"creating": "创建中...",
+			"defaultLabel": "默认",
+			"defaultValuePlaceholder": "默认值",
+			"deleteButton": "删除",
+			"deleteError": "删除自定义字段失败。",
+			"deleteSuccess": "自定义字段已删除。",
+			"deleting": "删除中...",
+			"empty": "尚未配置自定义字段。",
+			"loading": "正在加载自定义字段...",
+			"namePlaceholder": "字段名称",
+			"noOptionsPlaceholder": "无选项",
+			"optionsPlaceholder": "选项以逗号分隔",
+			"required": "必填",
+			"typePlaceholder": "选择字段类型",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "布尔值",
+				"date": "日期",
+				"dropdown": "下拉菜单",
+				"number": "数字",
+				"text": "文本",
+				"multiselect": "多选"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "可用选项",
+			"clearDefault": "清除",
+			"defaultValues": "{{count}} 个默认值",
+			"moreOptions": "另有 {{hiddenCount}} 个",
+			"multiple": "多个",
+			"options": "{{count}} 个选项",
+			"reorderError": "字段重新排序失败",
+			"selectPlaceholder": "选择选项",
+			"optionColorAriaLabel": "设置“{{option}}”的颜色",
+			"optionColorsLabel": "选项颜色",
+			"updateColorError": "更新选项颜色失败。",
+			"updateColorSuccess": "选项颜色已更新。",
+			"hiddenOnProject": "已隐藏",
+			"hideField": "在此项目中隐藏“{{name}}”",
+			"inheritedDescription": "在工作区级别定义的字段。隐藏字段仅会将其从此项目中移除，必填字段无法隐藏。",
+			"inheritedEmpty": "工作区级别尚未添加自定义字段。",
+			"inheritedTitle": "继承自工作区",
+			"ownFieldsDescription": "仅为此项目定义的字段。拖动可重新排序。",
+			"ownFieldsTitle": "项目字段",
+			"requiredByWorkspace": "工作区要求必填",
+			"showField": "在此项目中显示“{{name}}”",
+			"visibilityUpdateError": "更新字段可见性失败。",
+			"visibleOnProject": "可见"
 		},
-		"administration": "Administration",
+		"administration": "管理",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "停用账户",
+				"edit": "编辑账户",
+				"open": "{{name}} 的操作",
+				"reactivate": "重新启用账户"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "清除搜索",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "操作",
+				"joined": "加入时间",
+				"role": "全局角色",
+				"status": "状态",
+				"user": "用户"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "停用账户",
+					"description": "{{name}} 将被登出，在管理员重新启用账户前无法登录。",
+					"title": "停用此账户？"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "永久删除",
+					"description": "这将永久删除 {{name}}、其会话、成员身份及相关数据，且无法撤销。",
+					"title": "永久删除此账户？"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "重新启用账户",
+					"description": "{{name}} 将可以重新登录并访问其工作区。",
+					"title": "重新启用此账户？"
 				},
-				"working": "Working…"
+				"working": "处理中…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "用户目录",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "更新此账户的身份信息和实例范围的访问权限。",
+				"email": "邮箱地址",
+				"name": "姓名",
+				"role": "全局角色",
+				"save": "保存更改",
+				"saving": "保存中…",
+				"selfRoleHint": "你不能更改自己的全局角色。",
+				"title": "编辑用户"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "请尝试其他姓名或邮箱地址。",
+			"emptyTitle": "未找到用户",
+			"instanceBadge": "实例",
+			"loadError": "无法加载用户。",
+			"next": "下一页",
+			"pagination": "第 {{current}} 页，共 {{total}} 页",
+			"previous": "上一页",
+			"refreshing": "正在刷新用户",
+			"retry": "重试",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "实例管理员",
+				"user": "用户"
 			},
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_other": "{{count}} 位匹配用户",
+			"searchLabel": "搜索用户",
+			"searchPlaceholder": "搜索姓名或邮箱…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "已启用",
+				"deactivated": "已停用"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "管理此 Kaneo 实例上注册的所有账户。",
+			"title": "用户管理",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "更新用户状态失败",
+				"deactivated": "用户已停用",
+				"deleted": "用户已删除",
+				"reactivated": "用户已重新启用",
+				"updated": "用户已更新",
+				"updateError": "更新用户失败"
 			},
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_other": "{{count}} 位已注册用户",
+			"you": "（你）"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "添加节假日",
@@ -1649,256 +1649,256 @@
 			"workingDaysTitle": "工作日",
 			"loading": "正在加载日历…"
 		},
-		"security": "Security",
+		"security": "安全",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "确认新密码",
+			"confirmPasswordPlaceholder": "再次输入新密码",
+			"currentPassword": "当前密码",
+			"currentPasswordPlaceholder": "输入当前密码",
+			"newPassword": "新密码",
+			"newPasswordPlaceholder": "输入新密码",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "你的账户使用其他方式登录，因此没有可更改的密码。",
+				"title": "无法更改密码"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "安全",
+			"sectionSubtitle": "更改你用于登录的密码。",
+			"sectionTitle": "密码",
+			"submit": "更新密码",
+			"submitting": "更新中...",
+			"subtitle": "管理你的密码和账户安全。",
+			"title": "安全",
+			"updateError": "更新密码失败。",
+			"updateSuccess": "密码已更新。",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "请确认新密码。",
+				"currentRequired": "请输入当前密码。",
+				"mismatch": "两次输入的密码不一致。",
+				"tooShort": "新密码至少需要 8 个字符。",
+				"sameAsCurrent": "新密码不能与当前密码相同。"
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
+			"actionsHint": "验证访问并连接",
+			"actionsTitle": "操作",
+			"badgeConnected": "已连接",
+			"badgeNotConnected": "未连接",
+			"baseUrlHint": "https://gitlab.com，或你的实例根 URL",
 			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"browse": "浏览",
+			"browseModalHint": "你的令牌所属成员的项目",
+			"browseModalTitle": "你的项目",
+			"browseNeedsCredentials": "请输入 GitLab URL 和令牌以浏览",
+			"commentTaskLinkHint": "启用后，Kaneo 会在 GitLab 中新建的每个 Issue 下评论指向任务的链接。",
+			"commentTaskLinkTitle": "在 GitLab 新建的 Issue 下评论 Kaneo 链接",
+			"connect": "连接",
+			"connectedActive": "项目已连接并处于活动状态",
+			"connectionStatus": "连接状态",
+			"currentToken": "已存储",
+			"disconnect": "断开连接",
+			"importDisabledHint": "验证上方项目后即可启用导入",
+			"importing": "导入中…",
+			"importIssues": "导入 Issues",
+			"importSectionHint": "从该项目导入打开的 Issues 和合并请求",
+			"importSectionTitle": "导入 GitLab Issues",
+			"loadingProjects": "正在加载项目…",
+			"notConnectedHint": "未连接 GitLab 项目",
+			"openInGitlab": "在 GitLab 中打开 {{project}}",
+			"project": "项目",
+			"projectHint": "已关联的 GitLab 项目",
+			"projectPathHint": "包含所有群组的完整路径，例如 group/subgroup/project",
+			"projectPathLabel": "项目路径",
+			"retry": "重试",
+			"searchProjects": "搜索…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "已关闭在 GitLab 新建 Issue 下评论任务链接",
+				"commentOnEnabled": "Kaneo 会在 GitLab 中新建的 Issue 下评论任务链接",
+				"importError": "导入 Issues 失败",
+				"issuesImported": "Issues 导入成功",
+				"notGitlabInstance": "该 URL 未指向 GitLab 实例",
+				"projectNotFound": "项目不存在或无法访问",
+				"redirected": "GitLab URL 已被重定向（通常是跳转到 HTTPS），请直接使用最终 URL。",
+				"removed": "GitLab 集成已移除",
+				"removeError": "移除 GitLab 集成失败",
+				"secretCopied": "已复制",
+				"settingsUpdateError": "更新 GitLab 集成失败",
+				"tokenRequired": "访问令牌不能为空",
+				"tokenRequiredVerify": "请输入令牌以进行验证",
+				"unableToCopySecret": "无法复制密钥",
+				"updated": "GitLab 集成已保存",
+				"updateError": "保存 GitLab 集成失败",
+				"verifyError": "验证 GitLab 访问失败",
+				"verifyFirst": "验证访问失败，请检查 URL、令牌和项目路径",
+				"verifyOk": "GitLab 令牌可以访问此项目",
+				"verifyWarning": "请检查令牌权限或项目访问权限"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "具有 api 范围，且在项目中至少为 Developer 角色的令牌",
+			"tokenLabel": "访问令牌",
+			"tokenPlaceholder": "粘贴令牌",
+			"tokenPlaceholderUpdate": "粘贴新令牌以轮换",
+			"tokenTypeBearer": "OAuth2 令牌",
+			"tokenTypeHint": "令牌的发送方式。访问令牌使用 PRIVATE-TOKEN；OAuth2 令牌使用 Authorization。",
+			"tokenTypeLabel": "令牌类型",
+			"tokenTypePrivate": "个人、项目或群组访问令牌",
+			"update": "更新",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "请输入有效的 URL（例如 https://gitlab.com）",
+				"baseUrlRequired": "GitLab 基础 URL 不能为空",
+				"pathInvalid": "请输入完整路径，例如 group/project",
+				"pathRequired": "项目路径不能为空"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
+			"verify": "验证",
+			"webhookCopy": "复制",
+			"webhookHide": "隐藏",
+			"webhookHint": "在你的 GitLab 项目中，添加使用此 URL 和密钥令牌的 Webhook。启用 push、issues、comments 和 merge request 事件。",
+			"webhookSecretLabel": "密钥令牌（必须与 GitLab 中 Webhook 上设置的一致）",
+			"webhookShow": "显示",
 			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"loadProjectsError": "加载项目失败",
+			"importPermissionHint": "导入需要创建和更新任务的权限。"
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "日历订阅",
+			"subtitle": "在你的日历应用中订阅已排期的项目任务。",
+			"createTitle": "创建日历订阅",
+			"filterHint": "包含设有开始或截止日期，且至少带有一个所选标签的任务。",
+			"labels": "标签",
+			"selectLabels": "搜索并选择标签…",
+			"noLabels": "未找到标签。",
+			"timeZoneHint": "全天日期使用 {{timeZone}}。",
+			"accessHint": "任何拥有订阅链接的人都可以读取匹配任务的标题、描述和日期。撤销链接可阻止后续访问。",
+			"create": "创建订阅",
+			"creating": "创建中…",
+			"created": "日历订阅已创建。",
+			"createError": "无法创建日历订阅。",
+			"activeFeeds": "有效订阅",
+			"subscribeHint": "复制链接并将其添加为日历订阅。日历应用刷新订阅后，更新才会显示。",
+			"empty": "还没有日历订阅。",
+			"feedUrl": "日历订阅 URL",
+			"copy": "复制链接",
+			"copied": "日历订阅链接已复制。",
+			"copyError": "无法复制链接，请选中 URL 后手动复制。",
+			"revoke": "撤销",
+			"revoked": "日历订阅已撤销。",
+			"revokeError": "无法撤销日历订阅。",
+			"loadError": "无法加载日历订阅或标签，请重试。",
+			"deletedLabel": "已删除的标签",
+			"permissionRequired": "你需要项目共享权限才能管理日历订阅。"
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "自定义字段设置",
+			"sectionDescription": "此处定义的字段会添加到工作区中的每个项目。项目管理员只能为自己的项目隐藏或显示字段，必填字段无法隐藏。",
+			"sectionTitle": "自定义字段",
+			"subtitle": "管理工作区级别的自定义字段，此工作区中的每个项目都会继承这些字段。",
+			"title": "自定义字段"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "为此工作区创建新的可分配资源。创建后无法更改其类型。",
+			"createError": "创建资源失败",
+			"createResource": "创建资源",
+			"createSuccess": "资源已创建",
+			"deleteConfirmDescription": "此资源将从其分配的所有任务中移除，且无法撤销。",
+			"deleteConfirmTitle": "删除此资源？",
+			"deleteError": "删除资源失败",
+			"deleteResource": "删除",
+			"deleteSuccess": "资源已删除",
+			"editDescription": "更新此资源的名称或邮箱。",
+			"editResource": "编辑资源",
+			"emailLabel": "邮箱（可选）",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "还没有资源。创建第一个人员、设备或物料即可开始。",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "设备",
+				"material": "物料",
+				"person": "人员"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "类型",
+			"nameLabel": "名称",
+			"namePlaceholder": "输入名称",
+			"nameRequired": "资源名称不能为空",
+			"pageTitle": "资源设置",
+			"saveResource": "保存",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "资源",
+			"updateError": "更新资源失败",
+			"updateSuccess": "资源已更新",
+			"loadError": "无法加载资源，请重试。",
+			"loading": "正在加载资源…",
+			"emailChangeDetaches": "更改邮箱会解除与待处理邀请的关联。",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "此资源已关联到成员。",
+				"alreadyWorkspaceMember": "此地址属于工作区的一名成员，请改为将资源关联到该成员。",
+				"disposableEmail": "不允许邀请一次性邮箱地址。",
+				"duplicateProject": "每个项目只能列出一次。",
+				"emailNotAllowed": "只有人员类型的资源才能设置邮箱地址。",
+				"guestCannotInvite": "访客账户无法发送邀请。",
+				"insufficientPermissions": "你无权邀请人员加入其中某个项目。",
+				"invitationLimitReached": "已达到此工作区的邀请数量上限。",
+				"invitationRoleConflict": "此地址的待处理邀请已使用另一个工作区角色。",
+				"noEmail": "请先为该资源添加邮箱地址。",
+				"notLinked": "此资源未关联到成员。",
+				"notMember": "该用户不是此工作区的成员。",
+				"notPerson": "只有人员类型的资源才能被邀请或关联。",
+				"ownerRole": "所有者角色无法通过邀请授予。",
+				"projectAccessDenied": "你无权访问其中某个项目。",
+				"rateLimited": "邀请过于频繁，请一分钟后重试。",
+				"resourceChanged": "资源已发生变化，请重试。",
+				"roleExceedsYourPermissions": "你不能授予权限高于自己的角色。",
+				"unknownRole": "其中一个角色已不存在，请选择其他角色。",
+				"notFound": "未找到资源。",
+				"alreadyWorkspaceMemberOnly": "此地址属于工作区的一名成员。",
+				"workspaceNotFound": "未找到工作区。"
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "这些项目已添加到该地址的待处理邀请中。",
+				"createdTitle": "邀请已创建",
+				"description": "邀请将发送至 {{email}}。所选项目中此资源的分配将转移到新账户。",
+				"error": "发送邀请失败",
+				"hasTasks": "有任务",
+				"noProjectRoles": "没有可分配的角色",
+				"noProjects": "你无法邀请人员加入任何项目。",
+				"pickProject": "请至少选择一个项目。",
+				"projectRoleLabel": "在 {{project}} 中的角色",
+				"projectRolesError": "无法加载角色",
+				"projectRolesLoading": "正在加载角色...",
+				"projectsError": "无法加载你可邀请的项目，请稍后重试。",
+				"projectsHint": "此人将获得你勾选项目的访问权限。已包含此资源任务的项目默认已勾选。",
+				"projectsLabel": "项目",
+				"projectsLoading": "正在加载项目...",
+				"title": "邀请 {{name}}",
+				"workspaceRoleLabel": "工作区角色"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "邀请",
+			"inviteNeedsEmail": "请添加邮箱地址以邀请此人。",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "选择此工作区的一名成员。该成员可访问的项目中，此资源的分配将转移到其账户。",
+				"error": "关联资源失败",
+				"hint": "该成员无法访问的项目中的分配仍保留在资源上。工作负载会将其计入该成员所在行。",
+				"memberLabel": "成员",
+				"memberPlaceholder": "选择成员",
+				"membersError": "无法加载成员。",
+				"membersLoading": "正在加载成员...",
+				"noMembers": "没有可关联的成员。",
+				"submit": "关联",
+				"success": "已关联到 {{name}}。已转移的分配：{{moved}}。",
+				"title": "将 {{name}} 关联到成员"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "关联成员",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "已邀请（已过期）",
+				"invitedPending": "已邀请（待处理）",
+				"linked": "已关联到成员",
+				"linkedTo": "已关联到 {{name}}",
+				"notInvited": "未邀请"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "此资源将不再与该成员关联。已转移的分配仍保留在成员名下。",
+				"error": "取消关联资源失败",
+				"success": "资源已取消关联",
+				"title": "取消关联此资源？"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "取消关联"
 		}
 	},
 	"navigation": {
@@ -2017,11 +2017,11 @@
 			}
 		},
 		"mobileProjectNav": {
-			"backlog": "Backlog",
-			"board": "Board",
-			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"backlog": "待办",
+			"board": "看板",
+			"gantt": "甘特图",
+			"projects": "项目",
+			"view": "视图"
 		}
 	},
 	"notifications": {
@@ -2189,8 +2189,8 @@
 					"renderFailed": "Mermaid 图渲染失败"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "导入自 {{source}}",
+			"importedBy": "由 {{name}} 导入",
 			"commentedOnForge": "在 {{forge}} 上评论"
 		},
 		"relationCreated": "添加了依赖关系",
@@ -2242,7 +2242,7 @@
 			"loadingTask": "正在加载任务…",
 			"taskNotFound": "未找到任务",
 			"taskNotFoundDescription": "你查找的任务不存在或已删除。",
-			"customFields": "Custom Fields"
+			"customFields": "自定义字段"
 		},
 		"detail": {
 			"subtaskOf": "子任务属于",
@@ -2349,15 +2349,15 @@
 					"renderFailed": "Mermaid 图渲染失败"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "大",
+					"medium": "中",
+					"reset": "重置大小",
+					"resizeHandle": "调整图片大小",
+					"small": "小"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "字段已更新",
+			"selectOption": "选择选项",
 			"pickDate": "选择日期"
 		},
 		"entity": {
@@ -2418,7 +2418,7 @@
 			"deleteAction": "删除任务",
 			"completeAria": "将子任务标记为完成",
 			"progress": "已完成 {{completed}}/{{total}} 个子任务",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "此项目中没有与完成或重新打开该子任务对应的列。"
 		},
 		"properties": {
 			"title": "属性",
@@ -2449,19 +2449,19 @@
 			"assignee": {
 				"unassigned": "未指派",
 				"updateError": "更新任务负责人失败",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "取消全部分配",
+				"addResource": "新建资源",
+				"createResource": "创建",
+				"createResourceError": "创建资源失败",
+				"newResourceEmailPlaceholder": "邮箱（可选）",
+				"newResourceNamePlaceholder": "名称",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "设备",
+					"material": "物料",
+					"person": "人员"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "资源",
+				"notInProject": "已不在此项目中"
 			},
 			"status": {
 				"updateError": "更新任务状态失败"
@@ -2605,10 +2605,10 @@
 				"isAnyOf": "为以下任一",
 				"includeAnyOf": "包含以下任一"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "全部",
+			"allCustomFieldValues": "所有值",
+			"noCustomFieldValues": "没有自定义字段值",
+			"noValuesUsedYet": "尚未使用任何值"
 		},
 		"calendar": {
 			"pageTitle": "{{name}} – 日历",
@@ -2639,10 +2639,10 @@
 			"resizeStart": "调整开始日期",
 			"resizeDue": "调整截止日期",
 			"taskAriaLabel": "{{title}}：打开或拖动以移动",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"previousPeriod": "上一时段",
+			"nextPeriod": "下一时段",
+			"periodStart": "时间线开始日期",
+			"showTaskDates": "显示任务日期",
 			"legendBlocking": "阻塞",
 			"legendRelated": "相关",
 			"externalProjectBadge": "在{{projectName}}中",
@@ -2664,7 +2664,7 @@
 			"criticalPathToggle": "关键路径",
 			"criticalPathToggleAriaLabel": "高亮显示关键路径",
 			"legendCriticalPath": "关键路径",
-			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
+			"constraintMarkerAriaLabel": "{{title}}：{{type}}，{{date}}",
 			"constraintViolationAriaLabel": "{{title}}:违反约束 — {{type}},{{date}}",
 			"dependentsRescheduled_other": "已重新排期{{count}}个依赖任务",
 			"baselineSlipEarlyAriaLabel": "{{title}}:完成时间比基线早{{days}}天",
@@ -2682,12 +2682,12 @@
 			"gateWarningBadge": "关卡",
 			"gateWarningItem": "\"{{title}}\"为{{status}}",
 			"gateWarningTitle": "被未审批的关卡阻塞",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "自定义字段",
+			"barColorSourceLabel": "条形颜色",
+			"barColorSourceNone": "无",
+			"barColorSourceFirstLabel": "第一个标签",
+			"externalTaskDerivedTitle": "{{title}} — {{projectName}} 中的关联任务；该任务没有自己的日期，此位置由其依赖关系推算得出（此处只读）",
+			"externalTaskDerivedRailNote": "位置来自依赖关系"
 		},
 		"delete": {
 			"title": "删除任务？",
@@ -2716,13 +2716,13 @@
 			"merged": "已合并",
 			"draft": "草稿",
 			"open": "打开",
-			"label": "Pull Request",
+			"label": "拉取请求",
 			"count_other": "{{count}} 个 PR"
 		},
 		"assignee": {
 			"label": "负责人",
 			"unassigned": "未指派",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "已分配给 {{names}}"
 		},
 		"dueDate": {
 			"label": "截止日期",
@@ -2743,8 +2743,8 @@
 		"contextMenu": {
 			"copyLink": "复制链接",
 			"copyLinkSuccess": "任务链接已复制！",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "更多操作",
+			"copyLinkError": "无法复制任务链接。"
 		},
 		"actions": {
 			"duplicate": "创建副本",
@@ -2797,11 +2797,11 @@
 				"deleteTable": "删除表格"
 			}
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "正在搜索完整描述…",
+		"descriptionSearchError": "描述搜索失败，结果可能不完整。",
+		"descriptionRetry": "重试",
+		"descriptionLoading": "正在加载描述…",
+		"descriptionLoadError": "无法加载描述。请重试以加载最新版本。",
 		"approval": {
 			"approved": "已批准",
 			"label": "审批",
@@ -2811,7 +2811,7 @@
 		},
 		"checklistProgress": "已完成 {{completed}}/{{total}} 个清单项",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "自定义字段"
 		}
 	},
 	"invitations": {
@@ -3001,19 +3001,19 @@
 			"copyLink": "复制链接",
 			"linkCopied": "邀请链接已复制",
 			"copyFailed": "无法自动复制，请选中链接后按 Ctrl+C。",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "更新邀请链接",
+			"renewError": "更新邀请链接失败",
+			"renewSuccess": "邀请链接已更新，未发送邮件。请复制链接并自行发送。",
+			"resend": "重新发送邀请",
+			"resendError": "重新发送邀请失败",
+			"resendSuccess": "邀请已重新发送",
+			"expired": "已于 {{date}} 过期",
+			"inviteAgain": "再次邀请",
+			"inviteAgainError": "再次邀请失败",
+			"renewSuccessUnknownEmail": "邀请链接已更新。如果对方没有收到邮件，请分享该链接。",
+			"expiredBadge": "已过期",
+			"inviteAgainCancelError": "无法取消旧邀请，请手动取消。",
+			"rejectedBadge": "已拒绝"
 		},
 		"inviteModal": {
 			"title": "邀请团队成员",
@@ -3025,20 +3025,20 @@
 			"createdTitle": "邀请已创建",
 			"shareLinkDescription": "将此链接分享给 {{email}}，以便对方加入工作区。",
 			"done": "完成",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "请输入有效的邮箱地址",
+			"noSmtpNotice": "此服务器未配置邮件。邀请不会通过邮件发送，请复制链接并自行发送。",
+			"shareLinkDescriptionNoEmail": "未发送邮件。请将此链接分享给 {{email}}，以便其加入工作区。",
+			"successNoEmail": "邀请已创建，未发送邮件。",
+			"noAssignableRoles": "你无法分配任何角色，因此无法邀请他人。",
+			"roleLabel": "角色",
+			"rolesError": "无法加载你可分配的角色，请稍后重试。",
+			"rolesLoading": "正在加载角色...",
+			"sending": "发送中...",
+			"shareLinkDescriptionUnknownEmail": "如果 {{email}} 没有收到邮件，请将此链接分享给对方，以便其加入工作区。",
+			"successUnknownEmail": "邀请已创建。如果对方没有收到邮件，请分享该链接。",
+			"rolePlaceholder": "选择角色",
+			"roleUnavailable": "你选择的角色已不可用，请选择其他角色。",
+			"rolePickRequired": "请为此邀请选择角色。"
 		},
 		"membersTable": {
 			"emptyTitle": "暂无团队成员",
@@ -3065,19 +3065,19 @@
 			"cancelInviteError": "取消邀请失败",
 			"roleUpdateSuccess": "角色已更新",
 			"roleUpdateError": "更新角色失败",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "更改 {{name}} 的角色",
+			"rolesLoadError": "无法加载你可分配的角色，因此暂时无法更改角色。",
+			"rolesRetry": "重试"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "此人已有待处理的邀请。",
+			"alreadyMember": "此人已是工作区成员。",
+			"cannotChangeOwnRole": "你不能更改自己的角色。",
+			"cannotInviteWithRole": "你无法以此角色邀请他人。",
+			"cannotManageMember": "你无法管理此成员。",
+			"cannotUpdateMember": "你无法更改此成员。",
+			"invitationLimitReached": "已达到此工作区的邀请数量上限。",
+			"roleExceedsYourPermissions": "你不能授予权限高于自己的角色。"
 		}
 	},
 	"publicProject": {
@@ -3094,7 +3094,7 @@
 		"taskDetail": {
 			"labels": "标签",
 			"externalLinks": "外部链接",
-			"pullRequestFallback": "Pull Request",
+			"pullRequestFallback": "拉取请求",
 			"issueFallback": "Issue",
 			"prStatusMerged": "已合并",
 			"prStatusDraft": "草稿",
@@ -3118,213 +3118,213 @@
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "媒体资料包",
+		"headline": "Kaneo 媒体资料包",
+		"intro": "供文章、视频及其他媒体使用的 Kaneo 标志和产品截图。",
+		"description": "Kaneo 媒体资源：面向记者和创作者的产品信息、标志、截图和联系方式。",
+		"downloadKit": "下载全部素材",
+		"boilerplateTitle": "关于 Kaneo",
+		"boilerplate": "Kaneo 是由 Andrej Acevski 创建的开源项目管理平台。团队可以在看板和列表视图中组织任务、分配工作、设置优先级和截止日期，并连接 GitHub。Kaneo 采用 MIT 许可证，可自托管，也可通过 Kaneo Cloud 托管服务使用。",
+		"logosTitle": "标志",
+		"darkLogo": "深色字标",
+		"darkLogoAlt": "浅色背景上的深色 Kaneo 标志",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "浅色字标",
+		"lightLogoAlt": "深色背景上的浅色 Kaneo 标志",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "应用图标",
+		"iconAlt": "Kaneo 应用图标",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "下载",
+		"screenshotsTitle": "截图",
+		"lightScreenshot": "看板（浅色）",
+		"lightScreenshotAlt": "浅色主题下的 Kaneo 看板，任务卡片按状态排列",
+		"darkScreenshot": "看板（深色）",
+		"darkScreenshotAlt": "深色主题下的 Kaneo 看板，任务卡片按状态排列",
+		"contactTitle": "媒体咨询",
+		"contactBody": "如有产品问题、采访或需要更多素材，请联系 Kaneo 团队。",
+		"usageContrast": "深色背景请使用浅色字标，浅色背景请使用深色字标。",
+		"usageProportions": "请保持原有比例和颜色，不要拉伸或添加特效。",
+		"usageSpace": "请在标志周围留出足够空间，以保证清晰易读。",
+		"darkListScreenshot": "列表（深色）",
+		"darkListScreenshotAlt": "深色主题下的 Kaneo 任务列表，按状态分组，显示负责人、优先级、标签和截止日期",
+		"darkTaskScreenshot": "任务详情（深色）",
+		"darkTaskScreenshotAlt": "深色主题下的 Kaneo 任务详情，包含描述、检查清单、团队评论和任务属性",
+		"darkTimelineScreenshot": "时间线（深色）",
+		"darkTimelineScreenshotAlt": "深色主题下的 Kaneo 甘特时间线，显示已排期的任务及其时长",
+		"lightListScreenshot": "列表（浅色）",
+		"lightListScreenshotAlt": "浅色主题下的 Kaneo 任务列表，按状态分组，显示负责人、优先级、标签和截止日期",
+		"lightTaskScreenshot": "任务详情（浅色）",
+		"lightTaskScreenshotAlt": "浅色主题下的 Kaneo 任务详情，包含描述、检查清单、团队评论和任务属性",
+		"lightTimelineScreenshot": "时间线（浅色）",
+		"lightTimelineScreenshotAlt": "浅色主题下的 Kaneo 甘特时间线，显示已排期的任务及其时长"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "合作伙伴"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Kaneo 为何而生",
+			"intro": "我是 Andrej，创建 Kaneo 是因为我受够了那些帮倒忙多于帮忙的项目管理工具。多年来，我用过各种臃肿、过度复杂、让人无法专注于实际工作的平台，我知道一定有更好的方式。",
+			"problem": "问题不在于这些工具功能太少，而在于功能太多。每一条通知、每一个多余的按钮、每一套复杂的流程，都在把我的团队从真正重要的事情上拉开：打造出色的产品。",
+			"principle": "我相信最好的工具是无形的。它们应该放大团队自然的工作方式，而不是强迫你去适应它们。Kaneo 秉持少即是多的原则：每个功能的存在都是因为它解决了真实的问题，而不是因为它在演示中看起来很惊艳。"
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "试用 Kaneo Cloud",
+			"selfHostCta": "自托管 Kaneo",
+			"trialNote": "14 天云端试用，无需信用卡。",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "项目管理",
+			"titleAccent": "别让它变成项目本身。",
+			"description": "开源项目管理，提供看板、甘特图和 GitHub 集成。免费自托管并包含 SSO，或交由 Kaneo Cloud 托管。"
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
-			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
-			"roadmap": "Roadmap",
-			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"product": "产品",
+			"pricing": "定价",
+			"resources": "资源",
+			"docs": "文档",
+			"blog": "博客",
+			"guides": "指南",
+			"comparisons": "工具对比",
+			"roadmap": "路线图",
+			"menu": "菜单",
+			"closeMenu": "关闭菜单",
+			"home": "Kaneo 首页",
+			"signIn": "登录",
+			"getStarted": "开始使用"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
-			"list": "Backlog",
-			"gantt": "Gantt"
+			"label": "Kaneo 产品视图",
+			"controls": "选择产品视图",
+			"play": "播放产品视图",
+			"pause": "暂停产品视图",
+			"board": "看板",
+			"list": "待办",
+			"gantt": "甘特图"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "子任务与上下文",
+				"title": "大任务，清晰的下一步。",
+				"description": "将工作拆分为子任务并分别分配，跟踪进度的同时不丢失原始需求。所有细节都与工作放在一起。"
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "GitHub 集成",
+				"title": "从拉取请求到完成。",
+				"description": "Issue 和标签双向同步。代码提交并合并后，关联的拉取请求会推动任务经过评审直至完成。",
+				"link": "设置 GitHub"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "在你自己的服务器上运行。",
+				"description": "使用 Docker 部署，让你的工作区留在自己掌控的基础设施上。",
+				"link": "自托管 Kaneo"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "代码同样开源。",
+				"description": "阅读源码、报告问题或贡献修改。开发工作在 GitHub 上进行。",
+				"link": "查看源码"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
+				"taskAlt": "可交互的 Kaneo 任务与子任务预览。",
+				"githubAlt": "可交互预览：GitHub 合并如何更新 Kaneo 任务。",
+				"taskTitle": "发布新主页",
+				"taskDescription": "在下次发布前更新文案并检查布局。",
+				"checklistDone": "审阅文案",
+				"checklistOpen": "检查移动端布局",
+				"inProgress": "进行中",
+				"high": "高",
 				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"design": "设计",
+				"done": "已完成",
+				"relationsAlt": "可交互的 Kaneo 任务依赖关系预览。",
+				"inReview": "评审中",
+				"trySubtasks": "试试勾选一个子任务。",
+				"tryGithub": "预览一次合并，查看任务如何更新。",
+				"tryRelations": "打开一个关联任务，查看它们之间的联系。",
+				"mergeAction": "预览合并",
+				"resetAction": "重置预览",
+				"mergedHint": "拉取请求已合并，任务已移至“已完成”。",
+				"progress": "{{completed}}/{{total}} 个子任务已完成",
+				"backToTask": "返回主页任务",
+				"releaseNotes": "撰写发布说明",
+				"dependencyDescription": "主页正在等待移动端评审。请保留关联的发布说明作为上下文。",
+				"mobileDescription": "上线前在窄屏幕上检查新主页。",
+				"notesDescription": "记录本次上线公告需要说明的变更。"
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "关联任务与依赖",
+				"title": "看清是什么拖慢了进度。",
+				"description": "连接阻塞项、跟踪依赖，并让相关工作彼此靠近。打开关联任务，即可了解下一步背后的上下文。"
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — 开源、可自托管的项目管理",
+			"description": "开源项目管理，提供看板、甘特图和 GitHub 集成。免费自托管并包含 SSO，或使用 Kaneo Cloud。"
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "打造属于你的工具",
+			"title": "从试用到上手，一条清晰的路径。",
+			"description": "搭建你的服务器、连接你的工具，或将 Kaneo 与你当前的任务跟踪工具对比。",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "使用 Docker 自托管",
+				"description": "安装、备份和更新，打造由你掌控的部署。"
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "使用你自己的身份提供商",
+				"description": "在免费的自托管版本中配置 OIDC 单点登录。"
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "连接你的 AI 工具",
+				"description": "通过 AI 客户端使用 MCP 处理任务和项目。"
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "对比 Kaneo 与 Linear",
+				"description": "了解两者在托管、许可和工作流方面的差异。"
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "开始之前",
+			"description": "关于托管、规划和团队协作连接的实用细节。",
+			"overview": "Kaneo 是采用 MIT 许可证的开源项目管理平台，提供看板、待办、甘特图和日历视图、自定义字段、工时跟踪以及 GitHub 集成。你可以在自己的基础设施上自托管，也可以使用 Kaneo Cloud。",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Kaneo 可以免费自托管吗？",
+				"answer": "可以。Kaneo 采用 MIT 许可证，可免费自托管，并包含单点登录。你可以使用 Docker Compose 将应用与 PostgreSQL 一同运行，也可以通过官方 Helm chart 部署。基础设施、更新和备份由你自行管理。",
+				"link": "阅读安装指南"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Kaneo 有甘特图吗？",
+				"answer": "有。除看板、列表和待办规划外，Kaneo 还提供甘特图和日历视图。你可以利用任务开始日期和截止日期在时间线上规划工作。预算、基线对比和迭代燃尽报告目前不在其范围内。",
+				"link": "对比规划功能"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "是否包含单点登录？",
+				"answer": "是的。免费的自托管版本支持 Google、GitHub、Discord 以及自定义 OAuth/OIDC 提供商。你可以在自己的实例上配置提供商，无需购买单独的 Kaneo 版本。",
+				"link": "配置 OIDC"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "AI 客户端可以使用 Kaneo 吗？",
+				"answer": "可以。Kaneo 通过 @kaneo/mcp 包和 HTTP 端点提供 MCP 服务器。兼容的 AI 客户端可使用绑定到用户的 API 密钥读取和更新任务，并受工作区权限约束。",
+				"link": "阅读 MCP 指南"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "功能",
+			"yes": "是",
+			"no": "否"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "自托管涉及哪些内容，并附有维护中的 Docker Compose 配置和安装步骤链接。",
+			"answer": "要自托管 Kaneo，请使用 Docker Compose 运行应用和 PostgreSQL，配置公开 URL 和密钥，并在前面部署 TLS 反向代理。安装指南要求至少 2 GB 内存和 10 GB 磁盘空间。请规划好后续更新、数据库备份以及上传文件的存储。",
+			"requirements": "文档中的最低要求为 2 GB 内存和 10 GB 磁盘空间，以及 Docker 20.10 或更高版本和 Docker Compose V2。请根据你的工作负载、数据库增长和上传文件预留更多容量。",
+			"compose": "请使用 Docker Compose 指南中维护的 compose.yml。它定义了 PostgreSQL、持久化数据库卷、Kaneo 应用和健康检查。启动服务前请先配置环境文件；生产环境中请固定镜像版本，以便有计划地更新。",
+			"backups": "请同时备份 PostgreSQL 和用于上传文件的对象存储。根据团队能承受的工作丢失量选择备份计划，将副本存放在应用服务器之外，并在需要之前先测试恢复。",
+			"worth": "当你需要掌控基础设施和数据，并且有人负责维护时，自托管是合适的。与托管服务比较成本时，请把服务器容量、存储、备份和维护时间都计算在内。",
+			"minimum": "安装指南要求 Docker 20.10 或更高版本、Docker Compose V2、至少 2 GB 内存和 10 GB 磁盘空间。Compose 配置已包含 PostgreSQL。单个 API 实例可不使用 Redis。",
+			"composeLink": "Docker Compose 配置",
+			"composeLinkDescription": "带有持久化存储和健康检查的、维护中的 compose.yml。",
+			"startLink": "启动并验证服务",
+			"startLinkDescription": "启动整套服务，查看其状态，并确认应用可用。"
 		}
 	},
 	"portfolio": {
@@ -3345,174 +3345,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "你已是 {{workspaceName}} 的成员，因此此邀请无法将你添加到项目中。请联系工作区管理员将你添加到该项目。",
+			"alreadyMemberTitle": "你已是成员",
+			"invitedToProject": "你已受邀以 {{role}} 身份加入项目 {{project}}。",
+			"invitedToProjects": "你已受邀加入以下项目：",
+			"projectRole": "{{project}}（{{role}}）"
 		},
-		"empty": "No pending invitations.",
+		"empty": "没有待处理的邀请。",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "此人已是工作区成员。请使用“添加成员”将其加入项目。",
+			"disposableEmail": "不允许使用一次性邮箱地址。",
+			"expired": "此邀请已过期，请重新邀请对方。",
+			"guestCannotInvite": "访客账户无法邀请他人。",
+			"limitReached": "工作区中待处理的邀请过多，请先取消一部分。",
+			"notApplied": "无法应用此邀请的项目访问权限。请尝试重新接受。如果仍然失败，请联系工作区管理员将你添加到项目中。",
+			"notFound": "此邀请已不存在，列表已重新加载。",
+			"rateLimited": "邀请过于频繁，请稍后重试。",
+			"rateLimitedRetry": "邀请过于频繁，请 {{seconds}} 秒后重试。",
+			"roleConflict": "此邮箱已有使用其他工作区角色的待处理邀请。请取消该邀请，或使用相同的工作区角色。",
+			"workspaceInvitationExists": "此邮箱已有待处理的工作区邀请。只有可邀请他人加入工作区的人才能为其添加项目。"
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
-			"emailLabel": "Email",
+			"addAsMember": "添加为成员",
+			"addedToExisting": "{{email}} 已有待处理的邀请，此项目已添加到该邀请中，未再发送第二封邮件。如有需要，请分享链接。",
+			"createdNotSent": "已为 {{email}} 创建邀请，未发送邮件。请分享下方的链接。",
+			"createdSendFailed": "已为 {{email}} 创建邀请，但无法发送邮件。请分享下方的链接，或在列表中重新发送。",
+			"createdSent": "邀请已发送至 {{email}}。",
+			"createdTitle": "邀请已创建",
+			"description": "邀请尚未加入工作区的人员。他们将获得你在下方选择的角色。",
+			"done": "完成",
+			"emailLabel": "邮箱",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "无法发送邀请",
+			"invalidEmail": "请输入有效的邮箱地址",
+			"noSmtpNotice": "此服务器未配置邮件。邀请不会通过邮件发送。请复制链接并自行发送。",
+			"projectRoleHint": "此人在此项目中可执行的操作。",
+			"projectRoleLabel": "项目角色",
+			"rolePlaceholder": "选择角色",
+			"submit": "发送邀请",
+			"submitting": "发送中...",
+			"title": "邀请加入项目",
+			"workspaceRoleHint": "此人在工作区中可执行的操作。",
+			"workspaceRoleLabel": "工作区角色",
+			"noAssignableProjectRoles": "你无法分配任何项目角色，因此无法邀请他人。",
+			"noAssignableWorkspaceRoles": "你无法分配任何工作区角色，因此无法邀请他人。",
+			"projectRolePickRequired": "请选择项目角色。",
+			"projectRolesError": "无法加载你可分配的项目角色。",
+			"projectRolesLoading": "正在加载项目角色...",
+			"projectRoleUnavailable": "你选择的项目角色已不可用，请选择其他角色。",
+			"workspaceRolePickRequired": "请选择工作区角色。",
+			"workspaceRolesError": "无法加载你可分配的工作区角色。",
+			"workspaceRolesLoading": "正在加载工作区角色...",
+			"workspaceRoleUnavailable": "你选择的工作区角色已不可用，请选择其他角色。"
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "{{email}} 的邀请操作",
+			"cancelDialogDescription": "{{email}} 加入此项目的邀请将被取消。如果该邀请未授予其他项目的权限，链接将失效。",
+			"cancelDialogTitle": "取消邀请？",
+			"cancelError": "无法取消邀请",
+			"cancelSuccess": "邀请已取消",
+			"cancelSuccessOtherProjects": "此项目已从邀请中移除。该邀请仍授予其他项目的权限。",
 			"columns": {
-				"email": "Email",
-				"roles": "Roles"
+				"email": "邮箱",
+				"roles": "角色"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "项目角色：{{role}}",
+			"renewError": "无法更新邀请链接",
+			"resendError": "无法重新发送邀请",
+			"resendNotDelivered": "邀请已更新，但无法发送邮件。请复制链接并自行发送。",
+			"rolesLoadError": "无法加载你可分配的角色，因此暂时无法重新发送邀请。",
+			"rolesRetry": "重试",
+			"workspaceRole": "工作区角色：{{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "无法加载待处理的邀请。",
+		"subtitle": "已受邀加入此项目但尚未加入的人员。",
+		"title": "待处理邀请"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "选择一名工作区成员和一个项目角色。",
+			"error": "无法添加成员",
+			"loadError": "无法加载你可添加的人员。",
+			"loading": "正在加载人员...",
+			"memberLabel": "工作区成员",
+			"noAssignableRoles": "你无法分配任何角色。",
+			"noCandidates": "此工作区中的所有人都已拥有此项目的访问权限。",
+			"noMatches": "没有匹配搜索的人员。",
+			"roleLabel": "项目角色",
+			"rolePickRequired": "请选择项目角色。",
+			"rolePlaceholder": "选择角色",
+			"rolesError": "无法加载你可分配的角色。",
+			"rolesLoading": "正在加载角色...",
+			"roleUnavailable": "你选择的角色已不可用，请选择其他角色。",
+			"searchPlaceholder": "按姓名或邮箱搜索",
+			"submit": "添加成员",
+			"submitting": "添加中...",
+			"success": "成员已添加到项目",
+			"title": "添加项目成员"
 		},
-		"addMember": "Add member",
+		"addMember": "添加成员",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "此人已是该项目的成员。",
+			"cannotChangeOwnRole": "你不能更改自己的项目角色。",
+			"cannotManageMember": "你无法管理权限比你更高的成员。",
+			"insufficientPermissions": "你无权执行此操作。",
+			"memberHasFullAccess": "此人通过其工作区角色拥有完全访问权限。请在工作区成员中更改。",
+			"membershipChanged": "成员关系在此期间发生了变化，列表已重新加载。请重试。",
+			"notProjectMember": "此人已不再是该项目的成员。",
+			"notWorkspaceMember": "此人不是工作区成员。",
+			"ownerRoleNotAllowed": "项目中不能使用所有者角色。",
+			"roleAssignedToProjectMembers": "仍有项目成员或待处理的项目邀请在使用此角色。请先为他们分配其他角色。",
+			"roleExceedsYourPermissions": "你不能授予权限高于自己的角色。",
+			"unknownRole": "此角色不存在。请刷新页面并选择其他角色。",
+			"userHasFullAccess": "此人已拥有所有项目的完全访问权限。"
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "通过邮箱邀请",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "你将失去对此项目的访问权限。项目管理员或工作区管理员可以重新添加你。",
+			"error": "无法退出项目",
+			"success": "你已退出项目",
+			"title": "退出此项目？"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "无法加载项目成员。",
+		"loading": "正在加载成员...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "返回项目",
+			"description": "请联系项目管理员或工作区管理员将你添加进来。",
+			"title": "你无权访问此项目"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "你目前无权访问任何项目。请联系工作区管理员将你添加到项目中。",
+			"title": "暂无项目访问权限",
+			"descriptionCanCreate": "你目前无权访问任何项目。请联系工作区管理员将你添加到项目中，或自行创建。"
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "项目成员",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} 将失去对此项目的访问权限，但仍保留在工作区中。",
+			"error": "无法移除成员",
+			"success": "成员已从项目中移除",
+			"title": "从项目中移除？"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "重试",
+		"subtitle": "可以打开此项目的人员，以及他们在项目中可执行的操作。",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "{{name}} 的操作",
+			"ariaChangeRole": "更改 {{name}} 的项目角色",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "成员",
+				"role": "项目角色"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "添加工作区成员，或通过邮箱邀请他人。",
+			"emptyTitle": "还没有成员",
+			"fullAccess": "完全访问",
+			"fullAccessHint": "通过其工作区角色可访问所有项目。请在工作区成员中更改。",
+			"inactive": "已失效",
+			"inactiveHint": "此角色已不再提供任何访问权限。请选择其他角色或移除此人。",
+			"leaveProject": "退出项目",
+			"removeMember": "从项目中移除",
+			"rolesLoadError": "无法加载你可分配的角色，因此暂时无法更改角色。",
+			"rolesRetry": "重试",
+			"roleUpdateError": "无法更新项目角色",
+			"roleUpdateSuccess": "项目角色已更新",
+			"you": "你"
 		},
-		"title": "Members",
+		"title": "成员",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "没有完全访问权限的人员只能看到被添加进去的项目。如需邀请他人加入某个项目，请在项目设置中使用“通过邮箱邀请”。",
+			"link": "打开项目设置"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "无法检查你在此处可执行的操作，部分操作可能已被隐藏。"
 	}
 }

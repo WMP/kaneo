@@ -57,28 +57,28 @@
 			"tryAgain": "Попробовать снова",
 			"viewDeploymentGuide": "Руководство по развёртыванию",
 			"refreshPage": "Обновить страницу",
-			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
+			"description": "Страница неожиданно завершилась с ошибкой. Обычно помогает обновление.",
 			"messages": {
-				"auth": "Authentication failed. Please sign in again.",
-				"cors": "Unable to connect to the server. This might be due to CORS configuration issues.",
-				"network": "Network error. Please check your internet connection and try again.",
-				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred.",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"auth": "Не удалось пройти аутентификацию. Войдите снова.",
+				"cors": "Не удаётся подключиться к серверу. Возможно, проблема в настройке CORS.",
+				"network": "Ошибка сети. Проверьте подключение к интернету и повторите попытку.",
+				"server": "Ошибка сервера. Повторите попытку позже.",
+				"unknown": "Произошла непредвиденная ошибка.",
+				"serverUnreachable": "Не удаётся связаться с сервером. Проверьте подключение; данные загрузятся заново, когда сервер снова станет доступен."
 			},
 			"troubleshootingSteps": {
 				"cors": {
-					"checkAccessibility": "Check that your API server is accessible from your browser",
-					"checkApiRunning": "Make sure your API server is running",
-					"checkApiUrl": "Check that VITE_API_URL in your frontend .env matches your API server URL",
-					"checkProtocol": "Ensure both frontend and API are using the same protocol (http/https)",
-					"verifyCorsOrigins": "Verify CORS_ORIGINS in your API .env includes your frontend URL"
+					"checkAccessibility": "Проверьте, что сервер API доступен из вашего браузера",
+					"checkApiRunning": "Убедитесь, что сервер API запущен",
+					"checkApiUrl": "Проверьте, что VITE_API_URL в .env фронтенда совпадает с URL вашего сервера API",
+					"checkProtocol": "Убедитесь, что фронтенд и API используют один и тот же протокол (http/https)",
+					"verifyCorsOrigins": "Убедитесь, что CORS_ORIGINS в .env API содержит URL вашего фронтенда"
 				},
 				"network": {
-					"checkConnection": "Check your internet connection",
-					"checkFirewall": "Check if there are any firewall or proxy issues",
-					"tryRefresh": "Try refreshing the page",
-					"verifyApiRunning": "Verify the API server is running and accessible"
+					"checkConnection": "Проверьте подключение к интернету",
+					"checkFirewall": "Проверьте, нет ли проблем с брандмауэром или прокси",
+					"tryRefresh": "Попробуйте обновить страницу",
+					"verifyApiRunning": "Убедитесь, что сервер API запущен и доступен"
 				}
 			}
 		},
@@ -155,29 +155,29 @@
 					"rose": "Роза",
 					"crimson": "Малиновый"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "Вы не можете создавать задачи в этом проекте. Выберите другой проект.",
+				"permissionsUnavailable": "Не удалось проверить ваши права в этом проекте. Повторите попытку или выберите другой проект.",
 				"selectOptionPlaceholder": "Выберите вариант"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "Нет",
+			"notSet": "Не задано",
+			"true": "Да",
+			"undefined": "Не определено"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "Проверка…",
+			"offlineDescription": "Проверьте подключение к сети. Данные на экране могут быть устаревшими, а изменения не сохранятся, пока связь не восстановится.",
+			"offlineTitle": "Нет подключения к сети",
+			"restored": "Подключение восстановлено. Данные обновлены.",
+			"retry": "Повторить сейчас",
+			"serverUnreachableDescription": "Данные на экране могут быть устаревшими, а изменения не сохранятся. Повторяем попытку автоматически…",
+			"serverUnreachableTitle": "Не удаётся связаться с сервером Kaneo"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "Ваши права в этом проекте изменились.",
+			"lost": "У вас больше нет доступа к этому проекту."
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "Не удалось принять приглашение",
 				"acceptSuccess": "Приглашение принято! Добро пожаловать в команду."
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "Принятие приглашения..."
 		},
 		"onboarding": {
 			"pageTitle": "Добро пожаловать в Kaneo",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "Забыли пароль?",
+			"requestTitle": "Сброс пароля",
+			"requestSubtitle": "Введите свой email, и мы отправим ссылку для сброса пароля.",
+			"sendLink": "Отправить ссылку для сброса",
+			"sending": "Отправка…",
+			"sent": "Если для этого адреса есть аккаунт, вы получите ссылку для сброса пароля. Проверьте входящие и папку «Спам».",
+			"requestError": "Не удалось запросить ссылку для сброса. Повторите попытку.",
+			"unavailable": "Сброс пароля недоступен. Обратитесь к администратору экземпляра.",
+			"configError": "Не удалось связаться с сервером. Перезагрузите страницу и повторите попытку.",
+			"resetTitle": "Выберите новый пароль",
+			"resetSubtitle": "Новый пароль должен содержать от 8 до 128 символов.",
+			"newPassword": "Новый пароль",
+			"confirmPassword": "Подтвердите новый пароль",
+			"passwordMismatch": "Пароли не совпадают.",
+			"passwordLength": "Используйте от 8 до 128 символов.",
+			"resetPassword": "Сбросить пароль",
+			"resetting": "Сброс…",
+			"invalidLink": "Эта ссылка для сброса недействительна или срок её действия истёк. Запросите новую ссылку, чтобы продолжить.",
+			"requestNewLink": "Запросить новую ссылку",
+			"resetError": "Не удалось сбросить пароль. Повторите попытку.",
+			"success": "Пароль сброшен. Войдите с новым паролем.",
+			"backToSignIn": "Назад ко входу"
 		}
 	},
 	"settings": {
@@ -415,25 +415,25 @@
 			"avatar": {
 				"hint": "PNG, JPEG, or WebP. Cropped to a square and resized to 256x256.",
 				"remove": "Remove",
-				"removeError": "Failed to remove profile picture",
-				"removeSuccess": "Profile picture removed",
-				"updateError": "Failed to update profile picture",
-				"updateSuccess": "Profile picture updated",
-				"change": "Change avatar",
-				"edit": "Change your profile picture"
+				"removeError": "Не удалось удалить фото профиля",
+				"removeSuccess": "Фото профиля удалено",
+				"updateError": "Не удалось обновить фото профиля",
+				"updateSuccess": "Фото профиля обновлено",
+				"change": "Изменить аватар",
+				"edit": "Изменить фото профиля"
 			},
 			"deleteAccount": {
-				"confirm": "Delete account",
+				"confirm": "Удалить аккаунт",
 				"confirmLabel": "Confirm your email address",
-				"description": "Workspaces only you belong to are deleted with your account. Elsewhere, your tasks stay and become unassigned, and your comments are removed.",
-				"error": "Failed to delete account",
+				"description": "Рабочие области, в которых состоите только вы, удаляются вместе с аккаунтом. В остальных ваши задачи сохранятся, но останутся без исполнителя, а ваши комментарии будут удалены.",
+				"error": "Не удалось удалить аккаунт",
 				"modalDescription": "This cannot be undone. Type {{email}} to confirm.",
-				"modalTitle": "Delete your account?",
-				"sectionSubtitle": "Permanent actions that affect your whole account.",
-				"sectionTitle": "Danger zone",
-				"success": "Your account has been deleted",
-				"title": "Delete account",
-				"sessionTooOld": "For security, sign out and sign back in before deleting your account."
+				"modalTitle": "Удалить ваш аккаунт?",
+				"sectionSubtitle": "Необратимые действия, затрагивающие весь ваш аккаунт.",
+				"sectionTitle": "Опасная зона",
+				"success": "Ваш аккаунт удалён",
+				"title": "Удалить аккаунт",
+				"sessionTooOld": "В целях безопасности выйдите и войдите снова, прежде чем удалять аккаунт."
 			}
 		},
 		"notificationsPage": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "Показывать метки и теги задач",
 			"priority": "Приоритет",
 			"priorityDescription": "Показывать индикаторы приоритета",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "Фоны проектов",
+			"projectBackgroundsDescription": "Показывать фоновые изображения проектов на досках"
 		},
 		"developerPage": {
 			"pageTitle": "Настройки разработчика",
@@ -740,15 +740,15 @@
 			},
 			"importExportTasks": "Импорт/Экспорт",
 			"importExportTasksDescription": "Импортируйте и экспортируйте задачи.",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "Выберите изображение, которое будет отображаться за доской этого проекта.",
+			"backgroundLabel": "Фон доски",
+			"backgroundRemove": "Удалить изображение",
+			"backgroundRemoveError": "Не удалось удалить фон проекта",
+			"backgroundRemoveSuccess": "Фон проекта удалён",
+			"backgroundReplace": "Заменить изображение",
+			"backgroundUpload": "Загрузить изображение",
+			"backgroundUploadError": "Не удалось обновить фон проекта",
+			"backgroundUploadSuccess": "Фон проекта обновлён",
 			"moveModalConfirm": "Переместить проект",
 			"moveModalDescription": "Проект «{{name}}» и все его задачи будут перемещены в «{{workspace}}». С задач, назначенных пользователям, которые не состоят в этой рабочей области, назначение будет снято, а подписки на уведомления по этому проекту будут удалены.",
 			"moveModalTitle": "Переместить проект?",
@@ -777,8 +777,8 @@
 			"slackSectionSubtitle": "Отправка обновлений по задачам проекта в канал Slack через входящий вебхук.",
 			"telegramSectionTitle": "Интеграция с Telegram",
 			"telegramSectionSubtitle": "Отправка обновлений по задачам проекта в чат или тему Telegram через бота.",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
+			"mattermostSectionSubtitle": "Отправляйте обновления задач проекта в канал Mattermost через входящий вебхук.",
+			"mattermostSectionTitle": "Интеграция с Mattermost",
 			"gitlabSectionSubtitle": "Синхронизация задач с GitLab.com или self-managed экземпляром (issues, merge requests, вебхуки).",
 			"gitlabSectionTitle": "Интеграция с GitLab"
 		},
@@ -805,8 +805,8 @@
 			"columnsDescription": "Управляйте колонками на доске. Перетаскивайте для изменения порядка. Включите «Колонка завершения» для этапов, обозначающих выполненную работу.",
 			"automationTitle": "Правила автоматизации",
 			"automationDescription": "Привяжите события интеграций к колонкам. При наступлении события связанная задача перемещается в указанную колонку.",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "Управляйте настраиваемыми полями этого проекта. Перетащите, чтобы изменить порядок.",
+			"customFieldsTitle": "Настраиваемые поля"
 		},
 		"projectSwitcher": {
 			"selectProject": "Выберите проект",
@@ -897,9 +897,9 @@
 			"accountVerificationHint": "Подключите аккаунт GitHub, чтобы подтвердить права администратора этого репозитория.",
 			"enableGithubSignInHint": "Попросите администратора вашего сервера включить вход через GitHub.",
 			"reverifyHint": "Подключите репозиторий повторно, чтобы подтвердить доступ и возобновить синхронизацию.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "Продолжить импорт",
+			"importPaused": "Прогресс этого импорта сохранён. Вы можете его продолжить.",
+			"importSummary": "Создано: {{imported}} · Обновлено: {{updated}} · Пропущено: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -929,8 +929,8 @@
 				"settingsUpdateError": "Не удалось обновить интеграцию с Gitea",
 				"secretCopied": "Скопировано",
 				"unableToCopySecret": "Не удалось скопировать секрет",
-				"notGiteaInstance": "The URL does not point to a Gitea instance",
-				"redirected": "Gitea URL redirected (usually to HTTPS). Use the final URL directly."
+				"notGiteaInstance": "Этот URL не указывает на экземпляр Gitea",
+				"redirected": "URL Gitea был перенаправлен (обычно на HTTPS). Используйте конечный URL напрямую."
 			},
 			"webhookShow": "Показать",
 			"webhookHide": "Скрыть",
@@ -1217,14 +1217,14 @@
 			"merged": "Влит",
 			"draft": "Черновик",
 			"open": "Открыт",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "Добавление...",
+			"addResource": "Добавить ресурс",
+			"cancel": "Отмена",
+			"empty": "К этой задаче не привязано ресурсов.",
+			"titleOptional": "Название (необязательно)",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "Удалить {{title}}",
+			"removeError": "Не удалось удалить ссылку на ресурс."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Роли",
@@ -1264,11 +1264,11 @@
 				"task": "Задачи",
 				"label": "Метки",
 				"workspace": "Рабочая область",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "Администрирование рабочей области",
+				"member": "Участники",
+				"invitation": "Приглашения",
+				"team": "Команды",
+				"ac": "Роли и права"
 			},
 			"permissions": {
 				"project": {
@@ -1353,68 +1353,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "Изменение администрирования рабочей области",
+						"description": "Изменение настроек рабочей области через сервис аккаунтов."
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "Удаление рабочей области",
+						"description": "Безвозвратное удаление рабочей области через сервис аккаунтов."
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "Добавление участников",
+						"description": "Добавление пользователей в эту рабочую область."
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "Изменение ролей участников",
+						"description": "Изменение ролей, назначенных участникам рабочей области."
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "Удаление участников",
+						"description": "Удаление пользователей из этой рабочей области."
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "Приглашение участников",
+						"description": "Отправка приглашений в рабочую область."
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "Отмена приглашений",
+						"description": "Отзыв ожидающих приглашений в рабочую область."
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "Создание команд",
+						"description": "Создание команд в этой рабочей области."
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "Изменение команд",
+						"description": "Изменение команд и их состава."
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "Удаление команд",
+						"description": "Удаление команд в этой рабочей области."
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "Создание ролей",
+						"description": "Создание ролей рабочей области и назначение их прав."
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "Просмотр ролей",
+						"description": "Просмотр ролей рабочей области и их прав."
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "Изменение прав ролей",
+						"description": "Изменение прав ролей, включая административный доступ."
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "Удаление ролей",
+						"description": "Удаление пользовательских ролей рабочей области."
 					}
 				}
 			},
@@ -1460,180 +1460,180 @@
 			"updateError": "Не удалось обновить метку",
 			"deleteError": "Не удалось удалить метку",
 			"nameRequired": "Название метки обязательно",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "Удаление в ожидании",
+			"resumeDeletion": "Возобновить удаление"
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
+			"channelHint": "Необязательная подпись для вашего удобства. Фактический канал назначения определяется настройкой вебхука в Mattermost.",
+			"channelLabel": "Название канала",
 			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"connect": "Подключить Mattermost",
+			"connected": "Подключено",
+			"connectionHint": "Вставьте URL входящего вебхука Mattermost и выберите, о каких событиях задач нужно публиковать сообщения.",
+			"connectionTitle": "Подключение вебхука Mattermost",
+			"disconnect": "Отключить",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "Новые комментарии",
+				"taskCreated": "Новые задачи",
+				"taskDescriptionChanged": "Изменения описания",
+				"taskPriorityChanged": "Изменения приоритета",
+				"taskStatusChanged": "Изменения статуса",
+				"taskTitleChanged": "Изменения названия"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Выберите, какие изменения в проекте нужно публиковать в Mattermost.",
+			"eventsTitle": "Уведомления о событиях",
+			"paused": "Приостановлено",
+			"saveChanges": "Сохранить изменения",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Уведомления Mattermost приостановлены",
+				"enabled": "Уведомления Mattermost включены",
+				"removed": "Интеграция с Mattermost успешно удалена",
+				"removeError": "Не удалось удалить интеграцию с Mattermost",
+				"saved": "Интеграция с Mattermost успешно сохранена",
+				"saveError": "Не удалось сохранить интеграцию с Mattermost",
+				"updateError": "Не удалось обновить интеграцию с Mattermost"
 			},
-			"update": "Update Mattermost",
+			"update": "Обновить Mattermost",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "Введите корректный URL вебхука Mattermost"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
-			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
+			"webhookHint": "Создайте входящий вебхук в Mattermost и вставьте сюда полученный URL.",
+			"webhookLabel": "URL входящего вебхука",
+			"webhookPlaceholder": "https://ваш-сервер-mattermost.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "Добавить",
+			"createError": "Не удалось создать настраиваемое поле.",
+			"createSuccess": "Настраиваемое поле создано.",
+			"creating": "Создание...",
+			"defaultLabel": "По умолчанию",
+			"defaultValuePlaceholder": "Значение по умолчанию",
+			"deleteButton": "Удалить",
+			"deleteError": "Не удалось удалить настраиваемое поле.",
+			"deleteSuccess": "Настраиваемое поле удалено.",
+			"deleting": "Удаление...",
+			"empty": "Настраиваемые поля пока не настроены.",
+			"loading": "Загрузка настраиваемых полей...",
+			"namePlaceholder": "Название поля",
+			"noOptionsPlaceholder": "Нет вариантов",
+			"optionsPlaceholder": "Варианты через запятую",
+			"required": "Обязательное",
+			"typePlaceholder": "Выберите тип поля",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "Логическое",
+				"date": "Дата",
+				"dropdown": "Раскрывающийся список",
+				"number": "Число",
+				"text": "Текст",
+				"multiselect": "Множественный выбор"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "Доступные варианты",
+			"clearDefault": "Очистить",
+			"defaultValues": "По умолчанию: {{count}}",
+			"moreOptions": "ещё +{{hiddenCount}}",
+			"multiple": "Несколько",
+			"options": "Вариантов: {{count}}",
+			"reorderError": "Не удалось изменить порядок полей",
+			"selectPlaceholder": "Выберите варианты",
+			"optionColorAriaLabel": "Задать цвет для «{{option}}»",
+			"optionColorsLabel": "Цвета вариантов",
+			"updateColorError": "Не удалось обновить цвет варианта.",
+			"updateColorSuccess": "Цвет варианта обновлён.",
+			"hiddenOnProject": "Скрыто",
+			"hideField": "Скрыть «{{name}}» в этом проекте",
+			"inheritedDescription": "Поля, заданные на уровне рабочей области. Скройте поле, чтобы убрать его только из этого проекта — обязательное поле скрыть нельзя.",
+			"inheritedEmpty": "На уровне рабочей области настраиваемые поля пока не добавлены.",
+			"inheritedTitle": "Унаследовано от рабочей области",
+			"ownFieldsDescription": "Поля, заданные только для этого проекта. Перетащите, чтобы изменить порядок.",
+			"ownFieldsTitle": "Поля проекта",
+			"requiredByWorkspace": "Обязательно в рабочей области",
+			"showField": "Показать «{{name}}» в этом проекте",
+			"visibilityUpdateError": "Не удалось изменить видимость поля.",
+			"visibleOnProject": "Видимо"
 		},
-		"administration": "Administration",
+		"administration": "Администрирование",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "Деактивировать аккаунт",
+				"edit": "Редактировать аккаунт",
+				"open": "Действия для {{name}}",
+				"reactivate": "Активировать аккаунт снова"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "Очистить поиск",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "Действия",
+				"joined": "Дата регистрации",
+				"role": "Глобальная роль",
+				"status": "Статус",
+				"user": "Пользователь"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "Деактивировать аккаунт",
+					"description": "{{name}} будет выведен из системы и не сможет войти, пока администратор не активирует аккаунт снова.",
+					"title": "Деактивировать этот аккаунт?"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "Удалить навсегда",
+					"description": "Будут безвозвратно удалены {{name}}, сеансы, членство и связанные данные. Это действие нельзя отменить.",
+					"title": "Удалить этот аккаунт навсегда?"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "Активировать аккаунт",
+					"description": "{{name}} снова сможет войти и получит доступ к своим рабочим областям.",
+					"title": "Активировать этот аккаунт снова?"
 				},
-				"working": "Working…"
+				"working": "Выполнение…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "Справочник пользователей",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "Измените данные этого аккаунта и доступ на уровне всего экземпляра.",
+				"email": "Адрес электронной почты",
+				"name": "Полное имя",
+				"role": "Глобальная роль",
+				"save": "Сохранить изменения",
+				"saving": "Сохранение…",
+				"selfRoleHint": "Вы не можете изменить свою глобальную роль.",
+				"title": "Редактирование пользователя"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "Попробуйте другое имя или адрес электронной почты.",
+			"emptyTitle": "Пользователи не найдены",
+			"instanceBadge": "Экземпляр",
+			"loadError": "Не удалось загрузить пользователей.",
+			"next": "Вперёд",
+			"pagination": "Страница {{current}} из {{total}}",
+			"previous": "Назад",
+			"refreshing": "Обновление списка пользователей",
+			"retry": "Повторить",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "Администратор экземпляра",
+				"user": "Пользователь"
 			},
-			"searchCount_few": "{{count}} matching users",
-			"searchCount_many": "{{count}} matching users",
-			"searchCount_one": "{{count}} matching user",
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_few": "{{count}} подходящих пользователя",
+			"searchCount_many": "{{count}} подходящих пользователей",
+			"searchCount_one": "{{count}} подходящий пользователь",
+			"searchCount_other": "{{count}} подходящего пользователя",
+			"searchLabel": "Поиск пользователей",
+			"searchPlaceholder": "Поиск по имени или email…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "Активен",
+				"deactivated": "Деактивирован"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "Управляйте всеми аккаунтами, зарегистрированными в этом экземпляре Kaneo.",
+			"title": "Управление пользователями",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "Не удалось изменить статус пользователя",
+				"deactivated": "Пользователь деактивирован",
+				"deleted": "Пользователь удалён",
+				"reactivated": "Пользователь активирован",
+				"updated": "Пользователь обновлён",
+				"updateError": "Не удалось обновить пользователя"
 			},
-			"userCount_few": "{{count}} registered users",
-			"userCount_many": "{{count}} registered users",
-			"userCount_one": "{{count}} registered user",
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_few": "{{count}} зарегистрированных пользователя",
+			"userCount_many": "{{count}} зарегистрированных пользователей",
+			"userCount_one": "{{count}} зарегистрированный пользователь",
+			"userCount_other": "{{count}} зарегистрированного пользователя",
+			"you": "(вы)"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "Добавить праздник",
@@ -1666,33 +1666,33 @@
 			"workingDaysTitle": "Рабочие дни",
 			"loading": "Загрузка календаря…"
 		},
-		"security": "Security",
+		"security": "Безопасность",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "Подтвердите новый пароль",
+			"confirmPasswordPlaceholder": "Повторите новый пароль",
+			"currentPassword": "Текущий пароль",
+			"currentPasswordPlaceholder": "Введите текущий пароль",
+			"newPassword": "Новый пароль",
+			"newPasswordPlaceholder": "Введите новый пароль",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "Ваш аккаунт использует другой способ входа, поэтому пароля для смены нет.",
+				"title": "Смена пароля недоступна"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "Безопасность",
+			"sectionSubtitle": "Измените пароль, который вы используете для входа.",
+			"sectionTitle": "Пароль",
+			"submit": "Обновить пароль",
+			"submitting": "Обновление...",
+			"subtitle": "Управляйте паролем и безопасностью аккаунта.",
+			"title": "Безопасность",
+			"updateError": "Не удалось обновить пароль.",
+			"updateSuccess": "Пароль обновлён.",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "Подтвердите новый пароль.",
+				"currentRequired": "Введите текущий пароль.",
+				"mismatch": "Пароли не совпадают.",
+				"tooShort": "Новый пароль должен содержать не менее 8 символов.",
+				"sameAsCurrent": "Новый пароль должен отличаться от текущего."
 			}
 		},
 		"gitlabIntegration": {
@@ -1772,150 +1772,150 @@
 			"webhookSecretLabel": "Секретный токен (должен совпадать с указанным в вебхуке GitLab)",
 			"webhookShow": "Показать",
 			"webhookTitle": "Вебхук",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"importPermissionHint": "Для импорта нужны права на создание и изменение задач."
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "Календарные ленты",
+			"subtitle": "Подписывайтесь на запланированные задачи проектов в своём приложении-календаре.",
+			"createTitle": "Создать календарную ленту",
+			"filterHint": "Включаются задачи с датой начала или сроком выполнения и хотя бы одной из выбранных меток.",
+			"labels": "Метки",
+			"selectLabels": "Найдите и выберите метки…",
+			"noLabels": "Метки не найдены.",
+			"timeZoneHint": "Для событий на весь день используется часовой пояс {{timeZone}}.",
+			"accessHint": "Любой, у кого есть ссылка на ленту, может читать названия, описания и даты подходящих задач. Отзовите ссылку, чтобы закрыть доступ в будущем.",
+			"create": "Создать ленту",
+			"creating": "Создание…",
+			"created": "Календарная лента создана.",
+			"createError": "Не удалось создать календарную ленту.",
+			"activeFeeds": "Активные ленты",
+			"subscribeHint": "Скопируйте ссылку и добавьте её как подписку в календаре. Обновления появятся, когда календарь обновит ленту.",
+			"empty": "Календарных лент пока нет.",
+			"feedUrl": "URL календарной ленты",
+			"copy": "Копировать ссылку",
+			"copied": "Ссылка на календарную ленту скопирована.",
+			"copyError": "Не удалось скопировать ссылку. Выделите URL и скопируйте его вручную.",
+			"revoke": "Отозвать",
+			"revoked": "Календарная лента отозвана.",
+			"revokeError": "Не удалось отозвать календарную ленту.",
+			"loadError": "Не удалось загрузить календарные ленты или метки. Повторите попытку.",
+			"deletedLabel": "Удалённая метка",
+			"permissionRequired": "Для управления календарными лентами нужно право на общий доступ к проекту."
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "Настройки настраиваемых полей",
+			"sectionDescription": "Поля, заданные здесь, добавляются в каждый проект рабочей области. Администратор проекта может только скрывать или показывать поле в своём проекте — обязательное поле скрыть нельзя.",
+			"sectionTitle": "Настраиваемые поля",
+			"subtitle": "Управляйте настраиваемыми полями на уровне рабочей области. Их наследует каждый проект в этой рабочей области.",
+			"title": "Настраиваемые поля"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "Создайте новый ресурс, который можно назначать в этой рабочей области. Тип нельзя изменить после создания.",
+			"createError": "Не удалось создать ресурс",
+			"createResource": "Создать ресурс",
+			"createSuccess": "Ресурс создан",
+			"deleteConfirmDescription": "Ресурс будет убран из всех задач, на которые он назначен. Это действие нельзя отменить.",
+			"deleteConfirmTitle": "Удалить этот ресурс?",
+			"deleteError": "Не удалось удалить ресурс",
+			"deleteResource": "Удалить",
+			"deleteSuccess": "Ресурс удалён",
+			"editDescription": "Измените название или email этого ресурса.",
+			"editResource": "Редактировать ресурс",
+			"emailLabel": "Email (необязательно)",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "Ресурсов пока нет. Создайте первого человека, единицу оборудования или материал, чтобы начать.",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "Оборудование",
+				"material": "Материал",
+				"person": "Человек"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "Тип",
+			"nameLabel": "Название",
+			"namePlaceholder": "Введите название",
+			"nameRequired": "Укажите название ресурса",
+			"pageTitle": "Настройки ресурсов",
+			"saveResource": "Сохранить",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "Ресурсы",
+			"updateError": "Не удалось обновить ресурс",
+			"updateSuccess": "Ресурс обновлён",
+			"loadError": "Не удалось загрузить ресурсы. Повторите попытку.",
+			"loading": "Загрузка ресурсов…",
+			"emailChangeDetaches": "При смене email связь с ожидающим приглашением будет удалена.",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "Этот ресурс уже связан с участником.",
+				"alreadyWorkspaceMember": "Этот адрес принадлежит участнику рабочей области. Свяжите ресурс с этим участником.",
+				"disposableEmail": "Приглашения на одноразовые адреса электронной почты не разрешены.",
+				"duplicateProject": "Проект можно указать только один раз.",
+				"emailNotAllowed": "Адрес электронной почты может быть только у человека.",
+				"guestCannotInvite": "Гостевые аккаунты не могут отправлять приглашения.",
+				"insufficientPermissions": "У вас нет прав приглашать людей в один из этих проектов.",
+				"invitationLimitReached": "Достигнут лимит приглашений для этой рабочей области.",
+				"invitationRoleConflict": "Для этого адреса уже есть ожидающее приглашение с другой ролью в рабочей области.",
+				"noEmail": "Сначала добавьте ресурсу адрес электронной почты.",
+				"notLinked": "Этот ресурс не связан с участником.",
+				"notMember": "Этот пользователь не является участником рабочей области.",
+				"notPerson": "Пригласить или связать можно только человека.",
+				"ownerRole": "Роль владельца нельзя выдать по приглашению.",
+				"projectAccessDenied": "У вас нет доступа к одному из этих проектов.",
+				"rateLimited": "Слишком много приглашений. Повторите попытку через минуту.",
+				"resourceChanged": "Ресурс был изменён. Повторите попытку.",
+				"roleExceedsYourPermissions": "Вы не можете выдать роль с большими правами, чем у вас.",
+				"unknownRole": "Одной из ролей больше нет. Выберите другую.",
+				"notFound": "Ресурс не найден.",
+				"alreadyWorkspaceMemberOnly": "Этот адрес принадлежит участнику рабочей области.",
+				"workspaceNotFound": "Рабочая область не найдена."
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "Проекты добавлены в ожидающее приглашение для этого адреса.",
+				"createdTitle": "Приглашение создано",
+				"description": "Приглашение будет отправлено на {{email}}. Назначения этого ресурса в выбранных проектах перейдут на новый аккаунт.",
+				"error": "Не удалось отправить приглашение",
+				"hasTasks": "Есть задачи",
+				"noProjectRoles": "Нет ролей, которые вы можете назначить",
+				"noProjects": "Вы не можете приглашать людей ни в один проект.",
+				"pickProject": "Выберите хотя бы один проект.",
+				"projectRoleLabel": "Роль в проекте {{project}}",
+				"projectRolesError": "Не удалось загрузить роли",
+				"projectRolesLoading": "Загрузка ролей...",
+				"projectsError": "Не удалось загрузить проекты, в которые вы можете приглашать. Повторите попытку позже.",
+				"projectsHint": "Человек получит доступ к отмеченным проектам. Проекты с задачами этого ресурса уже отмечены.",
+				"projectsLabel": "Проекты",
+				"projectsLoading": "Загрузка проектов...",
+				"title": "Пригласить {{name}}",
+				"workspaceRoleLabel": "Роль в рабочей области"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "Пригласить",
+			"inviteNeedsEmail": "Добавьте адрес электронной почты, чтобы пригласить этого человека.",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "Выберите участника этой рабочей области. Назначения этого ресурса в проектах, доступных участнику, перейдут на его аккаунт.",
+				"error": "Не удалось связать ресурс",
+				"hint": "Назначения в проектах, недоступных участнику, остаются за ресурсом. В загрузке они учитываются в строке участника.",
+				"memberLabel": "Участник",
+				"memberPlaceholder": "Выберите участника",
+				"membersError": "Не удалось загрузить участников.",
+				"membersLoading": "Загрузка участников...",
+				"noMembers": "Нет участников, с которыми можно связать ресурс.",
+				"submit": "Связать",
+				"success": "Связано с {{name}}. Перенесено назначений: {{moved}}.",
+				"title": "Связать {{name}} с участником"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "Связать с участником",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "Приглашён (истекло)",
+				"invitedPending": "Приглашён (ожидает)",
+				"linked": "Связан с участником",
+				"linkedTo": "Связан с {{name}}",
+				"notInvited": "Не приглашён"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "Ресурс больше не будет связан с участником. Уже перенесённые назначения останутся за участником.",
+				"error": "Не удалось отвязать ресурс",
+				"success": "Ресурс отвязан",
+				"title": "Отвязать этот ресурс?"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "Отвязать"
 		}
 	},
 	"navigation": {
@@ -2035,10 +2035,10 @@
 		},
 		"mobileProjectNav": {
 			"backlog": "Backlog",
-			"board": "Board",
-			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"board": "Доска",
+			"gantt": "Гант",
+			"projects": "Проекты",
+			"view": "Вид"
 		}
 	},
 	"notifications": {
@@ -2216,8 +2216,8 @@
 					"renderFailed": "Не удалось отобразить диаграмму Mermaid"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "Импортировано из {{source}}",
+			"importedBy": "Импортировал(а): {{name}}",
 			"commentedOnForge": "прокомментировал на {{forge}}"
 		},
 		"moved": "переместил задачу из «{{from}}» в «{{to}}»",
@@ -2271,7 +2271,7 @@
 			"loadingTask": "Загрузка задачи...",
 			"taskNotFound": "Задача не найдена",
 			"taskNotFoundDescription": "Задача, которую вы ищете, не существует или была удалена.",
-			"customFields": "Custom Fields"
+			"customFields": "Настраиваемые поля"
 		},
 		"detail": {
 			"subtaskOf": "Подзадача",
@@ -2378,15 +2378,15 @@
 					"renderFailed": "Не удалось отобразить диаграмму Mermaid"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "Большой",
+					"medium": "Средний",
+					"reset": "Сбросить размер",
+					"resizeHandle": "Изменить размер изображения",
+					"small": "Маленький"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "Поле обновлено",
+			"selectOption": "Выберите вариант",
 			"pickDate": "Выберите дату"
 		},
 		"entity": {
@@ -2447,7 +2447,7 @@
 			"deleteAction": "Удалить задачу",
 			"completeAria": "Отметить подзадачу выполненной",
 			"progress": "Выполнено подзадач: {{completed}} из {{total}}",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "В этом проекте нет подходящей колонки, чтобы завершить или вновь открыть эту подзадачу."
 		},
 		"properties": {
 			"title": "Свойства",
@@ -2478,19 +2478,19 @@
 			"assignee": {
 				"unassigned": "Не назначено",
 				"updateError": "Не удалось обновить исполнителя задачи",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "Снять все назначения",
+				"addResource": "Новый ресурс",
+				"createResource": "Создать",
+				"createResourceError": "Не удалось создать ресурс",
+				"newResourceEmailPlaceholder": "Email (необязательно)",
+				"newResourceNamePlaceholder": "Название",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "Оборудование",
+					"material": "Материал",
+					"person": "Человек"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "Ресурсы",
+				"notInProject": "Больше не в этом проекте"
 			},
 			"status": {
 				"updateError": "Не удалось обновить статус задачи"
@@ -2642,10 +2642,10 @@
 				"includeAnyOf": "включает любой из"
 			},
 			"selectedCount": "{{count}} выбрано",
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "Все",
+			"allCustomFieldValues": "Все значения",
+			"noCustomFieldValues": "Нет значений настраиваемого поля",
+			"noValuesUsedYet": "Значения ещё не использовались"
 		},
 		"gantt": {
 			"pageTitle": "{{name}} – Гант",
@@ -2662,11 +2662,11 @@
 			"resizeStart": "Изменить дату начала",
 			"resizeDue": "Изменить срок выполнения",
 			"taskAriaLabel": "{{title}}: откройте или перетащите для перемещения",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "К сегодняшнему дню",
+			"previousPeriod": "Предыдущий период",
+			"nextPeriod": "Следующий период",
+			"periodStart": "Дата начала шкалы",
+			"showTaskDates": "Показывать даты задач",
 			"legendBlocking": "Блокирует",
 			"legendRelated": "Связано",
 			"externalProjectBadge": "в {{projectName}}",
@@ -2690,16 +2690,16 @@
 			"legendCriticalPath": "Критический путь",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
 			"constraintViolationAriaLabel": "{{title}}: ограничение нарушено — {{type}}, {{date}}",
-			"dependentsRescheduled_few": "Rescheduled {{count}} dependent tasks",
-			"dependentsRescheduled_many": "Rescheduled {{count}} dependent tasks",
+			"dependentsRescheduled_few": "Перенесено {{count}} зависимые задачи",
+			"dependentsRescheduled_many": "Перенесено {{count}} зависимых задач",
 			"dependentsRescheduled_one": "Перенесена {{count}} зависимая задача",
 			"dependentsRescheduled_other": "Перенесено {{count}} зависимых задач",
 			"baselineSlipEarlyAriaLabel": "{{title}}: завершение на {{days}} дн. раньше базового плана",
 			"baselineSlipLateAriaLabel": "{{title}}: завершение на {{days}} дн. позже базового плана",
 			"legendDependencyType": "Тип (нажмите, чтобы изменить)",
 			"legendDependencyTypeHint": "Каждая блокирующая линия показывает свой тип зависимости (FS/SS/FF/SF) и задержку/опережение — нажмите на неё, чтобы изменить тип или задержку.",
-			"criticalPathDroppedEdges_few": "{{count}} undated deps skipped",
-			"criticalPathDroppedEdges_many": "{{count}} undated deps skipped",
+			"criticalPathDroppedEdges_few": "Пропущено {{count}} зависимости без дат",
+			"criticalPathDroppedEdges_many": "Пропущено {{count}} зависимостей без дат",
 			"criticalPathDroppedEdges_one": "Пропущена {{count}} зависимость без дат",
 			"criticalPathDroppedEdges_other": "Пропущено {{count}} зависимостей без дат",
 			"criticalPathDroppedEdgesHint": "Эти зависимости ведут к задаче без дат, поэтому их нельзя проверить на критический путь — задача, которую они иначе сделали бы критической, может не быть выделена.",
@@ -2712,12 +2712,12 @@
 			"gateWarningBadge": "Шлюз",
 			"gateWarningItem": "«{{title}}» имеет статус {{status}}",
 			"gateWarningTitle": "Заблокировано неутверждённым шлюзом",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "Настраиваемое поле",
+			"barColorSourceLabel": "Цвет полосы",
+			"barColorSourceNone": "Нет",
+			"barColorSourceFirstLabel": "Первая метка",
+			"externalTaskDerivedTitle": "{{title}} — связанная задача в проекте {{projectName}}; её положение определено зависимостью, так как у задачи нет собственных дат (здесь только для чтения)",
+			"externalTaskDerivedRailNote": "Положение по зависимости"
 		},
 		"delete": {
 			"title": "Удалить задачу?",
@@ -2759,7 +2759,7 @@
 		"assignee": {
 			"label": "Исполнитель",
 			"unassigned": "Не назначено",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "Назначено: {{names}}"
 		},
 		"dueDate": {
 			"label": "Срок выполнения",
@@ -2780,8 +2780,8 @@
 		"contextMenu": {
 			"copyLink": "Скопировать ссылку",
 			"copyLinkSuccess": "Ссылка на задачу скопирована!",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "Другие действия",
+			"copyLinkError": "Не удалось скопировать ссылку на задачу."
 		},
 		"actions": {
 			"duplicate": "Дублировать",
@@ -2883,11 +2883,11 @@
 			"today": "Сегодня",
 			"loadError": "Не удалось загрузить задачи."
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "Поиск по полным описаниям…",
+		"descriptionSearchError": "Не удалось выполнить поиск по описаниям. Результаты могут быть неполными.",
+		"descriptionRetry": "Повторить",
+		"descriptionLoading": "Загрузка описания…",
+		"descriptionLoadError": "Не удалось загрузить описание. Повторите попытку, чтобы загрузить актуальную версию.",
 		"approval": {
 			"approved": "Утверждено",
 			"label": "Утверждение",
@@ -2897,7 +2897,7 @@
 		},
 		"checklistProgress": "Выполнено пунктов списка: {{completed}} из {{total}}",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "Настраиваемые поля"
 		}
 	},
 	"invitations": {
@@ -3090,19 +3090,19 @@
 			"copyFailed": "Не удалось скопировать автоматически. Выделите ссылку и нажмите Ctrl+C.",
 			"pendingBadge": "ожидает",
 			"expires": "Истекает {{date}}",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "Обновить ссылку приглашения",
+			"renewError": "Не удалось обновить ссылку приглашения",
+			"renewSuccess": "Ссылка приглашения обновлена. Письмо не отправлялось. Скопируйте ссылку и отправьте её самостоятельно.",
+			"resend": "Отправить приглашение повторно",
+			"resendError": "Не удалось повторно отправить приглашение",
+			"resendSuccess": "Приглашение отправлено повторно",
+			"expired": "Истекло {{date}}",
+			"inviteAgain": "Пригласить снова",
+			"inviteAgainError": "Не удалось пригласить снова",
+			"renewSuccessUnknownEmail": "Ссылка приглашения обновлена. Поделитесь ссылкой, если человек не получил письмо.",
+			"expiredBadge": "истекло",
+			"inviteAgainCancelError": "Не удалось отменить старое приглашение. Отмените его вручную.",
+			"rejectedBadge": "отклонено"
 		},
 		"inviteModal": {
 			"title": "Пригласить участника команды",
@@ -3114,20 +3114,20 @@
 			"createdTitle": "Приглашение создано",
 			"shareLinkDescription": "Поделитесь этой ссылкой с {{email}}, чтобы этот пользователь мог присоединиться к рабочей области.",
 			"done": "Готово",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "Введите корректный адрес электронной почты",
+			"noSmtpNotice": "Электронная почта на этом сервере не настроена. Приглашение не будет отправлено по почте; скопируйте ссылку и отправьте её самостоятельно.",
+			"shareLinkDescriptionNoEmail": "Письмо не отправлялось. Отправьте эту ссылку на {{email}}, чтобы человек мог присоединиться к рабочей области.",
+			"successNoEmail": "Приглашение создано. Письмо не отправлялось.",
+			"noAssignableRoles": "Вы не можете назначать роли, поэтому не можете приглашать людей.",
+			"roleLabel": "Роль",
+			"rolesError": "Не удалось загрузить роли, которые вы можете назначать. Повторите попытку позже.",
+			"rolesLoading": "Загрузка ролей...",
+			"sending": "Отправка...",
+			"shareLinkDescriptionUnknownEmail": "Отправьте эту ссылку на {{email}}, если письмо не дошло, чтобы человек мог присоединиться к рабочей области.",
+			"successUnknownEmail": "Приглашение создано. Поделитесь ссылкой, если человек не получил письмо.",
+			"rolePlaceholder": "Выберите роль",
+			"roleUnavailable": "Выбранная роль больше недоступна. Выберите другую.",
+			"rolePickRequired": "Выберите роль для этого приглашения."
 		},
 		"membersTable": {
 			"emptyTitle": "Участников команды пока нет",
@@ -3154,19 +3154,19 @@
 			"ariaInvitationActions": "Действия с приглашением",
 			"roleUpdateSuccess": "Роль обновлена",
 			"roleUpdateError": "Не удалось обновить роль",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "Изменить роль для {{name}}",
+			"rolesLoadError": "Не удалось загрузить роли, которые вы можете назначать, поэтому сейчас роли изменить нельзя.",
+			"rolesRetry": "Повторить"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "У этого человека уже есть ожидающее приглашение.",
+			"alreadyMember": "Этот человек уже является участником рабочей области.",
+			"cannotChangeOwnRole": "Вы не можете изменить свою роль.",
+			"cannotInviteWithRole": "Вы не можете пригласить человека с этой ролью.",
+			"cannotManageMember": "Вы не можете управлять этим участником.",
+			"cannotUpdateMember": "Вы не можете изменить этого участника.",
+			"invitationLimitReached": "Достигнут лимит приглашений для этой рабочей области.",
+			"roleExceedsYourPermissions": "Вы не можете выдать роль с большими правами, чем у вас."
 		}
 	},
 	"publicProject": {
@@ -3207,213 +3207,213 @@
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "Пресс-кит",
+		"headline": "Пресс-кит Kaneo",
+		"intro": "Логотипы и скриншоты Kaneo для статей, видео и других материалов.",
+		"description": "Материалы для прессы о Kaneo: информация о продукте, логотипы, скриншоты и контакты для журналистов и авторов.",
+		"downloadKit": "Скачать все материалы",
+		"boilerplateTitle": "О Kaneo",
+		"boilerplate": "Kaneo — платформа для управления проектами с открытым исходным кодом, созданная Андреем Ацевским. Команды могут организовывать задачи в режимах доски и списка, назначать работу, задавать приоритеты и сроки и подключать GitHub. Kaneo распространяется по лицензии MIT для самостоятельного размещения, а также как управляемый сервис Kaneo Cloud.",
+		"logosTitle": "Логотипы",
+		"darkLogo": "Тёмный логотип",
+		"darkLogoAlt": "Тёмный логотип Kaneo на светлом фоне",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "Светлый логотип",
+		"lightLogoAlt": "Светлый логотип Kaneo на тёмном фоне",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "Значок приложения",
+		"iconAlt": "Значок приложения Kaneo",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "Скачать",
+		"screenshotsTitle": "Скриншоты",
+		"lightScreenshot": "Доска (светлая)",
+		"lightScreenshotAlt": "Доска Kaneo в светлой теме с карточками задач, сгруппированными по статусам",
+		"darkScreenshot": "Доска (тёмная)",
+		"darkScreenshotAlt": "Доска Kaneo в тёмной теме с карточками задач, сгруппированными по статусам",
+		"contactTitle": "Запросы от прессы",
+		"contactBody": "Свяжитесь с командой Kaneo по вопросам о продукте, интервью или для получения дополнительных материалов.",
+		"usageContrast": "Используйте светлый логотип на тёмном фоне, а тёмный — на светлом.",
+		"usageProportions": "Сохраняйте исходные пропорции и цвета, не растягивайте логотип и не добавляйте эффекты.",
+		"usageSpace": "Оставляйте вокруг логотипа достаточно свободного места, чтобы он оставался чётким и читаемым.",
+		"darkListScreenshot": "Список (тёмный)",
+		"darkListScreenshotAlt": "Список задач Kaneo в тёмной теме, сгруппированный по статусам, с исполнителями, приоритетами, метками и сроками",
+		"darkTaskScreenshot": "Детали задачи (тёмная)",
+		"darkTaskScreenshotAlt": "Детали задачи Kaneo в тёмной теме с описанием, чек-листом, комментарием команды и свойствами задачи",
+		"darkTimelineScreenshot": "Временная шкала (тёмная)",
+		"darkTimelineScreenshotAlt": "Временная шкала Ганта Kaneo в тёмной теме с запланированными задачами и их длительностью",
+		"lightListScreenshot": "Список (светлый)",
+		"lightListScreenshotAlt": "Список задач Kaneo в светлой теме, сгруппированный по статусам, с исполнителями, приоритетами, метками и сроками",
+		"lightTaskScreenshot": "Детали задачи (светлая)",
+		"lightTaskScreenshotAlt": "Детали задачи Kaneo в светлой теме с описанием, чек-листом, комментарием команды и свойствами задачи",
+		"lightTimelineScreenshot": "Временная шкала (светлая)",
+		"lightTimelineScreenshotAlt": "Временная шкала Ганта Kaneo в светлой теме с запланированными задачами и их длительностью"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "Партнёры"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Зачем существует Kaneo",
+			"intro": "Меня зовут Андрей, и я создал Kaneo, потому что устал от инструментов управления проектами, которые мешали больше, чем помогали. После многих лет работы с громоздкими и запутанными платформами, отвлекавшими от настоящей работы, я понял, что должен быть способ лучше.",
+			"problem": "Проблема была не в нехватке функций у этих инструментов, а в их избытке. Каждое уведомление, каждая лишняя кнопка, каждый сложный процесс отвлекали мою команду от главного: создания хороших продуктов.",
+			"principle": "Я верю, что лучшие инструменты незаметны. Они должны усиливать естественный рабочий процесс команды, а не заставлять подстраиваться под свой. Kaneo построен на принципе «меньше — значит лучше»: каждая функция существует, потому что решает реальную проблему, а не потому, что хорошо смотрится в демо."
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Попробовать Kaneo Cloud",
+			"selfHostCta": "Развернуть Kaneo у себя",
+			"trialNote": "14 дней облачной пробной версии. Кредитная карта не нужна.",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "Управление проектами,",
+			"titleAccent": "которое не превращается в проект.",
+			"description": "Управление проектами с открытым исходным кодом: доски, диаграммы Ганта и интеграция с GitHub. Разверните у себя бесплатно с включённым SSO или доверьте хостинг Kaneo Cloud."
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
-			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
-			"roadmap": "Roadmap",
-			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"product": "Продукт",
+			"pricing": "Цены",
+			"resources": "Ресурсы",
+			"docs": "Документация",
+			"blog": "Блог",
+			"guides": "Руководства",
+			"comparisons": "Сравнение инструментов",
+			"roadmap": "Дорожная карта",
+			"menu": "Меню",
+			"closeMenu": "Закрыть меню",
+			"home": "Главная Kaneo",
+			"signIn": "Войти",
+			"getStarted": "Начать"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
+			"label": "Представления продукта Kaneo",
+			"controls": "Выберите представление продукта",
+			"play": "Запустить показ представлений",
+			"pause": "Приостановить показ представлений",
+			"board": "Доска",
 			"list": "Backlog",
-			"gantt": "Gantt"
+			"gantt": "Гант"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "Подзадачи и контекст",
+				"title": "Большие задачи. Понятные следующие шаги.",
+				"description": "Разбивайте работу на подзадачи, назначайте исполнителей и отслеживайте прогресс, не теряя исходное описание. Все детали остаются рядом с работой."
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "Интеграция с GitHub",
+				"title": "От pull request до готово.",
+				"description": "Issues и метки синхронизируются в обе стороны. Связанные pull request'ы переводят задачи через проверку в «Готово» по мере открытия и слияния кода.",
+				"link": "Настроить GitHub"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "Запустите на собственном сервере.",
+				"description": "Разверните с помощью Docker и храните свою рабочую область на инфраструктуре, которую вы контролируете.",
+				"link": "Развернуть Kaneo у себя"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "Код тоже открыт.",
+				"description": "Читайте исходный код, сообщайте о проблемах или вносите изменения. Разработка ведётся на GitHub.",
+				"link": "Посмотреть исходный код"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
-				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"taskAlt": "Интерактивный предпросмотр задачи и подзадач Kaneo.",
+				"githubAlt": "Интерактивный предпросмотр слияния на GitHub, обновляющего задачу в Kaneo.",
+				"taskTitle": "Опубликовать новую главную страницу",
+				"taskDescription": "Обновить тексты и проверить вёрстку перед следующим релизом.",
+				"checklistDone": "Проверить тексты",
+				"checklistOpen": "Проверить мобильную вёрстку",
+				"inProgress": "В работе",
+				"high": "Высокий",
+				"date": "12 окт.",
+				"design": "дизайн",
+				"done": "Готово",
+				"relationsAlt": "Интерактивный предпросмотр зависимостей задач Kaneo.",
+				"inReview": "На проверке",
+				"trySubtasks": "Попробуйте отметить подзадачу.",
+				"tryGithub": "Посмотрите слияние, чтобы увидеть обновление задачи.",
+				"tryRelations": "Откройте связанную задачу, чтобы проследить связь.",
+				"mergeAction": "Показать слияние",
+				"resetAction": "Сбросить предпросмотр",
+				"mergedHint": "Pull request влит. Задача перемещена в «Готово».",
+				"progress": "Завершено подзадач: {{completed}} из {{total}}",
+				"backToTask": "Назад к задаче о главной странице",
+				"releaseNotes": "Написать примечания к релизу",
+				"dependencyDescription": "Главная страница ждёт проверки мобильной версии. Оставьте заметки о запуске связанными для контекста.",
+				"mobileDescription": "Проверить новую главную страницу на узких экранах перед публикацией.",
+				"notesDescription": "Записать, что изменилось, для анонса запуска."
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "Связанные задачи и зависимости",
+				"title": "Смотрите, что тормозит работу.",
+				"description": "Связывайте блокирующие задачи, отслеживайте зависимости и держите связанную работу рядом. Откройте связанную задачу, чтобы увидеть контекст следующего шага."
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — управление проектами с открытым исходным кодом для самостоятельного размещения",
+			"description": "Управление проектами с открытым исходным кодом: доски, диаграммы Ганта и интеграция с GitHub. Разверните у себя бесплатно с включённым SSO или используйте Kaneo Cloud."
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "Настройте под себя",
+			"title": "Понятный путь от знакомства до работы.",
+			"description": "Настройте свой сервер, подключите нужные инструменты или сравните Kaneo с вашим текущим трекером.",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Самостоятельное размещение с Docker",
+				"description": "Установка, резервное копирование и обновления для инфраструктуры под вашим контролем."
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "Подключите свой провайдер удостоверений",
+				"description": "Настройте единый вход OIDC в бесплатной самостоятельно размещаемой сборке."
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "Подключите свои ИИ-инструменты",
+				"description": "Работайте с задачами и проектами через ИИ-клиент с помощью MCP."
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "Сравнение Kaneo и Linear",
+				"description": "Узнайте, чем они различаются по хостингу, лицензированию и рабочему процессу."
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "Прежде чем начать",
+			"description": "Практические подробности о размещении, планировании и подключении вашей команды.",
+			"overview": "Kaneo — платформа для управления проектами с открытым исходным кодом под лицензией MIT: доски, backlog, представления Ганта и календаря, настраиваемые поля, учёт времени и интеграция с GitHub. Разверните её на собственной инфраструктуре или используйте Kaneo Cloud.",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Можно ли развернуть Kaneo бесплатно у себя?",
+				"answer": "Да. Kaneo распространяется по лицензии MIT и бесплатна для самостоятельного размещения, единый вход включён. Запустите приложение вместе с PostgreSQL через Docker Compose или разверните с официальным Helm-чартом. Инфраструктура, обновления и резервные копии остаются на вашей стороне.",
+				"link": "Читать руководство по установке"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Есть ли в Kaneo диаграммы Ганта?",
+				"answer": "Да. Kaneo включает представления Ганта и календаря наряду с досками, списками и планированием backlog. Используйте даты начала и сроки задач, чтобы планировать работу на временной шкале. Бюджетирование, сравнение с базовым планом и отчёты burndown по спринтам пока не входят в возможности продукта.",
+				"link": "Сравнить возможности планирования"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "Включён ли единый вход (SSO)?",
+				"answer": "Да. Бесплатная самостоятельно размещаемая сборка поддерживает Google, GitHub, Discord и собственных провайдеров OAuth/OIDC. Настройте своего провайдера в своём экземпляре, не покупая отдельную редакцию Kaneo.",
+				"link": "Настроить OIDC"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "Могут ли ИИ-клиенты работать с Kaneo?",
+				"answer": "Да. Kaneo предоставляет MCP-сервер в пакете @kaneo/mcp и HTTP-эндпоинт. Совместимые ИИ-клиенты могут читать и обновлять задачи с помощью API-ключа, привязанного к пользователю, с учётом прав в рабочей области.",
+				"link": "Читать руководство по MCP"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "Возможность",
+			"yes": "Да",
+			"no": "Нет"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "Что включает самостоятельное размещение, со ссылками на поддерживаемую конфигурацию Docker Compose и шаги установки.",
+			"answer": "Чтобы развернуть Kaneo у себя, запустите приложение и PostgreSQL через Docker Compose, настройте публичный URL и секреты и поставьте перед ними обратный прокси с TLS. По руководству по установке нужно не менее 2 ГБ ОЗУ и 10 ГБ дискового пространства. Учитывайте регулярные обновления, резервное копирование базы данных и хранилище для загруженных файлов.",
+			"requirements": "Минимум по документации: 2 ГБ ОЗУ и 10 ГБ дискового пространства, Docker 20.10 или новее и Docker Compose V2. Заложите больше ресурсов с учётом вашей нагрузки, роста базы данных и загружаемых файлов.",
+			"compose": "Используйте поддерживаемый compose.yml из руководства по Docker Compose. Он описывает PostgreSQL, постоянный том базы данных, приложение Kaneo и проверки работоспособности. Настройте файл окружения перед запуском сервисов; в продакшене закрепите версию образа, чтобы обновления были осознанными.",
+			"backups": "Делайте резервные копии как PostgreSQL, так и объектного хранилища, используемого для загрузок. Выберите расписание с учётом того, сколько работы ваша команда может позволить себе потерять, храните копии вне сервера приложения и проверяйте восстановление заранее.",
+			"worth": "Самостоятельное размещение имеет смысл, когда нужен контроль над инфраструктурой и данными и есть тот, кто возьмёт на себя обслуживание. При сравнении стоимости с управляемым сервисом учитывайте мощности сервера, хранилище, резервные копии и время на обслуживание.",
+			"minimum": "Руководство по установке требует Docker 20.10 или новее, Docker Compose V2, не менее 2 ГБ ОЗУ и 10 ГБ дискового пространства. Конфигурация Compose включает PostgreSQL. Redis необязателен для одного экземпляра API.",
+			"composeLink": "Конфигурация Docker Compose",
+			"composeLinkDescription": "Поддерживаемый compose.yml с постоянным хранилищем и проверками работоспособности.",
+			"startLink": "Запуск и проверка сервисов",
+			"startLinkDescription": "Запустите стек, проверьте его состояние и убедитесь, что приложение доступно."
 		}
 	},
 	"portfolio": {
@@ -3434,174 +3434,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "Вы уже являетесь участником {{workspaceName}}, поэтому это приглашение не может добавить вас в проект. Попросите администратора рабочей области добавить вас в проект.",
+			"alreadyMemberTitle": "Вы уже участник",
+			"invitedToProject": "Вас пригласили в проект {{project}} с ролью {{role}}.",
+			"invitedToProjects": "Вас пригласили в эти проекты:",
+			"projectRole": "{{project}} — {{role}}"
 		},
-		"empty": "No pending invitations.",
+		"empty": "Ожидающих приглашений нет.",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "Этот человек уже является участником рабочей области. Добавьте его в проект через «Добавить участника».",
+			"disposableEmail": "Одноразовые адреса электронной почты не разрешены.",
+			"expired": "Срок действия этого приглашения истёк. Пригласите человека снова.",
+			"guestCannotInvite": "Гостевые аккаунты не могут приглашать людей.",
+			"limitReached": "В рабочей области слишком много ожидающих приглашений. Сначала отмените некоторые из них.",
+			"notApplied": "Не удалось применить доступ к проекту из этого приглашения. Попробуйте принять его снова. Если ошибка повторяется, попросите администратора рабочей области добавить вас в проект.",
+			"notFound": "Этого приглашения больше нет. Список перезагружен.",
+			"rateLimited": "Слишком много приглашений. Повторите попытку чуть позже.",
+			"rateLimitedRetry": "Слишком много приглашений. Повторите попытку через {{seconds}} с.",
+			"roleConflict": "Ожидающее приглашение для этого адреса уже существует с другой ролью в рабочей области. Отмените его или используйте ту же роль в рабочей области.",
+			"workspaceInvitationExists": "Для этого адреса уже есть ожидающее приглашение в рабочую область. Добавить в него проект может только тот, кто вправе приглашать людей в рабочую область."
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
+			"addAsMember": "Добавить как участника",
+			"addedToExisting": "У {{email}} уже есть ожидающее приглашение. Этот проект добавлен в него. Второе письмо не отправлялось. При необходимости поделитесь ссылкой.",
+			"createdNotSent": "Приглашение для {{email}} создано. Письмо не отправлялось. Поделитесь ссылкой ниже.",
+			"createdSendFailed": "Приглашение для {{email}} создано, но письмо отправить не удалось. Поделитесь ссылкой ниже или отправьте приглашение повторно из списка.",
+			"createdSent": "Приглашение отправлено на {{email}}.",
+			"createdTitle": "Приглашение создано",
+			"description": "Пригласите человека, которого ещё нет в рабочей области. Он получит роли, которые вы выберете ниже.",
+			"done": "Готово",
 			"emailLabel": "Email",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "Не удалось отправить приглашение",
+			"invalidEmail": "Введите корректный адрес электронной почты",
+			"noSmtpNotice": "Электронная почта на этом сервере не настроена. Приглашение не будет отправлено по почте. Скопируйте ссылку и отправьте её самостоятельно.",
+			"projectRoleHint": "Что человек может делать в этом проекте.",
+			"projectRoleLabel": "Роль в проекте",
+			"rolePlaceholder": "Выберите роль",
+			"submit": "Отправить приглашение",
+			"submitting": "Отправка...",
+			"title": "Пригласить в проект",
+			"workspaceRoleHint": "Что человек может делать в рабочей области.",
+			"workspaceRoleLabel": "Роль в рабочей области",
+			"noAssignableProjectRoles": "Вы не можете назначать роли проекта, поэтому не можете приглашать людей.",
+			"noAssignableWorkspaceRoles": "Вы не можете назначать роли рабочей области, поэтому не можете приглашать людей.",
+			"projectRolePickRequired": "Выберите роль в проекте.",
+			"projectRolesError": "Не удалось загрузить роли проекта, которые вы можете назначать.",
+			"projectRolesLoading": "Загрузка ролей проекта...",
+			"projectRoleUnavailable": "Выбранная роль в проекте больше недоступна. Выберите другую.",
+			"workspaceRolePickRequired": "Выберите роль в рабочей области.",
+			"workspaceRolesError": "Не удалось загрузить роли рабочей области, которые вы можете назначать.",
+			"workspaceRolesLoading": "Загрузка ролей рабочей области...",
+			"workspaceRoleUnavailable": "Выбранная роль в рабочей области больше недоступна. Выберите другую."
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "Действия для приглашения {{email}}",
+			"cancelDialogDescription": "Приглашение для {{email}} в этот проект будет отменено. Ссылка перестанет работать, если она не даёт доступ к другим проектам.",
+			"cancelDialogTitle": "Отменить приглашение?",
+			"cancelError": "Не удалось отменить приглашение",
+			"cancelSuccess": "Приглашение отменено",
+			"cancelSuccessOtherProjects": "Этот проект удалён из приглашения. Оно по-прежнему даёт доступ к другим проектам.",
 			"columns": {
 				"email": "Email",
-				"roles": "Roles"
+				"roles": "Роли"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "Роль в проекте: {{role}}",
+			"renewError": "Не удалось обновить ссылку приглашения",
+			"resendError": "Не удалось повторно отправить приглашение",
+			"resendNotDelivered": "Приглашение обновлено, но письмо отправить не удалось. Скопируйте ссылку и отправьте её самостоятельно.",
+			"rolesLoadError": "Не удалось загрузить роли, которые вы можете назначать, поэтому сейчас приглашения нельзя отправить повторно.",
+			"rolesRetry": "Повторить",
+			"workspaceRole": "Роль в рабочей области: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "Не удалось загрузить ожидающие приглашения.",
+		"subtitle": "Люди, приглашённые в этот проект, которые ещё не присоединились.",
+		"title": "Ожидающие приглашения"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "Выберите участника рабочей области и роль в проекте.",
+			"error": "Не удалось добавить участника",
+			"loadError": "Не удалось загрузить людей, которых вы можете добавить.",
+			"loading": "Загрузка людей...",
+			"memberLabel": "Участник рабочей области",
+			"noAssignableRoles": "Вы не можете назначать роли.",
+			"noCandidates": "Все в этой рабочей области уже имеют доступ к этому проекту.",
+			"noMatches": "Никого не найдено по вашему запросу.",
+			"roleLabel": "Роль в проекте",
+			"rolePickRequired": "Выберите роль в проекте.",
+			"rolePlaceholder": "Выберите роль",
+			"rolesError": "Не удалось загрузить роли, которые вы можете назначать.",
+			"rolesLoading": "Загрузка ролей...",
+			"roleUnavailable": "Выбранная роль больше недоступна. Выберите другую.",
+			"searchPlaceholder": "Поиск по имени или email",
+			"submit": "Добавить участника",
+			"submitting": "Добавление...",
+			"success": "Участник добавлен в проект",
+			"title": "Добавить участника проекта"
 		},
-		"addMember": "Add member",
+		"addMember": "Добавить участника",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "Этот человек уже является участником этого проекта.",
+			"cannotChangeOwnRole": "Вы не можете изменить свою роль в проекте.",
+			"cannotManageMember": "Вы не можете управлять участником, у которого больше прав, чем у вас.",
+			"insufficientPermissions": "У вас нет прав на это действие.",
+			"memberHasFullAccess": "У этого человека полный доступ через роль в рабочей области. Изменить её можно в разделе участников рабочей области.",
+			"membershipChanged": "Членство изменилось. Список перезагружен. Повторите попытку.",
+			"notProjectMember": "Этот человек больше не является участником этого проекта.",
+			"notWorkspaceMember": "Этот человек не является участником рабочей области.",
+			"ownerRoleNotAllowed": "Роль владельца нельзя использовать в проекте.",
+			"roleAssignedToProjectMembers": "Эта роль всё ещё используется участниками проекта или ожидающими приглашениями. Сначала назначьте им другую роль.",
+			"roleExceedsYourPermissions": "Вы не можете выдать роль с большими правами, чем у вас.",
+			"unknownRole": "Такой роли не существует. Перезагрузите страницу и выберите другую.",
+			"userHasFullAccess": "У этого человека уже есть полный доступ ко всем проектам."
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "Пригласить по email",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "Вы потеряете доступ к этому проекту. Администратор проекта или рабочей области сможет добавить вас снова.",
+			"error": "Не удалось покинуть проект",
+			"success": "Вы покинули проект",
+			"title": "Покинуть этот проект?"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "Не удалось загрузить участников проекта.",
+		"loading": "Загрузка участников...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "Назад к проектам",
+			"description": "Попросите администратора проекта или рабочей области добавить вас.",
+			"title": "У вас нет доступа к этому проекту"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "У вас пока нет доступа ни к одному проекту. Попросите администратора рабочей области добавить вас в проект.",
+			"title": "Пока нет доступа к проектам",
+			"descriptionCanCreate": "У вас пока нет доступа ни к одному проекту. Попросите администратора рабочей области добавить вас в проект или создайте свой."
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "Участники проекта",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} потеряет доступ к этому проекту. Участник останется в рабочей области.",
+			"error": "Не удалось удалить участника",
+			"success": "Участник удалён из проекта",
+			"title": "Удалить из проекта?"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "Повторить",
+		"subtitle": "Люди, которые могут открывать этот проект, и что они могут в нём делать.",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "Действия для {{name}}",
+			"ariaChangeRole": "Изменить роль в проекте для {{name}}",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "Участник",
+				"role": "Роль в проекте"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "Добавьте участника рабочей области или пригласите человека по email.",
+			"emptyTitle": "Участников пока нет",
+			"fullAccess": "Полный доступ",
+			"fullAccessHint": "Имеет доступ ко всем проектам через роль в рабочей области. Изменить её можно в разделе участников рабочей области.",
+			"inactive": "неактивна",
+			"inactiveHint": "Эта роль больше не даёт доступа. Выберите другую роль или удалите человека.",
+			"leaveProject": "Покинуть проект",
+			"removeMember": "Удалить из проекта",
+			"rolesLoadError": "Не удалось загрузить роли, которые вы можете назначать, поэтому сейчас роли изменить нельзя.",
+			"rolesRetry": "Повторить",
+			"roleUpdateError": "Не удалось обновить роль в проекте",
+			"roleUpdateSuccess": "Роль в проекте обновлена",
+			"you": "Вы"
 		},
-		"title": "Members",
+		"title": "Участники",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "Люди без полного доступа видят только те проекты, в которые их добавили. Чтобы пригласить человека в один проект, используйте «Пригласить по email» в настройках проекта.",
+			"link": "Открыть настройки проекта"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "Не удалось проверить, что вам здесь доступно. Некоторые действия могут быть скрыты."
 	}
 }

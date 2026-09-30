@@ -57,28 +57,28 @@
 			"tryAgain": "Riprova",
 			"viewDeploymentGuide": "Visualizza guida al deployment",
 			"refreshPage": "Aggiorna pagina",
-			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
+			"description": "La pagina si è chiusa in modo imprevisto. Di solito aggiornarla risolve il problema.",
 			"messages": {
-				"auth": "Authentication failed. Please sign in again.",
-				"cors": "Unable to connect to the server. This might be due to CORS configuration issues.",
-				"network": "Network error. Please check your internet connection and try again.",
-				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred.",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"auth": "Autenticazione fallita. Accedi di nuovo.",
+				"cors": "Impossibile connettersi al server. Potrebbe dipendere da problemi di configurazione CORS.",
+				"network": "Errore di rete. Controlla la connessione a internet e riprova.",
+				"server": "Errore del server. Riprova più tardi.",
+				"unknown": "Si è verificato un errore imprevisto.",
+				"serverUnreachable": "Impossibile raggiungere il server. Controlla la connessione: i dati verranno ricaricati quando il server sarà di nuovo disponibile."
 			},
 			"troubleshootingSteps": {
 				"cors": {
-					"checkAccessibility": "Check that your API server is accessible from your browser",
-					"checkApiRunning": "Make sure your API server is running",
-					"checkApiUrl": "Check that VITE_API_URL in your frontend .env matches your API server URL",
-					"checkProtocol": "Ensure both frontend and API are using the same protocol (http/https)",
-					"verifyCorsOrigins": "Verify CORS_ORIGINS in your API .env includes your frontend URL"
+					"checkAccessibility": "Verifica che il tuo server API sia raggiungibile dal browser",
+					"checkApiRunning": "Assicurati che il tuo server API sia in esecuzione",
+					"checkApiUrl": "Verifica che VITE_API_URL nel .env del frontend corrisponda all'URL del tuo server API",
+					"checkProtocol": "Assicurati che frontend e API usino lo stesso protocollo (http/https)",
+					"verifyCorsOrigins": "Verifica che CORS_ORIGINS nel .env dell'API includa l'URL del tuo frontend"
 				},
 				"network": {
-					"checkConnection": "Check your internet connection",
-					"checkFirewall": "Check if there are any firewall or proxy issues",
-					"tryRefresh": "Try refreshing the page",
-					"verifyApiRunning": "Verify the API server is running and accessible"
+					"checkConnection": "Controlla la connessione a internet",
+					"checkFirewall": "Controlla se ci sono problemi con firewall o proxy",
+					"tryRefresh": "Prova ad aggiornare la pagina",
+					"verifyApiRunning": "Verifica che il server API sia in esecuzione e raggiungibile"
 				}
 			}
 		},
@@ -155,29 +155,29 @@
 					"rose": "Rosa",
 					"crimson": "Cremisi"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "Non puoi creare attività in questo progetto. Scegli un altro progetto.",
+				"permissionsUnavailable": "Impossibile verificare i tuoi permessi in questo progetto. Riprova o scegli un altro progetto.",
 				"selectOptionPlaceholder": "Seleziona un'opzione"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "Falso",
+			"notSet": "Non impostato",
+			"true": "Vero",
+			"undefined": "Non definito"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "Verifica in corso…",
+			"offlineDescription": "Controlla la connessione di rete. I dati a schermo potrebbero non essere aggiornati e le modifiche non possono essere salvate finché non torni online.",
+			"offlineTitle": "Sei offline",
+			"restored": "Connessione ripristinata. Dati aggiornati.",
+			"retry": "Riprova ora",
+			"serverUnreachableDescription": "I dati a schermo potrebbero non essere aggiornati e le modifiche non verranno salvate. Nuovo tentativo automatico in corso…",
+			"serverUnreachableTitle": "Impossibile raggiungere il server Kaneo"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "I tuoi permessi in questo progetto sono cambiati.",
+			"lost": "Non hai più accesso a questo progetto."
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "Accettazione invito fallita",
 				"acceptSuccess": "Invito accettato! Benvenuto nel team."
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "Accettazione dell'invito in corso..."
 		},
 		"onboarding": {
 			"pageTitle": "Benvenuto su Kaneo",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "Password dimenticata?",
+			"requestTitle": "Reimposta la tua password",
+			"requestSubtitle": "Inserisci la tua email e ti invieremo un link per reimpostare la password.",
+			"sendLink": "Invia link di reimpostazione",
+			"sending": "Invio in corso…",
+			"sent": "Se esiste un account per questa email, riceverai un link per reimpostare la password. Controlla la posta in arrivo e la cartella spam.",
+			"requestError": "Impossibile richiedere il link di reimpostazione. Riprova.",
+			"unavailable": "La reimpostazione della password non è disponibile. Contatta l'amministratore della tua istanza.",
+			"configError": "Impossibile raggiungere il server. Ricarica la pagina e riprova.",
+			"resetTitle": "Scegli una nuova password",
+			"resetSubtitle": "Usa da 8 a 128 caratteri per la nuova password.",
+			"newPassword": "Nuova password",
+			"confirmPassword": "Conferma nuova password",
+			"passwordMismatch": "Le password non corrispondono.",
+			"passwordLength": "Usa da 8 a 128 caratteri.",
+			"resetPassword": "Reimposta password",
+			"resetting": "Reimpostazione in corso…",
+			"invalidLink": "Questo link di reimpostazione non è valido o è scaduto. Richiedi un nuovo link per continuare.",
+			"requestNewLink": "Richiedi un nuovo link",
+			"resetError": "Impossibile reimpostare la password. Riprova.",
+			"success": "La tua password è stata reimpostata. Accedi con la nuova password.",
+			"backToSignIn": "Torna all'accesso"
 		}
 	},
 	"settings": {
@@ -415,25 +415,25 @@
 			"avatar": {
 				"hint": "PNG, JPEG, or WebP. Cropped to a square and resized to 256x256.",
 				"remove": "Remove",
-				"removeError": "Failed to remove profile picture",
-				"removeSuccess": "Profile picture removed",
-				"updateError": "Failed to update profile picture",
-				"updateSuccess": "Profile picture updated",
-				"change": "Change avatar",
-				"edit": "Change your profile picture"
+				"removeError": "Rimozione immagine profilo fallita",
+				"removeSuccess": "Immagine profilo rimossa",
+				"updateError": "Aggiornamento immagine profilo fallito",
+				"updateSuccess": "Immagine profilo aggiornata",
+				"change": "Cambia avatar",
+				"edit": "Cambia la tua immagine profilo"
 			},
 			"deleteAccount": {
-				"confirm": "Delete account",
+				"confirm": "Elimina account",
 				"confirmLabel": "Confirm your email address",
-				"description": "Workspaces only you belong to are deleted with your account. Elsewhere, your tasks stay and become unassigned, and your comments are removed.",
-				"error": "Failed to delete account",
+				"description": "I workspace di cui fai parte solo tu vengono eliminati insieme all'account. Negli altri, le tue attività restano e rimangono senza assegnatario, mentre i tuoi commenti vengono rimossi.",
+				"error": "Eliminazione account fallita",
 				"modalDescription": "This cannot be undone. Type {{email}} to confirm.",
-				"modalTitle": "Delete your account?",
-				"sectionSubtitle": "Permanent actions that affect your whole account.",
-				"sectionTitle": "Danger zone",
-				"success": "Your account has been deleted",
-				"title": "Delete account",
-				"sessionTooOld": "For security, sign out and sign back in before deleting your account."
+				"modalTitle": "Eliminare il tuo account?",
+				"sectionSubtitle": "Azioni permanenti che riguardano l'intero account.",
+				"sectionTitle": "Zona pericolosa",
+				"success": "Il tuo account è stato eliminato",
+				"title": "Elimina account",
+				"sessionTooOld": "Per sicurezza, esci e accedi di nuovo prima di eliminare il tuo account."
 			}
 		},
 		"notificationsPage": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "Mostra etichette e tag delle attività",
 			"priority": "Priorità",
 			"priorityDescription": "Visualizza indicatori di priorità",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "Sfondi dei progetti",
+			"projectBackgroundsDescription": "Mostra le immagini di sfondo dei progetti nelle board"
 		},
 		"developerPage": {
 			"pageTitle": "Impostazioni Sviluppatore",
@@ -738,11 +738,11 @@
 				"task": "Attività",
 				"label": "Etichette",
 				"workspace": "Workspace",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "Amministrazione del workspace",
+				"member": "Membri",
+				"invitation": "Inviti",
+				"team": "Team",
+				"ac": "Ruoli e permessi"
 			},
 			"permissions": {
 				"project": {
@@ -827,68 +827,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "Modifica amministrazione del workspace",
+						"description": "Modifica le impostazioni del workspace tramite il servizio account."
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "Elimina workspace",
+						"description": "Elimina definitivamente il workspace tramite il servizio account."
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "Aggiungi membri",
+						"description": "Aggiungi utenti a questo workspace."
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "Modifica ruoli dei membri",
+						"description": "Modifica i ruoli assegnati ai membri del workspace."
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "Rimuovi membri",
+						"description": "Rimuovi utenti da questo workspace."
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "Invita membri",
+						"description": "Invia inviti al workspace."
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "Annulla inviti",
+						"description": "Revoca gli inviti al workspace in sospeso."
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "Crea team",
+						"description": "Crea team in questo workspace."
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "Modifica team",
+						"description": "Modifica i team e la loro composizione."
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "Elimina team",
+						"description": "Elimina i team in questo workspace."
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "Crea ruoli",
+						"description": "Crea ruoli del workspace e assegna i relativi permessi."
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "Visualizza ruoli",
+						"description": "Leggi i ruoli del workspace e i relativi permessi."
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "Modifica permessi dei ruoli",
+						"description": "Modifica i permessi dei ruoli, incluso l'accesso amministrativo."
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "Elimina ruoli",
+						"description": "Elimina i ruoli personalizzati del workspace."
 					}
 				}
 			},
@@ -935,8 +935,8 @@
 			"updateError": "Aggiornamento etichetta fallito",
 			"deleteError": "Eliminazione etichetta fallita",
 			"nameRequired": "Il nome dell'etichetta è obbligatorio",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "Eliminazione in sospeso",
+			"resumeDeletion": "Riprendi eliminazione"
 		},
 		"projectGeneral": {
 			"pageTitle": "Impostazioni Progetto",
@@ -976,15 +976,15 @@
 			},
 			"importExportTasks": "Importa/Esporta",
 			"importExportTasksDescription": "Importa ed esporta attività.",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "Scegli un'immagine da mostrare dietro la board di questo progetto.",
+			"backgroundLabel": "Sfondo della board",
+			"backgroundRemove": "Rimuovi immagine",
+			"backgroundRemoveError": "Rimozione sfondo del progetto fallita",
+			"backgroundRemoveSuccess": "Sfondo del progetto rimosso",
+			"backgroundReplace": "Sostituisci immagine",
+			"backgroundUpload": "Carica immagine",
+			"backgroundUploadError": "Aggiornamento sfondo del progetto fallito",
+			"backgroundUploadSuccess": "Sfondo del progetto aggiornato",
 			"moveModalConfirm": "Sposta progetto",
 			"moveModalDescription": "Questa azione sposterà il progetto \"{{name}}\" e tutte le sue attività in \"{{workspace}}\". Le attività assegnate a persone che non sono membri di quel workspace resteranno senza assegnatario e le iscrizioni alle notifiche per questo progetto verranno eliminate.",
 			"moveModalTitle": "Spostare il progetto?",
@@ -1013,10 +1013,10 @@
 			"slackSectionSubtitle": "Invia aggiornamenti delle attività del progetto in un canale Slack tramite webhook in entrata.",
 			"telegramSectionTitle": "Integrazione Telegram",
 			"telegramSectionSubtitle": "Invia aggiornamenti delle attività del progetto in una chat o topic Telegram con un bot.",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"mattermostSectionSubtitle": "Invia gli aggiornamenti delle attività del progetto a un canale Mattermost tramite un webhook in entrata.",
+			"mattermostSectionTitle": "Integrazione Mattermost",
+			"gitlabSectionSubtitle": "Sincronizza le attività con GitLab.com o con un'istanza self-managed (issue, merge request, webhook).",
+			"gitlabSectionTitle": "Integrazione GitLab"
 		},
 		"projectVisibility": {
 			"pageTitle": "Visibilità Progetto",
@@ -1041,8 +1041,8 @@
 			"columnsDescription": "Gestisci le colonne che appaiono sulla tua board. Trascina per riordinare. Attiva \"Colonna completata\" per le fasi che rappresentano lavoro concluso.",
 			"automationTitle": "Regole di Automazione",
 			"automationDescription": "Mappa eventi di integrazione alle colonne. Quando si verifica un evento, l'attività collegata si sposta nella colonna specificata.",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "Gestisci i campi personalizzati di questo progetto. Trascina  per riordinare.",
+			"customFieldsTitle": "Campi personalizzati"
 		},
 		"projectSwitcher": {
 			"selectProject": "Seleziona progetto",
@@ -1133,9 +1133,9 @@
 			"accountVerificationHint": "Collega il tuo account GitHub per verificare che amministri questo repository.",
 			"enableGithubSignInHint": "Chiedi all’amministratore della tua istanza di abilitare l’accesso con GitHub.",
 			"reverifyHint": "Ricollega questo repository per verificare l’accesso e riprendere la sincronizzazione.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "Riprendi importazione",
+			"importPaused": "Questa importazione ha un avanzamento salvato. Puoi riprenderla.",
+			"importSummary": "Create: {{imported}} · Aggiornate: {{updated}} · Ignorate: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -1436,7 +1436,7 @@
 				"issue_closed": "Issue Chiusa"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "Quando si verifica un evento webhook di GitLab, sposta l'attività collegata in una colonna."
 		},
 		"externalLinks": {
 			"resources": "Risorse",
@@ -1445,184 +1445,184 @@
 			"merged": "Unito",
 			"draft": "Bozza",
 			"open": "Aperto",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "Aggiunta in corso...",
+			"addResource": "Aggiungi risorsa",
+			"cancel": "Annulla",
+			"empty": "Nessuna risorsa collegata a questa attività.",
+			"titleOptional": "Titolo (facoltativo)",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "Rimuovi {{title}}",
+			"removeError": "Rimozione del link alla risorsa fallita."
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
-			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"channelHint": "Etichetta facoltativa a tuo riferimento. Il canale di destinazione effettivo è determinato dalla configurazione del webhook in Mattermost.",
+			"channelLabel": "Nome del canale",
+			"channelPlaceholder": "#aggiornamenti-team",
+			"connect": "Connetti Mattermost",
+			"connected": "Connesso",
+			"connectionHint": "Incolla l'URL di un webhook in entrata di Mattermost e scegli quali eventi delle attività pubblicare.",
+			"connectionTitle": "Connessione webhook Mattermost",
+			"disconnect": "Disconnetti",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "Nuovi commenti",
+				"taskCreated": "Nuove attività",
+				"taskDescriptionChanged": "Cambiamenti di descrizione",
+				"taskPriorityChanged": "Cambiamenti di priorità",
+				"taskStatusChanged": "Cambiamenti di stato",
+				"taskTitleChanged": "Cambiamenti di titolo"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Scegli quali modifiche del progetto pubblicare su Mattermost.",
+			"eventsTitle": "Notifiche eventi",
+			"paused": "In pausa",
+			"saveChanges": "Salva modifiche",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Notifiche Mattermost in pausa",
+				"enabled": "Notifiche Mattermost attivate",
+				"removed": "Integrazione Mattermost rimossa con successo",
+				"removeError": "Rimozione integrazione Mattermost fallita",
+				"saved": "Integrazione Mattermost salvata con successo",
+				"saveError": "Salvataggio integrazione Mattermost fallito",
+				"updateError": "Aggiornamento integrazione Mattermost fallito"
 			},
-			"update": "Update Mattermost",
+			"update": "Aggiorna Mattermost",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "Inserisci un URL webhook Mattermost valido"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
-			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
+			"webhookHint": "Crea un Incoming Webhook in Mattermost e incolla qui l'URL generato.",
+			"webhookLabel": "URL del webhook in entrata",
+			"webhookPlaceholder": "https://il-tuo-server-mattermost.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "Aggiungi",
+			"createError": "Creazione campo personalizzato fallita.",
+			"createSuccess": "Campo personalizzato creato.",
+			"creating": "Creazione in corso...",
+			"defaultLabel": "Predefinito",
+			"defaultValuePlaceholder": "Valore predefinito",
+			"deleteButton": "Elimina",
+			"deleteError": "Eliminazione campo personalizzato fallita.",
+			"deleteSuccess": "Campo personalizzato eliminato.",
+			"deleting": "Eliminazione in corso...",
+			"empty": "Nessun campo personalizzato configurato.",
+			"loading": "Caricamento campi personalizzati...",
+			"namePlaceholder": "Nome del campo",
+			"noOptionsPlaceholder": "Nessuna opzione",
+			"optionsPlaceholder": "Opzioni separate da virgole",
+			"required": "Obbligatorio",
+			"typePlaceholder": "Seleziona il tipo di campo",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "Booleano",
+				"date": "Data",
+				"dropdown": "Menu a discesa",
+				"number": "Numero",
+				"text": "Testo",
+				"multiselect": "Selezione multipla"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "Opzioni disponibili",
+			"clearDefault": "Cancella",
+			"defaultValues": "{{count}} predefinito/i",
+			"moreOptions": "+{{hiddenCount}} altre",
+			"multiple": "Multiplo",
+			"options": "{{count}} opzione/i",
+			"reorderError": "Riordino dei campi fallito",
+			"selectPlaceholder": "Seleziona opzioni",
+			"optionColorAriaLabel": "Imposta il colore per \"{{option}}\"",
+			"optionColorsLabel": "Colori delle opzioni",
+			"updateColorError": "Aggiornamento colore dell'opzione fallito.",
+			"updateColorSuccess": "Colore dell'opzione aggiornato.",
+			"hiddenOnProject": "Nascosto",
+			"hideField": "Nascondi \"{{name}}\" per questo progetto",
+			"inheritedDescription": "Campi definiti a livello di workspace. Nascondi un campo per rimuoverlo solo da questo progetto: un campo obbligatorio non può essere nascosto.",
+			"inheritedEmpty": "Non è ancora stato aggiunto alcun campo personalizzato a livello di workspace.",
+			"inheritedTitle": "Ereditati dal workspace",
+			"ownFieldsDescription": "Campi definiti solo per questo progetto. Trascina per riordinare.",
+			"ownFieldsTitle": "Campi del progetto",
+			"requiredByWorkspace": "Obbligatorio per il workspace",
+			"showField": "Mostra \"{{name}}\" per questo progetto",
+			"visibilityUpdateError": "Aggiornamento visibilità del campo fallito.",
+			"visibleOnProject": "Visibile"
 		},
-		"administration": "Administration",
+		"administration": "Amministrazione",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "Disattiva account",
+				"edit": "Modifica account",
+				"open": "Azioni per {{name}}",
+				"reactivate": "Riattiva account"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "Cancella ricerca",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "Azioni",
+				"joined": "Iscritto dal",
+				"role": "Ruolo globale",
+				"status": "Stato",
+				"user": "Utente"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "Disattiva account",
+					"description": "{{name}} verrà disconnesso e non potrà accedere finché un amministratore non riattiverà l'account.",
+					"title": "Disattivare questo account?"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "Elimina definitivamente",
+					"description": "Verranno eliminati definitivamente {{name}}, le sue sessioni, le appartenenze e i dati associati. Questa azione non può essere annullata.",
+					"title": "Eliminare definitivamente questo account?"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "Riattiva account",
+					"description": "{{name}} potrà accedere e utilizzare di nuovo i propri workspace.",
+					"title": "Riattivare questo account?"
 				},
-				"working": "Working…"
+				"working": "Operazione in corso…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "Elenco utenti",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "Aggiorna l'identità di questo account e l'accesso a livello di istanza.",
+				"email": "Indirizzo email",
+				"name": "Nome completo",
+				"role": "Ruolo globale",
+				"save": "Salva modifiche",
+				"saving": "Salvataggio in corso…",
+				"selfRoleHint": "Non puoi modificare il tuo ruolo globale.",
+				"title": "Modifica utente"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "Prova con un altro nome o indirizzo email.",
+			"emptyTitle": "Nessun utente trovato",
+			"instanceBadge": "Istanza",
+			"loadError": "Impossibile caricare gli utenti.",
+			"next": "Successivo",
+			"pagination": "Pagina {{current}} di {{total}}",
+			"previous": "Precedente",
+			"refreshing": "Aggiornamento utenti",
+			"retry": "Riprova",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "Amministratore istanza",
+				"user": "Utente"
 			},
-			"searchCount_many": "{{count}} matching users",
-			"searchCount_one": "{{count}} matching user",
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_many": "{{count}} utenti corrispondenti",
+			"searchCount_one": "{{count}} utente corrispondente",
+			"searchCount_other": "{{count}} utenti corrispondenti",
+			"searchLabel": "Cerca utenti",
+			"searchPlaceholder": "Cerca nome o email…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "Attivo",
+				"deactivated": "Disattivato"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "Gestisci tutti gli account registrati su questa istanza di Kaneo.",
+			"title": "Gestione utenti",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "Aggiornamento stato utente fallito",
+				"deactivated": "Utente disattivato",
+				"deleted": "Utente eliminato",
+				"reactivated": "Utente riattivato",
+				"updated": "Utente aggiornato",
+				"updateError": "Aggiornamento utente fallito"
 			},
-			"userCount_many": "{{count}} registered users",
-			"userCount_one": "{{count}} registered user",
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_many": "{{count}} utenti registrati",
+			"userCount_one": "{{count}} utente registrato",
+			"userCount_other": "{{count}} utenti registrati",
+			"you": "(tu)"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "Aggiungi festività",
@@ -1655,256 +1655,256 @@
 			"workingDaysTitle": "Giorni lavorativi",
 			"loading": "Caricamento calendario…"
 		},
-		"security": "Security",
+		"security": "Sicurezza",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "Conferma nuova password",
+			"confirmPasswordPlaceholder": "Reinserisci la nuova password",
+			"currentPassword": "Password attuale",
+			"currentPasswordPlaceholder": "Inserisci la tua password attuale",
+			"newPassword": "Nuova password",
+			"newPasswordPlaceholder": "Inserisci una nuova password",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "Il tuo account accede con un metodo diverso, quindi non c'è alcuna password da cambiare.",
+				"title": "Il cambio password non è disponibile"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
+			"pageTitle": "Sicurezza",
+			"sectionSubtitle": "Cambia la password che usi per accedere.",
 			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"submit": "Aggiorna password",
+			"submitting": "Aggiornamento in corso...",
+			"subtitle": "Gestisci la tua password e la sicurezza dell'account.",
+			"title": "Sicurezza",
+			"updateError": "Aggiornamento password fallito.",
+			"updateSuccess": "Password aggiornata.",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "Conferma la tua nuova password.",
+				"currentRequired": "Inserisci la tua password attuale.",
+				"mismatch": "Le password non corrispondono.",
+				"tooShort": "La nuova password deve contenere almeno 8 caratteri.",
+				"sameAsCurrent": "La nuova password deve essere diversa da quella attuale."
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
-			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"actionsHint": "Verifica l'accesso e connetti",
+			"actionsTitle": "Azioni",
+			"badgeConnected": "Connesso",
+			"badgeNotConnected": "Non connesso",
+			"baseUrlHint": "https://gitlab.com, oppure l'URL radice della tua istanza",
+			"baseUrlLabel": "URL GitLab",
+			"browse": "Sfoglia",
+			"browseModalHint": "Progetti di cui il tuo token è membro",
+			"browseModalTitle": "I tuoi progetti",
+			"browseNeedsCredentials": "Inserisci URL e token GitLab per sfogliare",
+			"commentTaskLinkHint": "Quando attivato, Kaneo commenta con un link all'attività ogni issue aperta in GitLab.",
+			"commentTaskLinkTitle": "Commenta con un link Kaneo le issue aperte in GitLab",
+			"connect": "Connetti",
+			"connectedActive": "Progetto connesso e attivo",
+			"connectionStatus": "Stato connessione",
+			"currentToken": "archiviato",
+			"disconnect": "Disconnetti",
+			"importDisabledHint": "Verifica il progetto qui sopra per abilitare l'importazione",
+			"importing": "Importazione in corso…",
+			"importIssues": "Importa issue",
+			"importSectionHint": "Importa le issue e le merge request aperte del progetto",
+			"importSectionTitle": "Importa issue GitLab",
+			"loadingProjects": "Caricamento progetti…",
+			"notConnectedHint": "Nessun progetto GitLab connesso",
+			"openInGitlab": "Apri {{project}} in GitLab",
+			"project": "Progetto",
+			"projectHint": "Progetto GitLab collegato",
+			"projectPathHint": "Percorso completo inclusi eventuali gruppi, es. gruppo/sottogruppo/progetto",
+			"projectPathLabel": "Percorso del progetto",
+			"retry": "Riprova",
+			"searchProjects": "Cerca…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "I commenti con il link all'attività sulle issue aperte in GitLab sono disattivati",
+				"commentOnEnabled": "Kaneo commenterà con un link all'attività le issue aperte in GitLab",
+				"importError": "Importazione issue fallita",
+				"issuesImported": "Issue importate con successo",
+				"notGitlabInstance": "L'URL non punta a un'istanza GitLab",
+				"projectNotFound": "Progetto non trovato o non accessibile",
+				"redirected": "L'URL di GitLab è stato reindirizzato (di solito a HTTPS). Usa direttamente l'URL finale.",
+				"removed": "Integrazione GitLab rimossa",
+				"removeError": "Rimozione integrazione GitLab fallita",
+				"secretCopied": "Copiato",
+				"settingsUpdateError": "Aggiornamento integrazione GitLab fallito",
+				"tokenRequired": "Il token di accesso è obbligatorio",
+				"tokenRequiredVerify": "Inserisci un token da verificare",
+				"unableToCopySecret": "Impossibile copiare il segreto",
+				"updated": "Integrazione GitLab salvata",
+				"updateError": "Salvataggio integrazione GitLab fallito",
+				"verifyError": "Verifica accesso GitLab fallita",
+				"verifyFirst": "Verifica accesso fallita. Controlla URL, token e percorso del progetto",
+				"verifyOk": "Il token GitLab può accedere a questo progetto",
+				"verifyWarning": "Controlla i permessi del token o l'accesso al progetto"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "Token con scope api e almeno il ruolo Developer sul progetto",
+			"tokenLabel": "Token di accesso",
+			"tokenPlaceholder": "Incolla il token",
+			"tokenPlaceholderUpdate": "Incolla un nuovo token per la rotazione",
+			"tokenTypeBearer": "Token OAuth2",
+			"tokenTypeHint": "Come viene inviato il token. I token di accesso usano PRIVATE-TOKEN; un token OAuth2 usa Authorization.",
+			"tokenTypeLabel": "Tipo di token",
+			"tokenTypePrivate": "Token di accesso personale, di progetto o di gruppo",
+			"update": "Aggiorna",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "Inserisci un URL valido (es. https://gitlab.com)",
+				"baseUrlRequired": "L'URL base di GitLab è obbligatorio",
+				"pathInvalid": "Inserisci il percorso completo, es. gruppo/progetto",
+				"pathRequired": "Il percorso del progetto è obbligatorio"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
+			"verify": "Verifica",
+			"webhookCopy": "Copia",
+			"webhookHide": "Nascondi",
+			"webhookHint": "Nel tuo progetto GitLab, aggiungi un webhook con questo URL e questo token segreto. Abilita gli eventi push, issue, commenti e merge request.",
+			"webhookSecretLabel": "Token segreto (deve corrispondere a quello impostato nel webhook in GitLab)",
+			"webhookShow": "Mostra",
 			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"loadProjectsError": "Caricamento progetti fallito",
+			"importPermissionHint": "L'importazione richiede il permesso di creare e aggiornare attività."
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "Feed calendario",
+			"subtitle": "Iscriviti alle attività pianificate dei progetti nella tua app di calendario.",
+			"createTitle": "Crea un feed calendario",
+			"filterHint": "Includi le attività con una data di inizio o di scadenza e almeno una delle etichette selezionate.",
+			"labels": "Etichette",
+			"selectLabels": "Cerca e seleziona etichette…",
+			"noLabels": "Nessuna etichetta trovata.",
+			"timeZoneHint": "Le date di tutto il giorno usano {{timeZone}}.",
+			"accessHint": "Chiunque abbia il link di un feed può leggere titoli, descrizioni e date delle attività corrispondenti. Revoca un link per bloccare gli accessi futuri.",
+			"create": "Crea feed",
+			"creating": "Creazione in corso…",
+			"created": "Feed calendario creato.",
+			"createError": "Impossibile creare il feed calendario.",
+			"activeFeeds": "Feed attivi",
+			"subscribeHint": "Copia un link e aggiungilo come iscrizione a un calendario. Gli aggiornamenti compaiono quando la tua app di calendario aggiorna il feed.",
+			"empty": "Ancora nessun feed calendario.",
+			"feedUrl": "URL del feed calendario",
+			"copy": "Copia link",
+			"copied": "Link del feed calendario copiato.",
+			"copyError": "Impossibile copiare il link. Seleziona l'URL e copialo manualmente.",
+			"revoke": "Revoca",
+			"revoked": "Feed calendario revocato.",
+			"revokeError": "Impossibile revocare il feed calendario.",
+			"loadError": "Impossibile caricare i feed calendario o le etichette. Riprova.",
+			"deletedLabel": "Etichetta eliminata",
+			"permissionRequired": "Ti serve il permesso di condivisione del progetto per gestire i feed calendario."
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "Impostazioni campi personalizzati",
+			"sectionDescription": "I campi definiti qui vengono aggiunti a ogni progetto del workspace. Un amministratore di progetto può solo nascondere o mostrare un campo per il proprio progetto: un campo obbligatorio non può essere nascosto.",
+			"sectionTitle": "Campi personalizzati",
+			"subtitle": "Gestisci i campi personalizzati a livello di workspace. Tutti i progetti di questo workspace li ereditano.",
+			"title": "Campi personalizzati"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "Crea una nuova risorsa assegnabile per questo workspace. Il tipo non può essere modificato dopo la creazione.",
+			"createError": "Creazione risorsa fallita",
+			"createResource": "Crea risorsa",
+			"createSuccess": "Risorsa creata",
+			"deleteConfirmDescription": "Questa risorsa verrà rimossa da tutte le attività a cui è assegnata. Questa azione non può essere annullata.",
+			"deleteConfirmTitle": "Eliminare questa risorsa?",
+			"deleteError": "Eliminazione risorsa fallita",
+			"deleteResource": "Elimina",
+			"deleteSuccess": "Risorsa eliminata",
+			"editDescription": "Aggiorna il nome o l'email di questa risorsa.",
+			"editResource": "Modifica risorsa",
+			"emailLabel": "Email (facoltativa)",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "Ancora nessuna risorsa. Crea la tua prima persona, attrezzatura o materiale per iniziare.",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "Attrezzatura",
+				"material": "Materiale",
+				"person": "Persona"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "Tipo",
+			"nameLabel": "Nome",
+			"namePlaceholder": "Inserisci un nome",
+			"nameRequired": "Il nome della risorsa è obbligatorio",
+			"pageTitle": "Impostazioni risorse",
+			"saveResource": "Salva",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "Risorse",
+			"updateError": "Aggiornamento risorsa fallito",
+			"updateSuccess": "Risorsa aggiornata",
+			"loadError": "Impossibile caricare le risorse. Riprova.",
+			"loading": "Caricamento risorse…",
+			"emailChangeDetaches": "Cambiando l'email si rimuove il collegamento all'invito in sospeso.",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "Questa risorsa è già collegata a un membro.",
+				"alreadyWorkspaceMember": "Questo indirizzo appartiene a un membro del workspace. Collega invece la risorsa a quel membro.",
+				"disposableEmail": "Gli inviti a indirizzi email usa e getta non sono consentiti.",
+				"duplicateProject": "Un progetto può essere indicato una sola volta.",
+				"emailNotAllowed": "Solo una persona può avere un indirizzo email.",
+				"guestCannotInvite": "Gli account ospite non possono inviare inviti.",
+				"insufficientPermissions": "Non hai il permesso di invitare persone in uno di questi progetti.",
+				"invitationLimitReached": "È stato raggiunto il limite di inviti per questo workspace.",
+				"invitationRoleConflict": "Un invito in sospeso per questo indirizzo ha già un altro ruolo nel workspace.",
+				"noEmail": "Aggiungi prima un indirizzo email alla risorsa.",
+				"notLinked": "Questa risorsa non è collegata a un membro.",
+				"notMember": "Questo utente non è un membro del workspace.",
+				"notPerson": "Si può invitare o collegare solo una persona.",
+				"ownerRole": "Il ruolo di proprietario non può essere assegnato tramite invito.",
+				"projectAccessDenied": "Non hai accesso a uno di questi progetti.",
+				"rateLimited": "Troppi inviti. Riprova tra un minuto.",
+				"resourceChanged": "La risorsa è cambiata. Riprova.",
+				"roleExceedsYourPermissions": "Non puoi assegnare un ruolo con più permessi dei tuoi.",
+				"unknownRole": "Uno dei ruoli non esiste più. Scegline un altro.",
+				"notFound": "Risorsa non trovata.",
+				"alreadyWorkspaceMemberOnly": "Questo indirizzo appartiene a un membro del workspace.",
+				"workspaceNotFound": "Workspace non trovato."
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "I progetti sono stati aggiunti all'invito in sospeso per questo indirizzo.",
+				"createdTitle": "Invito creato",
+				"description": "Verrà inviato un invito a {{email}}. Le assegnazioni di questa risorsa nei progetti scelti passeranno al nuovo account.",
+				"error": "Invio dell'invito fallito",
+				"hasTasks": "Ha attività",
+				"noProjectRoles": "Nessun ruolo che puoi assegnare",
+				"noProjects": "Non puoi invitare persone in nessun progetto.",
+				"pickProject": "Scegli almeno un progetto.",
+				"projectRoleLabel": "Ruolo in {{project}}",
+				"projectRolesError": "Impossibile caricare i ruoli",
+				"projectRolesLoading": "Caricamento ruoli...",
+				"projectsError": "Impossibile caricare i progetti a cui puoi invitare. Riprova più tardi.",
+				"projectsHint": "La persona avrà accesso ai progetti selezionati. I progetti con attività di questa risorsa sono già selezionati.",
+				"projectsLabel": "Progetti",
+				"projectsLoading": "Caricamento progetti...",
+				"title": "Invita {{name}}",
+				"workspaceRoleLabel": "Ruolo nel workspace"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "Invita",
+			"inviteNeedsEmail": "Aggiungi un indirizzo email per invitare questa persona.",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "Scegli un membro di questo workspace. Le assegnazioni di questa risorsa nei progetti che il membro può aprire passeranno al suo account.",
+				"error": "Collegamento della risorsa fallito",
+				"hint": "Le assegnazioni nei progetti che il membro non può aprire restano sulla risorsa. Il carico di lavoro le conteggia nella riga del membro.",
+				"memberLabel": "Membro",
+				"memberPlaceholder": "Seleziona un membro",
+				"membersError": "Impossibile caricare i membri.",
+				"membersLoading": "Caricamento membri...",
+				"noMembers": "Non ci sono membri da collegare.",
+				"submit": "Collega",
+				"success": "Collegato a {{name}}. Assegnazioni spostate: {{moved}}.",
+				"title": "Collega {{name}} a un membro"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "Collega a membro",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "Invitato (scaduto)",
+				"invitedPending": "Invitato (in sospeso)",
+				"linked": "Collegato a un membro",
+				"linkedTo": "Collegato a {{name}}",
+				"notInvited": "Non invitato"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "La risorsa non sarà più collegata al membro. Le assegnazioni già spostate restano al membro.",
+				"error": "Scollegamento della risorsa fallito",
+				"success": "Risorsa scollegata",
+				"title": "Scollegare questa risorsa?"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "Scollega"
 		}
 	},
 	"navigation": {
@@ -2026,8 +2026,8 @@
 			"backlog": "Backlog",
 			"board": "Board",
 			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"projects": "Progetti",
+			"view": "Vista"
 		}
 	},
 	"notifications": {
@@ -2203,8 +2203,8 @@
 					"renderFailed": "Impossibile eseguire il rendering del diagramma Mermaid"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "Importato da {{source}}",
+			"importedBy": "Importato da {{name}}",
 			"commentedOnForge": "ha commentato su {{forge}}"
 		},
 		"relationCreated": "ha aggiunto una dipendenza",
@@ -2256,7 +2256,7 @@
 			"loadingTask": "Caricamento attività...",
 			"taskNotFound": "Attività non trovata",
 			"taskNotFoundDescription": "L'attività che stai cercando non esiste o è stata eliminata.",
-			"customFields": "Custom Fields"
+			"customFields": "Campi personalizzati"
 		},
 		"detail": {
 			"subtaskOf": "Sotto-attività di",
@@ -2363,15 +2363,15 @@
 					"renderFailed": "Impossibile eseguire il rendering del diagramma Mermaid"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "Grande",
+					"medium": "Media",
+					"reset": "Reimposta dimensioni",
+					"resizeHandle": "Ridimensiona immagine",
+					"small": "Piccola"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "Campo aggiornato",
+			"selectOption": "Seleziona opzione",
 			"pickDate": "Scegli una data"
 		},
 		"entity": {
@@ -2432,7 +2432,7 @@
 			"deleteAction": "Elimina Attività",
 			"completeAria": "Segna sotto-attività come completata",
 			"progress": "{{completed}} di {{total}} sottoattività completate",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "Questo progetto non ha una colonna adatta per completare o riaprire questa sotto-attività."
 		},
 		"properties": {
 			"title": "Proprietà",
@@ -2463,19 +2463,19 @@
 			"assignee": {
 				"unassigned": "Non assegnato",
 				"updateError": "Aggiornamento assegnatario attività fallito",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "Rimuovi tutte le assegnazioni",
+				"addResource": "Nuova risorsa",
+				"createResource": "Crea",
+				"createResourceError": "Creazione risorsa fallita",
+				"newResourceEmailPlaceholder": "Email (facoltativa)",
+				"newResourceNamePlaceholder": "Nome",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "Attrezzatura",
+					"material": "Materiale",
+					"person": "Persona"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "Risorse",
+				"notInProject": "Non più in questo progetto"
 			},
 			"status": {
 				"updateError": "Aggiornamento stato attività fallito"
@@ -2619,10 +2619,10 @@
 				"isAnyOf": "è uno di",
 				"includeAnyOf": "include uno di"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "Tutti",
+			"allCustomFieldValues": "Tutti i valori",
+			"noCustomFieldValues": "Nessun valore del campo personalizzato",
+			"noValuesUsedYet": "Nessun valore ancora utilizzato"
 		},
 		"gantt": {
 			"pageTitle": "{{name}} – Gantt",
@@ -2639,11 +2639,11 @@
 			"resizeStart": "Ridimensiona data inizio",
 			"resizeDue": "Ridimensiona data scadenza",
 			"taskAriaLabel": "{{title}}: apri o trascina per spostare",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "Vai a oggi",
+			"previousPeriod": "Periodo precedente",
+			"nextPeriod": "Periodo successivo",
+			"periodStart": "Data di inizio della timeline",
+			"showTaskDates": "Mostra le date delle attività",
 			"legendBlocking": "Bloccante",
 			"legendRelated": "Correlata",
 			"externalProjectBadge": "in {{projectName}}",
@@ -2667,14 +2667,14 @@
 			"legendCriticalPath": "Percorso critico",
 			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
 			"constraintViolationAriaLabel": "{{title}}: vincolo violato — {{type}}, {{date}}",
-			"dependentsRescheduled_many": "Rescheduled {{count}} dependent tasks",
+			"dependentsRescheduled_many": "{{count}} attività dipendenti ripianificate",
 			"dependentsRescheduled_one": "{{count}} attività dipendente ripianificata",
 			"dependentsRescheduled_other": "{{count}} attività dipendenti ripianificate",
 			"baselineSlipEarlyAriaLabel": "{{title}}: termina {{days}} g prima della base di riferimento",
 			"baselineSlipLateAriaLabel": "{{title}}: termina {{days}} g dopo la base di riferimento",
 			"legendDependencyType": "Tipo (clic per cambiare)",
 			"legendDependencyTypeHint": "Ogni linea bloccante mostra il proprio tipo di dipendenza (FS/SS/FF/SF) e ritardo/anticipo: fai clic per cambiare il tipo o il ritardo.",
-			"criticalPathDroppedEdges_many": "{{count}} undated deps skipped",
+			"criticalPathDroppedEdges_many": "{{count}} dipendenze senza data ignorate",
 			"criticalPathDroppedEdges_one": "{{count}} dipendenza senza data ignorata",
 			"criticalPathDroppedEdges_other": "{{count}} dipendenze senza data ignorate",
 			"criticalPathDroppedEdgesHint": "Queste dipendenze raggiungono un'attività priva di date, quindi non possono essere verificate per il percorso critico: un'attività che diventerebbe critica potrebbe non essere evidenziata.",
@@ -2687,12 +2687,12 @@
 			"gateWarningBadge": "Gate",
 			"gateWarningItem": "\"{{title}}\" è {{status}}",
 			"gateWarningTitle": "Bloccata da un gate non approvato",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "Campo personalizzato",
+			"barColorSourceLabel": "Colore della barra",
+			"barColorSourceNone": "Nessuno",
+			"barColorSourceFirstLabel": "Prima etichetta",
+			"externalTaskDerivedTitle": "{{title}} — attività correlata in {{projectName}}; questa posizione deriva dalla sua dipendenza, poiché l'attività non ha date proprie (sola lettura qui)",
+			"externalTaskDerivedRailNote": "Posizione da dipendenza"
 		},
 		"delete": {
 			"title": "Eliminare l'Attività?",
@@ -2729,7 +2729,7 @@
 		"assignee": {
 			"label": "Assegnatario",
 			"unassigned": "Non assegnato",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "Assegnata a {{names}}"
 		},
 		"dueDate": {
 			"label": "Data scadenza",
@@ -2750,8 +2750,8 @@
 		"contextMenu": {
 			"copyLink": "Copia link",
 			"copyLinkSuccess": "Link attività copiato!",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "Altre azioni",
+			"copyLinkError": "Impossibile copiare il link dell'attività."
 		},
 		"actions": {
 			"duplicate": "Duplica",
@@ -2817,11 +2817,11 @@
 			"today": "Oggi",
 			"loadError": "Impossibile caricare le attività."
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "Ricerca nelle descrizioni complete…",
+		"descriptionSearchError": "Ricerca nelle descrizioni fallita. I risultati potrebbero essere incompleti.",
+		"descriptionRetry": "Riprova",
+		"descriptionLoading": "Caricamento descrizione…",
+		"descriptionLoadError": "Impossibile caricare la descrizione. Riprova per caricare la versione attuale.",
 		"approval": {
 			"approved": "Approvato",
 			"label": "Approvazione",
@@ -2831,7 +2831,7 @@
 		},
 		"checklistProgress": "{{completed}} di {{total}} elementi della checklist completati",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "Campi personalizzati"
 		}
 	},
 	"invitations": {
@@ -3023,19 +3023,19 @@
 			"copyLink": "Copia link",
 			"linkCopied": "Link di invito copiato",
 			"copyFailed": "Impossibile copiare automaticamente. Seleziona il link e premi Ctrl+C.",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "Rinnova link di invito",
+			"renewError": "Rinnovo del link di invito fallito",
+			"renewSuccess": "Link di invito rinnovato. Non è stata inviata alcuna email. Copia il link e invialo tu.",
+			"resend": "Reinvia invito",
+			"resendError": "Reinvio dell'invito fallito",
+			"resendSuccess": "Invito inviato di nuovo",
+			"expired": "Scaduto il {{date}}",
+			"inviteAgain": "Invita di nuovo",
+			"inviteAgainError": "Nuovo invito fallito",
+			"renewSuccessUnknownEmail": "Link di invito rinnovato. Condividi il link se la persona non ha ricevuto l'email.",
+			"expiredBadge": "scaduto",
+			"inviteAgainCancelError": "Impossibile annullare il vecchio invito. Annullalo manualmente.",
+			"rejectedBadge": "rifiutato"
 		},
 		"inviteModal": {
 			"title": "Invita Membro del Team",
@@ -3047,20 +3047,20 @@
 			"createdTitle": "Invito creato",
 			"shareLinkDescription": "Condividi questo link con {{email}} così potrà unirsi al workspace.",
 			"done": "Fatto",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "Inserisci un indirizzo email valido",
+			"noSmtpNotice": "L'email non è configurata su questo server. L'invito non verrà inviato per email: copia il link e invialo tu.",
+			"shareLinkDescriptionNoEmail": "Non è stata inviata alcuna email. Condividi questo link con {{email}} per consentirgli di unirsi al workspace.",
+			"successNoEmail": "Invito creato. Non è stata inviata alcuna email.",
+			"noAssignableRoles": "Non puoi assegnare alcun ruolo, quindi non puoi invitare persone.",
+			"roleLabel": "Ruolo",
+			"rolesError": "Impossibile caricare i ruoli che puoi assegnare. Riprova più tardi.",
+			"rolesLoading": "Caricamento ruoli...",
+			"sending": "Invio in corso...",
+			"shareLinkDescriptionUnknownEmail": "Condividi questo link con {{email}} se non ha ricevuto un'email, così potrà unirsi al workspace.",
+			"successUnknownEmail": "Invito creato. Condividi il link se la persona non ha ricevuto un'email.",
+			"rolePlaceholder": "Seleziona un ruolo",
+			"roleUnavailable": "Il ruolo scelto non è più disponibile. Scegline un altro.",
+			"rolePickRequired": "Scegli il ruolo per questo invito."
 		},
 		"membersTable": {
 			"emptyTitle": "Nessun membro del team ancora",
@@ -3087,19 +3087,19 @@
 			"cancelInviteError": "Annullamento invito fallito",
 			"roleUpdateSuccess": "Ruolo aggiornato",
 			"roleUpdateError": "Aggiornamento ruolo fallito",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "Cambia ruolo per {{name}}",
+			"rolesLoadError": "Impossibile caricare i ruoli che puoi assegnare, quindi al momento non è possibile modificarli.",
+			"rolesRetry": "Riprova"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "Questa persona ha già un invito in sospeso.",
+			"alreadyMember": "Questa persona è già membro del workspace.",
+			"cannotChangeOwnRole": "Non puoi modificare il tuo ruolo.",
+			"cannotInviteWithRole": "Non puoi invitare qualcuno con questo ruolo.",
+			"cannotManageMember": "Non puoi gestire questo membro.",
+			"cannotUpdateMember": "Non puoi modificare questo membro.",
+			"invitationLimitReached": "È stato raggiunto il limite di inviti per questo workspace.",
+			"roleExceedsYourPermissions": "Non puoi assegnare un ruolo con più permessi dei tuoi."
 		}
 	},
 	"publicProject": {
@@ -3141,212 +3141,212 @@
 	},
 	"press": {
 		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"headline": "Press kit di Kaneo",
+		"intro": "Loghi e screenshot del prodotto Kaneo per articoli, video e altri contenuti multimediali.",
+		"description": "Risorse stampa di Kaneo: informazioni sul prodotto, loghi, screenshot e contatti per giornalisti e creatori di contenuti.",
+		"downloadKit": "Scarica tutti gli asset",
+		"boilerplateTitle": "Informazioni su Kaneo",
+		"boilerplate": "Kaneo è una piattaforma di gestione dei progetti open source creata da Andrej Acevski. I team possono organizzare le attività nelle viste board e lista, assegnare il lavoro, impostare priorità e scadenze e collegare GitHub. Kaneo è disponibile con licenza MIT per il self-hosting, oppure come servizio gestito tramite Kaneo Cloud.",
+		"logosTitle": "Loghi",
+		"darkLogo": "Logotipo scuro",
+		"darkLogoAlt": "Logo Kaneo scuro su sfondo chiaro",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "Logotipo chiaro",
+		"lightLogoAlt": "Logo Kaneo chiaro su sfondo scuro",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "Icona dell'app",
+		"iconAlt": "Icona dell'app Kaneo",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "Scarica",
+		"screenshotsTitle": "Screenshot",
+		"lightScreenshot": "Board (chiaro)",
+		"lightScreenshotAlt": "Board di Kaneo con tema chiaro, con le schede delle attività organizzate per stato",
+		"darkScreenshot": "Board (scuro)",
+		"darkScreenshotAlt": "Board di Kaneo con tema scuro, con le schede delle attività organizzate per stato",
+		"contactTitle": "Richieste stampa",
+		"contactBody": "Contatta il team di Kaneo per domande sul prodotto, interviste o materiali aggiuntivi.",
+		"usageContrast": "Scegli il logotipo chiaro per gli sfondi scuri e quello scuro per gli sfondi chiari.",
+		"usageProportions": "Mantieni le proporzioni e i colori originali, senza deformare il logo né aggiungere effetti.",
+		"usageSpace": "Lascia abbastanza spazio attorno al logo per mantenerlo chiaro e leggibile.",
+		"darkListScreenshot": "Lista (scuro)",
+		"darkListScreenshotAlt": "Lista delle attività di Kaneo con tema scuro, raggruppata per stato con assegnatari, priorità, etichette e scadenze",
+		"darkTaskScreenshot": "Dettagli attività (scuro)",
+		"darkTaskScreenshotAlt": "Dettagli di un'attività di Kaneo con tema scuro, con descrizione, checklist, commento del team e proprietà dell'attività",
+		"darkTimelineScreenshot": "Timeline (scuro)",
+		"darkTimelineScreenshotAlt": "Timeline Gantt di Kaneo con tema scuro, che mostra le attività pianificate e le loro durate",
+		"lightListScreenshot": "Lista (chiaro)",
+		"lightListScreenshotAlt": "Lista delle attività di Kaneo con tema chiaro, raggruppata per stato con assegnatari, priorità, etichette e scadenze",
+		"lightTaskScreenshot": "Dettagli attività (chiaro)",
+		"lightTaskScreenshotAlt": "Dettagli di un'attività di Kaneo con tema chiaro, con descrizione, checklist, commento del team e proprietà dell'attività",
+		"lightTimelineScreenshot": "Timeline (chiaro)",
+		"lightTimelineScreenshotAlt": "Timeline Gantt di Kaneo con tema chiaro, che mostra le attività pianificate e le loro durate"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "Partner"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Perché esiste Kaneo",
+			"intro": "Sono Andrej e ho creato Kaneo perché ero stanco degli strumenti di gestione dei progetti che ostacolavano più di quanto aiutassero. Dopo anni passati con piattaforme gonfie e troppo complicate che distraevano dal lavoro vero, sapevo che doveva esserci un modo migliore.",
+			"problem": "Il problema non era che questi strumenti avessero poche funzionalità: ne avevano troppe. Ogni notifica, ogni pulsante superfluo, ogni flusso complesso distoglieva il mio team da ciò che contava: creare ottimi prodotti.",
+			"principle": "Credo che i migliori strumenti siano invisibili. Dovrebbero amplificare il flusso di lavoro naturale del tuo team, non costringerti ad adattarti al loro. Kaneo si basa sul principio che meno è meglio: ogni funzionalità esiste perché risolve un problema reale, non perché fa colpo in una demo."
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Prova Kaneo Cloud",
+			"selfHostCta": "Ospita Kaneo in self-hosting",
+			"trialNote": "Prova cloud di 14 giorni. Nessuna carta di credito richiesta.",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "Gestione dei progetti",
+			"titleAccent": "che non diventa essa stessa il progetto.",
+			"description": "Gestione dei progetti open source con board, diagrammi di Gantt e integrazione con GitHub. Ospitala gratis sul tuo server con SSO incluso, oppure lascia che Kaneo Cloud gestisca l'hosting."
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
+			"product": "Prodotto",
+			"pricing": "Prezzi",
+			"resources": "Risorse",
+			"docs": "Documentazione",
 			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
+			"guides": "Guide",
+			"comparisons": "Confronta strumenti",
 			"roadmap": "Roadmap",
 			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"closeMenu": "Chiudi menu",
+			"home": "Home di Kaneo",
+			"signIn": "Accedi",
+			"getStarted": "Inizia"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
+			"label": "Viste del prodotto Kaneo",
+			"controls": "Scegli una vista del prodotto",
+			"play": "Avvia le viste del prodotto",
+			"pause": "Metti in pausa le viste del prodotto",
 			"board": "Board",
 			"list": "Backlog",
 			"gantt": "Gantt"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "Sotto-attività e contesto",
+				"title": "Attività grandi. Prossimi passi chiari.",
+				"description": "Suddividi il lavoro in sotto-attività, assegnale una per una e monitora l'avanzamento senza perdere la richiesta originale. Ogni dettaglio resta con il lavoro."
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "Integrazione GitHub",
+				"title": "Dalla pull request al completamento.",
+				"description": "Issue ed etichette si sincronizzano in entrambe le direzioni. Le pull request collegate portano le attività dalla revisione al completamento man mano che il codice viene aperto e unito.",
+				"link": "Configura GitHub"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "Eseguilo sul tuo server.",
+				"description": "Distribuisci con Docker e mantieni il tuo workspace su un'infrastruttura che controlli.",
+				"link": "Ospita Kaneo in self-hosting"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "Anche il codice è aperto.",
+				"description": "Leggi il codice sorgente, segnala un problema o contribuisci con una modifica. Lo sviluppo avviene su GitHub.",
+				"link": "Vedi il codice sorgente"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
+				"taskAlt": "Anteprima interattiva di un'attività e delle sue sotto-attività in Kaneo.",
+				"githubAlt": "Anteprima interattiva di un merge su GitHub che aggiorna un'attività di Kaneo.",
+				"taskTitle": "Pubblica la nuova homepage",
+				"taskDescription": "Aggiorna i testi e controlla il layout prima della prossima release.",
+				"checklistDone": "Rivedi i testi",
+				"checklistOpen": "Controlla il layout mobile",
+				"inProgress": "In corso",
+				"high": "Alta",
 				"date": "Oct 12",
 				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"done": "Completata",
+				"relationsAlt": "Anteprima interattiva delle dipendenze tra attività in Kaneo.",
+				"inReview": "In revisione",
+				"trySubtasks": "Prova a spuntare una sotto-attività.",
+				"tryGithub": "Simula un merge per vedere l'attività aggiornarsi.",
+				"tryRelations": "Apri un'attività collegata per seguire la connessione.",
+				"mergeAction": "Simula merge",
+				"resetAction": "Reimposta anteprima",
+				"mergedHint": "Pull request unita. Attività spostata in Completata.",
+				"progress": "{{completed}} di {{total}} sotto-attività completate",
+				"backToTask": "Torna all'attività della homepage",
+				"releaseNotes": "Scrivi le note di rilascio",
+				"dependencyDescription": "La homepage è in attesa della revisione mobile. Tieni collegate le note di lancio per contesto.",
+				"mobileDescription": "Controlla la nuova homepage sugli schermi stretti prima della pubblicazione.",
+				"notesDescription": "Annota cosa è cambiato per l'annuncio di lancio."
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "Attività collegate e dipendenze",
+				"title": "Scopri cosa sta bloccando il lavoro.",
+				"description": "Collega i blocchi, segui le dipendenze e tieni vicino il lavoro correlato. Apri un'attività collegata per vedere il contesto dietro il prossimo passo."
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — Gestione dei progetti open source e self-hosted",
+			"description": "Gestione dei progetti open source con board, diagrammi di Gantt e integrazione con GitHub. Ospitala gratis sul tuo server con SSO incluso, oppure usa Kaneo Cloud."
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "Rendilo tuo",
+			"title": "Un percorso chiaro dalla prova all'uso quotidiano.",
+			"description": "Configura il tuo server, collega i tuoi strumenti o confronta Kaneo con il tuo tracker attuale.",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Self-hosting con Docker",
+				"description": "Installazione, backup e aggiornamenti per una configurazione sotto il tuo controllo."
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "Usa il tuo identity provider",
+				"description": "Configura il single sign-on OIDC nella versione self-hosted gratuita."
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "Collega i tuoi strumenti di AI",
+				"description": "Usa MCP per lavorare con attività e progetti tramite un client AI."
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "Confronta Kaneo e Linear",
+				"description": "Scopri le differenze in termini di hosting, licenze e flusso di lavoro."
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "Prima di iniziare",
+			"description": "I dettagli pratici su hosting, pianificazione e collegamento del tuo team.",
+			"overview": "Kaneo è una piattaforma di gestione dei progetti open source con licenza MIT, con board, backlog, viste Gantt e calendario, campi personalizzati, tracciamento del tempo e integrazione con GitHub. Ospitala sulla tua infrastruttura oppure usa Kaneo Cloud.",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Kaneo è gratuito in self-hosting?",
+				"answer": "Sì. Kaneo ha licenza MIT ed è gratuito in self-hosting, con il single sign-on incluso. Esegui l'applicazione insieme a PostgreSQL con Docker Compose, oppure distribuiscila con il chart Helm ufficiale. Infrastruttura, aggiornamenti e backup sono a tuo carico.",
+				"link": "Leggi la guida all'installazione"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Kaneo ha i diagrammi di Gantt?",
+				"answer": "Sì. Kaneo include le viste Gantt e calendario insieme a board, liste e pianificazione del backlog. Usa le date di inizio e di scadenza delle attività per pianificare il lavoro su una timeline. Budget, confronti con la baseline e report di burndown degli sprint non rientrano attualmente nel suo ambito.",
+				"link": "Confronta le funzionalità di pianificazione"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "Il single sign-on è incluso?",
+				"answer": "Sì. La versione self-hosted gratuita supporta Google, GitHub, Discord e provider OAuth/OIDC personalizzati. Configura il tuo provider sulla tua istanza senza acquistare un'edizione separata di Kaneo.",
+				"link": "Configura OIDC"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "I client AI possono lavorare con Kaneo?",
+				"answer": "Sì. Kaneo fornisce un server MCP tramite il pacchetto @kaneo/mcp e un endpoint HTTP. I client AI compatibili possono leggere e aggiornare le attività usando una chiave API associata a un utente, nel rispetto dei permessi del workspace.",
+				"link": "Leggi la guida MCP"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
+			"feature": "Funzionalità",
+			"yes": "Sì",
 			"no": "No"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "Cosa comporta il self-hosting, con link alla configurazione Docker Compose mantenuta e ai passaggi di installazione.",
+			"answer": "Per ospitare Kaneo in self-hosting, esegui l'applicazione e PostgreSQL con Docker Compose, configura l'URL pubblico e i segreti e metti davanti un reverse proxy TLS. La guida all'installazione richiede almeno 2 GB di RAM e 10 GB di spazio su disco. Pianifica aggiornamenti continui, backup del database e spazio per i file caricati.",
+			"requirements": "Il minimo documentato è 2 GB di RAM e 10 GB di spazio su disco, con Docker 20.10 o successivo e Docker Compose V2. Prevedi più risorse in base al carico di lavoro, alla crescita del database e ai file caricati.",
+			"compose": "Usa il compose.yml mantenuto nella guida a Docker Compose. Definisce PostgreSQL, un volume persistente per il database, l'applicazione Kaneo e i controlli di integrità. Configura il file di ambiente prima di avviare i servizi; in produzione, fissa la versione dell'immagine in modo che gli aggiornamenti siano deliberati.",
+			"backups": "Esegui il backup sia di PostgreSQL sia dell'eventuale object storage usato per i caricamenti. Scegli una pianificazione in base a quanto lavoro il tuo team può permettersi di perdere, conserva le copie fuori dal server dell'applicazione e prova il ripristino prima di averne bisogno.",
+			"worth": "Il self-hosting ha senso quando hai bisogno di controllo su infrastruttura e dati e qualcuno può occuparsi della manutenzione. Nel confronto dei costi con un servizio gestito includi capacità del server, spazio di archiviazione, backup e il tempo di manutenzione.",
+			"minimum": "La guida all'installazione richiede Docker 20.10 o successivo, Docker Compose V2, almeno 2 GB di RAM e 10 GB di spazio su disco. La configurazione Compose include PostgreSQL. Redis è facoltativo per una singola istanza API.",
+			"composeLink": "Configurazione Docker Compose",
+			"composeLinkDescription": "Il compose.yml mantenuto, con archiviazione persistente e controlli di integrità.",
+			"startLink": "Avvia e verifica i servizi",
+			"startLinkDescription": "Avvia lo stack, controlla il suo stato e verifica che l'applicazione sia disponibile."
 		}
 	},
 	"portfolio": {
@@ -3367,174 +3367,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "Sei già membro di {{workspaceName}}, quindi questo invito non può aggiungerti a un progetto. Chiedi a un amministratore del workspace di aggiungerti al progetto.",
+			"alreadyMemberTitle": "Sei già un membro",
+			"invitedToProject": "Sei stato invitato al progetto {{project}} come {{role}}.",
+			"invitedToProjects": "Sei stato invitato a questi progetti:",
+			"projectRole": "{{project}} come {{role}}"
 		},
-		"empty": "No pending invitations.",
+		"empty": "Nessun invito in sospeso.",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "Questa persona è già membro del workspace. Aggiungila al progetto con Aggiungi membro.",
+			"disposableEmail": "Gli indirizzi email usa e getta non sono consentiti.",
+			"expired": "Questo invito è scaduto. Invita di nuovo la persona.",
+			"guestCannotInvite": "Gli account ospite non possono invitare persone.",
+			"limitReached": "Il workspace ha troppi inviti in sospeso. Annullane prima alcuni.",
+			"notApplied": "Non è stato possibile applicare l'accesso al progetto di questo invito. Prova ad accettarlo di nuovo. Se continua a fallire, chiedi a un amministratore del workspace di aggiungerti al progetto.",
+			"notFound": "Questo invito non esiste più. L'elenco è stato ricaricato.",
+			"rateLimited": "Troppi inviti. Riprova tra un momento.",
+			"rateLimitedRetry": "Troppi inviti. Riprova tra {{seconds}} secondi.",
+			"roleConflict": "Esiste già un invito in sospeso per questa email con un altro ruolo nel workspace. Annullalo oppure usa lo stesso ruolo nel workspace.",
+			"workspaceInvitationExists": "Questa email ha già un invito al workspace in sospeso. Solo chi può invitare persone nel workspace può aggiungervi un progetto."
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
+			"addAsMember": "Aggiungi come membro",
+			"addedToExisting": "{{email}} ha già un invito in sospeso. Questo progetto è stato aggiunto all'invito. Non è stata inviata una seconda email. Condividi il link se necessario.",
+			"createdNotSent": "Invito creato per {{email}}. Non è stata inviata alcuna email. Condividi il link qui sotto.",
+			"createdSendFailed": "Invito creato per {{email}}, ma non è stato possibile inviare l'email. Condividi il link qui sotto oppure reinvialo dall'elenco.",
+			"createdSent": "Invito inviato a {{email}}.",
+			"createdTitle": "Invito creato",
+			"description": "Invita qualcuno che non fa ancora parte del workspace. Riceverà i ruoli che scegli qui sotto.",
+			"done": "Fatto",
 			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"emailPlaceholder": "collega@azienda.com",
+			"error": "Impossibile inviare l'invito",
+			"invalidEmail": "Inserisci un indirizzo email valido",
+			"noSmtpNotice": "L'email non è configurata su questo server. L'invito non verrà inviato per email. Copia il link e invialo tu.",
+			"projectRoleHint": "Cosa può fare la persona in questo progetto.",
+			"projectRoleLabel": "Ruolo nel progetto",
+			"rolePlaceholder": "Seleziona un ruolo",
+			"submit": "Invia invito",
+			"submitting": "Invio in corso...",
+			"title": "Invita al progetto",
+			"workspaceRoleHint": "Cosa può fare la persona nel workspace.",
+			"workspaceRoleLabel": "Ruolo nel workspace",
+			"noAssignableProjectRoles": "Non puoi assegnare alcun ruolo del progetto, quindi non puoi invitare persone.",
+			"noAssignableWorkspaceRoles": "Non puoi assegnare alcun ruolo del workspace, quindi non puoi invitare persone.",
+			"projectRolePickRequired": "Scegli il ruolo nel progetto.",
+			"projectRolesError": "Impossibile caricare i ruoli del progetto che puoi assegnare.",
+			"projectRolesLoading": "Caricamento ruoli del progetto...",
+			"projectRoleUnavailable": "Il ruolo del progetto scelto non è più disponibile. Scegline un altro.",
+			"workspaceRolePickRequired": "Scegli il ruolo nel workspace.",
+			"workspaceRolesError": "Impossibile caricare i ruoli del workspace che puoi assegnare.",
+			"workspaceRolesLoading": "Caricamento ruoli del workspace...",
+			"workspaceRoleUnavailable": "Il ruolo del workspace scelto non è più disponibile. Scegline un altro."
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "Azioni per l'invito di {{email}}",
+			"cancelDialogDescription": "L'invito di {{email}} a questo progetto verrà annullato. Il link smette di funzionare se non dà accesso ad altri progetti.",
+			"cancelDialogTitle": "Annullare l'invito?",
+			"cancelError": "Impossibile annullare l'invito",
+			"cancelSuccess": "Invito annullato",
+			"cancelSuccessOtherProjects": "Questo progetto è stato rimosso dall'invito. L'invito dà ancora accesso ad altri progetti.",
 			"columns": {
 				"email": "Email",
-				"roles": "Roles"
+				"roles": "Ruoli"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "Ruolo nel progetto: {{role}}",
+			"renewError": "Impossibile rinnovare il link di invito",
+			"resendError": "Impossibile reinviare l'invito",
+			"resendNotDelivered": "Invito rinnovato, ma non è stato possibile inviare l'email. Copia il link e invialo tu.",
+			"rolesLoadError": "Impossibile caricare i ruoli che puoi assegnare, quindi al momento non è possibile reinviare gli inviti.",
+			"rolesRetry": "Riprova",
+			"workspaceRole": "Ruolo nel workspace: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "Impossibile caricare gli inviti in sospeso.",
+		"subtitle": "Persone invitate a questo progetto che non si sono ancora unite.",
+		"title": "Inviti in sospeso"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "Scegli un membro del workspace e un ruolo nel progetto.",
+			"error": "Impossibile aggiungere il membro",
+			"loadError": "Impossibile caricare le persone che puoi aggiungere.",
+			"loading": "Caricamento persone...",
+			"memberLabel": "Membro del workspace",
+			"noAssignableRoles": "Non puoi assegnare alcun ruolo.",
+			"noCandidates": "Tutti i membri di questo workspace hanno già accesso a questo progetto.",
+			"noMatches": "Nessuno corrisponde alla tua ricerca.",
+			"roleLabel": "Ruolo nel progetto",
+			"rolePickRequired": "Scegli il ruolo nel progetto.",
+			"rolePlaceholder": "Seleziona un ruolo",
+			"rolesError": "Impossibile caricare i ruoli che puoi assegnare.",
+			"rolesLoading": "Caricamento ruoli...",
+			"roleUnavailable": "Il ruolo scelto non è più disponibile. Scegline un altro.",
+			"searchPlaceholder": "Cerca per nome o email",
+			"submit": "Aggiungi membro",
+			"submitting": "Aggiunta in corso...",
+			"success": "Membro aggiunto al progetto",
+			"title": "Aggiungi membro al progetto"
 		},
-		"addMember": "Add member",
+		"addMember": "Aggiungi membro",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "Questa persona è già membro di questo progetto.",
+			"cannotChangeOwnRole": "Non puoi modificare il tuo ruolo nel progetto.",
+			"cannotManageMember": "Non puoi gestire un membro che ha più permessi di te.",
+			"insufficientPermissions": "Non hai il permesso di farlo.",
+			"memberHasFullAccess": "Questa persona ha accesso completo tramite il suo ruolo nel workspace. Modificalo in Membri del workspace.",
+			"membershipChanged": "L'appartenenza è cambiata nel frattempo. L'elenco è stato ricaricato. Riprova.",
+			"notProjectMember": "Questa persona non è più membro di questo progetto.",
+			"notWorkspaceMember": "Questa persona non è membro del workspace.",
+			"ownerRoleNotAllowed": "Il ruolo di proprietario non può essere usato in un progetto.",
+			"roleAssignedToProjectMembers": "Membri del progetto o inviti al progetto in sospeso usano ancora questo ruolo. Assegna prima un altro ruolo.",
+			"roleExceedsYourPermissions": "Non puoi assegnare un ruolo con più permessi dei tuoi.",
+			"unknownRole": "Questo ruolo non esiste. Ricarica la pagina e scegline un altro.",
+			"userHasFullAccess": "Questa persona ha già accesso completo a tutti i progetti."
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "Invita via email",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "Perderai l'accesso a questo progetto. Un amministratore del progetto o del workspace potrà aggiungerti di nuovo.",
+			"error": "Impossibile abbandonare il progetto",
+			"success": "Hai abbandonato il progetto",
+			"title": "Abbandonare questo progetto?"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "Impossibile caricare i membri del progetto.",
+		"loading": "Caricamento membri...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "Torna ai progetti",
+			"description": "Chiedi a un amministratore del progetto o del workspace di aggiungerti.",
+			"title": "Non hai accesso a questo progetto"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "Non hai ancora accesso a nessun progetto. Chiedi a un amministratore del workspace di aggiungerti a un progetto.",
+			"title": "Ancora nessun accesso ai progetti",
+			"descriptionCanCreate": "Non hai ancora accesso a nessun progetto. Chiedi a un amministratore del workspace di aggiungerti a un progetto, oppure creane uno tuo."
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "Membri del progetto",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} perderà l'accesso a questo progetto. Resterà nel workspace.",
+			"error": "Impossibile rimuovere il membro",
+			"success": "Membro rimosso dal progetto",
+			"title": "Rimuovere dal progetto?"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "Riprova",
+		"subtitle": "Le persone che possono aprire questo progetto e cosa possono fare al suo interno.",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "Azioni per {{name}}",
+			"ariaChangeRole": "Cambia il ruolo nel progetto di {{name}}",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "Membro",
+				"role": "Ruolo nel progetto"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "Aggiungi un membro del workspace o invita qualcuno via email.",
+			"emptyTitle": "Ancora nessun membro",
+			"fullAccess": "Accesso completo",
+			"fullAccessHint": "Ha accesso a ogni progetto tramite il suo ruolo nel workspace. Modificalo in Membri del workspace.",
+			"inactive": "inattivo",
+			"inactiveHint": "Questo ruolo non dà più alcun accesso. Scegli un altro ruolo o rimuovi la persona.",
+			"leaveProject": "Abbandona progetto",
+			"removeMember": "Rimuovi dal progetto",
+			"rolesLoadError": "Impossibile caricare i ruoli che puoi assegnare, quindi al momento non è possibile modificarli.",
+			"rolesRetry": "Riprova",
+			"roleUpdateError": "Impossibile aggiornare il ruolo nel progetto",
+			"roleUpdateSuccess": "Ruolo nel progetto aggiornato",
+			"you": "Tu"
 		},
-		"title": "Members",
+		"title": "Membri",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "Le persone senza accesso completo vedono solo i progetti a cui sono state aggiunte. Per invitare qualcuno a un solo progetto, usa Invita via email nelle impostazioni del progetto.",
+			"link": "Apri impostazioni del progetto"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "Impossibile verificare cosa puoi fare qui. Alcune azioni potrebbero essere nascoste."
 	}
 }

@@ -57,28 +57,28 @@
 			"tryAgain": "Coba lagi",
 			"viewDeploymentGuide": "Lihat panduan deployment",
 			"refreshPage": "Muat ulang halaman",
-			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
+			"description": "Halaman mengalami kegagalan tak terduga. Memuat ulang biasanya dapat memperbaikinya.",
 			"messages": {
-				"auth": "Authentication failed. Please sign in again.",
-				"cors": "Unable to connect to the server. This might be due to CORS configuration issues.",
-				"network": "Network error. Please check your internet connection and try again.",
-				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred.",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"auth": "Autentikasi gagal. Silakan masuk lagi.",
+				"cors": "Tidak dapat terhubung ke server. Ini mungkin disebabkan oleh masalah konfigurasi CORS.",
+				"network": "Kesalahan jaringan. Periksa koneksi internet Anda lalu coba lagi.",
+				"server": "Kesalahan server. Silakan coba lagi nanti.",
+				"unknown": "Terjadi kesalahan yang tidak terduga.",
+				"serverUnreachable": "Tidak dapat menjangkau server. Periksa koneksi Anda; data akan dimuat ulang setelah server kembali."
 			},
 			"troubleshootingSteps": {
 				"cors": {
-					"checkAccessibility": "Check that your API server is accessible from your browser",
-					"checkApiRunning": "Make sure your API server is running",
-					"checkApiUrl": "Check that VITE_API_URL in your frontend .env matches your API server URL",
-					"checkProtocol": "Ensure both frontend and API are using the same protocol (http/https)",
-					"verifyCorsOrigins": "Verify CORS_ORIGINS in your API .env includes your frontend URL"
+					"checkAccessibility": "Pastikan server API Anda dapat diakses dari browser Anda",
+					"checkApiRunning": "Pastikan server API Anda berjalan",
+					"checkApiUrl": "Pastikan VITE_API_URL di .env frontend Anda sesuai dengan URL server API Anda",
+					"checkProtocol": "Pastikan frontend dan API menggunakan protokol yang sama (http/https)",
+					"verifyCorsOrigins": "Pastikan CORS_ORIGINS di .env API Anda menyertakan URL frontend Anda"
 				},
 				"network": {
-					"checkConnection": "Check your internet connection",
-					"checkFirewall": "Check if there are any firewall or proxy issues",
-					"tryRefresh": "Try refreshing the page",
-					"verifyApiRunning": "Verify the API server is running and accessible"
+					"checkConnection": "Periksa koneksi internet Anda",
+					"checkFirewall": "Periksa apakah ada masalah firewall atau proxy",
+					"tryRefresh": "Coba muat ulang halaman",
+					"verifyApiRunning": "Pastikan server API berjalan dan dapat diakses"
 				}
 			}
 		},
@@ -94,7 +94,7 @@
 				"pickIcon": "Pilih ikon",
 				"searchIcons": "Cari ikon...",
 				"projectName": "Nama proyek",
-				"keyLabel": "Key:",
+				"keyLabel": "Kunci:",
 				"keyHint": "Digunakan untuk ID tiket (contoh, {{example}}-123)",
 				"createButton": "Buat Proyek",
 				"successToast": "Proyek berhasil dibuat",
@@ -155,29 +155,29 @@
 					"rose": "Merah Mawar",
 					"crimson": "Merah Tua"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "Anda tidak dapat membuat tugas di proyek ini. Pilih proyek lain.",
+				"permissionsUnavailable": "Tidak dapat memeriksa izin Anda di proyek ini. Coba lagi atau pilih proyek lain.",
 				"selectOptionPlaceholder": "Pilih opsi"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "Salah",
+			"notSet": "Belum diatur",
+			"true": "Benar",
+			"undefined": "Tidak terdefinisi"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "Memeriksa…",
+			"offlineDescription": "Periksa koneksi jaringan Anda. Data di layar mungkin sudah usang, dan perubahan tidak dapat disimpan sampai Anda online kembali.",
+			"offlineTitle": "Anda sedang offline",
+			"restored": "Koneksi pulih. Data telah dimuat ulang.",
+			"retry": "Coba lagi sekarang",
+			"serverUnreachableDescription": "Data di layar mungkin sudah usang, dan perubahan tidak akan disimpan. Mencoba lagi secara otomatis…",
+			"serverUnreachableTitle": "Tidak dapat menjangkau server Kaneo"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "Izin Anda di proyek ini berubah.",
+			"lost": "Anda tidak lagi memiliki akses ke proyek ini."
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "Gagal menerima undangan",
 				"acceptSuccess": "Undangan diterima! Selamat bergabung dengan tim."
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "Menerima undangan..."
 		},
 		"onboarding": {
 			"pageTitle": "Selamat datang di Kaneo",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "Lupa kata sandi?",
+			"requestTitle": "Atur ulang kata sandi Anda",
+			"requestSubtitle": "Masukkan email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi.",
+			"sendLink": "Kirim tautan atur ulang",
+			"sending": "Mengirim…",
+			"sent": "Jika akun dengan email ini ada, Anda akan menerima tautan untuk mengatur ulang kata sandi. Periksa kotak masuk dan folder spam Anda.",
+			"requestError": "Tidak dapat meminta tautan atur ulang. Silakan coba lagi.",
+			"unavailable": "Pengaturan ulang kata sandi tidak tersedia. Hubungi administrator instans Anda.",
+			"configError": "Tidak dapat menjangkau server. Muat ulang halaman untuk mencoba lagi.",
+			"resetTitle": "Pilih kata sandi baru",
+			"resetSubtitle": "Gunakan 8–128 karakter untuk kata sandi baru Anda.",
+			"newPassword": "Kata sandi baru",
+			"confirmPassword": "Konfirmasi kata sandi baru",
+			"passwordMismatch": "Kata sandi tidak cocok.",
+			"passwordLength": "Gunakan 8 hingga 128 karakter.",
+			"resetPassword": "Atur ulang kata sandi",
+			"resetting": "Mengatur ulang…",
+			"invalidLink": "Tautan atur ulang ini tidak valid atau sudah kedaluwarsa. Minta tautan baru untuk melanjutkan.",
+			"requestNewLink": "Minta tautan baru",
+			"resetError": "Tidak dapat mengatur ulang kata sandi Anda. Silakan coba lagi.",
+			"success": "Kata sandi Anda telah diatur ulang. Masuk dengan kata sandi baru Anda.",
+			"backToSignIn": "Kembali ke halaman masuk"
 		}
 	},
 	"settings": {
@@ -415,25 +415,25 @@
 			"avatar": {
 				"hint": "PNG, JPEG, or WebP. Cropped to a square and resized to 256x256.",
 				"remove": "Remove",
-				"removeError": "Failed to remove profile picture",
-				"removeSuccess": "Profile picture removed",
-				"updateError": "Failed to update profile picture",
-				"updateSuccess": "Profile picture updated",
-				"change": "Change avatar",
-				"edit": "Change your profile picture"
+				"removeError": "Gagal menghapus foto profil",
+				"removeSuccess": "Foto profil dihapus",
+				"updateError": "Gagal memperbarui foto profil",
+				"updateSuccess": "Foto profil diperbarui",
+				"change": "Ubah avatar",
+				"edit": "Ubah foto profil Anda"
 			},
 			"deleteAccount": {
-				"confirm": "Delete account",
+				"confirm": "Hapus akun",
 				"confirmLabel": "Confirm your email address",
-				"description": "Workspaces only you belong to are deleted with your account. Elsewhere, your tasks stay and become unassigned, and your comments are removed.",
-				"error": "Failed to delete account",
+				"description": "Ruang kerja yang hanya Anda ikuti akan dihapus bersama akun Anda. Di ruang kerja lain, tugas Anda tetap ada dan menjadi tidak ditugaskan, sedangkan komentar Anda dihapus.",
+				"error": "Gagal menghapus akun",
 				"modalDescription": "This cannot be undone. Type {{email}} to confirm.",
-				"modalTitle": "Delete your account?",
-				"sectionSubtitle": "Permanent actions that affect your whole account.",
-				"sectionTitle": "Danger zone",
-				"success": "Your account has been deleted",
-				"title": "Delete account",
-				"sessionTooOld": "For security, sign out and sign back in before deleting your account."
+				"modalTitle": "Hapus akun Anda?",
+				"sectionSubtitle": "Tindakan permanen yang memengaruhi seluruh akun Anda.",
+				"sectionTitle": "Zona berbahaya",
+				"success": "Akun Anda telah dihapus",
+				"title": "Hapus akun",
+				"sessionTooOld": "Demi keamanan, keluar lalu masuk kembali sebelum menghapus akun Anda."
 			}
 		},
 		"notificationsPage": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "Tampilkan label dan tag tugas",
 			"priority": "Prioritas",
 			"priorityDescription": "Tampilkan indikator prioritas",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "Latar belakang proyek",
+			"projectBackgroundsDescription": "Tampilkan gambar latar belakang proyek di papan"
 		},
 		"developerPage": {
 			"pageTitle": "Pengaturan Pengembang",
@@ -607,7 +607,7 @@
 				"loading": "Memuat API key...",
 				"empty": "Belum ada API key. Buat satu untuk memulai.",
 				"columnName": "Nama",
-				"columnKey": "Key",
+				"columnKey": "Kunci",
 				"columnCreated": "Dibuat",
 				"columnExpires": "Kedaluwarsa",
 				"columnActions": "Aksi",
@@ -619,7 +619,7 @@
 				"delete": "Hapus",
 				"deleting": "Menghapus...",
 				"deleteAria": "Hapus {{name}}",
-				"deleteAriaFallback": "API key",
+				"deleteAriaFallback": "Kunci API",
 				"toastDeleted": "API key berhasil dihapus",
 				"toastDeleteError": "Gagal menghapus API key"
 			},
@@ -715,7 +715,7 @@
 			"projectNameLabel": "Nama proyek",
 			"projectNameHint": "Nama proyek Anda",
 			"projectNamePlaceholder": "Masukkan nama proyek",
-			"keyLabel": "Key",
+			"keyLabel": "Kunci",
 			"keyHint": "Digunakan untuk ID tiket (misalnya, {{slug}}-123)",
 			"keyPlaceholder": "PRO",
 			"descriptionLabel": "Deskripsi",
@@ -740,15 +740,15 @@
 			},
 			"importExportTasks": "Impor/Ekspor",
 			"importExportTasksDescription": "Impor dan ekspor tugas.",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "Pilih gambar yang ditampilkan di belakang papan proyek ini.",
+			"backgroundLabel": "Latar belakang papan",
+			"backgroundRemove": "Hapus gambar",
+			"backgroundRemoveError": "Gagal menghapus latar belakang proyek",
+			"backgroundRemoveSuccess": "Latar belakang proyek dihapus",
+			"backgroundReplace": "Ganti gambar",
+			"backgroundUpload": "Unggah gambar",
+			"backgroundUploadError": "Gagal memperbarui latar belakang proyek",
+			"backgroundUploadSuccess": "Latar belakang proyek diperbarui",
 			"moveModalConfirm": "Pindahkan proyek",
 			"moveModalDescription": "Tindakan ini akan memindahkan proyek \"{{name}}\" beserta semua tugasnya ke \"{{workspace}}\". Tugas yang ditugaskan kepada orang yang bukan anggota ruang kerja tersebut akan dilepas penugasannya, dan langganan notifikasi untuk proyek ini akan dihapus.",
 			"moveModalTitle": "Pindahkan proyek?",
@@ -777,10 +777,10 @@
 			"slackSectionSubtitle": "Kirim pembaruan tugas proyek ke kanal Slack dengan incoming webhook.",
 			"telegramSectionTitle": "Integrasi Telegram",
 			"telegramSectionSubtitle": "Kirim pembaruan tugas proyek ke chat atau topik Telegram dengan bot.",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"mattermostSectionSubtitle": "Kirim pembaruan tugas proyek ke kanal Mattermost dengan webhook masuk.",
+			"mattermostSectionTitle": "Integrasi Mattermost",
+			"gitlabSectionSubtitle": "Sinkronkan tugas dengan GitLab.com atau instans yang dikelola sendiri (issue, merge request, webhook).",
+			"gitlabSectionTitle": "Integrasi GitLab"
 		},
 		"projectVisibility": {
 			"pageTitle": "Visibilitas Proyek",
@@ -805,8 +805,8 @@
 			"columnsDescription": "Kelola kolom yang muncul di papan Anda. Seret untuk mengurutkan ulang. Aktifkan \"Kolom selesai\" untuk tahap yang mewakili pekerjaan selesai.",
 			"automationTitle": "Aturan Otomatisasi",
 			"automationDescription": "Petakan event integrasi ke kolom. Saat event terjadi, tugas tertaut berpindah ke kolom yang ditentukan.",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "Kelola kolom kustom untuk proyek ini. Seret  untuk mengurutkan ulang.",
+			"customFieldsTitle": "Kolom Kustom"
 		},
 		"projectSwitcher": {
 			"selectProject": "Pilih proyek",
@@ -897,9 +897,9 @@
 			"accountVerificationHint": "Hubungkan akun GitHub Anda untuk memverifikasi bahwa Anda mengelola repositori ini.",
 			"enableGithubSignInHint": "Minta administrator instans Anda mengaktifkan masuk dengan GitHub.",
 			"reverifyHint": "Hubungkan kembali repositori ini untuk memverifikasi akses dan melanjutkan sinkronisasi.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "Lanjutkan impor",
+			"importPaused": "Impor ini memiliki progres tersimpan. Anda dapat melanjutkannya.",
+			"importSummary": "Dibuat: {{imported}} · Diperbarui: {{updated}} · Dilewati: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -1128,7 +1128,7 @@
 			"threadIdPlaceholder": "ID topik opsional",
 			"threadIdHint": "Opsional. Gunakan ini untuk topik forum di dalam grup Telegram.",
 			"chatLabelLabel": "Label chat",
-			"chatLabelPlaceholder": "Engineering Updates",
+			"chatLabelPlaceholder": "Pembaruan Engineering",
 			"chatLabelHint": "Label opsional untuk referensi Anda di Kaneo.",
 			"eventsTitle": "Notifikasi event",
 			"eventsHint": "Pilih perubahan proyek yang harus diposting ke Telegram.",
@@ -1200,7 +1200,7 @@
 				"issue_closed": "Issue Ditutup"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "Saat event webhook GitLab terjadi, pindahkan tugas yang ditautkan ke sebuah kolom."
 		},
 		"externalLinks": {
 			"resources": "Sumber daya",
@@ -1209,14 +1209,14 @@
 			"merged": "Digabung",
 			"draft": "Draf",
 			"open": "Terbuka",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "Menambahkan...",
+			"addResource": "Tambah sumber daya",
+			"cancel": "Batal",
+			"empty": "Tidak ada sumber daya yang ditautkan ke tugas ini.",
+			"titleOptional": "Judul (opsional)",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "Hapus {{title}}",
+			"removeError": "Gagal menghapus tautan sumber daya."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Peran",
@@ -1253,11 +1253,11 @@
 				"task": "Tugas",
 				"label": "Label",
 				"workspace": "Ruang kerja",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "Administrasi ruang kerja",
+				"member": "Anggota",
+				"invitation": "Undangan",
+				"team": "Tim",
+				"ac": "Peran dan izin"
 			},
 			"permissions": {
 				"project": {
@@ -1342,68 +1342,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "Edit administrasi ruang kerja",
+						"description": "Ubah pengaturan ruang kerja melalui layanan akun."
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "Hapus ruang kerja",
+						"description": "Hapus ruang kerja secara permanen melalui layanan akun."
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "Tambah anggota",
+						"description": "Tambahkan pengguna ke ruang kerja ini."
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "Ubah peran anggota",
+						"description": "Ubah peran yang ditetapkan untuk anggota ruang kerja."
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "Hapus anggota",
+						"description": "Hapus pengguna dari ruang kerja ini."
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "Undang anggota",
+						"description": "Kirim undangan ruang kerja."
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "Batalkan undangan",
+						"description": "Cabut undangan ruang kerja yang tertunda."
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "Buat tim",
+						"description": "Buat tim di ruang kerja ini."
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "Edit tim",
+						"description": "Ubah tim dan keanggotaan tim."
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "Hapus tim",
+						"description": "Hapus tim di ruang kerja ini."
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "Buat peran",
+						"description": "Buat peran ruang kerja dan tetapkan izinnya."
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "Lihat peran",
+						"description": "Baca peran ruang kerja beserta izinnya."
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "Ubah izin peran",
+						"description": "Ubah izin peran, termasuk akses administratif."
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "Hapus peran",
+						"description": "Hapus peran ruang kerja kustom."
 					}
 				}
 			},
@@ -1449,174 +1449,174 @@
 			"updateError": "Gagal memperbarui label",
 			"deleteError": "Gagal menghapus label",
 			"nameRequired": "Nama label wajib diisi",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "Penghapusan tertunda",
+			"resumeDeletion": "Lanjutkan penghapusan"
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
+			"channelHint": "Label opsional sebagai referensi Anda. Kanal tujuan sebenarnya ditentukan Mattermost dari pengaturan webhook.",
+			"channelLabel": "Nama kanal",
 			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"connect": "Hubungkan Mattermost",
+			"connected": "Terhubung",
+			"connectionHint": "Tempel URL webhook masuk Mattermost dan pilih event tugas mana yang akan diposting.",
+			"connectionTitle": "Koneksi webhook Mattermost",
+			"disconnect": "Putuskan",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "Komentar baru",
+				"taskCreated": "Tugas baru",
+				"taskDescriptionChanged": "Perubahan deskripsi",
+				"taskPriorityChanged": "Perubahan prioritas",
+				"taskStatusChanged": "Perubahan status",
+				"taskTitleChanged": "Perubahan judul"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Pilih perubahan proyek mana yang akan diposting ke Mattermost.",
+			"eventsTitle": "Notifikasi event",
+			"paused": "Dijeda",
+			"saveChanges": "Simpan perubahan",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Notifikasi Mattermost dijeda",
+				"enabled": "Notifikasi Mattermost diaktifkan",
+				"removed": "Integrasi Mattermost berhasil dihapus",
+				"removeError": "Gagal menghapus integrasi Mattermost",
+				"saved": "Integrasi Mattermost berhasil disimpan",
+				"saveError": "Gagal menyimpan integrasi Mattermost",
+				"updateError": "Gagal memperbarui integrasi Mattermost"
 			},
-			"update": "Update Mattermost",
+			"update": "Perbarui Mattermost",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "Masukkan URL webhook Mattermost yang valid"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookHint": "Buat Incoming Webhook di Mattermost lalu tempel URL yang dihasilkan di sini.",
+			"webhookLabel": "URL webhook masuk",
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
+			"addButton": "Tambah",
+			"createError": "Gagal membuat kolom kustom.",
+			"createSuccess": "Kolom kustom dibuat.",
+			"creating": "Membuat...",
 			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"defaultValuePlaceholder": "Nilai default",
+			"deleteButton": "Hapus",
+			"deleteError": "Gagal menghapus kolom kustom.",
+			"deleteSuccess": "Kolom kustom dihapus.",
+			"deleting": "Menghapus...",
+			"empty": "Belum ada kolom kustom yang dikonfigurasi.",
+			"loading": "Memuat kolom kustom...",
+			"namePlaceholder": "Nama kolom",
+			"noOptionsPlaceholder": "Tidak ada opsi",
+			"optionsPlaceholder": "Opsi dipisahkan koma",
+			"required": "Wajib",
+			"typePlaceholder": "Pilih jenis kolom",
 			"types": {
 				"boolean": "Boolean",
-				"date": "Date",
+				"date": "Tanggal",
 				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"number": "Angka",
+				"text": "Teks",
+				"multiselect": "Pilihan Ganda"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "Opsi yang tersedia",
+			"clearDefault": "Hapus",
+			"defaultValues": "{{count}} default",
+			"moreOptions": "+{{hiddenCount}} lainnya",
+			"multiple": "Ganda",
+			"options": "{{count}} opsi",
+			"reorderError": "Gagal mengurutkan ulang kolom",
+			"selectPlaceholder": "Pilih opsi",
+			"optionColorAriaLabel": "Atur warna untuk \"{{option}}\"",
+			"optionColorsLabel": "Warna opsi",
+			"updateColorError": "Gagal memperbarui warna opsi.",
+			"updateColorSuccess": "Warna opsi diperbarui.",
+			"hiddenOnProject": "Tersembunyi",
+			"hideField": "Sembunyikan \"{{name}}\" untuk proyek ini",
+			"inheritedDescription": "Kolom yang didefinisikan di tingkat ruang kerja. Sembunyikan kolom untuk menghapusnya dari proyek ini saja — kolom wajib tidak dapat disembunyikan.",
+			"inheritedEmpty": "Belum ada kolom kustom yang ditambahkan di tingkat ruang kerja.",
+			"inheritedTitle": "Diwarisi dari ruang kerja",
+			"ownFieldsDescription": "Kolom yang hanya didefinisikan untuk proyek ini. Seret untuk mengurutkan ulang.",
+			"ownFieldsTitle": "Kolom proyek",
+			"requiredByWorkspace": "Diwajibkan oleh ruang kerja",
+			"showField": "Tampilkan \"{{name}}\" untuk proyek ini",
+			"visibilityUpdateError": "Gagal memperbarui visibilitas kolom.",
+			"visibleOnProject": "Terlihat"
 		},
-		"administration": "Administration",
+		"administration": "Administrasi",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "Nonaktifkan akun",
+				"edit": "Edit akun",
+				"open": "Tindakan untuk {{name}}",
+				"reactivate": "Aktifkan kembali akun"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "Hapus pencarian",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
+				"actions": "Tindakan",
+				"joined": "Bergabung",
+				"role": "Peran global",
 				"status": "Status",
-				"user": "User"
+				"user": "Pengguna"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "Nonaktifkan akun",
+					"description": "{{name}} akan dikeluarkan dan tidak dapat masuk sampai administrator mengaktifkan kembali akun tersebut.",
+					"title": "Nonaktifkan akun ini?"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "Hapus permanen",
+					"description": "Ini akan menghapus {{name}}, sesi, keanggotaan, dan data terkaitnya secara permanen. Tindakan ini tidak dapat dibatalkan.",
+					"title": "Hapus akun ini secara permanen?"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "Aktifkan kembali akun",
+					"description": "{{name}} akan dapat masuk dan mengakses ruang kerjanya lagi.",
+					"title": "Aktifkan kembali akun ini?"
 				},
-				"working": "Working…"
+				"working": "Memproses…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "Direktori pengguna",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "Perbarui identitas akun ini dan akses di seluruh instans.",
+				"email": "Alamat email",
+				"name": "Nama lengkap",
+				"role": "Peran global",
+				"save": "Simpan perubahan",
+				"saving": "Menyimpan…",
+				"selfRoleHint": "Anda tidak dapat mengubah peran global Anda sendiri.",
+				"title": "Edit pengguna"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "Coba nama atau alamat email lain.",
+			"emptyTitle": "Tidak ada pengguna ditemukan",
+			"instanceBadge": "Instans",
+			"loadError": "Pengguna tidak dapat dimuat.",
+			"next": "Berikutnya",
+			"pagination": "Halaman {{current}} dari {{total}}",
+			"previous": "Sebelumnya",
+			"refreshing": "Memuat ulang pengguna",
+			"retry": "Coba lagi",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "Admin instans",
+				"user": "Pengguna"
 			},
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_other": "{{count}} pengguna yang cocok",
+			"searchLabel": "Cari pengguna",
+			"searchPlaceholder": "Cari nama atau email…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "Aktif",
+				"deactivated": "Dinonaktifkan"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "Kelola semua akun yang terdaftar di instans Kaneo ini.",
+			"title": "Manajemen pengguna",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "Gagal memperbarui status pengguna",
+				"deactivated": "Pengguna dinonaktifkan",
+				"deleted": "Pengguna dihapus",
+				"reactivated": "Pengguna diaktifkan kembali",
+				"updated": "Pengguna diperbarui",
+				"updateError": "Gagal memperbarui pengguna"
 			},
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_other": "{{count}} pengguna terdaftar",
+			"you": "(Anda)"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "Tambah hari libur",
@@ -1649,256 +1649,256 @@
 			"workingDaysTitle": "Hari kerja",
 			"loading": "Memuat kalender…"
 		},
-		"security": "Security",
+		"security": "Keamanan",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "Konfirmasi kata sandi baru",
+			"confirmPasswordPlaceholder": "Masukkan ulang kata sandi baru Anda",
+			"currentPassword": "Kata sandi saat ini",
+			"currentPasswordPlaceholder": "Masukkan kata sandi Anda saat ini",
+			"newPassword": "Kata sandi baru",
+			"newPasswordPlaceholder": "Masukkan kata sandi baru",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "Akun Anda masuk dengan metode lain, sehingga tidak ada kata sandi yang dapat diubah.",
+				"title": "Perubahan kata sandi tidak tersedia"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "Keamanan",
+			"sectionSubtitle": "Ubah kata sandi yang Anda gunakan untuk masuk.",
+			"sectionTitle": "Kata sandi",
+			"submit": "Perbarui kata sandi",
+			"submitting": "Memperbarui...",
+			"subtitle": "Kelola kata sandi dan keamanan akun Anda.",
+			"title": "Keamanan",
+			"updateError": "Gagal memperbarui kata sandi.",
+			"updateSuccess": "Kata sandi diperbarui.",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "Konfirmasi kata sandi baru Anda.",
+				"currentRequired": "Masukkan kata sandi Anda saat ini.",
+				"mismatch": "Kata sandi tidak cocok.",
+				"tooShort": "Kata sandi baru minimal 8 karakter.",
+				"sameAsCurrent": "Kata sandi baru harus berbeda dari kata sandi Anda saat ini."
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
-			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"actionsHint": "Verifikasi akses dan hubungkan",
+			"actionsTitle": "Tindakan",
+			"badgeConnected": "Terhubung",
+			"badgeNotConnected": "Tidak terhubung",
+			"baseUrlHint": "https://gitlab.com, atau URL root instans Anda",
+			"baseUrlLabel": "URL GitLab",
+			"browse": "Telusuri",
+			"browseModalHint": "Proyek yang diikuti oleh token Anda",
+			"browseModalTitle": "Proyek Anda",
+			"browseNeedsCredentials": "Masukkan URL GitLab dan token untuk menelusuri",
+			"commentTaskLinkHint": "Saat diaktifkan, Kaneo berkomentar dengan tautan ke tugas pada setiap issue yang dibuka di GitLab.",
+			"commentTaskLinkTitle": "Komentari tautan Kaneo pada issue yang dibuka di GitLab",
+			"connect": "Hubungkan",
+			"connectedActive": "Proyek terhubung dan aktif",
+			"connectionStatus": "Status koneksi",
+			"currentToken": "tersimpan",
+			"disconnect": "Putuskan",
+			"importDisabledHint": "Verifikasi proyek di atas untuk mengaktifkan impor",
+			"importing": "Mengimpor…",
+			"importIssues": "Impor issue",
+			"importSectionHint": "Impor issue dan merge request yang terbuka dari proyek",
+			"importSectionTitle": "Impor issue GitLab",
+			"loadingProjects": "Memuat proyek…",
+			"notConnectedHint": "Tidak ada proyek GitLab yang terhubung",
+			"openInGitlab": "Buka {{project}} di GitLab",
+			"project": "Proyek",
+			"projectHint": "Proyek GitLab yang ditautkan",
+			"projectPathHint": "Path lengkap termasuk grup, mis. group/subgroup/project",
+			"projectPathLabel": "Path proyek",
+			"retry": "Coba lagi",
+			"searchProjects": "Cari…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "Komentar tautan tugas pada issue yang dibuka di GitLab dimatikan",
+				"commentOnEnabled": "Kaneo akan berkomentar dengan tautan tugas pada issue yang dibuka di GitLab",
+				"importError": "Gagal mengimpor issue",
+				"issuesImported": "Issue berhasil diimpor",
+				"notGitlabInstance": "URL tidak mengarah ke instans GitLab",
+				"projectNotFound": "Proyek tidak ditemukan atau tidak dapat diakses",
+				"redirected": "URL GitLab dialihkan (biasanya ke HTTPS). Gunakan URL akhir secara langsung.",
+				"removed": "Integrasi GitLab dihapus",
+				"removeError": "Gagal menghapus integrasi GitLab",
+				"secretCopied": "Disalin",
+				"settingsUpdateError": "Gagal memperbarui integrasi GitLab",
+				"tokenRequired": "Token akses wajib diisi",
+				"tokenRequiredVerify": "Masukkan token untuk diverifikasi",
+				"unableToCopySecret": "Tidak dapat menyalin secret",
+				"updated": "Integrasi GitLab disimpan",
+				"updateError": "Gagal menyimpan integrasi GitLab",
+				"verifyError": "Gagal memverifikasi akses GitLab",
+				"verifyFirst": "Verifikasi akses gagal. Periksa URL, token, dan path proyek",
+				"verifyOk": "Token GitLab dapat mengakses proyek ini",
+				"verifyWarning": "Periksa izin token atau akses proyek"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "Token dengan scope api dan minimal Developer pada proyek",
+			"tokenLabel": "Token akses",
+			"tokenPlaceholder": "Tempel token",
+			"tokenPlaceholderUpdate": "Tempel token baru untuk merotasi",
+			"tokenTypeBearer": "Token OAuth2",
+			"tokenTypeHint": "Cara token dikirim. Token akses menggunakan PRIVATE-TOKEN; token OAuth2 menggunakan Authorization.",
+			"tokenTypeLabel": "Jenis token",
+			"tokenTypePrivate": "Token akses pribadi, proyek, atau grup",
+			"update": "Perbarui",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "Masukkan URL yang valid (mis. https://gitlab.com)",
+				"baseUrlRequired": "URL dasar GitLab wajib diisi",
+				"pathInvalid": "Masukkan path lengkap, mis. group/project",
+				"pathRequired": "Path proyek wajib diisi"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
+			"verify": "Verifikasi",
+			"webhookCopy": "Salin",
+			"webhookHide": "Sembunyikan",
+			"webhookHint": "Di proyek GitLab Anda, tambahkan webhook dengan URL dan secret token ini. Aktifkan event push, issue, komentar, dan merge request.",
+			"webhookSecretLabel": "Secret token (harus sama dengan yang diatur pada webhook di GitLab)",
+			"webhookShow": "Tampilkan",
 			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"loadProjectsError": "Gagal memuat proyek",
+			"importPermissionHint": "Impor memerlukan izin untuk membuat dan memperbarui tugas."
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "Feed kalender",
+			"subtitle": "Berlangganan tugas proyek terjadwal di aplikasi kalender Anda.",
+			"createTitle": "Buat feed kalender",
+			"filterHint": "Sertakan tugas dengan tanggal mulai atau tenggat dan setidaknya satu dari label yang dipilih.",
+			"labels": "Label",
+			"selectLabels": "Cari dan pilih label…",
+			"noLabels": "Label tidak ditemukan.",
+			"timeZoneHint": "Tanggal seharian penuh menggunakan {{timeZone}}.",
+			"accessHint": "Siapa pun yang memiliki tautan feed dapat membaca judul, deskripsi, dan tanggal tugas yang cocok. Cabut tautan untuk menghentikan akses selanjutnya.",
+			"create": "Buat feed",
+			"creating": "Membuat…",
+			"created": "Feed kalender dibuat.",
+			"createError": "Tidak dapat membuat feed kalender.",
+			"activeFeeds": "Feed aktif",
+			"subscribeHint": "Salin tautan dan tambahkan sebagai langganan kalender. Pembaruan muncul saat aplikasi kalender Anda menyegarkan feed.",
+			"empty": "Belum ada feed kalender.",
+			"feedUrl": "URL feed kalender",
+			"copy": "Salin tautan",
+			"copied": "Tautan feed kalender disalin.",
+			"copyError": "Tidak dapat menyalin tautan. Pilih URL lalu salin secara manual.",
+			"revoke": "Cabut",
+			"revoked": "Feed kalender dicabut.",
+			"revokeError": "Tidak dapat mencabut feed kalender.",
+			"loadError": "Tidak dapat memuat feed kalender atau label. Silakan coba lagi.",
+			"deletedLabel": "Label dihapus",
+			"permissionRequired": "Anda memerlukan izin berbagi proyek untuk mengelola feed kalender."
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "Pengaturan Kolom Kustom",
+			"sectionDescription": "Kolom yang didefinisikan di sini ditambahkan ke setiap proyek di ruang kerja. Admin proyek hanya dapat menyembunyikan atau menampilkan kolom untuk proyeknya sendiri — kolom wajib tidak dapat disembunyikan.",
+			"sectionTitle": "Kolom Kustom",
+			"subtitle": "Kelola kolom kustom tingkat ruang kerja. Setiap proyek di ruang kerja ini mewarisinya.",
+			"title": "Kolom Kustom"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "Buat sumber daya baru yang dapat ditugaskan untuk ruang kerja ini. Jenisnya tidak dapat diubah setelah dibuat.",
+			"createError": "Gagal membuat sumber daya",
+			"createResource": "Buat Sumber Daya",
+			"createSuccess": "Sumber daya dibuat",
+			"deleteConfirmDescription": "Sumber daya ini akan dihapus dari semua tugas yang ditugaskan kepadanya. Tindakan ini tidak dapat dibatalkan.",
+			"deleteConfirmTitle": "Hapus sumber daya ini?",
+			"deleteError": "Gagal menghapus sumber daya",
+			"deleteResource": "Hapus",
+			"deleteSuccess": "Sumber daya dihapus",
+			"editDescription": "Perbarui nama atau email sumber daya ini.",
+			"editResource": "Edit Sumber Daya",
+			"emailLabel": "Email (opsional)",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "Belum ada sumber daya. Buat orang, peralatan, atau material pertama Anda untuk memulai.",
 			"kind": {
-				"equipment": "Equipment",
+				"equipment": "Peralatan",
 				"material": "Material",
-				"person": "Person"
+				"person": "Orang"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "Jenis",
+			"nameLabel": "Nama",
+			"namePlaceholder": "Masukkan nama",
+			"nameRequired": "Nama sumber daya wajib diisi",
+			"pageTitle": "Pengaturan Sumber Daya",
+			"saveResource": "Simpan",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "Sumber Daya",
+			"updateError": "Gagal memperbarui sumber daya",
+			"updateSuccess": "Sumber daya diperbarui",
+			"loadError": "Tidak dapat memuat sumber daya. Silakan coba lagi.",
+			"loading": "Memuat sumber daya…",
+			"emailChangeDetaches": "Mengubah email akan menghapus tautan ke undangan yang tertunda.",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "Sumber daya ini sudah ditautkan ke anggota.",
+				"alreadyWorkspaceMember": "Alamat ini milik anggota ruang kerja. Tautkan sumber daya ke anggota tersebut.",
+				"disposableEmail": "Undangan ke alamat email sekali pakai tidak diizinkan.",
+				"duplicateProject": "Sebuah proyek hanya dapat dicantumkan sekali.",
+				"emailNotAllowed": "Hanya orang yang dapat memiliki alamat email.",
+				"guestCannotInvite": "Akun tamu tidak dapat mengirim undangan.",
+				"insufficientPermissions": "Anda tidak memiliki izin untuk mengundang orang ke salah satu proyek ini.",
+				"invitationLimitReached": "Batas undangan untuk ruang kerja ini telah tercapai.",
+				"invitationRoleConflict": "Undangan tertunda untuk alamat ini sudah memiliki peran ruang kerja lain.",
+				"noEmail": "Tambahkan alamat email ke sumber daya terlebih dahulu.",
+				"notLinked": "Sumber daya ini tidak ditautkan ke anggota.",
+				"notMember": "Pengguna ini bukan anggota ruang kerja.",
+				"notPerson": "Hanya orang yang dapat diundang atau ditautkan.",
+				"ownerRole": "Peran pemilik tidak dapat diberikan melalui undangan.",
+				"projectAccessDenied": "Anda tidak memiliki akses ke salah satu proyek ini.",
+				"rateLimited": "Terlalu banyak undangan. Coba lagi dalam semenit.",
+				"resourceChanged": "Sumber daya telah berubah. Silakan coba lagi.",
+				"roleExceedsYourPermissions": "Anda tidak dapat memberikan peran dengan izin lebih banyak dari izin Anda sendiri.",
+				"unknownRole": "Salah satu peran sudah tidak ada. Pilih peran lain.",
+				"notFound": "Sumber daya tidak ditemukan.",
+				"alreadyWorkspaceMemberOnly": "Alamat ini milik anggota ruang kerja.",
+				"workspaceNotFound": "Ruang kerja tidak ditemukan."
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "Proyek telah ditambahkan ke undangan tertunda untuk alamat ini.",
+				"createdTitle": "Undangan dibuat",
+				"description": "Undangan akan dikirim ke {{email}}. Penugasan sumber daya ini di proyek yang dipilih akan dipindahkan ke akun baru.",
+				"error": "Gagal mengirim undangan",
+				"hasTasks": "Memiliki tugas",
+				"noProjectRoles": "Tidak ada peran yang dapat Anda tetapkan",
+				"noProjects": "Anda tidak dapat mengundang orang ke proyek mana pun.",
+				"pickProject": "Pilih setidaknya satu proyek.",
+				"projectRoleLabel": "Peran di {{project}}",
+				"projectRolesError": "Tidak dapat memuat peran",
+				"projectRolesLoading": "Memuat peran...",
+				"projectsError": "Tidak dapat memuat proyek yang dapat Anda undang. Coba lagi nanti.",
+				"projectsHint": "Orang ini mendapat akses ke proyek yang Anda centang. Proyek yang memiliki tugas sumber daya ini sudah dicentang.",
+				"projectsLabel": "Proyek",
+				"projectsLoading": "Memuat proyek...",
+				"title": "Undang {{name}}",
+				"workspaceRoleLabel": "Peran ruang kerja"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "Undang",
+			"inviteNeedsEmail": "Tambahkan alamat email untuk mengundang orang ini.",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "Pilih anggota ruang kerja ini. Penugasan sumber daya ini di proyek yang dapat dibuka anggota tersebut akan dipindahkan ke akunnya.",
+				"error": "Gagal menautkan sumber daya",
+				"hint": "Penugasan di proyek yang tidak dapat dibuka anggota tetap pada sumber daya. Beban kerja menghitungnya di baris anggota.",
+				"memberLabel": "Anggota",
+				"memberPlaceholder": "Pilih anggota",
+				"membersError": "Tidak dapat memuat anggota.",
+				"membersLoading": "Memuat anggota...",
+				"noMembers": "Tidak ada anggota untuk ditautkan.",
+				"submit": "Tautkan",
+				"success": "Ditautkan ke {{name}}. Penugasan dipindahkan: {{moved}}.",
+				"title": "Tautkan {{name}} ke anggota"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "Tautkan ke anggota",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "Diundang (kedaluwarsa)",
+				"invitedPending": "Diundang (tertunda)",
+				"linked": "Ditautkan ke anggota",
+				"linkedTo": "Ditautkan ke {{name}}",
+				"notInvited": "Belum diundang"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "Sumber daya tidak lagi ditautkan ke anggota. Penugasan yang sudah dipindahkan tetap bersama anggota.",
+				"error": "Gagal melepas tautan sumber daya",
+				"success": "Tautan sumber daya dilepas",
+				"title": "Lepas tautan sumber daya ini?"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "Lepas tautan"
 		}
 	},
 	"navigation": {
@@ -2018,10 +2018,10 @@
 		},
 		"mobileProjectNav": {
 			"backlog": "Backlog",
-			"board": "Board",
+			"board": "Papan",
 			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"projects": "Proyek",
+			"view": "Tampilan"
 		}
 	},
 	"notifications": {
@@ -2189,8 +2189,8 @@
 					"renderFailed": "Diagram Mermaid tidak dapat dirender"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "Diimpor dari {{source}}",
+			"importedBy": "Diimpor oleh {{name}}",
 			"commentedOnForge": "berkomentar di {{forge}}"
 		},
 		"relationCreated": "menambahkan dependensi",
@@ -2242,7 +2242,7 @@
 			"loadingTask": "Memuat tugas...",
 			"taskNotFound": "Tugas tidak ditemukan",
 			"taskNotFoundDescription": "Tugas yang Anda cari tidak ada atau telah dihapus.",
-			"customFields": "Custom Fields"
+			"customFields": "Kolom Kustom"
 		},
 		"detail": {
 			"subtaskOf": "Subtugas dari",
@@ -2349,15 +2349,15 @@
 					"renderFailed": "Diagram Mermaid tidak dapat dirender"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "Besar",
+					"medium": "Sedang",
+					"reset": "Atur ulang ukuran",
+					"resizeHandle": "Ubah ukuran gambar",
+					"small": "Kecil"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "Kolom diperbarui",
+			"selectOption": "Pilih opsi",
 			"pickDate": "Pilih tanggal"
 		},
 		"entity": {
@@ -2418,7 +2418,7 @@
 			"deleteAction": "Hapus Tugas",
 			"completeAria": "Tandai subtugas selesai",
 			"progress": "{{completed}} dari {{total}} subtugas selesai",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "Proyek ini tidak memiliki kolom yang sesuai untuk menyelesaikan atau membuka kembali subtugas ini."
 		},
 		"properties": {
 			"title": "Properti",
@@ -2449,19 +2449,19 @@
 			"assignee": {
 				"unassigned": "Belum ditugaskan",
 				"updateError": "Gagal memperbarui penanggung jawab tugas",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "Batalkan semua penugasan",
+				"addResource": "Sumber daya baru",
+				"createResource": "Buat",
+				"createResourceError": "Gagal membuat sumber daya",
+				"newResourceEmailPlaceholder": "Email (opsional)",
+				"newResourceNamePlaceholder": "Nama",
 				"resourceKind": {
-					"equipment": "Equipment",
+					"equipment": "Peralatan",
 					"material": "Material",
-					"person": "Person"
+					"person": "Orang"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "Sumber daya",
+				"notInProject": "Tidak lagi di proyek ini"
 			},
 			"status": {
 				"updateError": "Gagal memperbarui status tugas"
@@ -2491,14 +2491,14 @@
 				"createError": "Gagal membuat label",
 				"colors": {
 					"stone": "Batu",
-					"slate": "Slate",
-					"lavender": "Lavender",
-					"sage": "Sage",
-					"forest": "Forest",
-					"amber": "Amber",
-					"terracotta": "Terracotta",
-					"rose": "Rose",
-					"crimson": "Crimson"
+					"slate": "Abu Kebiruan",
+					"lavender": "Lembayung",
+					"sage": "Hijau Kelabu",
+					"forest": "Hijau Hutan",
+					"amber": "Kuning Ambar",
+					"terracotta": "Merah Bata",
+					"rose": "Merah Mawar",
+					"crimson": "Merah Tua"
 				}
 			},
 			"baseline": {
@@ -2605,10 +2605,10 @@
 				"isAnyOf": "adalah salah satu dari",
 				"includeAnyOf": "menyertakan salah satu dari"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "Semua",
+			"allCustomFieldValues": "Semua nilai",
+			"noCustomFieldValues": "Tidak ada nilai kolom kustom",
+			"noValuesUsedYet": "Belum ada nilai yang digunakan"
 		},
 		"gantt": {
 			"pageTitle": "{{name}} – Gantt",
@@ -2625,11 +2625,11 @@
 			"resizeStart": "Ubah ukuran tanggal mulai",
 			"resizeDue": "Ubah ukuran tenggat",
 			"taskAriaLabel": "{{title}}: buka atau seret untuk memindahkan",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "Ke hari ini",
+			"previousPeriod": "Periode sebelumnya",
+			"nextPeriod": "Periode berikutnya",
+			"periodStart": "Tanggal mulai linimasa",
+			"showTaskDates": "Tampilkan tanggal tugas",
 			"legendBlocking": "Memblokir",
 			"legendRelated": "Terkait",
 			"externalProjectBadge": "di {{projectName}}",
@@ -2669,12 +2669,12 @@
 			"gateWarningBadge": "Gerbang",
 			"gateWarningItem": "\"{{title}}\" berstatus {{status}}",
 			"gateWarningTitle": "Diblokir oleh gerbang yang belum disetujui",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "Kolom kustom",
+			"barColorSourceLabel": "Warna bar",
+			"barColorSourceNone": "Tidak ada",
+			"barColorSourceFirstLabel": "Label pertama",
+			"externalTaskDerivedTitle": "{{title}} — tugas terkait di {{projectName}}; posisi ini diturunkan dari dependensinya karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
+			"externalTaskDerivedRailNote": "Posisi dari dependensi"
 		},
 		"delete": {
 			"title": "Hapus Tugas?",
@@ -2709,7 +2709,7 @@
 		"assignee": {
 			"label": "Penanggung jawab",
 			"unassigned": "Belum ditugaskan",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "Ditugaskan ke {{names}}"
 		},
 		"dueDate": {
 			"label": "Tenggat",
@@ -2730,8 +2730,8 @@
 		"contextMenu": {
 			"copyLink": "Salin tautan",
 			"copyLinkSuccess": "Tautan tugas disalin!",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "Tindakan lainnya",
+			"copyLinkError": "Tidak dapat menyalin tautan tugas."
 		},
 		"actions": {
 			"duplicate": "Duplikat",
@@ -2797,11 +2797,11 @@
 			"today": "Hari ini",
 			"loadError": "Gagal memuat tugas."
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "Mencari di deskripsi lengkap…",
+		"descriptionSearchError": "Pencarian deskripsi gagal. Hasil mungkin tidak lengkap.",
+		"descriptionRetry": "Coba lagi",
+		"descriptionLoading": "Memuat deskripsi…",
+		"descriptionLoadError": "Deskripsi tidak dapat dimuat. Coba lagi untuk memuat versi terbaru.",
 		"approval": {
 			"approved": "Disetujui",
 			"label": "Persetujuan",
@@ -2811,7 +2811,7 @@
 		},
 		"checklistProgress": "{{completed}} dari {{total}} item daftar periksa selesai",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "Kolom kustom"
 		}
 	},
 	"invitations": {
@@ -3001,19 +3001,19 @@
 			"copyFailed": "Tidak dapat menyalin secara otomatis. Pilih tautan lalu tekan Ctrl+C.",
 			"pendingBadge": "tertunda",
 			"expires": "Kedaluwarsa {{date}}",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "Perbarui tautan undangan",
+			"renewError": "Gagal memperbarui tautan undangan",
+			"renewSuccess": "Tautan undangan diperbarui. Tidak ada email yang dikirim. Salin tautan dan kirim sendiri.",
+			"resend": "Kirim ulang undangan",
+			"resendError": "Gagal mengirim ulang undangan",
+			"resendSuccess": "Undangan dikirim ulang",
+			"expired": "Kedaluwarsa {{date}}",
+			"inviteAgain": "Undang lagi",
+			"inviteAgainError": "Gagal mengundang lagi",
+			"renewSuccessUnknownEmail": "Tautan undangan diperbarui. Bagikan tautan jika orang tersebut tidak menerima email.",
+			"expiredBadge": "kedaluwarsa",
+			"inviteAgainCancelError": "Undangan lama tidak dapat dibatalkan. Batalkan secara manual.",
+			"rejectedBadge": "ditolak"
 		},
 		"inviteModal": {
 			"title": "Undang Anggota Tim",
@@ -3025,20 +3025,20 @@
 			"createdTitle": "Undangan dibuat",
 			"shareLinkDescription": "Bagikan tautan ini kepada {{email}} agar mereka dapat bergabung ke ruang kerja.",
 			"done": "Selesai",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "Masukkan alamat email yang valid",
+			"noSmtpNotice": "Email belum dikonfigurasi di server ini. Undangan tidak akan dikirim lewat email; salin tautan dan kirim sendiri.",
+			"shareLinkDescriptionNoEmail": "Tidak ada email yang dikirim. Bagikan tautan ini kepada {{email}} agar dapat bergabung ke ruang kerja.",
+			"successNoEmail": "Undangan dibuat. Tidak ada email yang dikirim.",
+			"noAssignableRoles": "Anda tidak dapat menetapkan peran apa pun, sehingga tidak dapat mengundang orang.",
+			"roleLabel": "Peran",
+			"rolesError": "Tidak dapat memuat peran yang dapat Anda tetapkan. Coba lagi nanti.",
+			"rolesLoading": "Memuat peran...",
+			"sending": "Mengirim...",
+			"shareLinkDescriptionUnknownEmail": "Bagikan tautan ini kepada {{email}} jika belum menerima email, agar dapat bergabung ke ruang kerja.",
+			"successUnknownEmail": "Undangan dibuat. Bagikan tautan jika orang tersebut tidak menerima email.",
+			"rolePlaceholder": "Pilih peran",
+			"roleUnavailable": "Peran yang Anda pilih tidak lagi tersedia. Pilih peran lain.",
+			"rolePickRequired": "Pilih peran untuk undangan ini."
 		},
 		"membersTable": {
 			"emptyTitle": "Belum ada anggota tim",
@@ -3065,19 +3065,19 @@
 			"roleUpdateSuccess": "Peran diperbarui",
 			"roleUpdateError": "Gagal memperbarui peran",
 			"ariaInvitationActions": "Tindakan undangan",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "Ubah peran untuk {{name}}",
+			"rolesLoadError": "Tidak dapat memuat peran yang dapat Anda tetapkan, sehingga peran tidak dapat diubah saat ini.",
+			"rolesRetry": "Coba lagi"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "Orang ini sudah memiliki undangan yang tertunda.",
+			"alreadyMember": "Orang ini sudah menjadi anggota ruang kerja.",
+			"cannotChangeOwnRole": "Anda tidak dapat mengubah peran Anda sendiri.",
+			"cannotInviteWithRole": "Anda tidak dapat mengundang seseorang dengan peran ini.",
+			"cannotManageMember": "Anda tidak dapat mengelola anggota ini.",
+			"cannotUpdateMember": "Anda tidak dapat mengubah anggota ini.",
+			"invitationLimitReached": "Batas undangan untuk ruang kerja ini telah tercapai.",
+			"roleExceedsYourPermissions": "Anda tidak dapat memberikan peran dengan izin lebih banyak dari izin Anda sendiri."
 		}
 	},
 	"publicProject": {
@@ -3118,213 +3118,213 @@
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "Kit pers",
+		"headline": "Kit pers Kaneo",
+		"intro": "Logo dan tangkapan layar produk Kaneo untuk artikel, video, dan media lainnya.",
+		"description": "Sumber daya pers Kaneo: informasi produk, logo, tangkapan layar, dan detail kontak untuk jurnalis dan kreator.",
+		"downloadKit": "Unduh semua aset",
+		"boilerplateTitle": "Tentang Kaneo",
+		"boilerplate": "Kaneo adalah platform manajemen proyek open source yang dibuat oleh Andrej Acevski. Tim dapat mengatur tugas dalam tampilan papan dan daftar, menugaskan pekerjaan, menetapkan prioritas dan tenggat, serta menghubungkan GitHub. Kaneo tersedia di bawah lisensi MIT untuk di-host sendiri, atau sebagai layanan terkelola melalui Kaneo Cloud.",
+		"logosTitle": "Logo",
+		"darkLogo": "Wordmark gelap",
+		"darkLogoAlt": "Logo Kaneo gelap pada latar terang",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "Wordmark terang",
+		"lightLogoAlt": "Logo Kaneo terang pada latar gelap",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "Ikon aplikasi",
+		"iconAlt": "Ikon aplikasi Kaneo",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "Unduh",
+		"screenshotsTitle": "Tangkapan layar",
+		"lightScreenshot": "Papan (terang)",
+		"lightScreenshotAlt": "Papan Kaneo dalam tema terang, dengan kartu tugas yang diatur berdasarkan status",
+		"darkScreenshot": "Papan (gelap)",
+		"darkScreenshotAlt": "Papan Kaneo dalam tema gelap, dengan kartu tugas yang diatur berdasarkan status",
+		"contactTitle": "Pertanyaan pers",
+		"contactBody": "Hubungi tim Kaneo untuk pertanyaan produk, wawancara, atau materi tambahan.",
+		"usageContrast": "Pilih wordmark terang untuk latar gelap dan wordmark gelap untuk latar terang.",
+		"usageProportions": "Pertahankan proporsi dan warna asli, tanpa meregangkan atau menambahkan efek.",
+		"usageSpace": "Sisakan ruang yang cukup di sekitar logo agar tetap jelas dan mudah dibaca.",
+		"darkListScreenshot": "Daftar (gelap)",
+		"darkListScreenshotAlt": "Daftar tugas Kaneo dalam tema gelap, dikelompokkan berdasarkan status dengan penanggung jawab, prioritas, label, dan tenggat",
+		"darkTaskScreenshot": "Detail tugas (gelap)",
+		"darkTaskScreenshotAlt": "Detail tugas Kaneo dalam tema gelap, dengan deskripsi, daftar periksa, komentar tim, dan properti tugas",
+		"darkTimelineScreenshot": "Linimasa (gelap)",
+		"darkTimelineScreenshotAlt": "Linimasa Gantt Kaneo dalam tema gelap, menampilkan tugas terjadwal beserta durasinya",
+		"lightListScreenshot": "Daftar (terang)",
+		"lightListScreenshotAlt": "Daftar tugas Kaneo dalam tema terang, dikelompokkan berdasarkan status dengan penanggung jawab, prioritas, label, dan tenggat",
+		"lightTaskScreenshot": "Detail tugas (terang)",
+		"lightTaskScreenshotAlt": "Detail tugas Kaneo dalam tema terang, dengan deskripsi, daftar periksa, komentar tim, dan properti tugas",
+		"lightTimelineScreenshot": "Linimasa (terang)",
+		"lightTimelineScreenshotAlt": "Linimasa Gantt Kaneo dalam tema terang, menampilkan tugas terjadwal beserta durasinya"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "Mitra"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Mengapa Kaneo ada",
+			"intro": "Saya Andrej, dan saya membuat Kaneo karena lelah dengan alat manajemen proyek yang lebih sering menghambat daripada membantu. Setelah bertahun-tahun memakai platform yang bengkak dan terlalu rumit sehingga mengalihkan perhatian dari pekerjaan sebenarnya, saya tahu pasti ada cara yang lebih baik.",
+			"problem": "Masalahnya bukan karena alat-alat itu kekurangan fitur, tetapi karena fiturnya terlalu banyak. Setiap notifikasi, setiap tombol yang tidak perlu, setiap alur kerja yang rumit menarik tim saya dari hal yang penting: membangun produk hebat.",
+			"principle": "Saya percaya alat terbaik adalah yang tidak terasa. Alat itu harus memperkuat alur kerja alami tim Anda, bukan memaksa Anda menyesuaikan diri dengannya. Kaneo dibangun dengan prinsip less is more: setiap fitur ada karena menyelesaikan masalah nyata, bukan karena tampak mengesankan dalam demo."
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Coba Kaneo Cloud",
+			"selfHostCta": "Host Kaneo sendiri",
+			"trialNote": "Uji coba cloud 14 hari. Tanpa kartu kredit.",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "Manajemen proyek",
+			"titleAccent": "yang tidak menjadi proyek itu sendiri.",
+			"description": "Manajemen proyek open source dengan papan, bagan Gantt, dan integrasi GitHub. Host sendiri gratis dengan SSO termasuk, atau biarkan Kaneo Cloud yang mengurus hosting."
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
+			"product": "Produk",
+			"pricing": "Harga",
+			"resources": "Sumber daya",
+			"docs": "Dokumentasi",
 			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
+			"guides": "Panduan",
+			"comparisons": "Bandingkan alat",
 			"roadmap": "Roadmap",
 			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"closeMenu": "Tutup menu",
+			"home": "Beranda Kaneo",
+			"signIn": "Masuk",
+			"getStarted": "Mulai"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
+			"label": "Tampilan produk Kaneo",
+			"controls": "Pilih tampilan produk",
+			"play": "Putar tampilan produk",
+			"pause": "Jeda tampilan produk",
+			"board": "Papan",
 			"list": "Backlog",
 			"gantt": "Gantt"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "Subtugas & konteks",
+				"title": "Tugas besar. Langkah berikutnya jelas.",
+				"description": "Pecah pekerjaan menjadi subtugas, tugaskan masing-masing, dan lacak progres tanpa kehilangan brief awal. Setiap detail tetap menyatu dengan pekerjaannya."
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "Integrasi GitHub",
+				"title": "Dari pull request sampai selesai.",
+				"description": "Issue dan label disinkronkan dua arah. Pull request yang tertaut memindahkan tugas melalui review hingga selesai saat kode Anda dibuka dan digabungkan.",
+				"link": "Siapkan GitHub"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "Jalankan di server Anda sendiri.",
+				"description": "Deploy dengan Docker dan simpan ruang kerja Anda di infrastruktur yang Anda kendalikan.",
+				"link": "Host Kaneo sendiri"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "Kodenya juga terbuka.",
+				"description": "Baca kode sumber, laporkan issue, atau kirim perubahan. Pengembangan berlangsung di GitHub.",
+				"link": "Lihat kode sumber"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
-				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"taskAlt": "Pratinjau interaktif tugas dan subtugas Kaneo.",
+				"githubAlt": "Pratinjau interaktif merge GitHub yang memperbarui tugas Kaneo.",
+				"taskTitle": "Publikasikan beranda baru",
+				"taskDescription": "Perbarui teks dan periksa tata letak sebelum rilis berikutnya.",
+				"checklistDone": "Tinjau teks",
+				"checklistOpen": "Periksa tata letak seluler",
+				"inProgress": "Sedang Berjalan",
+				"high": "Tinggi",
+				"date": "12 Okt",
+				"design": "desain",
+				"done": "Selesai",
+				"relationsAlt": "Pratinjau interaktif dependensi tugas Kaneo.",
+				"inReview": "Dalam Review",
+				"trySubtasks": "Coba centang sebuah subtugas.",
+				"tryGithub": "Pratinjau merge untuk melihat tugas diperbarui.",
+				"tryRelations": "Buka tugas yang tertaut untuk mengikuti hubungannya.",
+				"mergeAction": "Pratinjau merge",
+				"resetAction": "Atur ulang pratinjau",
+				"mergedHint": "Pull request digabungkan. Tugas dipindahkan ke Selesai.",
+				"progress": "{{completed}} dari {{total}} subtugas selesai",
+				"backToTask": "Kembali ke tugas beranda",
+				"releaseNotes": "Tulis catatan rilis",
+				"dependencyDescription": "Beranda menunggu review seluler. Tautkan catatan peluncuran sebagai konteks.",
+				"mobileDescription": "Periksa beranda baru di layar sempit sebelum ditayangkan.",
+				"notesDescription": "Catat apa yang berubah untuk pengumuman peluncuran."
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "Tugas tertaut & dependensi",
+				"title": "Lihat apa yang menghambat.",
+				"description": "Hubungkan penghambat, ikuti dependensi, dan jaga pekerjaan terkait tetap dekat. Buka tugas yang tertaut untuk melihat konteks di balik langkah berikutnya."
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — Manajemen proyek open source yang dapat di-host sendiri",
+			"description": "Manajemen proyek open source dengan papan, bagan Gantt, dan integrasi GitHub. Host sendiri gratis dengan SSO termasuk, atau gunakan Kaneo Cloud."
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "Sesuaikan dengan kebutuhan Anda",
+			"title": "Jalur jelas dari mencoba hingga menggunakan.",
+			"description": "Siapkan server Anda, hubungkan alat Anda, atau bandingkan Kaneo dengan pelacak Anda saat ini.",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Host sendiri dengan Docker",
+				"description": "Instalasi, pencadangan, dan pembaruan untuk pengaturan yang Anda kendalikan."
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "Gunakan penyedia identitas Anda sendiri",
+				"description": "Konfigurasikan single sign-on OIDC pada build self-hosted gratis."
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "Hubungkan alat AI Anda",
+				"description": "Gunakan MCP untuk mengelola tugas dan proyek melalui klien AI."
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "Bandingkan Kaneo dan Linear",
+				"description": "Lihat perbedaan dalam hosting, lisensi, dan alur kerja."
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "Sebelum Anda memulai",
+			"description": "Detail praktis tentang hosting, perencanaan, dan menghubungkan tim Anda.",
+			"overview": "Kaneo adalah platform manajemen proyek open source berlisensi MIT dengan papan, backlog, tampilan Gantt dan kalender, kolom kustom, pelacakan waktu, dan integrasi GitHub. Host di infrastruktur Anda sendiri atau gunakan Kaneo Cloud.",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Apakah Kaneo gratis untuk di-host sendiri?",
+				"answer": "Ya. Kaneo berlisensi MIT dan gratis untuk di-host sendiri, dengan single sign-on termasuk. Jalankan aplikasi bersama PostgreSQL menggunakan Docker Compose, atau deploy dengan Helm chart resmi. Anda mengelola infrastruktur, pembaruan, dan pencadangan.",
+				"link": "Baca panduan instalasi"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Apakah Kaneo memiliki bagan Gantt?",
+				"answer": "Ya. Kaneo menyertakan tampilan Gantt dan kalender di samping papan, daftar, dan perencanaan backlog. Gunakan tanggal mulai dan tenggat tugas untuk merencanakan pekerjaan pada linimasa. Penganggaran, perbandingan baseline, dan laporan burndown sprint berada di luar cakupannya saat ini.",
+				"link": "Bandingkan fitur perencanaan"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "Apakah single sign-on termasuk?",
+				"answer": "Ya. Build self-hosted gratis mendukung Google, GitHub, Discord, dan penyedia OAuth/OIDC kustom. Konfigurasikan penyedia Anda di instans Anda tanpa membeli edisi Kaneo terpisah.",
+				"link": "Konfigurasikan OIDC"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "Dapatkah klien AI bekerja dengan Kaneo?",
+				"answer": "Ya. Kaneo menyediakan server MCP melalui paket @kaneo/mcp dan endpoint HTTP. Klien AI yang kompatibel dapat membaca dan memperbarui tugas menggunakan kunci API yang terikat ke pengguna, sesuai izin ruang kerja.",
+				"link": "Baca panduan MCP"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "Fitur",
+			"yes": "Ya",
+			"no": "Tidak"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "Apa saja yang terlibat dalam hosting mandiri, dengan tautan ke konfigurasi Docker Compose yang dipelihara dan langkah instalasi.",
+			"answer": "Untuk meng-host Kaneo sendiri, jalankan aplikasi dan PostgreSQL dengan Docker Compose, konfigurasikan URL publik dan secret Anda, lalu pasang reverse proxy TLS di depannya. Panduan instalasi menetapkan minimal RAM 2 GB dan ruang disk 10 GB. Siapkan pembaruan berkelanjutan, pencadangan database, dan penyimpanan untuk file yang diunggah.",
+			"requirements": "Minimum yang didokumentasikan adalah RAM 2 GB dan ruang disk 10 GB, dengan Docker 20.10 atau lebih baru dan Docker Compose V2. Sediakan kapasitas lebih untuk beban kerja, pertumbuhan database, dan file yang diunggah.",
+			"compose": "Gunakan compose.yml yang dipelihara di panduan Docker Compose. File ini mendefinisikan PostgreSQL, volume database persisten, aplikasi Kaneo, dan health check. Konfigurasikan file environment sebelum menjalankan layanan; untuk produksi, kunci versi image agar pembaruan dilakukan secara sengaja.",
+			"backups": "Cadangkan PostgreSQL dan penyimpanan objek apa pun yang digunakan untuk unggahan. Pilih jadwal berdasarkan seberapa banyak pekerjaan yang sanggup hilang bagi tim Anda, simpan salinan di luar server aplikasi, dan uji pemulihannya sebelum Anda membutuhkannya.",
+			"worth": "Hosting mandiri masuk akal jika Anda perlu mengendalikan infrastruktur dan data, dan ada orang yang dapat bertanggung jawab atas pemeliharaan. Sertakan kapasitas server, penyimpanan, pencadangan, dan waktu pemeliharaan saat membandingkan biaya dengan layanan terkelola.",
+			"minimum": "Panduan instalasi menetapkan Docker 20.10 atau lebih baru, Docker Compose V2, minimal RAM 2 GB, dan ruang disk 10 GB. Pengaturan Compose sudah mencakup PostgreSQL. Redis bersifat opsional untuk satu instans API.",
+			"composeLink": "Konfigurasi Docker Compose",
+			"composeLinkDescription": "compose.yml yang dipelihara dengan penyimpanan persisten dan health check.",
+			"startLink": "Jalankan dan verifikasi layanan",
+			"startLinkDescription": "Jalankan stack, periksa statusnya, dan pastikan aplikasi tersedia."
 		}
 	},
 	"portfolio": {
@@ -3345,174 +3345,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "Anda sudah menjadi anggota {{workspaceName}}, sehingga undangan ini tidak dapat menambahkan Anda ke proyek. Minta admin ruang kerja untuk menambahkan Anda ke proyek.",
+			"alreadyMemberTitle": "Anda sudah menjadi anggota",
+			"invitedToProject": "Anda diundang ke proyek {{project}} sebagai {{role}}.",
+			"invitedToProjects": "Anda diundang ke proyek-proyek berikut:",
+			"projectRole": "{{project}} sebagai {{role}}"
 		},
-		"empty": "No pending invitations.",
+		"empty": "Tidak ada undangan tertunda.",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "Orang ini sudah menjadi anggota ruang kerja. Tambahkan ke proyek dengan Tambah anggota.",
+			"disposableEmail": "Alamat email sekali pakai tidak diizinkan.",
+			"expired": "Undangan ini telah kedaluwarsa. Undang orang tersebut lagi.",
+			"guestCannotInvite": "Akun tamu tidak dapat mengundang orang.",
+			"limitReached": "Ruang kerja memiliki terlalu banyak undangan tertunda. Batalkan beberapa terlebih dahulu.",
+			"notApplied": "Akses proyek dari undangan ini tidak dapat diterapkan. Coba terima lagi. Jika terus gagal, minta admin ruang kerja untuk menambahkan Anda ke proyek.",
+			"notFound": "Undangan ini tidak ada lagi. Daftar telah dimuat ulang.",
+			"rateLimited": "Terlalu banyak undangan. Coba lagi sebentar lagi.",
+			"rateLimitedRetry": "Terlalu banyak undangan. Coba lagi dalam {{seconds}} detik.",
+			"roleConflict": "Undangan tertunda untuk email ini sudah ada dengan peran ruang kerja lain. Batalkan undangan tersebut atau gunakan peran ruang kerja yang sama.",
+			"workspaceInvitationExists": "Email ini sudah memiliki undangan ruang kerja yang tertunda. Hanya orang yang dapat mengundang ke ruang kerja yang dapat menambahkan proyek ke dalamnya."
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
+			"addAsMember": "Tambah sebagai anggota",
+			"addedToExisting": "{{email}} sudah memiliki undangan tertunda. Proyek ini telah ditambahkan ke undangan tersebut. Tidak ada email kedua yang dikirim. Bagikan tautan jika perlu.",
+			"createdNotSent": "Undangan dibuat untuk {{email}}. Tidak ada email yang dikirim. Bagikan tautan di bawah.",
+			"createdSendFailed": "Undangan dibuat untuk {{email}}, tetapi email tidak dapat dikirim. Bagikan tautan di bawah atau kirim ulang dari daftar.",
+			"createdSent": "Undangan dikirim ke {{email}}.",
+			"createdTitle": "Undangan dibuat",
+			"description": "Undang seseorang yang belum ada di ruang kerja. Mereka mendapat peran yang Anda pilih di bawah.",
+			"done": "Selesai",
 			"emailLabel": "Email",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "Tidak dapat mengirim undangan",
+			"invalidEmail": "Masukkan alamat email yang valid",
+			"noSmtpNotice": "Email belum dikonfigurasi di server ini. Undangan tidak akan dikirim lewat email. Salin tautan dan kirim sendiri.",
+			"projectRoleHint": "Apa yang dapat dilakukan orang ini di proyek ini.",
+			"projectRoleLabel": "Peran proyek",
+			"rolePlaceholder": "Pilih peran",
+			"submit": "Kirim undangan",
+			"submitting": "Mengirim...",
+			"title": "Undang ke proyek",
+			"workspaceRoleHint": "Apa yang dapat dilakukan orang ini di ruang kerja.",
+			"workspaceRoleLabel": "Peran ruang kerja",
+			"noAssignableProjectRoles": "Anda tidak dapat menetapkan peran proyek apa pun, sehingga tidak dapat mengundang orang.",
+			"noAssignableWorkspaceRoles": "Anda tidak dapat menetapkan peran ruang kerja apa pun, sehingga tidak dapat mengundang orang.",
+			"projectRolePickRequired": "Pilih peran proyek.",
+			"projectRolesError": "Tidak dapat memuat peran proyek yang dapat Anda tetapkan.",
+			"projectRolesLoading": "Memuat peran proyek...",
+			"projectRoleUnavailable": "Peran proyek yang Anda pilih tidak lagi tersedia. Pilih peran lain.",
+			"workspaceRolePickRequired": "Pilih peran ruang kerja.",
+			"workspaceRolesError": "Tidak dapat memuat peran ruang kerja yang dapat Anda tetapkan.",
+			"workspaceRolesLoading": "Memuat peran ruang kerja...",
+			"workspaceRoleUnavailable": "Peran ruang kerja yang Anda pilih tidak lagi tersedia. Pilih peran lain."
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "Tindakan untuk undangan {{email}}",
+			"cancelDialogDescription": "Undangan {{email}} ke proyek ini akan dibatalkan. Tautan berhenti berfungsi jika tidak memberi akses ke proyek lain.",
+			"cancelDialogTitle": "Batalkan undangan?",
+			"cancelError": "Tidak dapat membatalkan undangan",
+			"cancelSuccess": "Undangan dibatalkan",
+			"cancelSuccessOtherProjects": "Proyek ini dihapus dari undangan. Undangan masih memberi akses ke proyek lain.",
 			"columns": {
 				"email": "Email",
-				"roles": "Roles"
+				"roles": "Peran"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "Peran proyek: {{role}}",
+			"renewError": "Tidak dapat memperbarui tautan undangan",
+			"resendError": "Tidak dapat mengirim ulang undangan",
+			"resendNotDelivered": "Undangan diperbarui, tetapi email tidak dapat dikirim. Salin tautan dan kirim sendiri.",
+			"rolesLoadError": "Tidak dapat memuat peran yang dapat Anda tetapkan, sehingga undangan tidak dapat dikirim ulang sekarang.",
+			"rolesRetry": "Coba lagi",
+			"workspaceRole": "Peran ruang kerja: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "Tidak dapat memuat undangan tertunda.",
+		"subtitle": "Orang yang diundang ke proyek ini tetapi belum bergabung.",
+		"title": "Undangan tertunda"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "Pilih anggota ruang kerja dan peran proyek.",
+			"error": "Tidak dapat menambahkan anggota",
+			"loadError": "Tidak dapat memuat orang yang dapat Anda tambahkan.",
+			"loading": "Memuat orang...",
+			"memberLabel": "Anggota ruang kerja",
+			"noAssignableRoles": "Anda tidak dapat menetapkan peran apa pun.",
+			"noCandidates": "Semua orang di ruang kerja ini sudah memiliki akses ke proyek ini.",
+			"noMatches": "Tidak ada yang cocok dengan pencarian Anda.",
+			"roleLabel": "Peran proyek",
+			"rolePickRequired": "Pilih peran proyek.",
+			"rolePlaceholder": "Pilih peran",
+			"rolesError": "Tidak dapat memuat peran yang dapat Anda tetapkan.",
+			"rolesLoading": "Memuat peran...",
+			"roleUnavailable": "Peran yang Anda pilih tidak lagi tersedia. Pilih peran lain.",
+			"searchPlaceholder": "Cari berdasarkan nama atau email",
+			"submit": "Tambah anggota",
+			"submitting": "Menambahkan...",
+			"success": "Anggota ditambahkan ke proyek",
+			"title": "Tambah anggota proyek"
 		},
-		"addMember": "Add member",
+		"addMember": "Tambah anggota",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "Orang ini sudah menjadi anggota proyek ini.",
+			"cannotChangeOwnRole": "Anda tidak dapat mengubah peran proyek Anda sendiri.",
+			"cannotManageMember": "Anda tidak dapat mengelola anggota yang memiliki izin lebih banyak dari Anda.",
+			"insufficientPermissions": "Anda tidak memiliki izin untuk melakukan ini.",
+			"memberHasFullAccess": "Orang ini memiliki akses penuh melalui peran ruang kerjanya. Ubah di anggota ruang kerja.",
+			"membershipChanged": "Keanggotaan berubah sementara itu. Daftar telah dimuat ulang. Coba lagi.",
+			"notProjectMember": "Orang ini bukan lagi anggota proyek ini.",
+			"notWorkspaceMember": "Orang ini bukan anggota ruang kerja.",
+			"ownerRoleNotAllowed": "Peran pemilik tidak dapat digunakan di proyek.",
+			"roleAssignedToProjectMembers": "Anggota proyek atau undangan proyek yang tertunda masih menggunakan peran ini. Berikan peran lain kepada mereka terlebih dahulu.",
+			"roleExceedsYourPermissions": "Anda tidak dapat memberikan peran dengan izin lebih banyak dari izin Anda sendiri.",
+			"unknownRole": "Peran ini tidak ada. Muat ulang halaman dan pilih peran lain.",
+			"userHasFullAccess": "Orang ini sudah memiliki akses penuh ke setiap proyek."
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "Undang lewat email",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "Anda akan kehilangan akses ke proyek ini. Admin proyek atau admin ruang kerja dapat menambahkan Anda kembali.",
+			"error": "Tidak dapat meninggalkan proyek",
+			"success": "Anda telah meninggalkan proyek",
+			"title": "Tinggalkan proyek ini?"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "Tidak dapat memuat anggota proyek.",
+		"loading": "Memuat anggota...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "Kembali ke proyek",
+			"description": "Minta admin proyek atau admin ruang kerja untuk menambahkan Anda.",
+			"title": "Anda tidak memiliki akses ke proyek ini"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "Anda belum memiliki akses ke proyek mana pun. Minta admin ruang kerja untuk menambahkan Anda ke sebuah proyek.",
+			"title": "Belum ada akses proyek",
+			"descriptionCanCreate": "Anda belum memiliki akses ke proyek mana pun. Minta admin ruang kerja untuk menambahkan Anda ke sebuah proyek, atau buat proyek Anda sendiri."
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "Anggota proyek",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} akan kehilangan akses ke proyek ini. Tetap berada di ruang kerja.",
+			"error": "Tidak dapat mengeluarkan anggota",
+			"success": "Anggota dikeluarkan dari proyek",
+			"title": "Keluarkan dari proyek?"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "Coba lagi",
+		"subtitle": "Orang yang dapat membuka proyek ini, dan apa yang dapat mereka lakukan di dalamnya.",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "Tindakan untuk {{name}}",
+			"ariaChangeRole": "Ubah peran proyek {{name}}",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "Anggota",
+				"role": "Peran proyek"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "Tambahkan anggota ruang kerja atau undang seseorang lewat email.",
+			"emptyTitle": "Belum ada anggota",
+			"fullAccess": "Akses penuh",
+			"fullAccessHint": "Memiliki akses ke setiap proyek melalui peran ruang kerjanya. Ubah di anggota ruang kerja.",
+			"inactive": "nonaktif",
+			"inactiveHint": "Peran ini tidak lagi memberi akses. Pilih peran lain atau hapus orang ini.",
+			"leaveProject": "Tinggalkan proyek",
+			"removeMember": "Keluarkan dari proyek",
+			"rolesLoadError": "Tidak dapat memuat peran yang dapat Anda tetapkan, sehingga peran tidak dapat diubah sekarang.",
+			"rolesRetry": "Coba lagi",
+			"roleUpdateError": "Tidak dapat memperbarui peran proyek",
+			"roleUpdateSuccess": "Peran proyek diperbarui",
+			"you": "Anda"
 		},
-		"title": "Members",
+		"title": "Anggota",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "Orang tanpa akses penuh hanya melihat proyek tempat mereka ditambahkan. Untuk mengundang seseorang ke satu proyek, gunakan Undang lewat email di pengaturan proyek.",
+			"link": "Buka pengaturan proyek"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "Tidak dapat memeriksa apa yang dapat Anda lakukan di sini. Beberapa tindakan mungkin disembunyikan."
 	}
 }

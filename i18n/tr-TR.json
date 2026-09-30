@@ -57,28 +57,28 @@
 			"tryAgain": "Tekrar dene",
 			"viewDeploymentGuide": "Dağıtım Kılavuzunu Görüntüle",
 			"refreshPage": "Sayfayı Yenile",
-			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
+			"description": "Sayfa beklenmedik şekilde çöktü. Sayfayı yenilemek genellikle sorunu çözer.",
 			"messages": {
-				"auth": "Authentication failed. Please sign in again.",
-				"cors": "Unable to connect to the server. This might be due to CORS configuration issues.",
-				"network": "Network error. Please check your internet connection and try again.",
-				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred.",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"auth": "Kimlik doğrulama başarısız. Lütfen tekrar giriş yapın.",
+				"cors": "Sunucuya bağlanılamıyor. Bunun nedeni CORS yapılandırma sorunları olabilir.",
+				"network": "Ağ hatası. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
+				"server": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+				"unknown": "Beklenmeyen bir hata oluştu.",
+				"serverUnreachable": "Sunucuya ulaşılamıyor. Bağlantınızı kontrol edin; sunucu tekrar erişilebilir olduğunda veriler yeniden yüklenecek."
 			},
 			"troubleshootingSteps": {
 				"cors": {
-					"checkAccessibility": "Check that your API server is accessible from your browser",
-					"checkApiRunning": "Make sure your API server is running",
-					"checkApiUrl": "Check that VITE_API_URL in your frontend .env matches your API server URL",
-					"checkProtocol": "Ensure both frontend and API are using the same protocol (http/https)",
-					"verifyCorsOrigins": "Verify CORS_ORIGINS in your API .env includes your frontend URL"
+					"checkAccessibility": "API sunucunuza tarayıcınızdan erişilebildiğini kontrol edin",
+					"checkApiRunning": "API sunucunuzun çalıştığından emin olun",
+					"checkApiUrl": "Ön yüzünüzün .env dosyasındaki VITE_API_URL değerinin API sunucu adresinizle eşleştiğini kontrol edin",
+					"checkProtocol": "Hem ön yüzün hem de API'nin aynı protokolü (http/https) kullandığından emin olun",
+					"verifyCorsOrigins": "API .env dosyanızdaki CORS_ORIGINS değerinin ön yüz adresinizi içerdiğini doğrulayın"
 				},
 				"network": {
-					"checkConnection": "Check your internet connection",
-					"checkFirewall": "Check if there are any firewall or proxy issues",
-					"tryRefresh": "Try refreshing the page",
-					"verifyApiRunning": "Verify the API server is running and accessible"
+					"checkConnection": "İnternet bağlantınızı kontrol edin",
+					"checkFirewall": "Güvenlik duvarı veya proxy sorunu olup olmadığını kontrol edin",
+					"tryRefresh": "Sayfayı yenilemeyi deneyin",
+					"verifyApiRunning": "API sunucusunun çalıştığını ve erişilebilir olduğunu doğrulayın"
 				}
 			}
 		},
@@ -155,29 +155,29 @@
 					"rose": "Gül Kurusu",
 					"crimson": "Koyu Kırmızı"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "Bu projede talep oluşturamazsınız. Başka bir proje seçin.",
+				"permissionsUnavailable": "Bu projedeki izinleriniz kontrol edilemedi. Tekrar deneyin veya başka bir proje seçin.",
 				"selectOptionPlaceholder": "Bir seçenek belirleyin"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "Yanlış",
+			"notSet": "Ayarlanmadı",
+			"true": "Doğru",
+			"undefined": "Tanımsız"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "Kontrol ediliyor…",
+			"offlineDescription": "Ağ bağlantınızı kontrol edin. Ekrandaki veriler güncel olmayabilir ve tekrar çevrimiçi olana kadar değişiklikler kaydedilemez.",
+			"offlineTitle": "Çevrimdışısınız",
+			"restored": "Bağlantı yeniden kuruldu. Veriler yenilendi.",
+			"retry": "Şimdi yeniden dene",
+			"serverUnreachableDescription": "Ekrandaki veriler güncel olmayabilir ve değişiklikler kaydedilmez. Otomatik olarak yeniden deneniyor…",
+			"serverUnreachableTitle": "Kaneo sunucusuna ulaşılamıyor"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "Bu projedeki izinleriniz değişti.",
+			"lost": "Artık bu projeye erişiminiz yok."
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "Davet kabul edilemedi",
 				"acceptSuccess": "Davet kabul edildi! Aramıza hoş geldiniz."
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "Davet kabul ediliyor..."
 		},
 		"onboarding": {
 			"pageTitle": "Kaneo'ya Hoş Geldiniz",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "Parolanızı mı unuttunuz?",
+			"requestTitle": "Parolanızı sıfırlayın",
+			"requestSubtitle": "E-posta adresinizi girin, size parola sıfırlama bağlantısı gönderelim.",
+			"sendLink": "Sıfırlama bağlantısı gönder",
+			"sending": "Gönderiliyor…",
+			"sent": "Bu e-posta adresiyle bir hesap varsa parola sıfırlama bağlantısı alacaksınız. Gelen kutunuzu ve spam klasörünüzü kontrol edin.",
+			"requestError": "Sıfırlama bağlantısı istenemedi. Lütfen tekrar deneyin.",
+			"unavailable": "Parola sıfırlama kullanılamıyor. Örnek yöneticinizle iletişime geçin.",
+			"configError": "Sunucuya ulaşılamadı. Tekrar denemek için lütfen sayfayı yenileyin.",
+			"resetTitle": "Yeni bir parola seçin",
+			"resetSubtitle": "Yeni parolanız için 8–128 karakter kullanın.",
+			"newPassword": "Yeni parola",
+			"confirmPassword": "Yeni parolayı onaylayın",
+			"passwordMismatch": "Parolalar eşleşmiyor.",
+			"passwordLength": "8 ile 128 karakter arasında kullanın.",
+			"resetPassword": "Parolayı sıfırla",
+			"resetting": "Sıfırlanıyor…",
+			"invalidLink": "Bu sıfırlama bağlantısı geçersiz veya süresi dolmuş. Devam etmek için yeni bir bağlantı isteyin.",
+			"requestNewLink": "Yeni bağlantı iste",
+			"resetError": "Parolanız sıfırlanamadı. Lütfen tekrar deneyin.",
+			"success": "Parolanız sıfırlandı. Yeni parolanızla giriş yapın.",
+			"backToSignIn": "Girişe dön"
 		}
 	},
 	"settings": {
@@ -415,25 +415,25 @@
 			"avatar": {
 				"hint": "PNG, JPEG, or WebP. Cropped to a square and resized to 256x256.",
 				"remove": "Remove",
-				"removeError": "Failed to remove profile picture",
-				"removeSuccess": "Profile picture removed",
-				"updateError": "Failed to update profile picture",
-				"updateSuccess": "Profile picture updated",
-				"change": "Change avatar",
-				"edit": "Change your profile picture"
+				"removeError": "Profil fotoğrafı kaldırılamadı",
+				"removeSuccess": "Profil fotoğrafı kaldırıldı",
+				"updateError": "Profil fotoğrafı güncellenemedi",
+				"updateSuccess": "Profil fotoğrafı güncellendi",
+				"change": "Avatarı değiştir",
+				"edit": "Profil fotoğrafınızı değiştirin"
 			},
 			"deleteAccount": {
-				"confirm": "Delete account",
+				"confirm": "Hesabı sil",
 				"confirmLabel": "Confirm your email address",
-				"description": "Workspaces only you belong to are deleted with your account. Elsewhere, your tasks stay and become unassigned, and your comments are removed.",
-				"error": "Failed to delete account",
+				"description": "Yalnızca sizin üyesi olduğunuz çalışma alanları hesabınızla birlikte silinir. Diğerlerinde talepleriniz kalır ve atanmamış hâle gelir, yorumlarınız ise kaldırılır.",
+				"error": "Hesap silinemedi",
 				"modalDescription": "This cannot be undone. Type {{email}} to confirm.",
-				"modalTitle": "Delete your account?",
-				"sectionSubtitle": "Permanent actions that affect your whole account.",
-				"sectionTitle": "Danger zone",
-				"success": "Your account has been deleted",
-				"title": "Delete account",
-				"sessionTooOld": "For security, sign out and sign back in before deleting your account."
+				"modalTitle": "Hesabınız silinsin mi?",
+				"sectionSubtitle": "Tüm hesabınızı etkileyen kalıcı işlemler.",
+				"sectionTitle": "Tehlikeli bölge",
+				"success": "Hesabınız silindi",
+				"title": "Hesabı sil",
+				"sessionTooOld": "Güvenlik nedeniyle, hesabınızı silmeden önce oturumu kapatıp yeniden giriş yapın."
 			}
 		},
 		"notificationsPage": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "Talep etiketlerini ve etiketleri göster",
 			"priority": "Öncelik",
 			"priorityDescription": "Öncelik göstergelerini görüntüle",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "Proje arka planları",
+			"projectBackgroundsDescription": "Panolarda proje arka plan görsellerini göster"
 		},
 		"developerPage": {
 			"pageTitle": "Geliştirici Ayarları",
@@ -740,15 +740,15 @@
 			},
 			"importExportTasks": "İçe/Dışa Aktar",
 			"importExportTasksDescription": "Talepleri içe ve dışa aktarın.",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "Bu projenin panosunun arkasında gösterilecek bir görsel seçin.",
+			"backgroundLabel": "Pano arka planı",
+			"backgroundRemove": "Görseli kaldır",
+			"backgroundRemoveError": "Proje arka planı kaldırılamadı",
+			"backgroundRemoveSuccess": "Proje arka planı kaldırıldı",
+			"backgroundReplace": "Görseli değiştir",
+			"backgroundUpload": "Görsel yükle",
+			"backgroundUploadError": "Proje arka planı güncellenemedi",
+			"backgroundUploadSuccess": "Proje arka planı güncellendi",
 			"moveModalConfirm": "Projeyi taşı",
 			"moveModalDescription": "Bu işlem \"{{name}}\" projesini ve tüm görevlerini \"{{workspace}}\" alanına taşır. O çalışma alanının üyesi olmayan kişilere atanmış görevlerin ataması kaldırılır ve bu projeye ait bildirim abonelikleri silinir.",
 			"moveModalTitle": "Proje taşınsın mı?",
@@ -777,10 +777,10 @@
 			"slackSectionSubtitle": "Proje talep güncellemelerini gelen bir webhook ile Slack kanalına gönderin.",
 			"telegramSectionTitle": "Telegram Entegrasyonu",
 			"telegramSectionSubtitle": "Proje talep güncellemelerini bir bot ile Telegram sohbetine veya konusuna gönderin.",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"mattermostSectionSubtitle": "Proje talep güncellemelerini gelen webhook ile bir Mattermost kanalına gönderin.",
+			"mattermostSectionTitle": "Mattermost Entegrasyonu",
+			"gitlabSectionSubtitle": "Talepleri GitLab.com veya kendi barındırdığınız bir örnekle (sorunlar, merge request'ler, webhook'lar) eşitleyin.",
+			"gitlabSectionTitle": "GitLab Entegrasyonu"
 		},
 		"projectVisibility": {
 			"pageTitle": "Proje Görünürlüğü",
@@ -805,8 +805,8 @@
 			"columnsDescription": "Panonuzda görünecek sütunları yönetin. Yeniden sıralamak için sürükleyin. Tamamlanmış işleri temsil eden aşamalar için \"Tamamlandı sütunu\"nu açın.",
 			"automationTitle": "Otomasyon Kuralları",
 			"automationDescription": "Entegrasyon olaylarını sütunlarla eşleştirin. Bir olay gerçekleştiğinde, bağlı talep belirtilen sütuna taşınır.",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "Bu projenin özel alanlarını yönetin. Yeniden sıralamak için  simgesini sürükleyin.",
+			"customFieldsTitle": "Özel Alanlar"
 		},
 		"projectSwitcher": {
 			"selectProject": "Proje seç",
@@ -897,9 +897,9 @@
 			"accountVerificationHint": "Bu depoyu yönettiğinizi doğrulamak için GitHub hesabınızı bağlayın.",
 			"enableGithubSignInHint": "Örnek yöneticinizden GitHub ile oturum açmayı etkinleştirmesini isteyin.",
 			"reverifyHint": "Erişimi doğrulamak ve eşitlemeyi sürdürmek için bu depoyu yeniden bağlayın.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "İçe aktarmaya devam et",
+			"importPaused": "Bu içe aktarmanın kaydedilmiş ilerlemesi var. Devam edebilirsiniz.",
+			"importSummary": "Oluşturulan: {{imported}} · Güncellenen: {{updated}} · Atlanan: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -929,8 +929,8 @@
 				"settingsUpdateError": "Gitea entegrasyonu güncellenemedi",
 				"secretCopied": "Kopyalandı",
 				"unableToCopySecret": "Gizli anahtar kopyalanamıyor",
-				"notGiteaInstance": "The URL does not point to a Gitea instance",
-				"redirected": "Gitea URL redirected (usually to HTTPS). Use the final URL directly."
+				"notGiteaInstance": "URL bir Gitea örneğine işaret etmiyor",
+				"redirected": "Gitea URL'si yönlendirildi (genellikle HTTPS'e). Doğrudan son URL'yi kullanın."
 			},
 			"webhookShow": "Göster",
 			"webhookHide": "Gizle",
@@ -1200,7 +1200,7 @@
 				"issue_closed": "Sorun Kapatıldı"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "Bir GitLab webhook olayı gerçekleştiğinde bağlı talebi bir sütuna taşı."
 		},
 		"externalLinks": {
 			"resources": "Kaynaklar",
@@ -1209,14 +1209,14 @@
 			"merged": "Birleştirildi",
 			"draft": "Taslak",
 			"open": "Açık",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "Ekleniyor...",
+			"addResource": "Kaynak ekle",
+			"cancel": "İptal",
+			"empty": "Bu talebe bağlı kaynak yok.",
+			"titleOptional": "Başlık (isteğe bağlı)",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "{{title}} öğesini kaldır",
+			"removeError": "Kaynak bağlantısı kaldırılamadı."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Roller",
@@ -1254,11 +1254,11 @@
 				"task": "Talepler",
 				"label": "Etiketler",
 				"workspace": "Çalışma alanı",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "Çalışma alanı yönetimi",
+				"member": "Üyeler",
+				"invitation": "Davetler",
+				"team": "Ekipler",
+				"ac": "Roller ve izinler"
 			},
 			"permissions": {
 				"project": {
@@ -1343,68 +1343,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "Çalışma alanı yönetimini düzenle",
+						"description": "Çalışma alanı ayarlarını hesap hizmeti üzerinden değiştirin."
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "Çalışma alanını sil",
+						"description": "Çalışma alanını hesap hizmeti üzerinden kalıcı olarak silin."
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "Üye ekle",
+						"description": "Bu çalışma alanına kullanıcı ekleyin."
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "Üye rollerini değiştir",
+						"description": "Çalışma alanı üyelerine atanan rolleri değiştirin."
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "Üyeleri kaldır",
+						"description": "Kullanıcıları bu çalışma alanından kaldırın."
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "Üye davet et",
+						"description": "Çalışma alanı davetleri gönderin."
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "Davetleri iptal et",
+						"description": "Bekleyen çalışma alanı davetlerini geri çekin."
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "Ekip oluştur",
+						"description": "Bu çalışma alanında ekipler oluşturun."
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "Ekipleri düzenle",
+						"description": "Ekipleri ve ekip üyeliklerini değiştirin."
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "Ekipleri sil",
+						"description": "Bu çalışma alanındaki ekipleri silin."
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "Rol oluştur",
+						"description": "Çalışma alanı rolleri oluşturun ve izinlerini atayın."
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "Rolleri görüntüle",
+						"description": "Çalışma alanı rollerini ve izinlerini okuyun."
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "Rol izinlerini değiştir",
+						"description": "Yönetici erişimi dahil rol izinlerini değiştirin."
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "Rolleri sil",
+						"description": "Özel çalışma alanı rollerini silin."
 					}
 				}
 			},
@@ -1450,176 +1450,176 @@
 			"updateError": "Etiket güncellenemedi",
 			"deleteError": "Etiket silinemedi",
 			"nameRequired": "Etiket adı gereklidir",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "Silme bekleniyor",
+			"resumeDeletion": "Silmeye devam et"
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
+			"channelHint": "Referansınız için isteğe bağlı bir etiket. Asıl hedef kanalı Mattermost, webhook kurulumundan belirler.",
+			"channelLabel": "Kanal adı",
 			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"connect": "Mattermost'a Bağlan",
+			"connected": "Bağlı",
+			"connectionHint": "Bir Mattermost gelen webhook URL'si yapıştırın ve hangi talep olaylarının gönderileceğini seçin.",
+			"connectionTitle": "Mattermost webhook bağlantısı",
+			"disconnect": "Bağlantıyı kes",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "Yeni yorumlar",
+				"taskCreated": "Yeni talepler",
+				"taskDescriptionChanged": "Açıklama değişiklikleri",
+				"taskPriorityChanged": "Öncelik değişiklikleri",
+				"taskStatusChanged": "Durum değişiklikleri",
+				"taskTitleChanged": "Başlık değişiklikleri"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Hangi proje değişikliklerinin Mattermost'a gönderileceğini seçin.",
+			"eventsTitle": "Olay bildirimleri",
+			"paused": "Duraklatıldı",
+			"saveChanges": "Değişiklikleri kaydet",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Mattermost bildirimleri duraklatıldı",
+				"enabled": "Mattermost bildirimleri etkinleştirildi",
+				"removed": "Mattermost entegrasyonu başarıyla kaldırıldı",
+				"removeError": "Mattermost entegrasyonu kaldırılamadı",
+				"saved": "Mattermost entegrasyonu başarıyla kaydedildi",
+				"saveError": "Mattermost entegrasyonu kaydedilemedi",
+				"updateError": "Mattermost entegrasyonu güncellenemedi"
 			},
-			"update": "Update Mattermost",
+			"update": "Mattermost'u Güncelle",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "Geçerli bir Mattermost webhook URL'si girin"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookHint": "Mattermost'ta bir Gelen Webhook oluşturun ve oluşturulan URL'yi buraya yapıştırın.",
+			"webhookLabel": "Gelen webhook URL'si",
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "Ekle",
+			"createError": "Özel alan oluşturulamadı.",
+			"createSuccess": "Özel alan oluşturuldu.",
+			"creating": "Oluşturuluyor...",
+			"defaultLabel": "Varsayılan",
+			"defaultValuePlaceholder": "Varsayılan değer",
+			"deleteButton": "Sil",
+			"deleteError": "Özel alan silinemedi.",
+			"deleteSuccess": "Özel alan silindi.",
+			"deleting": "Siliniyor...",
+			"empty": "Henüz yapılandırılmış özel alan yok.",
+			"loading": "Özel alanlar yükleniyor...",
+			"namePlaceholder": "Alan adı",
+			"noOptionsPlaceholder": "Seçenek yok",
+			"optionsPlaceholder": "Virgülle ayrılmış seçenekler",
+			"required": "Zorunlu",
+			"typePlaceholder": "Alan türünü seçin",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "Mantıksal",
+				"date": "Tarih",
+				"dropdown": "Açılır liste",
+				"number": "Sayı",
+				"text": "Metin",
+				"multiselect": "Çoklu seçim"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "Kullanılabilir seçenekler",
+			"clearDefault": "Temizle",
+			"defaultValues": "{{count}} varsayılan",
+			"moreOptions": "+{{hiddenCount}} tane daha",
+			"multiple": "Çoklu",
+			"options": "{{count}} seçenek",
+			"reorderError": "Alanlar yeniden sıralanamadı",
+			"selectPlaceholder": "Seçenek(ler) seçin",
+			"optionColorAriaLabel": "\"{{option}}\" için renk belirle",
+			"optionColorsLabel": "Seçenek renkleri",
+			"updateColorError": "Seçenek rengi güncellenemedi.",
+			"updateColorSuccess": "Seçenek rengi güncellendi.",
+			"hiddenOnProject": "Gizli",
+			"hideField": "\"{{name}}\" alanını bu proje için gizle",
+			"inheritedDescription": "Çalışma alanı düzeyinde tanımlanan alanlar. Bir alanı gizlemek, onu yalnızca bu projeden kaldırır; zorunlu bir alan gizlenemez.",
+			"inheritedEmpty": "Çalışma alanı düzeyinde henüz özel alan eklenmedi.",
+			"inheritedTitle": "Çalışma alanından devralınan",
+			"ownFieldsDescription": "Yalnızca bu proje için tanımlanan alanlar. Yeniden sıralamak için sürükleyin.",
+			"ownFieldsTitle": "Proje alanları",
+			"requiredByWorkspace": "Çalışma alanı tarafından zorunlu kılındı",
+			"showField": "\"{{name}}\" alanını bu proje için göster",
+			"visibilityUpdateError": "Alan görünürlüğü güncellenemedi.",
+			"visibleOnProject": "Görünür"
 		},
-		"administration": "Administration",
+		"administration": "Yönetim",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "Hesabı devre dışı bırak",
+				"edit": "Hesabı düzenle",
+				"open": "{{name}} için işlemler",
+				"reactivate": "Hesabı yeniden etkinleştir"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "Aramayı temizle",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "İşlemler",
+				"joined": "Katılım",
+				"role": "Genel rol",
+				"status": "Durum",
+				"user": "Kullanıcı"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "Hesabı devre dışı bırak",
+					"description": "{{name}} oturumu kapatılacak ve bir yönetici hesabı yeniden etkinleştirene kadar giriş yapamayacak.",
+					"title": "Bu hesap devre dışı bırakılsın mı?"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "Kalıcı olarak sil",
+					"description": "Bu işlem {{name}} kullanıcısını, oturumlarını, üyeliklerini ve ilişkili verilerini kalıcı olarak siler. Geri alınamaz.",
+					"title": "Bu hesap kalıcı olarak silinsin mi?"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "Hesabı yeniden etkinleştir",
+					"description": "{{name}} yeniden giriş yapabilecek ve çalışma alanlarına erişebilecek.",
+					"title": "Bu hesap yeniden etkinleştirilsin mi?"
 				},
-				"working": "Working…"
+				"working": "İşleniyor…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "Kullanıcı dizini",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "Bu hesabın kimliğini ve örnek genelindeki erişimini güncelleyin.",
+				"email": "E-posta adresi",
+				"name": "Ad Soyad",
+				"role": "Genel rol",
+				"save": "Değişiklikleri kaydet",
+				"saving": "Kaydediliyor…",
+				"selfRoleHint": "Kendi genel rolünüzü değiştiremezsiniz.",
+				"title": "Kullanıcıyı düzenle"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "Başka bir ad veya e-posta adresi deneyin.",
+			"emptyTitle": "Kullanıcı bulunamadı",
+			"instanceBadge": "Örnek",
+			"loadError": "Kullanıcılar yüklenemedi.",
+			"next": "Sonraki",
+			"pagination": "Sayfa {{current}} / {{total}}",
+			"previous": "Önceki",
+			"refreshing": "Kullanıcılar yenileniyor",
+			"retry": "Tekrar dene",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "Örnek yöneticisi",
+				"user": "Kullanıcı"
 			},
-			"searchCount_one": "{{count}} matching user",
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_one": "{{count}} eşleşen kullanıcı",
+			"searchCount_other": "{{count}} eşleşen kullanıcı",
+			"searchLabel": "Kullanıcı ara",
+			"searchPlaceholder": "Ad veya e-posta ara…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "Etkin",
+				"deactivated": "Devre dışı"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "Bu Kaneo örneğine kayıtlı tüm hesapları yönetin.",
+			"title": "Kullanıcı yönetimi",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "Kullanıcı durumu güncellenemedi",
+				"deactivated": "Kullanıcı devre dışı bırakıldı",
+				"deleted": "Kullanıcı silindi",
+				"reactivated": "Kullanıcı yeniden etkinleştirildi",
+				"updated": "Kullanıcı güncellendi",
+				"updateError": "Kullanıcı güncellenemedi"
 			},
-			"userCount_one": "{{count}} registered user",
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_one": "{{count}} kayıtlı kullanıcı",
+			"userCount_other": "{{count}} kayıtlı kullanıcı",
+			"you": "(siz)"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "Tatil ekle",
@@ -1652,256 +1652,256 @@
 			"workingDaysTitle": "Çalışma günleri",
 			"loading": "Takvim yükleniyor…"
 		},
-		"security": "Security",
+		"security": "Güvenlik",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "Yeni parolayı onaylayın",
+			"confirmPasswordPlaceholder": "Yeni parolanızı tekrar girin",
+			"currentPassword": "Mevcut parola",
+			"currentPasswordPlaceholder": "Mevcut parolanızı girin",
+			"newPassword": "Yeni parola",
+			"newPasswordPlaceholder": "Yeni bir parola girin",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "Hesabınız farklı bir yöntemle giriş yapıyor, bu nedenle değiştirilecek bir parola yok.",
+				"title": "Parola değiştirme kullanılamıyor"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "Güvenlik",
+			"sectionSubtitle": "Giriş yaparken kullandığınız parolayı değiştirin.",
+			"sectionTitle": "Parola",
+			"submit": "Parolayı güncelle",
+			"submitting": "Güncelleniyor...",
+			"subtitle": "Parolanızı ve hesap güvenliğinizi yönetin.",
+			"title": "Güvenlik",
+			"updateError": "Parola güncellenemedi.",
+			"updateSuccess": "Parola güncellendi.",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "Yeni parolanızı onaylayın.",
+				"currentRequired": "Mevcut parolanızı girin.",
+				"mismatch": "Parolalar eşleşmiyor.",
+				"tooShort": "Yeni parola en az 8 karakter olmalıdır.",
+				"sameAsCurrent": "Yeni parola mevcut parolanızdan farklı olmalıdır."
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
-			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"actionsHint": "Erişimi doğrulayın ve bağlanın",
+			"actionsTitle": "İşlemler",
+			"badgeConnected": "Bağlı",
+			"badgeNotConnected": "Bağlı değil",
+			"baseUrlHint": "https://gitlab.com veya örneğinizin kök URL'si",
+			"baseUrlLabel": "GitLab URL'si",
+			"browse": "Gözat",
+			"browseModalHint": "Belirtecinizin üyesi olduğu projeler",
+			"browseModalTitle": "Projeleriniz",
+			"browseNeedsCredentials": "Gözatmak için GitLab URL'sini ve belirteci girin",
+			"commentTaskLinkHint": "Etkinleştirildiğinde Kaneo, GitLab'da açılan her soruna talep bağlantısıyla yorum yapar.",
+			"commentTaskLinkTitle": "GitLab'da açılan sorunlara Kaneo bağlantısıyla yorum yap",
+			"connect": "Bağlan",
+			"connectedActive": "Proje bağlı ve etkin",
+			"connectionStatus": "Bağlantı durumu",
+			"currentToken": "kayıtlı",
+			"disconnect": "Bağlantıyı kes",
+			"importDisabledHint": "İçe aktarmayı etkinleştirmek için yukarıdaki projeyi doğrulayın",
+			"importing": "İçe aktarılıyor…",
+			"importIssues": "Sorunları içe aktar",
+			"importSectionHint": "Projedeki açık sorunları ve merge request'leri içe aktarın",
+			"importSectionTitle": "GitLab sorunlarını içe aktar",
+			"loadingProjects": "Projeler yükleniyor…",
+			"notConnectedHint": "Bağlı GitLab projesi yok",
+			"openInGitlab": "{{project}} projesini GitLab'da aç",
+			"project": "Proje",
+			"projectHint": "Bağlı GitLab projesi",
+			"projectPathHint": "Gruplar dahil tam yol, örn. group/subgroup/project",
+			"projectPathLabel": "Proje yolu",
+			"retry": "Tekrar dene",
+			"searchProjects": "Ara…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "GitLab'da açılan sorunlara talep bağlantısı yorumları kapatıldı",
+				"commentOnEnabled": "Kaneo, GitLab'da açılan sorunlara talep bağlantısıyla yorum yapacak",
+				"importError": "Sorunlar içe aktarılamadı",
+				"issuesImported": "Sorunlar başarıyla içe aktarıldı",
+				"notGitlabInstance": "URL bir GitLab örneğine işaret etmiyor",
+				"projectNotFound": "Proje bulunamadı veya erişilemiyor",
+				"redirected": "GitLab URL'si yönlendirildi (genellikle HTTPS'e). Doğrudan son URL'yi kullanın.",
+				"removed": "GitLab entegrasyonu kaldırıldı",
+				"removeError": "GitLab entegrasyonu kaldırılamadı",
+				"secretCopied": "Kopyalandı",
+				"settingsUpdateError": "GitLab entegrasyonu güncellenemedi",
+				"tokenRequired": "Erişim belirteci gerekli",
+				"tokenRequiredVerify": "Doğrulamak için bir belirteç girin",
+				"unableToCopySecret": "Gizli anahtar kopyalanamadı",
+				"updated": "GitLab entegrasyonu kaydedildi",
+				"updateError": "GitLab entegrasyonu kaydedilemedi",
+				"verifyError": "GitLab erişimi doğrulanamadı",
+				"verifyFirst": "Erişim doğrulaması başarısız. URL'yi, belirteci ve proje yolunu kontrol edin",
+				"verifyOk": "GitLab belirteci bu projeye erişebiliyor",
+				"verifyWarning": "Belirteç izinlerini veya proje erişimini kontrol edin"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "api kapsamına sahip ve projede en az Developer yetkisi olan belirteç",
+			"tokenLabel": "Erişim belirteci",
+			"tokenPlaceholder": "Belirteci yapıştırın",
+			"tokenPlaceholderUpdate": "Değiştirmek için yeni belirteci yapıştırın",
+			"tokenTypeBearer": "OAuth2 belirteci",
+			"tokenTypeHint": "Belirtecin nasıl gönderildiği. Erişim belirteçleri PRIVATE-TOKEN, OAuth2 belirteci ise Authorization kullanır.",
+			"tokenTypeLabel": "Belirteç türü",
+			"tokenTypePrivate": "Kişisel, proje veya grup erişim belirteci",
+			"update": "Güncelle",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "Geçerli bir URL girin (örn. https://gitlab.com)",
+				"baseUrlRequired": "GitLab temel URL'si gerekli",
+				"pathInvalid": "Tam yolu girin, örn. group/project",
+				"pathRequired": "Proje yolu gerekli"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
+			"verify": "Doğrula",
+			"webhookCopy": "Kopyala",
+			"webhookHide": "Gizle",
+			"webhookHint": "GitLab projenizde bu URL ve gizli belirteçle bir webhook ekleyin. Push, sorun, yorum ve merge request olaylarını etkinleştirin.",
+			"webhookSecretLabel": "Gizli belirteç (GitLab'daki webhook'ta ayarlananla eşleşmeli)",
+			"webhookShow": "Göster",
 			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"loadProjectsError": "Projeler yüklenemedi",
+			"importPermissionHint": "İçe aktarmak için talep oluşturma ve güncelleme izni gerekir."
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "Takvim akışları",
+			"subtitle": "Planlanmış proje taleplerine takvim uygulamanızdan abone olun.",
+			"createTitle": "Takvim akışı oluştur",
+			"filterHint": "Başlangıç veya bitiş tarihi olan ve seçilen etiketlerden en az birine sahip talepleri dahil et.",
+			"labels": "Etiketler",
+			"selectLabels": "Etiket ara ve seç…",
+			"noLabels": "Etiket bulunamadı.",
+			"timeZoneHint": "Tüm gün tarihleri {{timeZone}} saat dilimini kullanır.",
+			"accessHint": "Akış bağlantısına sahip herkes eşleşen talep başlıklarını, açıklamalarını ve tarihlerini okuyabilir. Sonraki erişimi durdurmak için bağlantıyı iptal edin.",
+			"create": "Akış oluştur",
+			"creating": "Oluşturuluyor…",
+			"created": "Takvim akışı oluşturuldu.",
+			"createError": "Takvim akışı oluşturulamadı.",
+			"activeFeeds": "Etkin akışlar",
+			"subscribeHint": "Bir bağlantıyı kopyalayıp takvim aboneliği olarak ekleyin. Güncellemeler, takvim uygulamanız akışı yenilediğinde görünür.",
+			"empty": "Henüz takvim akışı yok.",
+			"feedUrl": "Takvim akışı URL'si",
+			"copy": "Bağlantıyı kopyala",
+			"copied": "Takvim akışı bağlantısı kopyalandı.",
+			"copyError": "Bağlantı kopyalanamadı. URL'yi seçip elle kopyalayın.",
+			"revoke": "İptal et",
+			"revoked": "Takvim akışı iptal edildi.",
+			"revokeError": "Takvim akışı iptal edilemedi.",
+			"loadError": "Takvim akışları veya etiketler yüklenemedi. Lütfen tekrar deneyin.",
+			"deletedLabel": "Silinmiş etiket",
+			"permissionRequired": "Takvim akışlarını yönetmek için proje paylaşma izni gerekir."
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "Özel Alan Ayarları",
+			"sectionDescription": "Burada tanımlanan alanlar çalışma alanındaki her projeye eklenir. Proje yöneticisi bir alanı yalnızca kendi projesi için gizleyebilir veya gösterebilir; zorunlu bir alan gizlenemez.",
+			"sectionTitle": "Özel Alanlar",
+			"subtitle": "Çalışma alanı düzeyindeki özel alanları yönetin. Bu çalışma alanındaki her proje bunları devralır.",
+			"title": "Özel Alanlar"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "Bu çalışma alanı için atanabilir yeni bir kaynak oluşturun. Türü oluşturulduktan sonra değiştirilemez.",
+			"createError": "Kaynak oluşturulamadı",
+			"createResource": "Kaynak Oluştur",
+			"createSuccess": "Kaynak oluşturuldu",
+			"deleteConfirmDescription": "Bu kaynak, atandığı tüm taleplerden kaldırılacak. Bu işlem geri alınamaz.",
+			"deleteConfirmTitle": "Bu kaynak silinsin mi?",
+			"deleteError": "Kaynak silinemedi",
+			"deleteResource": "Sil",
+			"deleteSuccess": "Kaynak silindi",
+			"editDescription": "Bu kaynağın adını veya e-postasını güncelleyin.",
+			"editResource": "Kaynağı Düzenle",
+			"emailLabel": "E-posta (isteğe bağlı)",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "Henüz kaynak yok. Başlamak için ilk kişiyi, ekipmanı veya malzemeyi oluşturun.",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "Ekipman",
+				"material": "Malzeme",
+				"person": "Kişi"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "Tür",
+			"nameLabel": "Ad",
+			"namePlaceholder": "Bir ad girin",
+			"nameRequired": "Kaynak adı gerekli",
+			"pageTitle": "Kaynak Ayarları",
+			"saveResource": "Kaydet",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "Kaynaklar",
+			"updateError": "Kaynak güncellenemedi",
+			"updateSuccess": "Kaynak güncellendi",
+			"loadError": "Kaynaklar yüklenemedi. Lütfen tekrar deneyin.",
+			"loading": "Kaynaklar yükleniyor…",
+			"emailChangeDetaches": "E-postayı değiştirmek, bekleyen davetle olan bağlantıyı kaldırır.",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "Bu kaynak zaten bir üyeye bağlı.",
+				"alreadyWorkspaceMember": "Bu adres çalışma alanının bir üyesine ait. Bunun yerine kaynağı o üyeye bağlayın.",
+				"disposableEmail": "Geçici e-posta adreslerine davet gönderilemez.",
+				"duplicateProject": "Bir proje yalnızca bir kez listelenebilir.",
+				"emailNotAllowed": "Yalnızca kişilerin e-posta adresi olabilir.",
+				"guestCannotInvite": "Misafir hesaplar davet gönderemez.",
+				"insufficientPermissions": "Bu projelerden birine kişi davet etme izniniz yok.",
+				"invitationLimitReached": "Bu çalışma alanı için davet sınırına ulaşıldı.",
+				"invitationRoleConflict": "Bu adres için bekleyen davet zaten başka bir çalışma alanı rolüne sahip.",
+				"noEmail": "Önce kaynağa bir e-posta adresi ekleyin.",
+				"notLinked": "Bu kaynak bir üyeye bağlı değil.",
+				"notMember": "Bu kullanıcı çalışma alanının üyesi değil.",
+				"notPerson": "Yalnızca bir kişi davet edilebilir veya bağlanabilir.",
+				"ownerRole": "Sahip rolü davetle verilemez.",
+				"projectAccessDenied": "Bu projelerden birine erişiminiz yok.",
+				"rateLimited": "Çok fazla davet. Bir dakika sonra tekrar deneyin.",
+				"resourceChanged": "Kaynak değişti. Lütfen tekrar deneyin.",
+				"roleExceedsYourPermissions": "Kendi izinlerinizden daha fazla izne sahip bir rol veremezsiniz.",
+				"unknownRole": "Rollerden biri artık mevcut değil. Başka bir rol seçin.",
+				"notFound": "Kaynak bulunamadı.",
+				"alreadyWorkspaceMemberOnly": "Bu adres çalışma alanının bir üyesine ait.",
+				"workspaceNotFound": "Çalışma alanı bulunamadı."
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "Projeler, bu adrese ait bekleyen davete eklendi.",
+				"createdTitle": "Davet oluşturuldu",
+				"description": "{{email}} adresine bir davet gönderilir. Bu kaynağın seçilen projelerdeki atamaları yeni hesaba taşınır.",
+				"error": "Davet gönderilemedi",
+				"hasTasks": "Talepleri var",
+				"noProjectRoles": "Atayabileceğiniz rol yok",
+				"noProjects": "Hiçbir projeye kişi davet edemezsiniz.",
+				"pickProject": "En az bir proje seçin.",
+				"projectRoleLabel": "{{project}} projesindeki rol",
+				"projectRolesError": "Roller yüklenemedi",
+				"projectRolesLoading": "Roller yükleniyor...",
+				"projectsError": "Davet edebileceğiniz projeler yüklenemedi. Daha sonra tekrar deneyin.",
+				"projectsHint": "Kişi, işaretlediğiniz projelere erişim kazanır. Bu kaynağa ait talepleri olan projeler zaten işaretlidir.",
+				"projectsLabel": "Projeler",
+				"projectsLoading": "Projeler yükleniyor...",
+				"title": "{{name}} kişisini davet et",
+				"workspaceRoleLabel": "Çalışma alanı rolü"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "Davet et",
+			"inviteNeedsEmail": "Bu kişiyi davet etmek için bir e-posta adresi ekleyin.",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "Bu çalışma alanının bir üyesini seçin. Bu kaynağın, üyenin açabildiği projelerdeki atamaları onun hesabına taşınır.",
+				"error": "Kaynak bağlanamadı",
+				"hint": "Üyenin açamadığı projelerdeki atamalar kaynakta kalır. İş yükü bunları üyenin satırında sayar.",
+				"memberLabel": "Üye",
+				"memberPlaceholder": "Bir üye seçin",
+				"membersError": "Üyeler yüklenemedi.",
+				"membersLoading": "Üyeler yükleniyor...",
+				"noMembers": "Bağlanacak üye yok.",
+				"submit": "Bağla",
+				"success": "{{name}} ile bağlandı. Taşınan atamalar: {{moved}}.",
+				"title": "{{name}} kaynağını bir üyeye bağla"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "Üyeye bağla",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "Davet edildi (süresi doldu)",
+				"invitedPending": "Davet edildi (bekliyor)",
+				"linked": "Bir üyeye bağlı",
+				"linkedTo": "{{name}} ile bağlantılı",
+				"notInvited": "Davet edilmedi"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "Kaynak artık üyeyle bağlantılı olmayacak. Önceden taşınan atamalar üyede kalır.",
+				"error": "Kaynağın bağlantısı kaldırılamadı",
+				"success": "Kaynağın bağlantısı kaldırıldı",
+				"title": "Bu kaynağın bağlantısı kaldırılsın mı?"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "Bağlantıyı kaldır"
 		}
 	},
 	"navigation": {
@@ -2021,10 +2021,10 @@
 		},
 		"mobileProjectNav": {
 			"backlog": "Backlog",
-			"board": "Board",
+			"board": "Pano",
 			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"projects": "Projeler",
+			"view": "Görünüm"
 		}
 	},
 	"notifications": {
@@ -2196,8 +2196,8 @@
 					"renderFailed": "Mermaid diyagramı oluşturulamadı"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "{{source}} kaynağından içe aktarıldı",
+			"importedBy": "{{name}} tarafından içe aktarıldı",
 			"commentedOnForge": "{{forge}}'da yorum yaptı"
 		},
 		"relationCreated": "bir bağımlılık ekledi",
@@ -2249,7 +2249,7 @@
 			"loadingTask": "Talep yükleniyor...",
 			"taskNotFound": "Talep bulunamadı",
 			"taskNotFoundDescription": "Aradığınız talep mevcut değil veya silinmiş.",
-			"customFields": "Custom Fields"
+			"customFields": "Özel Alanlar"
 		},
 		"detail": {
 			"subtaskOf": "Şunun alt talebi:",
@@ -2356,15 +2356,15 @@
 					"renderFailed": "Mermaid diyagramı oluşturulamadı"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "Büyük",
+					"medium": "Orta",
+					"reset": "Boyutu sıfırla",
+					"resizeHandle": "Görseli yeniden boyutlandır",
+					"small": "Küçük"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "Alan güncellendi",
+			"selectOption": "Seçenek seçin",
 			"pickDate": "Tarih seçin"
 		},
 		"entity": {
@@ -2392,7 +2392,7 @@
 			"dependency": {
 				"lagHint": "Pozitif değer başlangıcı geciktirir; negatif değer (öncü) çakışmaya izin verir.",
 				"lagLabel": "Gecikme (gün)",
-				"lagSuffix": " {{days}}d",
+				"lagSuffix": " {{days}}g",
 				"save": "Kaydet",
 				"summary": "{{type}}{{lag}}",
 				"typeLabel": "Bağımlılık türü",
@@ -2425,7 +2425,7 @@
 			"deleteAction": "Talebi Sil",
 			"completeAria": "Alt talebi tamamlandı olarak işaretle",
 			"progress": "{{total}} alt görevin {{completed}} tanesi tamamlandı",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "Bu projede, bu alt talebi tamamlamak veya yeniden açmak için uygun bir sütun yok."
 		},
 		"properties": {
 			"title": "Özellikler",
@@ -2456,19 +2456,19 @@
 			"assignee": {
 				"unassigned": "Atanmamış",
 				"updateError": "Talep atananı güncellenemedi",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "Tüm atamaları kaldır",
+				"addResource": "Yeni kaynak",
+				"createResource": "Oluştur",
+				"createResourceError": "Kaynak oluşturulamadı",
+				"newResourceEmailPlaceholder": "E-posta (isteğe bağlı)",
+				"newResourceNamePlaceholder": "Ad",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "Ekipman",
+					"material": "Malzeme",
+					"person": "Kişi"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "Kaynaklar",
+				"notInProject": "Artık bu projede değil"
 			},
 			"status": {
 				"updateError": "Talep durumu güncellenemedi"
@@ -2612,10 +2612,10 @@
 				"isAnyOf": "herhangi biri",
 				"includeAnyOf": "herhangi birini içer"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "Tümü",
+			"allCustomFieldValues": "Tüm değerler",
+			"noCustomFieldValues": "Özel alan değeri yok",
+			"noValuesUsedYet": "Henüz kullanılan değer yok"
 		},
 		"gantt": {
 			"pageTitle": "{{name}} – Gantt",
@@ -2632,11 +2632,11 @@
 			"resizeStart": "Başlangıç tarihini yeniden boyutlandır",
 			"resizeDue": "Bitiş tarihini yeniden boyutlandır",
 			"taskAriaLabel": "{{title}}: açmak veya taşımak için sürükleyin",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "Bugüne git",
+			"previousPeriod": "Önceki dönem",
+			"nextPeriod": "Sonraki dönem",
+			"periodStart": "Zaman çizelgesi başlangıç tarihi",
+			"showTaskDates": "Talep tarihlerini göster",
 			"legendBlocking": "Engelleyici",
 			"legendRelated": "İlgili",
 			"externalProjectBadge": "{{projectName}} içinde",
@@ -2678,12 +2678,12 @@
 			"gateWarningBadge": "Geçit",
 			"gateWarningItem": "\"{{title}}\" {{status}} durumunda",
 			"gateWarningTitle": "Onaylanmamış bir geçit tarafından engellendi",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "Özel alan",
+			"barColorSourceLabel": "Çubuk rengi",
+			"barColorSourceNone": "Yok",
+			"barColorSourceFirstLabel": "İlk etiket",
+			"externalTaskDerivedTitle": "{{title}} — {{projectName}} projesindeki ilgili talep; kendi tarihleri olmadığı için bu konum bağımlılığından türetilmiştir (burada salt okunur)",
+			"externalTaskDerivedRailNote": "Konum bağımlılıktan"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",
@@ -2719,7 +2719,7 @@
 		"assignee": {
 			"label": "Atanan",
 			"unassigned": "Atanmamış",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "Atanan: {{names}}"
 		},
 		"dueDate": {
 			"label": "Bitiş tarihi",
@@ -2740,8 +2740,8 @@
 		"contextMenu": {
 			"copyLink": "Bağlantıyı kopyala",
 			"copyLinkSuccess": "Talep bağlantısı kopyalandı!",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "Diğer işlemler",
+			"copyLinkError": "Talep bağlantısı kopyalanamadı."
 		},
 		"actions": {
 			"duplicate": "Çoğalt",
@@ -2807,11 +2807,11 @@
 			"today": "Bugün",
 			"loadError": "Talepler yüklenemedi."
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "Tam açıklamalar aranıyor…",
+		"descriptionSearchError": "Açıklama araması başarısız oldu. Sonuçlar eksik olabilir.",
+		"descriptionRetry": "Tekrar dene",
+		"descriptionLoading": "Açıklama yükleniyor…",
+		"descriptionLoadError": "Açıklama yüklenemedi. Güncel sürümü yüklemek için tekrar deneyin.",
 		"approval": {
 			"approved": "Onaylandı",
 			"label": "Onay",
@@ -2821,7 +2821,7 @@
 		},
 		"checklistProgress": "{{total}} kontrol listesi öğesinin {{completed}} tanesi tamamlandı",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "Özel alanlar"
 		}
 	},
 	"invitations": {
@@ -3012,19 +3012,19 @@
 			"copyFailed": "Otomatik olarak kopyalanamadı. Bağlantıyı seçip Ctrl+C tuşlarına basın.",
 			"pendingBadge": "beklemede",
 			"expires": "{{date}} tarihinde sona erer",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "Davet bağlantısını yenile",
+			"renewError": "Davet bağlantısı yenilenemedi",
+			"renewSuccess": "Davet bağlantısı yenilendi. E-posta gönderilmedi. Bağlantıyı kopyalayıp kendiniz gönderin.",
+			"resend": "Daveti yeniden gönder",
+			"resendError": "Davet yeniden gönderilemedi",
+			"resendSuccess": "Davet yeniden gönderildi",
+			"expired": "{{date}} tarihinde süresi doldu",
+			"inviteAgain": "Tekrar davet et",
+			"inviteAgainError": "Tekrar davet edilemedi",
+			"renewSuccessUnknownEmail": "Davet bağlantısı yenilendi. Kişi e-posta almadıysa bağlantıyı paylaşın.",
+			"expiredBadge": "süresi doldu",
+			"inviteAgainCancelError": "Eski davet iptal edilemedi. Elle iptal edin.",
+			"rejectedBadge": "reddedildi"
 		},
 		"inviteModal": {
 			"title": "Ekip Üyesi Davet Et",
@@ -3036,20 +3036,20 @@
 			"createdTitle": "Davet oluşturuldu",
 			"shareLinkDescription": "Bu bağlantıyı {{email}} ile paylaşın, böylece çalışma alanına katılabilir.",
 			"done": "Bitti",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "Geçerli bir e-posta adresi girin",
+			"noSmtpNotice": "Bu sunucuda e-posta yapılandırılmamış. Davet e-postayla gönderilmeyecek; bağlantıyı kopyalayıp kendiniz gönderin.",
+			"shareLinkDescriptionNoEmail": "E-posta gönderilmedi. Çalışma alanına katılabilmesi için bu bağlantıyı {{email}} ile paylaşın.",
+			"successNoEmail": "Davet oluşturuldu. E-posta gönderilmedi.",
+			"noAssignableRoles": "Hiçbir rol atayamadığınız için kişi davet edemezsiniz.",
+			"roleLabel": "Rol",
+			"rolesError": "Atayabileceğiniz roller yüklenemedi. Daha sonra tekrar deneyin.",
+			"rolesLoading": "Roller yükleniyor...",
+			"sending": "Gönderiliyor...",
+			"shareLinkDescriptionUnknownEmail": "Çalışma alanına katılabilmesi için, e-posta almadıysa bu bağlantıyı {{email}} ile paylaşın.",
+			"successUnknownEmail": "Davet oluşturuldu. Kişi e-posta almadıysa bağlantıyı paylaşın.",
+			"rolePlaceholder": "Bir rol seçin",
+			"roleUnavailable": "Seçtiğiniz rol artık kullanılamıyor. Başka bir rol seçin.",
+			"rolePickRequired": "Bu davet için rolü seçin."
 		},
 		"membersTable": {
 			"emptyTitle": "Henüz ekip üyesi yok",
@@ -3076,19 +3076,19 @@
 			"roleUpdateSuccess": "Rol güncellendi",
 			"roleUpdateError": "Rol güncellenemedi",
 			"ariaInvitationActions": "Davet işlemleri",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "{{name}} için rolü değiştir",
+			"rolesLoadError": "Atayabileceğiniz roller yüklenemedi, bu nedenle roller şu anda değiştirilemiyor.",
+			"rolesRetry": "Tekrar dene"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "Bu kişinin zaten bekleyen bir daveti var.",
+			"alreadyMember": "Bu kişi zaten çalışma alanının üyesi.",
+			"cannotChangeOwnRole": "Kendi rolünüzü değiştiremezsiniz.",
+			"cannotInviteWithRole": "Bu rolle kimseyi davet edemezsiniz.",
+			"cannotManageMember": "Bu üyeyi yönetemezsiniz.",
+			"cannotUpdateMember": "Bu üyeyi değiştiremezsiniz.",
+			"invitationLimitReached": "Bu çalışma alanı için davet sınırına ulaşıldı.",
+			"roleExceedsYourPermissions": "Kendi izinlerinizden daha fazla izne sahip bir rol veremezsiniz."
 		}
 	},
 	"publicProject": {
@@ -3129,213 +3129,213 @@
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "Basın kiti",
+		"headline": "Kaneo basın kiti",
+		"intro": "Makaleler, videolar ve diğer medya için Kaneo logoları ve ürün ekran görüntüleri.",
+		"description": "Kaneo basın kaynakları: ürün bilgileri, logolar, ekran görüntüleri ve gazeteciler ile içerik üreticileri için iletişim bilgileri.",
+		"downloadKit": "Tüm dosyaları indir",
+		"boilerplateTitle": "Kaneo hakkında",
+		"boilerplate": "Kaneo, Andrej Acevski tarafından oluşturulan açık kaynaklı bir proje yönetim platformudur. Ekipler talepleri pano ve liste görünümlerinde düzenleyebilir, iş atayabilir, öncelik ve bitiş tarihi belirleyebilir ve GitHub'ı bağlayabilir. Kaneo, kendi sunucunuzda barındırmak için MIT lisansıyla veya Kaneo Cloud üzerinden yönetilen bir hizmet olarak sunulur.",
+		"logosTitle": "Logolar",
+		"darkLogo": "Koyu logotype",
+		"darkLogoAlt": "Açık renkli arka plan üzerinde koyu Kaneo logosu",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "Açık logotype",
+		"lightLogoAlt": "Koyu renkli arka plan üzerinde açık Kaneo logosu",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "Uygulama simgesi",
+		"iconAlt": "Kaneo uygulama simgesi",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "İndir",
+		"screenshotsTitle": "Ekran görüntüleri",
+		"lightScreenshot": "Pano (açık)",
+		"lightScreenshotAlt": "Açık temada, talep kartlarının duruma göre sıralandığı Kaneo panosu",
+		"darkScreenshot": "Pano (koyu)",
+		"darkScreenshotAlt": "Koyu temada, talep kartlarının duruma göre sıralandığı Kaneo panosu",
+		"contactTitle": "Basın soruları",
+		"contactBody": "Ürün soruları, röportajlar veya ek materyaller için Kaneo ekibiyle iletişime geçin.",
+		"usageContrast": "Koyu arka planlar için açık logotype'ı, açık arka planlar için koyu logotype'ı seçin.",
+		"usageProportions": "Özgün oranları ve renkleri koruyun; logoyu esnetmeyin veya efekt eklemeyin.",
+		"usageSpace": "Logonun net ve okunaklı kalması için çevresinde yeterli boşluk bırakın.",
+		"darkListScreenshot": "Liste (koyu)",
+		"darkListScreenshotAlt": "Koyu temada, taleplerin duruma göre gruplandığı ve atananları, öncelikleri, etiketleri ve bitiş tarihlerini gösteren Kaneo talep listesi",
+		"darkTaskScreenshot": "Talep ayrıntıları (koyu)",
+		"darkTaskScreenshotAlt": "Koyu temada; açıklama, kontrol listesi, ekip yorumu ve talep özelliklerini gösteren Kaneo talep ayrıntıları",
+		"darkTimelineScreenshot": "Zaman çizelgesi (koyu)",
+		"darkTimelineScreenshotAlt": "Koyu temada, planlanmış talepleri ve sürelerini gösteren Kaneo Gantt zaman çizelgesi",
+		"lightListScreenshot": "Liste (açık)",
+		"lightListScreenshotAlt": "Açık temada, taleplerin duruma göre gruplandığı ve atananları, öncelikleri, etiketleri ve bitiş tarihlerini gösteren Kaneo talep listesi",
+		"lightTaskScreenshot": "Talep ayrıntıları (açık)",
+		"lightTaskScreenshotAlt": "Açık temada; açıklama, kontrol listesi, ekip yorumu ve talep özelliklerini gösteren Kaneo talep ayrıntıları",
+		"lightTimelineScreenshot": "Zaman çizelgesi (açık)",
+		"lightTimelineScreenshotAlt": "Açık temada, planlanmış talepleri ve sürelerini gösteren Kaneo Gantt zaman çizelgesi"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "İş ortakları"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Kaneo neden var",
+			"intro": "Ben Andrej ve Kaneo'yu, işe yaramaktan çok engel olan proje yönetim araçlarından bıktığım için geliştirdim. Yıllarca gerçek işten uzaklaştıran, şişkin ve aşırı karmaşık platformlar kullandıktan sonra daha iyi bir yolun olması gerektiğini biliyordum.",
+			"problem": "Sorun bu araçlarda özellik eksikliği değil, fazlalığıydı. Her bildirim, her gereksiz düğme, her karmaşık iş akışı ekibimi önemli olandan, yani harika ürünler geliştirmekten uzaklaştırıyordu.",
+			"principle": "En iyi araçların görünmez olduğuna inanıyorum. Ekibinizin doğal iş akışını güçlendirmeli, sizi kendi akışına uymaya zorlamamalı. Kaneo, \"azı çoktur\" ilkesiyle geliştirildi: her özellik gerçek bir sorunu çözdüğü için var, demoda etkileyici göründüğü için değil."
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Kaneo Cloud'u deneyin",
+			"selfHostCta": "Kaneo'yu kendiniz barındırın",
+			"trialNote": "14 günlük bulut denemesi. Kredi kartı gerekmez.",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "Projenin kendisine dönüşmeyen",
+			"titleAccent": "proje yönetimi.",
+			"description": "Pano, Gantt şeması ve GitHub entegrasyonu sunan açık kaynaklı proje yönetimi. SSO dahil olarak ücretsiz kendiniz barındırın veya barındırmayı Kaneo Cloud'a bırakın."
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
+			"product": "Ürün",
+			"pricing": "Fiyatlandırma",
+			"resources": "Kaynaklar",
+			"docs": "Dokümantasyon",
 			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
-			"roadmap": "Roadmap",
-			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"guides": "Rehberler",
+			"comparisons": "Araçları karşılaştır",
+			"roadmap": "Yol haritası",
+			"menu": "Menü",
+			"closeMenu": "Menüyü kapat",
+			"home": "Kaneo ana sayfa",
+			"signIn": "Giriş Yap",
+			"getStarted": "Başlayın"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
+			"label": "Kaneo ürün görünümleri",
+			"controls": "Bir ürün görünümü seçin",
+			"play": "Ürün görünümlerini oynat",
+			"pause": "Ürün görünümlerini duraklat",
+			"board": "Pano",
 			"list": "Backlog",
 			"gantt": "Gantt"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "Alt talepler ve bağlam",
+				"title": "Büyük talepler. Net sonraki adımlar.",
+				"description": "İşi alt taleplere bölün, her birini atayın ve asıl tanımı kaybetmeden ilerlemeyi takip edin. Her ayrıntı işin yanında kalır."
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "GitHub entegrasyonu",
+				"title": "Pull request'ten tamamlanmaya.",
+				"description": "Sorunlar ve etiketler iki yönlü eşitlenir. Bağlı pull request'ler, kodunuz açıldıkça ve birleştirildikçe talepleri incelemeden tamamlandıya taşır.",
+				"link": "GitHub'ı kur"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "Kendi sunucunuzda çalıştırın.",
+				"description": "Docker ile kurun ve çalışma alanınızı kontrol ettiğiniz altyapıda tutun.",
+				"link": "Kaneo'yu kendiniz barındırın"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "Kod da açık.",
+				"description": "Kaynak kodu okuyun, sorun bildirin veya değişiklik önerin. Geliştirme GitHub'da yürütülür.",
+				"link": "Kaynak kodu görüntüle"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
-				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"taskAlt": "Etkileşimli Kaneo talep ve alt talep önizlemesi.",
+				"githubAlt": "Bir GitHub birleştirmesinin Kaneo talebini güncellediğini gösteren etkileşimli önizleme.",
+				"taskTitle": "Yeni ana sayfayı yayınla",
+				"taskDescription": "Bir sonraki sürümden önce metni güncelleyin ve yerleşimi kontrol edin.",
+				"checklistDone": "Metni gözden geçir",
+				"checklistOpen": "Mobil yerleşimi kontrol et",
+				"inProgress": "Devam Ediyor",
+				"high": "Yüksek",
+				"date": "12 Eki",
+				"design": "tasarım",
+				"done": "Tamamlandı",
+				"relationsAlt": "Etkileşimli Kaneo talep bağımlılıkları önizlemesi.",
+				"inReview": "İncelemede",
+				"trySubtasks": "Bir alt talebi işaretlemeyi deneyin.",
+				"tryGithub": "Talebin güncellendiğini görmek için bir birleştirmeyi önizleyin.",
+				"tryRelations": "Bağlantıyı takip etmek için bağlı bir talebi açın.",
+				"mergeAction": "Birleştirmeyi önizle",
+				"resetAction": "Önizlemeyi sıfırla",
+				"mergedHint": "Pull request birleştirildi. Talep Tamamlandı'ya taşındı.",
+				"progress": "{{total}} alt talepten {{completed}} tanesi tamamlandı",
+				"backToTask": "Ana sayfa talebine dön",
+				"releaseNotes": "Sürüm notlarını yaz",
+				"dependencyDescription": "Ana sayfa mobil incelemeyi bekliyor. Bağlam için yayın notlarını bağlı tutun.",
+				"mobileDescription": "Yayına girmeden önce yeni ana sayfayı dar ekranlarda kontrol edin.",
+				"notesDescription": "Yayın duyurusu için nelerin değiştiğini not edin."
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "Bağlı talepler ve bağımlılıklar",
+				"title": "İşleri neyin yavaşlattığını görün.",
+				"description": "Engelleyenleri bağlayın, bağımlılıkları takip edin ve ilişkili işleri yakında tutun. Sonraki adımın arkasındaki bağlamı görmek için bağlı bir talebi açın."
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — Açık kaynaklı, kendi sunucunuzda barındırılan proje yönetimi",
+			"description": "Pano, Gantt şeması ve GitHub entegrasyonu sunan açık kaynaklı proje yönetimi. SSO dahil olarak ücretsiz kendiniz barındırın veya Kaneo Cloud'u kullanın."
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "Kendinize göre uyarlayın",
+			"title": "Denemekten kullanmaya net bir yol.",
+			"description": "Sunucunuzu kurun, araçlarınızı bağlayın veya Kaneo'yu mevcut takip aracınızla karşılaştırın.",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Docker ile kendiniz barındırın",
+				"description": "Kontrol ettiğiniz bir kurulum için kurulum, yedekleme ve güncelleme."
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "Kendi kimlik sağlayıcınızı kullanın",
+				"description": "Ücretsiz, kendi barındırdığınız sürümde OIDC ile çoklu oturum açmayı yapılandırın."
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "Yapay zeka araçlarınızı bağlayın",
+				"description": "Bir yapay zeka istemcisi üzerinden talepler ve projelerle çalışmak için MCP'yi kullanın."
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "Kaneo ve Linear'ı karşılaştırın",
+				"description": "Barındırma, lisanslama ve iş akışındaki farkları görün."
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "Başlamadan önce",
+			"description": "Barındırma, planlama ve ekibinizi bağlama hakkında pratik ayrıntılar.",
+			"overview": "Kaneo; pano, backlog, Gantt ve takvim görünümleri, özel alanlar, zaman takibi ve GitHub entegrasyonu sunan, açık kaynaklı, MIT lisanslı bir proje yönetim platformudur. Kendi altyapınızda barındırın veya Kaneo Cloud'u kullanın.",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Kaneo'yu kendim barındırmak ücretsiz mi?",
+				"answer": "Evet. Kaneo MIT lisanslıdır ve tek oturum açma dahil olarak ücretsiz barındırılabilir. Uygulamayı PostgreSQL ile birlikte Docker Compose kullanarak çalıştırın veya resmi Helm chart ile dağıtın. Altyapıyı, güncellemeleri ve yedeklemeleri siz yönetirsiniz.",
+				"link": "Kurulum kılavuzunu okuyun"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Kaneo'da Gantt şemaları var mı?",
+				"answer": "Evet. Kaneo, panolar, listeler ve backlog planlamasının yanında Gantt ve takvim görünümleri de sunar. İşleri zaman çizelgesinde planlamak için talep başlangıç ve bitiş tarihlerini kullanın. Bütçeleme, taban çizgisi karşılaştırmaları ve sprint burndown raporları mevcut kapsamın dışındadır.",
+				"link": "Planlama özelliklerini karşılaştırın"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "Tek oturum açma dahil mi?",
+				"answer": "Evet. Ücretsiz, kendi barındırdığınız sürüm Google, GitHub, Discord ve özel OAuth/OIDC sağlayıcılarını destekler. Ayrı bir Kaneo sürümü satın almadan sağlayıcınızı kendi örneğinizde yapılandırın.",
+				"link": "OIDC'yi yapılandırın"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "Yapay zeka istemcileri Kaneo ile çalışabilir mi?",
+				"answer": "Evet. Kaneo, @kaneo/mcp paketi ve bir HTTP uç noktası aracılığıyla MCP sunucusu sağlar. Uyumlu yapay zeka istemcileri, bir kullanıcıya bağlı API anahtarıyla ve çalışma alanı izinlerine tabi olarak talepleri okuyup güncelleyebilir.",
+				"link": "MCP rehberini okuyun"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "Özellik",
+			"yes": "Evet",
+			"no": "Hayır"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "Kendi sunucunuzda barındırmanın neler içerdiği; bakımı yapılan Docker Compose yapılandırmasına ve kurulum adımlarına bağlantılarla.",
+			"answer": "Kaneo'yu kendiniz barındırmak için uygulamayı ve PostgreSQL'i Docker Compose ile çalıştırın, genel URL'nizi ve gizli anahtarlarınızı yapılandırın ve önüne TLS destekli bir ters proxy koyun. Kurulum kılavuzu en az 2 GB RAM ve 10 GB disk alanı önerir. Sürekli güncellemeleri, veritabanı yedeklerini ve yüklenen dosyalar için depolamayı planlayın.",
+			"requirements": "Belgelenen minimum, Docker 20.10 veya üzeri ve Docker Compose V2 ile 2 GB RAM ve 10 GB disk alanıdır. İş yükünüz, veritabanı büyümesi ve yüklenen dosyalar için daha fazla kapasite ayırın.",
+			"compose": "Docker Compose kılavuzundaki bakımı yapılan compose.yml dosyasını kullanın. PostgreSQL'i, kalıcı bir veritabanı birimini, Kaneo uygulamasını ve sağlık kontrollerini tanımlar. Hizmetleri başlatmadan önce ortam dosyasını yapılandırın; üretimde güncellemelerin bilinçli olması için bir imaj sürümü sabitleyin.",
+			"backups": "Hem PostgreSQL'i hem de yüklemeler için kullanılan nesne depolamayı yedekleyin. Ekibinizin ne kadar işi kaybetmeyi göze alabileceğine göre bir program belirleyin, kopyaları uygulama sunucusunun dışında saklayın ve ihtiyaç duymadan önce geri yüklemeyi test edin.",
+			"worth": "Kendi sunucunuzda barındırma, altyapı ve veriler üzerinde kontrole ihtiyaç duyduğunuzda ve bakımı üstlenecek biri olduğunda mantıklıdır. Yönetilen bir hizmetle maliyet karşılaştırması yaparken sunucu kapasitesini, depolamayı, yedeklemeleri ve bu bakım süresini de hesaba katın.",
+			"minimum": "Kurulum kılavuzu Docker 20.10 veya üzerini, Docker Compose V2'yi, en az 2 GB RAM ve 10 GB disk alanını belirtir. Compose kurulumu PostgreSQL'i içerir. Tek API örneği için Redis isteğe bağlıdır.",
+			"composeLink": "Docker Compose yapılandırması",
+			"composeLinkDescription": "Kalıcı depolama ve sağlık kontrolleri içeren, bakımı yapılan compose.yml.",
+			"startLink": "Hizmetleri başlatın ve doğrulayın",
+			"startLinkDescription": "Yığını başlatın, durumunu inceleyin ve uygulamanın kullanılabilir olduğunu kontrol edin."
 		}
 	},
 	"portfolio": {
@@ -3356,174 +3356,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "Zaten {{workspaceName}} çalışma alanının üyesisiniz, bu nedenle bu davet sizi bir projeye ekleyemez. Bir çalışma alanı yöneticisinden sizi projeye eklemesini isteyin.",
+			"alreadyMemberTitle": "Zaten üyesiniz",
+			"invitedToProject": "{{project}} projesine {{role}} olarak davet edildiniz.",
+			"invitedToProjects": "Şu projelere davet edildiniz:",
+			"projectRole": "{{project}}: {{role}}"
 		},
-		"empty": "No pending invitations.",
+		"empty": "Bekleyen davet yok.",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "Bu kişi zaten çalışma alanının üyesi. Üye ekle ile projeye ekleyin.",
+			"disposableEmail": "Geçici e-posta adreslerine izin verilmez.",
+			"expired": "Bu davetin süresi doldu. Kişiyi tekrar davet edin.",
+			"guestCannotInvite": "Misafir hesaplar kişi davet edemez.",
+			"limitReached": "Çalışma alanında çok fazla bekleyen davet var. Önce bazılarını iptal edin.",
+			"notApplied": "Bu davetin proje erişimi uygulanamadı. Daveti tekrar kabul etmeyi deneyin. Sorun sürerse bir çalışma alanı yöneticisinden sizi projeye eklemesini isteyin.",
+			"notFound": "Bu davet artık mevcut değil. Liste yeniden yüklendi.",
+			"rateLimited": "Çok fazla davet. Biraz sonra tekrar deneyin.",
+			"rateLimitedRetry": "Çok fazla davet. {{seconds}} saniye sonra tekrar deneyin.",
+			"roleConflict": "Bu e-posta için bekleyen bir davet başka bir çalışma alanı rolüyle zaten var. İptal edin veya aynı çalışma alanı rolünü kullanın.",
+			"workspaceInvitationExists": "Bu e-postanın zaten bekleyen bir çalışma alanı daveti var. Ona yalnızca çalışma alanına kişi davet edebilen biri proje ekleyebilir."
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
-			"emailLabel": "Email",
+			"addAsMember": "Üye olarak ekle",
+			"addedToExisting": "{{email}} adresinin zaten bekleyen bir daveti var. Bu proje ona eklendi. İkinci bir e-posta gönderilmedi. Gerekirse bağlantıyı paylaşın.",
+			"createdNotSent": "{{email}} için davet oluşturuldu. E-posta gönderilmedi. Aşağıdaki bağlantıyı paylaşın.",
+			"createdSendFailed": "{{email}} için davet oluşturuldu ancak e-posta gönderilemedi. Aşağıdaki bağlantıyı paylaşın veya listeden yeniden gönderin.",
+			"createdSent": "Davet {{email}} adresine gönderildi.",
+			"createdTitle": "Davet oluşturuldu",
+			"description": "Henüz çalışma alanında olmayan birini davet edin. Aşağıda seçtiğiniz rolleri alır.",
+			"done": "Bitti",
+			"emailLabel": "E-posta",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "Davet gönderilemedi",
+			"invalidEmail": "Geçerli bir e-posta adresi girin",
+			"noSmtpNotice": "Bu sunucuda e-posta yapılandırılmamış. Davet e-postayla gönderilmeyecek. Bağlantıyı kopyalayıp kendiniz gönderin.",
+			"projectRoleHint": "Kişinin bu projede neler yapabileceği.",
+			"projectRoleLabel": "Proje rolü",
+			"rolePlaceholder": "Bir rol seçin",
+			"submit": "Davet gönder",
+			"submitting": "Gönderiliyor...",
+			"title": "Projeye davet et",
+			"workspaceRoleHint": "Kişinin çalışma alanında neler yapabileceği.",
+			"workspaceRoleLabel": "Çalışma alanı rolü",
+			"noAssignableProjectRoles": "Hiçbir proje rolü atayamadığınız için kişi davet edemezsiniz.",
+			"noAssignableWorkspaceRoles": "Hiçbir çalışma alanı rolü atayamadığınız için kişi davet edemezsiniz.",
+			"projectRolePickRequired": "Proje rolünü seçin.",
+			"projectRolesError": "Atayabileceğiniz proje rolleri yüklenemedi.",
+			"projectRolesLoading": "Proje rolleri yükleniyor...",
+			"projectRoleUnavailable": "Seçtiğiniz proje rolü artık kullanılamıyor. Başka bir rol seçin.",
+			"workspaceRolePickRequired": "Çalışma alanı rolünü seçin.",
+			"workspaceRolesError": "Atayabileceğiniz çalışma alanı rolleri yüklenemedi.",
+			"workspaceRolesLoading": "Çalışma alanı rolleri yükleniyor...",
+			"workspaceRoleUnavailable": "Seçtiğiniz çalışma alanı rolü artık kullanılamıyor. Başka bir rol seçin."
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "{{email}} davetine yönelik işlemler",
+			"cancelDialogDescription": "{{email}} adresinin bu projeye daveti iptal edilecek. Başka proje sağlamıyorsa bağlantı çalışmayı durdurur.",
+			"cancelDialogTitle": "Davet iptal edilsin mi?",
+			"cancelError": "Davet iptal edilemedi",
+			"cancelSuccess": "Davet iptal edildi",
+			"cancelSuccessOtherProjects": "Bu proje davetten kaldırıldı. Davet hâlâ diğer projelere erişim sağlıyor.",
 			"columns": {
-				"email": "Email",
-				"roles": "Roles"
+				"email": "E-posta",
+				"roles": "Roller"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "Proje rolü: {{role}}",
+			"renewError": "Davet bağlantısı yenilenemedi",
+			"resendError": "Davet yeniden gönderilemedi",
+			"resendNotDelivered": "Davet yenilendi ancak e-posta gönderilemedi. Bağlantıyı kopyalayıp kendiniz gönderin.",
+			"rolesLoadError": "Atayabileceğiniz roller yüklenemedi, bu nedenle davetler şu anda yeniden gönderilemiyor.",
+			"rolesRetry": "Tekrar dene",
+			"workspaceRole": "Çalışma alanı rolü: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "Bekleyen davetler yüklenemedi.",
+		"subtitle": "Bu projeye davet edilen ancak henüz katılmayan kişiler.",
+		"title": "Bekleyen davetler"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "Bir çalışma alanı üyesi ve bir proje rolü seçin.",
+			"error": "Üye eklenemedi",
+			"loadError": "Ekleyebileceğiniz kişiler yüklenemedi.",
+			"loading": "Kişiler yükleniyor...",
+			"memberLabel": "Çalışma alanı üyesi",
+			"noAssignableRoles": "Hiçbir rol atayamazsınız.",
+			"noCandidates": "Bu çalışma alanındaki herkesin bu projeye zaten erişimi var.",
+			"noMatches": "Aramanızla eşleşen kimse yok.",
+			"roleLabel": "Proje rolü",
+			"rolePickRequired": "Proje rolünü seçin.",
+			"rolePlaceholder": "Bir rol seçin",
+			"rolesError": "Atayabileceğiniz roller yüklenemedi.",
+			"rolesLoading": "Roller yükleniyor...",
+			"roleUnavailable": "Seçtiğiniz rol artık kullanılamıyor. Başka bir rol seçin.",
+			"searchPlaceholder": "Ada veya e-postaya göre ara",
+			"submit": "Üye ekle",
+			"submitting": "Ekleniyor...",
+			"success": "Üye projeye eklendi",
+			"title": "Proje üyesi ekle"
 		},
-		"addMember": "Add member",
+		"addMember": "Üye ekle",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "Bu kişi zaten bu projenin üyesi.",
+			"cannotChangeOwnRole": "Kendi proje rolünüzü değiştiremezsiniz.",
+			"cannotManageMember": "Sizden daha fazla izne sahip bir üyeyi yönetemezsiniz.",
+			"insufficientPermissions": "Bunu yapmak için izniniz yok.",
+			"memberHasFullAccess": "Bu kişi çalışma alanı rolü sayesinde tam erişime sahip. Bunu çalışma alanı üyeleri altından değiştirin.",
+			"membershipChanged": "Üyelik bu arada değişti. Liste yeniden yüklendi. Tekrar deneyin.",
+			"notProjectMember": "Bu kişi artık bu projenin üyesi değil.",
+			"notWorkspaceMember": "Bu kişi çalışma alanının üyesi değil.",
+			"ownerRoleNotAllowed": "Sahip rolü bir projede kullanılamaz.",
+			"roleAssignedToProjectMembers": "Proje üyeleri veya bekleyen proje davetleri hâlâ bu rolü kullanıyor. Önce onlara başka bir rol verin.",
+			"roleExceedsYourPermissions": "Kendi izinlerinizden daha fazla izne sahip bir rol veremezsiniz.",
+			"unknownRole": "Bu rol mevcut değil. Sayfayı yenileyin ve başka bir rol seçin.",
+			"userHasFullAccess": "Bu kişi zaten her projeye tam erişime sahip."
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "E-postayla davet et",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "Bu projeye erişiminizi kaybedeceksiniz. Bir proje yöneticisi veya çalışma alanı yöneticisi sizi tekrar ekleyebilir.",
+			"error": "Projeden ayrılamadınız",
+			"success": "Projeden ayrıldınız",
+			"title": "Bu projeden ayrılınsın mı?"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "Proje üyeleri yüklenemedi.",
+		"loading": "Üyeler yükleniyor...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "Projelere dön",
+			"description": "Bir proje yöneticisinden veya çalışma alanı yöneticisinden sizi eklemesini isteyin.",
+			"title": "Bu projeye erişiminiz yok"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "Henüz hiçbir projeye erişiminiz yok. Bir çalışma alanı yöneticisinden sizi bir projeye eklemesini isteyin.",
+			"title": "Henüz proje erişimi yok",
+			"descriptionCanCreate": "Henüz hiçbir projeye erişiminiz yok. Bir çalışma alanı yöneticisinden sizi bir projeye eklemesini isteyin veya kendi projenizi oluşturun."
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "Proje üyeleri",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} bu projeye erişimini kaybedecek. Çalışma alanında kalır.",
+			"error": "Üye kaldırılamadı",
+			"success": "Üye projeden kaldırıldı",
+			"title": "Projeden kaldırılsın mı?"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "Tekrar dene",
+		"subtitle": "Bu projeyi açabilen kişiler ve bu projede neler yapabilecekleri.",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "{{name}} için işlemler",
+			"ariaChangeRole": "{{name}} kişisinin proje rolünü değiştir",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "Üye",
+				"role": "Proje rolü"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "Bir çalışma alanı üyesi ekleyin veya e-postayla birini davet edin.",
+			"emptyTitle": "Henüz üye yok",
+			"fullAccess": "Tam erişim",
+			"fullAccessHint": "Çalışma alanı rolü sayesinde her projeye erişebilir. Bunu çalışma alanı üyeleri altından değiştirin.",
+			"inactive": "etkin değil",
+			"inactiveHint": "Bu rol artık erişim sağlamıyor. Başka bir rol seçin veya kişiyi kaldırın.",
+			"leaveProject": "Projeden ayrıl",
+			"removeMember": "Projeden kaldır",
+			"rolesLoadError": "Atayabileceğiniz roller yüklenemedi, bu nedenle roller şu anda değiştirilemiyor.",
+			"rolesRetry": "Tekrar dene",
+			"roleUpdateError": "Proje rolü güncellenemedi",
+			"roleUpdateSuccess": "Proje rolü güncellendi",
+			"you": "Siz"
 		},
-		"title": "Members",
+		"title": "Üyeler",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "Tam erişimi olmayan kişiler yalnızca eklendikleri projeleri görür. Birini tek bir projeye davet etmek için proje ayarlarındaki E-postayla davet et seçeneğini kullanın.",
+			"link": "Proje ayarlarını aç"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "Burada neler yapabileceğiniz kontrol edilemedi. Bazı işlemler gizlenmiş olabilir."
 	}
 }

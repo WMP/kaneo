@@ -57,28 +57,28 @@
 			"tryAgain": "다시 시도",
 			"viewDeploymentGuide": "배포 가이드 보기",
 			"refreshPage": "페이지 새로고침",
-			"description": "The page crashed unexpectedly. Refreshing usually fixes it.",
+			"description": "페이지가 예기치 않게 중단되었습니다. 새로 고치면 대개 해결됩니다.",
 			"messages": {
-				"auth": "Authentication failed. Please sign in again.",
-				"cors": "Unable to connect to the server. This might be due to CORS configuration issues.",
-				"network": "Network error. Please check your internet connection and try again.",
-				"server": "Server error. Please try again later.",
-				"unknown": "An unexpected error occurred.",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"auth": "인증에 실패했습니다. 다시 로그인하세요.",
+				"cors": "서버에 연결할 수 없습니다. CORS 설정 문제일 수 있습니다.",
+				"network": "네트워크 오류입니다. 인터넷 연결을 확인한 후 다시 시도하세요.",
+				"server": "서버 오류입니다. 나중에 다시 시도하세요.",
+				"unknown": "예기치 않은 오류가 발생했습니다.",
+				"serverUnreachable": "서버에 연결할 수 없습니다. 연결을 확인하세요. 서버가 복구되면 데이터를 다시 불러옵니다."
 			},
 			"troubleshootingSteps": {
 				"cors": {
-					"checkAccessibility": "Check that your API server is accessible from your browser",
-					"checkApiRunning": "Make sure your API server is running",
-					"checkApiUrl": "Check that VITE_API_URL in your frontend .env matches your API server URL",
-					"checkProtocol": "Ensure both frontend and API are using the same protocol (http/https)",
-					"verifyCorsOrigins": "Verify CORS_ORIGINS in your API .env includes your frontend URL"
+					"checkAccessibility": "브라우저에서 API 서버에 접근할 수 있는지 확인하세요",
+					"checkApiRunning": "API 서버가 실행 중인지 확인하세요",
+					"checkApiUrl": "프론트엔드 .env의 VITE_API_URL이 API 서버 URL과 일치하는지 확인하세요",
+					"checkProtocol": "프론트엔드와 API가 같은 프로토콜(http/https)을 사용하는지 확인하세요",
+					"verifyCorsOrigins": "API .env의 CORS_ORIGINS에 프론트엔드 URL이 포함되어 있는지 확인하세요"
 				},
 				"network": {
-					"checkConnection": "Check your internet connection",
-					"checkFirewall": "Check if there are any firewall or proxy issues",
-					"tryRefresh": "Try refreshing the page",
-					"verifyApiRunning": "Verify the API server is running and accessible"
+					"checkConnection": "인터넷 연결을 확인하세요",
+					"checkFirewall": "방화벽 또는 프록시 문제가 없는지 확인하세요",
+					"tryRefresh": "페이지를 새로 고쳐 보세요",
+					"verifyApiRunning": "API 서버가 실행 중이며 접근 가능한지 확인하세요"
 				}
 			}
 		},
@@ -155,29 +155,29 @@
 					"rose": "로즈",
 					"crimson": "크림슨"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "이 프로젝트에서 작업을 만들 수 없습니다. 다른 프로젝트를 선택하세요.",
+				"permissionsUnavailable": "이 프로젝트에서의 권한을 확인하지 못했습니다. 다시 시도하거나 다른 프로젝트를 선택하세요.",
 				"selectOptionPlaceholder": "옵션 선택"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "거짓",
+			"notSet": "설정되지 않음",
+			"true": "참",
+			"undefined": "정의되지 않음"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "확인 중…",
+			"offlineDescription": "네트워크 연결을 확인하세요. 화면의 데이터가 최신이 아닐 수 있으며, 다시 온라인이 될 때까지 변경 사항을 저장할 수 없습니다.",
+			"offlineTitle": "오프라인 상태입니다",
+			"restored": "연결이 복구되었습니다. 데이터를 새로 고쳤습니다.",
+			"retry": "지금 다시 시도",
+			"serverUnreachableDescription": "화면의 데이터가 최신이 아닐 수 있으며, 변경 사항이 저장되지 않습니다. 자동으로 다시 시도하는 중…",
+			"serverUnreachableTitle": "Kaneo 서버에 연결할 수 없습니다"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "이 프로젝트에서의 권한이 변경되었습니다.",
+			"lost": "더 이상 이 프로젝트에 접근할 수 없습니다."
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "초대 수락에 실패했습니다",
 				"acceptSuccess": "초대가 수락되었습니다! 팀에 오신 것을 환영합니다."
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "초대를 수락하는 중..."
 		},
 		"onboarding": {
 			"pageTitle": "Kaneo에 오신 것을 환영합니다",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "비밀번호를 잊으셨나요?",
+			"requestTitle": "비밀번호 재설정",
+			"requestSubtitle": "이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.",
+			"sendLink": "재설정 링크 보내기",
+			"sending": "보내는 중…",
+			"sent": "이 이메일로 등록된 계정이 있으면 비밀번호 재설정 링크를 받게 됩니다. 받은 편지함과 스팸 폴더를 확인하세요.",
+			"requestError": "재설정 링크를 요청하지 못했습니다. 다시 시도하세요.",
+			"unavailable": "비밀번호 재설정을 사용할 수 없습니다. 인스턴스 관리자에게 문의하세요.",
+			"configError": "서버에 연결할 수 없습니다. 페이지를 새로 고친 후 다시 시도하세요.",
+			"resetTitle": "새 비밀번호 선택",
+			"resetSubtitle": "새 비밀번호는 8~128자로 입력하세요.",
+			"newPassword": "새 비밀번호",
+			"confirmPassword": "새 비밀번호 확인",
+			"passwordMismatch": "비밀번호가 일치하지 않습니다.",
+			"passwordLength": "8~128자로 입력하세요.",
+			"resetPassword": "비밀번호 재설정",
+			"resetting": "재설정 중…",
+			"invalidLink": "이 재설정 링크가 올바르지 않거나 만료되었습니다. 계속하려면 새 링크를 요청하세요.",
+			"requestNewLink": "새 링크 요청",
+			"resetError": "비밀번호를 재설정하지 못했습니다. 다시 시도하세요.",
+			"success": "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인하세요.",
+			"backToSignIn": "로그인으로 돌아가기"
 		}
 	},
 	"settings": {
@@ -415,25 +415,25 @@
 			"avatar": {
 				"hint": "PNG, JPEG, or WebP. Cropped to a square and resized to 256x256.",
 				"remove": "Remove",
-				"removeError": "Failed to remove profile picture",
-				"removeSuccess": "Profile picture removed",
-				"updateError": "Failed to update profile picture",
-				"updateSuccess": "Profile picture updated",
-				"change": "Change avatar",
-				"edit": "Change your profile picture"
+				"removeError": "프로필 사진을 삭제하지 못했습니다",
+				"removeSuccess": "프로필 사진이 삭제되었습니다",
+				"updateError": "프로필 사진을 업데이트하지 못했습니다",
+				"updateSuccess": "프로필 사진이 업데이트되었습니다",
+				"change": "아바타 변경",
+				"edit": "프로필 사진 변경"
 			},
 			"deleteAccount": {
-				"confirm": "Delete account",
+				"confirm": "계정 삭제",
 				"confirmLabel": "Confirm your email address",
-				"description": "Workspaces only you belong to are deleted with your account. Elsewhere, your tasks stay and become unassigned, and your comments are removed.",
-				"error": "Failed to delete account",
+				"description": "나만 속한 워크스페이스는 계정과 함께 삭제됩니다. 그 외의 워크스페이스에서는 내 작업이 유지되지만 담당자가 지정 해제되고, 내 댓글은 삭제됩니다.",
+				"error": "계정을 삭제하지 못했습니다",
 				"modalDescription": "This cannot be undone. Type {{email}} to confirm.",
-				"modalTitle": "Delete your account?",
-				"sectionSubtitle": "Permanent actions that affect your whole account.",
-				"sectionTitle": "Danger zone",
-				"success": "Your account has been deleted",
-				"title": "Delete account",
-				"sessionTooOld": "For security, sign out and sign back in before deleting your account."
+				"modalTitle": "계정을 삭제하시겠습니까?",
+				"sectionSubtitle": "계정 전체에 영향을 주는 영구적인 작업입니다.",
+				"sectionTitle": "위험 구역",
+				"success": "계정이 삭제되었습니다",
+				"title": "계정 삭제",
+				"sessionTooOld": "보안을 위해 계정을 삭제하기 전에 로그아웃했다가 다시 로그인하세요."
 			}
 		},
 		"notificationsPage": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "작업 라벨과 태그를 표시합니다",
 			"priority": "우선순위",
 			"priorityDescription": "우선순위 표시기를 표시합니다",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "프로젝트 배경",
+			"projectBackgroundsDescription": "보드에 프로젝트 배경 이미지를 표시합니다"
 		},
 		"developerPage": {
 			"pageTitle": "개발자 설정",
@@ -740,15 +740,15 @@
 			},
 			"importExportTasks": "가져오기/내보내기",
 			"importExportTasksDescription": "작업을 가져오고 내보냅니다.",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
+			"backgroundHint": "이 프로젝트의 보드 뒤에 표시할 이미지를 선택하세요.",
+			"backgroundLabel": "보드 배경",
+			"backgroundRemove": "이미지 제거",
+			"backgroundRemoveError": "프로젝트 배경을 제거하지 못했습니다",
+			"backgroundRemoveSuccess": "프로젝트 배경이 제거되었습니다",
+			"backgroundReplace": "이미지 교체",
+			"backgroundUpload": "이미지 업로드",
+			"backgroundUploadError": "프로젝트 배경을 업데이트하지 못했습니다",
+			"backgroundUploadSuccess": "프로젝트 배경이 업데이트되었습니다",
 			"moveModalConfirm": "프로젝트 이동",
 			"moveModalDescription": "프로젝트 \"{{name}}\"과(와) 모든 작업이 \"{{workspace}}\"(으)로 이동됩니다. 해당 워크스페이스의 멤버가 아닌 사람에게 할당된 작업은 할당이 해제되며, 이 프로젝트의 알림 구독도 삭제됩니다.",
 			"moveModalTitle": "프로젝트를 이동할까요?",
@@ -777,10 +777,10 @@
 			"slackSectionSubtitle": "수신 웹훅을 사용하여 프로젝트 작업 업데이트를 Slack 채널로 전송합니다.",
 			"telegramSectionTitle": "Telegram 연동",
 			"telegramSectionSubtitle": "봇을 사용하여 프로젝트 작업 업데이트를 Telegram 채팅 또는 토픽으로 전송합니다.",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"mattermostSectionSubtitle": "수신 웹훅으로 프로젝트 작업 업데이트를 Mattermost 채널에 보냅니다.",
+			"mattermostSectionTitle": "Mattermost 연동",
+			"gitlabSectionSubtitle": "작업을 GitLab.com 또는 자체 관리 인스턴스와 동기화합니다(이슈, 머지 리퀘스트, 웹훅).",
+			"gitlabSectionTitle": "GitLab 연동"
 		},
 		"projectVisibility": {
 			"pageTitle": "프로젝트 공개 설정",
@@ -805,8 +805,8 @@
 			"columnsDescription": "보드에 표시되는 컬럼을 관리합니다. 드래그하여 순서를 바꿉니다. 완료된 작업을 나타내는 단계의 경우 \"완료 컬럼\"을 켜세요.",
 			"automationTitle": "자동화 규칙",
 			"automationDescription": "연동 이벤트를 컬럼에 매핑합니다. 이벤트가 발생하면 연결된 작업이 지정된 컬럼으로 이동합니다.",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "이 프로젝트의 사용자 정의 필드를 관리합니다. 드래그하여 순서를 바꿉니다.",
+			"customFieldsTitle": "사용자 정의 필드"
 		},
 		"projectSwitcher": {
 			"selectProject": "프로젝트 선택",
@@ -897,9 +897,9 @@
 			"accountVerificationHint": "이 저장소의 관리자 권한을 확인하려면 GitHub 계정을 연결하세요.",
 			"enableGithubSignInHint": "인스턴스 관리자에게 GitHub 로그인을 활성화해 달라고 요청하세요.",
 			"reverifyHint": "접근 권한을 확인하고 동기화를 재개하려면 이 저장소를 다시 연결하세요.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"resumeImport": "가져오기 다시 시작",
+			"importPaused": "이 가져오기의 진행 상황이 저장되어 있습니다. 다시 시작할 수 있습니다.",
+			"importSummary": "생성: {{imported}} · 업데이트: {{updated}} · 건너뜀: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -1200,7 +1200,7 @@
 				"issue_closed": "이슈 닫힘"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "GitLab 웹훅 이벤트가 발생하면 연결된 작업을 컬럼으로 이동합니다."
 		},
 		"externalLinks": {
 			"resources": "리소스",
@@ -1209,14 +1209,14 @@
 			"merged": "병합됨",
 			"draft": "초안",
 			"open": "열림",
-			"adding": "Adding...",
-			"addResource": "Add resource",
-			"cancel": "Cancel",
-			"empty": "No resources linked to this task.",
-			"titleOptional": "Title (optional)",
+			"adding": "추가하는 중...",
+			"addResource": "리소스 추가",
+			"cancel": "취소",
+			"empty": "이 작업에 연결된 리소스가 없습니다.",
+			"titleOptional": "제목(선택)",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "{{title}} 제거",
+			"removeError": "리소스 링크를 제거하지 못했습니다."
 		},
 		"workspaceRoles": {
 			"pageTitle": "역할",
@@ -1253,11 +1253,11 @@
 				"task": "작업",
 				"label": "라벨",
 				"workspace": "워크스페이스",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "워크스페이스 관리",
+				"member": "멤버",
+				"invitation": "초대",
+				"team": "팀",
+				"ac": "역할 및 권한"
 			},
 			"permissions": {
 				"project": {
@@ -1342,68 +1342,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "워크스페이스 관리 수정",
+						"description": "계정 서비스를 통해 워크스페이스 설정을 변경합니다."
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "워크스페이스 삭제",
+						"description": "계정 서비스를 통해 워크스페이스를 영구 삭제합니다."
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "멤버 추가",
+						"description": "이 워크스페이스에 사용자를 추가합니다."
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "멤버 역할 변경",
+						"description": "워크스페이스 멤버에게 할당된 역할을 변경합니다."
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "멤버 제거",
+						"description": "이 워크스페이스에서 사용자를 제거합니다."
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "멤버 초대",
+						"description": "워크스페이스 초대를 보냅니다."
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "초대 취소",
+						"description": "대기 중인 워크스페이스 초대를 취소합니다."
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "팀 만들기",
+						"description": "이 워크스페이스에 팀을 만듭니다."
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "팀 수정",
+						"description": "팀과 팀 멤버십을 변경합니다."
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "팀 삭제",
+						"description": "이 워크스페이스의 팀을 삭제합니다."
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "역할 만들기",
+						"description": "워크스페이스 역할을 만들고 권한을 할당합니다."
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "역할 보기",
+						"description": "워크스페이스 역할과 해당 권한을 확인합니다."
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "역할 권한 변경",
+						"description": "관리자 접근을 포함해 역할 권한을 변경합니다."
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "역할 삭제",
+						"description": "사용자 지정 워크스페이스 역할을 삭제합니다."
 					}
 				}
 			},
@@ -1449,174 +1449,174 @@
 			"updateError": "라벨 업데이트에 실패했습니다",
 			"deleteError": "라벨 삭제에 실패했습니다",
 			"nameRequired": "라벨 이름은 필수입니다",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "삭제 대기 중",
+			"resumeDeletion": "삭제 다시 시작"
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
+			"channelHint": "참고용 선택 라벨입니다. 실제 대상 채널은 Mattermost의 웹훅 설정에서 정해집니다.",
+			"channelLabel": "채널 이름",
 			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"connect": "Mattermost 연결",
+			"connected": "연결됨",
+			"connectionHint": "Mattermost 수신 웹훅 URL을 붙여넣고 게시할 작업 이벤트를 선택하세요.",
+			"connectionTitle": "Mattermost 웹훅 연결",
+			"disconnect": "연결 해제",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "새 댓글",
+				"taskCreated": "새 작업",
+				"taskDescriptionChanged": "설명 변경",
+				"taskPriorityChanged": "우선순위 변경",
+				"taskStatusChanged": "상태 변경",
+				"taskTitleChanged": "제목 변경"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Mattermost에 게시할 프로젝트 변경 사항을 선택하세요.",
+			"eventsTitle": "이벤트 알림",
+			"paused": "일시 중지됨",
+			"saveChanges": "변경 사항 저장",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Mattermost 알림이 일시 중지되었습니다",
+				"enabled": "Mattermost 알림이 활성화되었습니다",
+				"removed": "Mattermost 연동이 제거되었습니다",
+				"removeError": "Mattermost 연동을 제거하지 못했습니다",
+				"saved": "Mattermost 연동이 저장되었습니다",
+				"saveError": "Mattermost 연동을 저장하지 못했습니다",
+				"updateError": "Mattermost 연동을 업데이트하지 못했습니다"
 			},
-			"update": "Update Mattermost",
+			"update": "Mattermost 업데이트",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "올바른 Mattermost 웹훅 URL을 입력하세요"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookHint": "Mattermost에서 수신 웹훅을 만들고 생성된 URL을 여기에 붙여넣으세요.",
+			"webhookLabel": "수신 웹훅 URL",
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "추가",
+			"createError": "사용자 정의 필드를 만들지 못했습니다.",
+			"createSuccess": "사용자 정의 필드가 생성되었습니다.",
+			"creating": "만드는 중...",
+			"defaultLabel": "기본값",
+			"defaultValuePlaceholder": "기본값",
+			"deleteButton": "삭제",
+			"deleteError": "사용자 정의 필드를 삭제하지 못했습니다.",
+			"deleteSuccess": "사용자 정의 필드가 삭제되었습니다.",
+			"deleting": "삭제 중...",
+			"empty": "아직 설정된 사용자 정의 필드가 없습니다.",
+			"loading": "사용자 정의 필드를 불러오는 중...",
+			"namePlaceholder": "필드 이름",
+			"noOptionsPlaceholder": "옵션 없음",
+			"optionsPlaceholder": "쉼표로 구분한 옵션",
+			"required": "필수",
+			"typePlaceholder": "필드 유형 선택",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "불리언",
+				"date": "날짜",
+				"dropdown": "드롭다운",
+				"number": "숫자",
+				"text": "텍스트",
+				"multiselect": "다중 선택"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "사용 가능한 옵션",
+			"clearDefault": "지우기",
+			"defaultValues": "기본값 {{count}}개",
+			"moreOptions": "+{{hiddenCount}}개 더",
+			"multiple": "여러 개",
+			"options": "옵션 {{count}}개",
+			"reorderError": "필드 순서를 변경하지 못했습니다",
+			"selectPlaceholder": "옵션 선택",
+			"optionColorAriaLabel": "\"{{option}}\" 색상 설정",
+			"optionColorsLabel": "옵션 색상",
+			"updateColorError": "옵션 색상을 업데이트하지 못했습니다.",
+			"updateColorSuccess": "옵션 색상이 업데이트되었습니다.",
+			"hiddenOnProject": "숨김",
+			"hideField": "이 프로젝트에서 \"{{name}}\" 숨기기",
+			"inheritedDescription": "워크스페이스 수준에서 정의된 필드입니다. 필드를 숨기면 이 프로젝트에서만 제거되며, 필수 필드는 숨길 수 없습니다.",
+			"inheritedEmpty": "워크스페이스 수준에 추가된 사용자 정의 필드가 아직 없습니다.",
+			"inheritedTitle": "워크스페이스에서 상속됨",
+			"ownFieldsDescription": "이 프로젝트에만 정의된 필드입니다. 드래그하여 순서를 바꿉니다.",
+			"ownFieldsTitle": "프로젝트 필드",
+			"requiredByWorkspace": "워크스페이스에서 필수",
+			"showField": "이 프로젝트에서 \"{{name}}\" 표시",
+			"visibilityUpdateError": "필드 표시 여부를 업데이트하지 못했습니다.",
+			"visibleOnProject": "표시됨"
 		},
-		"administration": "Administration",
+		"administration": "관리",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "계정 비활성화",
+				"edit": "계정 수정",
+				"open": "{{name}} 작업",
+				"reactivate": "계정 다시 활성화"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "검색 지우기",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "작업",
+				"joined": "가입일",
+				"role": "전역 역할",
+				"status": "상태",
+				"user": "사용자"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "계정 비활성화",
+					"description": "{{name}}님은 로그아웃되며, 관리자가 계정을 다시 활성화할 때까지 로그인할 수 없습니다.",
+					"title": "이 계정을 비활성화하시겠습니까?"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "영구 삭제",
+					"description": "{{name}}님과 해당 세션, 멤버십, 관련 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+					"title": "이 계정을 영구 삭제하시겠습니까?"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "계정 다시 활성화",
+					"description": "{{name}}님이 다시 로그인하고 자신의 워크스페이스에 접근할 수 있게 됩니다.",
+					"title": "이 계정을 다시 활성화하시겠습니까?"
 				},
-				"working": "Working…"
+				"working": "처리 중…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "사용자 디렉터리",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "이 계정의 신원 정보와 인스턴스 전체 접근 권한을 업데이트합니다.",
+				"email": "이메일 주소",
+				"name": "이름",
+				"role": "전역 역할",
+				"save": "변경 사항 저장",
+				"saving": "저장 중…",
+				"selfRoleHint": "자신의 전역 역할은 변경할 수 없습니다.",
+				"title": "사용자 수정"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "다른 이름이나 이메일 주소로 시도해 보세요.",
+			"emptyTitle": "사용자를 찾을 수 없습니다",
+			"instanceBadge": "인스턴스",
+			"loadError": "사용자를 불러오지 못했습니다.",
+			"next": "다음",
+			"pagination": "{{total}}페이지 중 {{current}}페이지",
+			"previous": "이전",
+			"refreshing": "사용자를 새로 고치는 중",
+			"retry": "재시도",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "인스턴스 관리자",
+				"user": "사용자"
 			},
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_other": "일치하는 사용자 {{count}}명",
+			"searchLabel": "사용자 검색",
+			"searchPlaceholder": "이름 또는 이메일 검색…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "활성",
+				"deactivated": "비활성화됨"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "이 Kaneo 인스턴스에 등록된 모든 계정을 관리합니다.",
+			"title": "사용자 관리",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "사용자 상태를 업데이트하지 못했습니다",
+				"deactivated": "사용자가 비활성화되었습니다",
+				"deleted": "사용자가 삭제되었습니다",
+				"reactivated": "사용자가 다시 활성화되었습니다",
+				"updated": "사용자가 업데이트되었습니다",
+				"updateError": "사용자를 업데이트하지 못했습니다"
 			},
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_other": "등록된 사용자 {{count}}명",
+			"you": "(나)"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "휴일 추가",
@@ -1649,256 +1649,256 @@
 			"workingDaysTitle": "근무일",
 			"loading": "캘린더를 불러오는 중…"
 		},
-		"security": "Security",
+		"security": "보안",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "새 비밀번호 확인",
+			"confirmPasswordPlaceholder": "새 비밀번호 다시 입력",
+			"currentPassword": "현재 비밀번호",
+			"currentPasswordPlaceholder": "현재 비밀번호 입력",
+			"newPassword": "새 비밀번호",
+			"newPasswordPlaceholder": "새 비밀번호 입력",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "이 계정은 다른 방식으로 로그인하므로 변경할 비밀번호가 없습니다.",
+				"title": "비밀번호를 변경할 수 없습니다"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "보안",
+			"sectionSubtitle": "로그인에 사용하는 비밀번호를 변경합니다.",
+			"sectionTitle": "비밀번호",
+			"submit": "비밀번호 업데이트",
+			"submitting": "업데이트 중...",
+			"subtitle": "비밀번호와 계정 보안을 관리합니다.",
+			"title": "보안",
+			"updateError": "비밀번호를 업데이트하지 못했습니다.",
+			"updateSuccess": "비밀번호가 업데이트되었습니다.",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "새 비밀번호를 확인하세요.",
+				"currentRequired": "현재 비밀번호를 입력하세요.",
+				"mismatch": "비밀번호가 일치하지 않습니다.",
+				"tooShort": "새 비밀번호는 8자 이상이어야 합니다.",
+				"sameAsCurrent": "새 비밀번호는 현재 비밀번호와 달라야 합니다."
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
+			"actionsHint": "접근을 확인하고 연결합니다",
+			"actionsTitle": "작업",
+			"badgeConnected": "연결됨",
+			"badgeNotConnected": "연결 안 됨",
+			"baseUrlHint": "https://gitlab.com 또는 인스턴스의 루트 URL",
 			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"browse": "찾아보기",
+			"browseModalHint": "토큰이 멤버로 속한 프로젝트",
+			"browseModalTitle": "내 프로젝트",
+			"browseNeedsCredentials": "찾아보려면 GitLab URL과 토큰을 입력하세요",
+			"commentTaskLinkHint": "활성화하면 GitLab에서 열린 각 이슈에 Kaneo가 작업 링크를 댓글로 남깁니다.",
+			"commentTaskLinkTitle": "GitLab에서 열린 이슈에 Kaneo 링크를 댓글로 남기기",
+			"connect": "연결",
+			"connectedActive": "프로젝트가 연결되어 활성 상태입니다",
+			"connectionStatus": "연결 상태",
+			"currentToken": "저장됨",
+			"disconnect": "연결 해제",
+			"importDisabledHint": "위의 프로젝트를 확인하면 가져오기를 사용할 수 있습니다",
+			"importing": "가져오는 중…",
+			"importIssues": "이슈 가져오기",
+			"importSectionHint": "프로젝트의 열린 이슈와 머지 리퀘스트를 가져옵니다",
+			"importSectionTitle": "GitLab 이슈 가져오기",
+			"loadingProjects": "프로젝트를 불러오는 중…",
+			"notConnectedHint": "연결된 GitLab 프로젝트가 없습니다",
+			"openInGitlab": "GitLab에서 {{project}} 열기",
+			"project": "프로젝트",
+			"projectHint": "연결된 GitLab 프로젝트",
+			"projectPathHint": "그룹을 포함한 전체 경로(예: group/subgroup/project)",
+			"projectPathLabel": "프로젝트 경로",
+			"retry": "재시도",
+			"searchProjects": "검색…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "GitLab에서 열린 이슈에 작업 링크 댓글을 남기지 않습니다",
+				"commentOnEnabled": "GitLab에서 열린 이슈에 Kaneo가 작업 링크를 댓글로 남깁니다",
+				"importError": "이슈를 가져오지 못했습니다",
+				"issuesImported": "이슈를 가져왔습니다",
+				"notGitlabInstance": "이 URL은 GitLab 인스턴스를 가리키지 않습니다",
+				"projectNotFound": "프로젝트를 찾을 수 없거나 접근할 수 없습니다",
+				"redirected": "GitLab URL이 리디렉션되었습니다(대개 HTTPS로). 최종 URL을 직접 사용하세요.",
+				"removed": "GitLab 연동이 제거되었습니다",
+				"removeError": "GitLab 연동을 제거하지 못했습니다",
+				"secretCopied": "복사됨",
+				"settingsUpdateError": "GitLab 연동을 업데이트하지 못했습니다",
+				"tokenRequired": "액세스 토큰은 필수입니다",
+				"tokenRequiredVerify": "확인할 토큰을 입력하세요",
+				"unableToCopySecret": "시크릿을 복사할 수 없습니다",
+				"updated": "GitLab 연동이 저장되었습니다",
+				"updateError": "GitLab 연동을 저장하지 못했습니다",
+				"verifyError": "GitLab 접근을 확인하지 못했습니다",
+				"verifyFirst": "접근 확인에 실패했습니다. URL, 토큰, 프로젝트 경로를 확인하세요",
+				"verifyOk": "GitLab 토큰으로 이 프로젝트에 접근할 수 있습니다",
+				"verifyWarning": "토큰 권한 또는 프로젝트 접근 권한을 확인하세요"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "api 스코프가 있고 프로젝트에서 최소 Developer 권한을 가진 토큰",
+			"tokenLabel": "액세스 토큰",
+			"tokenPlaceholder": "토큰 붙여넣기",
+			"tokenPlaceholderUpdate": "교체하려면 새 토큰을 붙여넣으세요",
+			"tokenTypeBearer": "OAuth2 토큰",
+			"tokenTypeHint": "토큰을 전송하는 방식입니다. 액세스 토큰은 PRIVATE-TOKEN을, OAuth2 토큰은 Authorization을 사용합니다.",
+			"tokenTypeLabel": "토큰 유형",
+			"tokenTypePrivate": "개인, 프로젝트 또는 그룹 액세스 토큰",
+			"update": "업데이트",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "올바른 URL을 입력하세요(예: https://gitlab.com)",
+				"baseUrlRequired": "GitLab 기본 URL은 필수입니다",
+				"pathInvalid": "전체 경로를 입력하세요(예: group/project)",
+				"pathRequired": "프로젝트 경로는 필수입니다"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
-			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"verify": "확인",
+			"webhookCopy": "복사",
+			"webhookHide": "숨기기",
+			"webhookHint": "GitLab 프로젝트에서 이 URL과 시크릿 토큰으로 웹훅을 추가하세요. 푸시, 이슈, 댓글, 머지 리퀘스트 이벤트를 활성화합니다.",
+			"webhookSecretLabel": "시크릿 토큰(GitLab 웹훅에 설정한 토큰과 일치해야 함)",
+			"webhookShow": "표시",
+			"webhookTitle": "웹훅",
+			"loadProjectsError": "프로젝트를 불러오지 못했습니다",
+			"importPermissionHint": "가져오려면 작업을 만들고 수정할 권한이 필요합니다."
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "캘린더 피드",
+			"subtitle": "일정이 있는 프로젝트 작업을 캘린더 앱에서 구독합니다.",
+			"createTitle": "캘린더 피드 만들기",
+			"filterHint": "시작일 또는 마감일이 있고 선택한 라벨 중 하나 이상이 붙은 작업을 포함합니다.",
+			"labels": "라벨",
+			"selectLabels": "라벨 검색 및 선택…",
+			"noLabels": "라벨을 찾을 수 없습니다.",
+			"timeZoneHint": "종일 일정 날짜는 {{timeZone}} 기준입니다.",
+			"accessHint": "피드 링크가 있는 사람은 누구나 해당 작업의 제목, 설명, 날짜를 읽을 수 있습니다. 링크를 폐기하면 이후 접근이 차단됩니다.",
+			"create": "피드 만들기",
+			"creating": "만드는 중…",
+			"created": "캘린더 피드가 생성되었습니다.",
+			"createError": "캘린더 피드를 만들지 못했습니다.",
+			"activeFeeds": "활성 피드",
+			"subscribeHint": "링크를 복사해 캘린더 구독으로 추가하세요. 캘린더 앱이 피드를 새로 고칠 때 업데이트가 반영됩니다.",
+			"empty": "아직 캘린더 피드가 없습니다.",
+			"feedUrl": "캘린더 피드 URL",
+			"copy": "링크 복사",
+			"copied": "캘린더 피드 링크를 복사했습니다.",
+			"copyError": "링크를 복사하지 못했습니다. URL을 선택해 직접 복사하세요.",
+			"revoke": "폐기",
+			"revoked": "캘린더 피드가 폐기되었습니다.",
+			"revokeError": "캘린더 피드를 폐기하지 못했습니다.",
+			"loadError": "캘린더 피드 또는 라벨을 불러오지 못했습니다. 다시 시도하세요.",
+			"deletedLabel": "삭제된 라벨",
+			"permissionRequired": "캘린더 피드를 관리하려면 프로젝트 공유 권한이 필요합니다."
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "사용자 정의 필드 설정",
+			"sectionDescription": "여기에 정의한 필드는 워크스페이스의 모든 프로젝트에 추가됩니다. 프로젝트 관리자는 자기 프로젝트에서 필드를 숨기거나 표시할 수만 있으며, 필수 필드는 숨길 수 없습니다.",
+			"sectionTitle": "사용자 정의 필드",
+			"subtitle": "워크스페이스 수준의 사용자 정의 필드를 관리합니다. 이 워크스페이스의 모든 프로젝트가 이를 상속합니다.",
+			"title": "사용자 정의 필드"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "이 워크스페이스에서 할당할 수 있는 새 리소스를 만듭니다. 유형은 생성 후 변경할 수 없습니다.",
+			"createError": "리소스를 만들지 못했습니다",
+			"createResource": "리소스 만들기",
+			"createSuccess": "리소스가 생성되었습니다",
+			"deleteConfirmDescription": "이 리소스가 할당된 모든 작업에서 제거됩니다. 이 작업은 되돌릴 수 없습니다.",
+			"deleteConfirmTitle": "이 리소스를 삭제하시겠습니까?",
+			"deleteError": "리소스를 삭제하지 못했습니다",
+			"deleteResource": "삭제",
+			"deleteSuccess": "리소스가 삭제되었습니다",
+			"editDescription": "이 리소스의 이름 또는 이메일을 업데이트합니다.",
+			"editResource": "리소스 수정",
+			"emailLabel": "이메일(선택)",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "아직 리소스가 없습니다. 첫 번째 사람, 장비 또는 자재를 만들어 시작하세요.",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "장비",
+				"material": "자재",
+				"person": "사람"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "유형",
+			"nameLabel": "이름",
+			"namePlaceholder": "이름 입력",
+			"nameRequired": "리소스 이름은 필수입니다",
+			"pageTitle": "리소스 설정",
+			"saveResource": "저장",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "리소스",
+			"updateError": "리소스를 업데이트하지 못했습니다",
+			"updateSuccess": "리소스가 업데이트되었습니다",
+			"loadError": "리소스를 불러오지 못했습니다. 다시 시도하세요.",
+			"loading": "리소스를 불러오는 중…",
+			"emailChangeDetaches": "이메일을 변경하면 대기 중인 초대와의 연결이 해제됩니다.",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "이 리소스는 이미 멤버에 연결되어 있습니다.",
+				"alreadyWorkspaceMember": "이 주소는 워크스페이스 멤버의 것입니다. 대신 리소스를 해당 멤버에 연결하세요.",
+				"disposableEmail": "일회용 이메일 주소로는 초대할 수 없습니다.",
+				"duplicateProject": "프로젝트는 한 번만 나열할 수 있습니다.",
+				"emailNotAllowed": "사람만 이메일 주소를 가질 수 있습니다.",
+				"guestCannotInvite": "게스트 계정은 초대를 보낼 수 없습니다.",
+				"insufficientPermissions": "이 프로젝트 중 하나에 사람을 초대할 권한이 없습니다.",
+				"invitationLimitReached": "이 워크스페이스의 초대 한도에 도달했습니다.",
+				"invitationRoleConflict": "이 주소로 대기 중인 초대에 이미 다른 워크스페이스 역할이 지정되어 있습니다.",
+				"noEmail": "먼저 리소스에 이메일 주소를 추가하세요.",
+				"notLinked": "이 리소스는 멤버에 연결되어 있지 않습니다.",
+				"notMember": "이 사용자는 워크스페이스 멤버가 아닙니다.",
+				"notPerson": "사람만 초대하거나 연결할 수 있습니다.",
+				"ownerRole": "소유자 역할은 초대로 부여할 수 없습니다.",
+				"projectAccessDenied": "이 프로젝트 중 하나에 접근할 수 없습니다.",
+				"rateLimited": "초대가 너무 많습니다. 1분 후에 다시 시도하세요.",
+				"resourceChanged": "리소스가 변경되었습니다. 다시 시도하세요.",
+				"roleExceedsYourPermissions": "본인보다 권한이 많은 역할은 부여할 수 없습니다.",
+				"unknownRole": "역할 중 하나가 더 이상 존재하지 않습니다. 다른 역할을 선택하세요.",
+				"notFound": "리소스를 찾을 수 없습니다.",
+				"alreadyWorkspaceMemberOnly": "이 주소는 워크스페이스 멤버의 것입니다.",
+				"workspaceNotFound": "워크스페이스를 찾을 수 없습니다."
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "이 주소로 대기 중인 초대에 프로젝트가 추가되었습니다.",
+				"createdTitle": "초대가 생성되었습니다",
+				"description": "{{email}}(으)로 초대장이 전송됩니다. 선택한 프로젝트에서 이 리소스의 할당이 새 계정으로 이동합니다.",
+				"error": "초대를 보내지 못했습니다",
+				"hasTasks": "작업 있음",
+				"noProjectRoles": "할당할 수 있는 역할이 없습니다",
+				"noProjects": "어떤 프로젝트에도 사람을 초대할 수 없습니다.",
+				"pickProject": "프로젝트를 하나 이상 선택하세요.",
+				"projectRoleLabel": "{{project}}에서의 역할",
+				"projectRolesError": "역할을 불러오지 못했습니다",
+				"projectRolesLoading": "역할을 불러오는 중...",
+				"projectsError": "초대할 수 있는 프로젝트를 불러오지 못했습니다. 나중에 다시 시도하세요.",
+				"projectsHint": "선택한 프로젝트에 대한 접근 권한이 부여됩니다. 이 리소스의 작업이 있는 프로젝트는 이미 선택되어 있습니다.",
+				"projectsLabel": "프로젝트",
+				"projectsLoading": "프로젝트를 불러오는 중...",
+				"title": "{{name}} 초대",
+				"workspaceRoleLabel": "워크스페이스 역할"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "초대",
+			"inviteNeedsEmail": "이 사람을 초대하려면 이메일 주소를 추가하세요.",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "이 워크스페이스의 멤버를 선택하세요. 해당 멤버가 열 수 있는 프로젝트에서 이 리소스의 할당이 멤버의 계정으로 이동합니다.",
+				"error": "리소스를 연결하지 못했습니다",
+				"hint": "멤버가 열 수 없는 프로젝트의 할당은 리소스에 그대로 남습니다. 워크로드에서는 멤버의 행에 함께 집계됩니다.",
+				"memberLabel": "멤버",
+				"memberPlaceholder": "멤버 선택",
+				"membersError": "멤버를 불러오지 못했습니다.",
+				"membersLoading": "멤버를 불러오는 중...",
+				"noMembers": "연결할 멤버가 없습니다.",
+				"submit": "연결",
+				"success": "{{name}}님에 연결되었습니다. 이동한 할당: {{moved}}.",
+				"title": "{{name}}을(를) 멤버에 연결"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "멤버에 연결",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "초대됨(만료)",
+				"invitedPending": "초대됨(대기 중)",
+				"linked": "멤버에 연결됨",
+				"linkedTo": "{{name}}님에 연결됨",
+				"notInvited": "초대되지 않음"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "리소스가 더 이상 멤버에 연결되지 않습니다. 이미 이동한 할당은 멤버에게 그대로 남습니다.",
+				"error": "리소스 연결을 해제하지 못했습니다",
+				"success": "리소스 연결이 해제되었습니다",
+				"title": "이 리소스의 연결을 해제하시겠습니까?"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "연결 해제"
 		}
 	},
 	"navigation": {
@@ -2017,11 +2017,11 @@
 			}
 		},
 		"mobileProjectNav": {
-			"backlog": "Backlog",
-			"board": "Board",
-			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"backlog": "백로그",
+			"board": "보드",
+			"gantt": "간트",
+			"projects": "프로젝트",
+			"view": "보기"
 		}
 	},
 	"notifications": {
@@ -2189,8 +2189,8 @@
 					"renderFailed": "Mermaid 다이어그램을 렌더링할 수 없습니다"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "{{source}}에서 가져옴",
+			"importedBy": "{{name}}님이 가져옴",
 			"commentedOnForge": "{{forge}}에 댓글을 남김"
 		},
 		"relationCreated": "종속 관계를 추가했습니다",
@@ -2242,7 +2242,7 @@
 			"loadingTask": "작업 로딩 중...",
 			"taskNotFound": "작업을 찾을 수 없음",
 			"taskNotFoundDescription": "찾는 작업이 존재하지 않거나 삭제되었습니다.",
-			"customFields": "Custom Fields"
+			"customFields": "사용자 정의 필드"
 		},
 		"detail": {
 			"subtaskOf": "상위 작업",
@@ -2349,15 +2349,15 @@
 					"renderFailed": "Mermaid 다이어그램을 렌더링할 수 없습니다"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "크게",
+					"medium": "보통",
+					"reset": "크기 초기화",
+					"resizeHandle": "이미지 크기 조절",
+					"small": "작게"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "필드가 업데이트되었습니다",
+			"selectOption": "옵션 선택",
 			"pickDate": "날짜 선택"
 		},
 		"entity": {
@@ -2418,7 +2418,7 @@
 			"deleteAction": "작업 삭제",
 			"completeAria": "하위 작업을 완료로 표시",
 			"progress": "하위 작업 {{total}}개 중 {{completed}}개 완료",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "이 프로젝트에는 이 하위 작업을 완료하거나 다시 열 수 있는 컬럼이 없습니다."
 		},
 		"properties": {
 			"title": "속성",
@@ -2449,19 +2449,19 @@
 			"assignee": {
 				"unassigned": "미할당",
 				"updateError": "작업 담당자 업데이트에 실패했습니다",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "모두 할당 해제",
+				"addResource": "새 리소스",
+				"createResource": "만들기",
+				"createResourceError": "리소스를 만들지 못했습니다",
+				"newResourceEmailPlaceholder": "이메일(선택)",
+				"newResourceNamePlaceholder": "이름",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "장비",
+					"material": "자재",
+					"person": "사람"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "리소스",
+				"notInProject": "더 이상 이 프로젝트에 없음"
 			},
 			"status": {
 				"updateError": "작업 상태 업데이트에 실패했습니다"
@@ -2605,10 +2605,10 @@
 				"isAnyOf": "다음 중 하나",
 				"includeAnyOf": "다음 중 하나 포함"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "전체",
+			"allCustomFieldValues": "모든 값",
+			"noCustomFieldValues": "사용자 정의 필드 값 없음",
+			"noValuesUsedYet": "아직 사용된 값이 없습니다"
 		},
 		"calendar": {
 			"pageTitle": "{{name}} – 캘린더",
@@ -2638,11 +2638,11 @@
 			"resizeStart": "시작일 크기 조정",
 			"resizeDue": "마감일 크기 조정",
 			"taskAriaLabel": "{{title}}: 열거나 드래그하여 이동",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "오늘로 이동",
+			"previousPeriod": "이전 기간",
+			"nextPeriod": "다음 기간",
+			"periodStart": "타임라인 시작일",
+			"showTaskDates": "작업 날짜 표시",
 			"legendBlocking": "차단 중",
 			"legendRelated": "관련",
 			"externalProjectBadge": "{{projectName}} 내",
@@ -2682,12 +2682,12 @@
 			"gateWarningBadge": "게이트",
 			"gateWarningItem": "\"{{title}}\"은(는) {{status}} 상태입니다",
 			"gateWarningTitle": "승인되지 않은 게이트로 인해 차단됨",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "사용자 정의 필드",
+			"barColorSourceLabel": "막대 색상",
+			"barColorSourceNone": "없음",
+			"barColorSourceFirstLabel": "첫 번째 라벨",
+			"externalTaskDerivedTitle": "{{title}} — {{projectName}}의 관련 작업입니다. 자체 날짜가 없어 종속성에서 위치가 정해집니다(여기서는 읽기 전용)",
+			"externalTaskDerivedRailNote": "종속성에서 위치 결정"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",
@@ -2722,7 +2722,7 @@
 		"assignee": {
 			"label": "담당자",
 			"unassigned": "미할당",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "{{names}}에게 할당됨"
 		},
 		"dueDate": {
 			"label": "마감일",
@@ -2743,8 +2743,8 @@
 		"contextMenu": {
 			"copyLink": "링크 복사",
 			"copyLinkSuccess": "작업 링크가 복사되었습니다!",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "더 보기",
+			"copyLinkError": "작업 링크를 복사하지 못했습니다."
 		},
 		"actions": {
 			"duplicate": "복제",
@@ -2797,11 +2797,11 @@
 				"deleteTable": "표 삭제"
 			}
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "전체 설명을 검색하는 중…",
+		"descriptionSearchError": "설명 검색에 실패했습니다. 결과가 불완전할 수 있습니다.",
+		"descriptionRetry": "재시도",
+		"descriptionLoading": "설명을 불러오는 중…",
+		"descriptionLoadError": "설명을 불러오지 못했습니다. 다시 시도하면 현재 버전을 불러옵니다.",
 		"approval": {
 			"approved": "승인됨",
 			"label": "승인",
@@ -2811,7 +2811,7 @@
 		},
 		"checklistProgress": "체크리스트 항목 {{total}}개 중 {{completed}}개 완료",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "사용자 정의 필드"
 		}
 	},
 	"invitations": {
@@ -3001,19 +3001,19 @@
 			"copyFailed": "자동으로 복사하지 못했습니다. 링크를 선택한 후 Ctrl+C를 누르세요.",
 			"pendingBadge": "대기 중",
 			"expires": "{{date}} 만료",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "초대 링크 갱신",
+			"renewError": "초대 링크를 갱신하지 못했습니다",
+			"renewSuccess": "초대 링크가 갱신되었습니다. 이메일은 전송되지 않았습니다. 링크를 복사해 직접 보내세요.",
+			"resend": "초대 다시 보내기",
+			"resendError": "초대를 다시 보내지 못했습니다",
+			"resendSuccess": "초대를 다시 보냈습니다",
+			"expired": "{{date}}에 만료됨",
+			"inviteAgain": "다시 초대",
+			"inviteAgainError": "다시 초대하지 못했습니다",
+			"renewSuccessUnknownEmail": "초대 링크가 갱신되었습니다. 상대방이 이메일을 받지 못했다면 링크를 공유하세요.",
+			"expiredBadge": "만료됨",
+			"inviteAgainCancelError": "이전 초대를 취소하지 못했습니다. 직접 취소하세요.",
+			"rejectedBadge": "거절됨"
 		},
 		"inviteModal": {
 			"title": "팀 멤버 초대",
@@ -3025,20 +3025,20 @@
 			"createdTitle": "초대가 생성되었습니다",
 			"shareLinkDescription": "{{email}}님이 워크스페이스에 참여할 수 있도록 이 링크를 공유하세요.",
 			"done": "완료",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "올바른 이메일 주소를 입력하세요",
+			"noSmtpNotice": "이 서버에는 이메일이 설정되어 있지 않습니다. 초대 이메일이 전송되지 않으니 링크를 복사해 직접 보내세요.",
+			"shareLinkDescriptionNoEmail": "이메일은 전송되지 않았습니다. {{email}}님이 워크스페이스에 참여할 수 있도록 이 링크를 공유하세요.",
+			"successNoEmail": "초대가 생성되었습니다. 이메일은 전송되지 않았습니다.",
+			"noAssignableRoles": "할당할 수 있는 역할이 없어 사람을 초대할 수 없습니다.",
+			"roleLabel": "역할",
+			"rolesError": "할당할 수 있는 역할을 불러오지 못했습니다. 나중에 다시 시도하세요.",
+			"rolesLoading": "역할을 불러오는 중...",
+			"sending": "보내는 중...",
+			"shareLinkDescriptionUnknownEmail": "{{email}}님이 이메일을 받지 못했다면 워크스페이스에 참여할 수 있도록 이 링크를 공유하세요.",
+			"successUnknownEmail": "초대가 생성되었습니다. 상대방이 이메일을 받지 못했다면 링크를 공유하세요.",
+			"rolePlaceholder": "역할 선택",
+			"roleUnavailable": "선택한 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요.",
+			"rolePickRequired": "이 초대에 사용할 역할을 선택하세요."
 		},
 		"membersTable": {
 			"emptyTitle": "아직 팀 멤버가 없습니다",
@@ -3065,19 +3065,19 @@
 			"ariaInvitationActions": "초대 작업",
 			"roleUpdateSuccess": "역할이 업데이트되었습니다",
 			"roleUpdateError": "역할 업데이트에 실패했습니다",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "{{name}}님의 역할 변경",
+			"rolesLoadError": "할당할 수 있는 역할을 불러오지 못해 지금은 역할을 변경할 수 없습니다.",
+			"rolesRetry": "재시도"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "이미 대기 중인 초대가 있습니다.",
+			"alreadyMember": "이미 워크스페이스 멤버입니다.",
+			"cannotChangeOwnRole": "자신의 역할은 변경할 수 없습니다.",
+			"cannotInviteWithRole": "이 역할로는 초대할 수 없습니다.",
+			"cannotManageMember": "이 멤버를 관리할 수 없습니다.",
+			"cannotUpdateMember": "이 멤버를 변경할 수 없습니다.",
+			"invitationLimitReached": "이 워크스페이스의 초대 한도에 도달했습니다.",
+			"roleExceedsYourPermissions": "본인보다 권한이 많은 역할은 부여할 수 없습니다."
 		}
 	},
 	"publicProject": {
@@ -3118,213 +3118,213 @@
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "프레스 키트",
+		"headline": "Kaneo 프레스 키트",
+		"intro": "기사, 영상 등 미디어에 사용할 수 있는 Kaneo 로고와 제품 스크린샷입니다.",
+		"description": "Kaneo 프레스 자료: 기자와 크리에이터를 위한 제품 정보, 로고, 스크린샷, 연락처.",
+		"downloadKit": "모든 자료 다운로드",
+		"boilerplateTitle": "Kaneo 소개",
+		"boilerplate": "Kaneo는 Andrej Acevski가 만든 오픈소스 프로젝트 관리 플랫폼입니다. 팀은 보드와 목록 보기에서 작업을 정리하고, 업무를 할당하고, 우선순위와 마감일을 설정하고, GitHub와 연결할 수 있습니다. Kaneo는 MIT 라이선스로 셀프 호스팅할 수 있으며, Kaneo Cloud를 통한 관리형 서비스로도 이용할 수 있습니다.",
+		"logosTitle": "로고",
+		"darkLogo": "어두운 워드마크",
+		"darkLogoAlt": "밝은 배경의 어두운 Kaneo 로고",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "밝은 워드마크",
+		"lightLogoAlt": "어두운 배경의 밝은 Kaneo 로고",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "앱 아이콘",
+		"iconAlt": "Kaneo 앱 아이콘",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "다운로드",
+		"screenshotsTitle": "스크린샷",
+		"lightScreenshot": "보드(라이트)",
+		"lightScreenshotAlt": "상태별로 작업 카드가 배치된 라이트 테마의 Kaneo 보드",
+		"darkScreenshot": "보드(다크)",
+		"darkScreenshotAlt": "상태별로 작업 카드가 배치된 다크 테마의 Kaneo 보드",
+		"contactTitle": "보도 문의",
+		"contactBody": "제품 관련 질문, 인터뷰 또는 추가 자료가 필요하면 Kaneo 팀에 문의하세요.",
+		"usageContrast": "어두운 배경에는 밝은 워드마크를, 밝은 배경에는 어두운 워드마크를 사용하세요.",
+		"usageProportions": "원래의 비율과 색상을 유지하고, 늘리거나 효과를 추가하지 마세요.",
+		"usageSpace": "로고가 선명하게 보이도록 주변에 충분한 여백을 두세요.",
+		"darkListScreenshot": "목록(다크)",
+		"darkListScreenshotAlt": "담당자, 우선순위, 라벨, 마감일과 함께 상태별로 그룹화된 다크 테마의 Kaneo 작업 목록",
+		"darkTaskScreenshot": "작업 상세(다크)",
+		"darkTaskScreenshotAlt": "설명, 체크리스트, 팀 댓글, 작업 속성이 표시된 다크 테마의 Kaneo 작업 상세",
+		"darkTimelineScreenshot": "타임라인(다크)",
+		"darkTimelineScreenshotAlt": "일정이 잡힌 작업과 기간을 보여 주는 다크 테마의 Kaneo 간트 타임라인",
+		"lightListScreenshot": "목록(라이트)",
+		"lightListScreenshotAlt": "담당자, 우선순위, 라벨, 마감일과 함께 상태별로 그룹화된 라이트 테마의 Kaneo 작업 목록",
+		"lightTaskScreenshot": "작업 상세(라이트)",
+		"lightTaskScreenshotAlt": "설명, 체크리스트, 팀 댓글, 작업 속성이 표시된 라이트 테마의 Kaneo 작업 상세",
+		"lightTimelineScreenshot": "타임라인(라이트)",
+		"lightTimelineScreenshotAlt": "일정이 잡힌 작업과 기간을 보여 주는 라이트 테마의 Kaneo 간트 타임라인"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "파트너"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Kaneo가 존재하는 이유",
+			"intro": "저는 Andrej이며, 도움이 되기보다 방해가 되는 프로젝트 관리 도구에 지쳐서 Kaneo를 만들었습니다. 실제 업무에 방해가 되는 무겁고 복잡한 플랫폼을 수년간 써 보고, 더 나은 방법이 있어야 한다고 확신했습니다.",
+			"problem": "문제는 이런 도구에 기능이 부족한 것이 아니라 너무 많다는 것이었습니다. 모든 알림, 불필요한 버튼, 복잡한 워크플로가 팀을 중요한 일, 즉 훌륭한 제품을 만드는 일에서 멀어지게 했습니다.",
+			"principle": "최고의 도구는 눈에 띄지 않는다고 믿습니다. 도구가 팀의 자연스러운 업무 방식을 돕는 것이지, 팀이 도구에 맞추도록 강요해서는 안 됩니다. Kaneo는 적을수록 좋다는 원칙으로 만들어졌습니다. 모든 기능은 데모에서 화려해 보여서가 아니라 실제 문제를 해결하기 때문에 존재합니다."
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Kaneo Cloud 체험하기",
+			"selfHostCta": "Kaneo 셀프 호스팅",
+			"trialNote": "14일 클라우드 체험. 신용카드 불필요.",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "프로젝트 관리가",
+			"titleAccent": "또 다른 프로젝트가 되지 않도록.",
+			"description": "보드, 간트 차트, GitHub 연동을 갖춘 오픈소스 프로젝트 관리 도구입니다. SSO가 포함된 셀프 호스팅은 무료이며, 호스팅은 Kaneo Cloud에 맡길 수도 있습니다."
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
-			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
-			"roadmap": "Roadmap",
-			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"product": "제품",
+			"pricing": "요금",
+			"resources": "자료",
+			"docs": "문서",
+			"blog": "블로그",
+			"guides": "가이드",
+			"comparisons": "도구 비교",
+			"roadmap": "로드맵",
+			"menu": "메뉴",
+			"closeMenu": "메뉴 닫기",
+			"home": "Kaneo 홈",
+			"signIn": "로그인",
+			"getStarted": "시작하기"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
-			"list": "Backlog",
-			"gantt": "Gantt"
+			"label": "Kaneo 제품 화면",
+			"controls": "제품 화면 선택",
+			"play": "제품 화면 재생",
+			"pause": "제품 화면 일시 정지",
+			"board": "보드",
+			"list": "백로그",
+			"gantt": "간트"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "하위 작업과 맥락",
+				"title": "큰 작업도 다음 단계는 명확하게.",
+				"description": "업무를 하위 작업으로 나누고 각각 할당하며, 원래 요구 사항을 놓치지 않고 진행 상황을 추적하세요. 모든 세부 내용이 작업과 함께 유지됩니다."
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "GitHub 연동",
+				"title": "풀 리퀘스트에서 완료까지.",
+				"description": "이슈와 라벨이 양방향으로 동기화됩니다. 연결된 풀 리퀘스트는 코드가 열리고 병합되는 대로 작업을 리뷰를 거쳐 완료로 이동합니다.",
+				"link": "GitHub 설정하기"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "내 서버에서 실행하세요.",
+				"description": "Docker로 배포하고 워크스페이스를 직접 관리하는 인프라에 두세요.",
+				"link": "Kaneo 셀프 호스팅"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "코드도 공개되어 있습니다.",
+				"description": "소스를 읽고, 이슈를 보고하고, 변경 사항을 기여하세요. 개발은 GitHub에서 이루어집니다.",
+				"link": "소스 보기"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
+				"taskAlt": "Kaneo 작업과 하위 작업의 인터랙티브 미리보기.",
+				"githubAlt": "GitHub 병합이 Kaneo 작업을 업데이트하는 인터랙티브 미리보기.",
+				"taskTitle": "새 홈페이지 게시",
+				"taskDescription": "다음 릴리스 전에 문구를 업데이트하고 레이아웃을 확인합니다.",
+				"checklistDone": "문구 검토",
+				"checklistOpen": "모바일 레이아웃 확인",
+				"inProgress": "진행 중",
+				"high": "높음",
 				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"design": "디자인",
+				"done": "완료",
+				"relationsAlt": "Kaneo 작업 종속성의 인터랙티브 미리보기.",
+				"inReview": "리뷰 중",
+				"trySubtasks": "하위 작업을 체크해 보세요.",
+				"tryGithub": "병합을 미리 보고 작업이 업데이트되는 모습을 확인하세요.",
+				"tryRelations": "연결된 작업을 열어 관계를 따라가 보세요.",
+				"mergeAction": "병합 미리보기",
+				"resetAction": "미리보기 초기화",
+				"mergedHint": "풀 리퀘스트가 병합되었습니다. 작업이 완료로 이동했습니다.",
+				"progress": "하위 작업 {{total}}개 중 {{completed}}개 완료",
+				"backToTask": "홈페이지 작업으로 돌아가기",
+				"releaseNotes": "릴리스 노트 작성",
+				"dependencyDescription": "홈페이지는 모바일 검토를 기다리고 있습니다. 맥락을 위해 출시 노트를 연결해 두세요.",
+				"mobileDescription": "공개 전에 좁은 화면에서 새 홈페이지를 확인합니다.",
+				"notesDescription": "출시 공지를 위해 변경된 내용을 정리합니다."
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "연결된 작업과 종속성",
+				"title": "무엇이 발목을 잡는지 확인하세요.",
+				"description": "차단 요소를 연결하고, 종속성을 따라가고, 관련 작업을 가까이 두세요. 연결된 작업을 열면 다음 단계의 맥락을 볼 수 있습니다."
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — 오픈소스 셀프 호스팅 프로젝트 관리",
+			"description": "보드, 간트 차트, GitHub 연동을 갖춘 오픈소스 프로젝트 관리 도구입니다. SSO가 포함된 셀프 호스팅은 무료이며, Kaneo Cloud도 이용할 수 있습니다."
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "나에게 맞게 활용하세요",
+			"title": "체험에서 실사용까지 명확한 길.",
+			"description": "서버를 설정하고, 도구를 연결하고, Kaneo를 현재 사용 중인 트래커와 비교해 보세요.",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Docker로 셀프 호스팅",
+				"description": "직접 관리하는 환경을 위한 설치, 백업, 업데이트 안내."
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "자체 ID 공급자 사용",
+				"description": "무료 셀프 호스팅 빌드에서 OIDC 싱글 사인온을 설정합니다."
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "AI 도구 연결",
+				"description": "MCP를 사용해 AI 클라이언트로 작업과 프로젝트를 다룹니다."
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "Kaneo와 Linear 비교",
+				"description": "호스팅, 라이선스, 워크플로의 차이를 확인하세요."
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "시작하기 전에",
+			"description": "호스팅, 계획, 팀 연결에 관한 실용적인 정보입니다.",
+			"overview": "Kaneo는 보드, 백로그, 간트 및 캘린더 보기, 사용자 정의 필드, 시간 추적, GitHub 연동을 갖춘 오픈소스 MIT 라이선스 프로젝트 관리 플랫폼입니다. 자체 인프라에서 셀프 호스팅하거나 Kaneo Cloud를 이용하세요.",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Kaneo는 무료로 셀프 호스팅할 수 있나요?",
+				"answer": "네. Kaneo는 MIT 라이선스이며 싱글 사인온을 포함해 무료로 셀프 호스팅할 수 있습니다. Docker Compose로 PostgreSQL과 함께 애플리케이션을 실행하거나 공식 Helm 차트로 배포하세요. 인프라, 업데이트, 백업은 직접 관리합니다.",
+				"link": "설치 가이드 읽기"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Kaneo에 간트 차트가 있나요?",
+				"answer": "네. Kaneo는 보드, 목록, 백로그 계획과 함께 간트 및 캘린더 보기를 제공합니다. 작업의 시작일과 마감일로 타임라인에서 업무를 계획하세요. 예산 관리, 베이스라인 비교, 스프린트 번다운 리포트는 현재 범위에 포함되지 않습니다.",
+				"link": "계획 기능 비교"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "싱글 사인온이 포함되어 있나요?",
+				"answer": "네. 무료 셀프 호스팅 빌드는 Google, GitHub, Discord, 사용자 지정 OAuth/OIDC 공급자를 지원합니다. 별도의 Kaneo 에디션을 구매하지 않고 인스턴스에서 공급자를 설정하세요.",
+				"link": "OIDC 설정"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "AI 클라이언트가 Kaneo와 함께 작동하나요?",
+				"answer": "네. Kaneo는 @kaneo/mcp 패키지와 HTTP 엔드포인트로 MCP 서버를 제공합니다. 호환되는 AI 클라이언트는 사용자에 연결된 API 키로 작업을 읽고 수정할 수 있으며, 워크스페이스 권한이 적용됩니다.",
+				"link": "MCP 가이드 읽기"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "기능",
+			"yes": "예",
+			"no": "아니요"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "셀프 호스팅에 필요한 사항과 관리되는 Docker Compose 구성 및 설치 단계로 연결되는 링크입니다.",
+			"answer": "Kaneo를 셀프 호스팅하려면 Docker Compose로 애플리케이션과 PostgreSQL을 실행하고, 공개 URL과 시크릿을 설정하고, 앞단에 TLS 리버스 프록시를 두세요. 설치 가이드에서는 최소 2GB RAM과 10GB 디스크 공간을 요구합니다. 지속적인 업데이트, 데이터베이스 백업, 업로드 파일 저장소도 계획하세요.",
+			"requirements": "문서에 명시된 최소 사양은 2GB RAM과 10GB 디스크 공간이며, Docker 20.10 이상과 Docker Compose V2가 필요합니다. 워크로드, 데이터베이스 증가량, 업로드 파일을 고려해 여유를 두세요.",
+			"compose": "Docker Compose 가이드의 관리되는 compose.yml을 사용하세요. PostgreSQL, 영구 데이터베이스 볼륨, Kaneo 애플리케이션, 헬스 체크가 정의되어 있습니다. 서비스를 시작하기 전에 환경 파일을 설정하고, 프로덕션에서는 업데이트를 의도적으로 진행할 수 있도록 이미지 버전을 고정하세요.",
+			"backups": "PostgreSQL과 업로드에 사용하는 오브젝트 스토리지를 모두 백업하세요. 팀이 감수할 수 있는 작업 손실 범위에 맞춰 일정을 정하고, 사본은 애플리케이션 서버 밖에 보관하며, 필요해지기 전에 복원을 테스트하세요.",
+			"worth": "인프라와 데이터를 직접 통제해야 하고 유지 관리를 맡을 사람이 있을 때 셀프 호스팅이 적합합니다. 관리형 서비스와 비용을 비교할 때는 서버 용량, 스토리지, 백업, 유지 관리 시간을 포함하세요.",
+			"minimum": "설치 가이드에서는 Docker 20.10 이상, Docker Compose V2, 최소 2GB RAM, 10GB 디스크 공간을 요구합니다. Compose 구성에는 PostgreSQL이 포함되어 있습니다. API 인스턴스가 하나라면 Redis는 선택 사항입니다.",
+			"composeLink": "Docker Compose 구성",
+			"composeLinkDescription": "영구 스토리지와 헬스 체크가 포함된 관리되는 compose.yml.",
+			"startLink": "서비스 시작 및 확인",
+			"startLinkDescription": "스택을 시작하고 상태를 점검하며 애플리케이션을 사용할 수 있는지 확인합니다."
 		}
 	},
 	"portfolio": {
@@ -3345,174 +3345,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "이미 {{workspaceName}}의 멤버이므로 이 초대로 프로젝트에 추가할 수 없습니다. 워크스페이스 관리자에게 프로젝트에 추가해 달라고 요청하세요.",
+			"alreadyMemberTitle": "이미 멤버입니다",
+			"invitedToProject": "{{project}} 프로젝트에 {{role}} 역할로 초대되었습니다.",
+			"invitedToProjects": "다음 프로젝트에 초대되었습니다.",
+			"projectRole": "{{project}}: {{role}}"
 		},
-		"empty": "No pending invitations.",
+		"empty": "대기 중인 초대가 없습니다.",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "이미 워크스페이스 멤버입니다. 멤버 추가로 프로젝트에 추가하세요.",
+			"disposableEmail": "일회용 이메일 주소는 사용할 수 없습니다.",
+			"expired": "이 초대가 만료되었습니다. 다시 초대하세요.",
+			"guestCannotInvite": "게스트 계정은 사람을 초대할 수 없습니다.",
+			"limitReached": "워크스페이스에 대기 중인 초대가 너무 많습니다. 먼저 일부를 취소하세요.",
+			"notApplied": "이 초대의 프로젝트 접근 권한을 적용하지 못했습니다. 다시 수락해 보세요. 계속 실패하면 워크스페이스 관리자에게 프로젝트에 추가해 달라고 요청하세요.",
+			"notFound": "이 초대는 더 이상 존재하지 않습니다. 목록을 다시 불러왔습니다.",
+			"rateLimited": "초대가 너무 많습니다. 잠시 후 다시 시도하세요.",
+			"rateLimitedRetry": "초대가 너무 많습니다. {{seconds}}초 후에 다시 시도하세요.",
+			"roleConflict": "이 이메일로 다른 워크스페이스 역할이 지정된 대기 중인 초대가 이미 있습니다. 초대를 취소하거나 같은 워크스페이스 역할을 사용하세요.",
+			"workspaceInvitationExists": "이 이메일에는 이미 대기 중인 워크스페이스 초대가 있습니다. 워크스페이스에 사람을 초대할 수 있는 사람만 여기에 프로젝트를 추가할 수 있습니다."
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
-			"emailLabel": "Email",
+			"addAsMember": "멤버로 추가",
+			"addedToExisting": "{{email}}님에게는 이미 대기 중인 초대가 있습니다. 이 프로젝트가 해당 초대에 추가되었으며 두 번째 이메일은 전송되지 않았습니다. 필요하면 링크를 공유하세요.",
+			"createdNotSent": "{{email}}에 대한 초대가 생성되었습니다. 이메일은 전송되지 않았습니다. 아래 링크를 공유하세요.",
+			"createdSendFailed": "{{email}}에 대한 초대가 생성되었지만 이메일을 보내지 못했습니다. 아래 링크를 공유하거나 목록에서 다시 보내세요.",
+			"createdSent": "{{email}}(으)로 초대를 보냈습니다.",
+			"createdTitle": "초대가 생성되었습니다",
+			"description": "아직 워크스페이스에 없는 사람을 초대합니다. 아래에서 선택한 역할이 부여됩니다.",
+			"done": "완료",
+			"emailLabel": "이메일",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "초대를 보내지 못했습니다",
+			"invalidEmail": "올바른 이메일 주소를 입력하세요",
+			"noSmtpNotice": "이 서버에는 이메일이 설정되어 있지 않습니다. 초대 이메일이 전송되지 않습니다. 링크를 복사해 직접 보내세요.",
+			"projectRoleHint": "이 프로젝트에서 이 사람이 할 수 있는 일입니다.",
+			"projectRoleLabel": "프로젝트 역할",
+			"rolePlaceholder": "역할 선택",
+			"submit": "초대 보내기",
+			"submitting": "보내는 중...",
+			"title": "프로젝트에 초대",
+			"workspaceRoleHint": "워크스페이스에서 이 사람이 할 수 있는 일입니다.",
+			"workspaceRoleLabel": "워크스페이스 역할",
+			"noAssignableProjectRoles": "할당할 수 있는 프로젝트 역할이 없어 사람을 초대할 수 없습니다.",
+			"noAssignableWorkspaceRoles": "할당할 수 있는 워크스페이스 역할이 없어 사람을 초대할 수 없습니다.",
+			"projectRolePickRequired": "프로젝트 역할을 선택하세요.",
+			"projectRolesError": "할당할 수 있는 프로젝트 역할을 불러오지 못했습니다.",
+			"projectRolesLoading": "프로젝트 역할을 불러오는 중...",
+			"projectRoleUnavailable": "선택한 프로젝트 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요.",
+			"workspaceRolePickRequired": "워크스페이스 역할을 선택하세요.",
+			"workspaceRolesError": "할당할 수 있는 워크스페이스 역할을 불러오지 못했습니다.",
+			"workspaceRolesLoading": "워크스페이스 역할을 불러오는 중...",
+			"workspaceRoleUnavailable": "선택한 워크스페이스 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요."
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "{{email}} 초대 작업",
+			"cancelDialogDescription": "{{email}}님의 이 프로젝트 초대가 취소됩니다. 다른 프로젝트에 대한 권한이 없으면 링크가 더 이상 작동하지 않습니다.",
+			"cancelDialogTitle": "초대를 취소하시겠습니까?",
+			"cancelError": "초대를 취소하지 못했습니다",
+			"cancelSuccess": "초대가 취소되었습니다",
+			"cancelSuccessOtherProjects": "이 프로젝트가 초대에서 제거되었습니다. 초대는 다른 프로젝트에 대한 권한을 계속 부여합니다.",
 			"columns": {
-				"email": "Email",
-				"roles": "Roles"
+				"email": "이메일",
+				"roles": "역할"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "프로젝트 역할: {{role}}",
+			"renewError": "초대 링크를 갱신하지 못했습니다",
+			"resendError": "초대를 다시 보내지 못했습니다",
+			"resendNotDelivered": "초대가 갱신되었지만 이메일을 보내지 못했습니다. 링크를 복사해 직접 보내세요.",
+			"rolesLoadError": "할당할 수 있는 역할을 불러오지 못해 지금은 초대를 다시 보낼 수 없습니다.",
+			"rolesRetry": "재시도",
+			"workspaceRole": "워크스페이스 역할: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "대기 중인 초대를 불러오지 못했습니다.",
+		"subtitle": "이 프로젝트에 초대되었지만 아직 참여하지 않은 사람입니다.",
+		"title": "대기 중인 초대"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "워크스페이스 멤버와 프로젝트 역할을 선택하세요.",
+			"error": "멤버를 추가하지 못했습니다",
+			"loadError": "추가할 수 있는 사람을 불러오지 못했습니다.",
+			"loading": "사람을 불러오는 중...",
+			"memberLabel": "워크스페이스 멤버",
+			"noAssignableRoles": "할당할 수 있는 역할이 없습니다.",
+			"noCandidates": "이 워크스페이스의 모든 사람이 이미 이 프로젝트에 접근할 수 있습니다.",
+			"noMatches": "검색과 일치하는 사람이 없습니다.",
+			"roleLabel": "프로젝트 역할",
+			"rolePickRequired": "프로젝트 역할을 선택하세요.",
+			"rolePlaceholder": "역할 선택",
+			"rolesError": "할당할 수 있는 역할을 불러오지 못했습니다.",
+			"rolesLoading": "역할을 불러오는 중...",
+			"roleUnavailable": "선택한 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요.",
+			"searchPlaceholder": "이름 또는 이메일로 검색",
+			"submit": "멤버 추가",
+			"submitting": "추가하는 중...",
+			"success": "멤버가 프로젝트에 추가되었습니다",
+			"title": "프로젝트 멤버 추가"
 		},
-		"addMember": "Add member",
+		"addMember": "멤버 추가",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "이미 이 프로젝트의 멤버입니다.",
+			"cannotChangeOwnRole": "자신의 프로젝트 역할은 변경할 수 없습니다.",
+			"cannotManageMember": "본인보다 권한이 많은 멤버는 관리할 수 없습니다.",
+			"insufficientPermissions": "이 작업을 수행할 권한이 없습니다.",
+			"memberHasFullAccess": "이 사람은 워크스페이스 역할을 통해 전체 접근 권한이 있습니다. 워크스페이스 멤버에서 변경하세요.",
+			"membershipChanged": "그사이 멤버십이 변경되어 목록을 다시 불러왔습니다. 다시 시도하세요.",
+			"notProjectMember": "이 사람은 더 이상 이 프로젝트의 멤버가 아닙니다.",
+			"notWorkspaceMember": "이 사람은 워크스페이스 멤버가 아닙니다.",
+			"ownerRoleNotAllowed": "소유자 역할은 프로젝트에서 사용할 수 없습니다.",
+			"roleAssignedToProjectMembers": "프로젝트 멤버 또는 대기 중인 프로젝트 초대가 아직 이 역할을 사용하고 있습니다. 먼저 다른 역할을 지정하세요.",
+			"roleExceedsYourPermissions": "본인보다 권한이 많은 역할은 부여할 수 없습니다.",
+			"unknownRole": "존재하지 않는 역할입니다. 페이지를 새로 고치고 다른 역할을 선택하세요.",
+			"userHasFullAccess": "이 사람은 이미 모든 프로젝트에 대한 전체 접근 권한이 있습니다."
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "이메일로 초대",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "이 프로젝트에 접근할 수 없게 됩니다. 프로젝트 관리자 또는 워크스페이스 관리자가 다시 추가할 수 있습니다.",
+			"error": "프로젝트에서 나가지 못했습니다",
+			"success": "프로젝트에서 나갔습니다",
+			"title": "이 프로젝트에서 나가시겠습니까?"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "프로젝트 멤버를 불러오지 못했습니다.",
+		"loading": "멤버를 불러오는 중...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "프로젝트로 돌아가기",
+			"description": "프로젝트 관리자 또는 워크스페이스 관리자에게 추가를 요청하세요.",
+			"title": "이 프로젝트에 접근할 수 없습니다"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "아직 접근할 수 있는 프로젝트가 없습니다. 워크스페이스 관리자에게 프로젝트에 추가해 달라고 요청하세요.",
+			"title": "아직 접근할 수 있는 프로젝트가 없습니다",
+			"descriptionCanCreate": "아직 접근할 수 있는 프로젝트가 없습니다. 워크스페이스 관리자에게 프로젝트에 추가해 달라고 요청하거나 직접 만드세요."
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "프로젝트 멤버",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}}님은 이 프로젝트에 접근할 수 없게 됩니다. 워크스페이스에는 그대로 남습니다.",
+			"error": "멤버를 제거하지 못했습니다",
+			"success": "멤버를 프로젝트에서 제거했습니다",
+			"title": "프로젝트에서 제거하시겠습니까?"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "재시도",
+		"subtitle": "이 프로젝트를 열 수 있는 사람과 그들이 할 수 있는 일입니다.",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "{{name}} 작업",
+			"ariaChangeRole": "{{name}}님의 프로젝트 역할 변경",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "멤버",
+				"role": "프로젝트 역할"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "워크스페이스 멤버를 추가하거나 이메일로 초대하세요.",
+			"emptyTitle": "아직 멤버가 없습니다",
+			"fullAccess": "전체 접근",
+			"fullAccessHint": "워크스페이스 역할을 통해 모든 프로젝트에 접근할 수 있습니다. 워크스페이스 멤버에서 변경하세요.",
+			"inactive": "비활성",
+			"inactiveHint": "이 역할로는 더 이상 접근할 수 없습니다. 다른 역할을 선택하거나 이 사람을 제거하세요.",
+			"leaveProject": "프로젝트 나가기",
+			"removeMember": "프로젝트에서 제거",
+			"rolesLoadError": "할당할 수 있는 역할을 불러오지 못해 지금은 역할을 변경할 수 없습니다.",
+			"rolesRetry": "재시도",
+			"roleUpdateError": "프로젝트 역할을 업데이트하지 못했습니다",
+			"roleUpdateSuccess": "프로젝트 역할이 업데이트되었습니다",
+			"you": "나"
 		},
-		"title": "Members",
+		"title": "멤버",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "전체 접근 권한이 없는 사람은 추가된 프로젝트만 볼 수 있습니다. 한 프로젝트에만 초대하려면 프로젝트 설정의 이메일로 초대를 사용하세요.",
+			"link": "프로젝트 설정 열기"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "여기서 할 수 있는 작업을 확인하지 못했습니다. 일부 작업이 숨겨질 수 있습니다."
 	}
 }

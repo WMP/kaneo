@@ -64,7 +64,7 @@
 				"auth": "認証に失敗しました。再度サインインしてください。",
 				"server": "サーバーエラーが発生しました。しばらくしてからもう一度お試しください。",
 				"unknown": "予期しないエラーが発生しました。",
-				"serverUnreachable": "Can't reach the server. Check your connection; data will reload once the server is back."
+				"serverUnreachable": "サーバーに接続できません。接続を確認してください。サーバーが復旧するとデータが再読み込みされます。"
 			},
 			"troubleshootingSteps": {
 				"cors": {
@@ -155,29 +155,29 @@
 					"rose": "ローズ",
 					"crimson": "クリムゾン"
 				},
-				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"noCreatePermission": "このプロジェクトにタスクを作成する権限がありません。別のプロジェクトを選択してください。",
+				"permissionsUnavailable": "このプロジェクトでの権限を確認できませんでした。もう一度お試しいただくか、別のプロジェクトを選択してください。",
 				"selectOptionPlaceholder": "オプションを選択"
 			}
 		},
 		"boolean": {
-			"false": "False",
-			"notSet": "Not Set",
-			"true": "True",
-			"undefined": "Undefined"
+			"false": "偽",
+			"notSet": "未設定",
+			"true": "真",
+			"undefined": "未定義"
 		},
 		"connection": {
-			"checking": "Checking…",
-			"offlineDescription": "Check your network connection. Data on screen may be out of date, and changes can't be saved until you're back online.",
-			"offlineTitle": "You're offline",
-			"restored": "Connection restored. Data refreshed.",
-			"retry": "Retry now",
-			"serverUnreachableDescription": "Data on screen may be out of date, and changes won't be saved. Retrying automatically…",
-			"serverUnreachableTitle": "Can't reach the Kaneo server"
+			"checking": "確認中…",
+			"offlineDescription": "ネットワーク接続を確認してください。画面のデータが古い可能性があり、オンラインに戻るまで変更は保存できません。",
+			"offlineTitle": "オフラインです",
+			"restored": "接続が復旧しました。データを更新しました。",
+			"retry": "今すぐ再試行",
+			"serverUnreachableDescription": "画面のデータが古い可能性があり、変更は保存されません。自動的に再試行しています…",
+			"serverUnreachableTitle": "Kaneoサーバーに接続できません"
 		},
 		"projectAccess": {
-			"changed": "Your permissions in this project changed.",
-			"lost": "You no longer have access to this project."
+			"changed": "このプロジェクトでの権限が変更されました。",
+			"lost": "このプロジェクトにアクセスできなくなりました。"
 		}
 	},
 	"auth": {
@@ -317,7 +317,7 @@
 				"acceptFailed": "招待の承諾に失敗しました",
 				"acceptSuccess": "招待を承諾しました！チームへようこそ。"
 			},
-			"autoAccepting": "Accepting invitation..."
+			"autoAccepting": "招待を承諾しています..."
 		},
 		"onboarding": {
 			"pageTitle": "Kaneo へようこそ",
@@ -363,28 +363,28 @@
 			}
 		},
 		"passwordReset": {
-			"forgotPassword": "Forgot password?",
-			"requestTitle": "Reset your password",
-			"requestSubtitle": "Enter your email and we’ll send you a password reset link.",
-			"sendLink": "Send reset link",
-			"sending": "Sending…",
-			"sent": "If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.",
-			"requestError": "Could not request a reset link. Please try again.",
-			"unavailable": "Password reset is unavailable. Contact your instance administrator.",
-			"configError": "Could not reach the server. Please reload the page to try again.",
-			"resetTitle": "Choose a new password",
-			"resetSubtitle": "Use 8–128 characters for your new password.",
-			"newPassword": "New password",
-			"confirmPassword": "Confirm new password",
-			"passwordMismatch": "The passwords do not match.",
-			"passwordLength": "Use between 8 and 128 characters.",
-			"resetPassword": "Reset password",
-			"resetting": "Resetting…",
-			"invalidLink": "This reset link is invalid or has expired. Request a new link to continue.",
-			"requestNewLink": "Request a new link",
-			"resetError": "Could not reset your password. Please try again.",
-			"success": "Your password has been reset. Sign in with your new password.",
-			"backToSignIn": "Back to sign in"
+			"forgotPassword": "パスワードをお忘れですか？",
+			"requestTitle": "パスワードをリセット",
+			"requestSubtitle": "メールアドレスを入力してください。パスワードリセット用のリンクをお送りします。",
+			"sendLink": "リセットリンクを送信",
+			"sending": "送信中…",
+			"sent": "このメールアドレスのアカウントが存在する場合、パスワードリセット用のリンクが届きます。受信トレイと迷惑メールフォルダーを確認してください。",
+			"requestError": "リセットリンクをリクエストできませんでした。もう一度お試しください。",
+			"unavailable": "パスワードのリセットは利用できません。インスタンスの管理者に問い合わせてください。",
+			"configError": "サーバーに接続できませんでした。ページを再読み込みしてもう一度お試しください。",
+			"resetTitle": "新しいパスワードを設定",
+			"resetSubtitle": "新しいパスワードは8〜128文字で入力してください。",
+			"newPassword": "新しいパスワード",
+			"confirmPassword": "新しいパスワードを確認",
+			"passwordMismatch": "パスワードが一致しません。",
+			"passwordLength": "8〜128文字で入力してください。",
+			"resetPassword": "パスワードをリセット",
+			"resetting": "リセット中…",
+			"invalidLink": "このリセットリンクは無効か、有効期限が切れています。新しいリンクをリクエストしてください。",
+			"requestNewLink": "新しいリンクをリクエスト",
+			"resetError": "パスワードをリセットできませんでした。もう一度お試しください。",
+			"success": "パスワードをリセットしました。新しいパスワードでサインインしてください。",
+			"backToSignIn": "サインインに戻る"
 		}
 	},
 	"settings": {
@@ -578,8 +578,8 @@
 			"labelsDescription": "タスクのラベルとタグを表示します",
 			"priority": "優先度",
 			"priorityDescription": "優先度インジケーターを表示します",
-			"projectBackgrounds": "Project backgrounds",
-			"projectBackgroundsDescription": "Show project background images on boards"
+			"projectBackgrounds": "プロジェクトの背景",
+			"projectBackgroundsDescription": "ボードにプロジェクトの背景画像を表示します"
 		},
 		"developerPage": {
 			"pageTitle": "開発者設定",
@@ -737,11 +737,11 @@
 				"task": "タスク",
 				"label": "ラベル",
 				"workspace": "ワークスペース",
-				"organization": "Workspace administration",
-				"member": "Members",
-				"invitation": "Invitations",
-				"team": "Teams",
-				"ac": "Roles and permissions"
+				"organization": "ワークスペース管理",
+				"member": "メンバー",
+				"invitation": "招待",
+				"team": "チーム",
+				"ac": "ロールと権限"
 			},
 			"permissions": {
 				"project": {
@@ -826,68 +826,68 @@
 				},
 				"organization": {
 					"update": {
-						"label": "Edit workspace administration",
-						"description": "Change workspace settings through the account service."
+						"label": "ワークスペース管理を編集",
+						"description": "アカウントサービスを通じてワークスペースの設定を変更します。"
 					},
 					"delete": {
-						"label": "Delete workspace",
-						"description": "Permanently delete the workspace through the account service."
+						"label": "ワークスペースを削除",
+						"description": "アカウントサービスを通じてワークスペースを完全に削除します。"
 					}
 				},
 				"member": {
 					"create": {
-						"label": "Add members",
-						"description": "Add users to this workspace."
+						"label": "メンバーを追加",
+						"description": "このワークスペースにユーザーを追加します。"
 					},
 					"update": {
-						"label": "Change member roles",
-						"description": "Change the roles assigned to workspace members."
+						"label": "メンバーのロールを変更",
+						"description": "ワークスペースメンバーに割り当てられたロールを変更します。"
 					},
 					"delete": {
-						"label": "Remove members",
-						"description": "Remove users from this workspace."
+						"label": "メンバーを削除",
+						"description": "このワークスペースからユーザーを削除します。"
 					}
 				},
 				"invitation": {
 					"create": {
-						"label": "Invite members",
-						"description": "Send workspace invitations."
+						"label": "メンバーを招待",
+						"description": "ワークスペースへの招待を送信します。"
 					},
 					"cancel": {
-						"label": "Cancel invitations",
-						"description": "Revoke pending workspace invitations."
+						"label": "招待をキャンセル",
+						"description": "保留中のワークスペースへの招待を取り消します。"
 					}
 				},
 				"team": {
 					"create": {
-						"label": "Create teams",
-						"description": "Create teams in this workspace."
+						"label": "チームを作成",
+						"description": "このワークスペースにチームを作成します。"
 					},
 					"update": {
-						"label": "Edit teams",
-						"description": "Change teams and team membership."
+						"label": "チームを編集",
+						"description": "チームとチームのメンバーシップを変更します。"
 					},
 					"delete": {
-						"label": "Delete teams",
-						"description": "Delete teams in this workspace."
+						"label": "チームを削除",
+						"description": "このワークスペースのチームを削除します。"
 					}
 				},
 				"ac": {
 					"create": {
-						"label": "Create roles",
-						"description": "Create workspace roles and assign their permissions."
+						"label": "ロールを作成",
+						"description": "ワークスペースのロールを作成し、権限を割り当てます。"
 					},
 					"read": {
-						"label": "View roles",
-						"description": "Read the workspace roles and their permissions."
+						"label": "ロールを表示",
+						"description": "ワークスペースのロールとその権限を表示します。"
 					},
 					"update": {
-						"label": "Change role permissions",
-						"description": "Change role permissions, including administrative access."
+						"label": "ロールの権限を変更",
+						"description": "管理者アクセスを含め、ロールの権限を変更します。"
 					},
 					"delete": {
-						"label": "Delete roles",
-						"description": "Delete custom workspace roles."
+						"label": "ロールを削除",
+						"description": "カスタムのワークスペースロールを削除します。"
 					}
 				}
 			},
@@ -933,8 +933,8 @@
 			"updateError": "ラベルの更新に失敗しました",
 			"deleteError": "ラベルの削除に失敗しました",
 			"nameRequired": "ラベル名は必須です",
-			"deletionPending": "Deletion pending",
-			"resumeDeletion": "Resume deletion"
+			"deletionPending": "削除待ち",
+			"resumeDeletion": "削除を再開"
 		},
 		"projectGeneral": {
 			"pageTitle": "プロジェクト設定",
@@ -974,26 +974,26 @@
 			},
 			"importExportTasks": "インポート/エクスポート",
 			"importExportTasksDescription": "タスクのインポートとエクスポートを行います。",
-			"backgroundHint": "Choose an image shown behind this project's board.",
-			"backgroundLabel": "Board background",
-			"backgroundRemove": "Remove image",
-			"backgroundRemoveError": "Failed to remove project background",
-			"backgroundRemoveSuccess": "Project background removed",
-			"backgroundReplace": "Replace image",
-			"backgroundUpload": "Upload image",
-			"backgroundUploadError": "Failed to update project background",
-			"backgroundUploadSuccess": "Project background updated",
-			"moveModalConfirm": "Move Project",
-			"moveModalDescription": "This will move the project \"{{name}}\" and all of its tasks to \"{{workspace}}\". Tasks assigned to people who aren't members of that workspace will be unassigned, and notification subscriptions for this project will be cleared.",
-			"moveModalTitle": "Move Project?",
-			"moveProject": "Move to workspace",
-			"moveProjectAction": "Move",
-			"moveProjectDescription": "Move this project, with all of its tasks, to another workspace.",
-			"moveProjectPlaceholder": "Select workspace",
-			"moveTargetsError": "Couldn't check which workspaces you can move this project to. Reload to try again.",
-			"toastMoved": "Project moved successfully",
-			"toastMovedWithUnassigned": "Project moved successfully. {{taskCount}} task(s) were unassigned.",
-			"toastMoveError": "Failed to move project"
+			"backgroundHint": "このプロジェクトのボードの背後に表示する画像を選択します。",
+			"backgroundLabel": "ボードの背景",
+			"backgroundRemove": "画像を削除",
+			"backgroundRemoveError": "プロジェクトの背景の削除に失敗しました",
+			"backgroundRemoveSuccess": "プロジェクトの背景を削除しました",
+			"backgroundReplace": "画像を置き換え",
+			"backgroundUpload": "画像をアップロード",
+			"backgroundUploadError": "プロジェクトの背景の更新に失敗しました",
+			"backgroundUploadSuccess": "プロジェクトの背景を更新しました",
+			"moveModalConfirm": "プロジェクトを移動",
+			"moveModalDescription": "プロジェクト「{{name}}」とそのすべてのタスクを「{{workspace}}」に移動します。移動先のワークスペースのメンバーではない担当者のタスクは未割り当てになり、このプロジェクトの通知の購読は解除されます。",
+			"moveModalTitle": "プロジェクトを移動しますか？",
+			"moveProject": "ワークスペースへ移動",
+			"moveProjectAction": "移動",
+			"moveProjectDescription": "このプロジェクトをすべてのタスクごと別のワークスペースへ移動します。",
+			"moveProjectPlaceholder": "ワークスペースを選択",
+			"moveTargetsError": "このプロジェクトの移動先にできるワークスペースを確認できませんでした。再読み込みしてもう一度お試しください。",
+			"toastMoved": "プロジェクトを移動しました",
+			"toastMovedWithUnassigned": "プロジェクトを移動しました。{{taskCount}} 件のタスクの担当が解除されました。",
+			"toastMoveError": "プロジェクトの移動に失敗しました"
 		},
 		"projectIntegrations": {
 			"pageTitle": "プロジェクト連携",
@@ -1011,10 +1011,10 @@
 			"slackSectionSubtitle": "Incoming Webhook を使用してプロジェクトのタスク更新を Slack チャンネルに送信します。",
 			"telegramSectionTitle": "Telegram 連携",
 			"telegramSectionSubtitle": "ボットを使用してプロジェクトのタスク更新を Telegram のチャットまたはトピックに送信します。",
-			"mattermostSectionSubtitle": "Send project task updates into a Mattermost channel with an incoming webhook.",
-			"mattermostSectionTitle": "Mattermost Integration",
-			"gitlabSectionSubtitle": "Synchronize tasks with GitLab.com or a self-managed instance (issues, merge requests, webhooks).",
-			"gitlabSectionTitle": "GitLab Integration"
+			"mattermostSectionSubtitle": "受信Webhookを使って、プロジェクトのタスク更新をMattermostのチャンネルに送信します。",
+			"mattermostSectionTitle": "Mattermost連携",
+			"gitlabSectionSubtitle": "タスクをGitLab.comまたはセルフマネージドのインスタンスと同期します（イシュー、マージリクエスト、Webhook）。",
+			"gitlabSectionTitle": "GitLab連携"
 		},
 		"projectVisibility": {
 			"pageTitle": "プロジェクトの公開設定",
@@ -1039,8 +1039,8 @@
 			"columnsDescription": "ボードに表示されるカラムを管理します。ドラッグして並べ替えます。完了した作業を表すステージには「完了カラム」をオンにしてください。",
 			"automationTitle": "自動化ルール",
 			"automationDescription": "連携イベントをカラムにマッピングします。イベントが発生すると、リンクされたタスクが指定されたカラムに移動します。",
-			"customFieldsDescription": "Manage the custom fields for this project. Drag  to reorder.",
-			"customFieldsTitle": "Custom Fields"
+			"customFieldsDescription": "このプロジェクトのカスタムフィールドを管理します。ドラッグして並べ替えできます。",
+			"customFieldsTitle": "カスタムフィールド"
 		},
 		"projectSwitcher": {
 			"selectProject": "プロジェクトを選択",
@@ -1128,12 +1128,12 @@
 			"importing": "インポート中...",
 			"importIssues": "Issue をインポート",
 			"importDisabledHint": "インポートを有効にするには、上記のリポジトリ設定を完了してください",
-			"accountVerificationHint": "Connect your GitHub account to verify that you administer this repository.",
-			"enableGithubSignInHint": "Ask your instance administrator to enable GitHub sign-in.",
-			"reverifyHint": "Reconnect this repository to verify access and resume synchronization.",
-			"resumeImport": "Resume import",
-			"importPaused": "This import has saved progress. You can resume it.",
-			"importSummary": "Created: {{imported}} · Updated: {{updated}} · Skipped: {{skipped}}"
+			"accountVerificationHint": "GitHubアカウントを接続して、このリポジトリの管理者であることを確認してください。",
+			"enableGithubSignInHint": "インスタンスの管理者にGitHubサインインの有効化を依頼してください。",
+			"reverifyHint": "このリポジトリを再接続して、アクセスを確認し同期を再開してください。",
+			"resumeImport": "インポートを再開",
+			"importPaused": "このインポートは進捗が保存されています。再開できます。",
+			"importSummary": "作成: {{imported}} · 更新: {{updated}} · スキップ: {{skipped}}"
 		},
 		"giteaIntegration": {
 			"validation": {
@@ -1434,11 +1434,11 @@
 				"issue_closed": "Issue クローズ"
 			},
 			"gitlabHeading": "GitLab",
-			"gitlabHint": "When a GitLab webhook event occurs, move the linked task to a column."
+			"gitlabHint": "GitLabのWebhookイベントが発生したら、リンクされたタスクを列に移動します。"
 		},
 		"externalLinks": {
 			"resources": "リソース",
-			"issue": "Issue",
+			"issue": "イシュー",
 			"branch": "ブランチ",
 			"merged": "マージ済み",
 			"draft": "下書き",
@@ -1449,174 +1449,174 @@
 			"empty": "このタスクにリンクされたリソースはありません。",
 			"titleOptional": "タイトル（任意）",
 			"url": "URL",
-			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"remove": "{{title}} を削除",
+			"removeError": "リソースリンクの削除に失敗しました。"
 		},
 		"mattermostIntegration": {
-			"channelHint": "Optional label for your reference. Mattermost controls the actual destination channel from the webhook setup.",
-			"channelLabel": "Channel name",
+			"channelHint": "参照用の任意のラベルです。実際の投稿先チャンネルはMattermostのWebhook設定で決まります。",
+			"channelLabel": "チャンネル名",
 			"channelPlaceholder": "#team-updates",
-			"connect": "Connect Mattermost",
-			"connected": "Connected",
-			"connectionHint": "Paste a Mattermost incoming webhook URL and choose which task events should be posted.",
-			"connectionTitle": "Mattermost webhook connection",
-			"disconnect": "Disconnect",
+			"connect": "Mattermostを接続",
+			"connected": "接続済み",
+			"connectionHint": "Mattermostの受信Webhook URLを貼り付け、投稿するタスクのイベントを選択してください。",
+			"connectionTitle": "MattermostのWebhook接続",
+			"disconnect": "切断",
 			"events": {
-				"taskCommentCreated": "New comments",
-				"taskCreated": "New tasks",
-				"taskDescriptionChanged": "Description changes",
-				"taskPriorityChanged": "Priority changes",
-				"taskStatusChanged": "Status changes",
-				"taskTitleChanged": "Title changes"
+				"taskCommentCreated": "新しいコメント",
+				"taskCreated": "新しいタスク",
+				"taskDescriptionChanged": "説明の変更",
+				"taskPriorityChanged": "優先度の変更",
+				"taskStatusChanged": "ステータスの変更",
+				"taskTitleChanged": "タイトルの変更"
 			},
-			"eventsHint": "Choose which project changes should post to Mattermost.",
-			"eventsTitle": "Event notifications",
-			"paused": "Paused",
-			"saveChanges": "Save changes",
+			"eventsHint": "Mattermostに投稿するプロジェクトの変更を選択してください。",
+			"eventsTitle": "イベント通知",
+			"paused": "一時停止中",
+			"saveChanges": "変更を保存",
 			"toast": {
-				"disabled": "Mattermost notifications paused",
-				"enabled": "Mattermost notifications enabled",
-				"removed": "Mattermost integration removed successfully",
-				"removeError": "Failed to remove Mattermost integration",
-				"saved": "Mattermost integration saved successfully",
-				"saveError": "Failed to save Mattermost integration",
-				"updateError": "Failed to update Mattermost integration"
+				"disabled": "Mattermost通知を一時停止しました",
+				"enabled": "Mattermost通知を有効にしました",
+				"removed": "Mattermost連携を削除しました",
+				"removeError": "Mattermost連携の削除に失敗しました",
+				"saved": "Mattermost連携を保存しました",
+				"saveError": "Mattermost連携の保存に失敗しました",
+				"updateError": "Mattermost連携の更新に失敗しました"
 			},
-			"update": "Update Mattermost",
+			"update": "Mattermostを更新",
 			"validation": {
-				"webhookInvalid": "Enter a valid Mattermost webhook URL"
+				"webhookInvalid": "有効なMattermostのWebhook URLを入力してください"
 			},
-			"webhookHint": "Create an Incoming Webhook in Mattermost and paste the generated URL here.",
-			"webhookLabel": "Incoming webhook URL",
+			"webhookHint": "Mattermostで受信Webhookを作成し、生成されたURLをここに貼り付けてください。",
+			"webhookLabel": "受信Webhook URL",
 			"webhookPlaceholder": "https://your-mattermost-server.com/hooks/..."
 		},
 		"customFields": {
-			"addButton": "Add",
-			"createError": "Failed to create custom field.",
-			"createSuccess": "Custom field created.",
-			"creating": "Creating...",
-			"defaultLabel": "Default",
-			"defaultValuePlaceholder": "Default value",
-			"deleteButton": "Delete",
-			"deleteError": "Failed to delete custom field.",
-			"deleteSuccess": "Custom field deleted.",
-			"deleting": "Deleting...",
-			"empty": "No custom fields configured yet.",
-			"loading": "Loading custom fields...",
-			"namePlaceholder": "Field name",
-			"noOptionsPlaceholder": "No options",
-			"optionsPlaceholder": "Options separated by commas",
-			"required": "Required",
-			"typePlaceholder": "Select field type",
+			"addButton": "追加",
+			"createError": "カスタムフィールドの作成に失敗しました。",
+			"createSuccess": "カスタムフィールドを作成しました。",
+			"creating": "作成中...",
+			"defaultLabel": "デフォルト",
+			"defaultValuePlaceholder": "デフォルト値",
+			"deleteButton": "削除",
+			"deleteError": "カスタムフィールドの削除に失敗しました。",
+			"deleteSuccess": "カスタムフィールドを削除しました。",
+			"deleting": "削除中...",
+			"empty": "カスタムフィールドはまだ設定されていません。",
+			"loading": "カスタムフィールドを読み込み中...",
+			"namePlaceholder": "フィールド名",
+			"noOptionsPlaceholder": "オプションなし",
+			"optionsPlaceholder": "オプションをカンマで区切って入力",
+			"required": "必須",
+			"typePlaceholder": "フィールドの種類を選択",
 			"types": {
-				"boolean": "Boolean",
-				"date": "Date",
-				"dropdown": "Dropdown",
-				"number": "Number",
-				"text": "Text",
-				"multiselect": "Multi-Select"
+				"boolean": "真偽値",
+				"date": "日付",
+				"dropdown": "ドロップダウン",
+				"number": "数値",
+				"text": "テキスト",
+				"multiselect": "複数選択"
 			},
-			"availableOptions": "Available options",
-			"clearDefault": "Clear",
-			"defaultValues": "{{count}} default(s)",
-			"moreOptions": "+{{hiddenCount}} more",
-			"multiple": "Multiple",
-			"options": "{{count}} option(s)",
-			"reorderError": "Failed to reorder fields",
-			"selectPlaceholder": "Select option(s)",
-			"optionColorAriaLabel": "Set color for \"{{option}}\"",
-			"optionColorsLabel": "Option colors",
-			"updateColorError": "Failed to update option color.",
-			"updateColorSuccess": "Option color updated.",
-			"hiddenOnProject": "Hidden",
-			"hideField": "Hide \"{{name}}\" for this project",
-			"inheritedDescription": "Fields defined at the workspace level. Hide a field to remove it from this project only — a required field can't be hidden.",
-			"inheritedEmpty": "No custom fields have been added at the workspace level yet.",
-			"inheritedTitle": "Inherited from workspace",
-			"ownFieldsDescription": "Fields defined for this project only. Drag to reorder.",
-			"ownFieldsTitle": "Project fields",
-			"requiredByWorkspace": "Required by workspace",
-			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility.",
-			"visibleOnProject": "Visible"
+			"availableOptions": "利用可能なオプション",
+			"clearDefault": "クリア",
+			"defaultValues": "デフォルト {{count}} 件",
+			"moreOptions": "他 {{hiddenCount}} 件",
+			"multiple": "複数",
+			"options": "オプション {{count}} 件",
+			"reorderError": "フィールドの並べ替えに失敗しました",
+			"selectPlaceholder": "オプションを選択",
+			"optionColorAriaLabel": "「{{option}}」の色を設定",
+			"optionColorsLabel": "オプションの色",
+			"updateColorError": "オプションの色の更新に失敗しました。",
+			"updateColorSuccess": "オプションの色を更新しました。",
+			"hiddenOnProject": "非表示",
+			"hideField": "このプロジェクトで「{{name}}」を非表示にする",
+			"inheritedDescription": "ワークスペースレベルで定義されたフィールドです。フィールドを非表示にすると、このプロジェクトのみから削除されます。必須フィールドは非表示にできません。",
+			"inheritedEmpty": "ワークスペースレベルのカスタムフィールドはまだ追加されていません。",
+			"inheritedTitle": "ワークスペースから継承",
+			"ownFieldsDescription": "このプロジェクト専用に定義されたフィールドです。ドラッグして並べ替えできます。",
+			"ownFieldsTitle": "プロジェクトのフィールド",
+			"requiredByWorkspace": "ワークスペースで必須",
+			"showField": "このプロジェクトで「{{name}}」を表示する",
+			"visibilityUpdateError": "フィールドの表示設定の更新に失敗しました。",
+			"visibleOnProject": "表示"
 		},
-		"administration": "Administration",
+		"administration": "管理",
 		"adminUsers": {
 			"actions": {
-				"deactivate": "Deactivate account",
-				"edit": "Edit account",
-				"open": "Actions for {{name}}",
-				"reactivate": "Reactivate account"
+				"deactivate": "アカウントを無効化",
+				"edit": "アカウントを編集",
+				"open": "{{name}} の操作",
+				"reactivate": "アカウントを再有効化"
 			},
-			"clearSearch": "Clear search",
+			"clearSearch": "検索をクリア",
 			"columns": {
-				"actions": "Actions",
-				"joined": "Joined",
-				"role": "Global role",
-				"status": "Status",
-				"user": "User"
+				"actions": "操作",
+				"joined": "参加日",
+				"role": "グローバルロール",
+				"status": "ステータス",
+				"user": "ユーザー"
 			},
 			"confirm": {
 				"deactivate": {
-					"action": "Deactivate account",
-					"description": "{{name}} will be signed out and unable to sign in until an administrator reactivates the account.",
-					"title": "Deactivate this account?"
+					"action": "アカウントを無効化",
+					"description": "{{name}} はサインアウトされ、管理者がアカウントを再有効化するまでサインインできなくなります。",
+					"title": "このアカウントを無効化しますか？"
 				},
 				"delete": {
-					"action": "Delete permanently",
-					"description": "This permanently deletes {{name}}, their sessions, memberships, and associated data. This cannot be undone.",
-					"title": "Permanently delete this account?"
+					"action": "完全に削除",
+					"description": "{{name}}、そのセッション、メンバーシップ、関連データが完全に削除されます。この操作は元に戻せません。",
+					"title": "このアカウントを完全に削除しますか？"
 				},
 				"reactivate": {
-					"action": "Reactivate account",
-					"description": "{{name}} will be able to sign in and access their workspaces again.",
-					"title": "Reactivate this account?"
+					"action": "アカウントを再有効化",
+					"description": "{{name}} は再びサインインしてワークスペースにアクセスできるようになります。",
+					"title": "このアカウントを再有効化しますか？"
 				},
-				"working": "Working…"
+				"working": "処理中…"
 			},
-			"directoryTitle": "User directory",
+			"directoryTitle": "ユーザーディレクトリ",
 			"edit": {
-				"description": "Update this account's identity and instance-wide access.",
-				"email": "Email address",
-				"name": "Full name",
-				"role": "Global role",
-				"save": "Save changes",
-				"saving": "Saving…",
-				"selfRoleHint": "You cannot change your own global role.",
-				"title": "Edit user"
+				"description": "このアカウントの情報とインスタンス全体のアクセス権を更新します。",
+				"email": "メールアドレス",
+				"name": "氏名",
+				"role": "グローバルロール",
+				"save": "変更を保存",
+				"saving": "保存中…",
+				"selfRoleHint": "自分自身のグローバルロールは変更できません。",
+				"title": "ユーザーを編集"
 			},
-			"emptyDescription": "Try another name or email address.",
-			"emptyTitle": "No users found",
-			"instanceBadge": "Instance",
-			"loadError": "Users could not be loaded.",
-			"next": "Next",
-			"pagination": "Page {{current}} of {{total}}",
-			"previous": "Previous",
-			"refreshing": "Refreshing users",
-			"retry": "Retry",
+			"emptyDescription": "別の名前またはメールアドレスをお試しください。",
+			"emptyTitle": "ユーザーが見つかりません",
+			"instanceBadge": "インスタンス",
+			"loadError": "ユーザーを読み込めませんでした。",
+			"next": "次へ",
+			"pagination": "{{current}} / {{total}} ページ",
+			"previous": "前へ",
+			"refreshing": "ユーザーを更新中",
+			"retry": "再試行",
 			"roles": {
-				"admin": "Instance admin",
-				"user": "User"
+				"admin": "インスタンス管理者",
+				"user": "ユーザー"
 			},
-			"searchCount_other": "{{count}} matching users",
-			"searchLabel": "Search users",
-			"searchPlaceholder": "Search name or email…",
+			"searchCount_other": "一致するユーザー {{count}} 人",
+			"searchLabel": "ユーザーを検索",
+			"searchPlaceholder": "名前またはメールアドレスで検索…",
 			"status": {
-				"active": "Active",
-				"deactivated": "Deactivated"
+				"active": "有効",
+				"deactivated": "無効化済み"
 			},
-			"subtitle": "Manage every account registered on this Kaneo instance.",
-			"title": "User management",
+			"subtitle": "このKaneoインスタンスに登録されているすべてのアカウントを管理します。",
+			"title": "ユーザー管理",
 			"toast": {
-				"actionError": "Failed to update user status",
-				"deactivated": "User deactivated",
-				"deleted": "User deleted",
-				"reactivated": "User reactivated",
-				"updated": "User updated",
-				"updateError": "Failed to update user"
+				"actionError": "ユーザーのステータスの更新に失敗しました",
+				"deactivated": "ユーザーを無効化しました",
+				"deleted": "ユーザーを削除しました",
+				"reactivated": "ユーザーを再有効化しました",
+				"updated": "ユーザーを更新しました",
+				"updateError": "ユーザーの更新に失敗しました"
 			},
-			"userCount_other": "{{count}} registered users",
-			"you": "(you)"
+			"userCount_other": "登録ユーザー {{count}} 人",
+			"you": "（自分）"
 		},
 		"workspaceCalendar": {
 			"addHoliday": "休日を追加",
@@ -1649,256 +1649,256 @@
 			"workingDaysTitle": "稼働日",
 			"loading": "カレンダーを読み込み中…"
 		},
-		"security": "Security",
+		"security": "セキュリティ",
 		"securityPage": {
-			"confirmPassword": "Confirm new password",
-			"confirmPasswordPlaceholder": "Re-enter your new password",
-			"currentPassword": "Current password",
-			"currentPasswordPlaceholder": "Enter your current password",
-			"newPassword": "New password",
-			"newPasswordPlaceholder": "Enter a new password",
+			"confirmPassword": "新しいパスワードを確認",
+			"confirmPasswordPlaceholder": "新しいパスワードをもう一度入力",
+			"currentPassword": "現在のパスワード",
+			"currentPasswordPlaceholder": "現在のパスワードを入力",
+			"newPassword": "新しいパスワード",
+			"newPasswordPlaceholder": "新しいパスワードを入力",
 			"noPassword": {
-				"description": "Your account signs in with a different method, so there is no password to change.",
-				"title": "Password change isn't available"
+				"description": "このアカウントは別の方法でサインインしているため、変更するパスワードがありません。",
+				"title": "パスワードは変更できません"
 			},
-			"pageTitle": "Security",
-			"sectionSubtitle": "Change the password you use to sign in.",
-			"sectionTitle": "Password",
-			"submit": "Update password",
-			"submitting": "Updating...",
-			"subtitle": "Manage your password and account security.",
-			"title": "Security",
-			"updateError": "Failed to update password.",
-			"updateSuccess": "Password updated.",
+			"pageTitle": "セキュリティ",
+			"sectionSubtitle": "サインインに使用するパスワードを変更します。",
+			"sectionTitle": "パスワード",
+			"submit": "パスワードを更新",
+			"submitting": "更新中...",
+			"subtitle": "パスワードとアカウントのセキュリティを管理します。",
+			"title": "セキュリティ",
+			"updateError": "パスワードの更新に失敗しました。",
+			"updateSuccess": "パスワードを更新しました。",
 			"validation": {
-				"confirmRequired": "Confirm your new password.",
-				"currentRequired": "Enter your current password.",
-				"mismatch": "Passwords do not match.",
-				"tooShort": "New password must be at least 8 characters.",
-				"sameAsCurrent": "New password must be different from your current password."
+				"confirmRequired": "新しいパスワードを確認してください。",
+				"currentRequired": "現在のパスワードを入力してください。",
+				"mismatch": "パスワードが一致しません。",
+				"tooShort": "新しいパスワードは8文字以上にしてください。",
+				"sameAsCurrent": "新しいパスワードは現在のパスワードと異なるものにしてください。"
 			}
 		},
 		"gitlabIntegration": {
-			"actionsHint": "Verify access and connect",
-			"actionsTitle": "Actions",
-			"badgeConnected": "Connected",
-			"badgeNotConnected": "Not connected",
-			"baseUrlHint": "https://gitlab.com, or the root URL of your instance",
+			"actionsHint": "アクセスを確認して接続します",
+			"actionsTitle": "操作",
+			"badgeConnected": "接続済み",
+			"badgeNotConnected": "未接続",
+			"baseUrlHint": "https://gitlab.com、またはインスタンスのルートURL",
 			"baseUrlLabel": "GitLab URL",
-			"browse": "Browse",
-			"browseModalHint": "Projects your token is a member of",
-			"browseModalTitle": "Your projects",
-			"browseNeedsCredentials": "Enter GitLab URL and token to browse",
-			"commentTaskLinkHint": "When enabled, Kaneo comments with a link to the task on each issue opened in GitLab.",
-			"commentTaskLinkTitle": "Comment a Kaneo link on issues opened in GitLab",
-			"connect": "Connect",
-			"connectedActive": "Project connected and active",
-			"connectionStatus": "Connection status",
-			"currentToken": "stored",
-			"disconnect": "Disconnect",
-			"importDisabledHint": "Verify the project above to enable importing",
-			"importing": "Importing…",
-			"importIssues": "Import issues",
-			"importSectionHint": "Import open issues and merge requests from the project",
-			"importSectionTitle": "Import GitLab issues",
-			"loadingProjects": "Loading projects…",
-			"notConnectedHint": "No GitLab project connected",
-			"openInGitlab": "Open {{project}} in GitLab",
-			"project": "Project",
-			"projectHint": "Linked GitLab project",
-			"projectPathHint": "Full path including any groups, e.g. group/subgroup/project",
-			"projectPathLabel": "Project path",
-			"retry": "Retry",
-			"searchProjects": "Search…",
+			"browse": "参照",
+			"browseModalHint": "トークンのユーザーがメンバーになっているプロジェクト",
+			"browseModalTitle": "自分のプロジェクト",
+			"browseNeedsCredentials": "参照するにはGitLabのURLとトークンを入力してください",
+			"commentTaskLinkHint": "有効にすると、GitLabで作成された各イシューに、Kaneoがタスクへのリンクをコメントします。",
+			"commentTaskLinkTitle": "GitLabで作成されたイシューにKaneoのリンクをコメントする",
+			"connect": "接続",
+			"connectedActive": "プロジェクトは接続済みで有効です",
+			"connectionStatus": "接続状況",
+			"currentToken": "保存済み",
+			"disconnect": "切断",
+			"importDisabledHint": "インポートを有効にするには、上のプロジェクトを確認してください",
+			"importing": "インポート中…",
+			"importIssues": "イシューをインポート",
+			"importSectionHint": "プロジェクトのオープンなイシューとマージリクエストをインポートします",
+			"importSectionTitle": "GitLabのイシューをインポート",
+			"loadingProjects": "プロジェクトを読み込み中…",
+			"notConnectedHint": "GitLabプロジェクトは接続されていません",
+			"openInGitlab": "{{project}} をGitLabで開く",
+			"project": "プロジェクト",
+			"projectHint": "リンクされているGitLabプロジェクト",
+			"projectPathHint": "グループを含むフルパス（例: group/subgroup/project）",
+			"projectPathLabel": "プロジェクトパス",
+			"retry": "再試行",
+			"searchProjects": "検索…",
 			"toast": {
-				"commentOnDisabled": "Task link comments on issues opened in GitLab are turned off",
-				"commentOnEnabled": "Kaneo will comment with a task link on issues opened in GitLab",
-				"importError": "Failed to import issues",
-				"issuesImported": "Issues imported successfully",
-				"notGitlabInstance": "The URL does not point to a GitLab instance",
-				"projectNotFound": "Project not found or not accessible",
-				"redirected": "GitLab URL redirected (usually to HTTPS). Use the final URL directly.",
-				"removed": "GitLab integration removed",
-				"removeError": "Failed to remove GitLab integration",
-				"secretCopied": "Copied",
-				"settingsUpdateError": "Failed to update GitLab integration",
-				"tokenRequired": "Access token is required",
-				"tokenRequiredVerify": "Enter a token to verify",
-				"unableToCopySecret": "Unable to copy secret",
-				"updated": "GitLab integration saved",
-				"updateError": "Failed to save GitLab integration",
-				"verifyError": "Failed to verify GitLab access",
-				"verifyFirst": "Verify access failed. Check URL, token, and project path",
-				"verifyOk": "GitLab token can access this project",
-				"verifyWarning": "Check token permissions or project access"
+				"commentOnDisabled": "GitLabで作成されたイシューへのタスクリンクのコメントをオフにしました",
+				"commentOnEnabled": "GitLabで作成されたイシューに、Kaneoがタスクへのリンクをコメントします",
+				"importError": "イシューのインポートに失敗しました",
+				"issuesImported": "イシューをインポートしました",
+				"notGitlabInstance": "このURLはGitLabインスタンスを指していません",
+				"projectNotFound": "プロジェクトが見つからないか、アクセスできません",
+				"redirected": "GitLabのURLがリダイレクトされました（通常はHTTPSへ）。最終的なURLを直接使用してください。",
+				"removed": "GitLab連携を削除しました",
+				"removeError": "GitLab連携の削除に失敗しました",
+				"secretCopied": "コピーしました",
+				"settingsUpdateError": "GitLab連携の更新に失敗しました",
+				"tokenRequired": "アクセストークンは必須です",
+				"tokenRequiredVerify": "確認するトークンを入力してください",
+				"unableToCopySecret": "シークレットをコピーできません",
+				"updated": "GitLab連携を保存しました",
+				"updateError": "GitLab連携の保存に失敗しました",
+				"verifyError": "GitLabへのアクセスの確認に失敗しました",
+				"verifyFirst": "アクセスの確認に失敗しました。URL、トークン、プロジェクトパスを確認してください",
+				"verifyOk": "GitLabトークンでこのプロジェクトにアクセスできます",
+				"verifyWarning": "トークンの権限またはプロジェクトへのアクセスを確認してください"
 			},
-			"tokenHint": "Token with api scope and at least Developer on the project",
-			"tokenLabel": "Access token",
-			"tokenPlaceholder": "Paste token",
-			"tokenPlaceholderUpdate": "Paste new token to rotate",
-			"tokenTypeBearer": "OAuth2 token",
-			"tokenTypeHint": "How the token is sent. Access tokens use PRIVATE-TOKEN; an OAuth2 token uses Authorization.",
-			"tokenTypeLabel": "Token type",
-			"tokenTypePrivate": "Personal, project or group access token",
-			"update": "Update",
+			"tokenHint": "apiスコープを持ち、プロジェクトで少なくともDeveloper権限があるトークン",
+			"tokenLabel": "アクセストークン",
+			"tokenPlaceholder": "トークンを貼り付け",
+			"tokenPlaceholderUpdate": "新しいトークンを貼り付けてローテーション",
+			"tokenTypeBearer": "OAuth2トークン",
+			"tokenTypeHint": "トークンの送信方法です。アクセストークンはPRIVATE-TOKEN、OAuth2トークンはAuthorizationを使用します。",
+			"tokenTypeLabel": "トークンの種類",
+			"tokenTypePrivate": "パーソナル、プロジェクト、またはグループのアクセストークン",
+			"update": "更新",
 			"validation": {
-				"baseUrlInvalid": "Enter a valid URL (e.g. https://gitlab.com)",
-				"baseUrlRequired": "GitLab base URL is required",
-				"pathInvalid": "Enter the full path, e.g. group/project",
-				"pathRequired": "Project path is required"
+				"baseUrlInvalid": "有効なURLを入力してください（例: https://gitlab.com）",
+				"baseUrlRequired": "GitLabのベースURLは必須です",
+				"pathInvalid": "フルパスを入力してください（例: group/project）",
+				"pathRequired": "プロジェクトパスは必須です"
 			},
-			"verify": "Verify",
-			"webhookCopy": "Copy",
-			"webhookHide": "Hide",
-			"webhookHint": "In your GitLab project, add a webhook with this URL and secret token. Enable push, issues, comments, and merge request events.",
-			"webhookSecretLabel": "Secret token (must match the one set on the webhook in GitLab)",
-			"webhookShow": "Show",
+			"verify": "確認",
+			"webhookCopy": "コピー",
+			"webhookHide": "非表示",
+			"webhookHint": "GitLabプロジェクトで、このURLとシークレットトークンを使ってWebhookを追加してください。プッシュ、イシュー、コメント、マージリクエストのイベントを有効にします。",
+			"webhookSecretLabel": "シークレットトークン（GitLabのWebhookに設定したものと一致させてください）",
+			"webhookShow": "表示",
 			"webhookTitle": "Webhook",
-			"loadProjectsError": "Failed to load projects",
-			"importPermissionHint": "Importing requires permission to create and update tasks."
+			"loadProjectsError": "プロジェクトの読み込みに失敗しました",
+			"importPermissionHint": "インポートにはタスクを作成・更新する権限が必要です。"
 		},
 		"calendarFeeds": {
-			"title": "Calendar feeds",
-			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
-			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
-			"labels": "Labels",
-			"selectLabels": "Search and select labels…",
-			"noLabels": "No labels found.",
-			"timeZoneHint": "All-day dates use {{timeZone}}.",
-			"accessHint": "Anyone with a feed link can read the matching task titles, descriptions, and dates. Revoke a link to stop future access.",
-			"create": "Create feed",
-			"creating": "Creating…",
-			"created": "Calendar feed created.",
-			"createError": "Could not create the calendar feed.",
-			"activeFeeds": "Active feeds",
-			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
-			"empty": "No calendar feeds yet.",
-			"feedUrl": "Calendar feed URL",
-			"copy": "Copy link",
-			"copied": "Calendar feed link copied.",
-			"copyError": "Could not copy the link. Select the URL and copy it manually.",
-			"revoke": "Revoke",
-			"revoked": "Calendar feed revoked.",
-			"revokeError": "Could not revoke the calendar feed.",
-			"loadError": "Could not load calendar feeds or labels. Please try again.",
-			"deletedLabel": "Deleted label",
-			"permissionRequired": "You need project-sharing permission to manage calendar feeds."
+			"title": "カレンダーフィード",
+			"subtitle": "スケジュールされたプロジェクトのタスクをカレンダーアプリで購読します。",
+			"createTitle": "カレンダーフィードを作成",
+			"filterHint": "開始日または期限があり、選択したラベルを1つ以上持つタスクを含めます。",
+			"labels": "ラベル",
+			"selectLabels": "ラベルを検索して選択…",
+			"noLabels": "ラベルが見つかりません。",
+			"timeZoneHint": "終日の日付には {{timeZone}} が使用されます。",
+			"accessHint": "フィードのリンクを知っている人は、一致するタスクのタイトル、説明、日付を読み取れます。リンクを無効化すると、以降のアクセスを停止できます。",
+			"create": "フィードを作成",
+			"creating": "作成中…",
+			"created": "カレンダーフィードを作成しました。",
+			"createError": "カレンダーフィードを作成できませんでした。",
+			"activeFeeds": "有効なフィード",
+			"subscribeHint": "リンクをコピーして、カレンダーの購読として追加してください。カレンダーアプリがフィードを更新すると変更が反映されます。",
+			"empty": "カレンダーフィードはまだありません。",
+			"feedUrl": "カレンダーフィードのURL",
+			"copy": "リンクをコピー",
+			"copied": "カレンダーフィードのリンクをコピーしました。",
+			"copyError": "リンクをコピーできませんでした。URLを選択して手動でコピーしてください。",
+			"revoke": "無効化",
+			"revoked": "カレンダーフィードを無効化しました。",
+			"revokeError": "カレンダーフィードを無効化できませんでした。",
+			"loadError": "カレンダーフィードまたはラベルを読み込めませんでした。もう一度お試しください。",
+			"deletedLabel": "削除されたラベル",
+			"permissionRequired": "カレンダーフィードを管理するにはプロジェクト共有の権限が必要です。"
 		},
 		"workspaceCustomFields": {
-			"pageTitle": "Custom Field Settings",
-			"sectionDescription": "Fields defined here are added to every project in the workspace. A project admin can only hide or show a field for their own project — a required field can't be hidden.",
-			"sectionTitle": "Custom Fields",
-			"subtitle": "Manage workspace-level custom fields. Every project in this workspace inherits them.",
-			"title": "Custom Fields"
+			"pageTitle": "カスタムフィールド設定",
+			"sectionDescription": "ここで定義したフィールドは、ワークスペース内のすべてのプロジェクトに追加されます。プロジェクト管理者は自分のプロジェクトでのみフィールドを非表示または表示にできます。必須フィールドは非表示にできません。",
+			"sectionTitle": "カスタムフィールド",
+			"subtitle": "ワークスペースレベルのカスタムフィールドを管理します。このワークスペースのすべてのプロジェクトに継承されます。",
+			"title": "カスタムフィールド"
 		},
 		"workspaceResources": {
 			"cardDescription": "Assignable resources that have no Kaneo account and can't sign in.",
-			"createDescription": "Create a new assignable resource for this workspace. Its kind can't be changed after creation.",
-			"createError": "Failed to create resource",
-			"createResource": "Create Resource",
-			"createSuccess": "Resource created",
-			"deleteConfirmDescription": "This resource will be removed from every task it's assigned to. This action cannot be undone.",
-			"deleteConfirmTitle": "Delete this resource?",
-			"deleteError": "Failed to delete resource",
-			"deleteResource": "Delete",
-			"deleteSuccess": "Resource deleted",
-			"editDescription": "Update this resource's name or email.",
-			"editResource": "Edit Resource",
-			"emailLabel": "Email (optional)",
+			"createDescription": "このワークスペースに割り当て可能な新しいリソースを作成します。種類は作成後に変更できません。",
+			"createError": "リソースの作成に失敗しました",
+			"createResource": "リソースを作成",
+			"createSuccess": "リソースを作成しました",
+			"deleteConfirmDescription": "このリソースは、割り当てられているすべてのタスクから削除されます。この操作は元に戻せません。",
+			"deleteConfirmTitle": "このリソースを削除しますか？",
+			"deleteError": "リソースの削除に失敗しました",
+			"deleteResource": "削除",
+			"deleteSuccess": "リソースを削除しました",
+			"editDescription": "このリソースの名前またはメールアドレスを更新します。",
+			"editResource": "リソースを編集",
+			"emailLabel": "メールアドレス（任意）",
 			"emailPlaceholder": "Not used to sign in or send invites yet",
-			"empty": "No resources yet. Create your first person, equipment, or material to get started.",
+			"empty": "リソースはまだありません。最初の人、設備、資材を作成して始めましょう。",
 			"kind": {
-				"equipment": "Equipment",
-				"material": "Material",
-				"person": "Person"
+				"equipment": "設備",
+				"material": "資材",
+				"person": "人"
 			},
-			"kindLabel": "Kind",
-			"nameLabel": "Name",
-			"namePlaceholder": "Enter a name",
-			"nameRequired": "Resource name is required",
-			"pageTitle": "Resource Settings",
-			"saveResource": "Save",
+			"kindLabel": "種類",
+			"nameLabel": "名前",
+			"namePlaceholder": "名前を入力",
+			"nameRequired": "リソース名は必須です",
+			"pageTitle": "リソース設定",
+			"saveResource": "保存",
 			"subtitle": "Manage people, equipment, and material that can be assigned to tasks without a Kaneo account.",
-			"title": "Resources",
-			"updateError": "Failed to update resource",
-			"updateSuccess": "Resource updated",
-			"loadError": "Couldn't load resources. Please try again.",
-			"loading": "Loading resources…",
-			"emailChangeDetaches": "Changing the email removes the link to the pending invitation.",
+			"title": "リソース",
+			"updateError": "リソースの更新に失敗しました",
+			"updateSuccess": "リソースを更新しました",
+			"loadError": "リソースを読み込めませんでした。もう一度お試しください。",
+			"loading": "リソースを読み込み中…",
+			"emailChangeDetaches": "メールアドレスを変更すると、保留中の招待とのリンクが解除されます。",
 			"errors": {
-				"alreadyLinked": "This resource is already linked to a member.",
-				"alreadyWorkspaceMember": "This address belongs to a member of the workspace. Link the resource to that member instead.",
-				"disposableEmail": "Invitations to disposable email addresses aren't allowed.",
-				"duplicateProject": "A project can only be listed once.",
-				"emailNotAllowed": "Only a person can have an email address.",
-				"guestCannotInvite": "Guest accounts can't send invitations.",
-				"insufficientPermissions": "You don't have permission to invite people to one of these projects.",
-				"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-				"invitationRoleConflict": "A pending invitation for this address already has another workspace role.",
-				"noEmail": "Add an email address to the resource first.",
-				"notLinked": "This resource is not linked to a member.",
-				"notMember": "This user is not a member of the workspace.",
-				"notPerson": "Only a person can be invited or linked.",
-				"ownerRole": "The owner role can't be granted by invitation.",
-				"projectAccessDenied": "You don't have access to one of these projects.",
-				"rateLimited": "Too many invitations. Try again in a minute.",
-				"resourceChanged": "The resource changed. Please try again.",
-				"roleExceedsYourPermissions": "You can't give a role with more permissions than your own.",
-				"unknownRole": "One of the roles no longer exists. Pick another one.",
-				"notFound": "Resource not found.",
-				"alreadyWorkspaceMemberOnly": "This address belongs to a member of the workspace.",
-				"workspaceNotFound": "Workspace not found."
+				"alreadyLinked": "このリソースはすでにメンバーにリンクされています。",
+				"alreadyWorkspaceMember": "このアドレスはワークスペースのメンバーのものです。代わりにそのメンバーにリソースをリンクしてください。",
+				"disposableEmail": "使い捨てメールアドレスへの招待は許可されていません。",
+				"duplicateProject": "同じプロジェクトは1回しか指定できません。",
+				"emailNotAllowed": "メールアドレスを設定できるのは人のみです。",
+				"guestCannotInvite": "ゲストアカウントは招待を送信できません。",
+				"insufficientPermissions": "これらのプロジェクトのいずれかに人を招待する権限がありません。",
+				"invitationLimitReached": "このワークスペースの招待数の上限に達しました。",
+				"invitationRoleConflict": "このアドレス宛の保留中の招待に、別のワークスペースロールがすでに設定されています。",
+				"noEmail": "先にリソースにメールアドレスを追加してください。",
+				"notLinked": "このリソースはメンバーにリンクされていません。",
+				"notMember": "このユーザーはワークスペースのメンバーではありません。",
+				"notPerson": "招待またはリンクできるのは人のみです。",
+				"ownerRole": "オーナーロールは招待では付与できません。",
+				"projectAccessDenied": "これらのプロジェクトのいずれかにアクセスする権限がありません。",
+				"rateLimited": "招待の送信回数が多すぎます。1分後にもう一度お試しください。",
+				"resourceChanged": "リソースが変更されました。もう一度お試しください。",
+				"roleExceedsYourPermissions": "自分の権限より強い権限を持つロールは付与できません。",
+				"unknownRole": "ロールのいずれかが存在しなくなりました。別のロールを選択してください。",
+				"notFound": "リソースが見つかりません。",
+				"alreadyWorkspaceMemberOnly": "このアドレスはワークスペースのメンバーのものです。",
+				"workspaceNotFound": "ワークスペースが見つかりません。"
 			},
 			"invite": {
-				"addedToExisting": "The projects were added to the pending invitation for this address.",
-				"createdTitle": "Invitation created",
-				"description": "An invitation goes to {{email}}. Assignments of this resource in the chosen projects move to the new account.",
-				"error": "Failed to send the invitation",
-				"hasTasks": "Has tasks",
-				"noProjectRoles": "No role you can assign",
-				"noProjects": "You can't invite people to any project.",
-				"pickProject": "Choose at least one project.",
-				"projectRoleLabel": "Role in {{project}}",
-				"projectRolesError": "Couldn't load roles",
-				"projectRolesLoading": "Loading roles...",
-				"projectsError": "Couldn't load the projects you can invite to. Try again later.",
-				"projectsHint": "The person gets access to the projects you tick. Projects with tasks of this resource are ticked already.",
-				"projectsLabel": "Projects",
-				"projectsLoading": "Loading projects...",
-				"title": "Invite {{name}}",
-				"workspaceRoleLabel": "Workspace role"
+				"addedToExisting": "このアドレス宛の保留中の招待にプロジェクトを追加しました。",
+				"createdTitle": "招待を作成しました",
+				"description": "{{email}} に招待が送信されます。選択したプロジェクトでのこのリソースの割り当ては、新しいアカウントに移行されます。",
+				"error": "招待の送信に失敗しました",
+				"hasTasks": "タスクあり",
+				"noProjectRoles": "割り当て可能なロールがありません",
+				"noProjects": "どのプロジェクトにも招待する権限がありません。",
+				"pickProject": "プロジェクトを1つ以上選択してください。",
+				"projectRoleLabel": "{{project}} でのロール",
+				"projectRolesError": "ロールを読み込めませんでした",
+				"projectRolesLoading": "ロールを読み込み中...",
+				"projectsError": "招待できるプロジェクトを読み込めませんでした。後でもう一度お試しください。",
+				"projectsHint": "チェックしたプロジェクトにアクセスできるようになります。このリソースのタスクがあるプロジェクトはあらかじめチェックされています。",
+				"projectsLabel": "プロジェクト",
+				"projectsLoading": "プロジェクトを読み込み中...",
+				"title": "{{name}} を招待",
+				"workspaceRoleLabel": "ワークスペースロール"
 			},
-			"inviteAction": "Invite",
-			"inviteNeedsEmail": "Add an email address to invite this person.",
+			"inviteAction": "招待",
+			"inviteNeedsEmail": "この人を招待するにはメールアドレスを追加してください。",
 			"link": {
-				"description": "Choose a member of this workspace. Assignments of this resource in projects the member can open move to their account.",
-				"error": "Failed to link the resource",
-				"hint": "Assignments in projects the member can't open stay on the resource. The workload counts them in the member's row.",
-				"memberLabel": "Member",
-				"memberPlaceholder": "Select a member",
-				"membersError": "Couldn't load the members.",
-				"membersLoading": "Loading members...",
-				"noMembers": "There are no members to link.",
-				"submit": "Link",
-				"success": "Linked to {{name}}. Assignments moved: {{moved}}.",
-				"title": "Link {{name}} to a member"
+				"description": "このワークスペースのメンバーを選択してください。メンバーが開けるプロジェクトでのこのリソースの割り当ては、そのメンバーのアカウントに移行されます。",
+				"error": "リソースのリンクに失敗しました",
+				"hint": "メンバーが開けないプロジェクトの割り当てはリソースに残ります。ワークロードでは、それらもメンバーの行に含めて集計されます。",
+				"memberLabel": "メンバー",
+				"memberPlaceholder": "メンバーを選択",
+				"membersError": "メンバーを読み込めませんでした。",
+				"membersLoading": "メンバーを読み込み中...",
+				"noMembers": "リンクできるメンバーがいません。",
+				"submit": "リンク",
+				"success": "{{name}} にリンクしました。移行した割り当て: {{moved}}。",
+				"title": "{{name}} をメンバーにリンク"
 			},
-			"linkAction": "Link to member",
+			"linkAction": "メンバーにリンク",
 			"status": {
-				"invitedExpired": "Invited (expired)",
-				"invitedPending": "Invited (pending)",
-				"linked": "Linked to a member",
-				"linkedTo": "Linked to {{name}}",
-				"notInvited": "Not invited"
+				"invitedExpired": "招待済み（期限切れ）",
+				"invitedPending": "招待済み（保留中）",
+				"linked": "メンバーにリンク済み",
+				"linkedTo": "{{name}} にリンク済み",
+				"notInvited": "未招待"
 			},
 			"unlink": {
-				"description": "The resource is no longer linked to the member. Assignments that already moved stay with the member.",
-				"error": "Failed to unlink the resource",
-				"success": "Resource unlinked",
-				"title": "Unlink this resource?"
+				"description": "リソースとメンバーのリンクが解除されます。すでに移行した割り当てはメンバーに残ります。",
+				"error": "リソースのリンク解除に失敗しました",
+				"success": "リソースのリンクを解除しました",
+				"title": "このリソースのリンクを解除しますか？"
 			},
-			"unlinkAction": "Unlink"
+			"unlinkAction": "リンクを解除"
 		}
 	},
 	"navigation": {
@@ -2017,11 +2017,11 @@
 			}
 		},
 		"mobileProjectNav": {
-			"backlog": "Backlog",
-			"board": "Board",
-			"gantt": "Gantt",
-			"projects": "Projects",
-			"view": "View"
+			"backlog": "バックログ",
+			"board": "ボード",
+			"gantt": "ガント",
+			"projects": "プロジェクト",
+			"view": "表示"
 		}
 	},
 	"notifications": {
@@ -2189,8 +2189,8 @@
 					"renderFailed": "Mermaid ダイアグラムを描画できませんでした"
 				}
 			},
-			"importedFrom": "Imported from {{source}}",
-			"importedBy": "Imported by {{name}}",
+			"importedFrom": "{{source}} からインポート",
+			"importedBy": "{{name}} がインポート",
 			"commentedOnForge": "{{forge}} でコメント"
 		},
 		"relationCreated": "依存関係を追加しました",
@@ -2217,7 +2217,7 @@
 		"title": "タスク",
 		"status": {
 			"label": "ステータス",
-			"to-do": "To Do",
+			"to-do": "未着手",
 			"in-progress": "進行中",
 			"in-review": "レビュー中",
 			"done": "完了",
@@ -2242,7 +2242,7 @@
 			"loadingTask": "タスクを読み込み中...",
 			"taskNotFound": "タスクが見つかりません",
 			"taskNotFoundDescription": "お探しのタスクは存在しないか、削除されました。",
-			"customFields": "Custom Fields"
+			"customFields": "カスタムフィールド"
 		},
 		"detail": {
 			"subtaskOf": "親タスク:",
@@ -2349,15 +2349,15 @@
 					"renderFailed": "Mermaid ダイアグラムを描画できませんでした"
 				},
 				"image": {
-					"large": "Large",
-					"medium": "Medium",
-					"reset": "Reset size",
-					"resizeHandle": "Resize image",
-					"small": "Small"
+					"large": "大",
+					"medium": "中",
+					"reset": "サイズをリセット",
+					"resizeHandle": "画像のサイズを変更",
+					"small": "小"
 				}
 			},
-			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option",
+			"customFieldUpdated": "フィールドを更新しました",
+			"selectOption": "オプションを選択",
 			"pickDate": "日付を選択"
 		},
 		"entity": {
@@ -2418,7 +2418,7 @@
 			"deleteAction": "タスクを削除",
 			"completeAria": "サブタスクを完了にする",
 			"progress": "サブタスク {{total}} 件中 {{completed}} 件完了",
-			"noCompletionColumn": "This project has no matching column for completing or reopening this subtask."
+			"noCompletionColumn": "このプロジェクトには、このサブタスクを完了または再開するための該当する列がありません。"
 		},
 		"properties": {
 			"title": "プロパティ",
@@ -2449,19 +2449,19 @@
 			"assignee": {
 				"unassigned": "未割り当て",
 				"updateError": "担当者の更新に失敗しました",
-				"unassignAll": "Unassign all",
-				"addResource": "New resource",
-				"createResource": "Create",
-				"createResourceError": "Failed to create resource",
-				"newResourceEmailPlaceholder": "Email (optional)",
-				"newResourceNamePlaceholder": "Name",
+				"unassignAll": "すべて割り当て解除",
+				"addResource": "新しいリソース",
+				"createResource": "作成",
+				"createResourceError": "リソースの作成に失敗しました",
+				"newResourceEmailPlaceholder": "メールアドレス（任意）",
+				"newResourceNamePlaceholder": "名前",
 				"resourceKind": {
-					"equipment": "Equipment",
-					"material": "Material",
-					"person": "Person"
+					"equipment": "設備",
+					"material": "資材",
+					"person": "人"
 				},
-				"resourcesHeading": "Resources",
-				"notInProject": "No longer in this project"
+				"resourcesHeading": "リソース",
+				"notInProject": "このプロジェクトのメンバーではなくなりました"
 			},
 			"status": {
 				"updateError": "ステータスの更新に失敗しました"
@@ -2605,10 +2605,10 @@
 				"isAnyOf": "次のいずれか",
 				"includeAnyOf": "次のいずれかを含む"
 			},
-			"all": "All",
-			"allCustomFieldValues": "All values",
-			"noCustomFieldValues": "No custom field values",
-			"noValuesUsedYet": "No values used yet"
+			"all": "すべて",
+			"allCustomFieldValues": "すべての値",
+			"noCustomFieldValues": "カスタムフィールドの値がありません",
+			"noValuesUsedYet": "使用されている値はまだありません"
 		},
 		"calendar": {
 			"pageTitle": "{{name}} – カレンダー",
@@ -2638,11 +2638,11 @@
 			"resizeStart": "開始日を変更",
 			"resizeDue": "期限を変更",
 			"taskAriaLabel": "{{title}}: 開く、またはドラッグして移動",
-			"jumpToToday": "Jump to today",
-			"previousPeriod": "Previous period",
-			"nextPeriod": "Next period",
-			"periodStart": "Timeline start date",
-			"showTaskDates": "Show task dates",
+			"jumpToToday": "今日へ移動",
+			"previousPeriod": "前の期間",
+			"nextPeriod": "次の期間",
+			"periodStart": "タイムラインの開始日",
+			"showTaskDates": "タスクの日付を表示",
 			"legendBlocking": "ブロック中",
 			"legendRelated": "関連",
 			"externalProjectBadge": "{{projectName}}内",
@@ -2664,7 +2664,7 @@
 			"criticalPathToggle": "クリティカルパス",
 			"criticalPathToggleAriaLabel": "クリティカルパスを強調表示",
 			"legendCriticalPath": "クリティカルパス",
-			"constraintMarkerAriaLabel": "{{title}}: {{type}}, {{date}}",
+			"constraintMarkerAriaLabel": "{{title}}: {{type}}、{{date}}",
 			"constraintViolationAriaLabel": "{{title}}: 制約違反 — {{type}}、{{date}}",
 			"dependentsRescheduled_other": "依存タスクを{{count}}件再スケジュールしました",
 			"baselineSlipEarlyAriaLabel": "{{title}}: ベースラインより{{days}}日早く終了",
@@ -2682,12 +2682,12 @@
 			"gateWarningBadge": "ゲート",
 			"gateWarningItem": "「{{title}}」は{{status}}です",
 			"gateWarningTitle": "未承認のゲートによってブロックされています",
-			"barColorSourceCustomField": "Custom field",
-			"barColorSourceLabel": "Bar color",
-			"barColorSourceNone": "None",
-			"barColorSourceFirstLabel": "First label",
-			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
-			"externalTaskDerivedRailNote": "Position from dependency"
+			"barColorSourceCustomField": "カスタムフィールド",
+			"barColorSourceLabel": "バーの色",
+			"barColorSourceNone": "なし",
+			"barColorSourceFirstLabel": "最初のラベル",
+			"externalTaskDerivedTitle": "{{title}} — {{projectName}} の関連タスクです。このタスク自体には日付がないため、位置は依存関係から算出されています（ここでは読み取り専用）",
+			"externalTaskDerivedRailNote": "依存関係から算出した位置"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",
@@ -2711,13 +2711,13 @@
 			"merged": "マージ済み",
 			"draft": "下書き",
 			"open": "オープン",
-			"label": "Pull Request",
+			"label": "プルリクエスト",
 			"count_other": "{{count}} 件の PR"
 		},
 		"assignee": {
 			"label": "担当者",
 			"unassigned": "未割り当て",
-			"assignedAriaLabel": "Assigned to {{names}}"
+			"assignedAriaLabel": "担当: {{names}}"
 		},
 		"dueDate": {
 			"label": "期限",
@@ -2738,14 +2738,14 @@
 		"contextMenu": {
 			"copyLink": "リンクをコピー",
 			"copyLinkSuccess": "タスクのリンクをコピーしました！",
-			"moreActions": "More actions",
-			"copyLinkError": "Couldn't copy the task link."
+			"moreActions": "その他の操作",
+			"copyLinkError": "タスクのリンクをコピーできませんでした。"
 		},
 		"actions": {
 			"archive": "アーカイブ",
 			"markAsPlanned": "計画中に設定",
 			"delete": "削除...",
-			"duplicate": "Duplicate"
+			"duplicate": "複製"
 		},
 		"bulk": {
 			"selectedCount": "{{count}} 件選択中",
@@ -2792,11 +2792,11 @@
 				"deleteTable": "表を削除"
 			}
 		},
-		"descriptionSearchLoading": "Searching full descriptions…",
-		"descriptionSearchError": "Description search failed. Results may be incomplete.",
-		"descriptionRetry": "Retry",
-		"descriptionLoading": "Loading description…",
-		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
+		"descriptionSearchLoading": "説明全体を検索中…",
+		"descriptionSearchError": "説明の検索に失敗しました。結果が不完全な可能性があります。",
+		"descriptionRetry": "再試行",
+		"descriptionLoading": "説明を読み込み中…",
+		"descriptionLoadError": "説明を読み込めませんでした。再試行して最新の内容を読み込んでください。",
 		"approval": {
 			"approved": "承認済み",
 			"label": "承認",
@@ -2805,13 +2805,13 @@
 			"rejected": "却下"
 		},
 		"duplicate": {
-			"error": "Failed to duplicate task",
-			"success": "Task duplicated successfully",
-			"titleSuffix": "{{title}} (copy)"
+			"error": "タスクの複製に失敗しました",
+			"success": "タスクを複製しました",
+			"titleSuffix": "{{title}}（コピー）"
 		},
 		"checklistProgress": "チェックリスト {{total}} 項目中 {{completed}} 項目完了",
 		"customFields": {
-			"ariaLabel": "Custom fields"
+			"ariaLabel": "カスタムフィールド"
 		}
 	},
 	"invitations": {
@@ -3001,19 +3001,19 @@
 			"copyLink": "リンクをコピー",
 			"linkCopied": "招待リンクをコピーしました",
 			"copyFailed": "自動コピーできませんでした。リンクを選択して Ctrl+C を押してください。",
-			"renew": "Renew invitation link",
-			"renewError": "Failed to renew the invitation link",
-			"renewSuccess": "Invitation link renewed. No email was sent. Copy the link and send it yourself.",
-			"resend": "Resend invitation",
-			"resendError": "Failed to resend the invitation",
-			"resendSuccess": "Invitation sent again",
-			"expired": "Expired {{date}}",
-			"inviteAgain": "Invite again",
-			"inviteAgainError": "Failed to invite again",
-			"renewSuccessUnknownEmail": "Invitation link renewed. Share the link if the person did not get an email.",
-			"expiredBadge": "expired",
-			"inviteAgainCancelError": "The old invitation could not be cancelled. Cancel it manually.",
-			"rejectedBadge": "rejected"
+			"renew": "招待リンクを更新",
+			"renewError": "招待リンクの更新に失敗しました",
+			"renewSuccess": "招待リンクを更新しました。メールは送信されていません。リンクをコピーして自分で送信してください。",
+			"resend": "招待を再送信",
+			"resendError": "招待の再送信に失敗しました",
+			"resendSuccess": "招待を再送信しました",
+			"expired": "{{date}} に期限切れ",
+			"inviteAgain": "再度招待",
+			"inviteAgainError": "再招待に失敗しました",
+			"renewSuccessUnknownEmail": "招待リンクを更新しました。相手にメールが届いていない場合は、リンクを共有してください。",
+			"expiredBadge": "期限切れ",
+			"inviteAgainCancelError": "古い招待をキャンセルできませんでした。手動でキャンセルしてください。",
+			"rejectedBadge": "辞退"
 		},
 		"inviteModal": {
 			"title": "チームメンバーを招待",
@@ -3025,20 +3025,20 @@
 			"createdTitle": "招待を作成しました",
 			"shareLinkDescription": "{{email}} にこのリンクを共有して、ワークスペースに参加してもらいましょう。",
 			"done": "完了",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed; copy the link and send it yourself.",
-			"shareLinkDescriptionNoEmail": "No email was sent. Share this link with {{email}} so they can join the workspace.",
-			"successNoEmail": "Invitation created. No email was sent.",
-			"noAssignableRoles": "You can't assign any role, so you can't invite people.",
-			"roleLabel": "Role",
-			"rolesError": "Couldn't load the roles you can assign. Try again later.",
-			"rolesLoading": "Loading roles...",
-			"sending": "Sending...",
-			"shareLinkDescriptionUnknownEmail": "Share this link with {{email}} if they did not get an email, so they can join the workspace.",
-			"successUnknownEmail": "Invitation created. Share the link if the person did not get an email.",
-			"rolePlaceholder": "Select a role",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"rolePickRequired": "Choose the role for this invitation."
+			"invalidEmail": "有効なメールアドレスを入力してください",
+			"noSmtpNotice": "このサーバーではメールが設定されていません。招待はメールで送信されません。リンクをコピーして自分で送信してください。",
+			"shareLinkDescriptionNoEmail": "メールは送信されていません。{{email}} がワークスペースに参加できるよう、このリンクを共有してください。",
+			"successNoEmail": "招待を作成しました。メールは送信されていません。",
+			"noAssignableRoles": "割り当て可能なロールがないため、人を招待できません。",
+			"roleLabel": "ロール",
+			"rolesError": "割り当て可能なロールを読み込めませんでした。後でもう一度お試しください。",
+			"rolesLoading": "ロールを読み込み中...",
+			"sending": "送信中...",
+			"shareLinkDescriptionUnknownEmail": "{{email}} にメールが届いていない場合は、ワークスペースに参加できるようこのリンクを共有してください。",
+			"successUnknownEmail": "招待を作成しました。相手にメールが届いていない場合は、リンクを共有してください。",
+			"rolePlaceholder": "ロールを選択",
+			"roleUnavailable": "選択したロールは利用できなくなりました。別のロールを選択してください。",
+			"rolePickRequired": "この招待のロールを選択してください。"
 		},
 		"membersTable": {
 			"emptyTitle": "チームメンバーがまだいません",
@@ -3065,19 +3065,19 @@
 			"cancelInviteError": "招待のキャンセルに失敗しました",
 			"roleUpdateSuccess": "ロールを更新しました",
 			"roleUpdateError": "ロールの更新に失敗しました",
-			"ariaChangeRole": "Change role for {{name}}",
-			"rolesLoadError": "Couldn't load the roles you can assign, so roles can't be changed right now.",
-			"rolesRetry": "Retry"
+			"ariaChangeRole": "{{name}} のロールを変更",
+			"rolesLoadError": "割り当て可能なロールを読み込めなかったため、現在ロールを変更できません。",
+			"rolesRetry": "再試行"
 		},
 		"errors": {
-			"alreadyInvited": "This person already has a pending invitation.",
-			"alreadyMember": "This person is already a member of the workspace.",
-			"cannotChangeOwnRole": "You can't change your own role.",
-			"cannotInviteWithRole": "You can't invite someone with this role.",
-			"cannotManageMember": "You can't manage this member.",
-			"cannotUpdateMember": "You can't change this member.",
-			"invitationLimitReached": "The invitation limit for this workspace has been reached.",
-			"roleExceedsYourPermissions": "You can't give a role with more permissions than your own."
+			"alreadyInvited": "この人にはすでに保留中の招待があります。",
+			"alreadyMember": "この人はすでにワークスペースのメンバーです。",
+			"cannotChangeOwnRole": "自分自身のロールは変更できません。",
+			"cannotInviteWithRole": "このロールで招待することはできません。",
+			"cannotManageMember": "このメンバーを管理することはできません。",
+			"cannotUpdateMember": "このメンバーを変更することはできません。",
+			"invitationLimitReached": "このワークスペースの招待数の上限に達しました。",
+			"roleExceedsYourPermissions": "自分の権限より強い権限を持つロールは付与できません。"
 		}
 	},
 	"publicProject": {
@@ -3094,8 +3094,8 @@
 		"taskDetail": {
 			"labels": "ラベル",
 			"externalLinks": "外部リンク",
-			"pullRequestFallback": "Pull Request",
-			"issueFallback": "Issue",
+			"pullRequestFallback": "プルリクエスト",
+			"issueFallback": "イシュー",
 			"prStatusMerged": "マージ済み",
 			"prStatusDraft": "下書き",
 			"prStatusOpen": "オープン",
@@ -3114,217 +3114,217 @@
 			"share": "共有"
 		},
 		"branding": {
-			"poweredBy": "Powered by"
+			"poweredBy": "提供:"
 		}
 	},
 	"press": {
-		"title": "Press kit",
-		"headline": "Kaneo press kit",
-		"intro": "Kaneo logos and product screenshots for articles, videos, and other media.",
-		"description": "Kaneo press resources: product information, logos, screenshots, and contact details for journalists and creators.",
-		"downloadKit": "Download all assets",
-		"boilerplateTitle": "About Kaneo",
-		"boilerplate": "Kaneo is an open-source project management platform created by Andrej Acevski. Teams can organize tasks in board and list views, assign work, set priorities and due dates, and connect GitHub. Kaneo is available under the MIT license for self-hosting, or as a managed service through Kaneo Cloud.",
-		"logosTitle": "Logos",
-		"darkLogo": "Dark wordmark",
-		"darkLogoAlt": "Dark Kaneo logo on a light background",
+		"title": "プレスキット",
+		"headline": "Kaneoプレスキット",
+		"intro": "記事、動画、その他のメディアで使えるKaneoのロゴと製品スクリーンショットです。",
+		"description": "Kaneoの報道向けリソース: 製品情報、ロゴ、スクリーンショット、ジャーナリストやクリエイター向けの連絡先。",
+		"downloadKit": "すべての素材をダウンロード",
+		"boilerplateTitle": "Kaneoについて",
+		"boilerplate": "Kaneoは、Andrej Acevskiが開発したオープンソースのプロジェクト管理プラットフォームです。チームはボードやリストのビューでタスクを整理し、作業を割り当て、優先度や期限を設定し、GitHubと連携できます。KaneoはMITライセンスでセルフホストできるほか、Kaneo Cloudのマネージドサービスとしても利用できます。",
+		"logosTitle": "ロゴ",
+		"darkLogo": "ダークのワードマーク",
+		"darkLogoAlt": "明るい背景上のダークなKaneoロゴ",
 		"darkLogoDetail": "SVG",
-		"lightLogo": "Light wordmark",
-		"lightLogoAlt": "Light Kaneo logo on a dark background",
+		"lightLogo": "ライトのワードマーク",
+		"lightLogoAlt": "暗い背景上のライトなKaneoロゴ",
 		"lightLogoDetail": "SVG",
-		"icon": "App icon",
-		"iconAlt": "Kaneo app icon",
+		"icon": "アプリアイコン",
+		"iconAlt": "Kaneoアプリアイコン",
 		"iconDetail": "PNG, 512 × 512",
-		"download": "Download",
-		"screenshotsTitle": "Screenshots",
-		"lightScreenshot": "Board (light)",
-		"lightScreenshotAlt": "Kaneo board in light theme, with task cards arranged by status",
-		"darkScreenshot": "Board (dark)",
-		"darkScreenshotAlt": "Kaneo board in dark theme, with task cards arranged by status",
-		"contactTitle": "Press enquiries",
-		"contactBody": "Contact the Kaneo team for product questions, interviews, or additional materials.",
-		"usageContrast": "Choose the light wordmark for dark backgrounds and the dark wordmark for light backgrounds.",
-		"usageProportions": "Keep the original proportions and colours, without stretching or adding effects.",
-		"usageSpace": "Leave enough space around the logo to keep it clear and readable.",
-		"darkListScreenshot": "List (dark)",
-		"darkListScreenshotAlt": "Kaneo task list in dark theme, grouped by status with assignees, priorities, labels, and due dates",
-		"darkTaskScreenshot": "Task details (dark)",
-		"darkTaskScreenshotAlt": "Kaneo task details in dark theme, with a description, checklist, team comment, and task properties",
-		"darkTimelineScreenshot": "Timeline (dark)",
-		"darkTimelineScreenshotAlt": "Kaneo Gantt timeline in dark theme, showing scheduled tasks and their durations",
-		"lightListScreenshot": "List (light)",
-		"lightListScreenshotAlt": "Kaneo task list in light theme, grouped by status with assignees, priorities, labels, and due dates",
-		"lightTaskScreenshot": "Task details (light)",
-		"lightTaskScreenshotAlt": "Kaneo task details in light theme, with a description, checklist, team comment, and task properties",
-		"lightTimelineScreenshot": "Timeline (light)",
-		"lightTimelineScreenshotAlt": "Kaneo Gantt timeline in light theme, showing scheduled tasks and their durations"
+		"download": "ダウンロード",
+		"screenshotsTitle": "スクリーンショット",
+		"lightScreenshot": "ボード（ライト）",
+		"lightScreenshotAlt": "ライトテーマのKaneoボード。タスクカードがステータス別に並んでいます",
+		"darkScreenshot": "ボード（ダーク）",
+		"darkScreenshotAlt": "ダークテーマのKaneoボード。タスクカードがステータス別に並んでいます",
+		"contactTitle": "取材のお問い合わせ",
+		"contactBody": "製品に関するご質問、インタビュー、追加資料についてはKaneoチームまでご連絡ください。",
+		"usageContrast": "暗い背景にはライトのワードマーク、明るい背景にはダークのワードマークを使用してください。",
+		"usageProportions": "元の縦横比と色を保ち、引き伸ばしや効果の追加はしないでください。",
+		"usageSpace": "ロゴが見やすく読み取れるよう、周囲に十分な余白を確保してください。",
+		"darkListScreenshot": "リスト（ダーク）",
+		"darkListScreenshotAlt": "ダークテーマのKaneoタスクリスト。ステータス別にグループ化され、担当者、優先度、ラベル、期限が表示されています",
+		"darkTaskScreenshot": "タスクの詳細（ダーク）",
+		"darkTaskScreenshotAlt": "ダークテーマのKaneoタスクの詳細。説明、チェックリスト、チームのコメント、タスクのプロパティが表示されています",
+		"darkTimelineScreenshot": "タイムライン（ダーク）",
+		"darkTimelineScreenshotAlt": "ダークテーマのKaneoガントタイムライン。スケジュールされたタスクとその期間が表示されています",
+		"lightListScreenshot": "リスト（ライト）",
+		"lightListScreenshotAlt": "ライトテーマのKaneoタスクリスト。ステータス別にグループ化され、担当者、優先度、ラベル、期限が表示されています",
+		"lightTaskScreenshot": "タスクの詳細（ライト）",
+		"lightTaskScreenshotAlt": "ライトテーマのKaneoタスクの詳細。説明、チェックリスト、チームのコメント、タスクのプロパティが表示されています",
+		"lightTimelineScreenshot": "タイムライン（ライト）",
+		"lightTimelineScreenshotAlt": "ライトテーマのKaneoガントタイムライン。スケジュールされたタスクとその期間が表示されています"
 	},
 	"landing": {
 		"sponsors": {
 			"ciSponsor": "パートナー"
 		},
 		"founder": {
-			"title": "Why Kaneo exists",
-			"intro": "I'm Andrej, and I created Kaneo because I was tired of project management tools that got in the way more than they helped. After years of using bloated, overcomplicated platforms that distracted from actual work, I knew there had to be a better way.",
-			"problem": "The problem wasn't that these tools lacked features - it was that they had too many. Every notification, every unnecessary button, every complex workflow was pulling my team away from what mattered: building great products.",
-			"principle": "I believe the best tools are invisible. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that less is more - every feature exists because it solves a real problem, not because it looks impressive in a demo."
+			"title": "Kaneoが生まれた理由",
+			"intro": "Andrejです。私がKaneoを作ったのは、役に立つどころか邪魔になるプロジェクト管理ツールにうんざりしていたからです。肥大化して複雑すぎるプラットフォームが本来の仕事の妨げになるのを何年も経験し、もっと良い方法があるはずだと確信しました。",
+			"problem": "問題はツールに機能が足りないことではなく、多すぎることでした。あらゆる通知、不要なボタン、複雑なワークフローが、チームを本当に大切なこと、つまり優れたプロダクトづくりから引き離していました。",
+			"principle": "最高のツールは目立たないものだと私は考えています。チームが自然に働く流れを後押しするもので、ツールに合わせることを強いるものではありません。Kaneoは「少ないほうが豊か」という考えのもとに作られています。すべての機能は、デモで見栄えがするからではなく、実際の課題を解決するために存在します。"
 		},
 		"hero": {
-			"cloudCta": "Try Kaneo Cloud",
-			"selfHostCta": "Self-host Kaneo",
-			"trialNote": "14-day cloud trial. No credit card required.",
+			"cloudCta": "Kaneo Cloudを試す",
+			"selfHostCta": "Kaneoをセルフホスト",
+			"trialNote": "14日間のクラウド無料トライアル。クレジットカードは不要です。",
 			"github": "GitHub",
 			"productHunt": "Product Hunt",
-			"title": "Project management",
-			"titleAccent": "that doesn't become the project.",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or let Kaneo Cloud handle the hosting."
+			"title": "プロジェクト管理が",
+			"titleAccent": "プロジェクトの重荷にならないように。",
+			"description": "ボード、ガントチャート、GitHub連携を備えたオープンソースのプロジェクト管理。SSO込みで無料でセルフホストするか、ホスティングはKaneo Cloudにお任せください。"
 		},
 		"navigation": {
-			"product": "Product",
-			"pricing": "Pricing",
-			"resources": "Resources",
-			"docs": "Documentation",
-			"blog": "Blog",
-			"guides": "Guides",
-			"comparisons": "Compare tools",
-			"roadmap": "Roadmap",
-			"menu": "Menu",
-			"closeMenu": "Close menu",
-			"home": "Kaneo home",
-			"signIn": "Sign In",
-			"getStarted": "Get Started"
+			"product": "製品",
+			"pricing": "料金",
+			"resources": "リソース",
+			"docs": "ドキュメント",
+			"blog": "ブログ",
+			"guides": "ガイド",
+			"comparisons": "ツールを比較",
+			"roadmap": "ロードマップ",
+			"menu": "メニュー",
+			"closeMenu": "メニューを閉じる",
+			"home": "Kaneoホーム",
+			"signIn": "サインイン",
+			"getStarted": "始める"
 		},
 		"showcase": {
-			"label": "Kaneo product views",
-			"controls": "Choose a product view",
-			"play": "Play product views",
-			"pause": "Pause product views",
-			"board": "Board",
-			"list": "Backlog",
-			"gantt": "Gantt"
+			"label": "Kaneoの製品ビュー",
+			"controls": "製品ビューを選択",
+			"play": "製品ビューを再生",
+			"pause": "製品ビューを一時停止",
+			"board": "ボード",
+			"list": "バックログ",
+			"gantt": "ガント"
 		},
 		"features": {
 			"tasks": {
-				"label": "Subtasks & context",
-				"title": "Big tasks. Clear next steps.",
-				"description": "Break work into subtasks, assign each one, and track progress without losing the original brief. Every detail stays with the work."
+				"label": "サブタスクとコンテキスト",
+				"title": "大きなタスクも、次の一歩は明確に。",
+				"description": "作業をサブタスクに分けて、それぞれに担当者を割り当て、元の内容を見失うことなく進捗を追跡できます。すべての詳細が作業とともに残ります。"
 			},
 			"github": {
-				"label": "GitHub integration",
-				"title": "From pull request to done.",
-				"description": "Issues and labels sync both ways. Linked pull requests move tasks through review to done as your code is opened and merged.",
-				"link": "Set up GitHub"
+				"label": "GitHub連携",
+				"title": "プルリクエストから完了まで。",
+				"description": "イシューとラベルは双方向に同期されます。リンクされたプルリクエストは、コードのオープンとマージに応じて、タスクをレビューから完了へ移動します。",
+				"link": "GitHubを設定"
 			},
 			"hosting": {
-				"title": "Run it on your own server.",
-				"description": "Deploy with Docker and keep your workspace on infrastructure you control.",
-				"link": "Self-host Kaneo"
+				"title": "自分のサーバーで運用。",
+				"description": "Dockerでデプロイし、ワークスペースを自分で管理できるインフラ上に置けます。",
+				"link": "Kaneoをセルフホスト"
 			},
 			"source": {
-				"title": "The code is open, too.",
-				"description": "Read the source, report an issue, or contribute a change. Development happens on GitHub.",
-				"link": "View the source"
+				"title": "コードも公開されています。",
+				"description": "ソースを読み、問題を報告し、変更を提案できます。開発はGitHubで行われています。",
+				"link": "ソースを見る"
 			},
 			"preview": {
-				"taskAlt": "Interactive Kaneo task and subtask preview.",
-				"githubAlt": "Interactive preview of a GitHub merge updating a Kaneo task.",
-				"taskTitle": "Publish the new homepage",
-				"taskDescription": "Update the copy and check the layout before the next release.",
-				"checklistDone": "Review the copy",
-				"checklistOpen": "Check the mobile layout",
-				"inProgress": "In Progress",
-				"high": "High",
-				"date": "Oct 12",
-				"design": "design",
-				"done": "Done",
-				"relationsAlt": "Interactive Kaneo task dependencies preview.",
-				"inReview": "In Review",
-				"trySubtasks": "Try checking off a subtask.",
-				"tryGithub": "Preview a merge to see the task update.",
-				"tryRelations": "Open a linked task to follow the connection.",
-				"mergeAction": "Preview merge",
-				"resetAction": "Reset preview",
-				"mergedHint": "Pull request merged. Task moved to Done.",
-				"progress": "{{completed}} of {{total}} subtasks complete",
-				"backToTask": "Back to the homepage task",
-				"releaseNotes": "Write the release notes",
-				"dependencyDescription": "The homepage is waiting on the mobile review. Keep the launch notes linked for context.",
-				"mobileDescription": "Check the new homepage on narrow screens before it goes live.",
-				"notesDescription": "Capture what changed for the launch announcement."
+				"taskAlt": "Kaneoのタスクとサブタスクのインタラクティブなプレビュー。",
+				"githubAlt": "GitHubのマージがKaneoのタスクを更新するインタラクティブなプレビュー。",
+				"taskTitle": "新しいホームページを公開する",
+				"taskDescription": "次のリリースの前に、文面を更新してレイアウトを確認します。",
+				"checklistDone": "文面をレビューする",
+				"checklistOpen": "モバイルのレイアウトを確認する",
+				"inProgress": "進行中",
+				"high": "高",
+				"date": "10月12日",
+				"design": "デザイン",
+				"done": "完了",
+				"relationsAlt": "Kaneoのタスクの依存関係のインタラクティブなプレビュー。",
+				"inReview": "レビュー中",
+				"trySubtasks": "サブタスクにチェックを入れてみてください。",
+				"tryGithub": "マージをプレビューして、タスクの更新を確認できます。",
+				"tryRelations": "リンクされたタスクを開いて、つながりをたどってみてください。",
+				"mergeAction": "マージをプレビュー",
+				"resetAction": "プレビューをリセット",
+				"mergedHint": "プルリクエストがマージされました。タスクは完了に移動しました。",
+				"progress": "サブタスク {{total}} 件中 {{completed}} 件が完了",
+				"backToTask": "ホームページのタスクに戻る",
+				"releaseNotes": "リリースノートを書く",
+				"dependencyDescription": "ホームページはモバイルのレビュー待ちです。経緯がわかるよう、ローンチノートをリンクしておきましょう。",
+				"mobileDescription": "公開前に、狭い画面で新しいホームページを確認します。",
+				"notesDescription": "ローンチのお知らせに向けて、変更点をまとめます。"
 			},
 			"relations": {
-				"label": "Linked tasks & dependencies",
-				"title": "See what’s holding things up.",
-				"description": "Connect blockers, follow dependencies, and keep related work close. Open a linked task to see the context behind the next step."
+				"label": "リンクされたタスクと依存関係",
+				"title": "何が作業を止めているかがわかる。",
+				"description": "ブロッカーをつなぎ、依存関係をたどり、関連する作業を近くにまとめます。リンクされたタスクを開くと、次のステップの背景がわかります。"
 			}
 		},
 		"seo": {
-			"title": "Kaneo — Open-source, self-hosted project management",
-			"description": "Open-source project management with boards, Gantt charts, and GitHub integration. Self-host for free with SSO included, or use Kaneo Cloud."
+			"title": "Kaneo — オープンソースのセルフホスト型プロジェクト管理",
+			"description": "ボード、ガントチャート、GitHub連携を備えたオープンソースのプロジェクト管理。SSO込みで無料でセルフホストするか、Kaneo Cloudをご利用ください。"
 		},
 		"resources": {
-			"eyebrow": "Make it your own",
-			"title": "A clear path from trying it to using it.",
-			"description": "Set up your server, connect your tools, or compare Kaneo with your current tracker.",
+			"eyebrow": "自分仕様にカスタマイズ",
+			"title": "試すところから使いこなすまでの、わかりやすい道筋。",
+			"description": "サーバーをセットアップし、ツールを接続し、今お使いのトラッカーとKaneoを比較できます。",
 			"docker": {
-				"title": "Self-host with Docker",
-				"description": "Installation, backups, and updates for a setup you control."
+				"title": "Dockerでセルフホスト",
+				"description": "自分で管理する環境のためのインストール、バックアップ、アップデートの手順。"
 			},
 			"sso": {
-				"title": "Bring your own identity provider",
-				"description": "Configure OIDC single sign-on in the free self-hosted build."
+				"title": "自分のIDプロバイダーを利用",
+				"description": "無料のセルフホスト版でOIDCシングルサインオンを設定します。"
 			},
 			"mcp": {
-				"title": "Connect your AI tools",
-				"description": "Use MCP to work with tasks and projects through an AI client."
+				"title": "AIツールを接続",
+				"description": "MCPを使って、AIクライアントからタスクやプロジェクトを操作できます。"
 			},
 			"linear": {
-				"title": "Compare Kaneo and Linear",
-				"description": "See the differences in hosting, licensing, and workflow."
+				"title": "KaneoとLinearを比較",
+				"description": "ホスティング、ライセンス、ワークフローの違いを確認できます。"
 			}
 		},
 		"product": {
-			"title": "Before you get started",
-			"description": "The practical details about hosting, planning, and connecting your team.",
-			"overview": "Kaneo is an open-source, MIT-licensed project management platform with boards, backlog, Gantt and calendar views, custom fields, time tracking, and GitHub integration. Self-host it on your own infrastructure or use Kaneo Cloud.",
+			"title": "始める前に",
+			"description": "ホスティング、計画、チームとの連携に関する実用的な情報です。",
+			"overview": "Kaneoは、ボード、バックログ、ガントとカレンダーのビュー、カスタムフィールド、時間追跡、GitHub連携を備えた、MITライセンスのオープンソースのプロジェクト管理プラットフォームです。自社のインフラでセルフホストすることも、Kaneo Cloudを利用することもできます。",
 			"hosting": {
-				"question": "Is Kaneo free to self-host?",
-				"answer": "Yes. Kaneo is MIT licensed and free to self-host, with single sign-on included. Run the application alongside PostgreSQL using Docker Compose, or deploy with the official Helm chart. You manage infrastructure, updates, and backups.",
-				"link": "Read the installation guide"
+				"question": "Kaneoは無料でセルフホストできますか？",
+				"answer": "はい。KaneoはMITライセンスで、シングルサインオン込みで無料でセルフホストできます。Docker Composeを使ってPostgreSQLとともにアプリケーションを実行するか、公式のHelmチャートでデプロイしてください。インフラ、アップデート、バックアップはご自身で管理します。",
+				"link": "インストールガイドを読む"
 			},
 			"planning": {
-				"question": "Does Kaneo have Gantt charts?",
-				"answer": "Yes. Kaneo includes Gantt and calendar views alongside boards, lists, and backlog planning. Use task start dates and due dates to plan work on a timeline. Budgeting, baseline comparisons, and sprint burndown reports are outside its current scope.",
-				"link": "Compare planning features"
+				"question": "Kaneoにはガントチャートがありますか？",
+				"answer": "はい。Kaneoには、ボード、リスト、バックログ計画に加えて、ガントとカレンダーのビューがあります。タスクの開始日と期限を使って、タイムライン上で作業を計画できます。予算管理、ベースライン比較、スプリントのバーンダウンレポートは現在の対象外です。",
+				"link": "計画機能を比較"
 			},
 			"sso": {
-				"question": "Is single sign-on included?",
-				"answer": "Yes. The free self-hosted build supports Google, GitHub, Discord, and custom OAuth/OIDC providers. Configure your provider on your instance without purchasing a separate Kaneo edition.",
-				"link": "Configure OIDC"
+				"question": "シングルサインオンは含まれていますか？",
+				"answer": "はい。無料のセルフホスト版は、Google、GitHub、Discord、およびカスタムのOAuth/OIDCプロバイダーに対応しています。別のKaneoエディションを購入せずに、ご自身のインスタンスでプロバイダーを設定できます。",
+				"link": "OIDCを設定"
 			},
 			"agents": {
-				"question": "Can AI clients work with Kaneo?",
-				"answer": "Yes. Kaneo provides an MCP server through the @kaneo/mcp package and an HTTP endpoint. Compatible AI clients can read and update tasks using an API key tied to a user, subject to workspace permissions.",
-				"link": "Read the MCP guide"
+				"question": "AIクライアントからKaneoを使えますか？",
+				"answer": "はい。Kaneoは、@kaneo/mcpパッケージとHTTPエンドポイントでMCPサーバーを提供しています。対応するAIクライアントは、ユーザーに紐づいたAPIキーを使ってタスクを読み取り・更新できます。ワークスペースの権限が適用されます。",
+				"link": "MCPガイドを読む"
 			}
 		},
 		"comparison": {
-			"feature": "Feature",
-			"yes": "Yes",
-			"no": "No"
+			"feature": "機能",
+			"yes": "あり",
+			"no": "なし"
 		},
 		"selfHostingGuide": {
-			"summary": "What self-hosting involves, with links to the maintained Docker Compose configuration and installation steps.",
-			"answer": "To self-host Kaneo, run the application and PostgreSQL with Docker Compose, configure your public URL and secrets, and put a TLS reverse proxy in front. The installation guide specifies at least 2 GB of RAM and 10 GB of disk space. Plan for ongoing updates, database backups, and storage for uploaded files.",
-			"requirements": "The documented minimum is 2 GB of RAM and 10 GB of disk space, with Docker 20.10 or newer and Docker Compose V2. Allow more capacity for your workload, database growth, and uploaded files.",
-			"compose": "Use the maintained compose.yml in the Docker Compose guide. It defines PostgreSQL, a persistent database volume, the Kaneo application, and health checks. Configure the environment file before starting the services; for production, pin an image version so updates are deliberate.",
-			"backups": "Back up both PostgreSQL and any object storage used for uploads. Choose a schedule based on how much work your team can afford to lose, store copies off the application server, and test restoring them before you need them.",
-			"worth": "Self-hosting makes sense when you need control over infrastructure and data, and someone can own maintenance. Include server capacity, storage, backups, and that maintenance time when comparing costs with a managed service.",
-			"minimum": "The installation guide specifies Docker 20.10 or newer, Docker Compose V2, at least 2 GB of RAM, and 10 GB of disk space. The Compose setup includes PostgreSQL. Redis is optional for a single API instance.",
-			"composeLink": "Docker Compose configuration",
-			"composeLinkDescription": "The maintained compose.yml with persistent storage and health checks.",
-			"startLink": "Start and verify the services",
-			"startLinkDescription": "Start the stack, inspect its status, and check that the application is available."
+			"summary": "セルフホストに必要なことと、メンテナンスされているDocker Compose設定およびインストール手順へのリンク。",
+			"answer": "Kaneoをセルフホストするには、Docker ComposeでアプリケーションとPostgreSQLを実行し、公開URLとシークレットを設定して、前段にTLSリバースプロキシを置きます。インストールガイドでは、RAM 2 GB以上、ディスク空き容量10 GB以上を推奨しています。継続的なアップデート、データベースのバックアップ、アップロードファイルのストレージも計画してください。",
+			"requirements": "ドキュメントに記載されている最小要件は、RAM 2 GB、ディスク空き容量10 GB、Docker 20.10以降、Docker Compose V2です。ワークロード、データベースの増加、アップロードファイルに応じて余裕を持たせてください。",
+			"compose": "Docker Composeガイドにあるメンテナンスされたcompose.ymlを使用してください。PostgreSQL、永続的なデータベースボリューム、Kaneoアプリケーション、ヘルスチェックが定義されています。サービスを起動する前に環境ファイルを設定してください。本番環境では、アップデートを意図的に行えるようイメージのバージョンを固定します。",
+			"backups": "PostgreSQLと、アップロードに使用するオブジェクトストレージの両方をバックアップしてください。チームが失っても許容できる作業量に基づいてスケジュールを決め、コピーはアプリケーションサーバーの外に保管し、必要になる前に復元をテストしておきましょう。",
+			"worth": "セルフホストは、インフラとデータを自分で管理したく、メンテナンスを担当できる人がいる場合に適しています。マネージドサービスとコストを比較する際は、サーバー容量、ストレージ、バックアップ、そのメンテナンスの手間も含めてください。",
+			"minimum": "インストールガイドでは、Docker 20.10以降、Docker Compose V2、RAM 2 GB以上、ディスク空き容量10 GB以上が指定されています。ComposeのセットアップにはPostgreSQLが含まれます。単一のAPIインスタンスであればRedisは任意です。",
+			"composeLink": "Docker Composeの設定",
+			"composeLinkDescription": "永続ストレージとヘルスチェックを備えた、メンテナンスされているcompose.yml。",
+			"startLink": "サービスを起動して確認する",
+			"startLinkDescription": "スタックを起動し、ステータスを確認して、アプリケーションが利用可能であることをチェックします。"
 		}
 	},
 	"portfolio": {
@@ -3345,174 +3345,174 @@
 	},
 	"projectInvitations": {
 		"accept": {
-			"alreadyMemberDescription": "You are already a member of {{workspaceName}}, so this invitation cannot add you to a project. Ask a workspace admin to add you to the project.",
-			"alreadyMemberTitle": "You are already a member",
-			"invitedToProject": "You are invited to project {{project}} as {{role}}.",
-			"invitedToProjects": "You are invited to these projects:",
-			"projectRole": "{{project}} as {{role}}"
+			"alreadyMemberDescription": "{{workspaceName}} のメンバーであるため、この招待でプロジェクトに追加することはできません。ワークスペース管理者にプロジェクトへの追加を依頼してください。",
+			"alreadyMemberTitle": "すでにメンバーです",
+			"invitedToProject": "プロジェクト {{project}} に {{role}} として招待されています。",
+			"invitedToProjects": "次のプロジェクトに招待されています:",
+			"projectRole": "{{project}}（{{role}}）"
 		},
-		"empty": "No pending invitations.",
+		"empty": "保留中の招待はありません。",
 		"errors": {
-			"alreadyWorkspaceMember": "This person is already a member of the workspace. Add them to the project with Add member.",
-			"disposableEmail": "Disposable email addresses are not allowed.",
-			"expired": "This invitation has expired. Invite the person again.",
-			"guestCannotInvite": "Guest accounts cannot invite people.",
-			"limitReached": "The workspace has too many pending invitations. Cancel some first.",
-			"notApplied": "The project access of this invitation could not be applied. Try to accept it again. If it keeps failing, ask a workspace admin to add you to the project.",
-			"notFound": "This invitation no longer exists. The list was reloaded.",
-			"rateLimited": "Too many invitations. Try again in a moment.",
-			"rateLimitedRetry": "Too many invitations. Try again in {{seconds}} seconds.",
-			"roleConflict": "A pending invitation for this email already exists with another workspace role. Cancel it or use the same workspace role.",
-			"workspaceInvitationExists": "This email already has a pending workspace invitation. Only someone who can invite people to the workspace can add a project to it."
+			"alreadyWorkspaceMember": "この人はすでにワークスペースのメンバーです。「メンバーを追加」でプロジェクトに追加してください。",
+			"disposableEmail": "使い捨てメールアドレスは使用できません。",
+			"expired": "この招待は期限切れです。もう一度招待してください。",
+			"guestCannotInvite": "ゲストアカウントは人を招待できません。",
+			"limitReached": "ワークスペースの保留中の招待が多すぎます。先にいくつかキャンセルしてください。",
+			"notApplied": "この招待のプロジェクトアクセスを適用できませんでした。もう一度承諾してみてください。それでも失敗する場合は、ワークスペース管理者にプロジェクトへの追加を依頼してください。",
+			"notFound": "この招待はもう存在しません。リストを再読み込みしました。",
+			"rateLimited": "招待の送信回数が多すぎます。しばらくしてからもう一度お試しください。",
+			"rateLimitedRetry": "招待の送信回数が多すぎます。{{seconds}} 秒後にもう一度お試しください。",
+			"roleConflict": "このメールアドレス宛の保留中の招待が、別のワークスペースロールですでに存在します。キャンセルするか、同じワークスペースロールを使用してください。",
+			"workspaceInvitationExists": "このメールアドレスにはすでに保留中のワークスペースへの招待があります。プロジェクトを追加できるのは、ワークスペースに人を招待できる人のみです。"
 		},
 		"invite": {
-			"addAsMember": "Add as member",
-			"addedToExisting": "{{email}} already has a pending invitation. This project was added to it. No second email was sent. Share the link if needed.",
-			"createdNotSent": "Invitation created for {{email}}. No email was sent. Share the link below.",
-			"createdSendFailed": "Invitation created for {{email}}, but the email could not be sent. Share the link below or resend it from the list.",
-			"createdSent": "Invitation sent to {{email}}.",
-			"createdTitle": "Invitation created",
-			"description": "Invite someone who is not in the workspace yet. They get the roles you choose below.",
-			"done": "Done",
-			"emailLabel": "Email",
+			"addAsMember": "メンバーとして追加",
+			"addedToExisting": "{{email}} にはすでに保留中の招待があります。このプロジェクトをそこに追加しました。2通目のメールは送信されていません。必要に応じてリンクを共有してください。",
+			"createdNotSent": "{{email}} 宛の招待を作成しました。メールは送信されていません。以下のリンクを共有してください。",
+			"createdSendFailed": "{{email}} 宛の招待を作成しましたが、メールを送信できませんでした。以下のリンクを共有するか、リストから再送信してください。",
+			"createdSent": "{{email}} に招待を送信しました。",
+			"createdTitle": "招待を作成しました",
+			"description": "まだワークスペースにいない人を招待します。以下で選択したロールが付与されます。",
+			"done": "完了",
+			"emailLabel": "メールアドレス",
 			"emailPlaceholder": "colleague@company.com",
-			"error": "Could not send the invitation",
-			"invalidEmail": "Enter a valid email address",
-			"noSmtpNotice": "Email is not configured on this server. The invitation will not be emailed. Copy the link and send it yourself.",
-			"projectRoleHint": "What the person can do in this project.",
-			"projectRoleLabel": "Project role",
-			"rolePlaceholder": "Select a role",
-			"submit": "Send invitation",
-			"submitting": "Sending...",
-			"title": "Invite to project",
-			"workspaceRoleHint": "What the person can do in the workspace.",
-			"workspaceRoleLabel": "Workspace role",
-			"noAssignableProjectRoles": "You cannot assign any project role, so you cannot invite people.",
-			"noAssignableWorkspaceRoles": "You cannot assign any workspace role, so you cannot invite people.",
-			"projectRolePickRequired": "Choose the project role.",
-			"projectRolesError": "Could not load the project roles you can assign.",
-			"projectRolesLoading": "Loading project roles...",
-			"projectRoleUnavailable": "The project role you chose is no longer available. Pick another one.",
-			"workspaceRolePickRequired": "Choose the workspace role.",
-			"workspaceRolesError": "Could not load the workspace roles you can assign.",
-			"workspaceRolesLoading": "Loading workspace roles...",
-			"workspaceRoleUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			"error": "招待を送信できませんでした",
+			"invalidEmail": "有効なメールアドレスを入力してください",
+			"noSmtpNotice": "このサーバーではメールが設定されていません。招待はメールで送信されません。リンクをコピーして自分で送信してください。",
+			"projectRoleHint": "このプロジェクトでこの人ができる操作です。",
+			"projectRoleLabel": "プロジェクトロール",
+			"rolePlaceholder": "ロールを選択",
+			"submit": "招待を送信",
+			"submitting": "送信中...",
+			"title": "プロジェクトに招待",
+			"workspaceRoleHint": "ワークスペースでこの人ができる操作です。",
+			"workspaceRoleLabel": "ワークスペースロール",
+			"noAssignableProjectRoles": "割り当て可能なプロジェクトロールがないため、人を招待できません。",
+			"noAssignableWorkspaceRoles": "割り当て可能なワークスペースロールがないため、人を招待できません。",
+			"projectRolePickRequired": "プロジェクトロールを選択してください。",
+			"projectRolesError": "割り当て可能なプロジェクトロールを読み込めませんでした。",
+			"projectRolesLoading": "プロジェクトロールを読み込み中...",
+			"projectRoleUnavailable": "選択したプロジェクトロールは利用できなくなりました。別のロールを選択してください。",
+			"workspaceRolePickRequired": "ワークスペースロールを選択してください。",
+			"workspaceRolesError": "割り当て可能なワークスペースロールを読み込めませんでした。",
+			"workspaceRolesLoading": "ワークスペースロールを読み込み中...",
+			"workspaceRoleUnavailable": "選択したワークスペースロールは利用できなくなりました。別のロールを選択してください。"
 		},
 		"list": {
-			"ariaActions": "Actions for the invitation of {{email}}",
-			"cancelDialogDescription": "The invitation of {{email}} to this project will be cancelled. The link stops working if it grants no other project.",
-			"cancelDialogTitle": "Cancel invitation?",
-			"cancelError": "Could not cancel the invitation",
-			"cancelSuccess": "Invitation cancelled",
-			"cancelSuccessOtherProjects": "This project was removed from the invitation. It still grants other projects.",
+			"ariaActions": "{{email}} の招待の操作",
+			"cancelDialogDescription": "{{email}} のこのプロジェクトへの招待がキャンセルされます。他のプロジェクトへのアクセスが付与されていない場合、リンクは無効になります。",
+			"cancelDialogTitle": "招待をキャンセルしますか？",
+			"cancelError": "招待をキャンセルできませんでした",
+			"cancelSuccess": "招待をキャンセルしました",
+			"cancelSuccessOtherProjects": "このプロジェクトを招待から削除しました。招待は他のプロジェクトへのアクセスを引き続き付与します。",
 			"columns": {
-				"email": "Email",
-				"roles": "Roles"
+				"email": "メールアドレス",
+				"roles": "ロール"
 			},
-			"projectRole": "Project role: {{role}}",
-			"renewError": "Could not renew the invitation link",
-			"resendError": "Could not resend the invitation",
-			"resendNotDelivered": "Invitation renewed, but the email could not be sent. Copy the link and send it yourself.",
-			"rolesLoadError": "Could not load the roles you can assign, so invitations cannot be resent now.",
-			"rolesRetry": "Retry",
-			"workspaceRole": "Workspace role: {{role}}"
+			"projectRole": "プロジェクトロール: {{role}}",
+			"renewError": "招待リンクを更新できませんでした",
+			"resendError": "招待を再送信できませんでした",
+			"resendNotDelivered": "招待を更新しましたが、メールを送信できませんでした。リンクをコピーして自分で送信してください。",
+			"rolesLoadError": "割り当て可能なロールを読み込めなかったため、現在招待を再送信できません。",
+			"rolesRetry": "再試行",
+			"workspaceRole": "ワークスペースロール: {{role}}"
 		},
-		"loadError": "Could not load the pending invitations.",
-		"subtitle": "People invited to this project who have not joined yet.",
-		"title": "Pending invitations"
+		"loadError": "保留中の招待を読み込めませんでした。",
+		"subtitle": "このプロジェクトに招待され、まだ参加していない人です。",
+		"title": "保留中の招待"
 	},
 	"projectMembers": {
 		"addDialog": {
-			"description": "Choose a workspace member and a project role.",
-			"error": "Could not add the member",
-			"loadError": "Could not load the people you can add.",
-			"loading": "Loading people...",
-			"memberLabel": "Workspace member",
-			"noAssignableRoles": "You cannot assign any role.",
-			"noCandidates": "Everyone in this workspace already has access to this project.",
-			"noMatches": "No one matches your search.",
-			"roleLabel": "Project role",
-			"rolePickRequired": "Choose the project role.",
-			"rolePlaceholder": "Select a role",
-			"rolesError": "Could not load the roles you can assign.",
-			"rolesLoading": "Loading roles...",
-			"roleUnavailable": "The role you chose is no longer available. Pick another one.",
-			"searchPlaceholder": "Search by name or email",
-			"submit": "Add member",
-			"submitting": "Adding...",
-			"success": "Member added to the project",
-			"title": "Add project member"
+			"description": "ワークスペースのメンバーとプロジェクトロールを選択してください。",
+			"error": "メンバーを追加できませんでした",
+			"loadError": "追加できるユーザーを読み込めませんでした。",
+			"loading": "ユーザーを読み込み中...",
+			"memberLabel": "ワークスペースのメンバー",
+			"noAssignableRoles": "割り当て可能なロールがありません。",
+			"noCandidates": "このワークスペースの全員が、すでにこのプロジェクトにアクセスできます。",
+			"noMatches": "検索に一致する人はいません。",
+			"roleLabel": "プロジェクトロール",
+			"rolePickRequired": "プロジェクトロールを選択してください。",
+			"rolePlaceholder": "ロールを選択",
+			"rolesError": "割り当て可能なロールを読み込めませんでした。",
+			"rolesLoading": "ロールを読み込み中...",
+			"roleUnavailable": "選択したロールは利用できなくなりました。別のロールを選択してください。",
+			"searchPlaceholder": "名前またはメールアドレスで検索",
+			"submit": "メンバーを追加",
+			"submitting": "追加中...",
+			"success": "メンバーをプロジェクトに追加しました",
+			"title": "プロジェクトメンバーを追加"
 		},
-		"addMember": "Add member",
+		"addMember": "メンバーを追加",
 		"errors": {
-			"alreadyProjectMember": "This person is already a member of this project.",
-			"cannotChangeOwnRole": "You cannot change your own project role.",
-			"cannotManageMember": "You cannot manage a member who has more permissions than you.",
-			"insufficientPermissions": "You do not have permission to do this.",
-			"memberHasFullAccess": "This person has full access through their workspace role. Change it under workspace members.",
-			"membershipChanged": "The membership changed in the meantime. The list was reloaded. Try again.",
-			"notProjectMember": "This person is not a member of this project any more.",
-			"notWorkspaceMember": "This person is not a member of the workspace.",
-			"ownerRoleNotAllowed": "The owner role cannot be used in a project.",
-			"roleAssignedToProjectMembers": "Project members or pending project invitations still use this role. Give them another role first.",
-			"roleExceedsYourPermissions": "You cannot give a role with more permissions than your own.",
-			"unknownRole": "This role does not exist. Reload the page and choose another one.",
-			"userHasFullAccess": "This person already has full access to every project."
+			"alreadyProjectMember": "この人はすでにこのプロジェクトのメンバーです。",
+			"cannotChangeOwnRole": "自分自身のプロジェクトロールは変更できません。",
+			"cannotManageMember": "自分より強い権限を持つメンバーは管理できません。",
+			"insufficientPermissions": "この操作を行う権限がありません。",
+			"memberHasFullAccess": "この人はワークスペースのロールによりフルアクセスがあります。ワークスペースのメンバーから変更してください。",
+			"membershipChanged": "その間にメンバーシップが変更されました。リストを再読み込みしました。もう一度お試しください。",
+			"notProjectMember": "この人はもうこのプロジェクトのメンバーではありません。",
+			"notWorkspaceMember": "この人はワークスペースのメンバーではありません。",
+			"ownerRoleNotAllowed": "オーナーロールはプロジェクトでは使用できません。",
+			"roleAssignedToProjectMembers": "このロールは、プロジェクトメンバーまたは保留中のプロジェクト招待でまだ使用されています。先に別のロールを割り当ててください。",
+			"roleExceedsYourPermissions": "自分の権限より強い権限を持つロールは付与できません。",
+			"unknownRole": "このロールは存在しません。ページを再読み込みして別のロールを選択してください。",
+			"userHasFullAccess": "この人はすでにすべてのプロジェクトへのフルアクセスがあります。"
 		},
-		"inviteByEmail": "Invite by email",
+		"inviteByEmail": "メールで招待",
 		"leaveDialog": {
-			"description": "You will lose access to this project. A project admin or a workspace admin can add you again.",
-			"error": "Could not leave the project",
-			"success": "You left the project",
-			"title": "Leave this project?"
+			"description": "このプロジェクトにアクセスできなくなります。プロジェクト管理者またはワークスペース管理者が再度追加できます。",
+			"error": "プロジェクトから退出できませんでした",
+			"success": "プロジェクトから退出しました",
+			"title": "このプロジェクトから退出しますか？"
 		},
-		"loadError": "Could not load the project members.",
-		"loading": "Loading members...",
+		"loadError": "プロジェクトメンバーを読み込めませんでした。",
+		"loading": "メンバーを読み込み中...",
 		"noAccess": {
-			"back": "Back to projects",
-			"description": "Ask a project admin or a workspace admin to add you.",
-			"title": "You do not have access to this project"
+			"back": "プロジェクトに戻る",
+			"description": "プロジェクト管理者またはワークスペース管理者に追加を依頼してください。",
+			"title": "このプロジェクトへのアクセス権がありません"
 		},
 		"noProjects": {
-			"description": "You do not have access to any project yet. Ask a workspace admin to add you to a project.",
-			"title": "No project access yet",
-			"descriptionCanCreate": "You do not have access to any project yet. Ask a workspace admin to add you to a project, or create your own."
+			"description": "アクセスできるプロジェクトはまだありません。ワークスペース管理者にプロジェクトへの追加を依頼してください。",
+			"title": "アクセスできるプロジェクトはまだありません",
+			"descriptionCanCreate": "アクセスできるプロジェクトはまだありません。ワークスペース管理者にプロジェクトへの追加を依頼するか、自分で作成してください。"
 		},
-		"pageTitle": "Project members",
+		"pageTitle": "プロジェクトメンバー",
 		"removeDialog": {
-			"description": "{{name}} will lose access to this project. They stay in the workspace.",
-			"error": "Could not remove the member",
-			"success": "Member removed from the project",
-			"title": "Remove from project?"
+			"description": "{{name}} はこのプロジェクトにアクセスできなくなります。ワークスペースには残ります。",
+			"error": "メンバーを削除できませんでした",
+			"success": "メンバーをプロジェクトから削除しました",
+			"title": "プロジェクトから削除しますか？"
 		},
-		"retry": "Retry",
-		"subtitle": "People who can open this project, and what they can do in it.",
+		"retry": "再試行",
+		"subtitle": "このプロジェクトを開ける人と、プロジェクト内でできる操作です。",
 		"table": {
-			"ariaActions": "Actions for {{name}}",
-			"ariaChangeRole": "Change project role of {{name}}",
+			"ariaActions": "{{name}} の操作",
+			"ariaChangeRole": "{{name}} のプロジェクトロールを変更",
 			"columns": {
-				"member": "Member",
-				"role": "Project role"
+				"member": "メンバー",
+				"role": "プロジェクトロール"
 			},
-			"emptyDescription": "Add a workspace member or invite someone by email.",
-			"emptyTitle": "No members yet",
-			"fullAccess": "Full access",
-			"fullAccessHint": "Has access to every project through their workspace role. Change it under workspace members.",
-			"inactive": "inactive",
-			"inactiveHint": "This role gives no access any more. Choose another role or remove the person.",
-			"leaveProject": "Leave project",
-			"removeMember": "Remove from project",
-			"rolesLoadError": "Could not load the roles you can assign, so roles cannot be changed now.",
-			"rolesRetry": "Retry",
-			"roleUpdateError": "Could not update the project role",
-			"roleUpdateSuccess": "Project role updated",
-			"you": "You"
+			"emptyDescription": "ワークスペースのメンバーを追加するか、メールで招待してください。",
+			"emptyTitle": "メンバーはまだいません",
+			"fullAccess": "フルアクセス",
+			"fullAccessHint": "ワークスペースのロールにより、すべてのプロジェクトにアクセスできます。ワークスペースのメンバーから変更してください。",
+			"inactive": "無効",
+			"inactiveHint": "このロールではアクセスできなくなりました。別のロールを選択するか、この人を削除してください。",
+			"leaveProject": "プロジェクトから退出",
+			"removeMember": "プロジェクトから削除",
+			"rolesLoadError": "割り当て可能なロールを読み込めなかったため、現在ロールを変更できません。",
+			"rolesRetry": "再試行",
+			"roleUpdateError": "プロジェクトロールを更新できませんでした",
+			"roleUpdateSuccess": "プロジェクトロールを更新しました",
+			"you": "自分"
 		},
-		"title": "Members",
+		"title": "メンバー",
 		"workspaceInvite": {
-			"info": "People without full access see only the projects they are added to. To invite someone to one project, use Invite by email in the project settings.",
-			"link": "Open project settings"
+			"info": "フルアクセスのない人には、追加されたプロジェクトのみが表示されます。1つのプロジェクトに人を招待するには、プロジェクト設定の「メールで招待」を使用してください。",
+			"link": "プロジェクト設定を開く"
 		},
-		"abilitiesError": "Could not check what you can do here. Some actions may be hidden."
+		"abilitiesError": "ここで実行できる操作を確認できませんでした。一部の操作が表示されない場合があります。"
 	}
 }
