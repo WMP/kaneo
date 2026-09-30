@@ -44,7 +44,8 @@ export async function requireUserDirectoryRateLimit(c: Context, next: Next) {
 
 // One attempt to add somebody to a workspace: the limit of adds on every
 // instance and, on cloud, the limit of invitations (5 per minute, shared with
-// creating and re-sending invitations) exactly as for the workspace route. All
+// creating and re-sending invitations), for both routes (`assertCanAddUser`
+// calls it after every cheap refusal). All
 // applicable limits are asked first and an attempt is counted only when every
 // one of them allows it, so a request refused by one limit does not spend the
 // budget of the other.
@@ -68,9 +69,4 @@ export function consumeAddRateLimits(userId: string): void {
     if (!result.allowed) throw rateLimited(result.retryAfterSeconds, message);
   }
   for (const { limiter } of limits) limiter.hit(userId);
-}
-
-export async function requireAddRateLimit(c: Context, next: Next) {
-  consumeAddRateLimits(c.get("userId"));
-  return next();
 }

@@ -23,6 +23,7 @@ import { splitRoles } from "../utils/role-delegation";
 import { resolveRoleStatements } from "../utils/role-statements";
 import { closeUserWorkspaceConnections } from "../ws";
 import { assertUserDirectoryEnabled } from "./controllers/search-user-directory";
+import { consumeAddRateLimits } from "./rate-limit";
 
 // Adding an existing account to a workspace without an invitation. Used by
 // `POST /api/workspace/{id}/members` and by the project member route when the
@@ -160,6 +161,11 @@ export async function assertCanAddUser({
   if (member) throw alreadyMemberError();
 
   await assertCloudInvitationAllowed(actorUserId, person.email);
+
+  // The last step, after every cheap refusal above: the attempt is counted
+  // against the add and invitation limits only for a request that would go
+  // ahead, so refused requests never spend budget.
+  consumeAddRateLimits(actorUserId);
 
   return {
     id: person.id,

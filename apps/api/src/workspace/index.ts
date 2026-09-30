@@ -26,10 +26,7 @@ import searchUserDirectoryCtrl, {
 } from "./controllers/search-user-directory";
 import updateWorkspaceActivityRetention from "./controllers/update-workspace-activity-retention";
 import { assertActorNotGuest } from "./direct-add";
-import {
-  requireAddRateLimit,
-  requireUserDirectoryRateLimit,
-} from "./rate-limit";
+import { requireUserDirectoryRateLimit } from "./rate-limit";
 import {
   addedWorkspaceMemberSchema,
   assignableRolesSchema,
@@ -134,7 +131,6 @@ const addWorkspaceMemberRoute = createRoute({
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ member: ["create"] }),
-    requireAddRateLimit,
   ] as const,
   request: {
     params: workspaceIdParam,

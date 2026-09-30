@@ -148,7 +148,22 @@ function AddPeopleDialog({
     null,
   );
 
-  const trimmed = query.trim();
+  // Opening starts from nothing typed, picked or created. It is done while
+  // rendering, before anything is committed, so the first render of an open
+  // dialog never asks the directory about the text of the last time.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setQuery("");
+      setSelection(null);
+      setCreated(null);
+      setAlreadyMemberEmail(null);
+    }
+  }
+
+  // (The render that notices the opening already reads the text as empty.)
+  const trimmed = (open && !wasOpen ? "" : query).trim();
   // Reset when the dialog opens: nothing typed before may be searched again.
   const debounced = useDebouncedValue(trimmed, DEBOUNCE_MS, open);
   const searchable = trimmed.length >= USER_DIRECTORY_MIN_QUERY_LENGTH;
@@ -215,15 +230,9 @@ function AddPeopleDialog({
     canAdd,
   };
   useEffect(() => {
-    if (!open) {
-      // Closing forgets what was typed and picked, so reopening never searches
-      // the previous text.
-      setQuery("");
-      setSelection(null);
-      setCreated(null);
-      setAlreadyMemberEmail(null);
-      return;
-    }
+    // Nothing is reset while closing (the close animation would flip back to
+    // the empty form); the reset happens when the dialog opens.
+    if (!open) return;
     void refetchLists.current.refetchWorkspaceRoles({ cancelRefetch: false });
     if (isProject) {
       void refetchLists.current.refetchProjectRoles({ cancelRefetch: false });

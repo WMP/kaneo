@@ -827,6 +827,86 @@ describe("the add limits are consumed together", () => {
   });
 });
 
+describe("refused requests never spend the add budget", () => {
+  it("does not count unknown targets, however many, against the 30 per 10 minutes", async () => {
+    const w = await buildWorld();
+    as(w.owner.user);
+    for (let i = 0; i < 35; i += 1) {
+      await expectCode(
+        await add(w.workspaceId, {
+          userId: `user-nobody-${i}`,
+          role: "viewer",
+        }),
+        404,
+        "USER_CANNOT_BE_ADDED",
+      );
+    }
+    // The budget is intact: a valid add still goes through.
+    expect(
+      (await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }))
+        .status,
+    ).toBe(200);
+  });
+
+  it("does not count a role beyond the caller's or a member already in", async () => {
+    const w = await buildWorld();
+    as(w.adder);
+    for (let i = 0; i < 35; i += 1) {
+      await expectCode(
+        await add(w.workspaceId, { userId: w.newcomer.id, role: "admin" }),
+        403,
+        "ROLE_EXCEEDS_YOUR_PERMISSIONS",
+      );
+    }
+    for (let i = 0; i < 35; i += 1) {
+      await expectCode(
+        await add(w.workspaceId, { userId: w.plainMember.id, role: "reader" }),
+        409,
+        "ALREADY_WORKSPACE_MEMBER",
+      );
+    }
+    expect(
+      (await add(w.workspaceId, { userId: w.newcomer.id, role: "reader" }))
+        .status,
+    ).toBe(200);
+  });
+
+  it("does not let refusals by a disabled directory cause a 429 on cloud", async () => {
+    const w = await buildWorld();
+    // Cloud, the directory left off: no ENABLE_USER_DIRECTORY.
+    for (const [key, value] of Object.entries(CLOUD_ENV)) {
+      if (key === "ENABLE_USER_DIRECTORY") continue;
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    const enableFlag = "ENABLE_USER_DIRECTORY";
+    savedEnv[enableFlag] = process.env[enableFlag];
+    delete process.env[enableFlag];
+    as(w.owner.user);
+    for (let i = 0; i < 6; i += 1) {
+      await expectCode(
+        await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
+        403,
+        "USER_DIRECTORY_DISABLED",
+      );
+    }
+    // The invitation limit (5 per minute) is untouched: invitations go out.
+    const invitation = await app.request(
+      `/api/project/${w.project.id}/invitations`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: `invitee-${randomUUID().slice(0, 8)}@example.com`,
+          workspaceRole: "viewer",
+          projectRole: "viewer",
+        }),
+      },
+    );
+    expect(invitation.status).toBe(201);
+  });
+});
+
 describe("the workspace member limit", () => {
   async function fillWorkspace(workspaceId: string) {
     const existing = (

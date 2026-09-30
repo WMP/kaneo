@@ -572,7 +572,7 @@ describe("AddPeopleDialog in a workspace", () => {
     );
   });
 
-  it("forgets the typed text when it closes, so reopening never searches it again", async () => {
+  it("keeps the form while closing and starts empty when it opens again, never searching the old text", async () => {
     const props: Props = {
       open: true,
       onClose,
@@ -588,6 +588,8 @@ describe("AddPeopleDialog in a workspace", () => {
     fireEvent.click(await option(/Ada Lovelace/));
 
     view.rerender(<AddPeopleDialog {...props} open={false} />);
+    // Closing resets nothing (the close animation would flip to an empty
+    // form): the state is still the one of the last time.
     useSearchUserDirectory.mockClear();
     view.rerender(<AddPeopleDialog {...props} open />);
 
