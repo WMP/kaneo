@@ -108,6 +108,7 @@ When CPU autoscaling is enabled, set `kaneo.resources.requests.cpu`; Kubernetes 
 | `kaneo.env.disableRegistration`     | Disable new user registration                                                                                      | `false`                         |
 | `kaneo.env.disablePasswordRegistration` | Disable password-based account creation while keeping social/OIDC registration available                        | `false`                         |
 | `kaneo.env.disableEmailOtpSignIn`   | Use email/password sign-in instead of verification codes when SMTP is configured                                   | `false`                         |
+| `kaneo.env.disableUserDirectory`    | Turn off the account search of "Add people" (it reveals that an account exists on the instance)                     | `false`                         |
 | `kaneo.env.database.external.enabled` | Use external PostgreSQL database (set postgresql.enabled to false)                                               | `false`                         |
 | `kaneo.env.database.external.host`  | External PostgreSQL host                                                                                           | `""`                            |
 | `kaneo.env.database.external.port`  | External PostgreSQL port                                                                                           | `5432`                          |

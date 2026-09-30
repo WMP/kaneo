@@ -102,6 +102,15 @@ Hosted multi-tenant instances should enable the cloud abuse gates. Self-hosted i
 - `KANEO_TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, on the **web container**. The production web image bakes the literal placeholder `KANEO_TURNSTILE_SITE_KEY` into the bundle; `apps/web/env.sh` swaps it for the runtime value when the container starts.
 - `VITE_TURNSTILE_SITE_KEY` - Local dev only. Set in `apps/web/.env` when running `pnpm dev`; Vite reads this at build/dev time. Not used in the production image.
 
+#### User directory (adding people)
+
+"Add people" (workspace and project members) can search **all accounts of the instance** by name or email, for people whose workspace role grants `member:create`, so they can add an existing account without an invitation. The search returns at most 20 accounts (id, name, email, image), needs 2+ characters and leaves out guest accounts, banned accounts and people already in the workspace. **Privacy:** it reveals that an account exists, also one that shares no workspace with the searcher. That suits a company instance; switch it off on an instance with strangers.
+
+- `DISABLE_USER_DIRECTORY` - Set to `true` to turn the search off everywhere. People can still be invited by email, and workspace members can still be added to projects. Wins over `ENABLE_USER_DIRECTORY`.
+- `ENABLE_USER_DIRECTORY` - Only read when `KANEO_CLOUD=true`, where the search is off by default. Set to `true` to turn it on there.
+
+`GET /api/config` reports the result as `userDirectoryEnabled`.
+
 #### Background jobs
 
 - `ACTIVITY_RETENTION_ENABLED` - Set to `false` to disable the daily job that deletes activity older than each workspace's `activityRetentionDays` setting (Workspace Settings → General). Runs once a day (single-instance safe; uses a DB lease so it's also safe with multiple API instances). Leave unset (default: enabled) unless you need to pause it, e.g. while investigating a support issue.
