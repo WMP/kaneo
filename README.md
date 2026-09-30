@@ -32,7 +32,7 @@ Kaneo Pro is an independent fork of [Kaneo](https://github.com/usekaneo/kaneo), 
 
 Kaneo Pro is not affiliated with or endorsed by the Kaneo team. It is based on upstream `main` of 2026-09-26 and takes in upstream changes through a weekly sync (see [Staying in sync with upstream](#staying-in-sync-with-upstream)).
 
-This page covers what Kaneo Pro adds. For everything the two share, see the [Kaneo documentation](https://kaneo.app/docs/core). All screenshots show fictional demo data.
+This page covers what Kaneo Pro adds. For everything the two share, see the [Kaneo documentation](https://kaneo.app/docs/core). All screenshots show fictional demo data from the [demo tool](scripts/demo/README.md).
 
 ## Kaneo vs Kaneo Pro
 
@@ -267,6 +267,8 @@ pnpm dev              # API on port 1337, web app on port 5173
 ```
 
 Use Node.js 24 and pnpm 10.32.1. See the [environment setup guide](ENVIRONMENT_SETUP.md). Contributors and coding agents start with [AGENTS.md](AGENTS.md).
+
+To fill a local instance with the fictional data from the screenshots, run `node scripts/demo/seed.mjs --reset` and sign in as `claire@example.com` with the password `DemoPass123!`. The [demo tool](scripts/demo/README.md) also takes the screenshots and prepares a public demo instance.
 
 ## Configuration
 

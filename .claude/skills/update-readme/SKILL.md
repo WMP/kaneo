@@ -52,17 +52,36 @@ Rules:
 
 ## 4. Add or retake screenshots
 
-Use the demo tool. `scripts/demo/README.md` has the exact commands.
+Use the demo tool. `scripts/demo/README.md` explains every option.
 
-1. For a new UI feature, add its data to `scripts/demo/data.mjs` in the right layer: `base` only when upstream Kaneo has the feature, otherwise `pro`. Add a scene to `scripts/demo/capture.mjs`.
-2. Start the app behind the public hostname rehearsal, seed a fresh database, and capture only the scenes you need (`--only`).
-3. Keep the conventions from the README comment:
+1. For a new UI feature, add its data to `scripts/demo/data.mjs` in the right layer: `base` only when upstream Kaneo has the feature, otherwise `pro`. Add a scene to `scripts/demo/capture.mjs`. Run `node --test scripts/ci/demo-data.test.mjs`.
+2. Point the app at the public hostname, in two git-ignored files, then restart the API and the web app on an empty or disposable database:
+
+   ```sh
+   # .env
+   KANEO_CLIENT_URL=https://kaneopro.example.com
+   KANEO_API_URL=https://kaneopro.example.com
+   # apps/web/.env.development.local (apps/web/.env.local does not override the tracked .env.development)
+   VITE_API_URL=https://kaneopro.example.com/api
+   VITE_CLIENT_URL=https://kaneopro.example.com
+   ```
+
+3. Seed and capture through `https://kaneopro.example.com`, only the scenes you need:
+
+   ```sh
+   npm --prefix scripts/demo ci
+   npm --prefix scripts/demo run setup        # or pass --chromium <path> / set KANEO_DEMO_CHROMIUM
+   node scripts/demo/public-host.mjs --only 04,11
+   ```
+
+   Afterwards, remove the two variables from `.env`, delete `apps/web/.env.development.local` and restart.
+4. Keep the conventions from the README comment:
    - dark theme;
    - a 1440 CSS px viewport at 2x, cropped to the content;
    - fictional data (Northwind Robotics, international names, `@example.com`);
    - no `localhost`, no tokens.
-4. Look at every new or changed PNG. Retake it when it is clipped, empty or shows a loading state. When the app itself renders the feature wrongly, leave the scene out and report the bug instead.
-5. Name a new file with the next free two-digit prefix. Use a letter suffix (`07b`) for a second image in the same section. Delete a PNG that the README no longer uses.
+5. Look at every new or changed PNG. Retake it when it is clipped, empty or shows a loading state. When the app itself renders the feature wrongly, leave the scene out and report the bug instead.
+6. Name a new file with the next free two-digit prefix. Use a letter suffix (`07b`) for a second image in the same section. Delete a PNG that the README no longer uses.
 
 ## 5. Finish
 
