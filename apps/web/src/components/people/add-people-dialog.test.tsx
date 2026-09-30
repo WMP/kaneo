@@ -487,7 +487,7 @@ describe("AddPeopleDialog in a workspace", () => {
         "people:errors.membershipLimitReached",
       ],
       ["RATE_LIMITED", "people:errors.addRateLimited"],
-      ["USER_NOT_FOUND", "people:errors.userNotFound"],
+      ["USER_DIRECTORY_DISABLED", "people:errors.directoryDisabled"],
       ["USER_CANNOT_BE_ADDED", "people:errors.userCannotBeAdded"],
     ] as const) {
       cleanup();
@@ -570,6 +570,42 @@ describe("AddPeopleDialog in a workspace", () => {
         role: "qa-lead",
       }),
     );
+  });
+
+  it("forgets the typed text when it closes, so reopening never searches it again", async () => {
+    const props: Props = {
+      open: true,
+      onClose,
+      context: { kind: "workspace", workspaceId: "workspace-1" },
+      canAdd: true,
+      canInvite: true,
+    };
+    const view = render(<AddPeopleDialog {...props} />);
+    await type("ad");
+    expect(useSearchUserDirectory).toHaveBeenCalledWith("workspace-1", "ad", {
+      enabled: true,
+    });
+    fireEvent.click(await option(/Ada Lovelace/));
+
+    view.rerender(<AddPeopleDialog {...props} open={false} />);
+    useSearchUserDirectory.mockClear();
+    view.rerender(<AddPeopleDialog {...props} open />);
+
+    // The field is empty again and nothing was picked.
+    expect(await field()).toHaveValue("");
+    expect(
+      screen.queryByRole("combobox", { name: "people:add.workspaceRoleLabel" }),
+    ).toBeNull();
+    // No directory request for the old text, before or after the reopen.
+    const asked = useSearchUserDirectory.mock.calls as [
+      string,
+      string,
+      { enabled: boolean },
+    ][];
+    expect(asked.length).toBeGreaterThan(0);
+    // (The hook only searches from two characters on, so an empty text asks
+    // for nothing.)
+    for (const [, query] of asked) expect(query).toBe("");
   });
 
   it("renders nothing and does not search while closed", () => {

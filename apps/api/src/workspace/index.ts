@@ -125,7 +125,7 @@ const addWorkspaceMemberRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Add an existing account to the workspace",
   description:
-    "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). A guest (anonymous) caller is refused on every instance, and every caller may add at most 30 people per 10 minutes (shared with the project route when it adds to the workspace). The workspace member limit (100 by default, also applied when an invitation is accepted) answers 403 WORKSPACE_MEMBER_LIMIT_REACHED. On Kaneo Cloud the gates of invitations apply too (disposable addresses, 5 per minute per user). Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 400 USER_CANNOT_BE_ADDED (anonymous or banned account), 403 GUEST_NOT_ALLOWED, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 WORKSPACE_MEMBER_LIMIT_REACHED, 404 USER_NOT_FOUND, 409 ALREADY_WORKSPACE_MEMBER, 400 DISPOSABLE_EMAIL_NOT_ALLOWED (cloud), 429 RATE_LIMITED. The shared permission check answers plain text 403.",
+    "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). A guest (anonymous) caller is refused on every instance, and every caller may add at most 30 people per 10 minutes (shared with the project route when it adds to the workspace). The workspace member limit (100 by default, also applied when an invitation is accepted) answers 403 WORKSPACE_MEMBER_LIMIT_REACHED. On Kaneo Cloud the gates of invitations apply too (disposable addresses, 5 per minute per user). Adding an account that is not a member yet needs the user directory to be enabled (403 USER_DIRECTORY_DISABLED otherwise: invite the person by email instead). An unknown, anonymous or banned account all answer the same 404 USER_CANNOT_BE_ADDED. Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 404 USER_CANNOT_BE_ADDED, 403 GUEST_NOT_ALLOWED, 403 USER_DIRECTORY_DISABLED, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 WORKSPACE_MEMBER_LIMIT_REACHED, 409 ALREADY_WORKSPACE_MEMBER, 400 DISPOSABLE_EMAIL_NOT_ALLOWED (cloud), 429 RATE_LIMITED. The shared permission check answers plain text 403.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ member: ["create"] }),
@@ -140,13 +140,13 @@ const addWorkspaceMemberRoute = createRoute({
   },
   responses: {
     200: jsonResponse("The new member", addedWorkspaceMemberSchema),
-    400: codedErrorResponse(
-      "Invalid body, owner role, unknown role, or an account that cannot be added",
-    ),
+    400: codedErrorResponse("Invalid body, owner role, or unknown role"),
     403: codedErrorResponse(
-      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), the role exceeds the caller's permissions, or the member limit (WORKSPACE_MEMBER_LIMIT_REACHED)",
+      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), the user directory is disabled (USER_DIRECTORY_DISABLED), the role exceeds the caller's permissions, or the member limit (WORKSPACE_MEMBER_LIMIT_REACHED)",
     ),
-    404: codedErrorResponse("The account does not exist"),
+    404: codedErrorResponse(
+      "The account cannot be added: unknown, anonymous or banned (USER_CANNOT_BE_ADDED)",
+    ),
     409: codedErrorResponse("The person already is a member of the workspace"),
     429: codedErrorResponse(
       "Too many adds from this user (30 per 10 minutes; on cloud also the invitation limit)",

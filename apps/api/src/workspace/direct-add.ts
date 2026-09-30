@@ -22,6 +22,7 @@ import { isOwnerRole } from "../utils/project-access";
 import { splitRoles } from "../utils/role-delegation";
 import { resolveRoleStatements } from "../utils/role-statements";
 import { closeUserWorkspaceConnections } from "../ws";
+import { assertUserDirectoryEnabled } from "./controllers/search-user-directory";
 
 // Adding an existing account to a workspace without an invitation. Used by
 // `POST /api/workspace/{id}/members` and by the project member route when the
@@ -34,7 +35,8 @@ export const DIRECT_ADD_ERROR_CODES = {
   memberLimit: "WORKSPACE_MEMBER_LIMIT_REACHED",
   ownerRole: "OWNER_ROLE_NOT_ALLOWED",
   unknownRole: "UNKNOWN_ROLE",
-  userNotFound: "USER_NOT_FOUND",
+  // One answer for an unknown, a guest and a banned account, so the response
+  // does not reveal which case applies.
   userNotAddable: "USER_CANNOT_BE_ADDED",
   alreadyMember: "ALREADY_WORKSPACE_MEMBER",
 } as const;
@@ -113,6 +115,11 @@ export async function assertCanAddUser({
   role: string;
 }): Promise<AddablePerson> {
   await assertActorNotGuest(actorUserId);
+  // Adding an account that is not in the workspace yet is what the user
+  // directory exists for; where the instance switched it off (or cloud left it
+  // off), people are invited instead. Both routes come through here only for
+  // somebody who is not a member; adding workspace members to projects does not.
+  assertUserDirectoryEnabled();
   await assertAddableWorkspaceRole(workspaceId, actorUserId, role);
 
   const [person] = await db
@@ -129,19 +136,12 @@ export async function assertCanAddUser({
     .from(schema.userTable)
     .where(eq(schema.userTable.id, userId))
     .limit(1);
-  if (!person) {
+  const isBanned =
+    person?.banned === true &&
+    (!person.banExpires || person.banExpires.getTime() > Date.now());
+  if (!person || person.isAnonymous || isBanned) {
     throw codedError(
       404,
-      DIRECT_ADD_ERROR_CODES.userNotFound,
-      "This account does not exist",
-    );
-  }
-  const isBanned =
-    person.banned === true &&
-    (!person.banExpires || person.banExpires.getTime() > Date.now());
-  if (person.isAnonymous || isBanned) {
-    throw codedError(
-      400,
       DIRECT_ADD_ERROR_CODES.userNotAddable,
       "This account cannot be added to a workspace",
     );

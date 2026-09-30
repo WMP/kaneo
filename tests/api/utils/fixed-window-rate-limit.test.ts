@@ -43,4 +43,22 @@ describe("createFixedWindowRateLimiter", () => {
     limiter.reset();
     expect(limiter.size).toBe(0);
   });
+
+  it("peeks without counting: what hit would answer, nothing spent", () => {
+    const limiter = createFixedWindowRateLimiter({ windowMs: 60_000, max: 2 });
+    for (let i = 0; i < 10; i++) {
+      expect(limiter.peek("a", 0).allowed).toBe(true);
+    }
+    expect(limiter.size).toBe(0);
+    expect(limiter.hit("a", 0).allowed).toBe(true);
+    expect(limiter.peek("a", 1000).allowed).toBe(true);
+    expect(limiter.hit("a", 1000).allowed).toBe(true);
+    // Full: the next hit would be refused, and peek says so with the delay.
+    const peeked = limiter.peek("a", 2000);
+    expect(peeked.allowed).toBe(false);
+    expect(peeked.retryAfterSeconds).toBe(58);
+    expect(limiter.hit("a", 2000).allowed).toBe(false);
+    // A new window starts clean.
+    expect(limiter.peek("a", 61_000).allowed).toBe(true);
+  });
 });

@@ -3569,8 +3569,7 @@
 			"inviteError": "Nie udało się wysłać zaproszenia"
 		},
 		"errors": {
-			"userNotFound": "To konto już nie istnieje. Wyszukaj ponownie.",
-			"userCannotBeAdded": "Tego konta nie można dodać.",
+			"userCannotBeAdded": "Tego konta nie można dodać. Wyszukaj ponownie albo zaproś osobę e-mailem.",
 			"directoryDisabled": "Wyszukiwanie wszystkich kont jest wyłączone na tym serwerze. Wpisz adres e-mail, aby zaprosić osobę.",
 			"membershipLimitReached": "Obszar roboczy osiągnął limit członków.",
 			"guestNotAllowed": "Konta gościa nie mogą szukać kont ani dodawać osób. Zaloguj się na pełne konto.",

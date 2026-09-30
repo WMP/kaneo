@@ -3545,8 +3545,7 @@
 			"inviteError": "Could not send the invitation"
 		},
 		"errors": {
-			"userNotFound": "This account does not exist any more. Search again.",
-			"userCannotBeAdded": "This account cannot be added.",
+			"userCannotBeAdded": "This account cannot be added. Search again, or invite the person by email.",
 			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
 			"membershipLimitReached": "The workspace has reached its member limit.",
 			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",

@@ -44,24 +44,30 @@ export async function requireUserDirectoryRateLimit(c: Context, next: Next) {
 
 // One attempt to add somebody to a workspace: the limit of adds on every
 // instance and, on cloud, the limit of invitations (5 per minute, shared with
-// creating and re-sending invitations) exactly as for the workspace route.
+// creating and re-sending invitations) exactly as for the workspace route. All
+// applicable limits are asked first and an attempt is counted only when every
+// one of them allows it, so a request refused by one limit does not spend the
+// budget of the other.
 export function consumeAddRateLimits(userId: string): void {
-  const adds = directAddRateLimiter.hit(userId);
-  if (!adds.allowed) {
-    throw rateLimited(
-      adds.retryAfterSeconds,
-      "Too many people added, try again later.",
-    );
+  const limits = [
+    {
+      limiter: directAddRateLimiter,
+      message: "Too many people added, try again later.",
+    },
+    ...(isCloud()
+      ? [
+          {
+            limiter: invitationRateLimiter,
+            message: "Too many invitations, try again later.",
+          },
+        ]
+      : []),
+  ];
+  for (const { limiter, message } of limits) {
+    const result = limiter.peek(userId);
+    if (!result.allowed) throw rateLimited(result.retryAfterSeconds, message);
   }
-  if (isCloud()) {
-    const invitations = invitationRateLimiter.hit(userId);
-    if (!invitations.allowed) {
-      throw rateLimited(
-        invitations.retryAfterSeconds,
-        "Too many invitations, try again later.",
-      );
-    }
-  }
+  for (const { limiter } of limits) limiter.hit(userId);
 }
 
 export async function requireAddRateLimit(c: Context, next: Next) {

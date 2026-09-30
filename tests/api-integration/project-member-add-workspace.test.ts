@@ -455,7 +455,7 @@ describe("adding a person who is not a workspace member to a project", () => {
         role: "viewer",
         workspaceRole: "viewer",
       }),
-      400,
+      404,
       "USER_CANNOT_BE_ADDED",
     );
     await expectCode(
@@ -465,7 +465,7 @@ describe("adding a person who is not a workspace member to a project", () => {
         workspaceRole: "viewer",
       }),
       404,
-      "USER_NOT_FOUND",
+      "USER_CANNOT_BE_ADDED",
     );
     expect(await workspaceRows(w.workspaceId, guest.id)).toHaveLength(0);
   });

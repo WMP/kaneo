@@ -41,6 +41,8 @@ const { app } = createApp();
 
 const CLOUD_ENV = {
   KANEO_CLOUD: "true",
+  // Cloud leaves the user directory (and with it adding accounts) off.
+  ENABLE_USER_DIRECTORY: "true",
   CREEM_API_KEY: "creem_test_dummy",
   CREEM_WEBHOOK_SECRET: "whsec_dummy",
 };
@@ -443,14 +445,26 @@ describe("who can be added", () => {
     ).toBe("member");
   });
 
-  it("answers 404 for an account that does not exist", async () => {
+  it("answers the same 404 for an unknown, a guest and a banned account", async () => {
     const w = await buildWorld();
+    const guest = await createAccount("Guest", { isAnonymous: true });
+    const banned = await createAccount("Banned", { banned: true });
     as(w.owner.user);
-    await expectCode(
-      await add(w.workspaceId, { userId: "user-nobody", role: "viewer" }),
-      404,
-      "USER_NOT_FOUND",
-    );
+    const answers = [];
+    for (const userId of ["user-nobody", guest.id, banned.id]) {
+      const response = await add(w.workspaceId, { userId, role: "viewer" });
+      answers.push({ status: response.status, body: await response.json() });
+    }
+    expect(answers[0]).toEqual({
+      status: 404,
+      body: {
+        code: "USER_CANNOT_BE_ADDED",
+        message: "This account cannot be added to a workspace",
+      },
+    });
+    // Nothing tells the three apart.
+    expect(answers[1]).toEqual(answers[0]);
+    expect(answers[2]).toEqual(answers[0]);
   });
 
   it("refuses guest and banned accounts", async () => {
@@ -465,7 +479,7 @@ describe("who can be added", () => {
     for (const person of [guest, banned]) {
       await expectCode(
         await add(w.workspaceId, { userId: person.id, role: "viewer" }),
-        400,
+        404,
         "USER_CANNOT_BE_ADDED",
       );
       expect(await membershipRows(w.workspaceId, person.id)).toHaveLength(0);
@@ -547,6 +561,88 @@ describe("who can be added", () => {
     );
     expect(await membershipRows(w.workspaceId, throwaway.id)).toHaveLength(0);
     // An ordinary address passes.
+    expect(
+      (await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }))
+        .status,
+    ).toBe(200);
+  });
+});
+
+describe("when the user directory is off", () => {
+  const FLAGS = [
+    "DISABLE_USER_DIRECTORY",
+    "ENABLE_USER_DIRECTORY",
+    "KANEO_CLOUD",
+  ];
+  const saved: Record<string, string | undefined> = {};
+  beforeEach(() => {
+    for (const key of FLAGS) {
+      saved[key] = process.env[key];
+      delete process.env[key];
+    }
+  });
+  afterEach(() => {
+    for (const key of FLAGS) {
+      if (saved[key] === undefined) delete process.env[key];
+      else process.env[key] = saved[key];
+    }
+  });
+
+  const viaProject = (projectId: string, body: unknown) =>
+    app.request(`/api/project/${projectId}/members`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+  it("refuses to add an account that is not a member, on both routes, even to the owner", async () => {
+    const w = await buildWorld();
+    process.env.DISABLE_USER_DIRECTORY = "true";
+    as(w.owner.user);
+    await expectCode(
+      await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
+      403,
+      "USER_DIRECTORY_DISABLED",
+    );
+    await expectCode(
+      await viaProject(w.project.id, {
+        userId: w.newcomer.id,
+        role: "viewer",
+        workspaceRole: "viewer",
+      }),
+      403,
+      "USER_DIRECTORY_DISABLED",
+    );
+    expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(schema.notificationTable)
+        .where(eq(schema.notificationTable.userId, w.newcomer.id)),
+    ).toHaveLength(0);
+  });
+
+  it("leaves adding existing workspace members to projects alone", async () => {
+    const w = await buildWorld();
+    process.env.DISABLE_USER_DIRECTORY = "true";
+    as(w.owner.user);
+    const response = await viaProject(w.project.id, {
+      userId: w.plainMember.id,
+      role: "viewer",
+    });
+    expect(response.status).toBe(200);
+  });
+
+  it("is the default on cloud, and ENABLE_USER_DIRECTORY turns adding back on", async () => {
+    const w = await buildWorld();
+    process.env.KANEO_CLOUD = "true";
+    as(w.owner.user);
+    await expectCode(
+      await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
+      403,
+      "USER_DIRECTORY_DISABLED",
+    );
+    process.env.ENABLE_USER_DIRECTORY = "true";
     expect(
       (await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }))
         .status,
@@ -690,6 +786,44 @@ describe("limits on adding people", () => {
       "RATE_LIMITED",
     );
     expect(await membershipRows(w.workspaceId, sixth.id)).toHaveLength(0);
+  });
+});
+
+describe("the add limits are consumed together", () => {
+  it("does not spend the 30 per 10 minutes budget on adds the cloud invitation limit refused", async () => {
+    const w = await buildWorld();
+    for (const [key, value] of Object.entries(CLOUD_ENV)) {
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    const { directAddRateLimiter } = await import(
+      "../../apps/api/src/workspace/rate-limit"
+    );
+    as(w.owner.user);
+    // Five adds use the invitation limit of the minute (and 5 of the 30).
+    for (let i = 0; i < 5; i += 1) {
+      const person = await createAccount(`Person ${i}`);
+      expect(
+        (await add(w.workspaceId, { userId: person.id, role: "viewer" }))
+          .status,
+      ).toBe(200);
+    }
+    // Many refused attempts: each is stopped by the invitation limit.
+    for (let i = 0; i < 40; i += 1) {
+      const response = await add(w.workspaceId, {
+        userId: w.newcomer.id,
+        role: "viewer",
+      });
+      expect(response.status).toBe(429);
+    }
+    // They did not count against the budget of 30: 5 + 40 would have
+    // exhausted it.
+    expect(directAddRateLimiter.peek(w.owner.user.id).allowed).toBe(true);
+    process.env.KANEO_CLOUD = "false";
+    expect(
+      (await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }))
+        .status,
+    ).toBe(200);
   });
 });
 

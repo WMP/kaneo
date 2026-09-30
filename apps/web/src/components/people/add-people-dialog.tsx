@@ -215,7 +215,15 @@ function AddPeopleDialog({
     canAdd,
   };
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      // Closing forgets what was typed and picked, so reopening never searches
+      // the previous text.
+      setQuery("");
+      setSelection(null);
+      setCreated(null);
+      setAlreadyMemberEmail(null);
+      return;
+    }
     void refetchLists.current.refetchWorkspaceRoles({ cancelRefetch: false });
     if (isProject) {
       void refetchLists.current.refetchProjectRoles({ cancelRefetch: false });
