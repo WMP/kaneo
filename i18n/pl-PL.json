@@ -882,6 +882,15 @@
 			"acceptSuccess": "Zaproszenie zaakceptowane! Witamy w zespole.",
 			"rejectError": "Nie udało się odrzucić zaproszenia",
 			"rejectSuccess": "Zaproszenie odrzucone"
+		},
+		"memberAddedEmail": {
+			"subject": "{{inviterName}} dodał(a) Cię do obszaru roboczego {{workspaceName}} w Kaneo",
+			"preview": "Dodano Cię do obszaru roboczego {{workspaceName}} w Kaneo",
+			"title": "Jesteś w obszarze {{workspaceName}}",
+			"subtitle": "{{inviterName}} dodał(a) Cię do obszaru roboczego {{workspaceName}} z rolą: {{role}}.",
+			"cta": "Otwórz obszar roboczy",
+			"ignore": "Jeśli to niespodzianka, możesz w każdej chwili opuścić obszar roboczy.",
+			"footer": "Obszar roboczy Kaneo"
 		}
 	},
 	"activity": {

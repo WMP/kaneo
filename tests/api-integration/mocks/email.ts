@@ -26,6 +26,16 @@ export async function sendWorkspaceInvitationEmail(
   return { success: true };
 }
 
+// Tests that need to observe the "added to a workspace" email spy on this
+// export (`vi.spyOn(emailMock, "sendMemberAddedEmail")`).
+export async function sendMemberAddedEmail(
+  _to: string,
+  _subject: string,
+  _data: unknown,
+): Promise<EmailResult> {
+  return { success: true };
+}
+
 export function isSmtpConfigured(): boolean {
   return false;
 }

@@ -5,6 +5,9 @@ import { getSmtpTransportOptions, isSmtpConfigured } from "./smtp-config";
 import { getSmtpErrorDetails } from "./smtp-error-details";
 import type { MagicLinkEmailProps } from "./templates/magic-link";
 import MagicLinkEmail from "./templates/magic-link";
+import MemberAddedEmail, {
+  type MemberAddedEmailProps,
+} from "./templates/member-added";
 import NotificationEmail, {
   type NotificationEmailProps,
 } from "./templates/notification";
@@ -114,6 +117,30 @@ export const sendWorkspaceInvitationEmail = async (
     return { success: true };
   } catch (error) {
     console.error("Error sending workspace invitation email", error);
+    throw error;
+  }
+};
+
+export const sendMemberAddedEmail = async (
+  to: string,
+  subject: string,
+  data: MemberAddedEmailProps,
+): Promise<EmailResult> => {
+  if (!isSmtpConfigured()) {
+    return { success: false, reason: "SMTP_NOT_CONFIGURED" };
+  }
+
+  try {
+    const emailTemplate = await render(MemberAddedEmail(data));
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to,
+      subject,
+      html: emailTemplate,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending member added email", error);
     throw error;
   }
 };

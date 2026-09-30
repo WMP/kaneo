@@ -2852,6 +2852,15 @@
 			"acceptSuccess": "Invitation accepted! Welcome to the team.",
 			"rejectError": "Failed to reject invitation",
 			"rejectSuccess": "Invitation rejected"
+		},
+		"memberAddedEmail": {
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"title": "You are now in {{workspaceName}}",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"cta": "Open workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"footer": "Kaneo workspace"
 		}
 	},
 	"workspace": {
