@@ -1,6 +1,6 @@
 <!--
   Screenshots live in docs/images/kaneo-pro/. Keep them consistent when you update them:
-  dark theme, 1440 CSS px wide at 2x, cropped to their content, fictional demo data only
+  dark theme, a 1440 CSS px viewport at 2x, cropped to their content, fictional demo data only
   (Northwind Robotics, @example.com). Never show real people, logins, tokens or other secrets.
 -->
 
@@ -138,9 +138,8 @@ Set the working weekdays and holidays of a workspace. The Gantt chart shades non
 </p>
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/08b-task-constraint.png" alt="Choosing a date constraint for a task" width="49%" />
   <img src="docs/images/kaneo-pro/08c-task-assignees.png" alt="Several assignees and a resource on one task" width="49%" />
-  <br /><sub>Left: date constraints. Right: several assignees and a resource on one task.</sub>
+  <br /><sub>Several assignees and a resource on one task.</sub>
 </p>
 
 ### Project-level access
