@@ -5,8 +5,8 @@ name: Sync upstream
 # upstream/main and, when upstream has new commits, opens ONE pull request that
 # merges them into our canonical branch. Conflicts are left for a human to
 # resolve in the PR — GitHub's UI shows them file by file — and the PR body
-# carries a migration report so a database-migration number clash is never a
-# surprise.
+# carries a migration report so a database-migration number clash, or an
+# upstream migration that Drizzle would skip, is never a surprise.
 #
 # NOTE: a `schedule:` trigger only fires when this file is on the repository's
 # DEFAULT branch. Until it is merged to the fork's default branch the weekly run
@@ -70,8 +70,11 @@ jobs:
         if: steps.decide.outputs.needed == 'true'
         run: |
           dir=apps/api/drizzle
-          nums() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '[0-9]{4}_[^/]+\.sql$' | sed 's/_.*//' | sort -u; }
-          names() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '[0-9]{4}_[^/]+\.sql$' | sort; }
+          # Match the basename only (the leading "/"): a timestamp name such as
+          # 20261001120000_ganttpro_x.sql must not be read as number 0000.
+          sqlnames() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '/[0-9]{4}_[^/]+\.sql$' | sed 's|^/||'; }
+          nums() { sqlnames "$1" | sed 's/_.*//' | sort -u; }
+          names() { sqlnames "$1" | sort; }
           # A clash is a 4-digit prefix used by BOTH sides for DIFFERENT files.
           clashes=""
           for n in $(comm -12 <(nums "origin/$TARGET_BRANCH") <(nums "upstream/$UPSTREAM_BRANCH")); do
@@ -81,24 +84,54 @@ jobs:
               clashes="${clashes}- \`${n}\`: ours \`${ours}\` vs upstream \`${theirs}\`\n"
             fi
           done
+          # Drizzle runs a journal entry only when its "when" is newer than the
+          # newest applied migration, so an upstream entry that is not newer than
+          # our newest one is skipped on upgraded fork databases. Tags are
+          # reduced to a safe character set because they end up in $GITHUB_OUTPUT.
+          older=""
+          journal_unreadable=""
+          if ours_journal="$(git show "origin/$TARGET_BRANCH:$dir/meta/_journal.json")" \
+            && theirs_journal="$(git show "upstream/$UPSTREAM_BRANCH:$dir/meta/_journal.json")"; then
+            older="$(jq -nr --argjson ours "$ours_journal" --argjson theirs "$theirs_journal" '
+              ($ours.entries | map(.tag)) as $known
+              | ($ours.entries | map(.when) | max) as $newest
+              | $theirs.entries[]
+              | select(.when <= $newest and (.tag | IN($known[]) | not))
+              | "- `\(.tag | gsub("[^A-Za-z0-9_-]"; "?"))` (\(.when / 1000 | floor | todate))"
+            ')" || journal_unreadable=1
+          else
+            journal_unreadable=1
+          fi
           {
             echo "report<<EOF"
             if [ -n "$clashes" ]; then
               echo "⚠️ **Migration number clash — resolve before merging.**"
               echo ""
-              echo "Our additive delta and an upstream migration share a number. After"
-              echo "resolving file conflicts, renumber OUR delta to sit after upstream's"
-              echo "latest and regenerate it:"
-              echo ""
-              echo '```bash'
-              echo "git rm apps/api/drizzle/<our>.sql apps/api/drizzle/meta/<our>_snapshot.json"
-              echo "# keep upstream's meta/_journal.json, then:"
-              echo "pnpm --filter @kaneo/api db:generate --name ganttpro_additions"
-              echo '```'
+              echo "Our migration and an upstream migration share a four-digit number. Never"
+              echo "renumber or regenerate a fork migration that an installation may have"
+              echo "applied. New fork migrations have a UTC timestamp prefix and cannot clash;"
+              echo "a clash on a legacy number needs a manual resolution of"
+              echo "\`meta/_journal.json\` and the snapshot chain. Follow \"Upstream sync\" in"
+              echo "\`docs/agent-guide/database.md\`. \`tests/api/database/migration-journal.test.ts\`"
+              echo "fails on an out-of-order or orphaned journal entry."
               echo ""
               echo -e "$clashes"
             else
               echo "✅ No migration-number clash detected between upstream and \`$TARGET_BRANCH\`."
+            fi
+            if [ -n "$older" ]; then
+              echo ""
+              echo "⚠️ **Upstream migrations older than our newest migration**"
+              echo ""
+              echo "The Drizzle migrator skips these on upgraded fork databases if they are"
+              echo "journaled with their own \`when\`. See \"Upstream sync\" in"
+              echo "\`docs/agent-guide/database.md\`."
+              echo ""
+              echo "$older"
+            fi
+            if [ -n "$journal_unreadable" ]; then
+              echo ""
+              echo "⚠️ Could not read \`meta/_journal.json\` on one of the branches; compare the journals by hand."
             fi
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
