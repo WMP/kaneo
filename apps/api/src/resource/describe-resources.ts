@@ -41,11 +41,14 @@ export async function describeResources(
   const linkedIds = [
     ...new Set(rows.flatMap((row) => (row.userId ? [row.userId] : []))),
   ];
-  // Only the linked accounts are looked at, with the members-list rules.
+  const wantsInvitations = rows.some((row) => row.invitationId && !row.userId);
+  // The caller's project scope, resolved once for whatever needs it: the
+  // linked accounts' visibility and the invitation check.
   const scope =
-    linkedIds.length > 0
+    linkedIds.length > 0 || wantsInvitations
       ? await accessibleProjectIds(viewer.userId, viewer.workspaceId)
       : null;
+  // Only the linked accounts are looked at, with the members-list rules.
   const members = await getWorkspaceMembers(
     viewer.workspaceId,
     viewer.userId,
@@ -64,9 +67,8 @@ export async function describeResources(
     ]),
   );
 
-  const wantsInvitations = rows.some((row) => row.invitationId && !row.userId);
   const mayShowInvitations =
-    wantsInvitations && (await viewer.canSeeInvitations());
+    wantsInvitations && (await viewer.canSeeInvitations(scope));
   const invitationIds = mayShowInvitations
     ? rows.flatMap((row) =>
         row.invitationId && !row.userId ? [row.invitationId] : [],

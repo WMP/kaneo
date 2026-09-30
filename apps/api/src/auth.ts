@@ -88,6 +88,7 @@ import {
   assertCanAssignRole,
   assertCanResendInvitation,
 } from "./utils/role-delegation";
+import { runIndependently } from "./utils/run-independently";
 import { queueSignInEmail } from "./utils/sign-in-email-tasks";
 import { authCaptchaPaths, verifyTurnstile } from "./utils/verify-turnstile";
 import { closeUserWorkspaceConnections } from "./ws";
@@ -571,10 +572,21 @@ export const auth = betterAuth({
         // administrator adds them again). The `/organization/leave` route runs
         // no organization hook and is handled in `hooks.after`.
         beforeRemoveMember: async ({ member, organization }) => {
-          await removeUserProjectMemberships(member.userId, organization.id);
-          // The resources linked to this account stop being linked (nothing
-          // moves back).
-          await unlinkUserResources(member.userId, organization.id);
+          // Each step runs whatever the other did; a failure is logged and the
+          // first one still aborts the removal (nothing is masked).
+          await runIndependently([
+            [
+              "Removing the project memberships",
+              () =>
+                removeUserProjectMemberships(member.userId, organization.id),
+            ],
+            [
+              // The resources linked to this account stop being linked
+              // (nothing moves back).
+              "Unlinking the resources",
+              () => unlinkUserResources(member.userId, organization.id),
+            ],
+          ]);
         },
         afterRemoveMember: async ({ member }) => {
           if (member?.userId && member.organizationId) {
@@ -916,14 +928,23 @@ export const auth = betterAuth({
             typeof userId === "string" &&
             typeof organizationId === "string"
           ) {
-            // The leaver is out of the workspace already: their sockets close
-            // whatever the cleanup does.
-            try {
-              await removeUserProjectMemberships(userId, organizationId);
-              await unlinkUserResources(userId, organizationId);
-            } finally {
-              await closeUserWorkspaceConnections(userId, organizationId);
-            }
+            // The leaver is out of the workspace already. Each cleanup step
+            // runs whatever the others did (the sockets close even if a
+            // cleanup fails); every failure is logged and the first is thrown.
+            await runIndependently([
+              [
+                "Removing the project memberships",
+                () => removeUserProjectMemberships(userId, organizationId),
+              ],
+              [
+                "Unlinking the resources",
+                () => unlinkUserResources(userId, organizationId),
+              ],
+              [
+                "Closing the sockets",
+                () => closeUserWorkspaceConnections(userId, organizationId),
+              ],
+            ]);
           }
         }
       }

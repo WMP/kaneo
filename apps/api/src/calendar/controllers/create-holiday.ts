@@ -6,16 +6,8 @@ import { publishEvent } from "../../events";
 // Holidays are date-only, normalized to UTC midnight so they compare equal
 // regardless of the server or caller's local time zone — the shared helper
 // used for task startDate/dueDate/constraintDate does exactly this.
+import { isUniqueViolation } from "../../utils/pg-error";
 import { normalizeToUtcMidnight } from "../../utils/validate-dates";
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "23505"
-  );
-}
 
 async function createHoliday(
   workspaceId: string,

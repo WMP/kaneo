@@ -1,13 +1,9 @@
 import type { Context } from "hono";
 import {
-  accessibleProjectIds,
-  projectAccessSatisfies,
-  resolveProjectAccessMap,
-} from "../utils/project-access";
-import {
   apiKeyAllows,
   hasWorkspacePermission,
 } from "../utils/require-workspace-permission";
+import { projectsCallerMayInviteTo } from "./invitable-projects";
 
 const INVITE = { invitation: ["create"] };
 
@@ -16,7 +12,9 @@ const INVITE = { invitation: ["create"] };
 // show, whether it may see invitation state at all.
 export type ResourceViewer = {
   userId: string;
-  canSeeInvitations: () => Promise<boolean>;
+  // `scope` is the caller's project scope when it is known already
+  // (`accessibleProjectIds`); the first call decides for the whole response.
+  canSeeInvitations: (scope?: string[] | null) => Promise<boolean>;
 };
 
 // May the caller see the state of invitations? Whoever could send one:
@@ -29,17 +27,18 @@ export function resourceViewer(c: Context): ResourceViewer {
   let decided: Promise<boolean> | null = null;
   return {
     userId,
-    canSeeInvitations: () => {
+    canSeeInvitations: (scope) => {
       decided ??= (async () => {
         if (!apiKeyAllows(c, INVITE)) return false;
         if (await hasWorkspacePermission(c, INVITE)) return true;
-        const ids = await accessibleProjectIds(userId, workspaceId);
-        // `null` is full access: the workspace role answered above already.
-        if (!ids || ids.length === 0) return false;
-        const accesses = await resolveProjectAccessMap(userId, ids);
-        return [...accesses.values()].some((access) =>
-          projectAccessSatisfies(access, INVITE),
-        );
+        // Full access (`scope` null) has the workspace role's statements in
+        // every project: the check above answered already.
+        if (scope === null) return false;
+        const projects = await projectsCallerMayInviteTo(userId, workspaceId, {
+          stopAtFirst: true,
+          scope,
+        });
+        return projects.length > 0;
       })();
       return decided;
     },

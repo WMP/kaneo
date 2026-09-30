@@ -11,6 +11,7 @@ import {
   type AssigneeChangeSource,
   recomputeTaskPrimaryAssignees,
 } from "../task/assignments";
+import { isUniqueViolation } from "../utils/pg-error";
 import { projectScopeCondition } from "../utils/project-scope-filters";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -30,17 +31,6 @@ export type MovedAssignment = {
 };
 
 type Candidate = { units: number; work: number | null };
-
-// A unique violation (`23505`), whether the driver error is thrown as is or
-// wrapped (`cause`).
-function isUniqueViolation(error: unknown): boolean {
-  let current: unknown = error;
-  for (let depth = 0; depth < 3 && current; depth++) {
-    if ((current as { code?: unknown }).code === "23505") return true;
-    current = (current as { cause?: unknown }).cause;
-  }
-  return false;
-}
 
 // The allocation of a task that the resource and the account both had a share
 // in: the higher `units` win (the sum is deliberately not taken), and `work` is
@@ -91,14 +81,38 @@ export async function moveResourceAssignmentsToUser(
 
   const scope = projectScopeCondition(projectTable.id, projectScope);
 
-  // Locking order: the assignment rows first (in id order), then, at the end,
-  // the task rows that `recomputeTaskPrimaryAssignees` updates. That is the
-  // order the assignee routes take (`setTaskAssignees` deletes and inserts
-  // assignment rows before it updates `task.userId`), so a transfer and an
-  // assignee change on one task cannot deadlock. No lock on the task row up
-  // front: what could race is the account being added to a task meanwhile, and
-  // the write below survives that on its own (the in-place UPDATE falls back to
-  // the upsert on a unique violation).
+  // Locking order: the affected task rows first (`FOR NO KEY UPDATE`, in id
+  // order), then their assignment rows (`FOR UPDATE`, in id order). That is what
+  // `update-task` does, the most frequent writer of these rows. The app's routes
+  // are not consistent with each other (the assignee routes touch assignment
+  // rows before `task.userId`), so no single order rules every deadlock out:
+  // the callers run the transfer in `retryTransaction`, which runs it again when
+  // the server picks it as a deadlock victim. `task.userId` (the primary the
+  // events report as "previous") is read only after the task rows are locked.
+  const candidateTasks = await tx
+    .selectDistinct({ taskId: taskAssignmentTable.taskId })
+    .from(taskAssignmentTable)
+    .innerJoin(taskTable, eq(taskAssignmentTable.taskId, taskTable.id))
+    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .where(
+      and(
+        inArray(taskAssignmentTable.resourceId, resourceIds),
+        eq(projectTable.workspaceId, workspaceId),
+        ...(scope ? [scope] : []),
+      ),
+    );
+  if (candidateTasks.length === 0) return [];
+  await tx
+    .select({ id: taskTable.id })
+    .from(taskTable)
+    .where(
+      inArray(
+        taskTable.id,
+        candidateTasks.map((row) => row.taskId),
+      ),
+    )
+    .orderBy(asc(taskTable.id))
+    .for("no key update");
   const rows = await tx
     .select({
       id: taskAssignmentTable.id,

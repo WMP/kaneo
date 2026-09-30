@@ -5,6 +5,7 @@ import {
   accessibleProjectIds,
   workspaceMemberStanding,
 } from "../utils/project-access";
+import { retryTransaction } from "../utils/retry-transaction";
 import { RESOURCE_ERROR_CODES, resourceError } from "./errors";
 import {
   type MovedAssignment,
@@ -121,51 +122,55 @@ export async function linkResourceToMember({
   }
   const projectScope = await accessibleProjectIds(userId, workspaceId);
 
-  const { resource, moves } = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(resourceTable)
-      .where(
-        and(
-          eq(resourceTable.id, resourceId),
-          eq(resourceTable.workspaceId, workspaceId),
-        ),
-      )
-      .for("update");
-    if (!current) {
-      throw resourceError(
-        404,
-        RESOURCE_ERROR_CODES.notFound,
-        "Resource not found",
-      );
-    }
-    if (current.kind !== "person") {
-      throw resourceError(
-        400,
-        RESOURCE_ERROR_CODES.notPerson,
-        "Only a person resource can be linked to a member",
-      );
-    }
-    if (current.userId) {
-      throw resourceError(
-        409,
-        RESOURCE_ERROR_CODES.alreadyLinked,
-        "This resource is already linked to a member",
-      );
-    }
-    const moves = await linkResourcesToUser(tx, {
-      workspaceId,
-      resourceIds: [resourceId],
-      userId,
-      projectScope,
-    });
-    const [resource] = await tx
-      .select()
-      .from(resourceTable)
-      .where(eq(resourceTable.id, resourceId));
-    if (!resource) throw new Error("The linked resource disappeared");
-    return { resource, moves };
-  });
+  // A deadlock victim or serialization failure runs the whole transaction again
+  // (nothing outside it happens until it committed).
+  const { resource, moves } = await retryTransaction(() =>
+    db.transaction(async (tx) => {
+      const [current] = await tx
+        .select()
+        .from(resourceTable)
+        .where(
+          and(
+            eq(resourceTable.id, resourceId),
+            eq(resourceTable.workspaceId, workspaceId),
+          ),
+        )
+        .for("update");
+      if (!current) {
+        throw resourceError(
+          404,
+          RESOURCE_ERROR_CODES.notFound,
+          "Resource not found",
+        );
+      }
+      if (current.kind !== "person") {
+        throw resourceError(
+          400,
+          RESOURCE_ERROR_CODES.notPerson,
+          "Only a person resource can be linked to a member",
+        );
+      }
+      if (current.userId) {
+        throw resourceError(
+          409,
+          RESOURCE_ERROR_CODES.alreadyLinked,
+          "This resource is already linked to a member",
+        );
+      }
+      const moves = await linkResourcesToUser(tx, {
+        workspaceId,
+        resourceIds: [resourceId],
+        userId,
+        projectScope,
+      });
+      const [resource] = await tx
+        .select()
+        .from(resourceTable)
+        .where(eq(resourceTable.id, resourceId));
+      if (!resource) throw new Error("The linked resource disappeared");
+      return { resource, moves };
+    }),
+  );
 
   await publishMovedAssignments({ moves, userId, actorUserId });
   return {

@@ -10,6 +10,7 @@ import {
   isFullAccess,
   removeUserProjectMemberships,
 } from "../utils/project-access";
+import { retryTransaction } from "../utils/retry-transaction";
 import { closeUserWorkspaceConnections } from "../ws";
 import { applyInvitationProjects } from "./apply-invitation-projects";
 
@@ -106,26 +107,30 @@ export async function afterAcceptProjectInvitation({
 }: AcceptInput & { member: { id: string } }): Promise<void> {
   try {
     const fullAccess = await isFullAccess(user.id, invitation.organizationId);
-    const moves = await db.transaction(async (tx) => {
-      const applied = await applyInvitationProjects({
-        invitationId: invitation.id,
-        workspaceId: invitation.organizationId,
-        userId: user.id,
-        // A full-access person reaches every project through their workspace
-        // role; a stored project row would only become a stale grant after a
-        // demotion (the member API refuses to add such people, too).
-        skipGrants: fullAccess,
-        executor: tx,
-      });
-      return linkInvitedResources(tx, {
-        invitationId: invitation.id,
-        workspaceId: invitation.organizationId,
-        userId: user.id,
-        // The new memberships are not visible outside this transaction yet, so
-        // the reachable projects come from what was just granted.
-        projectScope: fullAccess ? null : applied.grantedProjectIds,
-      });
-    });
+    // A deadlock victim or serialization failure runs the whole transaction
+    // again (memberships and link roll back together; events come after).
+    const moves = await retryTransaction(() =>
+      db.transaction(async (tx) => {
+        const applied = await applyInvitationProjects({
+          invitationId: invitation.id,
+          workspaceId: invitation.organizationId,
+          userId: user.id,
+          // A full-access person reaches every project through their workspace
+          // role; a stored project row would only become a stale grant after a
+          // demotion (the member API refuses to add such people, too).
+          skipGrants: fullAccess,
+          executor: tx,
+        });
+        return linkInvitedResources(tx, {
+          invitationId: invitation.id,
+          workspaceId: invitation.organizationId,
+          userId: user.id,
+          // The new memberships are not visible outside this transaction yet, so
+          // the reachable projects come from what was just granted.
+          projectScope: fullAccess ? null : applied.grantedProjectIds,
+        });
+      }),
+    );
     // After the commit; a failing publish is logged and never undoes the link.
     await publishMovedAssignments({
       moves,

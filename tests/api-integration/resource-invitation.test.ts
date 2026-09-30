@@ -1557,3 +1557,65 @@ describe("invite defaults when a project stops being accessible meanwhile", () =
     expect(ids).toEqual([P.id, Q.id].sort());
   });
 });
+
+describe("the cleanup steps of leaving run independently", () => {
+  it("unlinks the resource and closes the sockets even when removing the project memberships fails", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    expect((await link(owner, member.id)).status).toBe(200);
+    const socket = { send: vi.fn(), close: vi.fn() };
+    const connection = addConnection(
+      P.id,
+      socket as unknown as WSContext,
+      member.id,
+      "window",
+      workspaceId,
+    );
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(
+      accessModule,
+      "removeUserProjectMemberships",
+    ).mockRejectedValueOnce(new Error("database went away"));
+    try {
+      await request(member.cookie, "POST", "/api/auth/organization/leave", {
+        organizationId: workspaceId,
+      });
+      expect((await resourceRow()).userId).toBeNull();
+      await vi.waitFor(() => expect(socket.close).toHaveBeenCalledTimes(1));
+    } finally {
+      removeConnection(P.id, connection);
+    }
+  });
+});
+
+describe("the transfer when the server picks it as a deadlock victim", () => {
+  it("runs the link again and moves the assignments", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    const deadlock = Object.assign(new Error("deadlock detected"), {
+      code: "40P01",
+    });
+    vi.spyOn(
+      transferModule,
+      "moveResourceAssignmentsToUser",
+    ).mockRejectedValueOnce(deadlock);
+    const response = await link(owner, member.id);
+    expect(response.status).toBe(200);
+    expect((await resourceRow()).userId).toBe(member.id);
+    expect((await assignmentsOf(t2))[0]?.userId).toBe(member.id);
+  });
+
+  it("gives up after three attempts and leaves everything as it was", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    const deadlock = Object.assign(new Error("deadlock detected"), {
+      code: "40P01",
+    });
+    const spy = vi
+      .spyOn(transferModule, "moveResourceAssignmentsToUser")
+      .mockRejectedValue(deadlock);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const response = await link(owner, member.id);
+    expect(response.status).toBe(500);
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect((await resourceRow()).userId).toBeNull();
+    expect((await assignmentsOf(t2))[0]?.resourceId).toBe(alice.id);
+  });
+});

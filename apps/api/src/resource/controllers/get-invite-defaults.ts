@@ -1,18 +1,9 @@
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import db from "../../database";
-import {
-  projectTable,
-  taskAssignmentTable,
-  taskTable,
-} from "../../database/schema";
-import {
-  accessibleProjectIds,
-  projectAccessSatisfies,
-  resolveProjectAccessMap,
-} from "../../utils/project-access";
-import { projectScopeCondition } from "../../utils/project-scope-filters";
+import { taskAssignmentTable, taskTable } from "../../database/schema";
 import { apiKeyAllows } from "../../utils/require-workspace-permission";
+import { projectsCallerMayInviteTo } from "../invitable-projects";
 
 const INVITE = { invitation: ["create"] };
 
@@ -34,19 +25,9 @@ async function getInviteDefaults({
 }) {
   if (!apiKeyAllows(c, INVITE)) return { projects: [] };
 
-  const scope = await accessibleProjectIds(actorUserId, workspaceId);
-  const scopeCondition = projectScopeCondition(projectTable.id, scope);
-  const projects = await db
-    .select({ id: projectTable.id, name: projectTable.name })
-    .from(projectTable)
-    .where(
-      and(
-        eq(projectTable.workspaceId, workspaceId),
-        isNull(projectTable.archivedAt),
-        ...(scopeCondition ? [scopeCondition] : []),
-      ),
-    )
-    .orderBy(asc(projectTable.name), asc(projectTable.id));
+  const allowed = await projectsCallerMayInviteTo(actorUserId, workspaceId, {
+    skipArchived: true,
+  });
 
   const assigned = new Set(
     (
@@ -57,20 +38,6 @@ async function getInviteDefaults({
         .where(eq(taskAssignmentTable.resourceId, resourceId))
     ).map((row) => row.projectId),
   );
-
-  // The listed projects are the ones the caller can open, resolved in one
-  // query. A project that stopped being accessible meanwhile is left out on its
-  // own; the others are still offered.
-  const accesses = await resolveProjectAccessMap(
-    actorUserId,
-    projects.map((project) => project.id),
-  );
-  const mayInvite = new Set(
-    [...accesses.values()]
-      .filter((access) => projectAccessSatisfies(access, INVITE))
-      .map((access) => access.projectId),
-  );
-  const allowed = projects.filter((project) => mayInvite.has(project.id));
 
   return {
     projects: allowed
