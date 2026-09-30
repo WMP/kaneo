@@ -1,6 +1,6 @@
 name: Sync upstream
 
-# Keeps this fork's gantt-pro line current with the original project without
+# Keeps this fork's main branch current with the original project without
 # ever silently overwriting our work. Once a week (and on demand) it fetches
 # upstream/main and, when upstream has new commits, opens ONE pull request that
 # merges them into our canonical branch. Conflicts are left for a human to
@@ -21,7 +21,7 @@ on:
       target_branch:
         description: "Fork branch to sync upstream into"
         required: false
-        default: claude/gantt-pro
+        default: main
         type: string
 
 concurrency:
@@ -35,7 +35,7 @@ permissions:
 env:
   UPSTREAM_REPO: https://github.com/usekaneo/kaneo.git
   UPSTREAM_BRANCH: main
-  TARGET_BRANCH: ${{ github.event.inputs.target_branch || 'claude/gantt-pro' }}
+  TARGET_BRANCH: ${{ github.event.inputs.target_branch || 'main' }}
 
 jobs:
   sync:
