@@ -1,6 +1,6 @@
 # Plan: workspace columns with optional enforcement
 
-Status: accepted by the product owner on 2026-09-30. Branch `claude/stoic-ritchie-sd7mmc`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: accepted by the product owner on 2026-09-30; stages 1 (API and database), 2 (web) and 3 (documentation) implemented on `claude/stoic-ritchie-sd7mmc`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 
@@ -32,18 +32,18 @@ Today board columns exist only per project (`column.project_id`) and are edited 
 | `POST /api/workspace-column/{workspaceId}` | `project:update` | Create `{ name, icon?, color?, isFinal? }`. Slug rules of project columns (`toSlug`, reserved virtual statuses, unique in workspace). Enforced: create the linked column in every project. |
 | `PUT /api/workspace-column/{workspaceId}/reorder` | `project:update` | `{ columns: [{ id, position }] }`, every id must belong to the workspace. Enforced: same positions in every project. |
 | `PUT /api/workspace-column/{workspaceId}/{columnId}` | `project:update` | Update `name`, `icon`, `color`, `isFinal` (slug stays stable, like project columns). Enforced: same values on every linked project column. |
-| `DELETE /api/workspace-column/{workspaceId}/{columnId}` | `project:update` | Optional `moveTasksTo` (workspace column id). Enforced: tasks of linked project columns move to `moveTasksTo`, otherwise 409 when any task exists; the last workspace column cannot be deleted while enforced. |
+| `DELETE /api/workspace-column/{workspaceId}/{columnId}` | `project:update` | Optional query parameter `moveTasksTo` (workspace column id). Enforced: tasks of linked project columns move to `moveTasksTo`, otherwise 409 when any task exists; the last workspace column cannot be deleted while enforced. |
 | `GET /api/workspace-column/{workspaceId}/enforcement-preview?fallbackColumnId=` | `workspace:manage_settings` | Dry run of the match: per project the columns to create, the columns to remove, tasks to move and workflow rules to delete. Only projects the caller can see (full access: all). |
 | `PUT /api/workspace-column/{workspaceId}/enforcement` | `workspace:manage_settings` | `{ enforced, fallbackColumnId? }`. On: requires at least one workspace column, runs the sync for every project in one transaction, returns the summary. |
 
 Errors are JSON with a `code`: `WORKSPACE_COLUMNS_ENFORCED` (409, project column mutation while enforced), `WORKSPACE_COLUMNS_EMPTY` (400), `WORKSPACE_COLUMN_NOT_EMPTY` (409), `WORKSPACE_COLUMN_LAST` (409), `WORKSPACE_COLUMN_SLUG_CONFLICT` (409), `WORKSPACE_COLUMN_RESERVED_SLUG` (409). A workspace column id of another workspace answers 404.
 
-Sync core: a pure function `planProjectColumnSync(projectColumns, workspaceColumns, fallbackWorkspaceColumnId)` returns the plan (preview and unit tests use it), and `applyProjectColumnSync(tx, projectId, plan)` writes it. Concurrency: every workspace column mutation and the enforcement toggle lock the workspace row `FOR UPDATE`; project column mutations, project creation and project move read the flag under `FOR SHARE` in the same transaction as their write.
+Sync core: a pure function `planProjectColumnSync(projectColumns, workspaceColumns, fallbackWorkspaceColumnId)` returns the plan (preview and unit tests use it), and `applyProjectColumnSync(tx, projectId, plan)` writes it. Concurrency: every workspace column mutation and the enforcement toggle lock the workspace row `FOR NO KEY UPDATE` (conflicts with `FOR SHARE`, does not block foreign key checks of unrelated inserts) inside `retryTransaction`; project column mutations, project creation and project move read the flag under `FOR SHARE` in the same transaction as their write.
 
 Other surfaces:
 
 - `project/controllers/create-project.ts`: copy workspace columns (linked) when the workspace has any.
-- `project/controllers/move-project.ts`: clear `ganttpro_workspace_column_id` of the moved project's columns; if the target workspace is enforced, sync with the first target workspace column as fallback.
+- `project/controllers/move-project.ts`: lock both workspace rows `FOR SHARE` (sorted) after the advisory locks, clear `ganttpro_workspace_column_id` of the moved project's columns; if the target workspace is enforced, sync with the first target workspace column as fallback. No `project.updated` follows, because a move closes the project's sockets.
 - Moving tasks during a sync writes `column_id` and `status` directly and does not publish per-task events, so integrations do not react (for example by closing issues). After the commit the API publishes `project.updated` for every changed project, and `subtask-parents.refresh` when final flags or task columns changed.
 - MCP: no new tool. Workspace column management is an administrator setting; `list_project_columns` already reads the effective columns. Project column mutations through any client get the 409 above.
 - OpenAPI: regenerate `apps/docs/openapi.json`.
@@ -59,7 +59,7 @@ Other surfaces:
 
 1. API and database: schema, migration, sync, routes, lock of project column routes, project create and move. Integration tests in `tests/api-integration/` (match and move, created and removed columns, rule deletion, 409 on project column routes, propagation of create/update/reorder/delete, new project copies, project move into an enforced workspace, 403 for a member without the permission and for a user of another workspace, nothing persisted after a rejected request) and a migration upgrade test from a populated 0058 database. Unit tests for `planProjectColumnSync`. `pnpm openapi:check`, API typecheck.
 2. Web: fetchers, hooks, pages, i18n, realtime invalidation. Component tests and web typecheck; `pnpm i18n:check`.
-3. Documentation: database contract (migration 0059), API contract paragraph, invariant `KAN-DATA-002` with its real status.
+3. Documentation: database contract (migration 0059), API contract paragraph, invariant `KAN-DATA-002` (partial).
 
 ## Known limitations
 
