@@ -1666,3 +1666,248 @@ export const customFieldValueTable = pgTable(
     ),
   ],
 );
+
+// Jira integration (docs/plans/jira-integration.md). One connection per
+// workspace; every user keeps their own encrypted personal access token.
+export const jiraConnectionTable = pgTable(
+  "ganttpro_jira_connection",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    baseUrl: text("base_url").notNull(),
+    deployment: text("deployment").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    pollingEnabled: boolean("polling_enabled").default(true).notNull(),
+    webhookSecret: text("webhook_secret").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    unique("ganttpro_jira_connection_workspace_unique").on(table.workspaceId),
+    check(
+      "ganttpro_jira_connection_deployment_check",
+      sql`${table.deployment} IN ('server', 'cloud')`,
+    ),
+  ],
+);
+
+// The token is AES-256-GCM encrypted (notification-preferences/secrets.ts) and
+// is never returned by the API, logged or published in an event.
+export const jiraUserTokenTable = pgTable(
+  "ganttpro_jira_user_token",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    connectionId: text("connection_id").notNull(),
+    userId: text("user_id").notNull(),
+    encryptedToken: text("encrypted_token").notNull(),
+    email: text("email"),
+    jiraAccountId: text("jira_account_id"),
+    jiraUsername: text("jira_username"),
+    jiraDisplayName: text("jira_display_name"),
+    lastVerifiedAt: timestamp("last_verified_at", { mode: "date" }),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: "ganttpro_jira_user_token_connection_fk",
+      columns: [table.connectionId],
+      foreignColumns: [jiraConnectionTable.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+    foreignKey({
+      name: "ganttpro_jira_user_token_user_fk",
+      columns: [table.userId],
+      foreignColumns: [userTable.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+    unique("ganttpro_jira_user_token_connection_user_unique").on(
+      table.connectionId,
+      table.userId,
+    ),
+    index("ganttpro_jira_user_token_user_id_idx").on(table.userId),
+  ],
+);
+
+// `config` is JSON text validated by jira-integration/schema.ts. The scope
+// decides which of project_id / user_id is set; NULLS NOT DISTINCT makes the
+// unique key hold for the rows where they are null (PostgreSQL 15+, Kaneo
+// documents and ships PostgreSQL 16).
+export const jiraMappingTable = pgTable(
+  "ganttpro_jira_mapping",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    scope: text("scope").notNull(),
+    projectId: text("project_id").references(() => projectTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    userId: text("user_id").references(() => userTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    config: text("config").notNull(),
+    updatedBy: text("updated_by").references(() => userTable.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    unique("ganttpro_jira_mapping_scope_unique")
+      .on(table.workspaceId, table.scope, table.projectId, table.userId)
+      .nullsNotDistinct(),
+    index("ganttpro_jira_mapping_project_id_idx").on(table.projectId),
+    index("ganttpro_jira_mapping_user_id_idx").on(table.userId),
+    check(
+      "ganttpro_jira_mapping_scope_check",
+      sql`${table.scope} IN ('workspace', 'project', 'user')`,
+    ),
+    check(
+      "ganttpro_jira_mapping_project_id_check",
+      sql`(${table.scope} = 'project') = (${table.projectId} IS NOT NULL)`,
+    ),
+    check(
+      "ganttpro_jira_mapping_user_id_check",
+      sql`(${table.scope} = 'user') = (${table.userId} IS NOT NULL)`,
+    ),
+  ],
+);
+
+// One Jira issue per Kaneo task and one Kaneo task per Jira issue.
+export const jiraIssueLinkTable = pgTable(
+  "ganttpro_jira_issue_link",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => taskTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    connectionId: text("connection_id").notNull(),
+    issueId: text("issue_id").notNull(),
+    issueKey: text("issue_key").notNull(),
+    issueUrl: text("issue_url").notNull(),
+    jiraProjectKey: text("jira_project_key").notNull(),
+    lastStatusId: text("last_status_id"),
+    lastStatusName: text("last_status_name"),
+    lastSyncedAt: timestamp("last_synced_at", { mode: "date" }),
+    syncError: text("sync_error"),
+    createdByUserId: text("created_by_user_id").references(() => userTable.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: "ganttpro_jira_issue_link_connection_fk",
+      columns: [table.connectionId],
+      foreignColumns: [jiraConnectionTable.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+    unique("ganttpro_jira_issue_link_task_unique").on(table.taskId),
+    unique("ganttpro_jira_issue_link_connection_issue_unique").on(
+      table.connectionId,
+      table.issueId,
+    ),
+    index("ganttpro_jira_issue_link_issue_key_idx").on(table.issueKey),
+    index("ganttpro_jira_issue_link_created_by_idx").on(table.createdByUserId),
+  ],
+);
+
+// A Jira status change never moves the task: it becomes a proposal that a
+// person with task:update accepts or rejects. At most one is pending per task.
+export const jiraStatusProposalTable = pgTable(
+  "ganttpro_jira_status_proposal",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => taskTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    linkId: text("link_id").notNull(),
+    fromStatusName: text("from_status_name"),
+    toStatusId: text("to_status_id"),
+    toStatusName: text("to_status_name").notNull(),
+    proposedStatus: text("proposed_status"),
+    state: text("state").default("pending").notNull(),
+    jiraChangedBy: text("jira_changed_by"),
+    jiraChangedAt: timestamp("jira_changed_at", { mode: "date" }),
+    source: text("source").notNull(),
+    resolvedByUserId: text("resolved_by_user_id").references(
+      () => userTable.id,
+      { onDelete: "set null", onUpdate: "cascade" },
+    ),
+    resolvedStatus: text("resolved_status"),
+    resolvedAt: timestamp("resolved_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: "ganttpro_jira_status_proposal_link_fk",
+      columns: [table.linkId],
+      foreignColumns: [jiraIssueLinkTable.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+    index("ganttpro_jira_status_proposal_task_state_idx").on(
+      table.taskId,
+      table.state,
+    ),
+    index("ganttpro_jira_status_proposal_link_id_idx").on(table.linkId),
+    uniqueIndex("ganttpro_jira_status_proposal_one_pending_uidx")
+      .on(table.taskId)
+      .where(sql`${table.state} = 'pending'`),
+    check(
+      "ganttpro_jira_status_proposal_state_check",
+      sql`${table.state} IN ('pending', 'accepted', 'rejected', 'superseded')`,
+    ),
+    check(
+      "ganttpro_jira_status_proposal_source_check",
+      sql`${table.source} IN ('webhook', 'poll', 'manual')`,
+    ),
+  ],
+);

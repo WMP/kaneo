@@ -41,6 +41,7 @@ import gitlabIntegration, {
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
+import jiraIntegration from "./jira-integration";
 import label from "./label";
 import mattermostIntegration from "./mattermost-integration";
 import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
@@ -765,6 +766,7 @@ export function createApp() {
     "/gitlab-integration",
     gitlabIntegration,
   );
+  const jiraIntegrationApi = api.route("/jira-integration", jiraIntegration);
   const genericWebhookIntegrationApi = api.route(
     "/generic-webhook-integration",
     genericWebhookIntegration,
@@ -941,6 +943,7 @@ export function createApp() {
     gitlabIntegrationApi,
     invitationApi,
     invitationPublicApi,
+    jiraIntegrationApi,
     labelApi,
     notificationApi,
     notificationPreferencesApi,
@@ -1086,6 +1089,7 @@ const {
   gitlabIntegrationApi,
   invitationApi,
   invitationPublicApi,
+  jiraIntegrationApi,
   labelApi,
   mattermostIntegrationApi,
   notificationApi,
@@ -1140,6 +1144,7 @@ export type AppType =
   | typeof githubIntegrationApi
   | typeof giteaIntegrationApi
   | typeof gitlabIntegrationApi
+  | typeof jiraIntegrationApi
   | typeof genericWebhookIntegrationApi
   | typeof discordIntegrationApi
   | typeof mattermostIntegrationApi
