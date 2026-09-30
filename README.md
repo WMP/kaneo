@@ -1,5 +1,5 @@
 <!--
-  readme-baseline: 0ecbbf738995e4a90adf78fb16f8fc11221245b5
+  readme-baseline: 626f426fef437218e01a322ec1549ff89f466cb7
   This README covers main up to the commit above. To bring it up to date, follow
   .claude/skills/update-readme/SKILL.md, which also moves this marker.
 
@@ -41,9 +41,9 @@ This page covers what Kaneo Pro adds. For everything the two share, see the [Kan
 | **Gantt chart** | Timeline with draggable, resizable task bars | Adds dependency lines and types (FS, SS, FF, SF) with lag, critical path, progress, milestones, baselines, summary bars, auto-rescheduling, date constraints, pan and zoom, Day/Week/Month/Quarter scale |
 | **Cross-project work** | – | Dependencies between projects of one workspace, a critical path that follows them, and a Portfolio timeline of all projects |
 | **Capacity** | – | Workload view per person and resource |
-| **Activity** | Per task | Workspace-wide feed with field-level schedule changes, project filter, CSV/JSON export and retention |
+| **Activity** | Per task | Workspace-wide feed with field-level schedule changes, project filter, CSV/JSON export, retention, and a label on changes made through MCP or an API key |
 | **Working calendar** | – | Working weekdays and holidays per workspace |
-| **Custom fields** | Per project | Also per workspace, inherited by every project; colored options that drive Gantt colors |
+| **Custom fields** | Per project | Also per workspace, inherited by every project; editable after creation; colored options that drive Gantt colors |
 | **Assignees** | One user per task | Several per task, including resources without an account (people, equipment, material) |
 | **Approval gates** | – | Approval status and note per task, with warnings on the tasks it blocks |
 | **Project access** | Every workspace member sees every project | Project membership with its own role, applied across the API and realtime |
@@ -87,7 +87,7 @@ The Gantt chart becomes a planning tool, not just a view of dates.
 
 - **Workload** lists every workspace member and person resource, week by week, over a date range you choose. Cells above your threshold are highlighted, the range summary shows totals, and you can drill into the tasks behind each number.
 - **Resources** are people, equipment and material without an account. Assign them to tasks just like users.
-- **Invite a person resource.** When they accept, the resource links to their account and its assignments move over (in the projects the account can open). Workload then shows one row for both.
+- **Invite a person resource**, from the resources settings or straight from a task's assignee picker. When they accept, the resource links to their account and its assignments move over (in the projects the account can open). Workload then shows one row for both.
 
 <p align="center">
   <img src="docs/images/kaneo-pro/04-workload.png" alt="Workload view with weekly load per person and resource" />
@@ -103,6 +103,7 @@ The Gantt chart becomes a planning tool, not just a view of dates.
 - Export to CSV or JSON.
 - A retention period per workspace. A daily job removes older entries.
 - Changes to the working calendar are logged too.
+- Changes made through an MCP client or an API key show a short label after the person's name (MCP or API, with a short token hint), so they stand apart from changes in the web app. Full tokens are never stored.
 
 <p align="center">
   <img src="docs/images/kaneo-pro/05-activity.png" alt="Workspace activity with field-level schedule changes" />
@@ -120,6 +121,7 @@ Set the working weekdays and holidays of a workspace. The Gantt chart shades non
 
 - Define a custom field once for the whole workspace. Every project inherits it and can hide it.
 - Dropdown options have colors. The Gantt chart can color its bars by them and show the field in a column.
+- Edit a field after creation: its name, its options and their colors, its default value and whether it is required. The type stays fixed. The API refuses to remove an option that tasks still use, and to make a workspace field required while a project hides it.
 
 <p align="center">
   <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Gantt chart colored by the Phase custom field, with a Phase column" />
@@ -132,7 +134,7 @@ Set the working weekdays and holidays of a workspace. The Gantt chart shades non
 
 ### Tasks
 
-- **Multiple assignees**, including resources. The first assignee stays in the original `assignee` field, so existing integrations keep working.
+- **Multiple assignees**, including resources, all shown in the task panel. The first assignee stays in the original `assignee` field, so existing integrations keep working.
 - **Approval gates.** A task can need approval (pending, approved or rejected), with a note. Tasks that an unapproved gate blocks get a warning on the Gantt chart. MCP and task exports include the approval fields.
 - **Date constraints, progress, milestones and baselines** are all in the task panel.
 - A visible menu button for task actions, next to the right-click menu.
@@ -185,7 +187,7 @@ New MCP tools:
 | `update_task_relation` | Change a dependency's type and lag |
 | `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Manage the working calendar |
 
-`get_task` and `list_tasks` also return custom fields, and `create_task` and `update_task` accept progress, milestone, date constraint and approval fields.
+`get_task` and `list_tasks` also return custom fields, and `create_task` and `update_task` accept progress, milestone, date constraint and approval fields. Changes made through MCP are labeled in the activity feeds.
 
 ## Quick start
 
@@ -287,7 +289,7 @@ Kaneo Pro uses the Kaneo configuration described in [ENVIRONMENT_SETUP.md](ENVIR
 
 - **Base version.** Kaneo Pro is based on upstream `main` of 2026-09-26 (after v2.27.0, before v2.28.0). Newer upstream changes arrive through the weekly sync pull request. Until they are merged, moving from Kaneo v2.28 or later drops the upstream changes made since that date.
 - **Tested path.** The CI step "Upgrade from the latest stable release" starts the latest upstream release (v2.29.3 at the time of writing), seeds an account, a workspace membership, a project, a task, a comment and a private image, then starts Kaneo Pro on the same database. It checks that this data is intact and that writes still work.
-- **Migrations.** Kaneo Pro adds its own migrations `0051` to `0058` (tables and columns prefixed `ganttpro_`), so after `0050` the numbering differs from upstream. On start-up, the API reconciles the migration journal of a database that already has the schema, so that only the missing migrations run.
+- **Migrations.** Kaneo Pro adds its own migrations `0051` to `0059` (their names contain `ganttpro`), so after `0050` the numbering differs from upstream. On start-up, the API reconciles the migration journal of a database that already has the schema, so that only the missing migrations run.
 - **Not carried over: project backgrounds and calendar feeds.** Kaneo v2.28 and later store them in `project.background_*` and `calendar_feed`. Kaneo Pro uses `project.ganttpro_background_*` and `ganttpro_calendar_feed`, and its migrations do not copy the data. The old data stays in the database, but Kaneo Pro does not show it: set the backgrounds again and create new calendar feed links after the upgrade.
 - **Project access changes.** Migration `0056` creates no project memberships. Workspace owners, instance administrators and roles with `workspace:manage_settings` keep access to every project. **All other members (`member`, `viewer` and custom roles) lose access to the existing projects until an administrator adds them.**
 - **User directory.** "Add people" can search every account on the instance by name and email, which reveals that an account exists. On an instance where anyone can sign up, set `DISABLE_USER_DIRECTORY=true`, `DISABLE_WORKSPACE_CREATION=true`, or both.
