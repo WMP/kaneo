@@ -129,7 +129,8 @@ Set the working weekdays and holidays of a workspace. The Gantt chart shades non
 </p>
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/07b-custom-fields-settings.png" alt="Workspace custom field settings" />
+  <img src="docs/images/kaneo-pro/07b-custom-fields-settings.png" alt="Editing a workspace custom field in the settings" />
+  <br /><sub>Edit a field after creation. The type stays fixed.</sub>
 </p>
 
 ### Tasks
@@ -146,7 +147,7 @@ Set the working weekdays and holidays of a workspace. The Gantt chart shades non
 
 <p align="center">
   <img src="docs/images/kaneo-pro/08c-task-assignees.png" alt="Several assignees and a resource on one task" width="49%" />
-  <br /><sub>Several assignees and a resource on one task.</sub>
+  <br /><sub>Several assignees and a resource on one task. The paper-plane button invites the person resource.</sub>
 </p>
 
 ### Project-level access

@@ -401,12 +401,17 @@ async function customFieldGantt(env) {
   await env.snap(page);
 }
 
-// 07b: the workspace custom field settings.
+// 07b: the workspace custom field settings, with the inline edit form of the
+// "Phase" field open (name, options, default value, required). Nothing is saved.
 async function customFieldSettings(env) {
   const page = await env.page({ height: 900 });
   await page.goto(`${env.webUrl}/dashboard/settings/workspace/custom-fields`);
   await page.getByText("Customer-visible").first().waitFor();
   await ready(page);
+  const phaseId = env.ids.customFields.phase.id;
+  await page.locator(`#custom-field-edit-button-${phaseId}`).click();
+  await page.locator(`#custom-field-edit-${phaseId}-name`).waitFor();
+  await frames(page, 4);
   await fitHeight(page, settingsBottom, { pad: 48, min: 500 });
   await env.snap(page);
 }
@@ -430,7 +435,9 @@ async function taskDetail(env) {
   await env.snap(page);
 }
 
-// 08c: several assignees and a resource on one task.
+// 08c: the assignee picker of a task with several assignees and a resource. The
+// trigger lists everybody, and the person resource without an account has an
+// invite button (the picker offers it to somebody who may invite).
 async function taskAssignees(env) {
   const page = await env.page({ height: 900 });
   await page.goto(taskUrl(env, WRV, "freezeReview"));
@@ -441,14 +448,30 @@ async function taskAssignees(env) {
     .waitFor();
   await ready(page);
   await page
-    .getByText(demo.users[0].name, { exact: true })
-    .locator("visible=true")
-    .last()
+    .getByRole("button", { name: /\d+ assigned/ })
+    .first()
     .click();
   await page.getByText("Unassign all").waitFor();
+  // Point at the invite button of the person resource, so that its hover
+  // background marks it.
+  const invite = page
+    .getByRole("button", { name: "Invite to project" })
+    .first();
+  await invite.hover();
   await frames(page, 4);
+  // From the top of the page to a little below the picker.
+  const bottom = await page.evaluate(() => {
+    const popup = document.querySelector("[data-slot='popover-popup']");
+    return popup ? popup.getBoundingClientRect().bottom : 0;
+  });
+  const { height } = page.viewportSize();
   await env.snap(page, {
-    clip: { x: WIDTH - 560, y: 0, width: 560, height: 650 },
+    clip: {
+      x: WIDTH - 560,
+      y: 0,
+      width: 560,
+      height: Math.min(height, Math.ceil(bottom + 32)),
+    },
   });
 }
 
