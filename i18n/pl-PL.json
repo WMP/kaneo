@@ -1073,6 +1073,7 @@
 			}
 		},
 		"apiKeys": "Klucze API",
+		"mcp": "MCP",
 		"columnEditor": {
 			"add": "Dodaj",
 			"doneColumn": "Kolumna ukończona",
@@ -1104,6 +1105,51 @@
 			"subtitle": "Zarządzaj kluczami API i zasobami dla deweloperów.",
 			"title": "Ustawienia deweloperskie",
 			"unnamedKey": "Klucz bez nazwy"
+		},
+		"mcpPage": {
+			"pageTitle": "MCP",
+			"title": "MCP",
+			"subtitle": "Połącz klientów AI z Kaneo. Połączony klient może zarządzać przestrzeniami roboczymi, projektami, zadaniami, komentarzami i etykietami w Twoim imieniu. Logujesz się w przeglądarce i jawnie zatwierdzasz dostęp, więc w poleceniach nie jest potrzebny żaden token.",
+			"copy": "Kopiuj",
+			"copied": "Skopiowano",
+			"copyAria": "Kopiuj: {{label}}",
+			"toastCopied": "Skopiowano do schowka",
+			"copyFailed": "Nie udało się skopiować automatycznie. Zaznacz tekst i naciśnij Ctrl+C.",
+			"docsLink": "Przeczytaj dokumentację MCP",
+			"serverUrl": {
+				"title": "Adres serwera",
+				"description": "Punkt końcowy MCP (Streamable HTTP) tej instancji Kaneo."
+			},
+			"claudeCode": {
+				"title": "Claude Code",
+				"description": "Dodaj Kaneo jako serwer MCP przez HTTP.",
+				"afterAdd": "Następnie uruchom claude, wpisz /mcp, wybierz kaneo i uwierzytelnij się w przeglądarce.",
+				"allowedToolsLabel": "Claude Code bez zatwierdzania każdego narzędzia",
+				"allowedToolsNote": "Opcjonalnie: pomija pytania o zgodę dla każdego narzędzia Kaneo. Używaj ostrożnie."
+			},
+			"codex": {
+				"title": "Codex",
+				"description": "Dodaj Kaneo jako serwer MCP, a następnie zaloguj się w przeglądarce.",
+				"addLabel": "Codex: dodanie serwera",
+				"loginLabel": "Codex: logowanie",
+				"configNote": "Możesz też dodać poniższy wpis do ~/.codex/config.toml i uruchomić polecenie logowania.",
+				"configLabel": "Codex: config.toml"
+			},
+			"desktop": {
+				"title": "Claude Desktop i claude.ai",
+				"description": "Użyj własnego konektora.",
+				"steps": "Otwórz Ustawienia, następnie Konektory, wybierz Dodaj własny konektor i wklej adres serwera.",
+				"note": "Ta opcja wymaga, aby instancja była dostępna z internetu przez HTTPS."
+			},
+			"cursor": {
+				"title": "Cursor i inni klienci",
+				"description": "Dodaj ten wpis do konfiguracji MCP klientów obsługujących serwery HTTP."
+			},
+			"stdio": {
+				"title": "Lokalny serwer stdio",
+				"description": "Dla klientów bez transportu HTTP.",
+				"note": "Używa logowania urządzenia i wymaga Node.js 24 lub nowszego."
+			}
 		},
 		"discordIntegration": {
 			"channelHint": "Opcjonalna etykieta pomocnicza. Discord określa docelowy kanał na podstawie konfiguracji webhooka.",

@@ -183,6 +183,22 @@ describe("workspace resources settings", () => {
     );
   });
 
+  it("shows the translated kind label, not the raw value, in the create dialog kind select", () => {
+    render(<Component />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:workspaceResources.createResource",
+      }),
+    );
+
+    const trigger = within(screen.getByRole("dialog")).getByRole("combobox");
+    expect(trigger).toHaveTextContent(
+      "settings:workspaceResources.kind.person",
+    );
+    expect(trigger).not.toHaveTextContent(/^person$/);
+  });
+
   it("shows a validation error and does not submit when the name is blank", () => {
     render(<Component />);
 

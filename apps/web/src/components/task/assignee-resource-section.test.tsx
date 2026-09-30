@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { createContext, useContext } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectMemberError } from "@/lib/project-member-error";
 import type Resource from "@/types/resource";
@@ -20,6 +21,14 @@ vi.mock("@/lib/toast", () => ({
 }));
 
 // A native select keeps the test on behavior instead of the popup internals.
+// The trigger and its value are rendered (as the real ones do) so a test can
+// see what the closed select shows; the real `SelectValue` only shows the raw
+// value when it has no children.
+const SelectContext = createContext<{
+  value: string;
+  onValueChange: (value: string) => void;
+}>({ value: "", onValueChange: () => {} });
+
 vi.mock("@/components/ui/select", () => ({
   Select: ({
     children,
@@ -30,19 +39,28 @@ vi.mock("@/components/ui/select", () => ({
     onValueChange: (value: string) => void;
     value: string;
   }) => (
-    <select
-      aria-label="kind"
-      value={value}
-      onChange={(event) => onValueChange(event.target.value)}
-    >
-      {children}
-    </select>
+    <SelectContext.Provider value={{ value, onValueChange }}>
+      <div>{children}</div>
+    </SelectContext.Provider>
   ),
-  SelectTrigger: () => null,
-  SelectValue: () => null,
-  SelectContent: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => (
+    <span data-testid="kind-trigger">{children}</span>
   ),
+  SelectValue: ({ children }: { children?: React.ReactNode }) => (
+    <SelectValueContent>{children}</SelectValueContent>
+  ),
+  SelectContent: ({ children }: { children: React.ReactNode }) => {
+    const { value, onValueChange } = useContext(SelectContext);
+    return (
+      <select
+        aria-label="kind"
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+      >
+        {children}
+      </select>
+    );
+  },
   SelectItem: ({
     children,
     value,
@@ -51,6 +69,12 @@ vi.mock("@/components/ui/select", () => ({
     value: string;
   }) => <option value={value}>{children}</option>,
 }));
+
+function SelectValueContent({ children }: { children?: React.ReactNode }) {
+  // Like the real component: no children means the raw value is shown.
+  const { value } = useContext(SelectContext);
+  return <>{children ?? value}</>;
+}
 
 const make = (id: string, name: string, userId: string | null): Resource => ({
   id,
@@ -160,6 +184,27 @@ describe("AssigneeResourceSection", () => {
       target: { value: "equipment" },
     });
     expect(screen.queryByPlaceholderText(emailPlaceholder)).toBeNull();
+  });
+
+  it("shows the translated kind label, not the raw value, in the kind select trigger", () => {
+    renderSection({ canCreateResource: true });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:popover.assignee.addResource",
+      }),
+    );
+    const trigger = screen.getByTestId("kind-trigger");
+    expect(trigger).toHaveTextContent(
+      "tasks:popover.assignee.resourceKind.person",
+    );
+    expect(trigger).not.toHaveTextContent(/^person$/);
+
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "equipment" },
+    });
+    expect(screen.getByTestId("kind-trigger")).toHaveTextContent(
+      "tasks:popover.assignee.resourceKind.equipment",
+    );
   });
 
   it("shows a translated message, never the raw body, when creating fails", async () => {

@@ -476,7 +476,7 @@ function RouteComponent() {
                 onValueChange={(value) => setNewKind(value as ResourceKind)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>{kindLabel(newKind)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {RESOURCE_KINDS.map((kind) => (
