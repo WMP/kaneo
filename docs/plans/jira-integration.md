@@ -141,3 +141,12 @@ Scheduler: `jira-status-poll` every 5 minutes under `withJobLease`. Per active c
 - Two-way sync of other fields (title, description) from Jira is out of scope.
 - Comments and attachments are not sent.
 - The poll reads at most the links whose creator still has a valid token.
+
+## TODO (product owner feedback, 2026-09-30)
+
+Not started. Decide the target first, then change the web settings (and, if needed, the API) in one stage.
+
+- **Placement is not consistent with the other integrations.** GitHub, GitLab, Gitea and the chat integrations are configured in project settings → Integrations. Jira has its own item in the workspace settings menu and in the account settings menu. The owner does not like this split.
+- **Hide Jira when it is not enabled.** The "Jira" menu items show even when the workspace has no active Jira connection. They must not show in the menu then. Decide how an administrator turns Jira on for the first time (for example from an integrations list) when the item is hidden.
+- **Possible target structure:** integrations at three levels, each with its own "Integrations" page: workspace integrations (connection, workspace mapping), project integrations (the existing page: GitHub, GitLab, Gitea, ..., Jira project mapping) and account integrations (personal tokens such as the Jira PAT, user mapping). Jira then appears as one entry in each list instead of a separate menu item. Other integrations could later move their shared parts (for example a GitLab instance and token) to the workspace or account level in the same way.
+- Keep the API contract (routes and permissions) unless the new structure needs a change; this is mainly a navigation and page change in `apps/web/src/routes/_layout/_authenticated/dashboard/settings/`.
