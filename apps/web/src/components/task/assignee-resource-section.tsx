@@ -1,5 +1,5 @@
 import { Check, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,22 +75,27 @@ export function AssigneeResourceSection({
   const { mutateAsync: createResource, isPending: creating } =
     useCreateResource();
 
+  const everSelected = useRef<Set<string>>(new Set());
   const [formOpen, setFormOpen] = useState(false);
   const [name, setName] = useState("");
   const [kind, setKind] = useState<ResourceKind>("person");
   const [email, setEmail] = useState("");
 
   const groupedResources = useMemo(() => {
+    // What the task has, and every resource that was selected while this
+    // section was open: a toggle never makes a row vanish (deselecting keeps
+    // it, so it can be selected again).
+    for (const id of selectedResourceIds) everSelected.current.add(id);
     const pickable = getPickableResources(
       resources,
       new Set(projectUserIds),
-      new Set(assignedResourceIds ?? []),
+      new Set([...(assignedResourceIds ?? []), ...everSelected.current]),
     );
     return RESOURCE_KINDS.map((resourceKind) => ({
       kind: resourceKind,
       items: pickable.filter((resource) => resource.kind === resourceKind),
     })).filter((group) => group.items.length > 0);
-  }, [resources, projectUserIds, assignedResourceIds]);
+  }, [resources, projectUserIds, assignedResourceIds, selectedResourceIds]);
 
   const resetForm = () => {
     setName("");

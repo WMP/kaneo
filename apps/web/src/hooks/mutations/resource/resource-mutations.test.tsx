@@ -46,7 +46,9 @@ describe("resource mutations", () => {
       movedTaskCount: 2,
       movedProjectIds: ["p1", "p2"],
     });
-    const { wrapper, keys, predicateHits, spy } = setup();
+    const { client, wrapper, keys, predicateHits, spy } = setup();
+    client.setQueryData(["task", "t1"], { projectId: "p1" });
+    client.setQueryData(["task", "t9"], { projectId: "other" });
     const { result } = renderHook(() => useLinkResource(), { wrapper });
 
     result.current.mutate({ id: "r1", userId: "u1" });
@@ -62,20 +64,24 @@ describe("resource mutations", () => {
         ["workload-tasks", "ws-1"],
         ["tasks", "p1"],
         ["tasks", "p2"],
-        ["task-relations", "project", "p1"],
-        ["task-relations", "project", "p2"],
+        ["task-relations"],
       ]),
     );
-    // Nothing global, and no notifications: the person is not notified.
+    // No global task lists, and no notifications: the person is not notified.
     for (const key of keys()) {
-      expect(key.length).toBeGreaterThan(1);
       expect(key[0]).not.toBe("notifications");
+      if (key[0] === "tasks") expect(key.length).toBe(2);
     }
     expect(spy).not.toHaveBeenCalledWith({ queryKey: ["tasks"] });
     // Task details of the moved projects (matched by their data) and the
     // workspace's search results are refreshed, other workspaces' are not.
     expect(predicateHits(["task", "t1"], { projectId: "p1" })).toBe(true);
     expect(predicateHits(["task", "t9"], { projectId: "other" })).toBe(false);
+    // Activity feeds: of a task in a moved project, or of a task whose project
+    // is not known; not of a task known to be elsewhere.
+    expect(predicateHits(["activities", "t1"])).toBe(true);
+    expect(predicateHits(["activities", "t-unknown"])).toBe(true);
+    expect(predicateHits(["activities", "t9"])).toBe(false);
     expect(predicateHits(["search", { workspaceId: "ws-1" }])).toBe(true);
     expect(predicateHits(["search", { workspaceId: "ws-2" }])).toBe(false);
   });

@@ -122,6 +122,25 @@ describe("AssigneeResourceSection", () => {
     expect(screen.getByText("Linked Lena")).toBeInTheDocument();
   });
 
+  it("keeps a linked resource in the list after it was deselected", () => {
+    // Where its account is a project member the resource is normally left out;
+    // one that was selected while the popover was open must not vanish when it
+    // is toggled off, so it can be selected again.
+    const view = renderSection({ selectedResourceIds: ["r2"] });
+    expect(screen.getByText("Linked Lena")).toBeInTheDocument();
+    view.rerender(
+      <AssigneeResourceSection
+        workspaceId="ws-1"
+        resources={resources}
+        projectUserIds={["u2"]}
+        selectedResourceIds={[]}
+        onToggleResource={vi.fn()}
+        canCreateResource={false}
+      />,
+    );
+    expect(screen.getByText("Linked Lena")).toBeInTheDocument();
+  });
+
   it("keeps a linked resource that is on the task", () => {
     renderSection({ assignedResourceIds: ["r2"], selectedResourceIds: [] });
     expect(screen.getByText("Linked Lena")).toBeInTheDocument();
