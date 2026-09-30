@@ -19,6 +19,9 @@ the previous image. It runs the MinIO binary directly with temporary test data.
   image digest, seed it through public APIs, then replace it with the candidate
   image on the same database. Verify account credentials, owner membership,
   project/task fields, comments, private image bytes and subsequent writes.
+  The release comes from `KANEO_UPGRADE_SOURCE_REPO` (default: the current
+  repository); this fork's CI sets it to `usekaneo/kaneo` because the fork
+  publishes no releases.
 - `require-ci.mjs`: release publication requires the latest CI run for the exact
   main SHA to succeed. It accepts push and manual CI runs, waits up to 30 minutes,
   and rejects failed, cancelled and skipped runs. If no push run exists (for
@@ -46,7 +49,7 @@ node scripts/ci/browser.mjs http://127.0.0.1:55173
 node scripts/ci/realtime.mjs http://127.0.0.1:55173
 KANEO_CI_REDIS_URL=redis://redis:6379 docker compose --env-file /dev/null -p kaneo-ci -f scripts/ci/compose.yml --profile realtime up -d --wait app second redis
 node scripts/ci/realtime.mjs http://127.0.0.1:55173 http://127.0.0.1:55174
-GITHUB_REPOSITORY=usekaneo/kaneo GITHUB_REPOSITORY_OWNER=usekaneo bash scripts/ci/upgrade.sh
+KANEO_UPGRADE_SOURCE_REPO=usekaneo/kaneo bash scripts/ci/upgrade.sh
 ```
 
 Install Chromium once using
