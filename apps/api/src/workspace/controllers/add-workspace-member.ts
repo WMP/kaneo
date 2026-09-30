@@ -20,7 +20,7 @@ async function addWorkspaceMember({
   userId: string;
   role: string;
 }) {
-  const person = await assertCanAddUser({
+  const { locale, ...person } = await assertCanAddUser({
     workspaceId,
     actorUserId,
     userId,
@@ -31,6 +31,7 @@ async function addWorkspaceMember({
     workspaceId,
     actorUserId,
     userId,
+    recipient: { email: person.email, locale },
     role,
   });
   return { ...person, role, ...membership, ...delivery };

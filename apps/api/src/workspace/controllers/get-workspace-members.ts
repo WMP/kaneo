@@ -170,13 +170,10 @@ async function getWorkspaceMembers(
   // (or has full access) and asked for it. The projects are still limited to
   // the ones the caller can open, so the list names no project the caller
   // could not see in the sidebar.
-  const present = async (listed: typeof members) =>
-    withProjects && managesMembers
-      ? withMemberProjects(workspaceId, listed, viewerProjectIds)
-      : listed.map(withoutInstanceRole);
-
   if (managesMembers) {
-    return present(members);
+    return withProjects
+      ? withMemberProjects(workspaceId, members, viewerProjectIds)
+      : members.map(withoutInstanceRole);
   }
 
   const visibleIds = new Set<string>([viewerUserId]);
@@ -211,7 +208,9 @@ async function getWorkspaceMembers(
 
   // Only workspace members are listed, so a project row left behind by someone
   // who is no longer a member is dropped here.
-  return present(members.filter((member) => visibleIds.has(member.id)));
+  return members
+    .filter((member) => visibleIds.has(member.id))
+    .map(withoutInstanceRole);
 }
 
 export default getWorkspaceMembers;

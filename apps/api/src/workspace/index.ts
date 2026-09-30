@@ -6,7 +6,6 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
-import { requireInvitationRateLimit } from "../project-invitation/rate-limit";
 import { codedErrorResponse } from "../utils/coded-error";
 import { accessibleProjectIds } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
@@ -22,7 +21,11 @@ import searchUserDirectoryCtrl, {
   assertUserDirectoryEnabled,
 } from "./controllers/search-user-directory";
 import updateWorkspaceActivityRetention from "./controllers/update-workspace-activity-retention";
-import { requireUserDirectoryRateLimit } from "./rate-limit";
+import { assertActorNotGuest } from "./direct-add";
+import {
+  requireAddRateLimit,
+  requireUserDirectoryRateLimit,
+} from "./rate-limit";
 import {
   addedWorkspaceMemberSchema,
   assignableRolesSchema,
@@ -80,7 +83,7 @@ const getWorkspaceMembersRoute = createRoute({
 });
 
 const userDirectoryErrorCodes =
-  "403 USER_DIRECTORY_DISABLED, 400 QUERY_TOO_SHORT, 429 RATE_LIMITED";
+  "403 USER_DIRECTORY_DISABLED, 403 GUEST_NOT_ALLOWED, 400 QUERY_TOO_SHORT, 429 RATE_LIMITED";
 
 const searchUserDirectoryRoute = createRoute({
   method: "get",
@@ -88,12 +91,16 @@ const searchUserDirectoryRoute = createRoute({
   path: "/{workspaceId}/user-directory",
   tags: ["Workspaces"],
   summary: "Search the accounts of the instance",
-  description: `Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. Errors carry a \`code\`: ${userDirectoryErrorCodes}. The shared permission check answers plain text 403.`,
+  description: `Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. A guest (anonymous) account is refused on every instance. Errors carry a \`code\`: ${userDirectoryErrorCodes}. The shared permission check answers plain text 403.`,
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ member: ["create"] }),
     async (_c, next) => {
       assertUserDirectoryEnabled();
+      return next();
+    },
+    async (c, next) => {
+      await assertActorNotGuest(c.get("userId"));
       return next();
     },
     requireUserDirectoryRateLimit,
@@ -105,7 +112,7 @@ const searchUserDirectoryRoute = createRoute({
       "Query shorter than 2 characters (QUERY_TOO_SHORT)",
     ),
     403: codedErrorResponse(
-      "No access to the workspace, missing member:create permission, or the directory is disabled (USER_DIRECTORY_DISABLED)",
+      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), or the directory is disabled (USER_DIRECTORY_DISABLED)",
     ),
     429: codedErrorResponse("Too many searches (RATE_LIMITED)"),
   },
@@ -118,11 +125,11 @@ const addWorkspaceMemberRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Add an existing account to the workspace",
   description:
-    "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). On Kaneo Cloud the gates of invitations apply (guest callers, disposable addresses, 5 per minute per user). Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 400 USER_CANNOT_BE_ADDED (anonymous or banned account), 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 404 USER_NOT_FOUND, 409 ALREADY_WORKSPACE_MEMBER, and on cloud 403 GUEST_CANNOT_INVITE, 400 DISPOSABLE_EMAIL_NOT_ALLOWED, 429 RATE_LIMITED. The shared permission check answers plain text 403.",
+    "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). A guest (anonymous) caller is refused on every instance, and every caller may add at most 30 people per 10 minutes (shared with the project route when it adds to the workspace). The workspace member limit (100 by default, also applied when an invitation is accepted) answers 403 WORKSPACE_MEMBER_LIMIT_REACHED. On Kaneo Cloud the gates of invitations apply too (disposable addresses, 5 per minute per user). Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 400 USER_CANNOT_BE_ADDED (anonymous or banned account), 403 GUEST_NOT_ALLOWED, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 WORKSPACE_MEMBER_LIMIT_REACHED, 404 USER_NOT_FOUND, 409 ALREADY_WORKSPACE_MEMBER, 400 DISPOSABLE_EMAIL_NOT_ALLOWED (cloud), 429 RATE_LIMITED. The shared permission check answers plain text 403.",
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ member: ["create"] }),
-    requireInvitationRateLimit,
+    requireAddRateLimit,
   ] as const,
   request: {
     params: workspaceIdParam,
@@ -137,11 +144,13 @@ const addWorkspaceMemberRoute = createRoute({
       "Invalid body, owner role, unknown role, or an account that cannot be added",
     ),
     403: codedErrorResponse(
-      "No access to the workspace, missing member:create permission, or the role exceeds the caller's permissions",
+      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), the role exceeds the caller's permissions, or the member limit (WORKSPACE_MEMBER_LIMIT_REACHED)",
     ),
     404: codedErrorResponse("The account does not exist"),
     409: codedErrorResponse("The person already is a member of the workspace"),
-    429: codedErrorResponse("Too many adds from this user (cloud only)"),
+    429: codedErrorResponse(
+      "Too many adds from this user (30 per 10 minutes; on cloud also the invitation limit)",
+    ),
   },
 });
 

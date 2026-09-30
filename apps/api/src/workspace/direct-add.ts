@@ -21,6 +21,7 @@ import {
 import { isOwnerRole } from "../utils/project-access";
 import { splitRoles } from "../utils/role-delegation";
 import { resolveRoleStatements } from "../utils/role-statements";
+import { closeUserWorkspaceConnections } from "../ws";
 
 // Adding an existing account to a workspace without an invitation. Used by
 // `POST /api/workspace/{id}/members` and by the project member route when the
@@ -29,6 +30,8 @@ import { resolveRoleStatements } from "../utils/role-statements";
 // scope allows it); everything that depends on the role and the person is here.
 
 export const DIRECT_ADD_ERROR_CODES = {
+  guest: "GUEST_NOT_ALLOWED",
+  memberLimit: "WORKSPACE_MEMBER_LIMIT_REACHED",
   ownerRole: "OWNER_ROLE_NOT_ALLOWED",
   unknownRole: "UNKNOWN_ROLE",
   userNotFound: "USER_NOT_FOUND",
@@ -65,12 +68,34 @@ export async function assertAddableWorkspaceRole(
   await assertWorkspaceRoleWithinCaller({ workspaceId }, actorUserId, role);
 }
 
+// A guest (anonymous) account never searches the user directory and never adds
+// anybody, on any instance: it is an ephemeral account nobody vouched for.
+// Decided on the stored account, not on a session snapshot.
+export async function assertActorNotGuest(actorUserId: string): Promise<void> {
+  const [actor] = await db
+    .select({ isAnonymous: schema.userTable.isAnonymous })
+    .from(schema.userTable)
+    .where(eq(schema.userTable.id, actorUserId))
+    .limit(1);
+  if (actor?.isAnonymous) {
+    throw codedError(
+      403,
+      DIRECT_ADD_ERROR_CODES.guest,
+      "Guest accounts cannot search accounts or add people",
+    );
+  }
+}
+
 export type AddedPerson = {
   id: string;
   name: string;
   email: string;
   image: string | null;
 };
+
+// What the routes need of the person: the public fields for the response and
+// the locale for the email (not part of any response).
+export type AddablePerson = AddedPerson & { locale: string | null };
 
 // An account that may be added: it exists, is a real account (not an anonymous
 // guest, and not banned right now), and is not in the workspace yet. On cloud
@@ -86,7 +111,8 @@ export async function assertCanAddUser({
   actorUserId: string;
   userId: string;
   role: string;
-}): Promise<AddedPerson> {
+}): Promise<AddablePerson> {
+  await assertActorNotGuest(actorUserId);
   await assertAddableWorkspaceRole(workspaceId, actorUserId, role);
 
   const [person] = await db
@@ -95,6 +121,7 @@ export async function assertCanAddUser({
       name: schema.userTable.name,
       email: schema.userTable.email,
       image: schema.userTable.image,
+      locale: schema.userTable.locale,
       isAnonymous: schema.userTable.isAnonymous,
       banned: schema.userTable.banned,
       banExpires: schema.userTable.banExpires,
@@ -139,6 +166,7 @@ export async function assertCanAddUser({
     name: person.name,
     email: person.email,
     image: person.image,
+    locale: person.locale,
   };
 }
 
@@ -162,7 +190,8 @@ export type AddedMembership = {
 // with `assertCanAddUser`. Project memberships and resource links an earlier
 // membership of the same person left behind are dropped first, exactly like a
 // fresh join through an invitation (`beforeAcceptInvitation`), so nothing is
-// revived.
+// revived. Those rows belong to somebody who is not a member (they grant
+// nothing), so dropping them before the add takes nothing away from anyone.
 //
 // Known limitation, shared with invitation acceptance: Better Auth's check and
 // insert are not one atomic step and nothing makes (workspace, member) unique,
@@ -196,6 +225,15 @@ export async function addUserToWorkspace({
       if (body?.code === "USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION") {
         throw alreadyMemberError();
       }
+      // Better Auth's `membershipLimit` (100 members by default, which
+      // accepting an invitation is subject to as well).
+      if (body?.code === "ORGANIZATION_MEMBERSHIP_LIMIT_REACHED") {
+        throw codedError(
+          403,
+          DIRECT_ADD_ERROR_CODES.memberLimit,
+          "The workspace has reached its member limit",
+        );
+      }
       throw codedError(
         typeof error.statusCode === "number" ? (error.statusCode as 400) : 400,
         body?.code ?? "MEMBER_NOT_ADDED",
@@ -227,6 +265,14 @@ export async function undoAddUserToWorkspace({
     void syncWorkspaceSeats(workspaceId).catch((error) => {
       console.error("Seat sync after undoing a member add failed:", error);
     });
+    // Like every other removal: sockets the person opened in the short window
+    // close at once instead of at the next revalidation.
+    await closeUserWorkspaceConnections(userId, workspaceId).catch((error) => {
+      console.error(
+        "Closing the sockets after undoing a member add failed:",
+        error,
+      );
+    });
   } catch (error) {
     console.error(
       `Undoing the add of ${userId} to workspace ${workspaceId} failed; the person is a workspace member without the project:`,
@@ -237,50 +283,37 @@ export async function undoAddUserToWorkspace({
 
 // The person learns about it: an in-app notification and, where SMTP is
 // configured, an email. Runs after the membership is committed and never fails
-// the request; the outcome of the email is reported to the caller.
+// the request; the outcome of the email is reported to the caller. `recipient`
+// is the person `assertCanAddUser` already loaded.
 export async function notifyMemberAdded({
   workspaceId,
   actorUserId,
   userId,
+  recipient,
   role,
 }: {
   workspaceId: string;
   actorUserId: string;
   userId: string;
+  recipient: { email: string; locale: string | null };
   role: string;
 }): Promise<EmailDelivery> {
-  let context: {
-    inviterName: string;
-    workspaceName: string;
-    email: string;
-    locale: string | null;
-  } | null = null;
+  let names: { inviterName: string; workspaceName: string } | null = null;
   try {
-    const [actor] = await db
-      .select({ name: schema.userTable.name })
-      .from(schema.userTable)
-      .where(eq(schema.userTable.id, actorUserId))
-      .limit(1);
-    const [workspace] = await db
-      .select({ name: schema.workspaceTable.name })
-      .from(schema.workspaceTable)
-      .where(eq(schema.workspaceTable.id, workspaceId))
-      .limit(1);
-    const [person] = await db
-      .select({
-        email: schema.userTable.email,
-        locale: schema.userTable.locale,
-      })
-      .from(schema.userTable)
-      .where(eq(schema.userTable.id, userId))
-      .limit(1);
-    if (actor && workspace && person) {
-      context = {
-        inviterName: actor.name,
-        workspaceName: workspace.name,
-        email: person.email,
-        locale: person.locale,
-      };
+    const [[actor], [workspace]] = await Promise.all([
+      db
+        .select({ name: schema.userTable.name })
+        .from(schema.userTable)
+        .where(eq(schema.userTable.id, actorUserId))
+        .limit(1),
+      db
+        .select({ name: schema.workspaceTable.name })
+        .from(schema.workspaceTable)
+        .where(eq(schema.workspaceTable.id, workspaceId))
+        .limit(1),
+    ]);
+    if (actor && workspace) {
+      names = { inviterName: actor.name, workspaceName: workspace.name };
     }
   } catch (error) {
     console.error(
@@ -288,8 +321,9 @@ export async function notifyMemberAdded({
       error,
     );
   }
-  if (!context) return EMAIL_NOT_ATTEMPTED;
-  const { inviterName, workspaceName, email, locale } = context;
+  if (!names) return EMAIL_NOT_ATTEMPTED;
+  const { inviterName, workspaceName } = names;
+  const { email, locale } = recipient;
 
   try {
     await createNotification({

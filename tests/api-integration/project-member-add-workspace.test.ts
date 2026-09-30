@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import * as projectAccess from "../../apps/api/src/utils/project-access";
+import * as ws from "../../apps/api/src/ws";
 import { mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import {
@@ -337,6 +338,54 @@ describe("adding a person who is not a workspace member to a project", () => {
     // No half state: not in the workspace, not in the project, nobody told.
     await expectNothingWritten(w);
     expect(sent).not.toHaveBeenCalled();
+  });
+
+  it("closes the person's sockets when it undoes the workspace add", async () => {
+    const w = await buildWorld();
+    const closeSockets = vi.spyOn(ws, "closeUserWorkspaceConnections");
+    vi.spyOn(projectAccess, "isFullAccess").mockRejectedValueOnce(
+      new Error("boom"),
+    );
+    as(w.owner.user);
+    const response = await addToProject(w.project.id, {
+      userId: w.newcomer.id,
+      role: "member",
+      workspaceRole: "viewer",
+    });
+    expect(response.status).toBe(500);
+    expect(closeSockets).toHaveBeenCalledWith(w.newcomer.id, w.workspaceId);
+  });
+
+  it("refuses a guest caller on every instance, but not the plain add of a workspace member", async () => {
+    const w = await buildWorld();
+    const guest = await addWorkspaceMember(w.workspaceId, "adder");
+    await addProjectMember(w.project.id, guest.id, "adder");
+    await db
+      .update(schema.userTable)
+      .set({ isAnonymous: true })
+      .where(eq(schema.userTable.id, guest.id));
+    as({ ...guest, isAnonymous: true });
+
+    await expectCode(
+      await addToProject(w.project.id, {
+        userId: w.newcomer.id,
+        role: "reader",
+        workspaceRole: "reader",
+      }),
+      403,
+      "GUEST_NOT_ALLOWED",
+    );
+    await expectNothingWritten(w);
+
+    // Adding an existing workspace member to the project is unchanged.
+    expect(
+      (
+        await addToProject(w.project.id, {
+          userId: w.plainMember.id,
+          role: "reader",
+        })
+      ).status,
+    ).toBe(200);
   });
 
   it("refuses a workspaceRole for somebody who already is a workspace member", async () => {

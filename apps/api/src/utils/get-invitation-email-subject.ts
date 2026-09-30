@@ -1,3 +1,4 @@
+import { fillEmailCopy } from "./email-copy";
 import { getWorkspaceInvitationEmailCopy } from "./get-workspace-invitation-email-copy";
 
 export function getInvitationEmailSubject(
@@ -5,10 +6,8 @@ export function getInvitationEmailSubject(
   inviterName: string,
   workspaceName: string,
 ) {
-  const values: Record<string, string> = { inviterName, workspaceName };
-
-  return getWorkspaceInvitationEmailCopy(locale).subject.replace(
-    /\{\{(\w+)\}\}/g,
-    (_match, key: string) => values[key] ?? "",
-  );
+  return fillEmailCopy(getWorkspaceInvitationEmailCopy(locale).subject, {
+    inviterName,
+    workspaceName,
+  });
 }

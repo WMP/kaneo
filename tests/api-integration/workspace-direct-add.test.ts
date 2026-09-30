@@ -552,25 +552,212 @@ describe("who can be added", () => {
         .status,
     ).toBe(200);
   });
+});
 
-  it("keeps the usual cloud gates: a guest caller may not add anybody", async () => {
-    const w = await buildWorld();
-    const guestAdmin = await addWorkspaceMember(w.workspaceId, "admin");
+describe("guest callers", () => {
+  async function guestAdmin(workspaceId: string) {
+    const guest = await addWorkspaceMember(workspaceId, "admin");
     await db
       .update(schema.userTable)
       .set({ isAnonymous: true })
-      .where(eq(schema.userTable.id, guestAdmin.id));
+      .where(eq(schema.userTable.id, guest.id));
+    return { ...guest, isAnonymous: true };
+  }
+
+  it("may not add anybody on any instance, although their role would allow it", async () => {
+    const w = await buildWorld();
+    const guest = await guestAdmin(w.workspaceId);
+    as(guest);
+    await expectCode(
+      await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
+      403,
+      "GUEST_NOT_ALLOWED",
+    );
+    expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(schema.notificationTable)
+        .where(eq(schema.notificationTable.userId, w.newcomer.id)),
+    ).toHaveLength(0);
+  });
+
+  it("is refused before anything is written on cloud too", async () => {
+    const w = await buildWorld();
+    const guest = await guestAdmin(w.workspaceId);
     for (const [key, value] of Object.entries(CLOUD_ENV)) {
       savedEnv[key] = process.env[key];
       process.env[key] = value;
     }
-    as({ ...guestAdmin, isAnonymous: true });
+    as(guest);
     await expectCode(
       await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
       403,
-      "GUEST_CANNOT_INVITE",
+      "GUEST_NOT_ALLOWED",
     );
     expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+  });
+});
+
+describe("limits on adding people", () => {
+  it("allows 30 adds per 10 minutes per user on every instance, then answers 429", async () => {
+    const w = await buildWorld();
+    as(w.owner.user);
+    for (let i = 0; i < 30; i += 1) {
+      const person = await createAccount(`Person ${i}`);
+      const response = await add(w.workspaceId, {
+        userId: person.id,
+        role: "viewer",
+      });
+      expect(response.status, `add ${i + 1}`).toBe(200);
+    }
+    const response = await add(w.workspaceId, {
+      userId: w.newcomer.id,
+      role: "viewer",
+    });
+    await expectCode(response, 429, "RATE_LIMITED");
+    expect(Number(response.headers.get("Retry-After"))).toBeGreaterThan(0);
+    expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+
+    // Another user has their own budget.
+    as(w.adder);
+    expect(
+      (await add(w.workspaceId, { userId: w.newcomer.id, role: "reader" }))
+        .status,
+    ).toBe(200);
+  });
+
+  it("shares the budget with the project route's add to the workspace", async () => {
+    const w = await buildWorld();
+    as(w.owner.user);
+    for (let i = 0; i < 29; i += 1) {
+      const person = await createAccount(`Person ${i}`);
+      expect(
+        (await add(w.workspaceId, { userId: person.id, role: "viewer" }))
+          .status,
+      ).toBe(200);
+    }
+    const viaProject = (userId: string) =>
+      app.request(`/api/project/${w.project.id}/members`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          role: "viewer",
+          workspaceRole: "viewer",
+        }),
+      });
+    // The 30th add of the budget goes through the project route ...
+    expect((await viaProject(w.newcomer.id)).status).toBe(200);
+    // ... so the 31st, through either route, is refused.
+    const other = await createAccount("Other");
+    await expectCode(await viaProject(other.id), 429, "RATE_LIMITED");
+    await expectCode(
+      await add(w.workspaceId, { userId: other.id, role: "viewer" }),
+      429,
+      "RATE_LIMITED",
+    );
+    expect(await membershipRows(w.workspaceId, other.id)).toHaveLength(0);
+  });
+
+  it("applies the cloud invitation limit (5 per minute) to the project route's workspace add too", async () => {
+    const w = await buildWorld();
+    for (const [key, value] of Object.entries(CLOUD_ENV)) {
+      savedEnv[key] = process.env[key];
+      process.env[key] = value;
+    }
+    as(w.owner.user);
+    const viaProject = (userId: string) =>
+      app.request(`/api/project/${w.project.id}/members`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          role: "viewer",
+          workspaceRole: "viewer",
+        }),
+      });
+    for (let i = 0; i < 5; i += 1) {
+      const person = await createAccount(`Person ${i}`);
+      expect((await viaProject(person.id)).status, `add ${i + 1}`).toBe(200);
+    }
+    const sixth = await createAccount("Sixth");
+    await expectCode(await viaProject(sixth.id), 429, "RATE_LIMITED");
+    // The workspace route draws on the same invitation budget.
+    await expectCode(
+      await add(w.workspaceId, { userId: sixth.id, role: "viewer" }),
+      429,
+      "RATE_LIMITED",
+    );
+    expect(await membershipRows(w.workspaceId, sixth.id)).toHaveLength(0);
+  });
+});
+
+describe("the workspace member limit", () => {
+  async function fillWorkspace(workspaceId: string) {
+    const existing = (
+      await db
+        .select()
+        .from(schema.workspaceUserTable)
+        .where(eq(schema.workspaceUserTable.workspaceId, workspaceId))
+    ).length;
+    const users = Array.from({ length: 100 - existing }, () => ({
+      id: `user-${randomUUID()}`,
+      name: "Filler",
+      emailVerified: true,
+    }));
+    await db
+      .insert(schema.userTable)
+      .values(users.map((u) => ({ ...u, email: `${u.id}@example.com` })));
+    await db.insert(schema.workspaceUserTable).values(
+      users.map((u) => ({
+        workspaceId,
+        userId: u.id,
+        role: "viewer",
+        joinedAt: new Date(),
+      })),
+    );
+  }
+
+  it("answers a documented coded 403 and adds nobody", async () => {
+    const w = await buildWorld();
+    await fillWorkspace(w.workspaceId);
+    as(w.owner.user);
+    await expectCode(
+      await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }),
+      403,
+      "WORKSPACE_MEMBER_LIMIT_REACHED",
+    );
+    expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(schema.notificationTable)
+        .where(eq(schema.notificationTable.userId, w.newcomer.id)),
+    ).toHaveLength(0);
+  });
+
+  it("answers the same through the project route and leaves no project row", async () => {
+    const w = await buildWorld();
+    await fillWorkspace(w.workspaceId);
+    as(w.owner.user);
+    const response = await app.request(`/api/project/${w.project.id}/members`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        userId: w.newcomer.id,
+        role: "viewer",
+        workspaceRole: "viewer",
+      }),
+    });
+    await expectCode(response, 403, "WORKSPACE_MEMBER_LIMIT_REACHED");
+    expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(schema.projectMemberTable)
+        .where(eq(schema.projectMemberTable.userId, w.newcomer.id)),
+    ).toHaveLength(0);
   });
 });
 

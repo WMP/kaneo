@@ -13,6 +13,7 @@ import {
   notifyMemberAdded,
   undoAddUserToWorkspace,
 } from "../../workspace/direct-add";
+import { consumeAddRateLimits } from "../../workspace/rate-limit";
 import { assertAssignableProjectRole, memberError } from "../delegation";
 
 const NO_WORKSPACE_ADD = {
@@ -137,7 +138,10 @@ async function addNewWorkspaceMember({
 
   await assertAssignableProjectRole(access, role);
   if (!workspaceMayAdd) throw memberError(403, "insufficient");
-  const person = await assertCanAddUser({
+  // The same limits as the workspace route: adds per user, and on cloud the
+  // invitation limit.
+  consumeAddRateLimits(actorUserId);
+  const { locale, ...person } = await assertCanAddUser({
     workspaceId,
     actorUserId,
     userId,
@@ -180,6 +184,7 @@ async function addNewWorkspaceMember({
     workspaceId,
     actorUserId,
     userId,
+    recipient: { email: person.email, locale },
     role: workspaceRole,
   });
 

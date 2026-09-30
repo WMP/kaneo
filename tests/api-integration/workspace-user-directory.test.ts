@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { User } from "better-auth/types";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { auth } from "../../apps/api/src/auth";
 import db, { schema } from "../../apps/api/src/database";
@@ -150,6 +151,22 @@ describe("user directory: who may search", () => {
 
     vi.restoreAllMocks();
     expect((await search(w.workspaceId, "zofia")).status).toBe(401);
+  });
+
+  it("refuses a guest account on every instance, whatever its role", async () => {
+    const w = await buildWorld();
+    await createAccount("Zofia Nowak");
+    const guest = await addWorkspaceMember(w.workspaceId, "adder");
+    await db
+      .update(schema.userTable)
+      .set({ isAnonymous: true })
+      .where(eq(schema.userTable.id, guest.id));
+    as({ ...guest, isAnonymous: true });
+    const response = await search(w.workspaceId, "zofia");
+    expect(response.status).toBe(403);
+    expect(((await response.json()) as { code: string }).code).toBe(
+      "GUEST_NOT_ALLOWED",
+    );
   });
 
   it("intersects the scope of an API key", async () => {

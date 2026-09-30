@@ -17,9 +17,9 @@ function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
-// The feature flag, as route middleware or a plain call: the directory reveals
-// that an account exists, so an instance that switched it off answers 403 to
-// everybody.
+// The feature flag, used by the route before anything else: the directory
+// reveals that an account exists, so an instance that switched it off answers
+// 403 to everybody.
 export function assertUserDirectoryEnabled(): void {
   if (!isUserDirectoryEnabled()) {
     throw codedError(
@@ -38,7 +38,6 @@ export function assertUserDirectoryEnabled(): void {
 // caller's right to use it (`member:create` in the workspace role) is decided by
 // the route.
 async function searchUserDirectory(workspaceId: string, rawQuery: string) {
-  assertUserDirectoryEnabled();
   const query = rawQuery.trim();
   if (query.length < USER_DIRECTORY_MIN_QUERY_LENGTH) {
     throw codedError(
