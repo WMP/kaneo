@@ -1,0 +1,17 @@
+{
+  "name": "kaneo-demo",
+  "private": true,
+  "type": "module",
+  "description": "Fictional demo data, README screenshots and public-host rehearsal for Kaneo",
+  "scripts": {
+    "seed": "node seed.mjs",
+    "capture": "node capture.mjs",
+    "public-host": "node public-host.mjs",
+    "test": "node --test ../ci/demo-data.test.mjs",
+    "setup": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "1.63.0",
+    "sharp": "0.35.5"
+  }
+}
