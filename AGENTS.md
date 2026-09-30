@@ -26,7 +26,7 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 - The API enforces authentication, workspace permissions and data scope; a hidden UI control is not authorization. Never expose credentials or private workspace data in responses, events, WebSockets, logs or MCP.
 - Follow a behavior change through its relevant surfaces: API schema/controller, permissions, typed client, UI/cache, events/realtime, MCP/integrations, database migration, documentation and translations. Check reverse actions and deletion where they apply; do not expand scope just to touch every surface.
 - Use `@hono/zod-openapi` and the `apiRouter()` pattern for public routes, `@kaneo/permissions` for workspace permissions, `@kaneo/libs` for typed web requests, and `publishEvent()` for mutations that drive activity or realtime. Details and exceptions live in the linked contracts.
-- Add user-facing text through static i18n keys, starting in `i18n/en-US.json`. Preserve accessibility and verify the relevant UI states.
+- Add user-facing text through static i18n keys in `i18n/en-US.json`, and translate each new or changed value into every locale in `i18n/` in the same change. An English placeholder in another locale is not a translation. Preserve accessibility and verify the relevant UI states.
 - Existing installations and data matter. Generate a new Drizzle migration for schema changes, review its SQL and OpenAPI output where applicable, and test the upgrade path.
 - When a user reports a recurring agent mistake, fix the behavior and add a meaningful regression check; document the rule in the appropriate contract. Prefer a type, constraint, lint rule or test to another long instruction.
 

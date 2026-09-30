@@ -9,8 +9,9 @@ export const i18nDir = path.join(repoRoot, "i18n");
 export const defaultLocale = "en-US";
 export const schemaPath = path.join(i18nDir, "schema.json");
 
-export async function getLocaleFiles() {
-  const entries = await fs.readdir(i18nDir, { withFileTypes: true });
+// `dir` defaults to the repository's i18n/ folder; tests pass a fixture folder.
+export async function getLocaleFiles(dir = i18nDir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
 
   return entries
     .filter(
@@ -21,7 +22,7 @@ export async function getLocaleFiles() {
     )
     .map((entry) => ({
       locale: entry.name.replace(/\.json$/u, ""),
-      path: path.join(i18nDir, entry.name),
+      path: path.join(dir, entry.name),
     }))
     .sort((a, b) => a.locale.localeCompare(b.locale));
 }
@@ -34,8 +35,8 @@ export async function writeJson(filePath, value) {
   await fs.writeFile(filePath, `${JSON.stringify(value, null, "\t")}\n`);
 }
 
-export async function loadLocales() {
-  const localeFiles = await getLocaleFiles();
+export async function loadLocales(dir = i18nDir) {
+  const localeFiles = await getLocaleFiles(dir);
   const locales = await Promise.all(
     localeFiles.map(async ({ locale, path: filePath }) => ({
       locale,
