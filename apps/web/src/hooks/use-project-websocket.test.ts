@@ -43,6 +43,46 @@ it("refreshes resource links when another client updates a task", () => {
   }
 });
 
+it("refreshes the Jira state and the activity of a task another client changed", () => {
+  const sockets: FakeWebSocket[] = [];
+  class FakeWebSocket {
+    onmessage: ((event: { data: string }) => void) | null = null;
+    close = vi.fn();
+    constructor() {
+      sockets.push(this);
+    }
+  }
+  vi.stubGlobal("WebSocket", FakeWebSocket);
+  invalidateQueries.mockClear();
+  try {
+    renderHook(() => useProjectWebSocket("project-1"));
+    sockets[0].onmessage?.({
+      data: JSON.stringify({
+        type: "TASK_UPDATED",
+        projectId: "project-1",
+        taskId: "task-7",
+      }),
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["jira-task", "task-7"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["activities", "task-7"],
+    });
+
+    invalidateQueries.mockClear();
+    sockets[0].onmessage?.({
+      data: JSON.stringify({ type: "TASK_CREATED", projectId: "project-1" }),
+    });
+    expect(invalidateQueries).not.toHaveBeenCalledWith({
+      queryKey: ["jira-task", undefined],
+    });
+  } finally {
+    cleanup();
+    vi.unstubAllGlobals();
+  }
+});
+
 describe("getWsUrl", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_API_URL", "http://localhost:1337");

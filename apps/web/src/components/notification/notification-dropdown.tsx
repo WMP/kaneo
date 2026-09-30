@@ -90,6 +90,11 @@ export function getNotificationTitle(
           ...eventData,
           defaultValue: notification.title ?? notification.type,
         });
+      case "jira_status_proposal":
+        return t("notifications:events.jira_status_proposal.title", {
+          ...eventData,
+          defaultValue: notification.title ?? notification.type,
+        });
       case "task_assignee_changed":
         return t("notifications:events.task_assignee_changed.title", {
           ...eventData,
@@ -150,6 +155,12 @@ export function getNotificationContent(
           ...eventData,
           oldStatus: getStatusLabel(String(eventData.oldStatus ?? "")),
           newStatus: getStatusLabel(String(eventData.newStatus ?? "")),
+          defaultValue: notification.content ?? "",
+        });
+      case "jira_status_proposal":
+        // The statuses are Jira's own names, not Kaneo columns.
+        return t("notifications:events.jira_status_proposal.content", {
+          ...eventData,
           defaultValue: notification.content ?? "",
         });
       case "task_assignee_changed":

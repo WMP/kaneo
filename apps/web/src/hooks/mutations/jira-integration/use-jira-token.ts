@@ -19,6 +19,9 @@ function useInvalidateToken() {
       queryClient.invalidateQueries({
         queryKey: jiraQueryKeys.meta(workspaceId),
       }),
+      // A draft says whether the caller has a token, and a refresh needs one.
+      queryClient.invalidateQueries({ queryKey: jiraQueryKeys.drafts }),
+      queryClient.invalidateQueries({ queryKey: jiraQueryKeys.tasks }),
     ]);
 }
 

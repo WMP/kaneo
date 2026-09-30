@@ -21,10 +21,16 @@ export function usePutJiraConnection() {
     // Changing the base URL or the deployment removes every stored user token
     // on the server, so the token status and metadata are stale as well.
     onSuccess: (_, { workspaceId }) =>
-      queryClient.invalidateQueries({
-        queryKey: jiraQueryKeys.all,
-        predicate: (query) => query.queryKey.includes(workspaceId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: jiraQueryKeys.all,
+          predicate: (query) => query.queryKey.includes(workspaceId),
+        }),
+        // Task-level keys carry no workspace id: a turned-off or re-pointed
+        // connection changes every link and draft read from it.
+        queryClient.invalidateQueries({ queryKey: jiraQueryKeys.tasks }),
+        queryClient.invalidateQueries({ queryKey: jiraQueryKeys.drafts }),
+      ]),
   });
 }
 
@@ -48,6 +54,10 @@ export function useDeleteJiraConnection() {
   return useMutation({
     mutationFn: (workspaceId: string) => deleteJiraConnection(workspaceId),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: jiraQueryKeys.all }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: jiraQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: jiraQueryKeys.tasks }),
+        queryClient.invalidateQueries({ queryKey: jiraQueryKeys.drafts }),
+      ]),
   });
 }

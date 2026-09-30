@@ -154,4 +154,89 @@ describe("Activity", () => {
     expect(screen.getByText("updated the plan")).toBeInTheDocument();
     expect(screen.queryByText(/→/)).not.toBeInTheDocument();
   });
+  it.each([
+    ["jira_issue_created", "created the Jira issue"],
+    ["jira_issue_updated", "updated the Jira issue"],
+    ["jira_issue_unlinked", "unlinked the Jira issue"],
+  ])("renders %s with the issue key linked to Jira", (type, text) => {
+    renderActivity(
+      baseActivity({
+        type,
+        userId: "user-1",
+        eventData: {
+          issueKey: "PROJ-7",
+          issueUrl: "https://jira.example.com/browse/PROJ-7",
+        },
+      }),
+    );
+
+    expect(screen.getByText(text, { exact: false })).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "PROJ-7" });
+    expect(link).toHaveAttribute(
+      "href",
+      "https://jira.example.com/browse/PROJ-7",
+    );
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+
+  it("shows the Jira issue key as text when its URL is not a web URL", () => {
+    renderActivity(
+      baseActivity({
+        type: "jira_issue_created",
+        eventData: { issueKey: "PROJ-7", issueUrl: "javascript:alert(1)" },
+      }),
+    );
+
+    expect(screen.getByText("PROJ-7")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("renders a status change seen in Jira, attributed to Jira", () => {
+    renderActivity(
+      baseActivity({
+        type: "jira_status_changed",
+        content: "Jira status changed from In Progress to Done",
+        eventData: {
+          issueKey: "PROJ-7",
+          fromStatus: "In Progress",
+          toStatus: "Done",
+          proposedStatus: "done",
+        },
+      }),
+    );
+
+    expect(screen.getByText("Jira")).toBeInTheDocument();
+    expect(
+      screen.getByText("changed the status of PROJ-7 from In Progress to Done"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Someone")).not.toBeInTheDocument();
+  });
+
+  it("renders a first status seen in Jira without a previous one", () => {
+    renderActivity(
+      baseActivity({
+        type: "jira_status_changed",
+        eventData: { issueKey: "PROJ-7", fromStatus: null, toStatus: "Done" },
+      }),
+    );
+
+    expect(
+      screen.getByText("changed the status of PROJ-7 to Done"),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to the stored text for a Jira activity without event data", () => {
+    renderActivity(
+      baseActivity({
+        type: "jira_status_changed",
+        content: "Jira status changed from A to B",
+        eventData: null,
+      }),
+    );
+
+    expect(
+      screen.getByText("Jira status changed from A to B"),
+    ).toBeInTheDocument();
+  });
 });

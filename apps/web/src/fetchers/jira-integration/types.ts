@@ -76,3 +76,25 @@ export type JiraMetaUser = InferResponseType<
   Jira["workspace"][":workspaceId"]["meta"]["users"]["$get"],
   200
 >["users"][number];
+
+type JiraTask = Jira["task"][":taskId"];
+
+export type JiraTaskInfo = InferResponseType<JiraTask["$get"], 200>;
+export type JiraIssueLink = NonNullable<JiraTaskInfo["link"]>;
+export type JiraStatusProposal = JiraTaskInfo["proposals"][number];
+export type JiraSyncHint = NonNullable<JiraTaskInfo["sync"]>;
+
+export type JiraDraft = InferResponseType<JiraTask["draft"]["$get"], 200>;
+export type JiraDraftField = JiraDraft["fields"][number];
+export type JiraDraftWarning = JiraDraft["warnings"][number];
+
+export type JiraSendRequest = InferRequestType<
+  JiraTask["send"]["$post"]
+>["json"];
+export type JiraSendField = JiraSendRequest["fields"][number];
+export type JiraSendResult = InferResponseType<JiraTask["send"]["$post"], 200>;
+
+export type JiraRefreshResult = InferResponseType<
+  JiraTask["refresh"]["$post"],
+  200
+>;

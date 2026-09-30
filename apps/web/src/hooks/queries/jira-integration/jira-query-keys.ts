@@ -19,4 +19,14 @@ export const jiraQueryKeys = {
     ["jira-integration", "token", workspaceId] as const,
   meta: (workspaceId: string) =>
     ["jira-integration", "meta", workspaceId] as const,
+  // Task-level keys sit next to the task caches (["task", id], ["activities",
+  // id]) so the project socket can refresh them by task id alone.
+  tasks: ["jira-task"] as const,
+  task: (taskId: string) => ["jira-task", taskId] as const,
+  drafts: ["jira-draft"] as const,
+  draft: (
+    taskId: string,
+    jiraProjectKey: string | undefined,
+    issueTypeId: string | undefined,
+  ) => ["jira-draft", taskId, jiraProjectKey ?? "", issueTypeId ?? ""] as const,
 };

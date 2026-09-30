@@ -12,6 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { JiraTaskPanel } from "@/components/jira/jira-task-panel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -910,6 +911,16 @@ export default function TaskPropertiesSidebar({
             </div>
           </div>
         </div>
+
+        {taskId && (
+          <div className="px-3 pb-3">
+            <JiraTaskPanel
+              taskId={taskId}
+              projectId={projectId}
+              workspaceId={workspaceId}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1973,7 +1973,11 @@
 				"notConfigured": "This workspace has no active Jira connection.",
 				"requestFailed": "Jira could not be reached or answered with an error.",
 				"tokenInvalid": "Jira rejected the token. Enter a valid token again.",
-				"tokenMissing": "You have no Jira token in this workspace. Add one in your account settings."
+				"tokenMissing": "You have no Jira token in this workspace. Add one in your account settings.",
+				"issueAlreadyLinked": "The Jira issue was created, but it is already linked to a Kaneo task, or this task already has a Jira issue. Check Jira for a duplicate.",
+				"notLinked": "This task is not linked to a Jira issue.",
+				"proposalNotPending": "Someone already resolved this status change. The list was refreshed.",
+				"statusRequired": "Choose a Kaneo status for this Jira status."
 			},
 			"mapping": {
 				"addField": "Add field mapping",
@@ -2340,6 +2344,10 @@
 				"title": "समय ट्रैकिंग शुरू",
 				"contentWithTask": "कार्य पर समय ट्रैकिंग शुरू: {{taskTitle}}",
 				"contentWithoutTask": "एक कार्य पर समय ट्रैकिंग शुरू"
+			},
+			"jira_status_proposal": {
+				"content": "Jira issue {{issueKey}} is now \"{{toStatus}}\" (task \"{{taskTitle}}\"). Review the proposed status.",
+				"title": "Jira status changed"
 			}
 		}
 	},
@@ -2474,6 +2482,14 @@
 				"baselineStartDate": "आधार रेखा प्रारंभ तिथि",
 				"baselineDueDate": "आधार रेखा नियत तिथि"
 			}
+		},
+		"jira": {
+			"actor": "Jira",
+			"issueCreated": "created the Jira issue",
+			"issueUnlinked": "unlinked the Jira issue",
+			"issueUpdated": "updated the Jira issue",
+			"statusChanged": "changed the status of {{issueKey}} from {{from}} to {{to}}",
+			"statusChangedNoFrom": "changed the status of {{issueKey}} to {{to}}"
 		}
 	},
 	"tasks": {
@@ -3078,6 +3094,116 @@
 		"checklistProgress": "चेकलिस्ट के {{total}} में से {{completed}} आइटम पूरे हुए",
 		"customFields": {
 			"ariaLabel": "कस्टम फ़ील्ड"
+		},
+		"jira": {
+			"button": {
+				"noPermission": "Sending this task to Jira needs permission to edit it.",
+				"send": "Send to Jira",
+				"update": "Update in Jira"
+			},
+			"panel": {
+				"history": {
+					"accepted": "Accepted by {{name}}",
+					"acceptedAs": "Accepted by {{name}} as {{status}}",
+					"rejectedBy": "Rejected by {{name}}",
+					"state": {
+						"accepted": "Accepted",
+						"pending": "Pending",
+						"rejected": "Rejected",
+						"superseded": "Superseded"
+					},
+					"title": "History ({{total}})"
+				},
+				"lastSync": "Last sync",
+				"neverSynced": "Not read yet",
+				"notLinked": "This task is not linked to a Jira issue. Earlier status changes are listed below.",
+				"opensInNewTab": "(opens in a new tab)",
+				"proposal": {
+					"accept": "Accept",
+					"accepted": "The task status was changed.",
+					"acceptError": "Could not accept the proposal.",
+					"changed": "Jira status changed from \"{{from}}\" to \"{{to}}\".",
+					"changedBy": "Changed by {{name}}",
+					"changedNoFrom": "Jira status changed to \"{{to}}\".",
+					"chooseLabel": "Kaneo status",
+					"choosePlaceholder": "Choose a status",
+					"proposed": "Proposed Kaneo status: {{status}}",
+					"reject": "Reject",
+					"rejected": "The proposal was rejected.",
+					"rejectError": "Could not reject the proposal.",
+					"unmapped": "This Jira status is not mapped to a Kaneo status. Choose one to accept it.",
+					"waiting": "Waiting for someone with permission to accept."
+				},
+				"refresh": "Refresh",
+				"refreshChanged": "The Jira status changed. Review the proposal below.",
+				"refreshError": "Could not read the status from Jira.",
+				"refreshing": "Refreshing...",
+				"refreshUnchanged": "The Jira status is up to date.",
+				"status": "Jira status",
+				"statusUnknown": "Unknown",
+				"sync": {
+					"creatorTokenInvalid": "Automatic status checks are off for this task: Jira rejected the token of the person who linked it. Use Refresh, or send the task again with your own token.",
+					"creatorTokenMissing": "Automatic status checks are off for this task: the person who linked it has no Jira token. Use Refresh, or send the task again with your own token.",
+					"pollingOff": "Automatic status checks are turned off for this workspace. Use Refresh to read the status."
+				},
+				"syncError": "Last sync failed: {{message}}",
+				"title": "Jira",
+				"tokenLink": "Add it in your account settings",
+				"tokenNeeded": "Refreshing needs your own Jira token.",
+				"unlink": "Unlink",
+				"unlinkConfirm": "Unlink",
+				"unlinkDescription": "{{issueKey}} stays in Jira. Kaneo forgets the link and the status proposals of this task.",
+				"unlinked": "Jira issue unlinked.",
+				"unlinkError": "Could not unlink the Jira issue.",
+				"unlinkTitle": "Unlink the Jira issue?"
+			},
+			"send": {
+				"createdToast": "Created {{issueKey}} in Jira",
+				"description": "Review what will be sent. Changes you make here apply to this send only.",
+				"descriptionUpdate": "Review what will update {{issueKey}} in Jira. Changes you make here apply to this send only.",
+				"error": "Could not send the task to Jira.",
+				"errorTitle": "Could not send the task",
+				"fields": "Fields",
+				"issueType": "Issue type",
+				"issueTypePlaceholder": "Choose an issue type",
+				"linkedTo": "This task is linked to {{issueKey}}. Its project and issue type cannot change.",
+				"loadError": "Could not load the Jira draft for this task.",
+				"loading": "Loading what would be sent...",
+				"missingRequired": {
+					"title": "Fill in the required fields before sending"
+				},
+				"multiPlaceholder": "Type a value and press Enter",
+				"noFields": "No fields are mapped. Add field mappings in the Jira settings.",
+				"noToken": {
+					"description": "You have no Jira token in this workspace. Add your token in your account settings, then send the task again.",
+					"link": "Open Jira account settings"
+				},
+				"origin": {
+					"default": "Default value",
+					"empty": "Empty",
+					"task": "From task"
+				},
+				"project": "Jira project",
+				"projectPlaceholder": "Choose a project",
+				"required": "Required",
+				"retry": "Retry",
+				"selectPlaceholder": "Choose a value",
+				"sending": "Sending...",
+				"sentAs": "Will be sent as: {{value}}",
+				"submit": "Send to Jira",
+				"submitUpdate": "Update issue",
+				"title": "Send to Jira",
+				"titleUpdate": "Update in Jira",
+				"unmapped": {
+					"description": "Jira requires {{fields}}, but no field mapping provides it. Add a mapping in the Jira settings, or Jira may refuse the issue.",
+					"title": "Required in Jira but not mapped"
+				},
+				"updatedToast": "Updated {{issueKey}} in Jira",
+				"warnings": {
+					"targetMissing": "Choose a Jira project and an issue type to see required fields and allowed values.",
+					"title": "Check before sending"
+				}
+			}
 		}
 	},
 	"invitations": {
@@ -3200,7 +3326,11 @@
 				"relation_deleted": "निर्भरता हटाई गई",
 				"calendar_updated": "कार्य दिवस बदले गए",
 				"holiday_added": "अवकाश जोड़ा गया",
-				"holiday_removed": "अवकाश हटाया गया"
+				"holiday_removed": "अवकाश हटाया गया",
+				"jira_issue_created": "Jira issue created",
+				"jira_issue_unlinked": "Jira issue unlinked",
+				"jira_issue_updated": "Jira issue updated",
+				"jira_status_changed": "Jira status changed"
 			},
 			"emptyFilteredTitle": "कोई मेल खाती गतिविधि नहीं",
 			"export": {
