@@ -49,6 +49,21 @@ export async function requireJiraConnection(
   return connection;
 }
 
+// A connection that is switched off answers like a missing one.
+export async function requireActiveJiraConnection(
+  workspaceId: string,
+): Promise<JiraConnectionRow> {
+  const connection = await requireJiraConnection(workspaceId);
+  if (!connection.isActive) {
+    throw jiraError(
+      404,
+      "JIRA_NOT_CONFIGURED",
+      "The Jira connection of this workspace is turned off.",
+    );
+  }
+  return connection;
+}
+
 export async function findJiraUserToken(
   connectionId: string,
   userId: string,
@@ -171,14 +186,7 @@ export async function getJiraClientForUser(
   workspaceId: string,
   userId: string,
 ) {
-  const connection = await requireJiraConnection(workspaceId);
-  if (!connection.isActive) {
-    throw jiraError(
-      404,
-      "JIRA_NOT_CONFIGURED",
-      "The Jira connection of this workspace is turned off.",
-    );
-  }
+  const connection = await requireActiveJiraConnection(workspaceId);
 
   const row = await findJiraUserToken(connection.id, userId);
   if (!row) {
@@ -189,12 +197,40 @@ export async function getJiraClientForUser(
     );
   }
 
-  const client = createJiraClient({
+  const client = createJiraClientForToken(connection, row);
+
+  return { client, connection, tokenRow: row };
+}
+
+// The client for one stored token. Used for requests made for that token's
+// owner only: the owner's own routes, and the poll of the issues they linked.
+export function createJiraClientForToken(
+  connection: JiraConnectionRow,
+  row: JiraUserTokenRow,
+) {
+  return createJiraClient({
     baseUrl: connection.baseUrl,
     deployment: connection.deployment as JiraDeployment,
     token: decryptJiraToken(row),
     email: row.email,
   });
+}
 
-  return { client, connection, tokenRow: row };
+// Remembers why a token stopped working. `message` is shown to its owner, so
+// it must never contain the token or anything Jira echoed back.
+export async function markJiraTokenError(
+  tokenId: string,
+  message: string,
+): Promise<void> {
+  await db
+    .update(jiraUserTokenTable)
+    .set({ lastError: message, updatedAt: new Date() })
+    .where(eq(jiraUserTokenTable.id, tokenId));
+}
+
+export async function clearJiraTokenError(tokenId: string): Promise<void> {
+  await db
+    .update(jiraUserTokenTable)
+    .set({ lastError: null, lastVerifiedAt: new Date(), updatedAt: new Date() })
+    .where(eq(jiraUserTokenTable.id, tokenId));
 }

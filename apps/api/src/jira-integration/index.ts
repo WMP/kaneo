@@ -10,14 +10,17 @@ import {
   requireWorkspacePermission,
 } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
+import { proposalAccess, requireTaskInWorkspace } from "./access";
 import {
   deleteJiraConnection,
   rotateJiraWebhookSecret,
   toConnectionResponse,
   upsertJiraConnection,
 } from "./connection";
+import { buildTaskDraft } from "./draft-loader";
 import { jiraError, withJiraErrors } from "./errors";
 import { createJiraClient } from "./jira-client";
+import { toLinkResponse, toProposalResponse } from "./links";
 import {
   loadMapping,
   type MappingKey,
@@ -34,9 +37,11 @@ import {
   shapeStatuses,
   shapeUsers,
 } from "./meta";
+import { acceptProposal, rejectProposal } from "./proposals";
 import {
   jiraConnectionSchema,
   jiraDeleteResultSchema,
+  jiraDraftSchema,
   jiraErrorResponse,
   jiraMappingLevelSchema,
   jiraMetaComponentListSchema,
@@ -45,25 +50,37 @@ import {
   jiraMetaProjectListSchema,
   jiraMetaStatusListSchema,
   jiraMetaUserListSchema,
+  jiraProposalResultSchema,
+  jiraRefreshResultSchema,
   jiraResolvedMappingResponseSchema,
+  jiraSendResultSchema,
+  jiraTaskInfoSchema,
   jiraTokenStatusSchema,
 } from "./response";
 import {
+  acceptProposalBody,
+  draftQuery,
   metaFieldsQuery,
   metaProjectKeyQuery,
   metaUsersQuery,
   projectIdParam,
+  proposalIdParam,
   putConnectionBody,
   putMappingBody,
   putTokenBody,
+  sendBody,
+  taskIdParam,
   workspaceIdParam,
 } from "./schema";
+import { sendTaskToJira } from "./send";
+import { loadTaskInfo, refreshTaskStatus, unlinkTask } from "./task-link";
 import {
   assertJiraEncryptionKey,
   deleteJiraUserToken,
   findJiraConnection,
   findJiraUserToken,
   getJiraClientForUser,
+  requireActiveJiraConnection,
   requireJiraConnection,
   storeJiraUserToken,
   toTokenStatus,
@@ -84,6 +101,21 @@ const projectReadAccess = [
 const projectWriteAccess = [
   workspaceAccess.fromProject("projectId"),
   requireWorkspacePermission({ project: ["update"] }),
+];
+
+const taskReadAccess = [
+  workspaceAccess.fromTaskId(),
+  requireWorkspacePermission({ task: ["read"] }),
+];
+
+const taskUpdateAccess = [
+  workspaceAccess.fromTaskId(),
+  requireWorkspacePermission({ task: ["update"] }),
+];
+
+const proposalUpdateAccess = [
+  proposalAccess,
+  requireWorkspacePermission({ task: ["update"] }),
 ];
 
 const NO_WORKSPACE_ACCESS = "No access to the workspace";
@@ -478,6 +510,181 @@ const metaUsersRoute = createRoute({
   },
 });
 
+const NO_TASK_ACCESS =
+  "No access to the task's project, or missing task permission";
+
+const taskErrors = {
+  403: errorResponse(NO_TASK_ACCESS),
+  404: jiraErrorResponse("Unknown task"),
+} as const;
+
+const jiraCallErrors = {
+  404: jiraErrorResponse("Unknown task, or no (active) Jira connection"),
+  409: jiraErrorResponse("The caller has no Jira token"),
+  422: jiraErrorResponse("Jira rejected the caller's token"),
+  502: jiraErrorResponse("Jira could not be reached or failed"),
+  503: jiraErrorResponse("The server has no token encryption key"),
+} as const;
+
+const getTaskInfoRoute = createRoute({
+  method: "get",
+  operationId: "getJiraTaskInfo",
+  path: "/task/{taskId}",
+  tags: ["Jira"],
+  summary: "Get the Jira state of a task",
+  description:
+    "The Jira issue the task is linked to, its pending status proposal and the 10 most recent proposals. Answers with no link when the workspace has no Jira connection.",
+  middleware: taskReadAccess,
+  request: { params: taskIdParam },
+  responses: {
+    200: jsonResponse("The task's Jira state", jiraTaskInfoSchema),
+    400: errorResponse("Workspace ID could not be determined"),
+    ...taskErrors,
+  },
+});
+
+const getDraftRoute = createRoute({
+  method: "get",
+  operationId: "getJiraDraft",
+  path: "/task/{taskId}/draft",
+  tags: ["Jira"],
+  summary: "Preview what would be sent to Jira",
+  description:
+    "Every mapped field with its value, where the value comes from (the task, the mapping's default, or nothing) and, when Jira's create metadata can be read with the caller's own token, which fields are required and what they allow. A Jira failure is a warning, not an error. The mapping is resolved for the caller: default, workspace, project and the caller's own level.",
+  middleware: taskUpdateAccess,
+  request: { params: taskIdParam, query: draftQuery },
+  responses: {
+    200: jsonResponse("The draft", jiraDraftSchema),
+    400: errorResponse("Workspace ID could not be determined"),
+    403: errorResponse(NO_TASK_ACCESS),
+    404: jiraErrorResponse("Unknown task, or no (active) Jira connection"),
+  },
+});
+
+const sendRoute = createRoute({
+  method: "post",
+  operationId: "sendTaskToJira",
+  path: "/task/{taskId}/send",
+  tags: ["Jira"],
+  summary: "Send a task to Jira",
+  description:
+    "Create the Jira issue, or update the linked one (without project and issue type), with the CALLER's own Jira token. Only typed field values are accepted; they are converted to Jira's JSON on the server and empty values are left out. Stores the link and writes the activity jira_issue_created or jira_issue_updated.",
+  middleware: taskUpdateAccess,
+  request: {
+    params: taskIdParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: sendBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The issue was created or updated", jiraSendResultSchema),
+    400: errorResponse(
+      "Invalid body, or a value that does not fit its field type",
+    ),
+    403: errorResponse(NO_TASK_ACCESS),
+    ...jiraCallErrors,
+    409: jiraErrorResponse(
+      "The caller has no Jira token (JIRA_TOKEN_MISSING), or the issue is already linked to a task (JIRA_ISSUE_ALREADY_LINKED)",
+    ),
+  },
+});
+
+const refreshRoute = createRoute({
+  method: "post",
+  operationId: "refreshJiraTask",
+  path: "/task/{taskId}/refresh",
+  tags: ["Jira"],
+  summary: "Read the Jira status now",
+  description:
+    "Read the linked issue's status with the caller's own token and process a change like the webhook and the poll do: activity, and a status proposal. The task's status is never changed.",
+  middleware: taskReadAccess,
+  request: { params: taskIdParam },
+  responses: {
+    200: jsonResponse(
+      "The task's Jira state after the read",
+      jiraRefreshResultSchema,
+    ),
+    403: errorResponse(NO_TASK_ACCESS),
+    404: jiraErrorResponse(
+      "Unknown task, task not linked (JIRA_NOT_LINKED), or no (active) Jira connection",
+    ),
+    409: jiraErrorResponse("The caller has no Jira token"),
+    422: jiraErrorResponse("Jira rejected the caller's token"),
+    502: jiraErrorResponse("Jira could not be reached or failed"),
+    503: jiraErrorResponse("The server has no token encryption key"),
+  },
+});
+
+const unlinkRoute = createRoute({
+  method: "delete",
+  operationId: "unlinkJiraIssue",
+  path: "/task/{taskId}/link",
+  tags: ["Jira"],
+  summary: "Unlink the Jira issue",
+  description:
+    "Remove the link between the task and its Jira issue, with its proposals. The Jira issue is not touched.",
+  middleware: taskUpdateAccess,
+  request: { params: taskIdParam },
+  responses: {
+    200: jsonResponse(
+      "The link was removed, or there was none",
+      jiraDeleteResultSchema,
+    ),
+    400: errorResponse("Workspace ID could not be determined"),
+    ...taskErrors,
+  },
+});
+
+const proposalErrors = {
+  403: errorResponse(NO_TASK_ACCESS),
+  404: jiraErrorResponse("Unknown proposal"),
+  409: jiraErrorResponse(
+    "The proposal is no longer pending (PROPOSAL_NOT_PENDING)",
+  ),
+} as const;
+
+const acceptProposalRoute = createRoute({
+  method: "post",
+  operationId: "acceptJiraStatusProposal",
+  path: "/proposal/{proposalId}/accept",
+  tags: ["Jira"],
+  summary: "Accept a Jira status proposal",
+  description:
+    "Set the task's status through the normal status change (events, activity, notifications and realtime apply, attributed to the caller) and mark the proposal accepted. The status defaults to the proposal's mapped status and is required when it has none (STATUS_REQUIRED). Needs task:update in the task's project.",
+  middleware: proposalUpdateAccess,
+  request: {
+    params: proposalIdParam,
+    body: {
+      required: false,
+      content: { "application/json": { schema: acceptProposalBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The accepted proposal", jiraProposalResultSchema),
+    400: jiraErrorResponse(
+      "No status given for an unmapped proposal (STATUS_REQUIRED), or an invalid status",
+    ),
+    ...proposalErrors,
+  },
+});
+
+const rejectProposalRoute = createRoute({
+  method: "post",
+  operationId: "rejectJiraStatusProposal",
+  path: "/proposal/{proposalId}/reject",
+  tags: ["Jira"],
+  summary: "Reject a Jira status proposal",
+  description:
+    "Mark the proposal rejected; the task's status stays as it is. Needs task:update in the task's project.",
+  middleware: proposalUpdateAccess,
+  request: { params: proposalIdParam },
+  responses: {
+    200: jsonResponse("The rejected proposal", jiraProposalResultSchema),
+    ...proposalErrors,
+  },
+});
+
 const jiraIntegration = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getConnectionRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
@@ -712,6 +919,84 @@ const jiraIntegration = apiRouter<BaseVariables & { workspaceId: string }>()
       client.searchUsers(query, projectKey),
     );
     return c.json({ users: shapeUsers(users) }, 200);
+  })
+  .openapi(getTaskInfoRoute, async (c) => {
+    const { taskId } = c.req.valid("param");
+    const workspaceId = c.get("workspaceId");
+    const task = await requireTaskInWorkspace(taskId, workspaceId);
+    return c.json(await loadTaskInfo(task, workspaceId), 200);
+  })
+  .openapi(getDraftRoute, async (c) => {
+    const { taskId } = c.req.valid("param");
+    const workspaceId = c.get("workspaceId");
+    const task = await requireTaskInWorkspace(taskId, workspaceId);
+    const connection = await requireActiveJiraConnection(workspaceId);
+    const draft = await buildTaskDraft({
+      task,
+      workspaceId,
+      userId: c.get("userId"),
+      connection,
+      overrides: c.req.valid("query"),
+    });
+    return c.json(draft, 200);
+  })
+  .openapi(sendRoute, async (c) => {
+    const { taskId } = c.req.valid("param");
+    const workspaceId = c.get("workspaceId");
+    const task = await requireTaskInWorkspace(taskId, workspaceId);
+    const result = await sendTaskToJira({
+      task,
+      workspaceId,
+      userId: c.get("userId"),
+      body: c.req.valid("json"),
+    });
+    return c.json(
+      {
+        created: result.created,
+        link: toLinkResponse(result.link),
+        warnings: result.warnings,
+      },
+      200,
+    );
+  })
+  .openapi(refreshRoute, async (c) => {
+    const { taskId } = c.req.valid("param");
+    const workspaceId = c.get("workspaceId");
+    const task = await requireTaskInWorkspace(taskId, workspaceId);
+    const { changed } = await refreshTaskStatus({
+      task,
+      workspaceId,
+      userId: c.get("userId"),
+    });
+    return c.json(
+      { changed, info: await loadTaskInfo(task, workspaceId) },
+      200,
+    );
+  })
+  .openapi(unlinkRoute, async (c) => {
+    const { taskId } = c.req.valid("param");
+    const task = await requireTaskInWorkspace(taskId, c.get("workspaceId"));
+    await unlinkTask({ task, userId: c.get("userId") });
+    return c.json({ success: true }, 200);
+  })
+  .openapi(acceptProposalRoute, async (c) => {
+    const { proposalId } = c.req.valid("param");
+    const body = c.req.valid("json") as { status?: string } | undefined;
+    const proposal = await acceptProposal({
+      proposalId,
+      userId: c.get("userId"),
+      status: body?.status,
+    });
+    return c.json({ proposal: toProposalResponse(proposal) }, 200);
+  })
+  .openapi(rejectProposalRoute, async (c) => {
+    const { proposalId } = c.req.valid("param");
+    const proposal = await rejectProposal({
+      proposalId,
+      userId: c.get("userId"),
+    });
+    return c.json({ proposal: toProposalResponse(proposal) }, 200);
   });
 
+export { handleJiraWebhookRoute, jiraWebhookBodyLimit } from "./webhook";
 export default jiraIntegration;

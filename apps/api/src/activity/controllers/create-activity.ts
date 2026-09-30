@@ -4,7 +4,8 @@ import { activityTable } from "../../database/schema";
 async function createActivity(
   taskId: string,
   type: string,
-  userId: string,
+  // Null for an event no Kaneo user caused (a change observed in Jira).
+  userId: string | null,
   content: string | null,
   eventData?: Record<string, unknown> | null,
 ) {

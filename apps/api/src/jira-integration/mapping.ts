@@ -222,3 +222,27 @@ export function resolveJiraMapping(levels: MappingLevels): ResolvedJiraMapping {
   result.labelComponentMappings = [...labels.values()];
   return result;
 }
+
+// The Kaneo status a Jira status maps to: a mapping that names the status id
+// wins, then one that only names it (case-insensitive). Pure.
+export function findMappedKaneoStatus(
+  mappings: Pick<
+    ResolvedStatusMapping,
+    "jiraStatusId" | "jiraStatusName" | "kaneoStatus"
+  >[],
+  status: { statusId: string | null; statusName: string },
+): string | null {
+  if (status.statusId) {
+    const byId = mappings.find(
+      (mapping) => mapping.jiraStatusId === status.statusId,
+    );
+    if (byId) return byId.kaneoStatus;
+  }
+  const name = status.statusName.trim().toLowerCase();
+  const byName = mappings.find(
+    (mapping) =>
+      !mapping.jiraStatusId &&
+      mapping.jiraStatusName.trim().toLowerCase() === name,
+  );
+  return byName?.kaneoStatus ?? null;
+}

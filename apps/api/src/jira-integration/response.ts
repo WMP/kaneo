@@ -1,6 +1,10 @@
 import { nullableResponseTimestamp, responseTimestamp, z } from "../openapi";
 import { JIRA_DEPLOYMENTS } from "./config";
-import { jiraFieldMappingSchema, jiraMappingConfigSchema } from "./schema";
+import {
+  jiraFieldMappingSchema,
+  jiraFieldTypeSchema,
+  jiraMappingConfigSchema,
+} from "./schema";
 
 const originSchema = z
   .enum(["default", "workspace", "project", "user"])
@@ -186,7 +190,7 @@ export const jiraErrorSchema = z
   .object({
     code: z.string().openapi({
       description:
-        "JIRA_NOT_CONFIGURED, JIRA_TOKEN_MISSING, JIRA_TOKEN_INVALID, JIRA_ENCRYPTION_KEY_MISSING or JIRA_REQUEST_FAILED.",
+        "JIRA_NOT_CONFIGURED, JIRA_TOKEN_MISSING, JIRA_TOKEN_INVALID, JIRA_ENCRYPTION_KEY_MISSING, JIRA_REQUEST_FAILED, JIRA_ISSUE_ALREADY_LINKED, JIRA_NOT_LINKED, PROPOSAL_NOT_PENDING or STATUS_REQUIRED.",
     }),
     message: z.string(),
     jiraStatus: z.number().optional().openapi({
@@ -207,3 +211,170 @@ export function jiraErrorResponse(description: string) {
     },
   };
 }
+
+export const jiraIssueLinkSchema = z
+  .object({
+    id: z.string(),
+    taskId: z.string(),
+    issueId: z.string(),
+    issueKey: z.string(),
+    issueUrl: z.string(),
+    jiraProjectKey: z.string(),
+    lastStatusId: z.string().nullable(),
+    lastStatusName: z.string().nullable(),
+    lastSyncedAt: nullableResponseTimestamp,
+    syncError: z.string().nullable(),
+    createdByUserId: z.string().nullable().openapi({
+      description:
+        "Whose Jira token the poll uses to read this issue. Null when that person was deleted.",
+    }),
+    createdAt: responseTimestamp,
+    updatedAt: responseTimestamp,
+  })
+  .openapi("JiraIssueLink");
+
+export const jiraStatusProposalSchema = z
+  .object({
+    id: z.string(),
+    taskId: z.string(),
+    linkId: z.string(),
+    fromStatusName: z.string().nullable(),
+    toStatusId: z.string().nullable(),
+    toStatusName: z.string(),
+    proposedStatus: z.string().nullable().openapi({
+      description:
+        "The Kaneo status the Jira status maps to. Null when it is not mapped: whoever accepts chooses one.",
+    }),
+    state: z.enum(["pending", "accepted", "rejected", "superseded"]),
+    jiraChangedBy: z.string().nullable(),
+    jiraChangedAt: nullableResponseTimestamp,
+    source: z.enum(["webhook", "poll", "manual"]),
+    resolvedByUserId: z.string().nullable(),
+    resolvedStatus: z.string().nullable(),
+    resolvedAt: nullableResponseTimestamp,
+    createdAt: responseTimestamp,
+  })
+  .openapi("JiraStatusProposal", {
+    description:
+      "A status change seen in Jira. The task's status only changes when a person with task:update accepts it.",
+  });
+
+const jiraSyncHintSchema = z
+  .object({
+    pollingEnabled: z.boolean(),
+    creatorTokenState: z.enum(["ok", "missing", "invalid"]).openapi({
+      description:
+        "State of the token of the person who linked the issue, which the poll uses. Missing or invalid: the poll skips this link.",
+    }),
+  })
+  .openapi("JiraSyncHint");
+
+export const jiraTaskInfoSchema = z
+  .object({
+    link: jiraIssueLinkSchema.nullable(),
+    pendingProposal: jiraStatusProposalSchema.nullable(),
+    proposals: z.array(jiraStatusProposalSchema).openapi({
+      description: "The 10 most recent proposals, newest first.",
+    }),
+    sync: jiraSyncHintSchema.nullable(),
+  })
+  .openapi("JiraTaskInfo");
+
+export const jiraRefreshResultSchema = z
+  .object({
+    changed: z.boolean().openapi({
+      description:
+        "True when the read found a status the task's link did not know yet.",
+    }),
+    info: jiraTaskInfoSchema,
+  })
+  .openapi("JiraRefreshResult");
+
+const jiraWarningSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+});
+
+const draftValueSchema = z
+  .union([z.string(), z.number(), z.boolean(), z.array(z.string())])
+  .nullable();
+
+export const jiraDraftFieldSchema = z
+  .object({
+    fieldId: z.string(),
+    fieldName: z.string(),
+    type: jiraFieldTypeSchema,
+    value: draftValueSchema.openapi({
+      description:
+        "The editable Kaneo-side value, before the mapping's value map is applied.",
+    }),
+    jiraValue: z.unknown().openapi({
+      description:
+        "What would be sent to Jira for `value`, or null when nothing is sent.",
+    }),
+    origin: z.enum(["task", "default", "empty"]).openapi({
+      description:
+        "task: the task's own value; default: the mapping's default value; empty: nothing to send.",
+    }),
+    mappingOrigin: originSchema,
+    required: z.boolean().optional(),
+    allowedValues: z
+      .array(
+        z.object({
+          id: z.string().optional(),
+          name: z.string().optional(),
+          value: z.string().optional(),
+        }),
+      )
+      .nullable()
+      .optional(),
+  })
+  .openapi("JiraDraftField");
+
+export const jiraDraftSchema = z
+  .object({
+    taskId: z.string(),
+    connection: z.object({
+      id: z.string(),
+      baseUrl: z.string(),
+      deployment: z.enum(JIRA_DEPLOYMENTS),
+    }),
+    tokenConnected: z.boolean(),
+    target: z.object({
+      jiraProjectKey: resolved(z.string().nullable()),
+      issueTypeId: resolved(z.string().nullable()),
+      issueTypeName: resolved(z.string().nullable()),
+    }),
+    link: jiraIssueLinkSchema.nullable(),
+    fields: z.array(jiraDraftFieldSchema),
+    missingRequired: z.array(
+      z.object({
+        fieldId: z.string(),
+        name: z.string(),
+        mapped: z.boolean(),
+      }),
+    ),
+    warnings: z.array(jiraWarningSchema),
+    createMeta: z
+      .object({ jiraProjectKey: z.string(), issueTypeId: z.string() })
+      .nullable()
+      .openapi({
+        description:
+          "The Jira project and issue type the required flags and allowed values were read for, or null when they could not be read.",
+      }),
+  })
+  .openapi("JiraDraft");
+
+export const jiraSendResultSchema = z
+  .object({
+    created: z.boolean().openapi({
+      description: "True when a new issue was created, false for an update.",
+    }),
+    link: jiraIssueLinkSchema,
+    warnings: z.array(jiraWarningSchema),
+  })
+  .openapi("JiraSendResult");
+
+export const jiraProposalResultSchema = z
+  .object({ proposal: jiraStatusProposalSchema })
+  .openapi("JiraProposalResult");

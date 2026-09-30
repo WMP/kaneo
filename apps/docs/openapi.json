@@ -2179,7 +2179,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted."
+            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted, jira_issue_created, jira_issue_updated, jira_issue_unlinked, jira_status_changed."
           },
           "createdAt": {
             "type": "string",
@@ -2475,7 +2475,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: info, task_created, workspace_created, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment."
+            "description": "One of: info, task_created, workspace_created, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment, jira_status_proposal."
           },
           "eventData": {
             "description": "Type-specific payload, e.g. { taskTitle, oldStatus, newStatus, projectId, workspaceId }."
@@ -3826,7 +3826,7 @@
         "properties": {
           "code": {
             "type": "string",
-            "description": "JIRA_NOT_CONFIGURED, JIRA_TOKEN_MISSING, JIRA_TOKEN_INVALID, JIRA_ENCRYPTION_KEY_MISSING or JIRA_REQUEST_FAILED."
+            "description": "JIRA_NOT_CONFIGURED, JIRA_TOKEN_MISSING, JIRA_TOKEN_INVALID, JIRA_ENCRYPTION_KEY_MISSING, JIRA_REQUEST_FAILED, JIRA_ISSUE_ALREADY_LINKED, JIRA_NOT_LINKED, PROPOSAL_NOT_PENDING or STATUS_REQUIRED."
           },
           "message": {
             "type": "string"
@@ -4750,6 +4750,653 @@
         "required": [
           "users"
         ]
+      },
+      "JiraTaskInfo": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "pendingProposal": {
+            "$ref": "#/components/schemas/JiraStatusProposal"
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraStatusProposal"
+            },
+            "description": "The 10 most recent proposals, newest first."
+          },
+          "sync": {
+            "$ref": "#/components/schemas/JiraSyncHint"
+          }
+        },
+        "required": [
+          "link",
+          "pendingProposal",
+          "proposals",
+          "sync"
+        ]
+      },
+      "JiraIssueLink": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "issueId": {
+            "type": "string"
+          },
+          "issueKey": {
+            "type": "string"
+          },
+          "issueUrl": {
+            "type": "string"
+          },
+          "jiraProjectKey": {
+            "type": "string"
+          },
+          "lastStatusId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastStatusName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "syncError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdByUserId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Whose Jira token the poll uses to read this issue. Null when that person was deleted."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "issueId",
+          "issueKey",
+          "issueUrl",
+          "jiraProjectKey",
+          "lastStatusId",
+          "lastStatusName",
+          "lastSyncedAt",
+          "syncError",
+          "createdByUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "JiraStatusProposal": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "linkId": {
+            "type": "string"
+          },
+          "fromStatusName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toStatusId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toStatusName": {
+            "type": "string"
+          },
+          "proposedStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The Kaneo status the Jira status maps to. Null when it is not mapped: whoever accepts chooses one."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected",
+              "superseded"
+            ]
+          },
+          "jiraChangedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jiraChangedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "webhook",
+              "poll",
+              "manual"
+            ]
+          },
+          "resolvedByUserId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolvedStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolvedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "linkId",
+          "fromStatusName",
+          "toStatusId",
+          "toStatusName",
+          "proposedStatus",
+          "state",
+          "jiraChangedBy",
+          "jiraChangedAt",
+          "source",
+          "resolvedByUserId",
+          "resolvedStatus",
+          "resolvedAt",
+          "createdAt"
+        ],
+        "description": "A status change seen in Jira. The task's status only changes when a person with task:update accepts it."
+      },
+      "JiraSyncHint": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "pollingEnabled": {
+            "type": "boolean"
+          },
+          "creatorTokenState": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "missing",
+              "invalid"
+            ],
+            "description": "State of the token of the person who linked the issue, which the poll uses. Missing or invalid: the poll skips this link."
+          }
+        },
+        "required": [
+          "pollingEnabled",
+          "creatorTokenState"
+        ]
+      },
+      "JiraDraft": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "connection": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "deployment": {
+                "type": "string",
+                "enum": [
+                  "server",
+                  "cloud"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "baseUrl",
+              "deployment"
+            ]
+          },
+          "tokenConnected": {
+            "type": "boolean"
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "jiraProjectKey": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              },
+              "issueTypeId": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              },
+              "issueTypeName": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              }
+            },
+            "required": [
+              "jiraProjectKey",
+              "issueTypeId",
+              "issueTypeName"
+            ]
+          },
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraDraftField"
+            }
+          },
+          "missingRequired": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fieldId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mapped": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "fieldId",
+                "name",
+                "mapped"
+              ]
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          },
+          "createMeta": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "jiraProjectKey": {
+                "type": "string"
+              },
+              "issueTypeId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "jiraProjectKey",
+              "issueTypeId"
+            ],
+            "description": "The Jira project and issue type the required flags and allowed values were read for, or null when they could not be read."
+          }
+        },
+        "required": [
+          "taskId",
+          "connection",
+          "tokenConnected",
+          "target",
+          "link",
+          "fields",
+          "missingRequired",
+          "warnings",
+          "createMeta"
+        ]
+      },
+      "JiraDraftField": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JiraFieldType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The editable Kaneo-side value, before the mapping's value map is applied."
+          },
+          "jiraValue": {
+            "description": "What would be sent to Jira for `value`, or null when nothing is sent."
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "task",
+              "default",
+              "empty"
+            ],
+            "description": "task: the task's own value; default: the mapping's default value; empty: nothing to send."
+          },
+          "mappingOrigin": {
+            "$ref": "#/components/schemas/JiraMappingOrigin"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "allowedValues": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "fieldId",
+          "fieldName",
+          "type",
+          "value",
+          "origin",
+          "mappingOrigin"
+        ]
+      },
+      "JiraSendResult": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "boolean",
+            "description": "True when a new issue was created, false for an update."
+          },
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "created",
+          "link",
+          "warnings"
+        ]
+      },
+      "JiraSend": {
+        "type": "object",
+        "properties": {
+          "jiraProjectKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Required to create an issue; ignored when the task is already linked."
+          },
+          "issueTypeId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Required to create an issue; ignored when the task is already linked."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraSendField"
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "fields"
+        ]
+      },
+      "JiraSendField": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JiraFieldType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                "maxItems": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fieldId",
+          "type",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "JiraRefreshResult": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "boolean",
+            "description": "True when the read found a status the task's link did not know yet."
+          },
+          "info": {
+            "$ref": "#/components/schemas/JiraTaskInfo"
+          }
+        },
+        "required": [
+          "changed",
+          "info"
+        ]
+      },
+      "JiraProposalResult": {
+        "type": "object",
+        "properties": {
+          "proposal": {
+            "$ref": "#/components/schemas/JiraStatusProposal"
+          }
+        },
+        "required": [
+          "proposal"
+        ]
+      },
+      "JiraAcceptProposal": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The Kaneo status to set. Defaults to the status the proposal mapped; required when it has none."
+          }
+        }
       },
       "GenericWebhookIntegration": {
         "type": [
@@ -20033,6 +20680,682 @@
           },
           "503": {
             "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}": {
+      "get": {
+        "operationId": "getJiraTaskInfo",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the Jira state of a task",
+        "description": "The Jira issue the task is linked to, its pending status proposal and the 10 most recent proposals. Answers with no link when the workspace has no Jira connection.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task's Jira state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraTaskInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/draft": {
+      "get": {
+        "operationId": "getJiraDraft",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Preview what would be sent to Jira",
+        "description": "Every mapped field with its value, where the value comes from (the task, the mapping's default, or nothing) and, when Jira's create metadata can be read with the caller's own token, which fields are required and what they allow. A Jira failure is a warning, not an error. The mapping is resolved for the caller: default, workspace, project and the caller's own level.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Jira project to read the create metadata of, instead of the mapped one."
+            },
+            "required": false,
+            "description": "Jira project to read the create metadata of, instead of the mapped one.",
+            "name": "jiraProjectKey",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Issue type to read the create metadata of, instead of the mapped one."
+            },
+            "required": false,
+            "description": "Issue type to read the create metadata of, instead of the mapped one.",
+            "name": "issueTypeId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDraft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/send": {
+      "post": {
+        "operationId": "sendTaskToJira",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Send a task to Jira",
+        "description": "Create the Jira issue, or update the linked one (without project and issue type), with the CALLER's own Jira token. Only typed field values are accepted; they are converted to Jira's JSON on the server and empty values are left out. Stores the link and writes the activity jira_issue_created or jira_issue_updated.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JiraSend"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The issue was created or updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraSendResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or a value that does not fit its field type",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token (JIRA_TOKEN_MISSING), or the issue is already linked to a task (JIRA_ISSUE_ALREADY_LINKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/refresh": {
+      "post": {
+        "operationId": "refreshJiraTask",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Read the Jira status now",
+        "description": "Read the linked issue's status with the caller's own token and process a change like the webhook and the poll do: activity, and a status proposal. The task's status is never changed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task's Jira state after the read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraRefreshResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, task not linked (JIRA_NOT_LINKED), or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/link": {
+      "delete": {
+        "operationId": "unlinkJiraIssue",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Unlink the Jira issue",
+        "description": "Remove the link between the task and its Jira issue, with its proposals. The Jira issue is not touched.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The link was removed, or there was none",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/proposal/{proposalId}/accept": {
+      "post": {
+        "operationId": "acceptJiraStatusProposal",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Accept a Jira status proposal",
+        "description": "Set the task's status through the normal status change (events, activity, notifications and realtime apply, attributed to the caller) and mark the proposal accepted. The status defaults to the proposal's mapped status and is required when it has none (STATUS_REQUIRED). Needs task:update in the task's project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "proposalId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JiraAcceptProposal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The accepted proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraProposalResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No status given for an unmapped proposal (STATUS_REQUIRED), or an invalid status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The proposal is no longer pending (PROPOSAL_NOT_PENDING)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/proposal/{proposalId}/reject": {
+      "post": {
+        "operationId": "rejectJiraStatusProposal",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Reject a Jira status proposal",
+        "description": "Mark the proposal rejected; the task's status stays as it is. Needs task:update in the task's project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "proposalId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The rejected proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraProposalResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The proposal is no longer pending (PROPOSAL_NOT_PENDING)",
             "content": {
               "application/json": {
                 "schema": {

@@ -1,6 +1,6 @@
 # Plan: Jira integration
 
-Status: requested on 2026-09-30, implemented in stages on `claude/jira-integration-etryqs` (branched from `claude/gantt-pro`, to be merged back into it). This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: requested on 2026-09-30, implemented in stages on `claude/jira-integration-etryqs` (branched from `claude/gantt-pro`, to be merged back into it). Stages 1 and 2 (API foundation, then API sync: draft, send, links, status processing, proposals, webhook, poll, notifications, events) are implemented; stages 3 and 4 (web) are not. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 
@@ -109,6 +109,8 @@ No backfill; an older binary ignores the new tables.
 Errors are JSON with a `code` where the UI must react: `JIRA_NOT_CONFIGURED`, `JIRA_TOKEN_MISSING`, `JIRA_TOKEN_INVALID`, `JIRA_ENCRYPTION_KEY_MISSING`, `JIRA_REQUEST_FAILED` (with Jira's `errorMessages`/`errors`, never the token), `JIRA_ISSUE_ALREADY_LINKED`, `PROPOSAL_NOT_PENDING`, `STATUS_REQUIRED`.
 
 Events: `jira.issue_linked`, `jira.status_changed`, `jira.status_proposal_created`, `jira.status_proposal_resolved` with `{ taskId, projectId, ... }`, added to `taskUpdateEvents` in `apps/api/src/ws/index.ts` (a `TASK_UPDATED` refresh). A new proposal creates a notification of type `jira_status_proposal` for the task's user assignees and the link creator (`createNotification`, which checks project access).
+
+Stage 2 details beyond the table: unlinking also writes the activity `jira_issue_unlinked` and publishes `jira.issue_unlinked` (also in `taskUpdateEvents`). The first status ever read for a link (a send that could not read it, or a refresh) is a baseline: it is stored without activity or proposal; a webhook is always a change. `GET /task/{taskId}` also returns `sync` (the state of the link creator's token and whether polling is on), and `POST /task/{taskId}/refresh` returns `{ changed, info }`. The draft needs an active connection but not a token (a missing token is a warning); `value` is the editable Kaneo-side value and the mapping's value map is applied again when sending, so a value typed in the dialog that is already a Jira value passes through. A proposal route answers 404 for an unknown proposal, and 403 outside the task's workspace or project.
 
 Scheduler: `jira-status-poll` every 5 minutes under `withJobLease`. Per active connection with polling on, links are grouped by creator, and each group is read in batches of 50 with `POST /rest/api/2/search` (`jql: key in (...)`, `fields: ["status"]`). A 401 marks the creator's token `lastError` and skips the group.
 

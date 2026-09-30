@@ -1045,6 +1045,50 @@ describe("Jira integration: mappings", () => {
     );
   });
 
+  it("rejects a user mapping for somebody who is not a member of the workspace", async () => {
+    const s = await setup();
+    const mapping = (kaneoUserId: string, jiraUser: string | null) => ({
+      config: { userMappings: [{ kaneoUserId, jiraUser }] },
+    });
+    const targets = [
+      ["PUT", `${ws(s.workspaceId)}/mapping`, s.manager],
+      ["PUT", `/project/${s.project.id}/mapping`, s.manager],
+      ["PUT", `${ws(s.workspaceId)}/me/mapping`, s.plain],
+    ] as const;
+
+    for (const [method, path, caller] of targets) {
+      // A member of ANOTHER workspace is refused, at every level.
+      const foreign = await s.call(
+        caller,
+        method,
+        path,
+        mapping(s.outsider.id, "alice"),
+      );
+      expect(foreign.status, path).toBe(400);
+      expect(foreign.text).toContain("not a member");
+
+      const unknown = await s.call(
+        caller,
+        method,
+        path,
+        mapping("no-such-user", "alice"),
+      );
+      expect(unknown.status, path).toBe(400);
+
+      // A member is accepted, and a removal marker never needs a member.
+      expect(
+        (await s.call(caller, method, path, mapping(s.reader.id, "alice")))
+          .status,
+        path,
+      ).toBe(200);
+      expect(
+        (await s.call(caller, method, path, mapping("gone-user", null))).status,
+        path,
+      ).toBe(200);
+    }
+    expect(await db.select().from(schema.jiraMappingTable)).toHaveLength(3);
+  });
+
   it("resolves the mapping for the caller, with origins and without user statuses", async () => {
     const s = await setup();
     await s.call(s.manager, "PUT", `${ws(s.workspaceId)}/mapping`, {

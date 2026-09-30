@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { getEffectiveCustomFieldDefinitions } from "../custom-field/effective-fields";
 import db from "../database";
@@ -6,6 +6,7 @@ import {
   customFieldDefinitionTable,
   jiraMappingTable,
   projectTable,
+  workspaceUserTable,
 } from "../database/schema";
 import { getValidTaskStatuses } from "../task/validate-task-fields";
 import { accessibleProjectIds } from "../utils/project-access";
@@ -201,6 +202,36 @@ export async function validateMappingReferences(
     throw badRequest(
       "Status mappings cannot be set at the user level: a status proposal belongs to the task, not to a person.",
     );
+  }
+
+  // A user mapping names a Kaneo user: only members of this workspace. A
+  // removal marker (`jiraUser: null`) is always accepted, so a mapping for
+  // somebody who has left can still be cleaned up.
+  const mappedUserIds = [
+    ...new Set(
+      (config.userMappings ?? [])
+        .filter((mapping) => mapping.jiraUser !== null)
+        .map((mapping) => mapping.kaneoUserId),
+    ),
+  ];
+  if (mappedUserIds.length > 0) {
+    const members = await db
+      .select({ userId: workspaceUserTable.userId })
+      .from(workspaceUserTable)
+      .where(
+        and(
+          eq(workspaceUserTable.workspaceId, key.workspaceId),
+          inArray(workspaceUserTable.userId, mappedUserIds),
+        ),
+      );
+    const memberIds = new Set(members.map((member) => member.userId));
+    for (const id of mappedUserIds) {
+      if (!memberIds.has(id)) {
+        throw badRequest(
+          `User "${id}" is not a member of this workspace and cannot be mapped.`,
+        );
+      }
+    }
   }
 
   const customFieldIds = new Set<string>();

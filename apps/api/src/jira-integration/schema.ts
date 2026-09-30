@@ -154,3 +154,63 @@ export const metaUsersQuery = z.object({
   query: z.string().trim().max(200).default(""),
   projectKey: z.string().trim().min(1).max(100).optional(),
 });
+
+export const taskIdParam = z.object({ taskId: z.string().min(1) });
+export const proposalIdParam = z.object({ proposalId: z.string().min(1) });
+
+export const draftQuery = z.object({
+  jiraProjectKey: z.string().trim().min(1).max(100).optional().openapi({
+    description:
+      "Jira project to read the create metadata of, instead of the mapped one.",
+  }),
+  issueTypeId: z.string().trim().min(1).max(100).optional().openapi({
+    description:
+      "Issue type to read the create metadata of, instead of the mapped one.",
+  }),
+});
+
+const fieldValueSchema = z
+  .union([
+    z.string().max(20000),
+    z.number(),
+    z.boolean(),
+    z.array(z.string().max(1000)).max(200),
+  ])
+  .nullable();
+
+export const sendFieldSchema = z
+  .object({
+    fieldId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .regex(/^[A-Za-z0-9_.-]+$/, "Invalid Jira field id"),
+    type: jiraFieldTypeSchema,
+    value: fieldValueSchema,
+  })
+  .strict()
+  .openapi("JiraSendField");
+
+export const sendBody = z
+  .object({
+    jiraProjectKey: z.string().trim().min(1).max(100).optional().openapi({
+      description:
+        "Required to create an issue; ignored when the task is already linked.",
+    }),
+    issueTypeId: z.string().trim().min(1).max(100).optional().openapi({
+      description:
+        "Required to create an issue; ignored when the task is already linked.",
+    }),
+    fields: z.array(sendFieldSchema).max(200),
+  })
+  .openapi("JiraSend");
+
+export const acceptProposalBody = z
+  .object({
+    status: z.string().trim().min(1).max(200).optional().openapi({
+      description:
+        "The Kaneo status to set. Defaults to the status the proposal mapped; required when it has none.",
+    }),
+  })
+  .openapi("JiraAcceptProposal");
