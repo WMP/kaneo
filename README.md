@@ -1,236 +1,309 @@
-<h1 align="center">Kaneo Pro</h1>
-
-<p align="center">
-  <b>kaneo-pro</b> to fork projektu <a href="https://github.com/usekaneo/kaneo">Kaneo</a>.<br />
-  Dodaje planowanie w stylu Gantt Pro, widoki całego obszaru roboczego i dostęp do danych na poziomie projektu.
-</p>
+<!--
+  Screenshots live in docs/images/kaneo-pro/. Keep them consistent when you update them:
+  dark theme, 1440 CSS px wide at 2x, cropped to their content, fictional demo data only
+  (Northwind Robotics, @example.com). Never show real people, logins, tokens or other secrets.
+-->
 
 <div align="center">
 
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![upstream](https://img.shields.io/badge/upstream-usekaneo%2Fkaneo-555)](https://github.com/usekaneo/kaneo)
+# Kaneo Pro
+
+**Self-hosted project management with real scheduling.**
+
+Dependency-driven Gantt charts, cross-project planning, workload and project-level access control,<br />
+built on the open-source [Kaneo](https://github.com/usekaneo/kaneo).
+
+[Features](#features) · [Kaneo vs Kaneo Pro](#kaneo-vs-kaneo-pro) · [Quick start](#quick-start) · [Upgrading from Kaneo](#upgrading-from-kaneo) · [Known limitations](#known-limitations)
 
 </div>
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/01-gantt.png" alt="Wykres Gantta w Kaneo Pro: zależności, ścieżka krytyczna, postęp, kamienie milowe i plan bazowy" />
+  <img src="docs/images/kaneo-pro/01-gantt.png" alt="Kaneo Pro Gantt chart with dependency lines, the critical path, progress, milestones, a summary bar and baseline slip" />
 </p>
 
-## Czym jest Kaneo Pro
+## About
 
-Kaneo to prosta platforma do zarządzania projektami, którą instalujesz na własnym serwerze. Kaneo Pro zachowuje tę bazę: tablicę, listę, zadania, integracje, MCP i wdrożenie Docker/Helm. Fork dodaje funkcje dla zespołów, które planują pracę w czasie i dzielą obszar roboczy między wiele projektów i osób.
+Kaneo Pro is an independent fork of [Kaneo](https://github.com/usekaneo/kaneo), the fast, minimal, self-hosted project management platform. It keeps everything Kaneo offers (board, list, backlog and calendar views, integrations, the MCP server, Docker and Helm deployment) and adds what teams need to plan work over time across many projects and people.
 
-Ten dokument opisuje tylko **różnice** między Kaneo a Kaneo Pro. Instrukcje wspólne dla obu wersji są w [oryginalnym README Kaneo](https://github.com/usekaneo/kaneo#readme) i w [dokumentacji Kaneo](https://kaneo.app/docs/core).
+Kaneo Pro is not affiliated with or endorsed by the Kaneo team. It is based on upstream `main` of 2026-09-26 and takes in upstream changes through a weekly sync (see [Staying in sync with upstream](#staying-in-sync-with-upstream)).
 
-Zrzuty ekranu w tym dokumencie pokazują fikcyjne dane testowe (firma „Northwind Robotics”).
+This page covers what Kaneo Pro adds. For everything the two share, see the [Kaneo documentation](https://kaneo.app/docs/core). All screenshots show fictional demo data.
 
-Stan na 30.09.2026: fork ma około 300 własnych commitów ponad bazę upstream z 26.09.2026. Zmiany z upstream trafiają do forka przez cotygodniowy pull request (zobacz [Utrzymanie forka](#utrzymanie-forka)).
+## Kaneo vs Kaneo Pro
 
-## Porównanie w skrócie
-
-| Obszar | Kaneo (upstream) | Kaneo Pro |
+| | Kaneo | Kaneo Pro |
 | --- | --- | --- |
-| Wykres Gantta | Paski zadań na osi czasu | Linie zależności, typy FS/SS/FF/SF z opóźnieniem, ścieżka krytyczna, postęp, kamienie milowe, plan bazowy, paski podsumowania podzadań, automatyczne przesuwanie zależnych zadań, ograniczenia dat, przesuwanie i przybliżanie osi, skala Dzień/Tydzień/Miesiąc/Kwartał, wirtualizacja wierszy |
-| Zależności między projektami | Brak | Powiązania `blocks` między projektami jednego obszaru roboczego, ścieżka krytyczna przez granice projektów, blokada cykli |
-| Widoki obszaru roboczego | Brak | Portfolio (oś czasu wszystkich projektów), Obciążenie (workload), Aktywność z eksportem CSV/JSON |
-| Kalendarz pracy | Brak | Dni robocze i święta obszaru roboczego, cieniowanie na wykresie Gantta |
-| Pola niestandardowe | Na poziomie projektu | Także na poziomie obszaru roboczego, z dziedziczeniem i ukrywaniem w projekcie, kolory opcji, kolumna i kolorowanie na wykresie Gantta |
-| Osoby przypisane | Jedna osoba | Wiele osób, także zasoby bez konta (osoba, sprzęt, materiał) |
-| Bramki akceptacji | Brak | Status akceptacji z notatką na zadaniu, ostrzeżenia na wykresie Gantta |
-| Dostęp do danych | Każdy członek obszaru roboczego widzi wszystkie projekty | Członkostwo w projekcie z rolą projektu, zaproszenia do projektu, filtrowanie list, wyszukiwania, powiadomień i WebSocket |
-| Dodawanie osób | Zaproszenie e-mailem | Jedno okno „Add people”: zaproszenie albo dodanie istniejącego konta bez zaproszenia |
-| Narzędzia MCP | Zadania, projekty, etykiety | Dodatkowo: pola niestandardowe, plan bazowy, wiele osób przypisanych, typy zależności, kalendarz pracy; strona połączenia MCP w ustawieniach konta |
-| Tłumaczenia | Interfejs w wielu językach | Nowe teksty po angielsku i po polsku; inne języki mogą mieć część nowych tekstów bez tłumaczenia |
+| **Gantt chart** | Timeline with draggable, resizable task bars | Adds dependency lines and types (FS, SS, FF, SF) with lag, critical path, progress, milestones, baselines, summary bars, auto-rescheduling, date constraints, pan and zoom, Day/Week/Month/Quarter scale |
+| **Cross-project work** | – | Dependencies between projects of one workspace, a critical path that follows them, and a Portfolio timeline of all projects |
+| **Capacity** | – | Workload view per person and resource |
+| **Activity** | Per task | Workspace-wide feed with field-level schedule changes, project filter, CSV/JSON export and retention |
+| **Working calendar** | – | Working weekdays and holidays per workspace |
+| **Custom fields** | Per project | Also per workspace, inherited by every project; colored options that drive Gantt colors |
+| **Assignees** | One user per task | Several per task, including resources without an account (people, equipment, material) |
+| **Approval gates** | – | Approval status and note per task, with warnings on the tasks it blocks |
+| **Project access** | Every workspace member sees every project | Project membership with its own role, applied across the API and realtime |
+| **Adding people** | Invite by email | Invite by email or add an existing account, in one dialog for workspaces and projects |
+| **MCP** | Tools for tasks, projects and labels | 11 more tools and a setup page with copy-ready client commands |
 
-## Funkcje Kaneo Pro
+## Features
 
-### 1. Wykres Gantta
+### Scheduling on the Gantt chart
 
-Wykres Gantta w Kaneo Pro jest narzędziem do planowania, nie tylko do podglądu dat.
+The Gantt chart becomes a planning tool, not just a view of dates.
 
-- **Linie zależności.** Wykres rysuje powiązania `blocks` między zadaniami. Aby utworzyć zależność, przeciągnij uchwyt z paska jednego zadania na drugie.
-- **Typy zależności.** Każda zależność ma typ FS, SS, FF albo SF i opóźnienie w dniach (lag). Typ jest widoczny na wykresie i można go zmienić.
-- **Automatyczne przesuwanie.** Gdy przesuwasz lub zmieniasz długość zadania, aplikacja przesuwa zadania zależne do przodu. Zależne zadanie trafia na dzień roboczy.
-- **Ścieżka krytyczna.** Wykres wyróżnia ścieżkę krytyczną. Zapas czasu jest liczony w dniach roboczych. Ścieżka przechodzi także przez zadania z innych projektów.
-- **Postęp i kamienie milowe.** Zadanie ma postęp w procentach (także zmiana wielu zadań naraz). Zadanie może być kamieniem milowym.
-- **Plan bazowy.** Zapisz plan bazowy zadania. Pasek pokazuje opóźnienie względem planu bazowego.
-- **Podzadania.** Zadanie nadrzędne ma pasek podsumowania z postępem ważonym czasem trwania. Grupę można zwinąć i rozwinąć.
-- **Ograniczenia dat.** Zadanie może mieć ograniczenie SNET (nie wcześniej niż), FNLT (zakończ nie później niż) albo MSO (musi zacząć się w dniu).
-- **Nawigacja.** Przeciągnij oś, aby ją przesunąć. Użyj kółka myszy, aby ją przybliżyć. Wybierz skalę Dzień, Tydzień, Miesiąc albo Kwartał. Domyślna skala zależy od zakresu dat projektu.
-- **Czytelność.** Wiersz pokazuje awatar właściciela i znacznik opóźnienia. Kolor paska może pochodzić z pierwszej etykiety albo z opcji pola niestandardowego. Kolumna z wybranym polem niestandardowym jest widoczna obok listy zadań.
-- **Duże projekty.** Wiersze są wirtualizowane, więc wykres działa płynnie także przy wielu zadaniach.
-- **Zadania bez dat.** Zadanie zależne z innego projektu, które nie ma dat, dostaje pozycję wyliczoną tylko do wyświetlenia.
+- **Dependencies you can see and draw.** Drag from a bar's link handle to another task. Each line shows its type and lag.
+- **Four dependency types with lag:** finish-to-start (FS), start-to-start (SS), finish-to-finish (FF) and start-to-finish (SF). Click a label to change it.
+- **Auto-rescheduling.** Move or resize a task, and its dependents move forward onto working days.
+- **Critical path**, with slack counted in working days. It follows dependencies into other projects.
+- **Progress and milestones.** Type an exact percentage or update many tasks at once. Mark any task as a milestone.
+- **Baselines.** Save a baseline, and each bar shows how far its task has slipped.
+- **Summary bars** for parent tasks, with duration-weighted progress. Collapse and expand the subtasks.
+- **Date constraints:** start no earlier than (SNET), finish no later than (FNLT), must start on (MSO).
+- **Navigation.** Drag to pan, scroll to zoom, and switch between Day, Week, Month and Quarter. The default scale fits the project's date span. Add tasks directly on the chart.
+- **At a glance.** Owner avatars, overdue markers, bar colors from the first label or a dropdown custom field, and an optional custom-field column.
+- **Large projects.** Rows are virtualized, so long plans stay responsive.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/02-gantt-dependency-types.png" alt="Edycja typu zależności i opóźnienia, cieniowanie dni wolnych na wykresie Gantta" />
-  <br /><sub>Edycja typu zależności i opóźnienia. Szare kolumny to weekendy i święta z kalendarza pracy.</sub>
+  <img src="docs/images/kaneo-pro/02-gantt-dependency-types.png" alt="Editing a dependency's type and lag on the Gantt chart, with non-working days shaded" />
+  <br /><sub>Edit a dependency's type and lag. Shaded columns are weekends and holidays from the working calendar.</sub>
 </p>
 
-### 2. Zależności między projektami
+### Portfolio and cross-project dependencies
 
-- Zadanie może blokować zadanie z innego projektu w tym samym obszarze roboczym.
-- API odrzuca powiązanie, które tworzy cykl w grafie `blocks` albo `subtask`.
-- API nie pozwala na powiązanie z zadaniem z innego obszaru roboczego.
-
-### 3. Portfolio
-
-Widok Portfolio pokazuje wszystkie projekty obszaru roboczego na jednej osi czasu. Widok rysuje linie zależności między projektami. Oś działa jak na wykresie Gantta: przesuwanie i przybliżanie.
+- **Portfolio** shows every project of the workspace on one timeline, with a summary bar per project and lines for the dependencies between projects. It pans and zooms like the Gantt chart.
+- A task can block a task in another project of the same workspace. Links never cross workspaces, and the API rejects any link that would create a cycle.
+- A successor from another project that has no dates yet gets a display-only position on the timeline.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/03-portfolio.png" alt="Widok Portfolio z zależnościami między projektami" />
+  <img src="docs/images/kaneo-pro/03-portfolio.png" alt="Portfolio timeline of three projects with cross-project dependency lines" />
 </p>
 
-### 4. Obciążenie (workload)
+### Workload and resources
 
-Widok Obciążenie pokazuje każdego członka obszaru roboczego i zasoby. Wybierz zakres dat, aby zobaczyć podsumowanie. Kliknij wiersz, aby zobaczyć zadania tej osoby.
-
-<p align="center">
-  <img src="docs/images/kaneo-pro/04-workload.png" alt="Widok obciążenia członków obszaru roboczego" />
-</p>
-
-### 5. Aktywność obszaru roboczego
-
-- Jeden widok pokazuje aktywność ze wszystkich projektów.
-- Zmiany harmonogramu są widoczne na poziomie pól (na przykład stara i nowa data).
-- Filtr projektu zawęża listę.
-- Eksport do CSV i JSON.
-- Ustawienie retencji usuwa stare wpisy aktywności.
-- Zmiany kalendarza pracy też trafiają do aktywności.
+- **Workload** lists every workspace member and person resource, week by week, over a date range you choose. Cells above your threshold are highlighted, the range summary shows totals, and you can drill into the tasks behind each number.
+- **Resources** are people, equipment and material without an account. Assign them to tasks just like users.
+- **Invite a person resource.** When they accept, the resource links to their account and its assignments move over (in the projects the account can open). Workload then shows one row for both.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/05-activity.png" alt="Aktywność obszaru roboczego ze zmianami harmonogramu" />
-</p>
-
-### 6. Kalendarz pracy
-
-Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne (zobacz zrzut w punkcie 1). Automatyczne przesuwanie zadań uwzględnia kalendarz.
-
-<p align="center">
-  <img src="docs/images/kaneo-pro/06-calendar.png" alt="Ustawienia kalendarza pracy obszaru roboczego" />
-</p>
-
-### 7. Pola niestandardowe obszaru roboczego
-
-- Pole niestandardowe może należeć do obszaru roboczego. Wszystkie projekty dziedziczą je automatycznie.
-- Projekt może ukryć pole, którego nie potrzebuje.
-- Opcje pola listy rozwijanej mają kolory. Wykres Gantta może użyć tych kolorów.
-
-<p align="center">
-  <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Wykres Gantta pokolorowany opcjami pola niestandardowego Phase" />
-  <br /><sub>Wykres Gantta pokolorowany polem „Phase” (Design, Build, Test), z kolumną pola przy liście zadań.</sub>
+  <img src="docs/images/kaneo-pro/04-workload.png" alt="Workload view with weekly load per person and resource" />
 </p>
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/07b-custom-fields-settings.png" alt="Ustawienia pól niestandardowych obszaru roboczego" />
+  <img src="docs/images/kaneo-pro/09-resources.png" alt="Workspace resources: a person, equipment and material" />
 </p>
 
-### 8. Zadania: wiele osób, bramki akceptacji, ograniczenia
+### Workspace activity
 
-- **Wiele osób przypisanych.** Zadanie może mieć kilka osób przypisanych. Pierwsza osoba zostaje w starym polu `assignee`, więc istniejące integracje dalej działają.
-- **Bramka akceptacji.** Zadanie ma status akceptacji i notatkę. Wykres Gantta ostrzega, gdy zadanie zależne rusza przed akceptacją. MCP i eksport też obsługują te pola.
-- **Menu zadania.** Obok menu prawego przycisku myszy jest widoczny przycisk menu (kebab).
-- **Utrata połączenia.** Gdy połączenie z serwerem zostanie przerwane, aplikacja pokazuje komunikat. Widoki nie są wtedy po cichu puste.
+- One feed for all projects, with field-level changes (for example, the old and the new due date) and a project filter.
+- Export to CSV or JSON.
+- A retention period per workspace. A daily job removes older entries.
+- Changes to the working calendar are logged too.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/08-task-detail.png" alt="Szczegóły zadania z bramką akceptacji, postępem, planem bazowym i ograniczeniem daty" />
-  <br /><sub>Bramka akceptacji z notatką. W panelu: postęp, kamień milowy, plan bazowy i ograniczenie daty.</sub>
+  <img src="docs/images/kaneo-pro/05-activity.png" alt="Workspace activity with field-level schedule changes" />
 </p>
 
+### Working calendar
+
+Set the working weekdays and holidays of a workspace. The Gantt chart shades non-working days, and auto-rescheduling lands dependents on working days. MCP tools can read and change the calendar.
+
 <p align="center">
-  <img src="docs/images/kaneo-pro/08b-task-constraint.png" alt="Wybór ograniczenia daty zadania" width="49%" />
-  <img src="docs/images/kaneo-pro/08c-task-assignees.png" alt="Wiele osób przypisanych i zasób bez konta" width="49%" />
-  <br /><sub>Z lewej: ograniczenia dat SNET, FNLT i MSO. Z prawej: kilka osób przypisanych i zasób bez konta.</sub>
+  <img src="docs/images/kaneo-pro/06-calendar.png" alt="Working calendar settings with working days and holidays" />
 </p>
 
-### 9. Zasoby
+### Workspace custom fields
 
-- Obszar roboczy ma zasoby bez konta: osoby, sprzęt i materiały.
-- Zadanie można przypisać do zasobu tak jak do użytkownika.
-- Zasób typu osoba można zaprosić do Kaneo. Po akceptacji zaproszenia zasób łączy się z kontem, a jego przypisania przechodzą na to konto.
-- Widok Obciążenie pokazuje połączony zasób i konto jako jeden wiersz.
+- Define a custom field once for the whole workspace. Every project inherits it and can hide it.
+- Dropdown options have colors. The Gantt chart can color its bars by them and show the field in a column.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/09-resources.png" alt="Ustawienia zasobów obszaru roboczego" />
-</p>
-
-### 10. Dostęp na poziomie projektu
-
-W Kaneo każdy członek obszaru roboczego widzi wszystkie projekty. W Kaneo Pro dostęp do danych projektu daje **członkostwo w projekcie**.
-
-- **Pełny dostęp** mają: właściciel obszaru roboczego, administrator instancji i każda rola z uprawnieniem `workspace:manage_settings` (na przykład wbudowana rola `admin`). Te osoby widzą wszystkie projekty.
-- **Inne osoby** widzą tylko projekty, w których są członkami. Członek projektu ma rolę projektu (`viewer`, `member`, `admin` albo rola niestandardowa).
-- API stosuje ten filtr do list projektów, Portfolio, wyszukiwania, obciążenia, aktywności, etykiet, powiązań, liczników podzadań, powiadomień, osób przypisanych i eksportu.
-- WebSocket sprawdza dostęp ponownie co 60 sekund. Po utracie dostępu serwer zamyka połączenie (kod 1008).
-- **Zaproszenie do projektu.** Osoba zapraszająca wybiera rolę w obszarze roboczym i rolę w projekcie. Żadna z nich nie może dać więcej uprawnień, niż ma osoba zapraszająca. Zaproszenia mają limit częstotliwości.
-- **Okno „Add people”.** Jedno okno i jedna tabela osób dla obszaru roboczego i projektu. Możesz zaprosić osobę e-mailem albo dodać istniejące konto bez zaproszenia. Dodana osoba dostaje powiadomienie i e-mail (gdy SMTP jest skonfigurowany).
-- **Ochrona przed eskalacją ról.** Zaproszenie i zmiana roli nie mogą dać roli wyższej niż rola osoby, która je wykonuje.
-
-<p align="center">
-  <img src="docs/images/kaneo-pro/10-project-members.png" alt="Członkowie projektu z rolą projektu innej niż rola w obszarze roboczym" />
-  <br /><sub>Rola w projekcie może być inna niż rola w obszarze roboczym. Pod tabelą są oczekujące zaproszenia do projektu.</sub>
+  <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Gantt chart colored by the Phase custom field, with a Phase column" />
+  <br /><sub>Bars colored by the workspace field “Phase” (Design, Build, Test).</sub>
 </p>
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/10b-add-people.png" alt="Okno Add people" />
+  <img src="docs/images/kaneo-pro/07b-custom-fields-settings.png" alt="Workspace custom field settings" />
 </p>
 
-### 11. Narzędzia MCP
+### Tasks
 
-Serwer MCP (`/api/mcp` i pakiet `@kaneo/mcp`) ma nowe narzędzia:
+- **Multiple assignees**, including resources. The first assignee stays in the original `assignee` field, so existing integrations keep working.
+- **Approval gates.** A task can need approval (pending, approved or rejected), with a note. Tasks that an unapproved gate blocks get a warning on the Gantt chart. MCP and task exports include the approval fields.
+- **Date constraints, progress, milestones and baselines** are all in the task panel.
+- A visible menu button for task actions, next to the right-click menu.
+- A connection-lost notice instead of silently empty views.
 
-| Narzędzie | Działanie |
+<p align="center">
+  <img src="docs/images/kaneo-pro/08-task-detail.png" alt="Task detail with an approval gate, progress, baseline and a date constraint" />
+</p>
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/08b-task-constraint.png" alt="Choosing a date constraint for a task" width="49%" />
+  <img src="docs/images/kaneo-pro/08c-task-assignees.png" alt="Several assignees and a resource on one task" width="49%" />
+  <br /><sub>Left: date constraints. Right: several assignees and a resource on one task.</sub>
+</p>
+
+### Project-level access
+
+In Kaneo, every workspace member sees every project. In Kaneo Pro, access to a project comes from membership in that project.
+
+- **Full access:** the workspace owner, instance administrators and any role with `workspace:manage_settings` (the built-in `admin` has it). They see every project.
+- **Everyone else** sees only the projects they belong to. Each membership has a project role (`viewer`, `member`, `admin` or a custom role), which can differ from the person's workspace role.
+- **Enforced by the API.** Project lists, Portfolio, search, workload, activity, labels, relations, subtask counts, notifications, assignee checks and exports are filtered by project access. MCP clients and API keys use the same routes, so they get the same filtering.
+- **Realtime.** WebSocket connections re-check access every 60 seconds. Removing someone from a project or a workspace closes their open connections at once.
+- **Project invitations.** The inviter picks a workspace role and a project role, never above their own. Invitations are rate-limited and can be re-sent.
+- **Add people.** One dialog and one people table for workspaces and projects: invite by email, or add an existing account without an invitation. The person gets an in-app notification and, when SMTP is configured, an email.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/10-project-members.png" alt="Project members with project roles that differ from their workspace roles" />
+  <br /><sub>A project role can differ from the workspace role. Pending project invitations are listed below.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/10b-add-people.png" alt="The Add people dialog" />
+</p>
+
+### MCP for AI agents
+
+**Settings → Account → Developer → MCP** shows the MCP endpoint of your instance and copy-ready setup for Claude Code, Codex, Claude Desktop and claude.ai, JSON-config clients such as Cursor, and the `@kaneo/mcp` stdio package. The endpoint signs in through OAuth in the browser, so the commands contain no token.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/11-mcp.png" alt="MCP connection page with the endpoint URL and client setup commands" />
+</p>
+
+New MCP tools:
+
+| Tool | What it does |
 | --- | --- |
-| `list_project_custom_fields`, `get_task_custom_fields`, `set_task_custom_field_value` | Odczyt i zapis pól niestandardowych |
-| `set_task_baseline`, `clear_task_baseline` | Zapis i usunięcie planu bazowego |
-| `update_task_assignees` | Zmiana listy osób przypisanych |
-| `update_task_relation` | Zmiana typu zależności i opóźnienia |
-| `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Kalendarz pracy |
+| `list_project_custom_fields`, `get_task_custom_fields`, `set_task_custom_field_value` | Read and write custom fields |
+| `set_task_baseline`, `clear_task_baseline` | Save or clear a task's baseline |
+| `update_task_assignees` | Replace a task's assignees |
+| `update_task_relation` | Change a dependency's type and lag |
+| `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Manage the working calendar |
 
-Strona **Settings → Account → Developer → MCP** pokazuje adres punktu końcowego MCP tej instancji i gotowe polecenia do skopiowania dla Claude Code, Codex, Claude Desktop/claude.ai, klientów z konfiguracją JSON (na przykład Cursor) i pakietu `@kaneo/mcp`. Punkt końcowy loguje przez OAuth w przeglądarce, więc polecenia nie zawierają tokenu.
+`get_task` and `list_tasks` also return custom fields, and `create_task` and `update_task` accept progress, milestone, date constraint and approval fields.
 
-Narzędzia `get_task` i `list_tasks` zwracają też pola niestandardowe. Narzędzia `create_task` i `update_task` przyjmują postęp, kamień milowy, ograniczenie daty i status akceptacji. Narzędzia MCP używają tych samych tras HTTP co aplikacja, więc stosują te same reguły dostępu do projektu.
+## Quick start
 
-## Aktualizacja i zgodność
+> [!NOTE]
+> Kaneo Pro has no versioned releases yet. `ghcr.io/wmp/kaneo:main` is a preview image of the latest `main` commit, and it is published without waiting for CI. For anything beyond a trial, pin `ghcr.io/wmp/kaneo:sha-<short commit>` of a commit whose CI passed, or [build the image yourself](#build-the-image-yourself).
 
-> [!WARNING]
-> Przeczytaj ten rozdział przed aktualizacją istniejącej instalacji Kaneo do Kaneo Pro.
+### Docker Compose
 
-- **Migracje bazy danych.** Kaneo Pro ma własne migracje `0051`–`0058` (tabele i kolumny z prefiksem `ganttpro_`). Numeracja rozchodzi się z upstream od migracji `0051`. Migracje upstream `0051`–`0053` (tło projektu, kanały kalendarza) są w Kaneo Pro częścią migracji `0051_ganttpro_additions`. Aktualizacja z bazy Kaneo w wersji z migracją `0050` jest wspierana. Przy starcie API funkcja `reconcileMigrationJournal()` naprawia dziennik migracji w bazie, która ma już schemat. **Aktualizacja z bazy upstream, która ma już migracje `0051` lub nowsze, nie jest przetestowana.** Zrób kopię zapasową bazy przed aktualizacją.
-- **Dostęp do projektów po aktualizacji.** Migracja `0056` nie tworzy członkostw w projektach. Właściciel, administrator instancji i role z `workspace:manage_settings` dalej widzą wszystkie projekty. **Wszyscy inni członkowie (role `member`, `viewer` i role niestandardowe) tracą dostęp do istniejących projektów, dopóki administrator nie doda ich do projektów.**
-- **Wyszukiwarka kont („user directory”).** Okno „Add people” może szukać wszystkich kont instancji po nazwie i adresie e-mail. To ujawnia, że konto istnieje. Na instancji otwartej dla nieznanych osób ustaw `DISABLE_USER_DIRECTORY=true` i/lub `DISABLE_WORKSPACE_CREATION=true`. W Helm użyj `kaneo.env.disableUserDirectory`. Szczegóły są w [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md).
+Save this as `compose.yml`:
 
-## Znane ograniczenia
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kaneo}
+      POSTGRES_DB: ${POSTGRES_DB:-kaneo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-Decyzje projektowe są w [project-decisions.md](docs/agent-guide/project-decisions.md). Stan realizacji jest w [indeksie niezmienników](docs/agent-guide/invariants.md). Najważniejsze otwarte punkty:
+  kaneo:
+    image: ghcr.io/wmp/kaneo:main
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
-- Automatyczne przesuwanie zależnych zadań liczy przeglądarka. API sprawdza daty, ale nie sprawdza zgodności z grafem zależności (KAN-SCHED-005).
-- Przesunięcie zadania i przesunięcie zadań zależnych to dwa osobne żądania, a nie jedna transakcja (KAN-SCHED-006).
-- Przesuwanie nie obejmuje zadań zależnych z innych projektów (KAN-SCHED-007). Ścieżka krytyczna i linie zależności obejmują je.
-- Kanał kalendarza (iCal) nie jest powiązany z twórcą, więc działa dalej po utracie przez niego dostępu do projektu.
-- Obrazy kontenerów z gałęzi są tylko podglądem. Ich publikacja nie czeka na wynik CI (KAN-RELEASE-001).
+volumes:
+  postgres_data:
+```
 
-## Uruchomienie
+Save [`.env.sample`](.env.sample) as `.env` next to it. Check that `KANEO_CLIENT_URL=http://localhost:5173` is set, and set `POSTGRES_PASSWORD` and `AUTH_SECRET` (use the output of `openssl rand -hex 32`). Then run `docker compose up -d` and open [http://localhost:5173](http://localhost:5173).
 
-Kaneo Pro uruchamiasz tak samo jak Kaneo. Zobacz [instrukcję Docker Compose w README Kaneo](https://github.com/usekaneo/kaneo#quick-start-with-docker-compose), [przewodnik po konfiguracji](ENVIRONMENT_SETUP.md) i [chart Helm](charts/kaneo/README.md).
+> [!IMPORTANT]
+> `compose.yml`, `compose.coolify.yml` and the Helm chart in this repository still default to the upstream image `ghcr.io/usekaneo/kaneo`. Set the Kaneo Pro image as shown here, or you run upstream Kaneo.
 
-Różnica: użyj obrazów tego forka zamiast `ghcr.io/usekaneo/*`. Workflow [build-branch-images.yml](.github/workflows/build-branch-images.yml) publikuje obrazy `ghcr.io/wmp/kaneo`, `ghcr.io/wmp/api` i `ghcr.io/wmp/web` z tagiem nazwy gałęzi (na przykład `main`) i skróconym SHA commita. To są obrazy podglądowe, a nie wersje wydań.
+### Kubernetes (Helm)
 
-Środowisko deweloperskie:
+Use the chart from this repository, because it has the Kaneo Pro settings (such as `kaneo.env.disableUserDirectory`):
+
+```bash
+git clone https://github.com/WMP/kaneo.git kaneo-pro
+helm install kaneo ./kaneo-pro/charts/kaneo \
+  --namespace kaneo --create-namespace \
+  --set kaneo.image.repository=ghcr.io/wmp/kaneo \
+  --set kaneo.image.tag=main
+```
+
+See the [chart documentation](charts/kaneo/README.md) for ingress, TLS and production values.
+
+### Build the image yourself
 
 ```bash
 git clone https://github.com/WMP/kaneo.git kaneo-pro
 cd kaneo-pro
-pnpm install
-cp .env.sample .env   # ustaw DATABASE_URL, AUTH_SECRET i KANEO_CLIENT_URL
-pnpm dev              # API na porcie 1337, aplikacja web na porcie 5173
+docker build -f Dockerfile.kaneo -t kaneo-pro:local .
 ```
 
-## Utrzymanie forka
+Then use `image: kaneo-pro:local` in the Compose file. CI builds the same Dockerfile for every pull request.
 
-- **Synchronizacja z upstream.** Workflow [upstream-sync.yml](.github/workflows/upstream-sync.yml) raz w tygodniu (poniedziałek) pobiera `usekaneo/kaneo` `main`. Gdy upstream ma nowe commity, workflow otwiera jeden pull request do `main`. Konflikty rozwiązuje człowiek. Opis pull requestu ma raport migracji, aby konflikt numerów migracji był widoczny od razu.
-- **CI.** CI działa na runnerach GitHub. Test aktualizacji startuje z wydania upstream. Fork nie ma workflow do tytułów PR, rozmiaru PR i automatycznego przypisywania.
-- **Przewodnik dla agentów.** [AGENTS.md](AGENTS.md) i [docs/agent-guide](docs/agent-guide/README.md) opisują kontrakty, niezmienniki i sposób weryfikacji zmian. Plan dostępu na poziomie projektu jest w [docs/plans/project-membership.md](docs/plans/project-membership.md).
+### Local development
 
-## Licencja
+```bash
+pnpm install
+cp .env.sample .env   # set DATABASE_URL, AUTH_SECRET and KANEO_CLIENT_URL
+pnpm dev              # API on port 1337, web app on port 5173
+```
 
-MIT, tak jak Kaneo. Zobacz [LICENSE](LICENSE). Kaneo Pro bazuje na pracy [zespołu Kaneo i współtwórców](https://github.com/usekaneo/kaneo).
+Use Node.js 24 and pnpm 10.32.1. See the [environment setup guide](ENVIRONMENT_SETUP.md). Contributors and coding agents start with [AGENTS.md](AGENTS.md).
+
+## Configuration
+
+Kaneo Pro uses the Kaneo configuration described in [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md), plus these variables:
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `DISABLE_USER_DIRECTORY` | `false` | `true` turns off the account search in "Add people". People can still be invited by email. Helm: `kaneo.env.disableUserDirectory`. |
+| `ENABLE_USER_DIRECTORY` | `false` | With `KANEO_CLOUD=true`, the account search stays off unless this is `true`. |
+| `ACTIVITY_RETENTION_ENABLED` | enabled | `false` pauses the daily job that deletes activity older than each workspace's retention setting. |
+
+## Upgrading from Kaneo
+
+> [!WARNING]
+> Back up your database before you switch an existing Kaneo installation to Kaneo Pro, and read this section first.
+
+- **Base version.** Kaneo Pro is based on upstream `main` of 2026-09-26 (after v2.27.0, before v2.28.0). Newer upstream changes arrive through the weekly sync pull request. Until they are merged, moving from Kaneo v2.28 or later drops the upstream changes made since that date.
+- **Tested path.** The CI step "Upgrade from the latest stable release" starts the latest upstream release (v2.29.3 at the time of writing), seeds an account, a workspace membership, a project, a task, a comment and a private image, then starts Kaneo Pro on the same database. It checks that this data is intact and that writes still work.
+- **Migrations.** Kaneo Pro adds its own migrations `0051` to `0058` (tables and columns prefixed `ganttpro_`), so after `0050` the numbering differs from upstream. On start-up, the API reconciles the migration journal of a database that already has the schema, so that only the missing migrations run.
+- **Not carried over: project backgrounds and calendar feeds.** Kaneo v2.28 and later store them in `project.background_*` and `calendar_feed`. Kaneo Pro uses `project.ganttpro_background_*` and `ganttpro_calendar_feed`, and its migrations do not copy the data. The old data stays in the database, but Kaneo Pro does not show it: set the backgrounds again and create new calendar feed links after the upgrade.
+- **Project access changes.** Migration `0056` creates no project memberships. Workspace owners, instance administrators and roles with `workspace:manage_settings` keep access to every project. **All other members (`member`, `viewer` and custom roles) lose access to the existing projects until an administrator adds them.**
+- **User directory.** "Add people" can search every account on the instance by name and email, which reveals that an account exists. On an instance where anyone can sign up, set `DISABLE_USER_DIRECTORY=true`, `DISABLE_WORKSPACE_CREATION=true`, or both.
+
+## Known limitations
+
+The [project decisions](docs/agent-guide/project-decisions.md) describe the target, and the [invariant index](docs/agent-guide/invariants.md) records what is enforced today. The main open points:
+
+- The browser calculates auto-rescheduling. The API validates dates, but not the dependency graph (KAN-SCHED-005).
+- Moving a task and shifting its dependents are two requests, not one transaction (KAN-SCHED-006).
+- Auto-rescheduling does not move dependents in other projects (KAN-SCHED-007). The critical path and the dependency lines do include them.
+- Calendar feeds are not tied to their creator, so a feed keeps working after its creator loses access to the project.
+- Workspace resources are listed to every workspace member, whatever their project access.
+- Preview images are published without waiting for CI (KAN-RELEASE-001).
+
+## Staying in sync with upstream
+
+- A weekly workflow ([upstream-sync.yml](.github/workflows/upstream-sync.yml)) fetches upstream `main` and, when there is something new, opens one pull request. A person resolves the conflicts, and the pull request reports clashing migration numbers.
+- This README is specific to Kaneo Pro. When a sync pull request conflicts on `README.md`, keep this version.
+- CI runs on GitHub-hosted runners and includes the upgrade test from the latest upstream release.
+- The [agent guide](docs/agent-guide/README.md) holds the contracts, invariants and verification steps for changes.
+
+## License
+
+MIT, like Kaneo. See [LICENSE](LICENSE).
