@@ -1,193 +1,214 @@
+<h1 align="center">Kaneo Pro</h1>
+
 <p align="center">
-  <a href="https://kaneo.app">
-    <img src="https://assets.kaneo.app/logo-text.png" alt="Kaneo's logo" width="450" />
-  </a>
+  <b>kaneo-pro</b> to fork projektu <a href="https://github.com/usekaneo/kaneo">Kaneo</a>.<br />
+  Dodaje planowanie w stylu Gantt Pro, widoki całego obszaru roboczego i dostęp do danych na poziomie projektu.
 </p>
 
 <div align="center">
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/usekaneo/kaneo/ci.yml?branch=main)](https://github.com/usekaneo/kaneo/actions)
-[![Discord](https://img.shields.io/discord/1326250681530843178?color=7389D8&label=&logo=discord&logoColor=ffffff)](https://discord.gg/rU4tSyhXXU)
-[![Sponsors](https://img.shields.io/github/sponsors/andrejsshell)](https://github.com/sponsors/andrejsshell)
+[![upstream](https://img.shields.io/badge/upstream-usekaneo%2Fkaneo-555)](https://github.com/usekaneo/kaneo)
 
 </div>
-
-<div align="center">
-  <h3>
-    <a href="https://kaneo.app/docs/core">Quick Start</a>
-    <span> | </span>
-    <a href="https://kaneo.app">Website</a>
-    <span> | </span>
-    <a href="https://cloud.kaneo.app">Cloud</a>
-    <span> | </span>
-    <a href="https://discord.gg/rU4tSyhXXU">Discord</a>
-  </h3>
-</div>
-
 
 <p align="center">
-  <img src="https://assets.kaneo.app/readme.png" alt="Kaneo Dashboard" />
+  <img src="docs/images/kaneo-pro/01-gantt.png" alt="Wykres Gantta w Kaneo Pro: zależności, ścieżka krytyczna, postęp, kamienie milowe i plan bazowy" />
 </p>
 
-## Why Kaneo?
+## Czym jest Kaneo Pro
 
-After years of using bloated, overcomplicated project management platforms that distracted from actual work, we built Kaneo to be different.
+Kaneo to prosta platforma do zarządzania projektami, którą instalujesz na własnym serwerze. Kaneo Pro zachowuje tę bazę: tablicę, listę, zadania, integracje, MCP i wdrożenie Docker/Helm. Fork dodaje funkcje dla zespołów, które planują pracę w czasie i dzielą obszar roboczy między wiele projektów i osób.
 
-The problem with most tools isn't that they lack features, it's that they have **too many**. Every notification, every unnecessary button, every complex workflow pulls your team away from what matters: **building great products**.
+Ten dokument opisuje tylko **różnice** między Kaneo a Kaneo Pro. Instrukcje wspólne dla obu wersji są w [oryginalnym README Kaneo](https://github.com/usekaneo/kaneo#readme) i w [dokumentacji Kaneo](https://kaneo.app/docs/core).
 
-We believe the best tools are **invisible**. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that **less is more**: every feature exists because it solves a real problem, not because it looks impressive in a demo.
+Stan na 30.09.2026: fork ma około 300 własnych commitów ponad bazę upstream z 26.09.2026. Zmiany z upstream trafiają do forka przez cotygodniowy pull request (zobacz [Utrzymanie forka](#utrzymanie-forka)).
 
-**What makes it different:**
-- **Clean interface** that focuses on your work, not the tool
-- **Self-hosted** so your data stays yours
-- **Actually fast** because we care about performance
-- **Open source** with a permissive MIT license
+## Porównanie w skrócie
 
-Learn more about Kaneo's features and capabilities in our [documentation](https://kaneo.app/docs/core).
+| Obszar | Kaneo (upstream) | Kaneo Pro |
+| --- | --- | --- |
+| Wykres Gantta | Paski zadań na osi czasu | Linie zależności, typy FS/SS/FF/SF z opóźnieniem, ścieżka krytyczna, postęp, kamienie milowe, plan bazowy, paski podsumowania podzadań, automatyczne przesuwanie zależnych zadań, ograniczenia dat, przesuwanie i przybliżanie osi, skala Dzień/Tydzień/Miesiąc/Kwartał, wirtualizacja wierszy |
+| Zależności między projektami | Brak | Powiązania `blocks` między projektami jednego obszaru roboczego, ścieżka krytyczna przez granice projektów, blokada cykli |
+| Widoki obszaru roboczego | Brak | Portfolio (oś czasu wszystkich projektów), Obciążenie (workload), Aktywność z eksportem CSV/JSON |
+| Kalendarz pracy | Brak | Dni robocze i święta obszaru roboczego, cieniowanie na wykresie Gantta |
+| Pola niestandardowe | Na poziomie projektu | Także na poziomie obszaru roboczego, z dziedziczeniem i ukrywaniem w projekcie, kolory opcji, kolumna i kolorowanie na wykresie Gantta |
+| Osoby przypisane | Jedna osoba | Wiele osób, także zasoby bez konta (osoba, sprzęt, materiał) |
+| Bramki akceptacji | Brak | Status akceptacji z notatką na zadaniu, ostrzeżenia na wykresie Gantta |
+| Dostęp do danych | Każdy członek obszaru roboczego widzi wszystkie projekty | Członkostwo w projekcie z rolą projektu, zaproszenia do projektu, filtrowanie list, wyszukiwania, powiadomień i WebSocket |
+| Dodawanie osób | Zaproszenie e-mailem | Jedno okno „Add people”: zaproszenie albo dodanie istniejącego konta bez zaproszenia |
+| Narzędzia MCP | Zadania, projekty, etykiety | Dodatkowo: pola niestandardowe, plan bazowy, wiele osób przypisanych, typy zależności, kalendarz pracy |
+| Tłumaczenia | Interfejs w wielu językach | Nowe funkcje przetłumaczone we wszystkich językach; e-mail o dodaniu do obszaru roboczego po angielsku i po polsku |
 
-## Sponsors
+## Funkcje Kaneo Pro
 
-Kaneo is open source. If you find it useful, consider [sponsoring the project](https://github.com/sponsors/andrejsshell) to help support ongoing development.
+### 1. Wykres Gantta
 
-### Partners
+Wykres Gantta w Kaneo Pro jest narzędziem do planowania, nie tylko do podglądu dat.
 
-<p>
-  <img src="apps/site/public/images/blacksmith-powered.png" alt="CI powered by Blacksmith" width="368" />
+- **Linie zależności.** Wykres rysuje powiązania `blocks` między zadaniami. Aby utworzyć zależność, przeciągnij uchwyt z paska jednego zadania na drugie.
+- **Typy zależności.** Każda zależność ma typ FS, SS, FF albo SF i opóźnienie w dniach (lag). Typ jest widoczny na wykresie i można go zmienić.
+- **Automatyczne przesuwanie.** Gdy przesuwasz lub zmieniasz długość zadania, aplikacja przesuwa zadania zależne do przodu. Zależne zadanie trafia na dzień roboczy.
+- **Ścieżka krytyczna.** Wykres wyróżnia ścieżkę krytyczną. Zapas czasu jest liczony w dniach roboczych. Ścieżka przechodzi także przez zadania z innych projektów.
+- **Postęp i kamienie milowe.** Zadanie ma postęp w procentach (także zmiana wielu zadań naraz). Zadanie może być kamieniem milowym.
+- **Plan bazowy.** Zapisz plan bazowy zadania. Pasek pokazuje opóźnienie względem planu bazowego.
+- **Podzadania.** Zadanie nadrzędne ma pasek podsumowania z postępem ważonym czasem trwania. Grupę można zwinąć i rozwinąć.
+- **Ograniczenia dat.** Zadanie może mieć ograniczenie SNET (nie wcześniej niż), FNLT (zakończ nie później niż) albo MSO (musi zacząć się w dniu).
+- **Nawigacja.** Przeciągnij oś, aby ją przesunąć. Użyj kółka myszy, aby ją przybliżyć. Wybierz skalę Dzień, Tydzień, Miesiąc albo Kwartał. Domyślna skala zależy od zakresu dat projektu.
+- **Czytelność.** Wiersz pokazuje awatar właściciela i znacznik opóźnienia. Kolor paska może pochodzić z pierwszej etykiety albo z opcji pola niestandardowego. Kolumna z wybranym polem niestandardowym jest widoczna obok listy zadań.
+- **Duże projekty.** Wiersze są wirtualizowane, więc wykres działa płynnie także przy wielu zadaniach.
+- **Zadania bez dat.** Zadanie zależne z innego projektu, które nie ma dat, dostaje pozycję wyliczoną tylko do wyświetlenia.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/02-gantt-dependency-types.png" alt="Typy zależności FS, SS i FF z opóźnieniem na wykresie Gantta" />
 </p>
 
-### Community sponsors
+### 2. Zależności między projektami
 
-<!-- sponsors --><a href="https://github.com/danielsada"><img src="https:&#x2F;&#x2F;github.com&#x2F;danielsada.png" width="60px" alt="User avatar: Daniel Sada" /></a><a href="https://github.com/randoneering"><img src="https:&#x2F;&#x2F;github.com&#x2F;randoneering.png" width="60px" alt="User avatar: (justin)randoneering" /></a><a href="https://github.com/floreabogdan"><img src="https:&#x2F;&#x2F;github.com&#x2F;floreabogdan.png" width="60px" alt="User avatar: Bogdan FLOREA" /></a><a href="https://github.com/barbanet"><img src="https:&#x2F;&#x2F;github.com&#x2F;barbanet.png" width="60px" alt="User avatar: Damián Culotta" /></a><a href="https://github.com/t0yohei"><img src="https:&#x2F;&#x2F;github.com&#x2F;t0yohei.png" width="60px" alt="User avatar: t0yohei" /></a><!-- sponsors -->
+- Zadanie może blokować zadanie z innego projektu w tym samym obszarze roboczym.
+- API odrzuca powiązanie, które tworzy cykl w grafie `blocks` albo `subtask`.
+- API nie pozwala na powiązanie z zadaniem z innego obszaru roboczego.
 
-## Getting Started
+### 3. Portfolio
 
-### Deployment with drim
+Widok Portfolio pokazuje wszystkie projekty obszaru roboczego na jednej osi czasu. Widok rysuje linie zależności między projektami. Oś działa jak na wykresie Gantta: przesuwanie i przybliżanie.
 
-For straightforward deployments, use [drim](https://github.com/usekaneo/drim) - a CLI tool that handles everything for you:
+<p align="center">
+  <img src="docs/images/kaneo-pro/03-portfolio.png" alt="Widok Portfolio z zależnościami między projektami" />
+</p>
 
-Install drim using the [version-pinned download and checksum verification](https://kaneo.app/docs/core/installation/drim#installation), then run:
+### 4. Obciążenie (workload)
+
+Widok Obciążenie pokazuje każdego członka obszaru roboczego i zasoby. Wybierz zakres dat, aby zobaczyć podsumowanie. Kliknij wiersz, aby zobaczyć zadania tej osoby.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/04-workload.png" alt="Widok obciążenia członków obszaru roboczego" />
+</p>
+
+### 5. Aktywność obszaru roboczego
+
+- Jeden widok pokazuje aktywność ze wszystkich projektów.
+- Zmiany harmonogramu są widoczne na poziomie pól (na przykład stara i nowa data).
+- Filtr projektu zawęża listę.
+- Eksport do CSV i JSON.
+- Ustawienie retencji usuwa stare wpisy aktywności.
+- Zmiany kalendarza pracy też trafiają do aktywności.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/05-activity.png" alt="Aktywność obszaru roboczego ze zmianami harmonogramu" />
+</p>
+
+### 6. Kalendarz pracy
+
+Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne. Automatyczne przesuwanie zadań uwzględnia kalendarz.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/06-calendar.png" alt="Ustawienia kalendarza pracy obszaru roboczego" />
+</p>
+
+### 7. Pola niestandardowe obszaru roboczego
+
+- Pole niestandardowe może należeć do obszaru roboczego. Wszystkie projekty dziedziczą je automatycznie.
+- Projekt może ukryć pole, którego nie potrzebuje.
+- Opcje pola listy rozwijanej mają kolory. Wykres Gantta może użyć tych kolorów.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Pola niestandardowe obszaru roboczego" />
+</p>
+
+### 8. Zadania: wiele osób, bramki akceptacji, ograniczenia
+
+- **Wiele osób przypisanych.** Zadanie może mieć kilka osób przypisanych. Pierwsza osoba zostaje w starym polu `assignee`, więc istniejące integracje dalej działają.
+- **Bramka akceptacji.** Zadanie ma status akceptacji i notatkę. Wykres Gantta ostrzega, gdy zadanie zależne rusza przed akceptacją. MCP i eksport też obsługują te pola.
+- **Menu zadania.** Obok menu prawego przycisku myszy jest widoczny przycisk menu (kebab).
+- **Utrata połączenia.** Gdy połączenie z serwerem zostanie przerwane, aplikacja pokazuje komunikat. Widoki nie są wtedy po cichu puste.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/08-task-detail.png" alt="Szczegóły zadania z bramką akceptacji, ograniczeniem daty i wieloma osobami przypisanymi" />
+</p>
+
+### 9. Zasoby
+
+- Obszar roboczy ma zasoby bez konta: osoby, sprzęt i materiały.
+- Zadanie można przypisać do zasobu tak jak do użytkownika.
+- Zasób typu osoba można zaprosić do Kaneo. Po akceptacji zaproszenia zasób łączy się z kontem, a jego przypisania przechodzą na to konto.
+- Widok Obciążenie pokazuje połączony zasób i konto jako jeden wiersz.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/09-resources.png" alt="Ustawienia zasobów obszaru roboczego" />
+</p>
+
+### 10. Dostęp na poziomie projektu
+
+W Kaneo każdy członek obszaru roboczego widzi wszystkie projekty. W Kaneo Pro dostęp do danych projektu daje **członkostwo w projekcie**.
+
+- **Pełny dostęp** mają: właściciel obszaru roboczego, administrator instancji i każda rola z uprawnieniem `workspace:manage_settings` (na przykład wbudowana rola `admin`). Te osoby widzą wszystkie projekty.
+- **Inne osoby** widzą tylko projekty, w których są członkami. Członek projektu ma rolę projektu (`viewer`, `member`, `admin` albo rola niestandardowa).
+- API stosuje ten filtr do list projektów, Portfolio, wyszukiwania, obciążenia, aktywności, etykiet, powiązań, liczników podzadań, powiadomień, osób przypisanych i eksportu.
+- WebSocket sprawdza dostęp ponownie co 60 sekund. Po utracie dostępu serwer zamyka połączenie (kod 1008).
+- **Zaproszenie do projektu.** Osoba zapraszająca wybiera rolę w obszarze roboczym i rolę w projekcie. Żadna z nich nie może dać więcej uprawnień, niż ma osoba zapraszająca. Zaproszenia mają limit częstotliwości.
+- **Okno „Add people”.** Jedno okno i jedna tabela osób dla obszaru roboczego i projektu. Możesz zaprosić osobę e-mailem albo dodać istniejące konto bez zaproszenia. Dodana osoba dostaje powiadomienie i e-mail (gdy SMTP jest skonfigurowany).
+- **Ochrona przed eskalacją ról.** Zaproszenie i zmiana roli nie mogą dać roli wyższej niż rola osoby, która je wykonuje.
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/10-project-members.png" alt="Członkowie projektu i okno Add people" />
+</p>
+
+### 11. Narzędzia MCP
+
+Serwer MCP (`/api/mcp` i pakiet `@kaneo/mcp`) ma nowe narzędzia:
+
+| Narzędzie | Działanie |
+| --- | --- |
+| `list_project_custom_fields`, `get_task_custom_fields`, `set_task_custom_field_value` | Odczyt i zapis pól niestandardowych |
+| `set_task_baseline`, `clear_task_baseline` | Zapis i usunięcie planu bazowego |
+| `update_task_assignees` | Zmiana listy osób przypisanych |
+| `update_task_relation` | Zmiana typu zależności i opóźnienia |
+| `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Kalendarz pracy |
+
+Narzędzia `get_task` i `list_tasks` zwracają też pola niestandardowe. Narzędzia `create_task` i `update_task` przyjmują postęp, kamień milowy, ograniczenie daty i status akceptacji. Narzędzia MCP używają tych samych tras HTTP co aplikacja, więc stosują te same reguły dostępu do projektu.
+
+## Aktualizacja i zgodność
+
+> [!WARNING]
+> Przeczytaj ten rozdział przed aktualizacją istniejącej instalacji Kaneo do Kaneo Pro.
+
+- **Migracje bazy danych.** Kaneo Pro ma własne migracje `0051`–`0058` (tabele i kolumny z prefiksem `ganttpro_`). Numeracja rozchodzi się z upstream od migracji `0051`. Migracje upstream `0051`–`0053` (tło projektu, kanały kalendarza) są w Kaneo Pro częścią migracji `0051_ganttpro_additions`. Aktualizacja z bazy Kaneo w wersji z migracją `0050` jest wspierana. Przy starcie API funkcja `reconcileMigrationJournal()` naprawia dziennik migracji w bazie, która ma już schemat. **Aktualizacja z bazy upstream, która ma już migracje `0051` lub nowsze, nie jest przetestowana.** Zrób kopię zapasową bazy przed aktualizacją.
+- **Dostęp do projektów po aktualizacji.** Migracja `0056` nie tworzy członkostw w projektach. Właściciel, administrator instancji i role z `workspace:manage_settings` dalej widzą wszystkie projekty. **Wszyscy inni członkowie (role `member`, `viewer` i role niestandardowe) tracą dostęp do istniejących projektów, dopóki administrator nie doda ich do projektów.**
+- **Wyszukiwarka kont („user directory”).** Okno „Add people” może szukać wszystkich kont instancji po nazwie i adresie e-mail. To ujawnia, że konto istnieje. Na instancji otwartej dla nieznanych osób ustaw `DISABLE_USER_DIRECTORY=true` i/lub `DISABLE_WORKSPACE_CREATION=true`. W Helm użyj `kaneo.env.disableUserDirectory`. Szczegóły są w [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md).
+
+## Znane ograniczenia
+
+Decyzje projektowe są w [project-decisions.md](docs/agent-guide/project-decisions.md). Stan realizacji jest w [indeksie niezmienników](docs/agent-guide/invariants.md). Najważniejsze otwarte punkty:
+
+- Automatyczne przesuwanie zależnych zadań liczy przeglądarka. API sprawdza daty, ale nie sprawdza zgodności z grafem zależności (KAN-SCHED-005).
+- Przesunięcie zadania i przesunięcie zadań zależnych to dwa osobne żądania, a nie jedna transakcja (KAN-SCHED-006).
+- Przesuwanie nie obejmuje zadań zależnych z innych projektów (KAN-SCHED-007). Ścieżka krytyczna i linie zależności obejmują je.
+- Kanał kalendarza (iCal) nie jest powiązany z twórcą, więc działa dalej po utracie przez niego dostępu do projektu.
+- Obrazy kontenerów z gałęzi są tylko podglądem. Ich publikacja nie czeka na wynik CI (KAN-RELEASE-001).
+
+## Uruchomienie
+
+Kaneo Pro uruchamiasz tak samo jak Kaneo. Zobacz [instrukcję Docker Compose w README Kaneo](https://github.com/usekaneo/kaneo#quick-start-with-docker-compose), [przewodnik po konfiguracji](ENVIRONMENT_SETUP.md) i [chart Helm](charts/kaneo/README.md).
+
+Różnica: użyj obrazów tego forka zamiast `ghcr.io/usekaneo/*`. Workflow [build-branch-images.yml](.github/workflows/build-branch-images.yml) publikuje obrazy `ghcr.io/wmp/kaneo`, `ghcr.io/wmp/api` i `ghcr.io/wmp/web` z tagiem nazwy gałęzi (na przykład `main`) i skróconym SHA commita. To są obrazy podglądowe, a nie wersje wydań.
+
+Środowisko deweloperskie:
 
 ```bash
-drim setup
-```
-
-That's it. Your Kaneo instance will be running with automatic HTTPS, database setup, and all services configured.
-
-Perfect for quick deployments and production setups where you want things to just work.
-
-### Quick Start with Docker Compose
-
-The fastest way to try Kaneo is with Docker Compose. This sets up Kaneo and PostgreSQL with a single Kaneo container:
-
-```yaml
-services:
-  postgres:
-    image: postgres:16-alpine
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-kaneo}
-      POSTGRES_DB: ${POSTGRES_DB:-kaneo}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  kaneo:
-    image: ghcr.io/usekaneo/kaneo:latest
-    ports:
-      - "5173:5173"
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
-```
-
-Save this as `compose.yml`, copy `.env.sample` to `.env`, uncomment `KANEO_CLIENT_URL=http://localhost:5173`, and set `POSTGRES_PASSWORD=<password>` and `AUTH_SECRET=<output of openssl rand -hex 32>`, run `docker compose up -d`, and open [http://localhost:5173](http://localhost:5173).
-
-In Docker Compose, the bundled Kaneo container reaches PostgreSQL at the service hostname `postgres`.
-The database is reachable only inside the Compose network. If you run the API on your host, explicitly add a loopback-only database mapping (`127.0.0.1:5432:5432`) for development and configure `DATABASE_URL` accordingly.
-
-> **Important:** See our [full documentation](https://kaneo.app/docs/core) for detailed setup instructions, environment variable configuration, and troubleshooting guides.
-
-### Deploy on Coolify
-
-Kaneo ships a [Coolify-optimized `compose.coolify.yml`](compose.coolify.yml). In Coolify, create a **Public Repository** resource pointing to `https://github.com/usekaneo/kaneo`, pick the **Docker Compose** build pack (Base Directory `/`, Compose Location `compose.coolify.yml`), assign a domain to the `kaneo` service as `https://your-domain.com:5173`, set `KANEO_CLIENT_URL`, and deploy. `AUTH_SECRET` and the database password are auto-generated by Coolify. Leave `KANEO_API_URL` unset (it is derived from `KANEO_CLIENT_URL`; a `localhost` value breaks the browser API calls). See the [Coolify deployment guide](https://kaneo.app/docs/core/deployments/coolify) for details.
-
-### Development Setup
-
-For development, see our [Environment Setup Guide](ENVIRONMENT_SETUP.md) for detailed instructions on configuring environment variables and troubleshooting common issues like CORS problems.
-
-### Configuration
-
-Kaneo requires several environment variables to be configured. The Docker Compose setup above handles the database automatically, but you'll need to configure environment variables for the API and web services.
-
-For complete configuration instructions, including all required environment variables, database setup for non-Docker deployments, and advanced settings, see the [documentation](https://kaneo.app/docs/core). Advanced deployments can still use the separate `ghcr.io/usekaneo/api` and `ghcr.io/usekaneo/web` images.
-
-## Kubernetes Deployment
-
-If you're running Kubernetes, we provide a comprehensive Helm chart. Check out the [Helm chart documentation](./charts/kaneo/README.md) for detailed installation instructions, production configuration examples, TLS setup, and more.
-
-## Development
-
-Want to hack on Kaneo? See our [Environment Setup Guide](ENVIRONMENT_SETUP.md) for detailed instructions on configuring environment variables and troubleshooting common issues like CORS problems.
-
-Quick start:
-```bash
-# Clone and install dependencies
-git clone https://github.com/usekaneo/kaneo.git
-cd kaneo
+git clone https://github.com/WMP/kaneo.git kaneo-pro
+cd kaneo-pro
 pnpm install
-
-# Create a .env file in the root with required environment variables
-# See ENVIRONMENT_SETUP.md for detailed instructions
-
-# Start development servers
-pnpm dev
+cp .env.sample .env   # ustaw DATABASE_URL, AUTH_SECRET i KANEO_CLIENT_URL
+pnpm dev              # API na porcie 1337, aplikacja web na porcie 5173
 ```
 
-For contributing guidelines, code structure, and development best practices, check out our [contributing guide](CONTRIBUTING.md) and [documentation](https://kaneo.app/docs/core).
+## Utrzymanie forka
 
-## MCP Server
+- **Synchronizacja z upstream.** Workflow [upstream-sync.yml](.github/workflows/upstream-sync.yml) raz w tygodniu (poniedziałek) pobiera `usekaneo/kaneo` `main`. Gdy upstream ma nowe commity, workflow otwiera jeden pull request do `main`. Konflikty rozwiązuje człowiek. Opis pull requestu ma raport migracji, aby konflikt numerów migracji był widoczny od razu.
+- **CI.** CI działa na runnerach GitHub. Test aktualizacji startuje z wydania upstream. Fork nie ma workflow do tytułów PR, rozmiaru PR i automatycznego przypisywania.
+- **Przewodnik dla agentów.** [AGENTS.md](AGENTS.md) i [docs/agent-guide](docs/agent-guide/README.md) opisują kontrakty, niezmienniki i sposób weryfikacji zmian. Plan dostępu na poziomie projektu jest w [docs/plans/project-membership.md](docs/plans/project-membership.md).
 
-Kaneo has an official [MCP (Model Context Protocol) server](https://kaneo.app/docs/core/integrations/mcp), so AI tools like Claude, Cursor, and other MCP clients can manage your tasks, projects, and labels. Every instance ships a built-in HTTP MCP endpoint at `/api/mcp`, and for stdio clients there is the official [@kaneo/mcp](https://www.npmjs.com/package/@kaneo/mcp) package on npm (`npx -y @kaneo/mcp`).
+## Licencja
 
-## Community
-
-- **[Discord](https://discord.gg/rU4tSyhXXU)** - Chat with users and contributors
-- **[GitHub Issues](https://github.com/usekaneo/kaneo/issues)** - Bug reports and feature requests
-- **[Documentation](https://kaneo.app/docs/core)** - Detailed guides, API docs, and tutorials
-
-## Contributing
-
-We're always looking for help, whether that's:
-- Reporting bugs or suggesting features
-- Improving documentation
-- Contributing code
-- Helping other users on Discord
-
-Check out [CONTRIBUTING.md](CONTRIBUTING.md) for the details on how to get involved.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-  <img src="https://repobeats.axiom.co/api/embed/3e8367ec2b2350e4fc48662df33c81dac657b833.svg" alt="Repobeats analytics image" />
-</div>
-
-<p align="center">
-  Built with ❤️ by the Kaneo team and <a href="#contributors">contributors</a>
-</p>
+MIT, tak jak Kaneo. Zobacz [LICENSE](LICENSE). Kaneo Pro bazuje na pracy [zespołu Kaneo i współtwórców](https://github.com/usekaneo/kaneo).
