@@ -47,7 +47,8 @@ The weekly workflow `upstream-sync.yml` already opens one merge pull request. A 
    3. Upgrade the same database to the Kaneo Pro candidate.
    4. Check that every base entity is still there with the same values, and that the base views show the same data. Compare the data shown, not the pixels: the two user interfaces differ. For example, compare text read from the page, or let a person or an agent review the screenshots side by side.
    5. Seed the `pro` layer and run the Kaneo Pro checks (later also the end-to-end suite).
-3. **Release.** Tag a Kaneo Pro version that records the Kaneo version it is compatible with, after CI passes for that exact commit (DEC-RELEASE-01).
+3. **README.** Run the `update-readme` skill (`.claude/skills/update-readme/`) for the merged range. It updates the base version, the tested release and the Kaneo column of the comparison table.
+4. **Release.** Tag a Kaneo Pro version that records the Kaneo version it is compatible with, after CI passes for that exact commit (DEC-RELEASE-01).
 
 Records to add in that pull request:
 
