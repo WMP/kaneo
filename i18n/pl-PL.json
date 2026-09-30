@@ -2328,7 +2328,19 @@
 			"hiddenOnProject": "Ukryte",
 			"hideField": "Ukryj „{{name}}\" dla tego projektu",
 			"showField": "Pokaż „{{name}}\" dla tego projektu",
-			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola."
+			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola.",
+			"editFieldAriaLabel": "Edytuj pole własne „{{name}}\"",
+			"editFormAriaLabel": "Edycja pola własnego „{{name}}\"",
+			"nameLabel": "Nazwa",
+			"typeLabel": "Typ",
+			"typeReadOnlyHint": "Typu nie można zmienić po utworzeniu pola.",
+			"optionsLabel": "Opcje",
+			"defaultValueLabel": "Wartość domyślna",
+			"saveButton": "Zapisz",
+			"cancelButton": "Anuluj",
+			"saving": "Zapisywanie…",
+			"updateSuccess": "Pole własne zostało zaktualizowane.",
+			"updateError": "Nie udało się zaktualizować pola własnego."
 		},
 		"administration": "Administracja",
 		"adminUsers": {

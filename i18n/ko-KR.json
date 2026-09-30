@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "워크스페이스에서 필수",
 			"showField": "이 프로젝트에서 \"{{name}}\" 표시",
 			"visibilityUpdateError": "필드 표시 여부를 업데이트하지 못했습니다.",
-			"visibleOnProject": "표시됨"
+			"visibleOnProject": "표시됨",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "관리",
 		"adminUsers": {

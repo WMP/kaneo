@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "Diwajibkan oleh ruang kerja",
 			"showField": "Tampilkan \"{{name}}\" untuk proyek ini",
 			"visibilityUpdateError": "Gagal memperbarui visibilitas kolom.",
-			"visibleOnProject": "Terlihat"
+			"visibleOnProject": "Terlihat",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Administrasi",
 		"adminUsers": {
