@@ -47,17 +47,38 @@ export async function publishEvent(
   }
 }
 
+// Handlers that are running. `EventEmitter.emit` discards the promises of async
+// listeners, so a publisher (or a test) cannot tell when the reactions to an
+// event (activity rows, notifications, integrations) have finished writing.
+const IN_FLIGHT_HANDLERS = new Set<Promise<void>>();
+
+// Resolves once no event handler is running, including handlers started by
+// other handlers meanwhile. For tests and shutdown: the integration harness
+// waits for it before truncating tables, otherwise a handler of the previous
+// test still writing takes locks that deadlock the TRUNCATE (`40P01`).
+export async function waitForPendingEventHandlers(): Promise<void> {
+  while (IN_FLIGHT_HANDLERS.size > 0) {
+    await Promise.allSettled([...IN_FLIGHT_HANDLERS]);
+  }
+}
+
 export async function subscribeToEvent<T>(
   eventType: string,
   handler: (data: T) => Promise<void>,
 ): Promise<void> {
   try {
-    EVENTS.on(eventType, async (payload: EventPayload<T>) => {
-      try {
-        await handler(payload.data);
-      } catch (error) {
-        console.error(`Error processing event ${eventType}:`, error);
-      }
+    EVENTS.on(eventType, (payload: EventPayload<T>) => {
+      const running = (async () => {
+        try {
+          await handler(payload.data);
+        } catch (error) {
+          console.error(`Error processing event ${eventType}:`, error);
+        }
+      })();
+      IN_FLIGHT_HANDLERS.add(running);
+      void running.finally(() => IN_FLIGHT_HANDLERS.delete(running));
+      // `publishEvent` with `waitForHandlers` awaits what the listener returns.
+      return running;
     });
   } catch (error) {
     console.error("Failed to subscribe to event:", error);

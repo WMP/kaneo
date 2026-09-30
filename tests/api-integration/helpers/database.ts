@@ -4,6 +4,8 @@ import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client } from "pg";
 import db from "../../../apps/api/src/database";
+import * as events from "../../../apps/api/src/events";
+import { retryTransaction } from "../../../apps/api/src/utils/retry-transaction";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../../apps/api/drizzle");
@@ -95,8 +97,24 @@ async function listPublicTableNames(): Promise<string[]> {
   return result.rows.map((row) => row.table_name);
 }
 
+// The event bus discards the promises of its async handlers, so the reactions
+// to a test's last event (activity rows, notifications) can still be writing
+// when the next test starts. Wait for them: they hold row locks that make the
+// TRUNCATE below deadlock (`40P01`). A test that replaces the events module
+// wholesale has nothing to wait for.
+async function drainEventHandlers() {
+  try {
+    await (
+      events as { waitForPendingEventHandlers?: () => Promise<void> }
+    ).waitForPendingEventHandlers?.();
+  } catch {
+    // The events module is mocked without the helper.
+  }
+}
+
 export async function resetTestDatabase() {
   await ensureTestDatabaseMigrated();
+  await drainEventHandlers();
 
   const tableNames = await listPublicTableNames();
 
@@ -108,7 +126,16 @@ export async function resetTestDatabase() {
 
   const formattedTableNames = tableNames.map(quoteIdentifier).join(", ");
 
-  await db.execute(
-    sql.raw(`TRUNCATE TABLE ${formattedTableNames} RESTART IDENTITY CASCADE`),
+  // Safety net for background work that is not an event handler (a scheduler
+  // tick, a delivery started with `void`): if the server picks the TRUNCATE as a
+  // deadlock victim, run it again, at most 3 attempts.
+  await retryTransaction(
+    () =>
+      db.execute(
+        sql.raw(
+          `TRUNCATE TABLE ${formattedTableNames} RESTART IDENTITY CASCADE`,
+        ),
+      ),
+    { backoffMs: 100 },
   );
 }

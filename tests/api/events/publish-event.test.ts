@@ -4,7 +4,42 @@ import {
   publishEvent,
   shutdownEventBus,
   subscribeToEvent,
+  waitForPendingEventHandlers,
 } from "../../../apps/api/src/events/index";
+
+describe("waitForPendingEventHandlers", () => {
+  it("waits for a fire-and-forget handler, and for one that publishes another event", async () => {
+    const done: string[] = [];
+    await subscribeToEvent("test.drain.second", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      done.push("second");
+    });
+    await subscribeToEvent("test.drain.first", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      done.push("first");
+      await publishEvent("test.drain.second", {});
+    });
+
+    // A plain publish does not wait for the handlers.
+    await publishEvent("test.drain.first", {});
+    expect(done).toEqual([]);
+
+    await waitForPendingEventHandlers();
+    expect(done).toEqual(["first", "second"]);
+  });
+
+  it("resolves at once when nothing is running, and after a failing handler", async () => {
+    await waitForPendingEventHandlers();
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await subscribeToEvent("test.drain.fails", async () => {
+      throw new Error("boom");
+    });
+    await publishEvent("test.drain.fails", {});
+    await waitForPendingEventHandlers();
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+  });
+});
 
 describe("publishEvent / subscribeToEvent", () => {
   it("awaits subscriber completion in sequence when requested", async () => {
