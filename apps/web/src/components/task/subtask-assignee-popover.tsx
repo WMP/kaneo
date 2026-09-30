@@ -117,7 +117,7 @@ export default function SubtaskAssigneePopover({
   return (
     <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
+      <PopoverContent className="w-72 p-0" align="start">
         <div
           className="max-h-80 space-y-1 overflow-y-auto p-1"
           onScroll={handleListScroll}
@@ -129,20 +129,20 @@ export default function SubtaskAssigneePopover({
             onClick={() => handleAssigneeChange("")}
           >
             <div
-              className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
+              className="w-6 h-6 shrink-0 rounded-full bg-muted border border-border flex items-center justify-center"
               title={t("tasks:popover.assignee.unassigned")}
             >
               <span className="text-[10px] font-medium text-muted-foreground">
                 ?
               </span>
             </div>
-            <span className="text-sm">
+            <span className="min-w-0 truncate text-sm">
               {t("tasks:popover.assignee.unassigned")}
             </span>
             {allSameAssignee && !currentAssignee ? (
-              <Check className="ml-auto h-4 w-4" />
+              <Check className="ml-auto h-4 w-4 shrink-0" />
             ) : (
-              <ShortcutNumber number={1} />
+              <ShortcutNumber number={1} className="shrink-0" />
             )}
           </Button>
           {visibleUsersOptions.map((user, index) => (

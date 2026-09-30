@@ -13,6 +13,8 @@ import TaskAssigneePopover from "./task-assignee-popover";
 
 afterEach(() => {
   permissions.canAssign = true;
+  permissions.canInvite = true;
+  permissions.canUpdateProjects = true;
   permissions.projectId = undefined;
   permissions.membersProjectId = undefined;
   cleanup();
@@ -23,6 +25,7 @@ afterEach(() => {
 const updateTaskAssignees = vi.fn();
 const toastError = vi.fn();
 const createResource = vi.fn();
+const inviteDialog = vi.fn();
 
 vi.mock("@/hooks/mutations/task/use-update-task-assignees", () => ({
   useUpdateTaskAssignees: () => ({ mutateAsync: updateTaskAssignees }),
@@ -51,6 +54,17 @@ const workspaceResources: Resource[] = [
     createdAt: "2026-07-17T00:00:00.000Z",
     updatedAt: "2026-07-17T00:00:00.000Z",
   },
+  {
+    id: "r3",
+    workspaceId: "workspace-1",
+    kind: "person",
+    name: "Nina",
+    email: "nina@example.com",
+    userId: null,
+    linked: false,
+    createdAt: "2026-07-17T00:00:00.000Z",
+    updatedAt: "2026-07-17T00:00:00.000Z",
+  },
 ];
 
 vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
@@ -72,16 +86,45 @@ vi.mock("@/hooks/use-numbered-shortcuts", () => ({
 // workspace-level action and stays with the workspace role.
 const permissions = vi.hoisted(() => ({
   canAssign: true,
+  canInvite: true,
+  canUpdateProjects: true,
   projectId: undefined as string | undefined,
   membersProjectId: undefined as string | undefined,
 }));
 vi.mock("@/hooks/use-workspace-permission", () => ({
-  useWorkspacePermission: () => ({ canUpdateProjects: () => true }),
+  useWorkspacePermission: () => ({
+    canUpdateProjects: () => permissions.canUpdateProjects,
+  }),
 }));
 vi.mock("@/hooks/use-project-permission", () => ({
   useProjectPermission: (projectId: string) => {
     permissions.projectId = projectId;
-    return { canAssignTasks: () => permissions.canAssign };
+    return {
+      canAssignTasks: () => permissions.canAssign,
+      canInviteToProject: () => permissions.canInvite,
+    };
+  },
+}));
+
+// The real dialog loads roles and projects; what matters here is what the
+// popover hands it and that it outlives the popover.
+vi.mock("@/components/resource/resource-invite-dialog", () => ({
+  default: (props: {
+    resource: Resource;
+    workspaceId: string;
+    defaultProjectIds?: string[];
+    canLink: boolean;
+    onClose: () => void;
+  }) => {
+    inviteDialog(props);
+    return (
+      <div role="dialog" aria-label="invite">
+        <span>{props.resource.name}</span>
+        <button type="button" onClick={props.onClose}>
+          close-invite
+        </button>
+      </div>
+    );
   },
 }));
 
@@ -370,6 +413,162 @@ describe("TaskAssigneePopover", () => {
         userIds: ["u1"],
         resourceIds: ["r2"],
       });
+    });
+  });
+  describe("inviting a person resource", () => {
+    const inviteLabel = "tasks:popover.assignee.inviteResource";
+
+    const openPicker = async () => {
+      render(
+        <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+          <Button>Assignee</Button>
+        </TaskAssigneePopover>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+      await screen.findByRole("button", { name: /Drill/ });
+    };
+
+    it("opens the invite dialog from a resource row, closing the picker but not the dialog", async () => {
+      await openPicker();
+
+      fireEvent.click(screen.getByRole("button", { name: inviteLabel }));
+
+      expect(
+        await screen.findByRole("dialog", { name: "invite" }),
+      ).toBeVisible();
+      expect(inviteDialog).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          resource: expect.objectContaining({ id: "r3", name: "Nina" }),
+          workspaceId: "workspace-1",
+          defaultProjectIds: ["project-1"],
+          canLink: false,
+        }),
+      );
+      // The picker is gone, the dialog stays and inviting assigns nobody.
+      await waitFor(() =>
+        expect(screen.queryByRole("button", { name: /Drill/ })).toBeNull(),
+      );
+      expect(screen.getByRole("dialog", { name: "invite" })).toBeVisible();
+      expect(updateTaskAssignees).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole("button", { name: "close-invite" }));
+      expect(screen.queryByRole("dialog", { name: "invite" })).toBeNull();
+    });
+
+    it("opens the invite dialog right after a person is created inline with an email", async () => {
+      updateTaskAssignees.mockResolvedValue(undefined);
+      createResource.mockResolvedValue({
+        id: "r4",
+        workspaceId: "workspace-1",
+        kind: "person",
+        name: "Olek",
+        email: "olek@example.com",
+        userId: null,
+        linked: false,
+        createdAt: "2026-07-17T00:00:00.000Z",
+        updatedAt: "2026-07-17T00:00:00.000Z",
+      });
+      await openPicker();
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: /tasks:popover.assignee.addResource/,
+        }),
+      );
+      fireEvent.change(
+        screen.getByPlaceholderText(
+          "tasks:popover.assignee.newResourceNamePlaceholder",
+        ),
+        { target: { value: "Olek" } },
+      );
+      fireEvent.change(
+        screen.getByPlaceholderText(
+          "tasks:popover.assignee.newResourceEmailPlaceholder",
+        ),
+        { target: { value: "olek@example.com" } },
+      );
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "tasks:popover.assignee.createResource",
+        }),
+      );
+
+      expect(
+        await screen.findByRole("dialog", { name: "invite" }),
+      ).toBeVisible();
+      expect(inviteDialog).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          resource: expect.objectContaining({ id: "r4", name: "Olek" }),
+          defaultProjectIds: ["project-1"],
+        }),
+      );
+      // The new resource is still assigned to the task.
+      await waitFor(() =>
+        expect(updateTaskAssignees).toHaveBeenCalledWith({
+          taskId: "task-1",
+          projectId: "project-1",
+          userIds: ["u1"],
+          resourceIds: ["r4"],
+        }),
+      );
+    });
+
+    it("does not open the invite dialog for a person created without an email", async () => {
+      updateTaskAssignees.mockResolvedValue(undefined);
+      createResource.mockResolvedValue({
+        id: "r5",
+        workspaceId: "workspace-1",
+        kind: "person",
+        name: "Contractor",
+        email: null,
+        userId: null,
+        linked: false,
+        createdAt: "2026-07-17T00:00:00.000Z",
+        updatedAt: "2026-07-17T00:00:00.000Z",
+      });
+      await openPicker();
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: /tasks:popover.assignee.addResource/,
+        }),
+      );
+      fireEvent.change(
+        screen.getByPlaceholderText(
+          "tasks:popover.assignee.newResourceNamePlaceholder",
+        ),
+        { target: { value: "Contractor" } },
+      );
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "tasks:popover.assignee.createResource",
+        }),
+      );
+
+      await waitFor(() => expect(updateTaskAssignees).toHaveBeenCalled());
+      expect(screen.queryByRole("dialog", { name: "invite" })).toBeNull();
+      expect(inviteDialog).not.toHaveBeenCalled();
+    });
+
+    it("offers no invitation without invitation:create in the task's project", async () => {
+      permissions.canInvite = false;
+      await openPicker();
+
+      expect(screen.getByRole("button", { name: /Nina/ })).toBeVisible();
+      expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
+    });
+
+    it("offers no invitation without the workspace permission to manage resources", async () => {
+      permissions.canUpdateProjects = false;
+      await openPicker();
+
+      expect(screen.getByRole("button", { name: /Nina/ })).toBeVisible();
+      expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
+      expect(
+        screen.queryByRole("button", {
+          name: /tasks:popover.assignee.addResource/,
+        }),
+      ).toBeNull();
     });
   });
 });

@@ -2524,7 +2524,10 @@
 					"person": "Kişi"
 				},
 				"resourcesHeading": "Kaynaklar",
-				"notInProject": "Artık bu projede değil"
+				"notInProject": "Artık bu projede değil",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Talep durumu güncellenemedi"

@@ -2524,7 +2524,10 @@
 					"person": "Πρόσωπο"
 				},
 				"resourcesHeading": "Πόροι",
-				"notInProject": "Δεν είναι πλέον σε αυτό το έργο"
+				"notInProject": "Δεν είναι πλέον σε αυτό το έργο",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Αποτυχία ενημέρωσης κατάστασης εργασίας"

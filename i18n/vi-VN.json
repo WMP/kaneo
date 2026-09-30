@@ -2517,7 +2517,10 @@
 					"person": "Người"
 				},
 				"resourcesHeading": "Tài nguyên",
-				"notInProject": "Không còn trong dự án này"
+				"notInProject": "Không còn trong dự án này",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Không thể cập nhật trạng thái công việc"

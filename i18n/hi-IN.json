@@ -2524,7 +2524,10 @@
 					"person": "व्यक्ति"
 				},
 				"resourcesHeading": "संसाधन",
-				"notInProject": "अब इस प्रोजेक्ट में नहीं है"
+				"notInProject": "अब इस प्रोजेक्ट में नहीं है",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "कार्य की स्थिति अपडेट करने में विफल"

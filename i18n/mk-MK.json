@@ -2524,7 +2524,10 @@
 					"person": "Лице"
 				},
 				"resourcesHeading": "Ресурси",
-				"notInProject": "Веќе не е во овој проект"
+				"notInProject": "Веќе не е во овој проект",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Неуспешно ажурирање на статус на задача"

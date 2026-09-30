@@ -39,6 +39,9 @@ type Props = {
   onLinkInstead: (resource: Resource) => void;
   /** May the caller link a resource to a member (what the API requires)? */
   canLink: boolean;
+  /** Projects ticked by default besides the ones the resource has tasks in
+   * (the project the dialog was opened from). */
+  defaultProjectIds?: string[];
 };
 
 type Created = { id: string; message: string };
@@ -128,9 +131,9 @@ function ProjectInviteRow({
 /**
  * "Invite" on a person resource: one invitation to the resource's email
  * address, with a workspace role and a role in each chosen project. The
- * projects the resource has tasks in are pre-selected. Which roles may be
- * offered comes from the API (the caller's own permissions, per project); the
- * API enforces the same again on send.
+ * projects the resource has tasks in (and `defaultProjectIds`) are
+ * pre-selected. Which roles may be offered comes from the API (the caller's own
+ * permissions, per project); the API enforces the same again on send.
  */
 function ResourceInviteDialog({
   resource,
@@ -138,6 +141,7 @@ function ResourceInviteDialog({
   onClose,
   onLinkInstead,
   canLink,
+  defaultProjectIds,
 }: Props) {
   const { t } = useTranslation();
   const emailDelivery = useInvitationEmailDelivery();
@@ -149,7 +153,7 @@ function ResourceInviteDialog({
   const projects = projectsQuery.data ?? [];
 
   // What the user changed; everything else follows the defaults (the projects
-  // the resource has tasks in are ticked).
+  // the resource has tasks in, and `defaultProjectIds`, are ticked).
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   // The role each ticked project will get, reported by its row.
   const [projectRoles, setProjectRoles] = useState<
@@ -165,7 +169,8 @@ function ResourceInviteDialog({
   const [created, setCreated] = useState<Created | null>(null);
 
   const isTicked = (projectId: string, hasAssignments: boolean) =>
-    ticked[projectId] ?? hasAssignments;
+    ticked[projectId] ??
+    (hasAssignments || Boolean(defaultProjectIds?.includes(projectId)));
   const selectedProjects = projects.filter((project) =>
     isTicked(project.id, project.hasAssignments),
   );

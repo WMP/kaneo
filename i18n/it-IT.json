@@ -2531,7 +2531,10 @@
 					"person": "Persona"
 				},
 				"resourcesHeading": "Risorse",
-				"notInProject": "Non più in questo progetto"
+				"notInProject": "Non più in questo progetto",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Aggiornamento stato attività fallito"

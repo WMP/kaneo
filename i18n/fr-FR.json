@@ -2531,7 +2531,10 @@
 					"person": "Personne"
 				},
 				"resourcesHeading": "Ressources",
-				"notInProject": "N'est plus dans ce projet"
+				"notInProject": "N'est plus dans ce projet",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Échec de la mise à jour du statut de la tâche"

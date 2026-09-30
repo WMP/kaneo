@@ -2517,7 +2517,10 @@
 					"person": "Orang"
 				},
 				"resourcesHeading": "Sumber daya",
-				"notInProject": "Tidak lagi di proyek ini"
+				"notInProject": "Tidak lagi di proyek ini",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Gagal memperbarui status tugas"

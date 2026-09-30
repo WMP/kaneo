@@ -2971,7 +2971,10 @@
 				"newResourceNamePlaceholder": "Nazwa",
 				"newResourceEmailPlaceholder": "E-mail (opcjonalnie)",
 				"createResource": "Utwórz",
-				"createResourceError": "Nie udało się utworzyć zasobu"
+				"createResourceError": "Nie udało się utworzyć zasobu",
+				"assignedCount": "Przypisano: {{count}}",
+				"inviteResource": "Zaproś do projektu",
+				"invitationPending": "Zaproszenie wysłane"
 			},
 			"dueDate": {
 				"clear": "Wyczyść datę",
