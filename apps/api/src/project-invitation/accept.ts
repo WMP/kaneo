@@ -75,9 +75,21 @@ export async function beforeAcceptProjectInvitation({
       message: "You are already a member of this workspace.",
     });
   }
-  await removeUserProjectMemberships(user.id, invitation.organizationId);
+  await purgeLeftoversOfEarlierMembership(user.id, invitation.organizationId);
+}
+
+// What a fresh join (an accepted invitation, or an existing account added
+// directly) must not inherit from an earlier membership of the same person in
+// the workspace: their project memberships there, and the links of their
+// account to the workspace's resources. Every project role of a workspace
+// member comes from an invitation or an explicit add.
+export async function purgeLeftoversOfEarlierMembership(
+  userId: string,
+  workspaceId: string,
+): Promise<void> {
+  await removeUserProjectMemberships(userId, workspaceId);
   // Likewise a link an earlier membership left behind on a resource.
-  await unlinkUserResources(user.id, invitation.organizationId);
+  await unlinkUserResources(userId, workspaceId);
 }
 
 // Runs after Better Auth accepted the invitation and created the member. Turns

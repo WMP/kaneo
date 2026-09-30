@@ -2,6 +2,31 @@ import { z } from "../openapi";
 
 export const workspaceIdParam = z.object({ workspaceId: z.string() });
 
+export const workspaceMembersQuery = z.object({
+  include: z.enum(["projects"]).optional().openapi({
+    description:
+      'Pass "projects" to add `projects` and `fullAccess` to every member. Only a caller who manages members (workspace role with member:create, member:update or member:delete) or has full access gets them; for anybody else the parameter has no effect.',
+  }),
+});
+
+export const userDirectoryQuery = z.object({
+  q: z.string().max(100).openapi({
+    description:
+      "Part of a name or email address, at least 2 characters after trimming.",
+  }),
+});
+
+export const addWorkspaceMemberBody = z.object({
+  userId: z.string().min(1).openapi({
+    description:
+      "An existing account of this instance that is not a member of the workspace yet (find it with the user directory).",
+  }),
+  role: z.string().min(1).openapi({
+    description:
+      "The workspace role to grant: the built-in viewer, member or admin, or a custom role. owner is never allowed, and every permission of the role must also be held by the caller (owners and instance administrators may grant any role except owner).",
+  }),
+});
+
 const pagingNumber = (min: number, max: number) =>
   z
     .string()

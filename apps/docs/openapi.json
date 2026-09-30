@@ -616,6 +616,10 @@
           },
           "billingEnabled": {
             "type": "boolean"
+          },
+          "userDirectoryEnabled": {
+            "type": "boolean",
+            "description": "Whether people who may add workspace members can search all accounts of the instance by name or email. False when DISABLE_USER_DIRECTORY is set, and on Kaneo Cloud unless ENABLE_USER_DIRECTORY is set."
           }
         },
         "required": [
@@ -633,7 +637,8 @@
           "disableLoginForm",
           "customOAuthAutoLogin",
           "customOAuthLogoutUrl",
-          "billingEnabled"
+          "billingEnabled",
+          "userDirectoryEnabled"
         ]
       },
       "McpClientRegistration": {
@@ -1150,6 +1155,18 @@
             "type": "string",
             "description": "For a project member, the project role. For a full-access member, their workspace role."
           },
+          "workspaceRole": {
+            "type": "string",
+            "description": "The person's workspace role, for every row (for a full-access member it equals `role`)."
+          },
+          "joinedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the person was added to the project. Null for a full-access member, who did not join the project but reaches it through their workspace role."
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -1169,6 +1186,8 @@
           "email",
           "image",
           "role",
+          "workspaceRole",
+          "joinedAt",
           "source",
           "active"
         ]
@@ -1186,6 +1205,35 @@
         "required": [
           "code",
           "message"
+        ]
+      },
+      "AddedProjectMember": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProjectMember"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "workspaceMemberAdded": {
+                "type": "boolean",
+                "description": "True when the person was not a workspace member and was added to the workspace as well (the request carried workspaceRole)."
+              },
+              "emailAttempted": {
+                "type": "boolean",
+                "description": "Only meaningful when workspaceMemberAdded: false when no email was sent because SMTP is not configured."
+              },
+              "emailSent": {
+                "type": "boolean",
+                "description": "Only meaningful when workspaceMemberAdded: true when the 'added to the workspace' email was handed to the mail server."
+              }
+            },
+            "required": [
+              "workspaceMemberAdded",
+              "emailAttempted",
+              "emailSent"
+            ]
+          }
         ]
       },
       "ProjectAccess": {
@@ -2475,7 +2523,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: info, task_created, workspace_created, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment."
+            "description": "One of: info, task_created, workspace_created, workspace_member_added, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment."
           },
           "eventData": {
             "description": "Type-specific payload, e.g. { taskTitle, oldStatus, newStatus, projectId, workspaceId }."
@@ -4647,6 +4695,42 @@
           "role": {
             "type": "string",
             "description": "The member's workspace role: a built-in role (owner, admin, member, guest) or a custom role name."
+          },
+          "memberId": {
+            "type": "string",
+            "description": "The id of the membership row (Better Auth member id), as update-member-role expects it. `id` is the user id."
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fullAccess": {
+            "type": "boolean",
+            "description": "Only with include=projects, for a caller who manages members: true when the person reaches every project of the workspace through their workspace role (owner, instance administrator, or a role granting workspace:manage_settings)."
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "description": "The project role."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "role"
+              ]
+            },
+            "description": "Only with include=projects, for a caller who manages members: the projects the person is a member of with their project role, limited to the projects the caller can open. Empty for a full-access person."
           }
         },
         "required": [
@@ -4654,7 +4738,86 @@
           "name",
           "email",
           "image",
-          "role"
+          "role",
+          "memberId",
+          "joinedAt"
+        ]
+      },
+      "AddedWorkspaceMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "description": "The member's workspace role: a built-in role (owner, admin, member, guest) or a custom role name."
+          },
+          "memberId": {
+            "type": "string",
+            "description": "The id of the membership row (Better Auth member id), as update-member-role expects it. `id` is the user id."
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "emailAttempted": {
+            "type": "boolean",
+            "description": "False when nothing was sent because SMTP is not configured on this instance."
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "True when the email 'you were added to the workspace' was handed to the mail server. A failing relay is logged and never fails the request."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image",
+          "role",
+          "memberId",
+          "joinedAt",
+          "emailAttempted",
+          "emailSent"
+        ]
+      },
+      "UserDirectoryEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image"
         ]
       },
       "WorkspaceActivityList": {
@@ -9764,7 +9927,7 @@
           "Project members"
         ],
         "summary": "Add a project member",
-        "description": "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions, which this endpoint checks explicitly: the project role for a project member, the workspace role for a full-access user (the workspace-level resources member, invitation, workspace, organization, ac and team are otherwise always decided by the workspace role). An API key must allow it too. The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). Errors are JSON with a `code` next to the message: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 INSUFFICIENT_PERMISSIONS, 404 NOT_WORKSPACE_MEMBER, 409 ALREADY_PROJECT_MEMBER, 409 USER_HAS_FULL_ACCESS. The shared access check answers plain text 403.",
+        "description": "Give an existing workspace member access to the project with a project role. Requires member:create in the caller's effective project permissions, which this endpoint checks explicitly: the project role for a project member, the workspace role for a full-access user (the workspace-level resources member, invitation, workspace, organization, ac and team are otherwise always decided by the workspace role). An API key must allow it too. The role must exist in the workspace, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may assign any role except owner). An existing account that is NOT a workspace member yet can be added to the workspace and the project in one step by sending `workspaceRole`: the caller then also needs member:create in their WORKSPACE role, both roles must be within the caller's permissions, and the same rules as POST /workspace/{id}/members apply (the person is notified, `workspaceMemberAdded`, `emailAttempted` and `emailSent` report it; if the project step fails the workspace add is undone). A workspace role that grants full access (workspace:manage_settings) reaches every project already: the person is added to the workspace only and the row comes back with source full-access. Errors are JSON with a `code` next to the message: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 400 USER_CANNOT_BE_ADDED, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 INSUFFICIENT_PERMISSIONS, 404 NOT_WORKSPACE_MEMBER (no workspaceRole sent), 404 USER_NOT_FOUND, 409 ALREADY_PROJECT_MEMBER, 409 USER_HAS_FULL_ACCESS, 409 ALREADY_WORKSPACE_MEMBER (workspaceRole sent for a workspace member). The shared access check answers plain text 403.",
         "parameters": [
           {
             "schema": {
@@ -9785,12 +9948,17 @@
                   "userId": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "A member of the project's workspace."
+                    "description": "A member of the project's workspace, or (with workspaceRole) an existing account that is not a member of it yet."
                   },
                   "role": {
                     "type": "string",
                     "minLength": 1,
                     "description": "A workspace role name: the built-in viewer, member or admin, or a custom role of the workspace. Its permissions apply inside this project only. owner is never a project role."
+                  },
+                  "workspaceRole": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Only for an account that is NOT a member of the workspace yet: the workspace role it gets, so it is added to the workspace and the project in one step. The caller also needs member:create in their WORKSPACE role, and the role must be within the caller's own workspace permissions (owner is never allowed). For somebody who already is a workspace member the request is refused (409 ALREADY_WORKSPACE_MEMBER): leave it out."
                   }
                 },
                 "required": [
@@ -9807,13 +9975,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectMember"
+                  "$ref": "#/components/schemas/AddedProjectMember"
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid body, owner role, or unknown role",
+            "description": "Invalid body, owner role, unknown role, or an account that cannot be added",
             "content": {
               "application/json": {
                 "schema": {
@@ -9846,7 +10014,7 @@
             }
           },
           "404": {
-            "description": "The user is not a member of the workspace",
+            "description": "The user is not a member of the workspace (and no workspaceRole was sent), or the account does not exist",
             "content": {
               "application/json": {
                 "schema": {
@@ -9861,7 +10029,7 @@
             }
           },
           "409": {
-            "description": "The user is already a project member or already has full access",
+            "description": "The user is already a project member or already has full access, or a workspaceRole was sent for somebody who already is a workspace member",
             "content": {
               "application/json": {
                 "schema": {
@@ -19858,7 +20026,7 @@
           "Workspaces"
         ],
         "summary": "Get workspace members",
-        "description": "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member).",
+        "description": "Get the members of a workspace, with their role and join date. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member). With include=projects, a caller who manages members (or has full access) also gets, per member, the projects they belong to with their project role (only projects the caller can open) and whether they have full access.",
         "parameters": [
           {
             "schema": {
@@ -19867,6 +20035,19 @@
             "required": true,
             "name": "workspaceId",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "projects"
+              ],
+              "description": "Pass \"projects\" to add `projects` and `fullAccess` to every member. Only a caller who manages members (workspace role with member:create, member:update or member:delete) or has full access gets them; for anybody else the parameter has no effect."
+            },
+            "required": false,
+            "description": "Pass \"projects\" to add `projects` and `fullAccess` to every member. Only a caller who manages members (workspace role with member:create, member:update or member:delete) or has full access gets them; for anybody else the parameter has no effect.",
+            "name": "include",
+            "in": "query"
           }
         ],
         "responses": {
@@ -19899,6 +20080,234 @@
           "403": {
             "description": "No access to the workspace",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addWorkspaceMember",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Add an existing account to the workspace",
+        "description": "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). On Kaneo Cloud the gates of invitations apply (guest callers, disposable addresses, 5 per minute per user). Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 400 USER_CANNOT_BE_ADDED (anonymous or banned account), 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 404 USER_NOT_FOUND, 409 ALREADY_WORKSPACE_MEMBER, and on cloud 403 GUEST_CANNOT_INVITE, 400 DISPOSABLE_EMAIL_NOT_ALLOWED, 429 RATE_LIMITED. The shared permission check answers plain text 403.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "An existing account of this instance that is not a member of the workspace yet (find it with the user directory)."
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The workspace role to grant: the built-in viewer, member or admin, or a custom role. owner is never allowed, and every permission of the role must also be held by the caller (owners and instance administrators may grant any role except owner)."
+                  }
+                },
+                "required": [
+                  "userId",
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddedWorkspaceMember"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, owner role, unknown role, or an account that cannot be added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace, missing member:create permission, or the role exceeds the caller's permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The person already is a member of the workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many adds from this user (cloud only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/{workspaceId}/user-directory": {
+      "get": {
+        "operationId": "searchUserDirectory",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Search the accounts of the instance",
+        "description": "Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. Errors carry a `code`: 403 USER_DIRECTORY_DISABLED, 400 QUERY_TOO_SHORT, 429 RATE_LIMITED. The shared permission check answers plain text 403.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Part of a name or email address, at least 2 characters after trimming."
+            },
+            "required": true,
+            "description": "Part of a name or email address, at least 2 characters after trimming.",
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDirectoryEntry"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query shorter than 2 characters (QUERY_TOO_SHORT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace, missing member:create permission, or the directory is disabled (USER_DIRECTORY_DISABLED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many searches (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

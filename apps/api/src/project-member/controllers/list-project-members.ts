@@ -17,6 +17,8 @@ type ListedMember = {
   email: string;
   image: string | null;
   role: string;
+  workspaceRole: string;
+  joinedAt: Date | null;
   source: "project" | "full-access";
   active: boolean;
 };
@@ -34,6 +36,8 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
       email: userTable.email,
       image: userTable.image,
       role: projectMemberTable.role,
+      workspaceRole: workspaceUserTable.role,
+      joinedAt: projectMemberTable.createdAt,
     })
     .from(projectMemberTable)
     .innerJoin(
@@ -86,7 +90,13 @@ async function listProjectMembers(projectId: string, workspaceId: string) {
   for (const row of fullAccessRows) {
     if (listed.has(row.userId)) continue;
     listed.add(row.userId);
-    members.push({ ...row, source: "full-access", active: true });
+    members.push({
+      ...row,
+      workspaceRole: row.role,
+      joinedAt: null,
+      source: "full-access",
+      active: true,
+    });
   }
   const inert = new Set(unusableRoles);
   for (const row of projectRows) {
