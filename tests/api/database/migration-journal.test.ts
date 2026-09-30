@@ -9,25 +9,33 @@ import {
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { LEGACY_WATERMARK_LAST_TAG } from "../../../apps/api/src/database/run-migrations";
 
 // Guards the Drizzle migration folder (apps/api/drizzle). Migrations 0000-0059
 // are frozen. New fork migrations are named <UTC timestamp>_ganttpro_<name>
 // (see `migrations.prefix` in apps/api/drizzle.config.ts); upstream migrations
-// keep their four-digit names.
+// keep their four-digit names. The runner that applies the folder is
+// apps/api/src/database/run-migrations.ts.
 
 const migrationsFolder = join(__dirname, "../../../apps/api/drizzle");
 
 /**
- * Drizzle's migrator records the `when` of the newest applied journal entry in
+ * Drizzle's own migrator records the `when` of each applied journal entry in
  * drizzle.__drizzle_migrations and, on the next start, runs only the entries
- * whose `when` is greater than that watermark. It never looks at file names or
- * hashes. An entry that is not newer than every entry before it therefore runs
- * on a fresh database but is silently skipped on a database that already
- * applied the later ones.
+ * whose `when` is greater than the newest recorded one (the watermark). An
+ * entry that is not newer than every entry before it therefore runs on a fresh
+ * database but is silently skipped on a database that already applied the
+ * later ones.
  *
- * These three upstream entries have that shape. They are part of upstream's
- * history and, like every applied migration, are frozen; every other entry has
- * to advance the watermark.
+ * The runner keeps that rule for the entries up to LEGACY_WATERMARK_LAST_TAG,
+ * which older installations applied with it, so in that range every entry has
+ * to be newer than all entries before it. These three upstream entries are the
+ * exceptions. They are part of upstream's history and, like every applied
+ * migration, are frozen.
+ *
+ * Every entry after LEGACY_WATERMARK_LAST_TAG runs when its own `when` is not
+ * recorded, in any order. It only has to be newer than the last legacy entry;
+ * an older `when` would put it back under the watermark rule.
  */
 const OUT_OF_ORDER_UPSTREAM_TAGS = new Set([
   "0006_rename_active_workspace_to_organization",
@@ -154,18 +162,38 @@ function checkIdentity(entries: JournalEntry[]): string[] {
   return problems;
 }
 
-// Every entry has to be newer than everything before it (see above).
+// Entries up to the legacy cutoff are newer than everything before them;
+// entries after it are newer than the cutoff entry and otherwise unordered.
 function checkWatermark(entries: JournalEntry[]): string[] {
+  const cutoffIndex = entries.findIndex(
+    ({ tag }) => tag === LEGACY_WATERMARK_LAST_TAG,
+  );
+  const cutoff = entries[cutoffIndex];
+  if (!cutoff) {
+    return [
+      `Journal has no entry ${LEGACY_WATERMARK_LAST_TAG}, the last entry decided by Drizzle's watermark rule (LEGACY_WATERMARK_LAST_TAG in apps/api/src/database/run-migrations.ts). The runner refuses to start without it.`,
+    ];
+  }
+
   const problems: string[] = [];
   let watermark = Number.NEGATIVE_INFINITY;
-  for (const entry of entries) {
-    if (entry.when <= watermark && !OUT_OF_ORDER_UPSTREAM_TAGS.has(entry.tag)) {
+  entries.forEach((entry, index) => {
+    if (index <= cutoffIndex) {
+      if (
+        entry.when <= watermark &&
+        !OUT_OF_ORDER_UPSTREAM_TAGS.has(entry.tag)
+      ) {
+        problems.push(
+          `Journal entry ${entry.tag} (when ${entry.when}, ${isoDate(entry.when)}) is not newer than an earlier entry (when ${watermark}, ${isoDate(watermark)}). Entries up to ${LEGACY_WATERMARK_LAST_TAG} follow Drizzle's watermark rule, which skips it on a database that already applied that entry; give it a larger "when".`,
+        );
+      }
+      watermark = Math.max(watermark, entry.when);
+    } else if (entry.when <= cutoff.when) {
       problems.push(
-        `Journal entry ${entry.tag} (when ${entry.when}, ${isoDate(entry.when)}) is not newer than an earlier entry (when ${watermark}, ${isoDate(watermark)}). Drizzle's migrator skips it on a database that already applied that entry; give it a larger "when".`,
+        `Journal entry ${entry.tag} (when ${entry.when}, ${isoDate(entry.when)}) is not newer than ${LEGACY_WATERMARK_LAST_TAG} (when ${cutoff.when}, ${isoDate(cutoff.when)}). The runner decides an entry that old by Drizzle's watermark rule, which skips it on a database that already applied a later entry; give it a larger "when".`,
       );
     }
-    watermark = Math.max(watermark, entry.when);
-  }
+  });
   return problems;
 }
 
@@ -310,24 +338,26 @@ function uuid(n: number): string {
   return `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 }
 
-// One legacy upstream entry, one frozen fork entry, one timestamp fork entry
-// and a later upstream entry with its own `when`. The last entry has no
-// snapshot, like a hand-written upstream migration.
+// Two legacy upstream entries, the last of them the legacy cutoff, one frozen
+// fork entry, one timestamp fork entry and a later upstream entry with its own
+// `when`. The hand-written entries (0001 and the last one) have no snapshot.
 function validSpec(): FolderSpec {
   const entries: JournalEntry[] = [
-    { idx: 0, tag: "0000_init", when: Date.UTC(2026, 8, 1, 8, 0, 0) },
+    { idx: 0, tag: "0000_init", when: Date.UTC(2026, 7, 15, 8, 0, 0) },
+    { idx: 1, tag: "0001_legacy_change", when: Date.UTC(2026, 7, 20, 8, 0, 0) },
+    { idx: 2, tag: LEGACY_WATERMARK_LAST_TAG, when: Date.UTC(2026, 8, 1, 8) },
     {
-      idx: 1,
+      idx: 3,
       tag: "0051_ganttpro_additions",
       when: Date.UTC(2026, 8, 28, 5, 7, 42, 249),
     },
     {
-      idx: 2,
+      idx: 4,
       tag: "20261001120000_ganttpro_probe",
       when: Date.UTC(2026, 9, 1, 12, 0, 0, 250),
     },
     {
-      idx: 3,
+      idx: 5,
       tag: "0060_upstream_change",
       when: Date.UTC(2026, 9, 2, 8, 0, 0),
     },
@@ -335,19 +365,35 @@ function validSpec(): FolderSpec {
   return {
     entries,
     sqlFiles: entries.map(({ tag }) => `${tag}.sql`),
-    snapshots: entries.slice(0, 3).map(({ tag }, index) => ({
-      file: `${tagPrefix(tag)}_snapshot.json`,
+    snapshots: [0, 2, 3, 4].map((entryIndex, index) => ({
+      file: `${tagPrefix(entries[entryIndex]?.tag ?? "")}_snapshot.json`,
       id: uuid(index + 1),
       prevId: uuid(index),
     })),
   };
 }
 
-function replaceLastEntry(spec: FolderSpec, tag: string, when: number) {
-  const last = spec.entries.length - 1;
-  spec.entries[last] = { idx: last, tag, when };
-  spec.sqlFiles[last] = `${tag}.sql`;
+function entryOf(spec: FolderSpec, tag: string): JournalEntry {
+  const entry = spec.entries.find((candidate) => candidate.tag === tag);
+  if (!entry) {
+    throw new Error(`The fixture has no entry ${tag}.`);
+  }
+  return entry;
+}
+
+function replaceEntry(
+  spec: FolderSpec,
+  index: number,
+  tag: string,
+  when: number,
+) {
+  spec.entries[index] = { idx: index, tag, when };
+  spec.sqlFiles[index] = `${tag}.sql`;
   return spec;
+}
+
+function replaceLastEntry(spec: FolderSpec, tag: string, when: number) {
+  return replaceEntry(spec, spec.entries.length - 1, tag, when);
 }
 
 function writeFolder(spec: FolderSpec): string {
@@ -402,10 +448,10 @@ describe("checkMigrationFolder", () => {
 
   it("reports an idx that is not the array position", () => {
     const spec = validSpec();
-    spec.entries[2] = { ...spec.entries[2], idx: 5 } as JournalEntry;
+    spec.entries[4] = { ...spec.entries[4], idx: 7 } as JournalEntry;
     expectOneProblem(
       problemsOf(spec),
-      /20261001120000_ganttpro_probe has idx 5, expected 2/,
+      /20261001120000_ganttpro_probe has idx 7, expected 4/,
     );
   });
 
@@ -414,39 +460,124 @@ describe("checkMigrationFolder", () => {
     replaceLastEntry(
       spec,
       "0051_ganttpro_additions",
-      spec.entries[3]?.when ?? 0,
+      entryOf(spec, "0060_upstream_change").when,
     );
     expectOneProblem(
       problemsOf(spec),
-      /tag 0051_ganttpro_additions is used by entries 1 and 3/,
+      /tag 0051_ganttpro_additions is used by entries 3 and 5/,
     );
   });
 
   it("reports a duplicate when", () => {
     const spec = validSpec();
-    replaceLastEntry(spec, "0060_upstream_change", spec.entries[2]?.when ?? 0);
+    replaceLastEntry(
+      spec,
+      "0060_upstream_change",
+      entryOf(spec, "20261001120000_ganttpro_probe").when,
+    );
     expect(problemsOf(spec)).toContainEqual(
       expect.stringMatching(/share the same "when"/),
     );
   });
 
-  it("reports an entry that is not newer than the entries before it", () => {
-    const spec = validSpec();
-    replaceLastEntry(
-      spec,
-      "0060_upstream_change",
-      (spec.entries[1]?.when ?? 0) + 1,
-    );
-    expectOneProblem(
-      problemsOf(spec),
-      /0060_upstream_change .* is not newer than an earlier entry/,
-    );
-  });
+  describe("entry order", () => {
+    it("reports a legacy entry that is not newer than the entries before it", () => {
+      const spec = validSpec();
+      replaceEntry(
+        spec,
+        1,
+        "0001_legacy_change",
+        entryOf(spec, "0000_init").when - 1,
+      );
+      expectOneProblem(
+        problemsOf(spec),
+        /0001_legacy_change .* is not newer than an earlier entry.*watermark rule/,
+      );
+    });
 
-  it("accepts the grandfathered upstream entries out of order", () => {
-    const spec = validSpec();
-    replaceLastEntry(spec, "0025_early_owl", (spec.entries[1]?.when ?? 0) + 1);
-    expect(problemsOf(spec)).toEqual([]);
+    it("reports the legacy cutoff entry when it is not newer than the entries before it", () => {
+      const spec = validSpec();
+      replaceEntry(
+        spec,
+        2,
+        LEGACY_WATERMARK_LAST_TAG,
+        entryOf(spec, "0001_legacy_change").when - 1,
+      );
+      expectOneProblem(
+        problemsOf(spec),
+        new RegExp(
+          `${LEGACY_WATERMARK_LAST_TAG} .* is not newer than an earlier`,
+        ),
+      );
+    });
+
+    it("accepts the grandfathered upstream entries out of order", () => {
+      const spec = validSpec();
+      replaceEntry(
+        spec,
+        1,
+        "0025_early_owl",
+        entryOf(spec, "0000_init").when - 1,
+      );
+      expect(problemsOf(spec)).toEqual([]);
+    });
+
+    it("accepts a post-cutoff entry older than an earlier post-cutoff entry", () => {
+      // A migration merged late: listed last, but with a `when` between the
+      // cutoff and the entries before it.
+      const spec = validSpec();
+      replaceLastEntry(
+        spec,
+        "0060_upstream_change",
+        entryOf(spec, "0051_ganttpro_additions").when + 1,
+      );
+      expect(problemsOf(spec)).toEqual([]);
+    });
+
+    it.each([-1, 0])(
+      "reports a post-cutoff entry %i ms from the cutoff entry's when",
+      (offsetMs) => {
+        const spec = validSpec();
+        const cutoff = entryOf(spec, LEGACY_WATERMARK_LAST_TAG);
+        replaceLastEntry(spec, "0060_upstream_change", cutoff.when + offsetMs);
+        expect(problemsOf(spec)).toContainEqual(
+          expect.stringMatching(
+            new RegExp(
+              `0060_upstream_change .* is not newer than ${LEGACY_WATERMARK_LAST_TAG}`,
+            ),
+          ),
+        );
+      },
+    );
+
+    it("reports a post-cutoff entry older than the cutoff entry", () => {
+      const spec = validSpec();
+      replaceLastEntry(
+        spec,
+        "0060_upstream_change",
+        entryOf(spec, LEGACY_WATERMARK_LAST_TAG).when - 1,
+      );
+      expectOneProblem(
+        problemsOf(spec),
+        new RegExp(
+          `0060_upstream_change .* is not newer than ${LEGACY_WATERMARK_LAST_TAG} .*watermark rule`,
+        ),
+      );
+    });
+
+    it("reports a journal without the legacy cutoff entry", () => {
+      const spec = validSpec();
+      replaceEntry(
+        spec,
+        2,
+        "0050_other_name",
+        entryOf(spec, LEGACY_WATERMARK_LAST_TAG).when,
+      );
+      expectOneProblem(
+        problemsOf(spec),
+        new RegExp(`Journal has no entry ${LEGACY_WATERMARK_LAST_TAG}`),
+      );
+    });
   });
 
   it("reports a journal entry without a .sql file", () => {
@@ -481,9 +612,9 @@ describe("checkMigrationFolder", () => {
 
   it("reports two snapshots with the same id", () => {
     const spec = validSpec();
-    spec.snapshots[2] = {
-      ...spec.snapshots[2],
-      id: spec.snapshots[1]?.id,
+    spec.snapshots[3] = {
+      ...spec.snapshots[3],
+      id: spec.snapshots[2]?.id,
     } as Snapshot;
     expectOneProblem(
       problemsOf(spec),
@@ -493,8 +624,8 @@ describe("checkMigrationFolder", () => {
 
   it("reports two snapshots with the same prevId", () => {
     const spec = validSpec();
-    spec.snapshots[2] = {
-      ...spec.snapshots[2],
+    spec.snapshots[3] = {
+      ...spec.snapshots[3],
       prevId: spec.snapshots[0]?.prevId,
     } as Snapshot;
     expectOneProblem(

@@ -9,7 +9,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import * as Sentry from "@sentry/node";
 import type { Session, User } from "better-auth/types";
 import { eq, sql } from "drizzle-orm";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
 import { cors } from "hono/cors";
@@ -26,6 +25,7 @@ import config from "./config";
 import customField from "./custom-field";
 import db, { getDatabase, schema } from "./database";
 import { prepareDatabaseStartup } from "./database/prepare-database-startup";
+import { runMigrations } from "./database/run-migrations";
 import { waitForDatabase } from "./database/wait-for-database";
 import discordIntegration from "./discord-integration";
 import { eventContext } from "./events";
@@ -993,17 +993,18 @@ export async function runStartupTasks() {
       await migrateSessionColumn();
 
       const migrationsFolder = `${currentDir}/../drizzle`;
-      // Reconcile the Drizzle journal for a pre-existing upstream-created
-      // database whose recorded migration timestamps don't line up with the
-      // standard migrator comparison, so migrate() below only runs this fork's
-      // own migrations instead of restarting from 0000 and hitting "already
-      // exists". No-op on fresh or already-aligned databases.
+      // Rewrite the journal rows of an older fork installation whose recorded
+      // baseline does not match this journal, so runMigrations() below does not
+      // restart from 0000 and hit "already exists". No-op on fresh databases and
+      // on databases that recorded any baseline migration (created by upstream
+      // or by this fork).
       await reconcileMigrationJournal(migrationsFolder);
 
+      // Records every applied migration, so a migration merged with an older
+      // `when` than the newest applied one still runs (see
+      // database/run-migrations.ts).
       console.log("🔄 Migrating database...");
-      await migrate(getDatabase(), {
-        migrationsFolder,
-      });
+      await runMigrations(getDatabase(), { migrationsFolder });
       console.log("✅ Database migrated successfully!");
     },
   });

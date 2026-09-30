@@ -84,10 +84,14 @@ jobs:
               clashes="${clashes}- \`${n}\`: ours \`${ours}\` vs upstream \`${theirs}\`\n"
             fi
           done
-          # Drizzle runs a journal entry only when its "when" is newer than the
-          # newest applied migration, so an upstream entry that is not newer than
-          # our newest one is skipped on upgraded fork databases. Tags are
-          # reduced to a safe character set because they end up in $GITHUB_OUTPUT.
+          # The startup runner (apps/api/src/database/run-migrations.ts) records
+          # each applied migration and runs every entry after
+          # 0050_resumable_github_import that is not recorded, whatever its
+          # "when". An upstream entry that is not newer than our newest one
+          # therefore runs on upgraded fork databases after our migrations, in
+          # an order upstream never tested. List these so a reviewer can check
+          # that. Tags are reduced to a safe character set because they end up
+          # in $GITHUB_OUTPUT.
           older=""
           journal_unreadable=""
           if ours_journal="$(git show "origin/$TARGET_BRANCH:$dir/meta/_journal.json")" \
@@ -113,7 +117,8 @@ jobs:
               echo "a clash on a legacy number needs a manual resolution of"
               echo "\`meta/_journal.json\` and the snapshot chain. Follow \"Upstream sync\" in"
               echo "\`docs/agent-guide/database.md\`. \`tests/api/database/migration-journal.test.ts\`"
-              echo "fails on an out-of-order or orphaned journal entry."
+              echo "fails on an orphaned journal entry or one that is not newer than"
+              echo "\`0050_resumable_github_import\`."
               echo ""
               echo -e "$clashes"
             else
@@ -123,9 +128,15 @@ jobs:
               echo ""
               echo "⚠️ **Upstream migrations older than our newest migration**"
               echo ""
-              echo "The Drizzle migrator skips these on upgraded fork databases if they are"
-              echo "journaled with their own \`when\`. See \"Upstream sync\" in"
-              echo "\`docs/agent-guide/database.md\`."
+              echo "On upgraded fork databases the startup runner applies these after this"
+              echo "fork's newer migrations, because it records each applied migration instead"
+              echo "of comparing \`when\` values. Check that they do not depend on the order,"
+              echo "for example on a table or column that a newer fork migration changed."
+              echo "An entry whose \`when\` is not newer than \`0050_resumable_github_import\`"
+              echo "would be skipped, because Drizzle's watermark rule still decides the entries"
+              echo "up to that one; that should not happen. See \"Upstream sync\" in"
+              echo "\`docs/agent-guide/database.md\` and"
+              echo "\`apps/api/src/database/run-migrations.ts\`."
               echo ""
               echo "$older"
             fi

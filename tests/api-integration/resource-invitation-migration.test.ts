@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -21,6 +20,7 @@ import {
   it,
 } from "vitest";
 import db from "../../apps/api/src/database";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 import { resetTestDatabase } from "./helpers/database";
 
 // Migration 0058 adds `ganttpro_resource.ganttpro_invitation_id`: a nullable
@@ -133,14 +133,14 @@ describe("migration 0058 resource invitation", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     const before = await scratch.query(
       `SELECT count(*)::int AS n FROM information_schema.columns
        WHERE table_name = 'ganttpro_resource' AND column_name = 'ganttpro_invitation_id'`,
     );
     expect(before.rows[0].n).toBe(0);
     await seed(scratch);
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
     return scratch;
   }
 
