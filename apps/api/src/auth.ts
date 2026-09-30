@@ -572,28 +572,29 @@ export const auth = betterAuth({
         // administrator adds them again). The `/organization/leave` route runs
         // no organization hook and is handled in `hooks.after`.
         beforeRemoveMember: async ({ member, organization }) => {
-          // Each step runs whatever the other did; a failure is logged and the
-          // first one still aborts the removal (nothing is masked).
-          await runIndependently([
-            [
-              "Removing the project memberships",
-              () =>
-                removeUserProjectMemberships(member.userId, organization.id),
-            ],
-            [
-              // The resources linked to this account stop being linked
-              // (nothing moves back).
-              "Unlinking the resources",
-              () => unlinkUserResources(member.userId, organization.id),
-            ],
-          ]);
+          await removeUserProjectMemberships(member.userId, organization.id);
         },
         afterRemoveMember: async ({ member }) => {
           if (member?.userId && member.organizationId) {
-            await closeUserWorkspaceConnections(
-              member.userId,
-              member.organizationId,
-            );
+            // The member is gone now (nothing above ran before Better Auth
+            // removed them, so a refused removal leaves the resources linked).
+            // The resources linked to this account stop being linked (nothing
+            // moves back) and their sockets close; each step runs whatever the
+            // other did, and a failure is logged only (the removal is done).
+            await runIndependently([
+              [
+                "Unlinking the resources",
+                () => unlinkUserResources(member.userId, member.organizationId),
+              ],
+              [
+                "Closing the sockets",
+                () =>
+                  closeUserWorkspaceConnections(
+                    member.userId,
+                    member.organizationId,
+                  ),
+              ],
+            ]).catch(() => undefined);
           }
           if (member?.organizationId) {
             void syncWorkspaceSeats(member.organizationId).catch((error) => {

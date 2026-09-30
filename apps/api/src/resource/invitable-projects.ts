@@ -4,7 +4,6 @@ import { projectTable } from "../database/schema";
 import {
   accessibleProjectIds,
   projectAccessSatisfies,
-  resolveProjectAccess,
   resolveProjectAccessMap,
 } from "../utils/project-access";
 import { projectScopeCondition } from "../utils/project-scope-filters";
@@ -19,8 +18,8 @@ const INVITE = { invitation: ["create"] };
 //
 // - `skipArchived`: leave archived projects out (the dialog does; the mere
 //   question "any project?" does not care).
-// - `stopAtFirst`: answer as soon as one project qualifies (the boolean
-//   question), resolving projects one after the other instead of all at once.
+// - `stopAtFirst`: return only the first qualifying project (the boolean
+//   question). Access is still resolved for all candidates in one query.
 // - `scope`: the caller's project scope when the caller has resolved it already
 //   (`accessibleProjectIds`), so it is not resolved again.
 export async function projectsCallerMayInviteTo(
@@ -53,22 +52,20 @@ export async function projectsCallerMayInviteTo(
     )
     .orderBy(asc(projectTable.name), asc(projectTable.id));
 
-  if (stopAtFirst) {
-    for (const project of projects) {
-      const access = await resolveProjectAccess(userId, project.id);
-      if (access && projectAccessSatisfies(access, INVITE)) return [project];
-    }
-    return [];
-  }
-
-  // One query for all of them; a project that stopped being accessible meanwhile
-  // is left out on its own.
+  // One query resolves all of them (a project that stopped being accessible
+  // meanwhile is left out on its own); the rest is in memory, in project order,
+  // so the boolean question stops at the first project without further queries.
   const accesses = await resolveProjectAccessMap(
     userId,
     projects.map((project) => project.id),
   );
-  return projects.filter((project) => {
+  const mayInvite = (project: { id: string }) => {
     const access = accesses.get(project.id);
     return access ? projectAccessSatisfies(access, INVITE) : false;
-  });
+  };
+  if (stopAtFirst) {
+    const first = projects.find(mayInvite);
+    return first ? [first] : [];
+  }
+  return projects.filter(mayInvite);
 }

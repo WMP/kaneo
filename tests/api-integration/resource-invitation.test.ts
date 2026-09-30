@@ -1587,6 +1587,46 @@ describe("the cleanup steps of leaving run independently", () => {
   });
 });
 
+describe("removing a member that fails", () => {
+  it("leaves the resource linked: the link goes only after the member is gone", async () => {
+    const member = await addMember("member", [{ project: P, role: "member" }]);
+    expect((await link(owner, member.id)).status).toBe(200);
+    const [row] = await db
+      .select({ id: schema.workspaceUserTable.id })
+      .from(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.userId, member.id));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    // The cleanup before the removal fails, which aborts the removal.
+    vi.spyOn(
+      accessModule,
+      "removeUserProjectMemberships",
+    ).mockRejectedValueOnce(new Error("database went away"));
+    const failed = await request(
+      owner.cookie,
+      "POST",
+      "/api/auth/organization/remove-member",
+      { organizationId: workspaceId, memberIdOrEmail: row.id },
+    );
+    expect(failed.status).not.toBe(200);
+    const stillMember = await db
+      .select()
+      .from(schema.workspaceUserTable)
+      .where(eq(schema.workspaceUserTable.userId, member.id));
+    expect(stillMember).toHaveLength(1);
+    expect((await resourceRow()).userId).toBe(member.id);
+
+    // A removal that goes through unlinks.
+    const removed = await request(
+      owner.cookie,
+      "POST",
+      "/api/auth/organization/remove-member",
+      { organizationId: workspaceId, memberIdOrEmail: row.id },
+    );
+    expect(removed.status).toBe(200);
+    expect((await resourceRow()).userId).toBeNull();
+  });
+});
+
 describe("the transfer when the server picks it as a deadlock victim", () => {
   it("runs the link again and moves the assignments", async () => {
     const member = await addMember("member", [{ project: P, role: "member" }]);
