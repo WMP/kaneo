@@ -2546,7 +2546,10 @@
 					"person": "Человек"
 				},
 				"resourcesHeading": "Ресурсы",
-				"notInProject": "Больше не в этом проекте"
+				"notInProject": "Больше не в этом проекте",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Не удалось обновить статус задачи"

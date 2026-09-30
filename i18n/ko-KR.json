@@ -2517,7 +2517,10 @@
 					"person": "사람"
 				},
 				"resourcesHeading": "리소스",
-				"notInProject": "더 이상 이 프로젝트에 없음"
+				"notInProject": "더 이상 이 프로젝트에 없음",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "작업 상태 업데이트에 실패했습니다"

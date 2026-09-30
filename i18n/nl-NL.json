@@ -2513,7 +2513,10 @@
 					"person": "Persoon"
 				},
 				"resourcesHeading": "Resources",
-				"notInProject": "Niet langer in dit project"
+				"notInProject": "Niet langer in dit project",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Bijwerken taakstatus mislukt"

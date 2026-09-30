@@ -2524,7 +2524,10 @@
 					"person": "Person"
 				},
 				"resourcesHeading": "Ressourcen",
-				"notInProject": "Nicht mehr in diesem Projekt"
+				"notInProject": "Nicht mehr in diesem Projekt",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Aufgabenstatus konnte nicht aktualisiert werden"

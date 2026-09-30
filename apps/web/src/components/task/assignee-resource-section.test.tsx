@@ -88,6 +88,16 @@ const make = (id: string, name: string, userId: string | null): Resource => ({
   updatedAt: "2026-09-19T12:00:00Z",
 });
 
+const makeInvitable = (
+  id: string,
+  name: string,
+  overrides: Partial<Resource> = {},
+): Resource => ({
+  ...make(id, name, null),
+  email: `${name.toLowerCase().replace(/\s/g, ".")}@example.com`,
+  ...overrides,
+});
+
 beforeEach(() => vi.clearAllMocks());
 afterEach(cleanup);
 
@@ -236,5 +246,239 @@ describe("AssigneeResourceSection", () => {
         "settings:workspaceResources.errors.emailNotAllowed",
       ),
     );
+  });
+});
+
+describe("AssigneeResourceSection invitations", () => {
+  const inviteLabel = "tasks:popover.assignee.inviteResource";
+  const pendingLabel = "tasks:popover.assignee.invitationPending";
+
+  const renderSection = (
+    props: Partial<Parameters<typeof AssigneeResourceSection>[0]> = {},
+  ) =>
+    render(
+      <AssigneeResourceSection
+        workspaceId="ws-1"
+        resources={[]}
+        projectUserIds={[]}
+        selectedResourceIds={[]}
+        onToggleResource={vi.fn()}
+        canCreateResource={true}
+        {...props}
+      />,
+    );
+
+  const createInline = (values: { name: string; email?: string }) => {
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:popover.assignee.addResource",
+      }),
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "tasks:popover.assignee.newResourceNamePlaceholder",
+      ),
+      { target: { value: values.name } },
+    );
+    if (values.email !== undefined) {
+      fireEvent.change(
+        screen.getByPlaceholderText(
+          "tasks:popover.assignee.newResourceEmailPlaceholder",
+        ),
+        { target: { value: values.email } },
+      );
+    }
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:popover.assignee.createResource",
+      }),
+    );
+  };
+
+  it("hands a person created with an email to onInviteResource, after selecting it", async () => {
+    const created = makeInvitable("new", "Nina", { email: "nina@example.com" });
+    m.create.mockResolvedValue(created);
+    const calls: string[] = [];
+    const onToggleResource = vi.fn(() => calls.push("toggle"));
+    const onInviteResource = vi.fn(() => calls.push("invite"));
+    renderSection({ onToggleResource, onInviteResource });
+
+    createInline({ name: "Nina", email: " nina@example.com " });
+
+    await vi.waitFor(() => expect(onInviteResource).toHaveBeenCalledOnce());
+    expect(m.create).toHaveBeenCalledWith({
+      workspaceId: "ws-1",
+      kind: "person",
+      name: "Nina",
+      email: "nina@example.com",
+    });
+    expect(onInviteResource).toHaveBeenCalledWith(created);
+    expect(onToggleResource).toHaveBeenCalledWith("new");
+    expect(calls).toEqual(["toggle", "invite"]);
+  });
+
+  it("does not offer an invitation for a person created without an email", async () => {
+    m.create.mockResolvedValue(make("new", "Nina", null));
+    const onToggleResource = vi.fn();
+    const onInviteResource = vi.fn();
+    renderSection({ onToggleResource, onInviteResource });
+
+    createInline({ name: "Nina", email: "   " });
+
+    await vi.waitFor(() =>
+      expect(onToggleResource).toHaveBeenCalledWith("new"),
+    );
+    expect(onInviteResource).not.toHaveBeenCalled();
+  });
+
+  it("does not offer an invitation for equipment", async () => {
+    m.create.mockResolvedValue({
+      ...make("new", "Drill", null),
+      kind: "equipment",
+    });
+    const onToggleResource = vi.fn();
+    const onInviteResource = vi.fn();
+    renderSection({ onToggleResource, onInviteResource });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:popover.assignee.addResource",
+      }),
+    );
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "equipment" },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "tasks:popover.assignee.newResourceNamePlaceholder",
+      ),
+      { target: { value: "Drill" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:popover.assignee.createResource",
+      }),
+    );
+
+    await vi.waitFor(() =>
+      expect(onToggleResource).toHaveBeenCalledWith("new"),
+    );
+    expect(m.create).toHaveBeenCalledWith({
+      workspaceId: "ws-1",
+      kind: "equipment",
+      name: "Drill",
+      email: undefined,
+    });
+    expect(onInviteResource).not.toHaveBeenCalled();
+  });
+
+  it("creates a person with an email as before when there is no onInviteResource", async () => {
+    m.create.mockResolvedValue(
+      makeInvitable("new", "Nina", { email: "nina@example.com" }),
+    );
+    const onToggleResource = vi.fn();
+    renderSection({ onToggleResource });
+
+    createInline({ name: "Nina", email: "nina@example.com" });
+
+    await vi.waitFor(() =>
+      expect(onToggleResource).toHaveBeenCalledWith("new"),
+    );
+  });
+
+  it("does not offer an invitation when creating fails", async () => {
+    m.create.mockRejectedValue(new Error("boom"));
+    const onInviteResource = vi.fn();
+    renderSection({ onInviteResource });
+
+    createInline({ name: "Nina", email: "nina@example.com" });
+
+    await vi.waitFor(() => expect(m.error).toHaveBeenCalled());
+    expect(onInviteResource).not.toHaveBeenCalled();
+  });
+
+  it("lists an invite button beside each person with an email who can still be invited", () => {
+    const fred = makeInvitable("r1", "Free Fred");
+    const expired = makeInvitable("r2", "Late Lena", {
+      invitation: { status: "expired", expiresAt: "2026-09-01T00:00:00Z" },
+    });
+    const onInviteResource = vi.fn();
+    const onToggleResource = vi.fn();
+    renderSection({
+      resources: [fred, expired],
+      onInviteResource,
+      onToggleResource,
+    });
+
+    const buttons = screen.getAllByRole("button", { name: inviteLabel });
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]).toHaveAttribute("title", inviteLabel);
+
+    fireEvent.click(buttons[0]);
+    expect(onInviteResource).toHaveBeenCalledExactlyOnceWith(fred);
+    // The invite button is not part of the toggle button.
+    expect(onToggleResource).not.toHaveBeenCalled();
+    expect(buttons[0].parentElement?.closest("button")).toBeNull();
+  });
+
+  it("shows a muted note instead of the button while an invitation is pending", () => {
+    renderSection({
+      resources: [
+        makeInvitable("r1", "Pending Pam", {
+          invitation: { status: "pending", expiresAt: "2026-12-01T00:00:00Z" },
+        }),
+      ],
+      onInviteResource: vi.fn(),
+    });
+
+    expect(screen.getByText(pendingLabel)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
+  });
+
+  it("offers no invitation for equipment, a person without an email or a linked person", () => {
+    renderSection({
+      resources: [
+        { ...makeInvitable("r1", "Drill"), kind: "equipment" },
+        make("r2", "No Mail Mo", null),
+        makeInvitable("r3", "Linked Lee", { userId: "u9", linked: true }),
+      ],
+      onInviteResource: vi.fn(),
+    });
+
+    expect(screen.getByText("Drill")).toBeInTheDocument();
+    expect(screen.getByText("No Mail Mo")).toBeInTheDocument();
+    expect(screen.getByText("Linked Lee")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
+    expect(screen.queryByText(pendingLabel)).toBeNull();
+  });
+
+  it("shows no invite UI without onInviteResource", () => {
+    renderSection({
+      resources: [
+        makeInvitable("r1", "Free Fred"),
+        makeInvitable("r2", "Pending Pam", {
+          invitation: { status: "pending", expiresAt: "2026-12-01T00:00:00Z" },
+        }),
+      ],
+    });
+
+    expect(screen.getByText("Free Fred")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
+    expect(screen.queryByText(pendingLabel)).toBeNull();
+  });
+
+  it("keeps the row toggle working and free of nested buttons", () => {
+    const onToggleResource = vi.fn();
+    renderSection({
+      resources: [makeInvitable("r1", "Free Fred")],
+      selectedResourceIds: ["r1"],
+      onInviteResource: vi.fn(),
+      onToggleResource,
+    });
+
+    const toggle = screen.getByRole("button", { name: /Free Fred/ });
+    expect(toggle.querySelector("button")).toBeNull();
+    fireEvent.click(toggle);
+    expect(onToggleResource).toHaveBeenCalledWith("r1");
   });
 });

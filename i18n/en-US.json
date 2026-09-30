@@ -2525,7 +2525,10 @@
 				"newResourceNamePlaceholder": "Name",
 				"newResourceEmailPlaceholder": "Email (optional)",
 				"createResource": "Create",
-				"createResourceError": "Failed to create resource"
+				"createResourceError": "Failed to create resource",
+				"assignedCount": "{{count}} assigned",
+				"inviteResource": "Invite to project",
+				"invitationPending": "Invitation sent"
 			},
 			"status": {
 				"updateError": "Failed to update task status"

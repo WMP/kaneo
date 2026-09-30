@@ -2520,7 +2520,10 @@
 					"person": "Persona"
 				},
 				"resourcesHeading": "Recursos",
-				"notInProject": "Ya no está en este proyecto"
+				"notInProject": "Ya no está en este proyecto",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Error al actualizar el estado de esta tarea"

@@ -2524,7 +2524,10 @@
 					"person": "Şəxs"
 				},
 				"resourcesHeading": "Resurslar",
-				"notInProject": "Artıq bu layihədə deyil"
+				"notInProject": "Artıq bu layihədə deyil",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Tapşırığın vəziyyətini yeniləmək alınmadı"

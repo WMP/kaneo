@@ -2517,7 +2517,10 @@
 					"person": "人"
 				},
 				"resourcesHeading": "リソース",
-				"notInProject": "このプロジェクトのメンバーではなくなりました"
+				"notInProject": "このプロジェクトのメンバーではなくなりました",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "ステータスの更新に失敗しました"
