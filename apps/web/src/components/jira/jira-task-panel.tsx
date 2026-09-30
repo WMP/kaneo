@@ -70,7 +70,7 @@ function ProposalHistory({
         <ChevronRight
           className={`size-3.5 transition-transform ${open ? "rotate-90" : ""}`}
         />
-        {t("tasks:jira.panel.history.title", { count: proposals.length })}
+        {t("tasks:jira.panel.history.title", { total: proposals.length })}
       </CollapsibleTrigger>
       <CollapsiblePanel>
         <ul className="mt-2 space-y-2">
