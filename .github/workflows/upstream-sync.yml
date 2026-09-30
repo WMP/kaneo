@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target branch (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 0
@@ -55,9 +55,9 @@ jobs:
       - name: Decide whether a sync is needed
         id: decide
         run: |
-          upstream_sha="$(git rev-parse upstream/$UPSTREAM_BRANCH)"
+          upstream_sha="$(git rev-parse "upstream/$UPSTREAM_BRANCH")"
           echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
-          echo "upstream_short=$(git rev-parse --short upstream/$UPSTREAM_BRANCH)" >> "$GITHUB_OUTPUT"
+          echo "upstream_short=$(git rev-parse --short "upstream/$UPSTREAM_BRANCH")" >> "$GITHUB_OUTPUT"
           if git merge-base --is-ancestor "$upstream_sha" "origin/$TARGET_BRANCH"; then
             echo "needed=false" >> "$GITHUB_OUTPUT"
             echo "Upstream is already contained in $TARGET_BRANCH — nothing to sync."
@@ -74,9 +74,9 @@ jobs:
           names() { git ls-tree -r --name-only "$1" -- "$dir" | grep -oE '[0-9]{4}_[^/]+\.sql$' | sort; }
           # A clash is a 4-digit prefix used by BOTH sides for DIFFERENT files.
           clashes=""
-          for n in $(comm -12 <(nums "origin/$TARGET_BRANCH") <(nums upstream/$UPSTREAM_BRANCH)); do
+          for n in $(comm -12 <(nums "origin/$TARGET_BRANCH") <(nums "upstream/$UPSTREAM_BRANCH")); do
             ours="$(names "origin/$TARGET_BRANCH" | grep "^${n}_" || true)"
-            theirs="$(names upstream/$UPSTREAM_BRANCH | grep "^${n}_" || true)"
+            theirs="$(names "upstream/$UPSTREAM_BRANCH" | grep "^${n}_" || true)"
             if [ "$ours" != "$theirs" ]; then
               clashes="${clashes}- \`${n}\`: ours \`${ours}\` vs upstream \`${theirs}\`\n"
             fi
@@ -94,7 +94,7 @@ jobs:
               echo "git rm apps/api/drizzle/<our>.sql apps/api/drizzle/meta/<our>_snapshot.json"
               echo "# keep upstream's meta/_journal.json, then:"
               echo "pnpm --filter @kaneo/api db:generate --name ganttpro_additions"
-              echo "```"
+              echo '```'
               echo ""
               echo -e "$clashes"
             else
