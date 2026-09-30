@@ -39,8 +39,8 @@ Stan na 30.09.2026: fork ma około 300 własnych commitów ponad bazę upstream 
 | Bramki akceptacji | Brak | Status akceptacji z notatką na zadaniu, ostrzeżenia na wykresie Gantta |
 | Dostęp do danych | Każdy członek obszaru roboczego widzi wszystkie projekty | Członkostwo w projekcie z rolą projektu, zaproszenia do projektu, filtrowanie list, wyszukiwania, powiadomień i WebSocket |
 | Dodawanie osób | Zaproszenie e-mailem | Jedno okno „Add people”: zaproszenie albo dodanie istniejącego konta bez zaproszenia |
-| Narzędzia MCP | Zadania, projekty, etykiety | Dodatkowo: pola niestandardowe, plan bazowy, wiele osób przypisanych, typy zależności, kalendarz pracy |
-| Tłumaczenia | Interfejs w wielu językach | Nowe funkcje przetłumaczone we wszystkich językach; e-mail o dodaniu do obszaru roboczego po angielsku i po polsku |
+| Narzędzia MCP | Zadania, projekty, etykiety | Dodatkowo: pola niestandardowe, plan bazowy, wiele osób przypisanych, typy zależności, kalendarz pracy; strona połączenia MCP w ustawieniach konta |
+| Tłumaczenia | Interfejs w wielu językach | Nowe teksty po angielsku i po polsku; inne języki mogą mieć część nowych tekstów bez tłumaczenia |
 
 ## Funkcje Kaneo Pro
 
@@ -185,6 +185,8 @@ Serwer MCP (`/api/mcp` i pakiet `@kaneo/mcp`) ma nowe narzędzia:
 | `update_task_assignees` | Zmiana listy osób przypisanych |
 | `update_task_relation` | Zmiana typu zależności i opóźnienia |
 | `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Kalendarz pracy |
+
+Strona **Settings → Account → Developer → MCP** pokazuje adres punktu końcowego MCP tej instancji i gotowe polecenia do skopiowania dla Claude Code, Codex, Claude Desktop/claude.ai, klientów z konfiguracją JSON (na przykład Cursor) i pakietu `@kaneo/mcp`. Punkt końcowy loguje przez OAuth w przeglądarce, więc polecenia nie zawierają tokenu.
 
 Narzędzia `get_task` i `list_tasks` zwracają też pola niestandardowe. Narzędzia `create_task` i `update_task` przyjmują postęp, kamień milowy, ograniczenie daty i status akceptacji. Narzędzia MCP używają tych samych tras HTTP co aplikacja, więc stosują te same reguły dostępu do projektu.
 
