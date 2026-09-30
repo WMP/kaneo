@@ -156,7 +156,8 @@
 					"crimson": "Cremisi"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "Seleziona un'opzione"
 			}
 		},
 		"boolean": {
@@ -2370,7 +2371,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "Scegli una data"
 		},
 		"entity": {
 			"task": "Attività"

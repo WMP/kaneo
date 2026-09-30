@@ -175,7 +175,8 @@
 					"terracotta": "Terracotta",
 					"rose": "Rose",
 					"crimson": "Crimson"
-				}
+				},
+				"selectOptionPlaceholder": "Select an option"
 			}
 		}
 	},
@@ -2364,7 +2365,8 @@
 					"resizeHandle": "Resize image",
 					"small": "Small"
 				}
-			}
+			},
+			"pickDate": "Pick a date"
 		},
 		"entity": {
 			"task": "Task"

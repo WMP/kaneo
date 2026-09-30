@@ -156,7 +156,8 @@
 					"crimson": "Βυσσινί"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "Επιλέξτε μια επιλογή"
 			}
 		},
 		"boolean": {
@@ -2363,7 +2364,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "Επιλέξτε ημερομηνία"
 		},
 		"entity": {
 			"task": "Εργασία"

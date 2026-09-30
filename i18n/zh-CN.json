@@ -156,7 +156,8 @@
 					"crimson": "深红"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "选择一个选项"
 			}
 		},
 		"boolean": {
@@ -2356,7 +2357,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "选择日期"
 		},
 		"entity": {
 			"task": "任务"

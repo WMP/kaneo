@@ -156,7 +156,8 @@
 					"crimson": "किरमिज़ी"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "एक विकल्प चुनें"
 			}
 		},
 		"boolean": {
@@ -2363,7 +2364,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "तारीख़ चुनें"
 		},
 		"entity": {
 			"task": "कार्य"

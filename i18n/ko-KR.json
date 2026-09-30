@@ -156,7 +156,8 @@
 					"crimson": "크림슨"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "옵션 선택"
 			}
 		},
 		"boolean": {
@@ -2356,7 +2357,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "날짜 선택"
 		},
 		"entity": {
 			"task": "작업"

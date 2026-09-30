@@ -169,7 +169,8 @@
 					"terracotta": "Terakota",
 					"rose": "Róża",
 					"crimson": "Karmazyn"
-				}
+				},
+				"selectOptionPlaceholder": "Wybierz opcję"
 			}
 		},
 		"boolean": {
@@ -2773,7 +2774,8 @@
 			"subtaskOf": "Podzadanie zadania",
 			"titlePlaceholder": "Kliknij, aby dodać tytuł",
 			"customFieldUpdated": "Pole zaktualizowane",
-			"selectOption": "Wybierz opcję"
+			"selectOption": "Wybierz opcję",
+			"pickDate": "Wybierz datę"
 		},
 		"dueDate": {
 			"clear": "Wyczyść datę",

@@ -156,7 +156,8 @@
 					"crimson": "クリムゾン"
 				},
 				"noCreatePermission": "You can't create tasks in this project. Pick another project.",
-				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project."
+				"permissionsUnavailable": "Couldn't check your permissions in this project. Try again or pick another project.",
+				"selectOptionPlaceholder": "オプションを選択"
 			}
 		},
 		"boolean": {
@@ -2356,7 +2357,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "日付を選択"
 		},
 		"entity": {
 			"task": "タスク"
