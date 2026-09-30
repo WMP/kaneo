@@ -9,6 +9,8 @@ on:
 jobs:
   run:
     runs-on: blacksmith-4vcpu-ubuntu-2404
+    # Assigns the upstream maintainer; skipped in forks.
+    if: github.repository == 'usekaneo/kaneo'
     permissions:
       issues: write
       pull-requests: write
