@@ -2,116 +2,131 @@ import { HTTPException } from "hono/http-exception";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  select: vi.fn(),
-  update: vi.fn(),
+  transaction: vi.fn(),
+  tx: {
+    select: vi.fn(),
+    selectDistinct: vi.fn(),
+    update: vi.fn(),
+  },
 }));
 
 vi.mock("../../../apps/api/src/database", () => ({
-  default: {
-    select: mocks.select,
-    update: mocks.update,
-  },
+  default: { transaction: mocks.transaction },
 }));
 
 import updateCustomField from "../../../apps/api/src/custom-field/controllers/update-custom-field";
 
-function mockExisting(field: Record<string, unknown> | undefined) {
-  const limit = vi.fn().mockResolvedValue(field ? [field] : []);
-  const where = vi.fn(() => ({ limit }));
-  const from = vi.fn(() => ({ where }));
-  mocks.select.mockReturnValue({ from });
+// select().from().where().limit().for() resolving to `rows` (the locked read).
+function mockLockedSelect(rows: unknown[]) {
+  const chain = {
+    from: () => chain,
+    where: () => chain,
+    limit: () => chain,
+    for: () => Promise.resolve(rows),
+  };
+  return chain;
 }
 
-function mockUpdated(updated: Record<string, unknown> | undefined) {
-  const returning = vi.fn().mockResolvedValue(updated ? [updated] : []);
-  const where = vi.fn(() => ({ returning }));
-  const set = vi.fn(() => ({ where }));
-  mocks.update.mockReturnValue({ set });
+// select().from().where() resolving to `rows` (no limit, no lock).
+function mockPlainSelect(rows: unknown[]) {
+  return { from: () => ({ where: () => Promise.resolve(rows) }) };
 }
+
+function mockExisting(field: Record<string, unknown> | undefined) {
+  mocks.tx.select.mockReturnValueOnce(mockLockedSelect(field ? [field] : []));
+}
+
+function mockUsedValues(values: (string | null)[]) {
+  mocks.tx.selectDistinct.mockReturnValue(
+    mockPlainSelect(values.map((value) => ({ value }))),
+  );
+}
+
+function mockUpdate(result: (set: Record<string, unknown>) => unknown) {
+  const set = vi.fn((values: Record<string, unknown>) => ({
+    where: () => ({ returning: async () => [result(values)] }),
+  }));
+  mocks.tx.update.mockReturnValue({ set });
+  return set;
+}
+
+const dropdown = {
+  id: "field-1",
+  projectId: "project-1",
+  workspaceId: null,
+  name: "Priority",
+  type: "dropdown",
+  required: false,
+  defaultValue: null,
+  options: ["low", "mid", "high"],
+  optionColors: { low: "green", mid: "yellow" },
+  position: 1,
+};
 
 describe("updateCustomField", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    mocks.transaction.mockImplementation(async (run) => run(mocks.tx));
   });
 
   it("throws 404 when the field does not exist", async () => {
     mockExisting(undefined);
 
-    await expect(updateCustomField("missing-id", "New name")).rejects.toThrow(
-      HTTPException,
-    );
+    await expect(
+      updateCustomField("missing-id", { name: "New name" }),
+    ).rejects.toMatchObject({ status: 404 });
+    expect(mocks.tx.update).not.toHaveBeenCalled();
   });
 
-  it("rejects an empty name", async () => {
-    mockExisting({ id: "field-1", type: "text", options: null });
-
-    await expect(updateCustomField("field-1", "   ")).rejects.toThrow(
-      HTTPException,
-    );
-  });
-
-  it("rejects option colors on a non-dropdown field", async () => {
-    mockExisting({ id: "field-1", type: "text", options: null });
+  it("writes nothing when the merged definition is invalid", async () => {
+    mockExisting(dropdown);
 
     await expect(
-      updateCustomField("field-1", undefined, { low: "green" }),
-    ).rejects.toThrow(/dropdown/);
+      updateCustomField("field-1", { required: true }),
+    ).rejects.toBeInstanceOf(HTTPException);
+    expect(mocks.tx.update).not.toHaveBeenCalled();
   });
 
-  it("rejects option colors that reference an unknown option", async () => {
-    mockExisting({
-      id: "field-1",
-      type: "dropdown",
-      options: ["low", "high"],
-    });
+  it("rejects removing an option that tasks still use with 409", async () => {
+    mockExisting(dropdown);
+    mockUsedValues(["mid", "low"]);
 
     await expect(
-      updateCustomField("field-1", undefined, { medium: "yellow" }),
-    ).rejects.toThrow(/medium/);
+      updateCustomField("field-1", { options: ["low", "high"] }),
+    ).rejects.toMatchObject({
+      status: 409,
+      message: expect.stringMatching(/mid/),
+    });
+    expect(mocks.tx.update).not.toHaveBeenCalled();
   });
 
-  it("allows clearing option colors with null", async () => {
-    mockExisting({
-      id: "field-1",
-      type: "dropdown",
+  it("writes the merged definition and prunes colors of removed options", async () => {
+    mockExisting(dropdown);
+    mockUsedValues(["low"]);
+    const set = mockUpdate((values) => ({ ...dropdown, ...values }));
+
+    const result = await updateCustomField("field-1", {
+      name: " Severity ",
       options: ["low", "high"],
-    });
-    mockUpdated({
-      id: "field-1",
-      type: "dropdown",
-      options: ["low", "high"],
-      optionColors: null,
     });
 
-    await expect(
-      updateCustomField("field-1", undefined, null),
-    ).resolves.toMatchObject({ optionColors: null });
-  });
-
-  it("updates the name and option colors for a valid dropdown field", async () => {
-    mockExisting({
-      id: "field-1",
-      type: "dropdown",
-      options: ["low", "high"],
-      name: "Priority",
-    });
-    mockUpdated({
-      id: "field-1",
-      type: "dropdown",
-      options: ["low", "high"],
+    expect(set).toHaveBeenCalledWith({
       name: "Severity",
-      optionColors: { low: "green", high: "red" },
+      required: false,
+      defaultValue: null,
+      options: ["low", "high"],
+      optionColors: { low: "green" },
     });
+    expect(result).toMatchObject({ name: "Severity", scope: "project" });
+  });
 
-    const result = await updateCustomField("field-1", "Severity", {
-      low: "green",
-      high: "red",
-    });
+  it("rejects making a workspace field required while a project hides it", async () => {
+    mockExisting({ ...dropdown, projectId: null, workspaceId: "ws-1" });
+    mocks.tx.select.mockReturnValueOnce(mockPlainSelect([{ projectId: "p1" }]));
 
-    expect(result).toMatchObject({
-      name: "Severity",
-      optionColors: { low: "green", high: "red" },
-    });
-    expect(mocks.update).toHaveBeenCalled();
+    await expect(
+      updateCustomField("field-1", { required: true, defaultValue: "low" }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(mocks.tx.update).not.toHaveBeenCalled();
   });
 });

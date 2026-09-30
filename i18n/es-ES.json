@@ -1540,7 +1540,19 @@
 			"requiredByWorkspace": "Obligatorio por el espacio de trabajo",
 			"showField": "Mostrar \"{{name}}\" en este proyecto",
 			"visibilityUpdateError": "Error al actualizar la visibilidad del campo.",
-			"visibleOnProject": "Visible"
+			"visibleOnProject": "Visible",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Administración",
 		"adminUsers": {

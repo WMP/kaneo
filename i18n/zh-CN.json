@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "工作区要求必填",
 			"showField": "在此项目中显示“{{name}}”",
 			"visibilityUpdateError": "更新字段可见性失败。",
-			"visibleOnProject": "可见"
+			"visibleOnProject": "可见",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "管理",
 		"adminUsers": {

@@ -4,6 +4,7 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
+import { codedErrorResponse } from "../utils/coded-error";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import createCustomField from "./controllers/create-custom-field";
@@ -240,7 +241,10 @@ const updateCustomFieldRoute = createRoute({
   tags: ["Custom Fields"],
   summary: "Update custom field",
   description:
-    "Update a custom field definition's name or dropdown option colors. Works for both a project-level field and a workspace-level field — a workspace field's name/type/options stay shared across every project that inherits it.",
+    "Update a custom field definition: name, required flag, default value (null clears it), options (the full replacement list, dropdown and multiselect only) and dropdown option colors. The type cannot be changed. " +
+    "The merged definition is validated with the same rules as creating a field, and nothing is written when it is invalid. " +
+    "An option that existing tasks still use cannot be removed (409), and a workspace field that a project hides cannot become required (409). Existing task values are never rewritten or backfilled. " +
+    "Works for both a project-level field and a workspace-level field — a workspace field's definition is shared across every project that inherits it.",
   middleware: [
     workspaceAccess.fromCustomField("id"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -255,10 +259,14 @@ const updateCustomFieldRoute = createRoute({
   responses: {
     200: jsonResponse("The updated custom field", customFieldDefinitionSchema),
     400: errorResponse(
-      "Invalid body, unknown custom field, or its workspace could not be determined",
+      "Invalid body or definition, unknown custom field, or its workspace could not be determined",
     ),
     403: errorResponse(
       "No workspace access, or missing project:update permission",
+    ),
+    404: errorResponse("Custom field not found"),
+    409: codedErrorResponse(
+      "CUSTOM_FIELD_OPTION_IN_USE: a removed option is still used by task values; CUSTOM_FIELD_HIDDEN_IN_PROJECTS: a hidden workspace field cannot become required",
     ),
   },
 });
@@ -497,9 +505,9 @@ const customField = apiRouter()
   })
   .openapi(updateCustomFieldRoute, async (c) => {
     const { id } = c.req.valid("param");
-    const { name, optionColors } = c.req.valid("json");
+    const patch = c.req.valid("json");
 
-    return c.json(await updateCustomField(id, name, optionColors), 200);
+    return c.json(await updateCustomField(id, patch), 200);
   })
   .openapi(reorderCustomFieldsRoute, async (c) => {
     const { projectId } = c.req.valid("param");

@@ -13,7 +13,7 @@ type WorkspaceCustomFieldEditorProps = {
 /** Manages a workspace's custom field definitions — every field here is
  * inherited by every project in the workspace. A project can only hide/show
  * one of these fields for itself (see the project editor's inherited-fields
- * section); content edits (name, options, colors) and deletion happen here. */
+ * section); content edits (name, required, default value, options, colors) and deletion happen here. */
 export default function WorkspaceCustomFieldEditor({
   workspaceId,
 }: WorkspaceCustomFieldEditorProps) {
@@ -44,6 +44,7 @@ export default function WorkspaceCustomFieldEditor({
       onUpdateOptionColor={(id, optionColors) =>
         updateCustomField({ id, optionColors })
       }
+      onUpdate={(id, payload) => updateCustomField({ id, ...payload })}
     />
   );
 }

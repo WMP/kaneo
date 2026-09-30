@@ -102,6 +102,7 @@ export default function CustomFieldEditor({
           onUpdateOptionColor={(id, optionColors) =>
             updateCustomField({ id, optionColors })
           }
+          onUpdate={(id, payload) => updateCustomField({ id, ...payload })}
         />
       </div>
     </div>

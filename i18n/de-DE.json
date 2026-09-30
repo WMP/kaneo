@@ -1619,7 +1619,19 @@
 			"requiredByWorkspace": "Vom Workspace vorgeschrieben",
 			"showField": "„{{name}}“ für dieses Projekt einblenden",
 			"visibilityUpdateError": "Sichtbarkeit des Felds konnte nicht aktualisiert werden.",
-			"visibleOnProject": "Sichtbar"
+			"visibleOnProject": "Sichtbar",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"security": "Sicherheit",
 		"securityPage": {

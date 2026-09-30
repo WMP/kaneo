@@ -1389,7 +1389,19 @@
 			"hiddenOnProject": "Hidden",
 			"hideField": "Hide \"{{name}}\" for this project",
 			"showField": "Show \"{{name}}\" for this project",
-			"visibilityUpdateError": "Failed to update field visibility."
+			"visibilityUpdateError": "Failed to update field visibility.",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"optionsLabel": "Options",
+			"defaultValueLabel": "Default value",
+			"saveButton": "Save",
+			"cancelButton": "Cancel",
+			"saving": "Saving...",
+			"updateSuccess": "Custom field updated.",
+			"updateError": "Failed to update custom field."
 		},
 		"githubIntegration": {
 			"validation": {
