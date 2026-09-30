@@ -414,6 +414,13 @@
       "when": 1790720245124,
       "tag": "0058_ganttpro_resource_invitation",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1790798272285,
+      "tag": "0059_ganttpro_workspace_columns",
+      "breakpoints": true
     }
   ]
 }

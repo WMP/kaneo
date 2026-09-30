@@ -33,6 +33,7 @@ import {
   userTable,
   verificationTable,
   workflowRuleTable,
+  workspaceColumnTable,
   workspaceHolidayTable,
   workspaceRoleTable,
   workspaceTable,
@@ -86,6 +87,7 @@ export const workspaceTableRelations = relations(
     invitations: many(invitationTable),
     notificationWorkspaceRules: many(userNotificationWorkspaceRuleTable),
     holidays: many(workspaceHolidayTable),
+    columns: many(workspaceColumnTable),
     activities: many(activityTable),
     customFieldDefinitions: many(customFieldDefinitionTable),
     resources: many(resourceTable),
@@ -184,9 +186,24 @@ export const columnTableRelations = relations(columnTable, ({ one, many }) => ({
     fields: [columnTable.projectId],
     references: [projectTable.id],
   }),
+  workspaceColumn: one(workspaceColumnTable, {
+    fields: [columnTable.workspaceColumnId],
+    references: [workspaceColumnTable.id],
+  }),
   tasks: many(taskTable),
   workflowRules: many(workflowRuleTable),
 }));
+
+export const workspaceColumnTableRelations = relations(
+  workspaceColumnTable,
+  ({ one, many }) => ({
+    workspace: one(workspaceTable, {
+      fields: [workspaceColumnTable.workspaceId],
+      references: [workspaceTable.id],
+    }),
+    projectColumns: many(columnTable),
+  }),
+);
 
 export const workflowRuleTableRelations = relations(
   workflowRuleTable,

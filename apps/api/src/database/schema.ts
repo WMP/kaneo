@@ -161,7 +161,47 @@ export const workspaceTable = pgTable("workspace", {
   // exceptions (specific non-working dates, e.g. public holidays) live in
   // workspaceHolidayTable instead of this bitmask.
   workingDays: integer("ganttpro_working_days").notNull().default(62),
+  // Strict enforcement of the workspace columns: every project of the
+  // workspace then has exactly `ganttpro_workspace_column` and its board
+  // columns cannot be edited per project. See `workspace-column/`.
+  enforceColumns: boolean("ganttpro_enforce_columns").notNull().default(false),
 });
+
+// Board columns defined once for a workspace. Without enforcement they are a
+// template copied into new projects; with enforcement every project has exactly
+// these columns (project columns point back through
+// `column.ganttpro_workspace_column_id`).
+export const workspaceColumnTable = pgTable(
+  "ganttpro_workspace_column",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+      }),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    position: integer("position").notNull().default(0),
+    icon: text("icon"),
+    color: text("color"),
+    isFinal: boolean("is_final").default(false).notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_workspace_column_workspaceId_idx").on(table.workspaceId),
+    unique("ganttpro_workspace_column_workspace_id_slug_unique").on(
+      table.workspaceId,
+      table.slug,
+    ),
+  ],
+);
 
 export const workspaceHolidayTable = pgTable(
   "ganttpro_workspace_holiday",
@@ -400,13 +440,30 @@ export const columnTable = pgTable(
     icon: text("icon"),
     color: text("color"),
     isFinal: boolean("is_final").default(false).notNull(),
+    // The workspace column this project column mirrors; null for a column the
+    // project defined itself. Kept after enforcement is turned off, so turning
+    // it on again matches exactly.
+    workspaceColumnId: text("ganttpro_workspace_column_id"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("column_projectId_idx").on(table.projectId)],
+  (table) => [
+    index("column_projectId_idx").on(table.projectId),
+    index("column_ganttpro_workspace_column_id_idx").on(
+      table.workspaceColumnId,
+    ),
+    // Named explicitly: the generated name exceeds PostgreSQL's 63 characters.
+    foreignKey({
+      columns: [table.workspaceColumnId],
+      foreignColumns: [workspaceColumnTable.id],
+      name: "column_ganttpro_workspace_column_fk",
+    })
+      .onDelete("set null")
+      .onUpdate("cascade"),
+  ],
 );
 
 export const workflowRuleTable = pgTable(
