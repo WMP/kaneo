@@ -153,7 +153,8 @@
 					"terracotta": "Terrakotta",
 					"rose": "Rosa",
 					"crimson": "Karmesinrot"
-				}
+				},
+				"selectOptionPlaceholder": "Select an option"
 			}
 		},
 		"boolean": {
@@ -1528,7 +1529,10 @@
 				"dropdown": "Dropdown",
 				"number": "Number",
 				"text": "Text"
-			}
+			},
+			"availableOptions": "Available options",
+			"options": "options",
+			"reorderError": "Failed to reorder fields"
 		}
 	},
 	"navigation": {
@@ -1956,7 +1960,8 @@
 				}
 			},
 			"customFieldUpdated": "Field updated",
-			"selectOption": "Select option"
+			"selectOption": "Select option",
+			"pickDate": "Pick a date"
 		},
 		"entity": {
 			"task": "Aufgabe"
@@ -2257,7 +2262,11 @@
 		"descriptionSearchError": "Die Suche in Beschreibungen ist fehlgeschlagen. Ergebnisse sind möglicherweise unvollständig.",
 		"descriptionRetry": "Erneut versuchen",
 		"descriptionLoading": "Beschreibung wird geladen…",
-		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden."
+		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden.",
+		"customFields": {
+			"ariaLabel_one": "{{count}} custom field value",
+			"ariaLabel_other": "{{count}} custom field values"
+		}
 	},
 	"invitations": {
 		"email": {
