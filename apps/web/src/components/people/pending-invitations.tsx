@@ -6,7 +6,7 @@ import {
   SendIcon,
   TrashIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
@@ -28,130 +28,73 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ProjectInvitationListItem } from "@/fetchers/project-invitation/get-project-invitations";
-import useCancelProjectInvitation from "@/hooks/mutations/project-invitation/use-cancel-project-invitation";
-import useResendProjectInvitation from "@/hooks/mutations/project-invitation/use-resend-project-invitation";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
-import {
-  getInvitationEmailMessageKey,
-  useInvitationEmailDelivery,
-} from "@/hooks/use-invitation-email-delivery";
+import { useInvitationEmailDelivery } from "@/hooks/use-invitation-email-delivery";
 import { formatDateMedium } from "@/lib/format";
-import { getProjectMemberErrorMessage } from "@/lib/project-member-error";
-import { toast } from "@/lib/toast";
 import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 
-type Props = {
-  projectId: string;
-  workspaceId: string;
-  invitations: ProjectInvitationListItem[];
-  canInvite: boolean;
-  canCancel: boolean;
-  /** Project roles the caller may assign; undefined until loaded. */
-  projectRoles: { role: string }[] | undefined;
-  /** Workspace roles the caller may assign; undefined until loaded. */
-  workspaceRoles: { role: string }[] | undefined;
-  rolesFailed: boolean;
-  onRetryRoles: () => void;
-  /** Open the invite dialog from an expired invitation. */
-  onInviteAgain: (invitation: ProjectInvitationListItem) => void;
+/** A pending invitation of a workspace or of a project, in one shape. */
+export type PendingInvitation = {
+  id: string;
+  email: string;
+  /** live: can still be accepted. expired: use "Invite again". */
+  status: "live" | "expired" | "rejected";
+  expiresAt: string | Date | null;
+  workspaceRole: string;
+  /** Only for an invitation to a project. */
+  projectRole?: string;
 };
 
-function ProjectInvitationsList({
-  projectId,
-  workspaceId,
+/** What the caller may do with one invitation; the context decides. */
+export type InvitationAbilities = {
+  copyLink: boolean;
+  resend: boolean;
+  inviteAgain: boolean;
+  cancel: boolean;
+};
+
+type Props = {
+  /** Wording of the cancel confirmation: it differs for a project. */
+  context: "workspace" | "project";
+  invitations: PendingInvitation[];
+  getAbilities: (invitation: PendingInvitation) => InvitationAbilities;
+  onResend: (invitation: PendingInvitation) => void | Promise<void>;
+  onInviteAgain: (invitation: PendingInvitation) => void | Promise<void>;
+  /** Called once the caller confirmed; shows its own success and error. */
+  onCancel: (invitation: PendingInvitation) => Promise<void>;
+  /** A resend, invite again or cancel is running. */
+  isBusy: boolean;
+  /** Shown above the table, for example "could not load the roles". */
+  notice?: React.ReactNode;
+};
+
+/**
+ * The pending invitations of a workspace or a project, the same section in
+ * both: live and expired (and rejected) invitations with copy link, resend or
+ * renew, invite again and cancel, each offered only when the context says the
+ * caller may.
+ */
+function PendingInvitations({
+  context,
   invitations,
-  canInvite,
-  canCancel,
-  projectRoles,
-  workspaceRoles,
-  rolesFailed,
-  onRetryRoles,
+  getAbilities,
+  onResend,
   onInviteAgain,
+  onCancel,
+  isBusy,
+  notice,
 }: Props) {
   const { t } = useTranslation();
-  const [invitationToCancel, setInvitationToCancel] =
-    useState<ProjectInvitationListItem | null>(null);
   const emailDelivery = useInvitationEmailDelivery();
   const { copy: copyInvitationLink } = useCopyInvitationLink();
-  const { mutateAsync: resendInvitation, isPending: isResending } =
-    useResendProjectInvitation(workspaceId);
-  const { mutateAsync: cancelInvitation, isPending: isCancelling } =
-    useCancelProjectInvitation(workspaceId);
+  const [invitationToCancel, setInvitationToCancel] =
+    useState<PendingInvitation | null>(null);
 
-  const projectRoleSet = useMemo(
-    () => new Set((projectRoles ?? []).map((role) => role.role)),
-    [projectRoles],
-  );
-  const workspaceRoleSet = useMemo(
-    () => new Set((workspaceRoles ?? []).map((role) => role.role)),
-    [workspaceRoles],
-  );
-  const showRolesLoadError =
-    canInvite &&
-    rolesFailed &&
-    (projectRoles === undefined || workspaceRoles === undefined);
-
-  // The API re-sends only when both roles of the invitation are within the
-  // caller's own permissions; the same lists decide what is offered here.
-  const rolesWithinReach = (invitation: ProjectInvitationListItem) =>
-    projectRoleSet.has(invitation.projectRole) &&
-    workspaceRoleSet.has(invitation.workspaceRole);
-
-  const handleResend = async (invitation: ProjectInvitationListItem) => {
-    try {
-      const result = await resendInvitation({
-        projectId,
-        invitationId: invitation.id,
-      });
-      if (result.emailSent) {
-        toast.success(t(getInvitationEmailMessageKey("renewed", "sent")));
-      } else if (result.emailAttempted) {
-        toast.warning(t("projectInvitations:list.resendNotDelivered"));
-      } else {
-        toast.success(
-          t(
-            getInvitationEmailMessageKey(
-              "renewed",
-              emailDelivery === "sent" ? "not-sent" : emailDelivery,
-            ),
-          ),
-        );
-      }
-    } catch (error) {
-      toast.error(
-        getProjectMemberErrorMessage(
-          error,
-          t,
-          emailDelivery === "sent"
-            ? "projectInvitations:list.resendError"
-            : "projectInvitations:list.renewError",
-        ),
-      );
-    }
-  };
-
-  const handleCancel = async () => {
+  const handleConfirmCancel = async () => {
     const invitation = invitationToCancel;
     if (!invitation) return;
     try {
-      const result = await cancelInvitation({
-        projectId,
-        invitationId: invitation.id,
-      });
-      toast.success(
-        result.canceled
-          ? t("projectInvitations:list.cancelSuccess")
-          : t("projectInvitations:list.cancelSuccessOtherProjects"),
-      );
-    } catch (error) {
-      toast.error(
-        getProjectMemberErrorMessage(
-          error,
-          t,
-          "projectInvitations:list.cancelError",
-        ),
-      );
+      await onCancel(invitation);
     } finally {
       setInvitationToCancel(null);
     }
@@ -159,17 +102,7 @@ function ProjectInvitationsList({
 
   return (
     <>
-      {showRolesLoadError ? (
-        <div
-          role="alert"
-          className="flex items-center justify-between gap-3 border-b px-6 py-3 text-sm text-destructive"
-        >
-          <span>{t("projectInvitations:list.rolesLoadError")}</span>
-          <Button variant="outline" size="xs" onClick={onRetryRoles}>
-            {t("projectInvitations:list.rolesRetry")}
-          </Button>
-        </div>
-      ) : null}
+      {notice}
       <Table>
         <TableHeader>
           <TableRow>
@@ -184,12 +117,13 @@ function ProjectInvitationsList({
         </TableHeader>
         <TableBody>
           {invitations.map((invitation) => {
+            const abilities = getAbilities(invitation);
             const isLive = invitation.status === "live";
-            const canResend =
-              isLive && canInvite && rolesWithinReach(invitation);
-            const canInviteAgain =
-              !isLive && canInvite && rolesWithinReach(invitation);
-            const hasActions = isLive || canInviteAgain || canCancel;
+            const hasActions =
+              abilities.copyLink ||
+              abilities.resend ||
+              abilities.inviteAgain ||
+              abilities.cancel;
             return (
               <TableRow key={invitation.id}>
                 <TableCell className="ps-6 py-3">
@@ -207,19 +141,24 @@ function ProjectInvitationsList({
                           size="sm"
                           className="font-mono text-[9px] uppercase tracking-wider"
                         >
-                          {isLive
-                            ? t("team:invitations.pendingBadge")
-                            : t("team:invitations.expiredBadge")}
+                          {invitation.status === "rejected"
+                            ? t("team:invitations.rejectedBadge")
+                            : isLive
+                              ? t("team:invitations.pendingBadge")
+                              : t("team:invitations.expiredBadge")}
                         </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {isLive
-                          ? t("team:invitations.expires", {
-                              date: formatDateMedium(invitation.expiresAt),
-                            })
-                          : t("team:invitations.expired", {
-                              date: formatDateMedium(invitation.expiresAt),
-                            })}
+                        {invitation.expiresAt &&
+                        invitation.status !== "rejected"
+                          ? isLive
+                            ? t("team:invitations.expires", {
+                                date: formatDateMedium(invitation.expiresAt),
+                              })
+                            : t("team:invitations.expired", {
+                                date: formatDateMedium(invitation.expiresAt),
+                              })
+                          : "–"}
                       </div>
                     </div>
                   </div>
@@ -234,11 +173,16 @@ function ProjectInvitationsList({
                         ),
                       })}
                     </Badge>
-                    <Badge variant="outline">
-                      {t("projectInvitations:list.projectRole", {
-                        role: getWorkspaceRoleLabel(invitation.projectRole, t),
-                      })}
-                    </Badge>
+                    {invitation.projectRole ? (
+                      <Badge variant="outline">
+                        {t("projectInvitations:list.projectRole", {
+                          role: getWorkspaceRoleLabel(
+                            invitation.projectRole,
+                            t,
+                          ),
+                        })}
+                      </Badge>
+                    ) : null}
                   </div>
                 </TableCell>
                 <TableCell className="pe-6 py-3 text-right">
@@ -252,9 +196,7 @@ function ProjectInvitationsList({
                             className="h-8 w-8 text-muted-foreground"
                             aria-label={t(
                               "projectInvitations:list.ariaActions",
-                              {
-                                email: invitation.email,
-                              },
+                              { email: invitation.email },
                             )}
                           />
                         }
@@ -262,7 +204,7 @@ function ProjectInvitationsList({
                         <EllipsisIcon className="size-4" />
                       </MenuTrigger>
                       <MenuPopup align="end">
-                        {isLive ? (
+                        {abilities.copyLink ? (
                           <MenuItem
                             onClick={() => copyInvitationLink(invitation.id)}
                           >
@@ -270,10 +212,10 @@ function ProjectInvitationsList({
                             {t("team:invitations.copyLink")}
                           </MenuItem>
                         ) : null}
-                        {canResend ? (
+                        {abilities.resend ? (
                           <MenuItem
-                            disabled={isResending}
-                            onClick={() => handleResend(invitation)}
+                            disabled={isBusy}
+                            onClick={() => onResend(invitation)}
                           >
                             {emailDelivery === "sent" ? (
                               <SendIcon className="size-4" />
@@ -285,13 +227,16 @@ function ProjectInvitationsList({
                               : t("team:invitations.renew")}
                           </MenuItem>
                         ) : null}
-                        {canInviteAgain ? (
-                          <MenuItem onClick={() => onInviteAgain(invitation)}>
+                        {abilities.inviteAgain ? (
+                          <MenuItem
+                            disabled={isBusy}
+                            onClick={() => onInviteAgain(invitation)}
+                          >
                             <SendIcon className="size-4" />
                             {t("team:invitations.inviteAgain")}
                           </MenuItem>
                         ) : null}
-                        {canCancel ? (
+                        {abilities.cancel ? (
                           <MenuItem
                             onClick={() => setInvitationToCancel(invitation)}
                           >
@@ -327,19 +272,23 @@ function ProjectInvitationsList({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("projectInvitations:list.cancelDialogTitle")}
+              {context === "project"
+                ? t("projectInvitations:list.cancelDialogTitle")
+                : t("team:membersTable.cancelDialogTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t("projectInvitations:list.cancelDialogDescription", {
-                email: invitationToCancel?.email ?? "",
-              })}
+              {context === "project"
+                ? t("projectInvitations:list.cancelDialogDescription", {
+                    email: invitationToCancel?.email ?? "",
+                  })
+                : t("team:membersTable.cancelDialogDescription", {
+                    email: invitationToCancel?.email ?? "",
+                  })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogClose
-              render={
-                <Button variant="outline" size="sm" disabled={isCancelling} />
-              }
+              render={<Button variant="outline" size="sm" disabled={isBusy} />}
             >
               {t("common:actions.cancel")}
             </AlertDialogClose>
@@ -348,8 +297,8 @@ function ProjectInvitationsList({
                 <Button
                   variant="destructive"
                   size="sm"
-                  disabled={isCancelling}
-                  onClick={handleCancel}
+                  disabled={isBusy}
+                  onClick={handleConfirmCancel}
                 />
               }
             >
@@ -363,4 +312,4 @@ function ProjectInvitationsList({
   );
 }
 
-export default ProjectInvitationsList;
+export default PendingInvitations;

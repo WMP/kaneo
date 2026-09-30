@@ -85,6 +85,11 @@ export function getNotificationTitle(
           ...eventData,
           defaultValue: notification.title ?? notification.type,
         });
+      case "workspace_member_added":
+        return t("notifications:events.workspace_member_added.title", {
+          ...eventData,
+          defaultValue: notification.title ?? notification.type,
+        });
       case "task_status_changed":
         return t("notifications:events.task_status_changed.title", {
           ...eventData,
@@ -142,6 +147,11 @@ export function getNotificationContent(
         });
       case "workspace_created":
         return t("notifications:events.workspace_created.content", {
+          ...eventData,
+          defaultValue: notification.content ?? "",
+        });
+      case "workspace_member_added":
+        return t("notifications:events.workspace_member_added.content", {
           ...eventData,
           defaultValue: notification.content ?? "",
         });
@@ -230,6 +240,14 @@ const NotificationDropdown = forwardRef<NotificationDropdownRef>(
           navigate({
             to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
             params: { workspaceId, projectId, taskId },
+          });
+        } else if (
+          notification.type === "workspace_member_added" &&
+          workspaceId
+        ) {
+          navigate({
+            to: "/dashboard/workspace/$workspaceId",
+            params: { workspaceId },
           });
         }
       },

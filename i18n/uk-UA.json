@@ -1908,6 +1908,9 @@
 				"title": "Роз’єднати цей ресурс?"
 			},
 			"unlinkAction": "Роз’єднати"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2084,6 +2087,10 @@
 			"task_overdue": {
 				"title": "Завдання прострочено",
 				"content": "Дата завершення {{taskTitle}} вже минула"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		},
 		"reminderLeadTime": {
@@ -2872,6 +2879,15 @@
 			"acceptSuccess": "Запрошення прийнято! Ласкаво просимо до команди.",
 			"rejectError": "Не вдалося відхилити запрошення",
 			"rejectSuccess": "Запрошення відхилено"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3023,9 +3039,7 @@
 			"viewer": "Спостерігач"
 		},
 		"members": {
-			"pageTitle": "Учасники",
-			"inviteMember": "Запросити учасника",
-			"you": "Ви"
+			"pageTitle": "Учасники"
 		},
 		"invitations": {
 			"linkLabel": "Посилання на запрошення",
@@ -3049,21 +3063,15 @@
 			"rejectedBadge": "відхилено"
 		},
 		"inviteModal": {
-			"title": "Запросити учасника команди",
-			"emailLabel": "Електронна пошта",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "Надіслати запрошення",
 			"success": "Запрошення успішно надіслано",
-			"error": "Не вдалося запросити учасника команди",
 			"createdTitle": "Запрошення створено",
 			"shareLinkDescription": "Поділіться цим посиланням з {{email}}, щоб вони могли приєднатися до робочого простору.",
 			"done": "Готово",
-			"invalidEmail": "Введіть коректну адресу електронної пошти",
 			"noSmtpNotice": "Електронну пошту на цьому сервері не налаштовано. Запрошення не буде надіслано листом; скопіюйте посилання й надішліть його самостійно.",
 			"shareLinkDescriptionNoEmail": "Лист не надсилався. Надішліть це посилання на {{email}}, щоб людина могла приєднатися до робочого простору.",
 			"successNoEmail": "Запрошення створено. Лист не надсилався.",
 			"noAssignableRoles": "Ви не можете призначити жодної ролі, тому не можете запрошувати людей.",
-			"roleLabel": "Роль",
 			"rolesError": "Не вдалося завантажити ролі, які ви можете призначати. Спробуйте пізніше.",
 			"rolesLoading": "Завантаження ролей...",
 			"sending": "Надсилання...",
@@ -3076,14 +3084,6 @@
 		"membersTable": {
 			"emptyTitle": "Учасників команди ще немає",
 			"emptyDescription": "Запросіть першого учасника команди, щоб почати.",
-			"columns": {
-				"name": "Ім'я",
-				"role": "Роль",
-				"joined": "Приєднався",
-				"actions": "Дії"
-			},
-			"memberRolePending": "{{role}} (Очікує)",
-			"ariaCancelInvitation": "Скасувати запрошення",
 			"ariaRemoveMember": "Видалити учасника",
 			"removeDialogTitle": "Видалити учасника команди?",
 			"removeDialogDescription": "Ви впевнені, що хочете видалити {{name}} з робочого простору? Цю дію неможливо скасувати.",
@@ -3095,7 +3095,6 @@
 			"removeError": "Не вдалося видалити учасника команди",
 			"cancelInviteSuccess": "Запрошення успішно скасовано",
 			"cancelInviteError": "Не вдалося скасувати запрошення",
-			"ariaInvitationActions": "Дії із запрошенням",
 			"roleUpdateSuccess": "Роль оновлено",
 			"roleUpdateError": "Не вдалося оновити роль",
 			"ariaChangeRole": "Змінити роль для {{name}}",
@@ -3403,33 +3402,7 @@
 			"addedToExisting": "{{email}} уже має запрошення, що очікує відповіді. Цей проєкт додано до нього. Другий лист не надсилався. За потреби поділіться посиланням.",
 			"createdNotSent": "Запрошення для {{email}} створено. Лист не надсилався. Поділіться посиланням нижче.",
 			"createdSendFailed": "Запрошення для {{email}} створено, але лист надіслати не вдалося. Поділіться посиланням нижче або надішліть запрошення повторно зі списку.",
-			"createdSent": "Запрошення надіслано на {{email}}.",
-			"createdTitle": "Запрошення створено",
-			"description": "Запросіть людину, якої ще немає в робочому просторі. Вона отримає ролі, які ви виберете нижче.",
-			"done": "Готово",
-			"emailLabel": "Електронна пошта",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Не вдалося надіслати запрошення",
-			"invalidEmail": "Введіть коректну адресу електронної пошти",
-			"noSmtpNotice": "Електронну пошту на цьому сервері не налаштовано. Запрошення не буде надіслано листом. Скопіюйте посилання й надішліть його самостійно.",
-			"projectRoleHint": "Що людина може робити в цьому проєкті.",
-			"projectRoleLabel": "Роль у проєкті",
-			"rolePlaceholder": "Виберіть роль",
-			"submit": "Надіслати запрошення",
-			"submitting": "Надсилання...",
-			"title": "Запросити до проєкту",
-			"workspaceRoleHint": "Що людина може робити в робочому просторі.",
-			"workspaceRoleLabel": "Роль у робочому просторі",
-			"noAssignableProjectRoles": "Ви не можете призначити жодної ролі в проєкті, тому не можете запрошувати людей.",
-			"noAssignableWorkspaceRoles": "Ви не можете призначити жодної ролі робочого простору, тому не можете запрошувати людей.",
-			"projectRolePickRequired": "Виберіть роль у проєкті.",
-			"projectRolesError": "Не вдалося завантажити ролі проєкту, які ви можете призначати.",
-			"projectRolesLoading": "Завантаження ролей проєкту...",
-			"projectRoleUnavailable": "Вибрана роль у проєкті більше недоступна. Виберіть іншу.",
-			"workspaceRolePickRequired": "Виберіть роль у робочому просторі.",
-			"workspaceRolesError": "Не вдалося завантажити ролі робочого простору, які ви можете призначати.",
-			"workspaceRolesLoading": "Завантаження ролей робочого простору...",
-			"workspaceRoleUnavailable": "Вибрана роль у робочому просторі більше недоступна. Виберіть іншу."
+			"createdSent": "Запрошення надіслано на {{email}}."
 		},
 		"list": {
 			"ariaActions": "Дії із запрошенням для {{email}}",
@@ -3455,28 +3428,6 @@
 		"title": "Запрошення, що очікують відповіді"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Виберіть учасника робочого простору та роль у проєкті.",
-			"error": "Не вдалося додати учасника",
-			"loadError": "Не вдалося завантажити людей, яких можна додати.",
-			"loading": "Завантаження людей...",
-			"memberLabel": "Учасник робочого простору",
-			"noAssignableRoles": "Ви не можете призначити жодної ролі.",
-			"noCandidates": "Усі в цьому робочому просторі вже мають доступ до цього проєкту.",
-			"noMatches": "Нікого не знайдено за вашим запитом.",
-			"roleLabel": "Роль у проєкті",
-			"rolePickRequired": "Виберіть роль у проєкті.",
-			"rolePlaceholder": "Виберіть роль",
-			"rolesError": "Не вдалося завантажити ролі, які ви можете призначати.",
-			"rolesLoading": "Завантаження ролей...",
-			"roleUnavailable": "Вибрана роль більше недоступна. Виберіть іншу.",
-			"searchPlaceholder": "Пошук за іменем або поштою",
-			"submit": "Додати учасника",
-			"submitting": "Додавання...",
-			"success": "Учасника додано до проєкту",
-			"title": "Додати учасника проєкту"
-		},
-		"addMember": "Додати учасника",
 		"errors": {
 			"alreadyProjectMember": "Ця людина вже є учасником цього проєкту.",
 			"cannotChangeOwnRole": "Ви не можете змінити власну роль у проєкті.",
@@ -3492,7 +3443,6 @@
 			"unknownRole": "Такої ролі не існує. Перезавантажте сторінку та виберіть іншу.",
 			"userHasFullAccess": "Ця людина вже має повний доступ до кожного проєкту."
 		},
-		"inviteByEmail": "Запросити електронною поштою",
 		"leaveDialog": {
 			"description": "Ви втратите доступ до цього проєкту. Адміністратор проєкту або робочого простору зможе додати вас знову.",
 			"error": "Не вдалося залишити проєкт",
@@ -3523,14 +3473,8 @@
 		"table": {
 			"ariaActions": "Дії для {{name}}",
 			"ariaChangeRole": "Змінити роль у проєкті для {{name}}",
-			"columns": {
-				"member": "Учасник",
-				"role": "Роль у проєкті"
-			},
 			"emptyDescription": "Додайте учасника робочого простору або запросіть когось електронною поштою.",
 			"emptyTitle": "Учасників ще немає",
-			"fullAccess": "Повний доступ",
-			"fullAccessHint": "Має доступ до кожного проєкту через свою роль у робочому просторі. Змініть її в розділі учасників робочого простору.",
 			"inactive": "неактивна",
 			"inactiveHint": "Ця роль більше не надає доступу. Виберіть іншу роль або вилучіть людину.",
 			"leaveProject": "Залишити проєкт",
@@ -3538,14 +3482,94 @@
 			"rolesLoadError": "Не вдалося завантажити ролі, які ви можете призначати, тому зараз змінити ролі неможливо.",
 			"rolesRetry": "Повторити",
 			"roleUpdateError": "Не вдалося оновити роль у проєкті",
-			"roleUpdateSuccess": "Роль у проєкті оновлено",
-			"you": "Ви"
+			"roleUpdateSuccess": "Роль у проєкті оновлено"
 		},
 		"title": "Учасники",
-		"workspaceInvite": {
-			"info": "Люди без повного доступу бачать лише проєкти, до яких їх додано. Щоб запросити когось в один проєкт, скористайтеся пунктом «Запросити електронною поштою» в налаштуваннях проєкту.",
-			"link": "Відкрити налаштування проєкту"
-		},
 		"abilitiesError": "Не вдалося перевірити, що ви можете тут робити. Деякі дії можуть бути приховані."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_few": "+{{count}} more",
+			"moreProjects_many": "+{{count}} more",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

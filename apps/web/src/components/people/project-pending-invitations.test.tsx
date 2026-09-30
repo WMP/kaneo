@@ -9,7 +9,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProjectInvitationListItem } from "@/fetchers/project-invitation/get-project-invitations";
 import { ProjectMemberError } from "@/lib/project-member-error";
-import ProjectInvitationsList from "./project-invitations-list";
+import ProjectPendingInvitations from "./project-pending-invitations";
 
 const success = vi.fn();
 const error = vi.fn();
@@ -77,10 +77,10 @@ const onInviteAgain = vi.fn();
 const onRetryRoles = vi.fn();
 
 function renderList(
-  props: Partial<React.ComponentProps<typeof ProjectInvitationsList>> = {},
+  props: Partial<React.ComponentProps<typeof ProjectPendingInvitations>> = {},
 ) {
   return render(
-    <ProjectInvitationsList
+    <ProjectPendingInvitations
       projectId="project-1"
       workspaceId="workspace-1"
       invitations={[live]}
@@ -126,7 +126,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("ProjectInvitationsList", () => {
+describe("ProjectPendingInvitations", () => {
   it("shows the email, both roles, the expiry and a pending badge for a live invitation", () => {
     renderList();
 

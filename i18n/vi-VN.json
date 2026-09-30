@@ -1899,6 +1899,9 @@
 				"title": "Hủy liên kết tài nguyên này?"
 			},
 			"unlinkAction": "Hủy liên kết"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2077,6 +2080,10 @@
 				"title": "Đã bắt đầu theo dõi thời gian",
 				"contentWithTask": "Đã bắt đầu theo dõi thời gian trên công việc: {{taskTitle}}",
 				"contentWithoutTask": "Đã bắt đầu theo dõi thời gian trên một công việc"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		}
 	},
@@ -2842,6 +2849,15 @@
 			"acceptSuccess": "Đã chấp nhận lời mời! Chào mừng bạn đến với nhóm.",
 			"rejectError": "Không thể từ chối lời mời",
 			"rejectSuccess": "Đã từ chối lời mời"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -2990,9 +3006,7 @@
 			"viewer": "Người xem"
 		},
 		"members": {
-			"pageTitle": "Thành viên",
-			"inviteMember": "Mời thành viên",
-			"you": "Bạn"
+			"pageTitle": "Thành viên"
 		},
 		"invitations": {
 			"pendingBadge": "đang chờ",
@@ -3016,21 +3030,15 @@
 			"rejectedBadge": "đã từ chối"
 		},
 		"inviteModal": {
-			"title": "Mời thành viên nhóm",
-			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "Gửi lời mời",
 			"success": "Gửi lời mời thành công",
-			"error": "Không thể mời thành viên nhóm",
 			"createdTitle": "Đã tạo lời mời",
 			"shareLinkDescription": "Chia sẻ liên kết này với {{email}} để họ có thể tham gia không gian làm việc.",
 			"done": "Xong",
-			"invalidEmail": "Nhập địa chỉ email hợp lệ",
 			"noSmtpNotice": "Email chưa được cấu hình trên máy chủ này. Lời mời sẽ không được gửi qua email; hãy sao chép liên kết và tự gửi.",
 			"shareLinkDescriptionNoEmail": "Chưa có email nào được gửi. Hãy chia sẻ liên kết này với {{email}} để họ có thể tham gia không gian làm việc.",
 			"successNoEmail": "Đã tạo lời mời. Chưa có email nào được gửi.",
 			"noAssignableRoles": "Bạn không thể gán vai trò nào nên không thể mời người khác.",
-			"roleLabel": "Vai trò",
 			"rolesError": "Không thể tải các vai trò bạn có thể gán. Hãy thử lại sau.",
 			"rolesLoading": "Đang tải vai trò...",
 			"sending": "Đang gửi...",
@@ -3043,15 +3051,6 @@
 		"membersTable": {
 			"emptyTitle": "Chưa có thành viên nhóm nào",
 			"emptyDescription": "Mời thành viên nhóm đầu tiên của bạn để bắt đầu.",
-			"columns": {
-				"name": "Tên",
-				"role": "Vai trò",
-				"joined": "Ngày tham gia",
-				"actions": "Hành động"
-			},
-			"memberRolePending": "{{role}} (Đang chờ)",
-			"ariaCancelInvitation": "Hủy lời mời",
-			"ariaInvitationActions": "Hành động lời mời",
 			"ariaRemoveMember": "Gỡ thành viên",
 			"removeDialogTitle": "Gỡ thành viên nhóm?",
 			"removeDialogDescription": "Bạn có chắc muốn gỡ {{name}} khỏi không gian làm việc? Hành động này không thể hoàn tác.",
@@ -3370,33 +3369,7 @@
 			"addedToExisting": "{{email}} đã có một lời mời đang chờ. Dự án này đã được thêm vào đó. Không có email thứ hai nào được gửi. Hãy chia sẻ liên kết nếu cần.",
 			"createdNotSent": "Đã tạo lời mời cho {{email}}. Chưa có email nào được gửi. Hãy chia sẻ liên kết bên dưới.",
 			"createdSendFailed": "Đã tạo lời mời cho {{email}}, nhưng không thể gửi email. Hãy chia sẻ liên kết bên dưới hoặc gửi lại từ danh sách.",
-			"createdSent": "Đã gửi lời mời đến {{email}}.",
-			"createdTitle": "Đã tạo lời mời",
-			"description": "Mời người chưa có trong không gian làm việc. Họ sẽ nhận các vai trò bạn chọn bên dưới.",
-			"done": "Xong",
-			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Không thể gửi lời mời",
-			"invalidEmail": "Nhập địa chỉ email hợp lệ",
-			"noSmtpNotice": "Email chưa được cấu hình trên máy chủ này. Lời mời sẽ không được gửi qua email. Hãy sao chép liên kết và tự gửi.",
-			"projectRoleHint": "Những gì người này có thể làm trong dự án này.",
-			"projectRoleLabel": "Vai trò trong dự án",
-			"rolePlaceholder": "Chọn vai trò",
-			"submit": "Gửi lời mời",
-			"submitting": "Đang gửi...",
-			"title": "Mời vào dự án",
-			"workspaceRoleHint": "Những gì người này có thể làm trong không gian làm việc.",
-			"workspaceRoleLabel": "Vai trò trong không gian làm việc",
-			"noAssignableProjectRoles": "Bạn không thể gán vai trò dự án nào nên không thể mời người khác.",
-			"noAssignableWorkspaceRoles": "Bạn không thể gán vai trò không gian làm việc nào nên không thể mời người khác.",
-			"projectRolePickRequired": "Hãy chọn vai trò trong dự án.",
-			"projectRolesError": "Không thể tải các vai trò dự án bạn có thể gán.",
-			"projectRolesLoading": "Đang tải vai trò dự án...",
-			"projectRoleUnavailable": "Vai trò dự án bạn đã chọn không còn khả dụng. Hãy chọn vai trò khác.",
-			"workspaceRolePickRequired": "Hãy chọn vai trò trong không gian làm việc.",
-			"workspaceRolesError": "Không thể tải các vai trò không gian làm việc bạn có thể gán.",
-			"workspaceRolesLoading": "Đang tải vai trò không gian làm việc...",
-			"workspaceRoleUnavailable": "Vai trò không gian làm việc bạn đã chọn không còn khả dụng. Hãy chọn vai trò khác."
+			"createdSent": "Đã gửi lời mời đến {{email}}."
 		},
 		"list": {
 			"ariaActions": "Hành động cho lời mời của {{email}}",
@@ -3422,28 +3395,6 @@
 		"title": "Lời mời đang chờ"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Chọn một thành viên không gian làm việc và một vai trò trong dự án.",
-			"error": "Không thể thêm thành viên",
-			"loadError": "Không thể tải danh sách những người bạn có thể thêm.",
-			"loading": "Đang tải danh sách người...",
-			"memberLabel": "Thành viên không gian làm việc",
-			"noAssignableRoles": "Bạn không thể gán vai trò nào.",
-			"noCandidates": "Mọi người trong không gian làm việc này đều đã có quyền truy cập dự án này.",
-			"noMatches": "Không có ai khớp với tìm kiếm của bạn.",
-			"roleLabel": "Vai trò trong dự án",
-			"rolePickRequired": "Hãy chọn vai trò trong dự án.",
-			"rolePlaceholder": "Chọn vai trò",
-			"rolesError": "Không thể tải các vai trò bạn có thể gán.",
-			"rolesLoading": "Đang tải vai trò...",
-			"roleUnavailable": "Vai trò bạn đã chọn không còn khả dụng. Hãy chọn vai trò khác.",
-			"searchPlaceholder": "Tìm theo tên hoặc email",
-			"submit": "Thêm thành viên",
-			"submitting": "Đang thêm...",
-			"success": "Đã thêm thành viên vào dự án",
-			"title": "Thêm thành viên dự án"
-		},
-		"addMember": "Thêm thành viên",
 		"errors": {
 			"alreadyProjectMember": "Người này đã là thành viên của dự án này.",
 			"cannotChangeOwnRole": "Bạn không thể đổi vai trò dự án của chính mình.",
@@ -3459,7 +3410,6 @@
 			"unknownRole": "Vai trò này không tồn tại. Hãy tải lại trang và chọn vai trò khác.",
 			"userHasFullAccess": "Người này đã có toàn quyền truy cập mọi dự án."
 		},
-		"inviteByEmail": "Mời qua email",
 		"leaveDialog": {
 			"description": "Bạn sẽ mất quyền truy cập dự án này. Quản trị viên dự án hoặc quản trị viên không gian làm việc có thể thêm lại bạn.",
 			"error": "Không thể rời dự án",
@@ -3490,14 +3440,8 @@
 		"table": {
 			"ariaActions": "Hành động cho {{name}}",
 			"ariaChangeRole": "Đổi vai trò dự án của {{name}}",
-			"columns": {
-				"member": "Thành viên",
-				"role": "Vai trò trong dự án"
-			},
 			"emptyDescription": "Thêm một thành viên không gian làm việc hoặc mời ai đó qua email.",
 			"emptyTitle": "Chưa có thành viên nào",
-			"fullAccess": "Toàn quyền truy cập",
-			"fullAccessHint": "Có quyền truy cập mọi dự án thông qua vai trò không gian làm việc của họ. Hãy thay đổi trong mục thành viên không gian làm việc.",
 			"inactive": "không hoạt động",
 			"inactiveHint": "Vai trò này không còn cấp quyền truy cập nào. Hãy chọn vai trò khác hoặc gỡ người này.",
 			"leaveProject": "Rời dự án",
@@ -3505,14 +3449,91 @@
 			"rolesLoadError": "Không thể tải các vai trò bạn có thể gán nên hiện chưa thể đổi vai trò.",
 			"rolesRetry": "Thử lại",
 			"roleUpdateError": "Không thể cập nhật vai trò dự án",
-			"roleUpdateSuccess": "Đã cập nhật vai trò dự án",
-			"you": "Bạn"
+			"roleUpdateSuccess": "Đã cập nhật vai trò dự án"
 		},
 		"title": "Thành viên",
-		"workspaceInvite": {
-			"info": "Những người không có toàn quyền truy cập chỉ thấy các dự án mà họ được thêm vào. Để mời ai đó vào một dự án, hãy dùng Mời qua email trong cài đặt dự án.",
-			"link": "Mở cài đặt dự án"
-		},
 		"abilitiesError": "Không thể kiểm tra những gì bạn có thể làm ở đây. Một số hành động có thể bị ẩn."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

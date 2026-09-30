@@ -1899,6 +1899,9 @@
 				"title": "이 리소스의 연결을 해제하시겠습니까?"
 			},
 			"unlinkAction": "연결 해제"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2072,6 +2075,10 @@
 			"task_overdue": {
 				"title": "작업 기한 초과",
 				"content": "{{taskTitle}}이(가) 마감일을 지났습니다"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		},
 		"reminderLeadTime": {
@@ -2842,6 +2849,15 @@
 			"acceptSuccess": "초대가 수락되었습니다! 팀에 오신 것을 환영합니다.",
 			"rejectError": "초대 거절에 실패했습니다",
 			"rejectSuccess": "초대를 거절했습니다"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -2990,9 +3006,7 @@
 			"viewer": "뷰어"
 		},
 		"members": {
-			"pageTitle": "멤버",
-			"inviteMember": "멤버 초대",
-			"you": "나"
+			"pageTitle": "멤버"
 		},
 		"invitations": {
 			"linkLabel": "초대 링크",
@@ -3016,21 +3030,15 @@
 			"rejectedBadge": "거절됨"
 		},
 		"inviteModal": {
-			"title": "팀 멤버 초대",
-			"emailLabel": "이메일",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "초대 전송",
 			"success": "초대가 전송되었습니다",
-			"error": "팀 멤버 초대에 실패했습니다",
 			"createdTitle": "초대가 생성되었습니다",
 			"shareLinkDescription": "{{email}}님이 워크스페이스에 참여할 수 있도록 이 링크를 공유하세요.",
 			"done": "완료",
-			"invalidEmail": "올바른 이메일 주소를 입력하세요",
 			"noSmtpNotice": "이 서버에는 이메일이 설정되어 있지 않습니다. 초대 이메일이 전송되지 않으니 링크를 복사해 직접 보내세요.",
 			"shareLinkDescriptionNoEmail": "이메일은 전송되지 않았습니다. {{email}}님이 워크스페이스에 참여할 수 있도록 이 링크를 공유하세요.",
 			"successNoEmail": "초대가 생성되었습니다. 이메일은 전송되지 않았습니다.",
 			"noAssignableRoles": "할당할 수 있는 역할이 없어 사람을 초대할 수 없습니다.",
-			"roleLabel": "역할",
 			"rolesError": "할당할 수 있는 역할을 불러오지 못했습니다. 나중에 다시 시도하세요.",
 			"rolesLoading": "역할을 불러오는 중...",
 			"sending": "보내는 중...",
@@ -3043,14 +3051,6 @@
 		"membersTable": {
 			"emptyTitle": "아직 팀 멤버가 없습니다",
 			"emptyDescription": "시작하려면 첫 팀 멤버를 초대하세요.",
-			"columns": {
-				"name": "이름",
-				"role": "역할",
-				"joined": "참여",
-				"actions": "작업"
-			},
-			"memberRolePending": "{{role}} (대기 중)",
-			"ariaCancelInvitation": "초대 취소",
 			"ariaRemoveMember": "멤버 제거",
 			"removeDialogTitle": "팀 멤버를 제거하시겠습니까?",
 			"removeDialogDescription": "{{name}}님을 워크스페이스에서 제거하시겠습니까? 이 작업은 취소할 수 없습니다.",
@@ -3062,7 +3062,6 @@
 			"removeError": "팀 멤버 제거에 실패했습니다",
 			"cancelInviteSuccess": "초대가 취소되었습니다",
 			"cancelInviteError": "초대 취소에 실패했습니다",
-			"ariaInvitationActions": "초대 작업",
 			"roleUpdateSuccess": "역할이 업데이트되었습니다",
 			"roleUpdateError": "역할 업데이트에 실패했습니다",
 			"ariaChangeRole": "{{name}}님의 역할 변경",
@@ -3370,33 +3369,7 @@
 			"addedToExisting": "{{email}}님에게는 이미 대기 중인 초대가 있습니다. 이 프로젝트가 해당 초대에 추가되었으며 두 번째 이메일은 전송되지 않았습니다. 필요하면 링크를 공유하세요.",
 			"createdNotSent": "{{email}}에 대한 초대가 생성되었습니다. 이메일은 전송되지 않았습니다. 아래 링크를 공유하세요.",
 			"createdSendFailed": "{{email}}에 대한 초대가 생성되었지만 이메일을 보내지 못했습니다. 아래 링크를 공유하거나 목록에서 다시 보내세요.",
-			"createdSent": "{{email}}(으)로 초대를 보냈습니다.",
-			"createdTitle": "초대가 생성되었습니다",
-			"description": "아직 워크스페이스에 없는 사람을 초대합니다. 아래에서 선택한 역할이 부여됩니다.",
-			"done": "완료",
-			"emailLabel": "이메일",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "초대를 보내지 못했습니다",
-			"invalidEmail": "올바른 이메일 주소를 입력하세요",
-			"noSmtpNotice": "이 서버에는 이메일이 설정되어 있지 않습니다. 초대 이메일이 전송되지 않습니다. 링크를 복사해 직접 보내세요.",
-			"projectRoleHint": "이 프로젝트에서 이 사람이 할 수 있는 일입니다.",
-			"projectRoleLabel": "프로젝트 역할",
-			"rolePlaceholder": "역할 선택",
-			"submit": "초대 보내기",
-			"submitting": "보내는 중...",
-			"title": "프로젝트에 초대",
-			"workspaceRoleHint": "워크스페이스에서 이 사람이 할 수 있는 일입니다.",
-			"workspaceRoleLabel": "워크스페이스 역할",
-			"noAssignableProjectRoles": "할당할 수 있는 프로젝트 역할이 없어 사람을 초대할 수 없습니다.",
-			"noAssignableWorkspaceRoles": "할당할 수 있는 워크스페이스 역할이 없어 사람을 초대할 수 없습니다.",
-			"projectRolePickRequired": "프로젝트 역할을 선택하세요.",
-			"projectRolesError": "할당할 수 있는 프로젝트 역할을 불러오지 못했습니다.",
-			"projectRolesLoading": "프로젝트 역할을 불러오는 중...",
-			"projectRoleUnavailable": "선택한 프로젝트 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요.",
-			"workspaceRolePickRequired": "워크스페이스 역할을 선택하세요.",
-			"workspaceRolesError": "할당할 수 있는 워크스페이스 역할을 불러오지 못했습니다.",
-			"workspaceRolesLoading": "워크스페이스 역할을 불러오는 중...",
-			"workspaceRoleUnavailable": "선택한 워크스페이스 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요."
+			"createdSent": "{{email}}(으)로 초대를 보냈습니다."
 		},
 		"list": {
 			"ariaActions": "{{email}} 초대 작업",
@@ -3422,28 +3395,6 @@
 		"title": "대기 중인 초대"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "워크스페이스 멤버와 프로젝트 역할을 선택하세요.",
-			"error": "멤버를 추가하지 못했습니다",
-			"loadError": "추가할 수 있는 사람을 불러오지 못했습니다.",
-			"loading": "사람을 불러오는 중...",
-			"memberLabel": "워크스페이스 멤버",
-			"noAssignableRoles": "할당할 수 있는 역할이 없습니다.",
-			"noCandidates": "이 워크스페이스의 모든 사람이 이미 이 프로젝트에 접근할 수 있습니다.",
-			"noMatches": "검색과 일치하는 사람이 없습니다.",
-			"roleLabel": "프로젝트 역할",
-			"rolePickRequired": "프로젝트 역할을 선택하세요.",
-			"rolePlaceholder": "역할 선택",
-			"rolesError": "할당할 수 있는 역할을 불러오지 못했습니다.",
-			"rolesLoading": "역할을 불러오는 중...",
-			"roleUnavailable": "선택한 역할을 더 이상 사용할 수 없습니다. 다른 역할을 선택하세요.",
-			"searchPlaceholder": "이름 또는 이메일로 검색",
-			"submit": "멤버 추가",
-			"submitting": "추가하는 중...",
-			"success": "멤버가 프로젝트에 추가되었습니다",
-			"title": "프로젝트 멤버 추가"
-		},
-		"addMember": "멤버 추가",
 		"errors": {
 			"alreadyProjectMember": "이미 이 프로젝트의 멤버입니다.",
 			"cannotChangeOwnRole": "자신의 프로젝트 역할은 변경할 수 없습니다.",
@@ -3459,7 +3410,6 @@
 			"unknownRole": "존재하지 않는 역할입니다. 페이지를 새로 고치고 다른 역할을 선택하세요.",
 			"userHasFullAccess": "이 사람은 이미 모든 프로젝트에 대한 전체 접근 권한이 있습니다."
 		},
-		"inviteByEmail": "이메일로 초대",
 		"leaveDialog": {
 			"description": "이 프로젝트에 접근할 수 없게 됩니다. 프로젝트 관리자 또는 워크스페이스 관리자가 다시 추가할 수 있습니다.",
 			"error": "프로젝트에서 나가지 못했습니다",
@@ -3490,14 +3440,8 @@
 		"table": {
 			"ariaActions": "{{name}} 작업",
 			"ariaChangeRole": "{{name}}님의 프로젝트 역할 변경",
-			"columns": {
-				"member": "멤버",
-				"role": "프로젝트 역할"
-			},
 			"emptyDescription": "워크스페이스 멤버를 추가하거나 이메일로 초대하세요.",
 			"emptyTitle": "아직 멤버가 없습니다",
-			"fullAccess": "전체 접근",
-			"fullAccessHint": "워크스페이스 역할을 통해 모든 프로젝트에 접근할 수 있습니다. 워크스페이스 멤버에서 변경하세요.",
 			"inactive": "비활성",
 			"inactiveHint": "이 역할로는 더 이상 접근할 수 없습니다. 다른 역할을 선택하거나 이 사람을 제거하세요.",
 			"leaveProject": "프로젝트 나가기",
@@ -3505,14 +3449,91 @@
 			"rolesLoadError": "할당할 수 있는 역할을 불러오지 못해 지금은 역할을 변경할 수 없습니다.",
 			"rolesRetry": "재시도",
 			"roleUpdateError": "프로젝트 역할을 업데이트하지 못했습니다",
-			"roleUpdateSuccess": "프로젝트 역할이 업데이트되었습니다",
-			"you": "나"
+			"roleUpdateSuccess": "프로젝트 역할이 업데이트되었습니다"
 		},
 		"title": "멤버",
-		"workspaceInvite": {
-			"info": "전체 접근 권한이 없는 사람은 추가된 프로젝트만 볼 수 있습니다. 한 프로젝트에만 초대하려면 프로젝트 설정의 이메일로 초대를 사용하세요.",
-			"link": "프로젝트 설정 열기"
-		},
 		"abilitiesError": "여기서 할 수 있는 작업을 확인하지 못했습니다. 일부 작업이 숨겨질 수 있습니다."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

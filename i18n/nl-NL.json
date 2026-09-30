@@ -1902,6 +1902,9 @@
 				"title": "Deze resource ontkoppelen?"
 			},
 			"unlinkAction": "Ontkoppelen"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2076,6 +2079,10 @@
 			"task_overdue": {
 				"title": "Taak te laat",
 				"content": "{{taskTitle}} is over de einddatum heen"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		},
 		"reminderLeadTime": {
@@ -2852,6 +2859,15 @@
 			"acceptSuccess": "Uitnodiging geaccepteerd! Welkom bij het team.",
 			"rejectError": "Weigeren van uitnodiging mislukt",
 			"rejectSuccess": "Uitnodiging geweigerd"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3001,9 +3017,7 @@
 			"viewer": "Kijker"
 		},
 		"members": {
-			"pageTitle": "Leden",
-			"inviteMember": "Lid uitnodigen",
-			"you": "Jij"
+			"pageTitle": "Leden"
 		},
 		"invitations": {
 			"linkLabel": "Uitnodigingslink",
@@ -3027,21 +3041,15 @@
 			"rejectedBadge": "afgewezen"
 		},
 		"inviteModal": {
-			"title": "Teamlid uitnodigen",
-			"emailLabel": "E-mailadres",
-			"emailPlaceholder": "collega@bedrijf.nl",
 			"sendInvitation": "Uitnodiging versturen",
 			"success": "Uitnodiging succesvol verzonden",
-			"error": "Uitnodigen teamlid mislukt",
 			"createdTitle": "Uitnodiging aangemaakt",
 			"shareLinkDescription": "Deel deze link met {{email}} zodat diegene lid kan worden van de werkruimte.",
 			"done": "Klaar",
-			"invalidEmail": "Voer een geldig e-mailadres in",
 			"noSmtpNotice": "E-mail is op deze server niet geconfigureerd. De uitnodiging wordt niet per e-mail verstuurd; kopieer de link en stuur hem zelf door.",
 			"shareLinkDescriptionNoEmail": "Er is geen e-mail verstuurd. Deel deze link met {{email}} zodat die persoon lid kan worden van de werkruimte.",
 			"successNoEmail": "Uitnodiging aangemaakt. Er is geen e-mail verstuurd.",
 			"noAssignableRoles": "Je kunt geen enkele rol toewijzen, dus je kunt geen mensen uitnodigen.",
-			"roleLabel": "Rol",
 			"rolesError": "Kon de rollen die je kunt toewijzen niet laden. Probeer het later opnieuw.",
 			"rolesLoading": "Rollen laden...",
 			"sending": "Versturen...",
@@ -3054,14 +3062,6 @@
 		"membersTable": {
 			"emptyTitle": "Nog geen teamleden",
 			"emptyDescription": "Nodig je eerste teamlid uit om te beginnen.",
-			"columns": {
-				"name": "Naam",
-				"role": "Rol",
-				"joined": "Lid sinds",
-				"actions": "Acties"
-			},
-			"memberRolePending": "{{role}} (In afwachting)",
-			"ariaCancelInvitation": "Uitnodiging annuleren",
 			"ariaRemoveMember": "Lid verwijderen",
 			"removeDialogTitle": "Teamlid verwijderen?",
 			"removeDialogDescription": "Weet je zeker dat je {{name}} wilt verwijderen uit de werkruimte? Dit kan niet ongedaan worden gemaakt.",
@@ -3073,7 +3073,6 @@
 			"removeError": "Verwijderen teamlid mislukt",
 			"cancelInviteSuccess": "Uitnodiging succesvol geannuleerd",
 			"cancelInviteError": "Annuleren uitnodiging mislukt",
-			"ariaInvitationActions": "Uitnodigingsacties",
 			"roleUpdateSuccess": "Rol bijgewerkt",
 			"roleUpdateError": "Bijwerken rol mislukt",
 			"ariaChangeRole": "Rol van {{name}} wijzigen",
@@ -3381,33 +3380,7 @@
 			"addedToExisting": "{{email}} heeft al een openstaande uitnodiging. Dit project is eraan toegevoegd. Er is geen tweede e-mail verstuurd. Deel de link indien nodig.",
 			"createdNotSent": "Uitnodiging aangemaakt voor {{email}}. Er is geen e-mail verstuurd. Deel de onderstaande link.",
 			"createdSendFailed": "Uitnodiging aangemaakt voor {{email}}, maar de e-mail kon niet worden verstuurd. Deel de onderstaande link of verstuur de uitnodiging opnieuw vanuit de lijst.",
-			"createdSent": "Uitnodiging verstuurd naar {{email}}.",
-			"createdTitle": "Uitnodiging aangemaakt",
-			"description": "Nodig iemand uit die nog niet in de werkruimte zit. De persoon krijgt de rollen die je hieronder kiest.",
-			"done": "Klaar",
-			"emailLabel": "E-mailadres",
-			"emailPlaceholder": "collega@bedrijf.nl",
-			"error": "Kon de uitnodiging niet versturen",
-			"invalidEmail": "Voer een geldig e-mailadres in",
-			"noSmtpNotice": "E-mail is op deze server niet geconfigureerd. De uitnodiging wordt niet per e-mail verstuurd. Kopieer de link en stuur hem zelf door.",
-			"projectRoleHint": "Wat de persoon in dit project kan doen.",
-			"projectRoleLabel": "Projectrol",
-			"rolePlaceholder": "Selecteer een rol",
-			"submit": "Uitnodiging versturen",
-			"submitting": "Versturen...",
-			"title": "Uitnodigen voor project",
-			"workspaceRoleHint": "Wat de persoon in de werkruimte kan doen.",
-			"workspaceRoleLabel": "Werkruimterol",
-			"noAssignableProjectRoles": "Je kunt geen enkele projectrol toewijzen, dus je kunt geen mensen uitnodigen.",
-			"noAssignableWorkspaceRoles": "Je kunt geen enkele werkruimterol toewijzen, dus je kunt geen mensen uitnodigen.",
-			"projectRolePickRequired": "Kies de projectrol.",
-			"projectRolesError": "Kon de projectrollen die je kunt toewijzen niet laden.",
-			"projectRolesLoading": "Projectrollen laden...",
-			"projectRoleUnavailable": "De gekozen projectrol is niet meer beschikbaar. Kies een andere.",
-			"workspaceRolePickRequired": "Kies de werkruimterol.",
-			"workspaceRolesError": "Kon de werkruimterollen die je kunt toewijzen niet laden.",
-			"workspaceRolesLoading": "Werkruimterollen laden...",
-			"workspaceRoleUnavailable": "De gekozen werkruimterol is niet meer beschikbaar. Kies een andere."
+			"createdSent": "Uitnodiging verstuurd naar {{email}}."
 		},
 		"list": {
 			"ariaActions": "Acties voor de uitnodiging van {{email}}",
@@ -3433,28 +3406,6 @@
 		"title": "Openstaande uitnodigingen"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Kies een werkruimtelid en een projectrol.",
-			"error": "Kon het lid niet toevoegen",
-			"loadError": "Kon de mensen die je kunt toevoegen niet laden.",
-			"loading": "Mensen laden...",
-			"memberLabel": "Werkruimtelid",
-			"noAssignableRoles": "Je kunt geen enkele rol toewijzen.",
-			"noCandidates": "Iedereen in deze werkruimte heeft al toegang tot dit project.",
-			"noMatches": "Niemand komt overeen met je zoekopdracht.",
-			"roleLabel": "Projectrol",
-			"rolePickRequired": "Kies de projectrol.",
-			"rolePlaceholder": "Selecteer een rol",
-			"rolesError": "Kon de rollen die je kunt toewijzen niet laden.",
-			"rolesLoading": "Rollen laden...",
-			"roleUnavailable": "De gekozen rol is niet meer beschikbaar. Kies een andere.",
-			"searchPlaceholder": "Zoek op naam of e-mailadres",
-			"submit": "Lid toevoegen",
-			"submitting": "Toevoegen...",
-			"success": "Lid aan het project toegevoegd",
-			"title": "Projectlid toevoegen"
-		},
-		"addMember": "Lid toevoegen",
 		"errors": {
 			"alreadyProjectMember": "Deze persoon is al lid van dit project.",
 			"cannotChangeOwnRole": "Je kunt je eigen projectrol niet wijzigen.",
@@ -3470,7 +3421,6 @@
 			"unknownRole": "Deze rol bestaat niet. Laad de pagina opnieuw en kies een andere.",
 			"userHasFullAccess": "Deze persoon heeft al volledige toegang tot elk project."
 		},
-		"inviteByEmail": "Uitnodigen per e-mail",
 		"leaveDialog": {
 			"description": "Je verliest de toegang tot dit project. Een projectbeheerder of werkruimtebeheerder kan je opnieuw toevoegen.",
 			"error": "Kon het project niet verlaten",
@@ -3501,14 +3451,8 @@
 		"table": {
 			"ariaActions": "Acties voor {{name}}",
 			"ariaChangeRole": "Projectrol van {{name}} wijzigen",
-			"columns": {
-				"member": "Lid",
-				"role": "Projectrol"
-			},
 			"emptyDescription": "Voeg een werkruimtelid toe of nodig iemand uit per e-mail.",
 			"emptyTitle": "Nog geen leden",
-			"fullAccess": "Volledige toegang",
-			"fullAccessHint": "Heeft via de werkruimterol toegang tot elk project. Wijzig dit onder werkruimteleden.",
 			"inactive": "inactief",
 			"inactiveHint": "Deze rol geeft geen toegang meer. Kies een andere rol of verwijder de persoon.",
 			"leaveProject": "Project verlaten",
@@ -3516,14 +3460,92 @@
 			"rolesLoadError": "Kon de rollen die je kunt toewijzen niet laden, dus rollen kunnen nu niet worden gewijzigd.",
 			"rolesRetry": "Opnieuw proberen",
 			"roleUpdateError": "Kon de projectrol niet bijwerken",
-			"roleUpdateSuccess": "Projectrol bijgewerkt",
-			"you": "Jij"
+			"roleUpdateSuccess": "Projectrol bijgewerkt"
 		},
 		"title": "Leden",
-		"workspaceInvite": {
-			"info": "Mensen zonder volledige toegang zien alleen de projecten waaraan ze zijn toegevoegd. Om iemand voor één project uit te nodigen, gebruik je Uitnodigen per e-mail in de projectinstellingen.",
-			"link": "Projectinstellingen openen"
-		},
 		"abilitiesError": "Kon niet controleren wat je hier kunt doen. Sommige acties zijn mogelijk verborgen."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

@@ -1902,6 +1902,9 @@
 				"title": "Αποσύνδεση αυτού του πόρου;"
 			},
 			"unlinkAction": "Αποσύνδεση"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2076,6 +2079,10 @@
 			"task_overdue": {
 				"title": "Εκπρόθεσμη εργασία",
 				"content": "Η εργασία {{taskTitle}} έχει ξεπεράσει την ημερομηνία λήξης της"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		},
 		"reminderLeadTime": {
@@ -2852,6 +2859,15 @@
 			"acceptSuccess": "Η πρόσκληση έγινε αποδεκτή! Καλώς ήρθατε στην ομάδα.",
 			"rejectError": "Αποτυχία απόρριψης πρόσκλησης",
 			"rejectSuccess": "Η πρόσκληση απορρίφθηκε"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3001,9 +3017,7 @@
 			"viewer": "Θεατής"
 		},
 		"members": {
-			"pageTitle": "Μέλη",
-			"inviteMember": "Πρόσκληση μέλους",
-			"you": "Εσείς"
+			"pageTitle": "Μέλη"
 		},
 		"invitations": {
 			"linkLabel": "Σύνδεσμος πρόσκλησης",
@@ -3027,21 +3041,15 @@
 			"rejectedBadge": "απορρίφθηκε"
 		},
 		"inviteModal": {
-			"title": "Πρόσκληση μέλους ομάδας",
-			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "Αποστολή πρόσκλησης",
 			"success": "Η πρόσκληση στάλθηκε με επιτυχία",
-			"error": "Αποτυχία πρόσκλησης μέλους ομάδας",
 			"createdTitle": "Η πρόσκληση δημιουργήθηκε",
 			"shareLinkDescription": "Μοιραστείτε αυτόν τον σύνδεσμο με τον/την {{email}} για να συμμετάσχει στον χώρο εργασίας.",
 			"done": "Ολοκλήρωση",
-			"invalidEmail": "Εισαγάγετε έγκυρη διεύθυνση email",
 			"noSmtpNotice": "Το email δεν έχει ρυθμιστεί σε αυτόν τον διακομιστή. Η πρόσκληση δεν θα σταλεί με email· αντιγράψτε τον σύνδεσμο και στείλτε τον μόνοι σας.",
 			"shareLinkDescriptionNoEmail": "Δεν στάλθηκε email. Μοιραστείτε αυτόν τον σύνδεσμο με τη διεύθυνση {{email}} για να μπορέσει να συμμετάσχει στον χώρο εργασίας.",
 			"successNoEmail": "Η πρόσκληση δημιουργήθηκε. Δεν στάλθηκε email.",
 			"noAssignableRoles": "Δεν μπορείτε να αναθέσετε κανέναν ρόλο, επομένως δεν μπορείτε να προσκαλέσετε άτομα.",
-			"roleLabel": "Ρόλος",
 			"rolesError": "Δεν ήταν δυνατή η φόρτωση των ρόλων που μπορείτε να αναθέσετε. Δοκιμάστε ξανά αργότερα.",
 			"rolesLoading": "Φόρτωση ρόλων...",
 			"sending": "Γίνεται αποστολή...",
@@ -3054,14 +3062,6 @@
 		"membersTable": {
 			"emptyTitle": "Δεν υπάρχουν ακόμα μέλη ομάδας",
 			"emptyDescription": "Προσκαλέστε το πρώτο μέλος της ομάδας σας για να ξεκινήσετε.",
-			"columns": {
-				"name": "Όνομα",
-				"role": "Ρόλος",
-				"joined": "Εντάχθηκε",
-				"actions": "Ενέργειες"
-			},
-			"memberRolePending": "{{role}} (Σε εκκρεμότητα)",
-			"ariaCancelInvitation": "Ακύρωση πρόσκλησης",
 			"ariaRemoveMember": "Αφαίρεση μέλους",
 			"removeDialogTitle": "Αφαίρεση μέλους ομάδας;",
 			"removeDialogDescription": "Είστε βέβαιοι ότι θέλετε να αφαιρέσετε τον/την {{name}} από τον χώρο εργασίας; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
@@ -3073,7 +3073,6 @@
 			"removeError": "Αποτυχία αφαίρεσης μέλους ομάδας",
 			"cancelInviteSuccess": "Η πρόσκληση ακυρώθηκε με επιτυχία",
 			"cancelInviteError": "Αποτυχία ακύρωσης πρόσκλησης",
-			"ariaInvitationActions": "Ενέργειες πρόσκλησης",
 			"roleUpdateSuccess": "Ο ρόλος ενημερώθηκε",
 			"roleUpdateError": "Αποτυχία ενημέρωσης ρόλου",
 			"ariaChangeRole": "Αλλαγή ρόλου για {{name}}",
@@ -3381,33 +3380,7 @@
 			"addedToExisting": "Η διεύθυνση {{email}} έχει ήδη εκκρεμή πρόσκληση. Αυτό το έργο προστέθηκε σε αυτήν. Δεν στάλθηκε δεύτερο email. Μοιραστείτε τον σύνδεσμο αν χρειάζεται.",
 			"createdNotSent": "Η πρόσκληση δημιουργήθηκε για τη διεύθυνση {{email}}. Δεν στάλθηκε email. Μοιραστείτε τον παρακάτω σύνδεσμο.",
 			"createdSendFailed": "Η πρόσκληση δημιουργήθηκε για τη διεύθυνση {{email}}, αλλά δεν ήταν δυνατή η αποστολή του email. Μοιραστείτε τον παρακάτω σύνδεσμο ή στείλτε την ξανά από τη λίστα.",
-			"createdSent": "Η πρόσκληση στάλθηκε στη διεύθυνση {{email}}.",
-			"createdTitle": "Η πρόσκληση δημιουργήθηκε",
-			"description": "Προσκαλέστε κάποιον που δεν είναι ακόμα στον χώρο εργασίας. Θα λάβει τους ρόλους που επιλέγετε παρακάτω.",
-			"done": "Ολοκλήρωση",
-			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Δεν ήταν δυνατή η αποστολή της πρόσκλησης",
-			"invalidEmail": "Εισαγάγετε έγκυρη διεύθυνση email",
-			"noSmtpNotice": "Το email δεν έχει ρυθμιστεί σε αυτόν τον διακομιστή. Η πρόσκληση δεν θα σταλεί με email. Αντιγράψτε τον σύνδεσμο και στείλτε τον μόνοι σας.",
-			"projectRoleHint": "Τι μπορεί να κάνει το άτομο σε αυτό το έργο.",
-			"projectRoleLabel": "Ρόλος στο έργο",
-			"rolePlaceholder": "Επιλέξτε ρόλο",
-			"submit": "Αποστολή πρόσκλησης",
-			"submitting": "Γίνεται αποστολή...",
-			"title": "Πρόσκληση στο έργο",
-			"workspaceRoleHint": "Τι μπορεί να κάνει το άτομο στον χώρο εργασίας.",
-			"workspaceRoleLabel": "Ρόλος στον χώρο εργασίας",
-			"noAssignableProjectRoles": "Δεν μπορείτε να αναθέσετε κανέναν ρόλο έργου, επομένως δεν μπορείτε να προσκαλέσετε άτομα.",
-			"noAssignableWorkspaceRoles": "Δεν μπορείτε να αναθέσετε κανέναν ρόλο χώρου εργασίας, επομένως δεν μπορείτε να προσκαλέσετε άτομα.",
-			"projectRolePickRequired": "Επιλέξτε τον ρόλο στο έργο.",
-			"projectRolesError": "Δεν ήταν δυνατή η φόρτωση των ρόλων έργου που μπορείτε να αναθέσετε.",
-			"projectRolesLoading": "Φόρτωση ρόλων έργου...",
-			"projectRoleUnavailable": "Ο ρόλος έργου που επιλέξατε δεν είναι πλέον διαθέσιμος. Επιλέξτε άλλον.",
-			"workspaceRolePickRequired": "Επιλέξτε τον ρόλο στον χώρο εργασίας.",
-			"workspaceRolesError": "Δεν ήταν δυνατή η φόρτωση των ρόλων χώρου εργασίας που μπορείτε να αναθέσετε.",
-			"workspaceRolesLoading": "Φόρτωση ρόλων χώρου εργασίας...",
-			"workspaceRoleUnavailable": "Ο ρόλος χώρου εργασίας που επιλέξατε δεν είναι πλέον διαθέσιμος. Επιλέξτε άλλον."
+			"createdSent": "Η πρόσκληση στάλθηκε στη διεύθυνση {{email}}."
 		},
 		"list": {
 			"ariaActions": "Ενέργειες για την πρόσκληση του {{email}}",
@@ -3433,28 +3406,6 @@
 		"title": "Εκκρεμείς προσκλήσεις"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Επιλέξτε ένα μέλος του χώρου εργασίας και έναν ρόλο στο έργο.",
-			"error": "Δεν ήταν δυνατή η προσθήκη του μέλους",
-			"loadError": "Δεν ήταν δυνατή η φόρτωση των ατόμων που μπορείτε να προσθέσετε.",
-			"loading": "Φόρτωση ατόμων...",
-			"memberLabel": "Μέλος χώρου εργασίας",
-			"noAssignableRoles": "Δεν μπορείτε να αναθέσετε κανέναν ρόλο.",
-			"noCandidates": "Όλοι στον χώρο εργασίας έχουν ήδη πρόσβαση σε αυτό το έργο.",
-			"noMatches": "Κανείς δεν ταιριάζει με την αναζήτησή σας.",
-			"roleLabel": "Ρόλος στο έργο",
-			"rolePickRequired": "Επιλέξτε τον ρόλο στο έργο.",
-			"rolePlaceholder": "Επιλέξτε ρόλο",
-			"rolesError": "Δεν ήταν δυνατή η φόρτωση των ρόλων που μπορείτε να αναθέσετε.",
-			"rolesLoading": "Φόρτωση ρόλων...",
-			"roleUnavailable": "Ο ρόλος που επιλέξατε δεν είναι πλέον διαθέσιμος. Επιλέξτε άλλον.",
-			"searchPlaceholder": "Αναζήτηση με όνομα ή email",
-			"submit": "Προσθήκη μέλους",
-			"submitting": "Γίνεται προσθήκη...",
-			"success": "Το μέλος προστέθηκε στο έργο",
-			"title": "Προσθήκη μέλους στο έργο"
-		},
-		"addMember": "Προσθήκη μέλους",
 		"errors": {
 			"alreadyProjectMember": "Αυτό το άτομο είναι ήδη μέλος αυτού του έργου.",
 			"cannotChangeOwnRole": "Δεν μπορείτε να αλλάξετε τον δικό σας ρόλο στο έργο.",
@@ -3470,7 +3421,6 @@
 			"unknownRole": "Αυτός ο ρόλος δεν υπάρχει. Ανανεώστε τη σελίδα και επιλέξτε άλλον.",
 			"userHasFullAccess": "Αυτό το άτομο έχει ήδη πλήρη πρόσβαση σε κάθε έργο."
 		},
-		"inviteByEmail": "Πρόσκληση με email",
 		"leaveDialog": {
 			"description": "Θα χάσετε την πρόσβαση σε αυτό το έργο. Ένας διαχειριστής έργου ή χώρου εργασίας μπορεί να σας προσθέσει ξανά.",
 			"error": "Δεν ήταν δυνατή η αποχώρηση από το έργο",
@@ -3501,14 +3451,8 @@
 		"table": {
 			"ariaActions": "Ενέργειες για {{name}}",
 			"ariaChangeRole": "Αλλαγή ρόλου στο έργο για {{name}}",
-			"columns": {
-				"member": "Μέλος",
-				"role": "Ρόλος στο έργο"
-			},
 			"emptyDescription": "Προσθέστε ένα μέλος του χώρου εργασίας ή προσκαλέστε κάποιον με email.",
 			"emptyTitle": "Δεν υπάρχουν ακόμα μέλη",
-			"fullAccess": "Πλήρης πρόσβαση",
-			"fullAccessHint": "Έχει πρόσβαση σε κάθε έργο μέσω του ρόλου του στον χώρο εργασίας. Αλλάξτε τον στα μέλη του χώρου εργασίας.",
 			"inactive": "ανενεργός",
 			"inactiveHint": "Αυτός ο ρόλος δεν δίνει πλέον πρόσβαση. Επιλέξτε άλλον ρόλο ή αφαιρέστε το άτομο.",
 			"leaveProject": "Αποχώρηση από το έργο",
@@ -3516,14 +3460,92 @@
 			"rolesLoadError": "Δεν ήταν δυνατή η φόρτωση των ρόλων που μπορείτε να αναθέσετε, επομένως οι ρόλοι δεν μπορούν να αλλάξουν τώρα.",
 			"rolesRetry": "Επανάληψη",
 			"roleUpdateError": "Δεν ήταν δυνατή η ενημέρωση του ρόλου στο έργο",
-			"roleUpdateSuccess": "Ο ρόλος στο έργο ενημερώθηκε",
-			"you": "Εσείς"
+			"roleUpdateSuccess": "Ο ρόλος στο έργο ενημερώθηκε"
 		},
 		"title": "Μέλη",
-		"workspaceInvite": {
-			"info": "Τα άτομα χωρίς πλήρη πρόσβαση βλέπουν μόνο τα έργα στα οποία έχουν προστεθεί. Για να προσκαλέσετε κάποιον σε ένα έργο, χρησιμοποιήστε την Πρόσκληση με email στις ρυθμίσεις του έργου.",
-			"link": "Άνοιγμα ρυθμίσεων έργου"
-		},
 		"abilitiesError": "Δεν ήταν δυνατός ο έλεγχος του τι μπορείτε να κάνετε εδώ. Ορισμένες ενέργειες μπορεί να είναι κρυμμένες."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

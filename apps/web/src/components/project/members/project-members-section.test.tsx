@@ -50,9 +50,14 @@ const ALL: Abilities = {
   canViewInvitations: true,
 };
 let abilities: Abilities;
+let workspaceCanAdd = true;
 
 vi.mock("@/hooks/use-project-member-abilities", () => ({
   useProjectMemberAbilities: () => abilities,
+}));
+
+vi.mock("@/hooks/use-workspace-permission", () => ({
+  useWorkspacePermission: () => ({ canAddMembers: () => workspaceCanAdd }),
 }));
 
 const refetchMembers = vi.fn();
@@ -74,15 +79,6 @@ vi.mock(
       useGetProjectInvitations(projectId, options),
   }),
 );
-const useGetMemberCandidates = vi.fn(
-  (_projectId: string, _options: { enabled?: boolean }) => ({
-    data: [{ id: "u-7", email: "carol@example.com" }],
-  }),
-);
-vi.mock("@/hooks/queries/project-member/use-get-member-candidates", () => ({
-  default: (projectId: string, options: { enabled?: boolean }) =>
-    useGetMemberCandidates(projectId, options),
-}));
 const useGetAssignableRoles = vi.fn((_workspaceId: string | undefined) => ({
   data: [],
   isError: false,
@@ -94,27 +90,24 @@ vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
 }));
 
 type DialogProps = Record<string, unknown> & { open: boolean };
-let inviteProps: DialogProps | undefined;
-let addProps: DialogProps | undefined;
+let dialogProps: DialogProps | undefined;
 
-vi.mock("./project-members-table", () => ({
+vi.mock("@/components/people/project-people-table", () => ({
   default: (props: { canManage: boolean }) => (
     <div>table canManage={String(props.canManage)}</div>
   ),
 }));
-vi.mock("./project-invitations-list", () => ({
-  default: () => <div>invitations list</div>,
-}));
-vi.mock("./add-project-member-dialog", () => ({
-  default: (props: DialogProps) => {
-    addProps = props;
-    return props.open ? <div>add dialog</div> : null;
+let pendingProps: Record<string, unknown> | undefined;
+vi.mock("@/components/people/project-pending-invitations", () => ({
+  default: (props: Record<string, unknown>) => {
+    pendingProps = props;
+    return <div>invitations list</div>;
   },
 }));
-vi.mock("./invite-to-project-dialog", () => ({
+vi.mock("@/components/people/add-people-dialog", () => ({
   default: (props: DialogProps) => {
-    inviteProps = props;
-    return props.open ? <div>invite dialog</div> : null;
+    dialogProps = props;
+    return props.open ? <div>add people dialog</div> : null;
   },
 }));
 
@@ -129,9 +122,10 @@ const renderSection = () =>
 
 beforeEach(() => {
   abilities = { ...ALL };
+  workspaceCanAdd = true;
   membersState = { data: [], error: null, isLoading: false };
-  inviteProps = undefined;
-  addProps = undefined;
+  dialogProps = undefined;
+  pendingProps = undefined;
 });
 
 afterEach(() => {
@@ -140,19 +134,31 @@ afterEach(() => {
 });
 
 describe("ProjectMembersSection", () => {
-  it("offers add member and invite by email to a caller who may do both", () => {
+  it("offers one Add people button to a caller who may add or invite", () => {
     renderSection();
 
     expect(
-      screen.getByRole("button", { name: "projectMembers:addMember" }),
-    ).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "projectMembers:inviteByEmail" }),
+      screen.getByRole("button", { name: "people:add.open" }),
     ).toBeVisible();
     expect(screen.getByText("invitations list")).toBeVisible();
   });
 
-  it("offers neither, and no invitation list, to a caller the API refuses", () => {
+  it("offers the button to a caller who can only invite, or only add", () => {
+    abilities = { ...ALL, canAdd: false };
+    const { unmount } = renderSection();
+    expect(
+      screen.getByRole("button", { name: "people:add.open" }),
+    ).toBeVisible();
+    unmount();
+
+    abilities = { ...ALL, canInvite: false };
+    renderSection();
+    expect(
+      screen.getByRole("button", { name: "people:add.open" }),
+    ).toBeVisible();
+  });
+
+  it("offers nothing, and no invitation list, to a caller the API refuses", () => {
     abilities = {
       ...ALL,
       canAdd: false,
@@ -164,21 +170,18 @@ describe("ProjectMembersSection", () => {
     renderSection();
 
     expect(
-      screen.queryByRole("button", { name: "projectMembers:addMember" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "projectMembers:inviteByEmail" }),
+      screen.queryByRole("button", { name: "people:add.open" }),
     ).toBeNull();
     expect(screen.queryByText("invitations list")).toBeNull();
     expect(screen.getByText("table canManage=false")).toBeVisible();
   });
 
-  it("shows no action buttons while the abilities are still loading", () => {
+  it("shows no action button while the abilities are still loading", () => {
     abilities = { ...ALL, isLoading: true };
     renderSection();
 
     expect(
-      screen.queryByRole("button", { name: "projectMembers:addMember" }),
+      screen.queryByRole("button", { name: "people:add.open" }),
     ).toBeNull();
   });
 
@@ -208,48 +211,64 @@ describe("ProjectMembersSection", () => {
     expect(refetchMembers).toHaveBeenCalledTimes(1);
   });
 
-  it("moves from the invite dialog to the add dialog with the person and role", () => {
+  it("opens the add people dialog in the project context with what the caller may do", () => {
     renderSection();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "projectMembers:inviteByEmail" }),
-    );
-    expect(screen.getByText("invite dialog")).toBeVisible();
+    expect(screen.queryByText("add people dialog")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "people:add.open" }));
 
-    const onAdd = inviteProps?.onAddExistingMember as
-      | ((member: { userId: string; role: string }) => void)
+    expect(screen.getByText("add people dialog")).toBeVisible();
+    expect(dialogProps).toMatchObject({
+      open: true,
+      context: {
+        kind: "project",
+        workspaceId: "workspace-1",
+        projectId: "project-1",
+      },
+      canAdd: true,
+      canInvite: true,
+      canAddToWorkspace: true,
+    });
+  });
+
+  it("tells the dialog when the caller may not add accounts to the workspace", () => {
+    workspaceCanAdd = false;
+    renderSection();
+
+    expect(dialogProps).toMatchObject({
+      canAdd: true,
+      canAddToWorkspace: false,
+    });
+  });
+
+  it("opens the dialog on an expired invitation with its address and roles", () => {
+    renderSection();
+
+    const onInviteAgain = pendingProps?.onInviteAgain as
+      | ((invitation: Record<string, string>) => void)
       | undefined;
-    expect(onAdd).toBeDefined();
+    expect(onInviteAgain).toBeDefined();
     act(() => {
-      onAdd?.({ userId: "u-7", role: "qa-lead" });
+      onInviteAgain?.({
+        email: "old@example.com",
+        workspaceRole: "viewer",
+        projectRole: "tester",
+      });
     });
 
-    expect(screen.queryByText("invite dialog")).toBeNull();
-    expect(screen.getByText("add dialog")).toBeVisible();
-    expect(addProps?.initial).toEqual({ userId: "u-7", role: "qa-lead" });
+    expect(screen.getByText("add people dialog")).toBeVisible();
+    expect(dialogProps?.prefill).toEqual({
+      email: "old@example.com",
+      workspaceRole: "viewer",
+      projectRole: "tester",
+    });
   });
 
-  it("does not hand candidates to the invite dialog when adding members is not allowed", () => {
-    abilities = { ...ALL, canAdd: false };
-    renderSection();
-
-    expect(inviteProps?.candidates).toBeUndefined();
-    expect(inviteProps?.onAddExistingMember).toBeUndefined();
-  });
-
-  it("mounts a dialog only for a caller who can use it", () => {
+  it("mounts the dialog only for a caller who can use it", () => {
     abilities = { ...ALL, canAdd: false, canInvite: false };
     renderSection();
 
-    expect(addProps).toBeUndefined();
-    expect(inviteProps).toBeUndefined();
-  });
-
-  it("mounts both dialogs for a caller who can use them", () => {
-    renderSection();
-
-    expect(addProps).toBeDefined();
-    expect(inviteProps).toBeDefined();
+    expect(dialogProps).toBeUndefined();
   });
 
   it("asks for the workspace assignable roles only when the caller can invite", () => {
@@ -286,7 +305,7 @@ describe("ProjectMembersSection", () => {
     expect(screen.queryByText("projectMembers:abilitiesError")).toBeNull();
   });
 
-  it("reads the candidates and the invitation list only when the capabilities allow it", () => {
+  it("reads the invitation list only when the capabilities allow it", () => {
     abilities = {
       ...ALL,
       canAdd: false,
@@ -294,9 +313,6 @@ describe("ProjectMembersSection", () => {
       canViewInvitations: false,
     };
     renderSection();
-    expect(useGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
-      enabled: false,
-    });
     expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
       enabled: false,
     });
@@ -304,9 +320,6 @@ describe("ProjectMembersSection", () => {
     cleanup();
     abilities = { ...ALL };
     renderSection();
-    expect(useGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
-      enabled: true,
-    });
     expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
       enabled: true,
     });

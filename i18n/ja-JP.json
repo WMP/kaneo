@@ -1899,6 +1899,9 @@
 				"title": "このリソースのリンクを解除しますか？"
 			},
 			"unlinkAction": "リンクを解除"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2077,6 +2080,10 @@
 				"title": "時間計測を開始しました",
 				"contentWithTask": "タスク「{{taskTitle}}」の時間計測を開始しました",
 				"contentWithoutTask": "タスクの時間計測を開始しました"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		}
 	},
@@ -2842,6 +2849,15 @@
 			"acceptSuccess": "招待を承諾しました！チームへようこそ。",
 			"rejectError": "招待の辞退に失敗しました",
 			"rejectSuccess": "招待を辞退しました"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -2990,9 +3006,7 @@
 			"viewer": "閲覧者"
 		},
 		"members": {
-			"pageTitle": "メンバー",
-			"inviteMember": "メンバーを招待",
-			"you": "あなた"
+			"pageTitle": "メンバー"
 		},
 		"invitations": {
 			"pendingBadge": "保留中",
@@ -3016,21 +3030,15 @@
 			"rejectedBadge": "辞退"
 		},
 		"inviteModal": {
-			"title": "チームメンバーを招待",
-			"emailLabel": "メールアドレス",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "招待を送信",
 			"success": "招待を送信しました",
-			"error": "チームメンバーの招待に失敗しました",
 			"createdTitle": "招待を作成しました",
 			"shareLinkDescription": "{{email}} にこのリンクを共有して、ワークスペースに参加してもらいましょう。",
 			"done": "完了",
-			"invalidEmail": "有効なメールアドレスを入力してください",
 			"noSmtpNotice": "このサーバーではメールが設定されていません。招待はメールで送信されません。リンクをコピーして自分で送信してください。",
 			"shareLinkDescriptionNoEmail": "メールは送信されていません。{{email}} がワークスペースに参加できるよう、このリンクを共有してください。",
 			"successNoEmail": "招待を作成しました。メールは送信されていません。",
 			"noAssignableRoles": "割り当て可能なロールがないため、人を招待できません。",
-			"roleLabel": "ロール",
 			"rolesError": "割り当て可能なロールを読み込めませんでした。後でもう一度お試しください。",
 			"rolesLoading": "ロールを読み込み中...",
 			"sending": "送信中...",
@@ -3043,15 +3051,6 @@
 		"membersTable": {
 			"emptyTitle": "チームメンバーがまだいません",
 			"emptyDescription": "最初のチームメンバーを招待して始めましょう。",
-			"columns": {
-				"name": "名前",
-				"role": "ロール",
-				"joined": "参加日",
-				"actions": "操作"
-			},
-			"memberRolePending": "{{role}} (保留中)",
-			"ariaCancelInvitation": "招待をキャンセル",
-			"ariaInvitationActions": "招待の操作",
 			"ariaRemoveMember": "メンバーを削除",
 			"removeDialogTitle": "チームメンバーを削除しますか？",
 			"removeDialogDescription": "本当に {{name}} をワークスペースから削除しますか？この操作は取り消せません。",
@@ -3370,33 +3369,7 @@
 			"addedToExisting": "{{email}} にはすでに保留中の招待があります。このプロジェクトをそこに追加しました。2通目のメールは送信されていません。必要に応じてリンクを共有してください。",
 			"createdNotSent": "{{email}} 宛の招待を作成しました。メールは送信されていません。以下のリンクを共有してください。",
 			"createdSendFailed": "{{email}} 宛の招待を作成しましたが、メールを送信できませんでした。以下のリンクを共有するか、リストから再送信してください。",
-			"createdSent": "{{email}} に招待を送信しました。",
-			"createdTitle": "招待を作成しました",
-			"description": "まだワークスペースにいない人を招待します。以下で選択したロールが付与されます。",
-			"done": "完了",
-			"emailLabel": "メールアドレス",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "招待を送信できませんでした",
-			"invalidEmail": "有効なメールアドレスを入力してください",
-			"noSmtpNotice": "このサーバーではメールが設定されていません。招待はメールで送信されません。リンクをコピーして自分で送信してください。",
-			"projectRoleHint": "このプロジェクトでこの人ができる操作です。",
-			"projectRoleLabel": "プロジェクトロール",
-			"rolePlaceholder": "ロールを選択",
-			"submit": "招待を送信",
-			"submitting": "送信中...",
-			"title": "プロジェクトに招待",
-			"workspaceRoleHint": "ワークスペースでこの人ができる操作です。",
-			"workspaceRoleLabel": "ワークスペースロール",
-			"noAssignableProjectRoles": "割り当て可能なプロジェクトロールがないため、人を招待できません。",
-			"noAssignableWorkspaceRoles": "割り当て可能なワークスペースロールがないため、人を招待できません。",
-			"projectRolePickRequired": "プロジェクトロールを選択してください。",
-			"projectRolesError": "割り当て可能なプロジェクトロールを読み込めませんでした。",
-			"projectRolesLoading": "プロジェクトロールを読み込み中...",
-			"projectRoleUnavailable": "選択したプロジェクトロールは利用できなくなりました。別のロールを選択してください。",
-			"workspaceRolePickRequired": "ワークスペースロールを選択してください。",
-			"workspaceRolesError": "割り当て可能なワークスペースロールを読み込めませんでした。",
-			"workspaceRolesLoading": "ワークスペースロールを読み込み中...",
-			"workspaceRoleUnavailable": "選択したワークスペースロールは利用できなくなりました。別のロールを選択してください。"
+			"createdSent": "{{email}} に招待を送信しました。"
 		},
 		"list": {
 			"ariaActions": "{{email}} の招待の操作",
@@ -3422,28 +3395,6 @@
 		"title": "保留中の招待"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "ワークスペースのメンバーとプロジェクトロールを選択してください。",
-			"error": "メンバーを追加できませんでした",
-			"loadError": "追加できるユーザーを読み込めませんでした。",
-			"loading": "ユーザーを読み込み中...",
-			"memberLabel": "ワークスペースのメンバー",
-			"noAssignableRoles": "割り当て可能なロールがありません。",
-			"noCandidates": "このワークスペースの全員が、すでにこのプロジェクトにアクセスできます。",
-			"noMatches": "検索に一致する人はいません。",
-			"roleLabel": "プロジェクトロール",
-			"rolePickRequired": "プロジェクトロールを選択してください。",
-			"rolePlaceholder": "ロールを選択",
-			"rolesError": "割り当て可能なロールを読み込めませんでした。",
-			"rolesLoading": "ロールを読み込み中...",
-			"roleUnavailable": "選択したロールは利用できなくなりました。別のロールを選択してください。",
-			"searchPlaceholder": "名前またはメールアドレスで検索",
-			"submit": "メンバーを追加",
-			"submitting": "追加中...",
-			"success": "メンバーをプロジェクトに追加しました",
-			"title": "プロジェクトメンバーを追加"
-		},
-		"addMember": "メンバーを追加",
 		"errors": {
 			"alreadyProjectMember": "この人はすでにこのプロジェクトのメンバーです。",
 			"cannotChangeOwnRole": "自分自身のプロジェクトロールは変更できません。",
@@ -3459,7 +3410,6 @@
 			"unknownRole": "このロールは存在しません。ページを再読み込みして別のロールを選択してください。",
 			"userHasFullAccess": "この人はすでにすべてのプロジェクトへのフルアクセスがあります。"
 		},
-		"inviteByEmail": "メールで招待",
 		"leaveDialog": {
 			"description": "このプロジェクトにアクセスできなくなります。プロジェクト管理者またはワークスペース管理者が再度追加できます。",
 			"error": "プロジェクトから退出できませんでした",
@@ -3490,14 +3440,8 @@
 		"table": {
 			"ariaActions": "{{name}} の操作",
 			"ariaChangeRole": "{{name}} のプロジェクトロールを変更",
-			"columns": {
-				"member": "メンバー",
-				"role": "プロジェクトロール"
-			},
 			"emptyDescription": "ワークスペースのメンバーを追加するか、メールで招待してください。",
 			"emptyTitle": "メンバーはまだいません",
-			"fullAccess": "フルアクセス",
-			"fullAccessHint": "ワークスペースのロールにより、すべてのプロジェクトにアクセスできます。ワークスペースのメンバーから変更してください。",
 			"inactive": "無効",
 			"inactiveHint": "このロールではアクセスできなくなりました。別のロールを選択するか、この人を削除してください。",
 			"leaveProject": "プロジェクトから退出",
@@ -3505,14 +3449,91 @@
 			"rolesLoadError": "割り当て可能なロールを読み込めなかったため、現在ロールを変更できません。",
 			"rolesRetry": "再試行",
 			"roleUpdateError": "プロジェクトロールを更新できませんでした",
-			"roleUpdateSuccess": "プロジェクトロールを更新しました",
-			"you": "自分"
+			"roleUpdateSuccess": "プロジェクトロールを更新しました"
 		},
 		"title": "メンバー",
-		"workspaceInvite": {
-			"info": "フルアクセスのない人には、追加されたプロジェクトのみが表示されます。1つのプロジェクトに人を招待するには、プロジェクト設定の「メールで招待」を使用してください。",
-			"link": "プロジェクト設定を開く"
-		},
 		"abilitiesError": "ここで実行できる操作を確認できませんでした。一部の操作が表示されない場合があります。"
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

@@ -93,6 +93,10 @@ const ERROR_KEYS_BY_CODE: Record<string, string> = {
   GUEST_CANNOT_INVITE: "projectInvitations:errors.guestCannotInvite",
   DISPOSABLE_EMAIL_NOT_ALLOWED: "projectInvitations:errors.disposableEmail",
   PROJECT_INVITATION_NOT_APPLIED: "projectInvitations:errors.notApplied",
+  USER_NOT_FOUND: "people:errors.userNotFound",
+  USER_CANNOT_BE_ADDED: "people:errors.userCannotBeAdded",
+  USER_DIRECTORY_DISABLED: "people:errors.directoryDisabled",
+  ORGANIZATION_MEMBERSHIP_LIMIT_REACHED: "people:errors.membershipLimitReached",
 };
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;

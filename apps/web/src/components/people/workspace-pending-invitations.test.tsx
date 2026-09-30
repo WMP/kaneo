@@ -1,5 +1,4 @@
 import {
-  act,
   cleanup,
   fireEvent,
   render,
@@ -8,11 +7,8 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WorkspaceMemberError } from "@/lib/workspace-role-error";
-import type {
-  WorkspaceUser,
-  WorkspaceUserInvitation,
-} from "@/types/workspace-user";
-import MembersTable from "./members-table";
+import type { WorkspaceUserInvitation } from "@/types/workspace-user";
+import WorkspacePendingInvitations from "./workspace-pending-invitations";
 
 const copyToClipboard = vi.fn();
 const success = vi.fn();
@@ -54,19 +50,6 @@ vi.mock("@/hooks/queries/config/use-get-config", () => ({
   default: () => ({ data: config }),
 }));
 
-vi.mock("@/hooks/mutations/workspace-user/use-delete-workspace-user", () => ({
-  default: () => ({ mutateAsync: vi.fn(), isPending: false }),
-}));
-
-const updateMemberRole = vi.fn();
-
-vi.mock(
-  "@/hooks/mutations/workspace-user/use-update-workspace-user-role",
-  () => ({
-    default: () => ({ mutateAsync: updateMemberRole }),
-  }),
-);
-
 const refetchAssignableRoles = vi.fn();
 
 type AssignableRolesState = {
@@ -87,31 +70,19 @@ vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
 }));
 
 const canInviteUsers = vi.fn(() => true);
-const canManageTeam = vi.fn(() => true);
 const canCancelInvitations = vi.fn(() => true);
-let isOwner = false;
 
 vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
-    canManageTeam: () => canManageTeam(),
     canCancelInvitations: () => canCancelInvitations(),
-    canRemoveMembers: () => true,
     canInviteUsers: () => canInviteUsers(),
-    isOwner,
   }),
-}));
-
-vi.mock("../providers/auth-provider/hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: "current-user" } }),
 }));
 
 beforeEach(() => {
   cancelInvitation.mockResolvedValue({});
-  canManageTeam.mockReturnValue(true);
   canCancelInvitations.mockReturnValue(true);
-  isOwner = false;
   assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
-  updateMemberRole.mockResolvedValue({});
   canInviteUsers.mockReturnValue(true);
   config = { hasSmtp: true };
   inviteMember.mockResolvedValue({ id: "invite-1" });
@@ -143,23 +114,32 @@ const rejectedInvitation = {
   status: "rejected",
 } as unknown as WorkspaceUserInvitation;
 
-describe("MembersTable pending invitation row menu", () => {
+const acceptedInvitation = {
+  ...pendingInvitation,
+  id: "invite-accepted",
+  status: "accepted",
+} as unknown as WorkspaceUserInvitation;
+
+const renderRow = (invitation: WorkspaceUserInvitation) =>
+  render(
+    <WorkspacePendingInvitations
+      workspaceId="workspace-1"
+      invitations={[invitation]}
+    />,
+  );
+
+const openMenu = () =>
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "projectInvitations:list.ariaActions",
+    }),
+  );
+
+describe("WorkspacePendingInvitations row menu", () => {
   it("copies the invitation link for that invitation when 'Copy link' is clicked", async () => {
     copyToClipboard.mockResolvedValue(true);
-
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[pendingInvitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
-      }),
-    );
+    renderRow(pendingInvitation);
+    openMenu();
 
     fireEvent.click(
       await screen.findByRole("menuitem", {
@@ -175,20 +155,9 @@ describe("MembersTable pending invitation row menu", () => {
     );
   });
 
-  it("still opens the cancel confirmation dialog instead of cancelling directly", async () => {
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[pendingInvitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
-      }),
-    );
+  it("opens the cancel confirmation dialog instead of cancelling directly", async () => {
+    renderRow(pendingInvitation);
+    openMenu();
 
     fireEvent.click(
       await screen.findByRole("menuitem", {
@@ -199,44 +168,81 @@ describe("MembersTable pending invitation row menu", () => {
     expect(
       await screen.findByText("team:membersTable.cancelDialogTitle"),
     ).toBeVisible();
+    expect(cancelInvitation).not.toHaveBeenCalled();
     expect(copyToClipboard).not.toHaveBeenCalled();
+  });
+
+  it("cancels after the confirmation and says so", async () => {
+    renderRow(pendingInvitation);
+    openMenu();
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: "team:membersTable.cancelInvitation",
+      }),
+    );
+    await screen.findByText("team:membersTable.cancelDialogTitle");
+
+    const confirm = screen
+      .getAllByRole("button", { name: "team:membersTable.cancelInvitation" })
+      .at(-1);
+    if (!confirm) throw new Error("no confirm button");
+    fireEvent.click(confirm);
+
+    await waitFor(() =>
+      expect(cancelInvitation).toHaveBeenCalledWith({
+        invitationId: "invite-1",
+        workspaceId: "workspace-1",
+      }),
+    );
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith(
+        "team:membersTable.cancelInviteSuccess",
+      ),
+    );
   });
 
   it("hides the row menu entirely when the user lacks canInvite", () => {
     canInviteUsers.mockReturnValue(false);
-
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[pendingInvitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
+    renderRow(pendingInvitation);
 
     expect(
       screen.queryByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
+        name: "projectInvitations:list.ariaActions",
       }),
+    ).toBeNull();
+  });
+
+  it("leaves accepted and cancelled invitations out", () => {
+    render(
+      <WorkspacePendingInvitations
+        workspaceId="workspace-1"
+        invitations={[
+          acceptedInvitation,
+          {
+            ...pendingInvitation,
+            id: "invite-cancelled",
+            status: "canceled",
+          } as unknown as WorkspaceUserInvitation,
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("projectInvitations:empty")).toBeVisible();
+  });
+
+  it("shows the workspace role of the invitation, and no project role", () => {
+    renderRow(pendingInvitation);
+
+    expect(
+      screen.getByText("projectInvitations:list.workspaceRole"),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("projectInvitations:list.projectRole"),
     ).toBeNull();
   });
 });
 
-describe("MembersTable expired invitations", () => {
-  const renderRow = (invitation: WorkspaceUserInvitation) =>
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[invitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
-  const openMenu = () =>
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
-      }),
-    );
-
+describe("WorkspacePendingInvitations expired invitations", () => {
   it("offers only 'Invite again' and cancel for an expired invitation", async () => {
     renderRow(expiredInvitation);
     openMenu();
@@ -340,7 +346,7 @@ describe("MembersTable expired invitations", () => {
     // Neither "Invite again" nor "Cancel" is available, so there is no menu.
     expect(
       screen.queryByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
+        name: "projectInvitations:list.ariaActions",
       }),
     ).toBeNull();
   });
@@ -428,25 +434,9 @@ describe("MembersTable expired invitations", () => {
   });
 });
 
-describe("MembersTable resend invitation", () => {
-  const openMenu = () =>
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
-      }),
-    );
-
-  const renderTable = () =>
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[pendingInvitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
-
+describe("WorkspacePendingInvitations resend", () => {
   it("resends with the invitation's own email and role when email is configured", async () => {
-    renderTable();
+    renderRow(pendingInvitation);
     openMenu();
 
     fireEvent.click(
@@ -468,7 +458,7 @@ describe("MembersTable resend invitation", () => {
 
   it("offers a renew action that says no email was sent when SMTP is off", async () => {
     config = { hasSmtp: false };
-    renderTable();
+    renderRow(pendingInvitation);
     openMenu();
 
     expect(
@@ -490,7 +480,7 @@ describe("MembersTable resend invitation", () => {
 
   it("does not promise an email while the config is unknown", async () => {
     config = undefined;
-    renderTable();
+    renderRow(pendingInvitation);
     openMenu();
 
     fireEvent.click(
@@ -512,7 +502,7 @@ describe("MembersTable resend invitation", () => {
         code: "INVITATION_LIMIT_REACHED",
       }),
     );
-    renderTable();
+    renderRow(pendingInvitation);
     openMenu();
 
     fireEvent.click(
@@ -527,7 +517,7 @@ describe("MembersTable resend invitation", () => {
 
   it("falls back to the resend error copy when the API sent no message", async () => {
     inviteMember.mockRejectedValue(new WorkspaceMemberError(""));
-    renderTable();
+    renderRow(pendingInvitation);
     openMenu();
 
     fireEvent.click(
@@ -540,136 +530,7 @@ describe("MembersTable resend invitation", () => {
   });
 });
 
-const makeMember = (
-  id: string,
-  role: string,
-  name: string = id,
-): WorkspaceUser =>
-  ({
-    id: `member-${id}`,
-    userId: id,
-    role,
-    createdAt: "2026-01-01T00:00:00.000Z",
-    user: { name, email: `${id}@example.com`, image: null },
-  }) as unknown as WorkspaceUser;
-
-describe("MembersTable role select", () => {
-  const makeUser = makeMember;
-
-  const renderUsers = (users: WorkspaceUser[]) =>
-    render(
-      <MembersTable workspaceId="workspace-1" invitations={[]} users={users} />,
-    );
-
-  it("offers only the assignable roles", async () => {
-    renderUsers([makeUser("ada", "member")]);
-
-    fireEvent.click(
-      screen.getByRole("combobox", {
-        name: "team:membersTable.ariaChangeRole",
-      }),
-    );
-
-    const options = (await screen.findAllByRole("option")).map(
-      (option) => option.textContent,
-    );
-    expect(options).toEqual([
-      "team:roles.viewer",
-      "team:roles.member",
-      "Qa-Lead",
-    ]);
-  });
-
-  it("changes the role to the picked assignable role", async () => {
-    renderUsers([makeUser("ada", "member")]);
-
-    fireEvent.click(
-      screen.getByRole("combobox", {
-        name: "team:membersTable.ariaChangeRole",
-      }),
-    );
-    const option = await screen.findByRole("option", { name: "Qa-Lead" });
-    fireEvent.pointerDown(option);
-    fireEvent.click(option, { detail: 1 });
-
-    await waitFor(() =>
-      expect(updateMemberRole).toHaveBeenCalledWith({
-        workspaceId: "workspace-1",
-        memberId: "member-ada",
-        role: "qa-lead",
-      }),
-    );
-  });
-
-  it("does not let a non-owner edit their own row", () => {
-    renderUsers([makeUser("current-user", "member")]);
-
-    expect(screen.queryByRole("combobox")).toBeNull();
-    expect(screen.getByText("team:roles.member")).toBeVisible();
-  });
-
-  it("shows a badge for a member whose role the caller cannot assign", () => {
-    renderUsers([makeUser("root", "admin"), makeUser("ada", "member")]);
-
-    expect(screen.getAllByRole("combobox")).toHaveLength(1);
-    expect(screen.getByText("team:roles.admin")).toBeVisible();
-  });
-
-  it("lets an owner change a member even when the role is not in the list", async () => {
-    isOwner = true;
-    assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES };
-    renderUsers([makeUser("root", "admin")]);
-
-    const trigger = screen.getByRole("combobox", {
-      name: "team:membersTable.ariaChangeRole",
-    });
-    // The current role stays visible as the selected value.
-    expect(trigger).toHaveTextContent("team:roles.admin");
-
-    fireEvent.click(trigger);
-    const options = (await screen.findAllByRole("option")).map(
-      (option) => option.textContent,
-    );
-    expect(options).toEqual([
-      "team:roles.admin",
-      "team:roles.viewer",
-      "team:roles.member",
-      "Qa-Lead",
-    ]);
-  });
-
-  it("keeps the owner row a badge, even for an owner viewer", () => {
-    isOwner = true;
-    renderUsers([makeUser("current-user", "owner")]);
-
-    expect(screen.queryByRole("combobox")).toBeNull();
-    expect(screen.getByText("team:roles.owner")).toBeVisible();
-  });
-
-  it("offers no select until the assignable roles are loaded", () => {
-    assignableRoles = { data: undefined };
-    renderUsers([makeUser("ada", "member")]);
-
-    expect(screen.queryByRole("combobox")).toBeNull();
-    expect(screen.getByText("team:roles.member")).toBeVisible();
-  });
-});
-
-describe("MembersTable and the assignable roles list", () => {
-  const renderInvitation = (invitation: WorkspaceUserInvitation) =>
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[invitation]}
-        users={[] as WorkspaceUser[]}
-      />,
-    );
-  const openMenu = () =>
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "team:membersTable.ariaInvitationActions",
-      }),
-    );
+describe("WorkspacePendingInvitations and the assignable roles list", () => {
   const adminInvitation = {
     ...pendingInvitation,
     id: "invite-admin",
@@ -682,7 +543,7 @@ describe("MembersTable and the assignable roles list", () => {
   } as unknown as WorkspaceUserInvitation;
 
   it("hides resend and renew when the caller could not grant the invitation's role", async () => {
-    renderInvitation(adminInvitation);
+    renderRow(adminInvitation);
     openMenu();
 
     expect(
@@ -704,7 +565,7 @@ describe("MembersTable and the assignable roles list", () => {
   });
 
   it("hides 'Invite again' when the caller could not grant the invitation's role", async () => {
-    renderInvitation(expiredAdminInvitation);
+    renderRow(expiredAdminInvitation);
     openMenu();
 
     await screen.findByRole("menuitem", {
@@ -717,7 +578,7 @@ describe("MembersTable and the assignable roles list", () => {
 
   it("hides the role-based invitation actions until the assignable roles are loaded", async () => {
     assignableRoles = { data: undefined };
-    renderInvitation(pendingInvitation);
+    renderRow(pendingInvitation);
     openMenu();
 
     await screen.findByRole("menuitem", { name: "team:invitations.copyLink" });
@@ -726,15 +587,9 @@ describe("MembersTable and the assignable roles list", () => {
     ).toBeNull();
   });
 
-  it("shows an error with a retry when the list failed and there is no data", () => {
+  it("shows an error with a retry to a user who can invite when the list failed and there is no data", () => {
     assignableRoles = { data: undefined, isError: true };
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[]}
-        users={[makeMember("ada", "member")]}
-      />,
-    );
+    renderRow(pendingInvitation);
 
     expect(screen.getByRole("alert")).toHaveTextContent(
       "team:membersTable.rolesLoadError",
@@ -745,87 +600,18 @@ describe("MembersTable and the assignable roles list", () => {
     expect(refetchAssignableRoles).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the load error to a user who can only invite, since resend depends on the list", () => {
-    canManageTeam.mockReturnValue(false);
-    canInviteUsers.mockReturnValue(true);
-    assignableRoles = { data: undefined, isError: true };
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[pendingInvitation]}
-        users={[]}
-      />,
-    );
-
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "team:membersTable.rolesLoadError",
-    );
-  });
-
-  it("shows no load error to a user who can neither change roles nor invite", () => {
-    canManageTeam.mockReturnValue(false);
+  it("shows no load error to a user who cannot invite", () => {
     canInviteUsers.mockReturnValue(false);
     assignableRoles = { data: undefined, isError: true };
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[]}
-        users={[makeMember("ada", "member")]}
-      />,
-    );
+    renderRow(pendingInvitation);
 
     expect(screen.queryByRole("alert")).toBeNull();
-  });
-
-  it("applies a typeahead change on a row's closed select (reported with reason none)", async () => {
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[]}
-        users={[makeMember("ada", "member")]}
-      />,
-    );
-    const trigger = screen.getByRole("combobox", {
-      name: "team:membersTable.ariaChangeRole",
-    });
-
-    // Focusing the trigger force-mounts the (hidden) items typeahead reads.
-    act(() => trigger.focus());
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    fireEvent.keyDown(trigger, { key: "q" });
-
-    await waitFor(() =>
-      expect(updateMemberRole).toHaveBeenCalledWith({
-        workspaceId: "workspace-1",
-        memberId: "member-ada",
-        role: "qa-lead",
-      }),
-    );
   });
 
   it("stays quiet when a background refetch failed but data exists", () => {
     assignableRoles = { data: DEFAULT_ASSIGNABLE_ROLES, isError: true };
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[]}
-        users={[makeMember("ada", "member")]}
-      />,
-    );
+    renderRow(pendingInvitation);
 
     expect(screen.queryByRole("alert")).toBeNull();
-    expect(screen.getByRole("combobox")).toBeVisible();
-  });
-
-  it("labels a custom role by its capitalized name in the badge", () => {
-    render(
-      <MembersTable
-        workspaceId="workspace-1"
-        invitations={[]}
-        users={[makeMember("root", "release-manager")]}
-      />,
-    );
-
-    expect(screen.getByText("Release-Manager")).toBeVisible();
   });
 });

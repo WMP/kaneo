@@ -1899,6 +1899,9 @@
 				"title": "取消关联此资源？"
 			},
 			"unlinkAction": "取消关联"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2077,6 +2080,10 @@
 				"title": "已开始计时",
 				"contentWithTask": "已开始为任务 {{taskTitle}} 计时",
 				"contentWithoutTask": "已开始为某个任务计时"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		}
 	},
@@ -2842,6 +2849,15 @@
 			"acceptSuccess": "邀请已接受，欢迎加入团队！",
 			"rejectError": "拒绝邀请失败",
 			"rejectSuccess": "邀请已拒绝"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -2990,9 +3006,7 @@
 			"viewer": "访客"
 		},
 		"members": {
-			"pageTitle": "成员",
-			"inviteMember": "邀请成员",
-			"you": "你"
+			"pageTitle": "成员"
 		},
 		"invitations": {
 			"pendingBadge": "待处理",
@@ -3016,21 +3030,15 @@
 			"rejectedBadge": "已拒绝"
 		},
 		"inviteModal": {
-			"title": "邀请团队成员",
-			"emailLabel": "邮箱",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "发送邀请",
 			"success": "邀请已成功发送",
-			"error": "邀请团队成员失败",
 			"createdTitle": "邀请已创建",
 			"shareLinkDescription": "将此链接分享给 {{email}}，以便对方加入工作区。",
 			"done": "完成",
-			"invalidEmail": "请输入有效的邮箱地址",
 			"noSmtpNotice": "此服务器未配置邮件。邀请不会通过邮件发送，请复制链接并自行发送。",
 			"shareLinkDescriptionNoEmail": "未发送邮件。请将此链接分享给 {{email}}，以便其加入工作区。",
 			"successNoEmail": "邀请已创建，未发送邮件。",
 			"noAssignableRoles": "你无法分配任何角色，因此无法邀请他人。",
-			"roleLabel": "角色",
 			"rolesError": "无法加载你可分配的角色，请稍后重试。",
 			"rolesLoading": "正在加载角色...",
 			"sending": "发送中...",
@@ -3043,15 +3051,6 @@
 		"membersTable": {
 			"emptyTitle": "暂无团队成员",
 			"emptyDescription": "先邀请你的第一个团队成员以开始使用。",
-			"columns": {
-				"name": "姓名",
-				"role": "角色",
-				"joined": "加入于",
-				"actions": "操作"
-			},
-			"memberRolePending": "{{role}}（待处理）",
-			"ariaCancelInvitation": "取消邀请",
-			"ariaInvitationActions": "邀请操作",
 			"ariaRemoveMember": "移除成员",
 			"removeDialogTitle": "移除团队成员？",
 			"removeDialogDescription": "确定要从工作区中移除 {{name}} 吗？此操作不可撤销。",
@@ -3370,33 +3369,7 @@
 			"addedToExisting": "{{email}} 已有待处理的邀请，此项目已添加到该邀请中，未再发送第二封邮件。如有需要，请分享链接。",
 			"createdNotSent": "已为 {{email}} 创建邀请，未发送邮件。请分享下方的链接。",
 			"createdSendFailed": "已为 {{email}} 创建邀请，但无法发送邮件。请分享下方的链接，或在列表中重新发送。",
-			"createdSent": "邀请已发送至 {{email}}。",
-			"createdTitle": "邀请已创建",
-			"description": "邀请尚未加入工作区的人员。他们将获得你在下方选择的角色。",
-			"done": "完成",
-			"emailLabel": "邮箱",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "无法发送邀请",
-			"invalidEmail": "请输入有效的邮箱地址",
-			"noSmtpNotice": "此服务器未配置邮件。邀请不会通过邮件发送。请复制链接并自行发送。",
-			"projectRoleHint": "此人在此项目中可执行的操作。",
-			"projectRoleLabel": "项目角色",
-			"rolePlaceholder": "选择角色",
-			"submit": "发送邀请",
-			"submitting": "发送中...",
-			"title": "邀请加入项目",
-			"workspaceRoleHint": "此人在工作区中可执行的操作。",
-			"workspaceRoleLabel": "工作区角色",
-			"noAssignableProjectRoles": "你无法分配任何项目角色，因此无法邀请他人。",
-			"noAssignableWorkspaceRoles": "你无法分配任何工作区角色，因此无法邀请他人。",
-			"projectRolePickRequired": "请选择项目角色。",
-			"projectRolesError": "无法加载你可分配的项目角色。",
-			"projectRolesLoading": "正在加载项目角色...",
-			"projectRoleUnavailable": "你选择的项目角色已不可用，请选择其他角色。",
-			"workspaceRolePickRequired": "请选择工作区角色。",
-			"workspaceRolesError": "无法加载你可分配的工作区角色。",
-			"workspaceRolesLoading": "正在加载工作区角色...",
-			"workspaceRoleUnavailable": "你选择的工作区角色已不可用，请选择其他角色。"
+			"createdSent": "邀请已发送至 {{email}}。"
 		},
 		"list": {
 			"ariaActions": "{{email}} 的邀请操作",
@@ -3422,28 +3395,6 @@
 		"title": "待处理邀请"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "选择一名工作区成员和一个项目角色。",
-			"error": "无法添加成员",
-			"loadError": "无法加载你可添加的人员。",
-			"loading": "正在加载人员...",
-			"memberLabel": "工作区成员",
-			"noAssignableRoles": "你无法分配任何角色。",
-			"noCandidates": "此工作区中的所有人都已拥有此项目的访问权限。",
-			"noMatches": "没有匹配搜索的人员。",
-			"roleLabel": "项目角色",
-			"rolePickRequired": "请选择项目角色。",
-			"rolePlaceholder": "选择角色",
-			"rolesError": "无法加载你可分配的角色。",
-			"rolesLoading": "正在加载角色...",
-			"roleUnavailable": "你选择的角色已不可用，请选择其他角色。",
-			"searchPlaceholder": "按姓名或邮箱搜索",
-			"submit": "添加成员",
-			"submitting": "添加中...",
-			"success": "成员已添加到项目",
-			"title": "添加项目成员"
-		},
-		"addMember": "添加成员",
 		"errors": {
 			"alreadyProjectMember": "此人已是该项目的成员。",
 			"cannotChangeOwnRole": "你不能更改自己的项目角色。",
@@ -3459,7 +3410,6 @@
 			"unknownRole": "此角色不存在。请刷新页面并选择其他角色。",
 			"userHasFullAccess": "此人已拥有所有项目的完全访问权限。"
 		},
-		"inviteByEmail": "通过邮箱邀请",
 		"leaveDialog": {
 			"description": "你将失去对此项目的访问权限。项目管理员或工作区管理员可以重新添加你。",
 			"error": "无法退出项目",
@@ -3490,14 +3440,8 @@
 		"table": {
 			"ariaActions": "{{name}} 的操作",
 			"ariaChangeRole": "更改 {{name}} 的项目角色",
-			"columns": {
-				"member": "成员",
-				"role": "项目角色"
-			},
 			"emptyDescription": "添加工作区成员，或通过邮箱邀请他人。",
 			"emptyTitle": "还没有成员",
-			"fullAccess": "完全访问",
-			"fullAccessHint": "通过其工作区角色可访问所有项目。请在工作区成员中更改。",
 			"inactive": "已失效",
 			"inactiveHint": "此角色已不再提供任何访问权限。请选择其他角色或移除此人。",
 			"leaveProject": "退出项目",
@@ -3505,14 +3449,91 @@
 			"rolesLoadError": "无法加载你可分配的角色，因此暂时无法更改角色。",
 			"rolesRetry": "重试",
 			"roleUpdateError": "无法更新项目角色",
-			"roleUpdateSuccess": "项目角色已更新",
-			"you": "你"
+			"roleUpdateSuccess": "项目角色已更新"
 		},
 		"title": "成员",
-		"workspaceInvite": {
-			"info": "没有完全访问权限的人员只能看到被添加进去的项目。如需邀请他人加入某个项目，请在项目设置中使用“通过邮箱邀请”。",
-			"link": "打开项目设置"
-		},
 		"abilitiesError": "无法检查你在此处可执行的操作，部分操作可能已被隐藏。"
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

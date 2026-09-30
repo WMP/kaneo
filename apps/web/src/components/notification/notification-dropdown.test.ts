@@ -39,6 +39,22 @@ function notification(
 }
 
 describe("notification display content", () => {
+  it("renders the workspace member added notification from its event data", () => {
+    const item = notification("workspace_member_added", {
+      workspaceId: "ws-1",
+      workspaceName: "Acme",
+      inviterName: "Olivia",
+      role: "member",
+    });
+
+    expect(getNotificationTitle(item, t)).toBe(
+      "notifications:events.workspace_member_added.title",
+    );
+    expect(getNotificationContent(item, t)).toBe(
+      "notifications:events.workspace_member_added.content",
+    );
+  });
+
   it("renders configured due-date lead times", () => {
     const item = notification("due_date_reminder", {
       taskTitle: "Launch website",

@@ -1902,6 +1902,9 @@
 				"title": "Bu resursun əlaqəsi ayrılsın?"
 			},
 			"unlinkAction": "Əlaqəni ayır"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2084,6 +2087,10 @@
 				"title": "Vaxtın izlənməsi başladı",
 				"contentWithTask": "Tapşırıqda vaxtın izlənməsi başladı: {{taskTitle}}",
 				"contentWithoutTask": "Tapşırıqda vaxtın izlənməsi başladı"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		}
 	},
@@ -2852,6 +2859,15 @@
 			"acceptSuccess": "Dəvət qəbul edildi! Komandaya xoş gəlmisiniz.",
 			"rejectError": "Dəvəti rədd etmək alınmadı",
 			"rejectSuccess": "Dəvət rədd edildi"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3001,9 +3017,7 @@
 			"viewer": "Baxışçı"
 		},
 		"members": {
-			"pageTitle": "Üzvlər",
-			"inviteMember": "Üzv dəvət et",
-			"you": "Siz"
+			"pageTitle": "Üzvlər"
 		},
 		"invitations": {
 			"pendingBadge": "Gözləyir",
@@ -3027,21 +3041,15 @@
 			"rejectedBadge": "rədd edilib"
 		},
 		"inviteModal": {
-			"title": "Komanda üzvü dəvət et",
-			"emailLabel": "E-poçt",
-			"emailPlaceholder": "hemkar@sirket.com",
 			"sendInvitation": "Dəvət göndər",
 			"success": "Dəvət uğurla göndərildi",
-			"error": "Komanda üzvünü dəvət etmək alınmadı",
 			"createdTitle": "Dəvət yaradıldı",
 			"shareLinkDescription": "İş sahəsinə qoşula bilməsi üçün bu keçidi {{email}} ilə paylaşın.",
 			"done": "Hazırdır",
-			"invalidEmail": "Etibarlı e-poçt ünvanı daxil edin",
 			"noSmtpNotice": "Bu serverdə e-poçt qurulmayıb. Dəvət e-poçtla göndərilməyəcək; keçidi kopyalayıb özünüz göndərin.",
 			"shareLinkDescriptionNoEmail": "E-poçt göndərilmədi. İş sahəsinə qoşula bilməsi üçün bu keçidi {{email}} ünvanı ilə paylaşın.",
 			"successNoEmail": "Dəvət yaradıldı. E-poçt göndərilmədi.",
 			"noAssignableRoles": "Heç bir rol təyin edə bilməzsiniz, ona görə insanları dəvət edə bilməzsiniz.",
-			"roleLabel": "Rol",
 			"rolesError": "Təyin edə biləcəyiniz rolları yükləmək alınmadı. Bir az sonra yenidən cəhd edin.",
 			"rolesLoading": "Rollar yüklənir...",
 			"sending": "Göndərilir...",
@@ -3054,15 +3062,6 @@
 		"membersTable": {
 			"emptyTitle": "Hələ komanda üzvü yoxdur",
 			"emptyDescription": "Başlamaq üçün ilk komanda üzvünüzü dəvət edin.",
-			"columns": {
-				"name": "Ad",
-				"role": "Rol",
-				"joined": "Qoşulub",
-				"actions": "Əməliyyatlar"
-			},
-			"memberRolePending": "{{role}} (gözləyir)",
-			"ariaCancelInvitation": "Dəvəti ləğv et",
-			"ariaInvitationActions": "Dəvət əməliyyatları",
 			"ariaRemoveMember": "Üzvü çıxar",
 			"removeDialogTitle": "Komanda üzvü çıxarılsın?",
 			"removeDialogDescription": "{{name}} adlı şəxsi iş sahəsindən çıxarmaq istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.",
@@ -3381,33 +3380,7 @@
 			"addedToExisting": "{{email}} ünvanının artıq gözləyən dəvəti var. Bu layihə ona əlavə edildi. İkinci e-poçt göndərilmədi. Lazım olarsa, keçidi paylaşın.",
 			"createdNotSent": "{{email}} ünvanı üçün dəvət yaradıldı. E-poçt göndərilmədi. Aşağıdakı keçidi paylaşın.",
 			"createdSendFailed": "{{email}} ünvanı üçün dəvət yaradıldı, lakin e-poçt göndərilə bilmədi. Aşağıdakı keçidi paylaşın və ya siyahıdan yenidən göndərin.",
-			"createdSent": "Dəvət {{email}} ünvanına göndərildi.",
-			"createdTitle": "Dəvət yaradıldı",
-			"description": "İş sahəsində hələ olmayan birini dəvət edin. O, aşağıda seçdiyiniz rolları alır.",
-			"done": "Hazırdır",
-			"emailLabel": "E-poçt",
-			"emailPlaceholder": "hemkar@sirket.com",
-			"error": "Dəvəti göndərmək alınmadı",
-			"invalidEmail": "Etibarlı e-poçt ünvanı daxil edin",
-			"noSmtpNotice": "Bu serverdə e-poçt qurulmayıb. Dəvət e-poçtla göndərilməyəcək. Keçidi kopyalayıb özünüz göndərin.",
-			"projectRoleHint": "Şəxsin bu layihədə nələr edə biləcəyi.",
-			"projectRoleLabel": "Layihə rolu",
-			"rolePlaceholder": "Rol seçin",
-			"submit": "Dəvət göndər",
-			"submitting": "Göndərilir...",
-			"title": "Layihəyə dəvət et",
-			"workspaceRoleHint": "Şəxsin iş sahəsində nələr edə biləcəyi.",
-			"workspaceRoleLabel": "İş sahəsi rolu",
-			"noAssignableProjectRoles": "Heç bir layihə rolu təyin edə bilməzsiniz, ona görə insanları dəvət edə bilməzsiniz.",
-			"noAssignableWorkspaceRoles": "Heç bir iş sahəsi rolu təyin edə bilməzsiniz, ona görə insanları dəvət edə bilməzsiniz.",
-			"projectRolePickRequired": "Layihə rolunu seçin.",
-			"projectRolesError": "Təyin edə biləcəyiniz layihə rollarını yükləmək alınmadı.",
-			"projectRolesLoading": "Layihə rolları yüklənir...",
-			"projectRoleUnavailable": "Seçdiyiniz layihə rolu artıq əlçatan deyil. Başqasını seçin.",
-			"workspaceRolePickRequired": "İş sahəsi rolunu seçin.",
-			"workspaceRolesError": "Təyin edə biləcəyiniz iş sahəsi rollarını yükləmək alınmadı.",
-			"workspaceRolesLoading": "İş sahəsi rolları yüklənir...",
-			"workspaceRoleUnavailable": "Seçdiyiniz iş sahəsi rolu artıq əlçatan deyil. Başqasını seçin."
+			"createdSent": "Dəvət {{email}} ünvanına göndərildi."
 		},
 		"list": {
 			"ariaActions": "{{email}} ünvanının dəvəti üçün əməliyyatlar",
@@ -3433,28 +3406,6 @@
 		"title": "Gözləyən dəvətlər"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "İş sahəsi üzvünü və layihə rolunu seçin.",
-			"error": "Üzvü əlavə etmək alınmadı",
-			"loadError": "Əlavə edə biləcəyiniz insanları yükləmək alınmadı.",
-			"loading": "İnsanlar yüklənir...",
-			"memberLabel": "İş sahəsi üzvü",
-			"noAssignableRoles": "Heç bir rol təyin edə bilməzsiniz.",
-			"noCandidates": "Bu iş sahəsindəki hər kəsin artıq bu layihəyə girişi var.",
-			"noMatches": "Axtarışınıza uyğun kimsə yoxdur.",
-			"roleLabel": "Layihə rolu",
-			"rolePickRequired": "Layihə rolunu seçin.",
-			"rolePlaceholder": "Rol seçin",
-			"rolesError": "Təyin edə biləcəyiniz rolları yükləmək alınmadı.",
-			"rolesLoading": "Rollar yüklənir...",
-			"roleUnavailable": "Seçdiyiniz rol artıq əlçatan deyil. Başqasını seçin.",
-			"searchPlaceholder": "Ad və ya e-poçt üzrə axtar",
-			"submit": "Üzv əlavə et",
-			"submitting": "Əlavə edilir...",
-			"success": "Üzv layihəyə əlavə edildi",
-			"title": "Layihə üzvü əlavə et"
-		},
-		"addMember": "Üzv əlavə et",
 		"errors": {
 			"alreadyProjectMember": "Bu şəxs artıq bu layihənin üzvüdür.",
 			"cannotChangeOwnRole": "Öz layihə rolunuzu dəyişə bilməzsiniz.",
@@ -3470,7 +3421,6 @@
 			"unknownRole": "Bu rol mövcud deyil. Səhifəni yeniləyin və başqasını seçin.",
 			"userHasFullAccess": "Bu şəxsin artıq hər layihəyə tam girişi var."
 		},
-		"inviteByEmail": "E-poçtla dəvət et",
 		"leaveDialog": {
 			"description": "Bu layihəyə girişinizi itirəcəksiniz. Layihə inzibatçısı və ya iş sahəsi inzibatçısı sizi yenidən əlavə edə bilər.",
 			"error": "Layihədən ayrılmaq alınmadı",
@@ -3501,14 +3451,8 @@
 		"table": {
 			"ariaActions": "{{name}} üçün əməliyyatlar",
 			"ariaChangeRole": "{{name}} üçün layihə rolunu dəyiş",
-			"columns": {
-				"member": "Üzv",
-				"role": "Layihə rolu"
-			},
 			"emptyDescription": "İş sahəsi üzvü əlavə edin və ya kimisə e-poçtla dəvət edin.",
 			"emptyTitle": "Hələ üzv yoxdur",
-			"fullAccess": "Tam giriş",
-			"fullAccessHint": "İş sahəsindəki rolu vasitəsilə hər layihəyə girişi var. Onu iş sahəsi üzvləri bölməsində dəyişin.",
 			"inactive": "qeyri-aktiv",
 			"inactiveHint": "Bu rol artıq giriş vermir. Başqa rol seçin və ya şəxsi çıxarın.",
 			"leaveProject": "Layihədən ayrıl",
@@ -3516,14 +3460,92 @@
 			"rolesLoadError": "Təyin edə biləcəyiniz rolları yükləmək alınmadı, ona görə rollar indi dəyişdirilə bilməz.",
 			"rolesRetry": "Yenidən cəhd et",
 			"roleUpdateError": "Layihə rolunu yeniləmək alınmadı",
-			"roleUpdateSuccess": "Layihə rolu yeniləndi",
-			"you": "Siz"
+			"roleUpdateSuccess": "Layihə rolu yeniləndi"
 		},
 		"title": "Üzvlər",
-		"workspaceInvite": {
-			"info": "Tam girişi olmayan insanlar yalnız əlavə edildikləri layihələri görür. Kimisə bir layihəyə dəvət etmək üçün layihə parametrlərində \"E-poçtla dəvət et\" bölməsindən istifadə edin.",
-			"link": "Layihə parametrlərini aç"
-		},
 		"abilitiesError": "Burada nələr edə biləcəyinizi yoxlamaq alınmadı. Bəzi əməliyyatlar gizlədilə bilər."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

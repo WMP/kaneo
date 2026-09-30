@@ -9,7 +9,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProjectMember } from "@/fetchers/project-member/get-project-members";
 import { ProjectMemberError } from "@/lib/project-member-error";
-import ProjectMembersTable from "./project-members-table";
+import ProjectPeopleTable from "./project-people-table";
 
 const success = vi.fn();
 const error = vi.fn();
@@ -23,6 +23,10 @@ vi.mock("@/lib/toast", () => ({
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+vi.mock("@/lib/format", () => ({
+  formatDateMedium: () => "Sep 1, 2026",
 }));
 
 const updateMember = vi.fn();
@@ -58,6 +62,8 @@ const member = (overrides: Partial<ProjectMember>): ProjectMember => ({
   email: "user@example.com",
   image: null,
   role: "member",
+  workspaceRole: "member",
+  joinedAt: "2026-01-01T00:00:00.000Z",
   source: "project",
   active: true,
   ...overrides,
@@ -68,6 +74,8 @@ const owner = member({
   name: "Olga Owner",
   email: "olga@example.com",
   role: "owner",
+  workspaceRole: "owner",
+  joinedAt: null,
   source: "full-access",
 });
 const alice = member({
@@ -106,10 +114,10 @@ const onLeft = vi.fn();
 const onRetryRoles = vi.fn();
 
 function renderTable(
-  props: Partial<React.ComponentProps<typeof ProjectMembersTable>> = {},
+  props: Partial<React.ComponentProps<typeof ProjectPeopleTable>> = {},
 ) {
   return render(
-    <ProjectMembersTable
+    <ProjectPeopleTable
       projectId="project-1"
       workspaceId="workspace-1"
       members={[owner, alice, bob, ghost, me]}
@@ -141,14 +149,12 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("ProjectMembersTable", () => {
+describe("ProjectPeopleTable", () => {
   it("badges a full-access row and offers neither a role select nor removal for it", () => {
     renderTable();
 
     const row = rowOf("Olga Owner");
-    expect(
-      within(row).getByText("projectMembers:table.fullAccess"),
-    ).toBeVisible();
+    expect(within(row).getByText("people:table.fullAccess")).toBeVisible();
     expect(within(row).queryByRole("combobox")).toBeNull();
     expect(within(row).queryByRole("button")).toBeNull();
   });
@@ -164,7 +170,7 @@ describe("ProjectMembersTable", () => {
       "Olga Ownerolga@example.com",
       "Alicealice@example.com",
       "Bobbob@example.com",
-      "Me Myself(projectMembers:table.you)me@example.com",
+      "Me Myself(people:table.you)me@example.com",
       "Gina Ghostgina@example.com",
     ]);
   });
@@ -422,7 +428,10 @@ describe("ProjectMembersTable", () => {
         name: "projectMembers:table.ariaActions",
       }),
     ).toHaveLength(1);
-    expect(within(rowOf("Alice")).getByText("team:roles.member")).toBeVisible();
+    // The project role and the workspace role are both "member".
+    expect(
+      within(rowOf("Alice")).getAllByText("team:roles.member"),
+    ).toHaveLength(2);
   });
 
   it("offers no role select before the assignable roles are known and lets the user retry a failed load", () => {
@@ -433,6 +442,53 @@ describe("ProjectMembersTable", () => {
       screen.getByRole("button", { name: "projectMembers:table.rolesRetry" }),
     );
     expect(onRetryRoles).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the project role and, in its own column, the workspace role of every row", () => {
+    renderTable({
+      members: [
+        owner,
+        member({
+          userId: "u-dana",
+          name: "Dana",
+          email: "dana@example.com",
+          role: "qa-lead",
+          workspaceRole: "viewer",
+        }),
+      ],
+    });
+
+    expect(
+      screen.getAllByRole("columnheader").map((header) => header.textContent),
+    ).toEqual([
+      "people:table.columns.person",
+      "people:table.columns.projectRole",
+      "people:table.columns.workspaceRole",
+      "people:table.columns.joined",
+      "",
+    ]);
+    // A project member: project role "qa-lead" in the select, workspace role
+    // "viewer" next to it, as its own cell.
+    const dana = rowOf("Dana");
+    expect(within(dana).getByRole("combobox")).toHaveTextContent("Qa-Lead");
+    const danaCells = within(dana).getAllByRole("cell");
+    expect(danaCells[2]).toHaveTextContent("team:roles.viewer");
+    // A full-access row shows the workspace role too.
+    const olga = rowOf("Olga Owner");
+    expect(within(olga).getAllByRole("cell")[2]).toHaveTextContent(
+      "team:roles.owner",
+    );
+  });
+
+  it("shows when a person joined the project, and a dash for full access", () => {
+    renderTable();
+
+    expect(within(rowOf("Alice")).getAllByRole("cell")[3]).toHaveTextContent(
+      "Sep 1, 2026",
+    );
+    expect(
+      within(rowOf("Olga Owner")).getAllByRole("cell")[3],
+    ).toHaveTextContent("–");
   });
 
   it("shows an empty state without members", () => {

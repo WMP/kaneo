@@ -127,6 +127,13 @@ describe("getProjectMemberErrorMessage", () => {
     ],
     ["PROJECT_INVITATION_NOT_APPLIED", "projectInvitations:errors.notApplied"],
     ["PROJECT_MEMBERSHIP_CHANGED", "projectMembers:errors.membershipChanged"],
+    ["USER_NOT_FOUND", "people:errors.userNotFound"],
+    ["USER_CANNOT_BE_ADDED", "people:errors.userCannotBeAdded"],
+    ["USER_DIRECTORY_DISABLED", "people:errors.directoryDisabled"],
+    [
+      "ORGANIZATION_MEMBERSHIP_LIMIT_REACHED",
+      "people:errors.membershipLimitReached",
+    ],
   ])("maps %s", (code, key) => {
     expect(getProjectMemberErrorMessage(fail(code, 400), t, "fallback")).toBe(
       key,

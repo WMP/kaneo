@@ -1899,6 +1899,9 @@
 				"title": "Lepas tautan sumber daya ini?"
 			},
 			"unlinkAction": "Lepas tautan"
+		},
+		"workspaceMembers": {
+			"title": "Members"
 		}
 	},
 	"navigation": {
@@ -2072,6 +2075,10 @@
 			"task_overdue": {
 				"title": "Tugas terlambat",
 				"content": "{{taskTitle}} telah melewati tenggatnya"
+			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
 			}
 		},
 		"reminderLeadTime": {
@@ -2842,6 +2849,15 @@
 			"acceptSuccess": "Undangan diterima! Selamat bergabung dengan tim.",
 			"rejectError": "Gagal menolak undangan",
 			"rejectSuccess": "Undangan ditolak"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -2990,9 +3006,7 @@
 			"viewer": "Lihat Saja"
 		},
 		"members": {
-			"pageTitle": "Anggota",
-			"inviteMember": "Undang anggota",
-			"you": "Anda"
+			"pageTitle": "Anggota"
 		},
 		"invitations": {
 			"linkLabel": "Tautan undangan",
@@ -3016,21 +3030,15 @@
 			"rejectedBadge": "ditolak"
 		},
 		"inviteModal": {
-			"title": "Undang Anggota Tim",
-			"emailLabel": "Email",
-			"emailPlaceholder": "rekan@perusahaan.com",
 			"sendInvitation": "Kirim Undangan",
 			"success": "Undangan berhasil dikirim",
-			"error": "Gagal mengundang anggota tim",
 			"createdTitle": "Undangan dibuat",
 			"shareLinkDescription": "Bagikan tautan ini kepada {{email}} agar mereka dapat bergabung ke ruang kerja.",
 			"done": "Selesai",
-			"invalidEmail": "Masukkan alamat email yang valid",
 			"noSmtpNotice": "Email belum dikonfigurasi di server ini. Undangan tidak akan dikirim lewat email; salin tautan dan kirim sendiri.",
 			"shareLinkDescriptionNoEmail": "Tidak ada email yang dikirim. Bagikan tautan ini kepada {{email}} agar dapat bergabung ke ruang kerja.",
 			"successNoEmail": "Undangan dibuat. Tidak ada email yang dikirim.",
 			"noAssignableRoles": "Anda tidak dapat menetapkan peran apa pun, sehingga tidak dapat mengundang orang.",
-			"roleLabel": "Peran",
 			"rolesError": "Tidak dapat memuat peran yang dapat Anda tetapkan. Coba lagi nanti.",
 			"rolesLoading": "Memuat peran...",
 			"sending": "Mengirim...",
@@ -3043,14 +3051,6 @@
 		"membersTable": {
 			"emptyTitle": "Belum ada anggota tim",
 			"emptyDescription": "Undang anggota tim pertama Anda untuk memulai.",
-			"columns": {
-				"name": "Nama",
-				"role": "Peran",
-				"joined": "Bergabung",
-				"actions": "Aksi"
-			},
-			"memberRolePending": "{{role}} (Tertunda)",
-			"ariaCancelInvitation": "Batalkan undangan",
 			"ariaRemoveMember": "Hapus anggota",
 			"removeDialogTitle": "Hapus Anggota Tim?",
 			"removeDialogDescription": "Apakah Anda yakin ingin menghapus {{name}} dari ruang kerja? Tindakan ini tidak dapat dibatalkan.",
@@ -3064,7 +3064,6 @@
 			"cancelInviteError": "Gagal membatalkan undangan",
 			"roleUpdateSuccess": "Peran diperbarui",
 			"roleUpdateError": "Gagal memperbarui peran",
-			"ariaInvitationActions": "Tindakan undangan",
 			"ariaChangeRole": "Ubah peran untuk {{name}}",
 			"rolesLoadError": "Tidak dapat memuat peran yang dapat Anda tetapkan, sehingga peran tidak dapat diubah saat ini.",
 			"rolesRetry": "Coba lagi"
@@ -3370,33 +3369,7 @@
 			"addedToExisting": "{{email}} sudah memiliki undangan tertunda. Proyek ini telah ditambahkan ke undangan tersebut. Tidak ada email kedua yang dikirim. Bagikan tautan jika perlu.",
 			"createdNotSent": "Undangan dibuat untuk {{email}}. Tidak ada email yang dikirim. Bagikan tautan di bawah.",
 			"createdSendFailed": "Undangan dibuat untuk {{email}}, tetapi email tidak dapat dikirim. Bagikan tautan di bawah atau kirim ulang dari daftar.",
-			"createdSent": "Undangan dikirim ke {{email}}.",
-			"createdTitle": "Undangan dibuat",
-			"description": "Undang seseorang yang belum ada di ruang kerja. Mereka mendapat peran yang Anda pilih di bawah.",
-			"done": "Selesai",
-			"emailLabel": "Email",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Tidak dapat mengirim undangan",
-			"invalidEmail": "Masukkan alamat email yang valid",
-			"noSmtpNotice": "Email belum dikonfigurasi di server ini. Undangan tidak akan dikirim lewat email. Salin tautan dan kirim sendiri.",
-			"projectRoleHint": "Apa yang dapat dilakukan orang ini di proyek ini.",
-			"projectRoleLabel": "Peran proyek",
-			"rolePlaceholder": "Pilih peran",
-			"submit": "Kirim undangan",
-			"submitting": "Mengirim...",
-			"title": "Undang ke proyek",
-			"workspaceRoleHint": "Apa yang dapat dilakukan orang ini di ruang kerja.",
-			"workspaceRoleLabel": "Peran ruang kerja",
-			"noAssignableProjectRoles": "Anda tidak dapat menetapkan peran proyek apa pun, sehingga tidak dapat mengundang orang.",
-			"noAssignableWorkspaceRoles": "Anda tidak dapat menetapkan peran ruang kerja apa pun, sehingga tidak dapat mengundang orang.",
-			"projectRolePickRequired": "Pilih peran proyek.",
-			"projectRolesError": "Tidak dapat memuat peran proyek yang dapat Anda tetapkan.",
-			"projectRolesLoading": "Memuat peran proyek...",
-			"projectRoleUnavailable": "Peran proyek yang Anda pilih tidak lagi tersedia. Pilih peran lain.",
-			"workspaceRolePickRequired": "Pilih peran ruang kerja.",
-			"workspaceRolesError": "Tidak dapat memuat peran ruang kerja yang dapat Anda tetapkan.",
-			"workspaceRolesLoading": "Memuat peran ruang kerja...",
-			"workspaceRoleUnavailable": "Peran ruang kerja yang Anda pilih tidak lagi tersedia. Pilih peran lain."
+			"createdSent": "Undangan dikirim ke {{email}}."
 		},
 		"list": {
 			"ariaActions": "Tindakan untuk undangan {{email}}",
@@ -3422,28 +3395,6 @@
 		"title": "Undangan tertunda"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Pilih anggota ruang kerja dan peran proyek.",
-			"error": "Tidak dapat menambahkan anggota",
-			"loadError": "Tidak dapat memuat orang yang dapat Anda tambahkan.",
-			"loading": "Memuat orang...",
-			"memberLabel": "Anggota ruang kerja",
-			"noAssignableRoles": "Anda tidak dapat menetapkan peran apa pun.",
-			"noCandidates": "Semua orang di ruang kerja ini sudah memiliki akses ke proyek ini.",
-			"noMatches": "Tidak ada yang cocok dengan pencarian Anda.",
-			"roleLabel": "Peran proyek",
-			"rolePickRequired": "Pilih peran proyek.",
-			"rolePlaceholder": "Pilih peran",
-			"rolesError": "Tidak dapat memuat peran yang dapat Anda tetapkan.",
-			"rolesLoading": "Memuat peran...",
-			"roleUnavailable": "Peran yang Anda pilih tidak lagi tersedia. Pilih peran lain.",
-			"searchPlaceholder": "Cari berdasarkan nama atau email",
-			"submit": "Tambah anggota",
-			"submitting": "Menambahkan...",
-			"success": "Anggota ditambahkan ke proyek",
-			"title": "Tambah anggota proyek"
-		},
-		"addMember": "Tambah anggota",
 		"errors": {
 			"alreadyProjectMember": "Orang ini sudah menjadi anggota proyek ini.",
 			"cannotChangeOwnRole": "Anda tidak dapat mengubah peran proyek Anda sendiri.",
@@ -3459,7 +3410,6 @@
 			"unknownRole": "Peran ini tidak ada. Muat ulang halaman dan pilih peran lain.",
 			"userHasFullAccess": "Orang ini sudah memiliki akses penuh ke setiap proyek."
 		},
-		"inviteByEmail": "Undang lewat email",
 		"leaveDialog": {
 			"description": "Anda akan kehilangan akses ke proyek ini. Admin proyek atau admin ruang kerja dapat menambahkan Anda kembali.",
 			"error": "Tidak dapat meninggalkan proyek",
@@ -3490,14 +3440,8 @@
 		"table": {
 			"ariaActions": "Tindakan untuk {{name}}",
 			"ariaChangeRole": "Ubah peran proyek {{name}}",
-			"columns": {
-				"member": "Anggota",
-				"role": "Peran proyek"
-			},
 			"emptyDescription": "Tambahkan anggota ruang kerja atau undang seseorang lewat email.",
 			"emptyTitle": "Belum ada anggota",
-			"fullAccess": "Akses penuh",
-			"fullAccessHint": "Memiliki akses ke setiap proyek melalui peran ruang kerjanya. Ubah di anggota ruang kerja.",
 			"inactive": "nonaktif",
 			"inactiveHint": "Peran ini tidak lagi memberi akses. Pilih peran lain atau hapus orang ini.",
 			"leaveProject": "Tinggalkan proyek",
@@ -3505,14 +3449,91 @@
 			"rolesLoadError": "Tidak dapat memuat peran yang dapat Anda tetapkan, sehingga peran tidak dapat diubah sekarang.",
 			"rolesRetry": "Coba lagi",
 			"roleUpdateError": "Tidak dapat memperbarui peran proyek",
-			"roleUpdateSuccess": "Peran proyek diperbarui",
-			"you": "Anda"
+			"roleUpdateSuccess": "Peran proyek diperbarui"
 		},
 		"title": "Anggota",
-		"workspaceInvite": {
-			"info": "Orang tanpa akses penuh hanya melihat proyek tempat mereka ditambahkan. Untuk mengundang seseorang ke satu proyek, gunakan Undang lewat email di pengaturan proyek.",
-			"link": "Buka pengaturan proyek"
-		},
 		"abilitiesError": "Tidak dapat memeriksa apa yang dapat Anda lakukan di sini. Beberapa tindakan mungkin disembunyikan."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"userNotFound": "This account does not exist any more. Search again."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }
