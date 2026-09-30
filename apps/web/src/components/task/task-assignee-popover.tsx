@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ResourceInviteDialog from "@/components/resource/resource-invite-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
+import type Resource from "@/types/resource";
 import type Task from "@/types/task";
 import { resolveTaskAssignees } from "./assignee-avatars";
 import { AssigneeResourceSection } from "./assignee-resource-section";
@@ -43,12 +45,20 @@ export default function TaskAssigneePopover({
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
   const { data: workspaceUsers } = useProjectMembers(task.projectId);
   const { data: workspaceResources } = useGetWorkspaceResources(workspaceId);
-  const { canAssignTasks } = useProjectPermission(task.projectId);
+  const { canAssignTasks, canInviteToProject } = useProjectPermission(
+    task.projectId,
+  );
   const canAssign = canAssignTasks();
   // Resources are workspace-level: POST /resource is gated by project:update in
   // the WORKSPACE role (no project is resolved for it) — see resource/index.ts.
   const { canUpdateProjects } = useWorkspacePermission();
   const canCreateResource = canUpdateProjects();
+  // Inviting a person resource needs the same workspace permission plus
+  // invitation:create in the project; the API checks both again.
+  const canInviteResource = canCreateResource && canInviteToProject();
+  // The person resource whose invite dialog is open. The dialog lives outside
+  // the popover so closing the popover does not unmount it.
+  const [inviting, setInviting] = useState<Resource | null>(null);
 
   const resolvedAssigneeIds = useMemo(
     () =>
@@ -169,6 +179,11 @@ export default function TaskAssigneePopover({
     void commitAssignees([], []);
   }, [commitAssignees]);
 
+  const handleInviteResource = useCallback((resource: Resource) => {
+    setOpen(false);
+    setInviting(resource);
+  }, []);
+
   const shortcutOptions = useMemo(() => {
     const unassignedOption = { onSelect: handleUnassignAll };
     const userOptions = (usersOptions || []).slice(0, 8).map((user) => ({
@@ -209,80 +224,96 @@ export default function TaskAssigneePopover({
   if (!canAssign) return <>{children}</>;
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
-        <div
-          className="max-h-80 space-y-1 overflow-y-auto p-1"
-          onScroll={handleListScroll}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 h-8 px-2"
-            onClick={handleUnassignAll}
+    <>
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>{children}</PopoverTrigger>
+        <PopoverContent className="w-72 p-0" align="start">
+          <div
+            className="max-h-80 space-y-1 overflow-y-auto p-1"
+            onScroll={handleListScroll}
           >
-            <div
-              className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
-              title={t("tasks:popover.assignee.unassigned")}
-            >
-              <span className="text-[10px] font-medium text-muted-foreground">
-                ?
-              </span>
-            </div>
-            <span className="text-sm">
-              {t("tasks:popover.assignee.unassignAll")}
-            </span>
-            {selectedIds.length === 0 && selectedResourceIds.length === 0 ? (
-              <Check className="ml-auto h-4 w-4" />
-            ) : (
-              <ShortcutNumber number={1} />
-            )}
-          </Button>
-          {visibleUsersOptions.map((user, index) => (
             <Button
-              key={user.value}
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2 h-8 px-2"
-              onClick={() => handleToggleUser(user.value)}
+              onClick={handleUnassignAll}
             >
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={user.image ?? ""} alt={user.name || ""} />
-                <AvatarFallback className="text-xs font-medium border border-border/30">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="flex min-w-0 flex-col items-start text-left">
-                <span className="max-w-full truncate text-sm">
-                  {user.label}
+              <div
+                className="w-6 h-6 shrink-0 rounded-full bg-muted border border-border flex items-center justify-center"
+                title={t("tasks:popover.assignee.unassigned")}
+              >
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  ?
                 </span>
-                {user.notInProject && (
-                  <span className="max-w-full truncate text-[11px] text-muted-foreground">
-                    {t("tasks:popover.assignee.notInProject")}
-                  </span>
-                )}
+              </div>
+              <span className="min-w-0 truncate text-sm">
+                {t("tasks:popover.assignee.unassignAll")}
               </span>
-              {selectedIds.includes(user.value) ? (
+              {selectedIds.length === 0 && selectedResourceIds.length === 0 ? (
                 <Check className="ml-auto h-4 w-4 shrink-0" />
-              ) : index < 8 ? (
-                <ShortcutNumber number={index + 2} />
-              ) : null}
+              ) : (
+                <ShortcutNumber number={1} className="shrink-0" />
+              )}
             </Button>
-          ))}
-          <AssigneeResourceSection
-            workspaceId={workspaceId}
-            resources={workspaceResources ?? []}
-            projectUserIds={
-              workspaceUsers?.members?.map((member) => member.userId) ?? []
-            }
-            assignedResourceIds={resolvedResourceIds}
-            selectedResourceIds={selectedResourceIds}
-            onToggleResource={handleToggleResource}
-            canCreateResource={canCreateResource}
-          />
-        </div>
-      </PopoverContent>
-    </Popover>
+            {visibleUsersOptions.map((user, index) => (
+              <Button
+                key={user.value}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 h-8 px-2"
+                onClick={() => handleToggleUser(user.value)}
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={user.image ?? ""} alt={user.name || ""} />
+                  <AvatarFallback className="text-xs font-medium border border-border/30">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="flex min-w-0 flex-col items-start text-left">
+                  <span className="max-w-full truncate text-sm">
+                    {user.label}
+                  </span>
+                  {user.notInProject && (
+                    <span className="max-w-full truncate text-[11px] text-muted-foreground">
+                      {t("tasks:popover.assignee.notInProject")}
+                    </span>
+                  )}
+                </span>
+                {selectedIds.includes(user.value) ? (
+                  <Check className="ml-auto h-4 w-4 shrink-0" />
+                ) : index < 8 ? (
+                  <ShortcutNumber number={index + 2} />
+                ) : null}
+              </Button>
+            ))}
+            <AssigneeResourceSection
+              workspaceId={workspaceId}
+              resources={workspaceResources ?? []}
+              projectUserIds={
+                workspaceUsers?.members?.map((member) => member.userId) ?? []
+              }
+              assignedResourceIds={resolvedResourceIds}
+              selectedResourceIds={selectedResourceIds}
+              onToggleResource={handleToggleResource}
+              canCreateResource={canCreateResource}
+              onInviteResource={
+                canInviteResource ? handleInviteResource : undefined
+              }
+            />
+          </div>
+        </PopoverContent>
+      </Popover>
+      {inviting && (
+        <ResourceInviteDialog
+          resource={inviting}
+          workspaceId={workspaceId}
+          defaultProjectIds={[task.projectId]}
+          // Linking a resource to a member stays on the resources settings page.
+          canLink={false}
+          onLinkInstead={() => setInviting(null)}
+          onClose={() => setInviting(null)}
+        />
+      )}
+    </>
   );
 }

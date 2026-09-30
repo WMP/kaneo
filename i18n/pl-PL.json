@@ -881,6 +881,12 @@
 		}
 	},
 	"activity": {
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
+		},
 		"assignedTo": "przypisał(a) zadanie użytkownikowi {{name}}",
 		"assignedToSelf": "przypisał(a) zadanie sobie",
 		"changedDueDate": "zmienił(a) termin z {{from}} na {{to}}",
@@ -2328,7 +2334,19 @@
 			"hiddenOnProject": "Ukryte",
 			"hideField": "Ukryj „{{name}}\" dla tego projektu",
 			"showField": "Pokaż „{{name}}\" dla tego projektu",
-			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola."
+			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola.",
+			"editFieldAriaLabel": "Edytuj pole własne „{{name}}\"",
+			"editFormAriaLabel": "Edycja pola własnego „{{name}}\"",
+			"nameLabel": "Nazwa",
+			"typeLabel": "Typ",
+			"typeReadOnlyHint": "Typu nie można zmienić po utworzeniu pola.",
+			"optionsLabel": "Opcje",
+			"defaultValueLabel": "Wartość domyślna",
+			"saveButton": "Zapisz",
+			"cancelButton": "Anuluj",
+			"saving": "Zapisywanie…",
+			"updateSuccess": "Pole własne zostało zaktualizowane.",
+			"updateError": "Nie udało się zaktualizować pola własnego."
 		},
 		"administration": "Administracja",
 		"adminUsers": {
@@ -2971,7 +2989,10 @@
 				"newResourceNamePlaceholder": "Nazwa",
 				"newResourceEmailPlaceholder": "E-mail (opcjonalnie)",
 				"createResource": "Utwórz",
-				"createResourceError": "Nie udało się utworzyć zasobu"
+				"createResourceError": "Nie udało się utworzyć zasobu",
+				"assignedCount": "Przypisano: {{count}}",
+				"inviteResource": "Zaproś do projektu",
+				"invitationPending": "Zaproszenie wysłane"
 			},
 			"dueDate": {
 				"clear": "Wyczyść datę",

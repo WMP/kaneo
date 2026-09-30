@@ -1,4 +1,4 @@
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, Send } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,12 @@ type AssigneeResourceSectionProps = {
    * POST /resource — the same permission that manages workspace labels
    * and custom fields). */
   canCreateResource: boolean;
+  /** Opens the invite dialog for a person resource that has an email. Given
+   * (only to somebody who may invite), the section offers it right after such
+   * a resource is created inline and as a button on each person row that can
+   * still be invited; without it there is no invite UI at all. Nothing is sent
+   * from here: the dialog asks for the roles and the projects. */
+  onInviteResource?: (resource: Resource) => void;
 };
 
 /** The resource half of the assignee picker: workspace resources (people,
@@ -70,6 +76,7 @@ export function AssigneeResourceSection({
   selectedResourceIds,
   onToggleResource,
   canCreateResource,
+  onInviteResource,
 }: AssigneeResourceSectionProps) {
   const { t } = useTranslation();
   const { mutateAsync: createResource, isPending: creating } =
@@ -107,17 +114,22 @@ export function AssigneeResourceSection({
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
+    // Only a person has an email.
+    const trimmedEmail = kind === "person" ? email.trim() : "";
+
     try {
       const created = await createResource({
         workspaceId,
         kind,
         name: trimmedName,
-        // Only a person has an email.
-        email: kind === "person" ? email.trim() || undefined : undefined,
+        email: trimmedEmail || undefined,
       });
       onToggleResource(created.id);
       setFormOpen(false);
       resetForm();
+      // The person was given an address: offer the invitation (the dialog is
+      // where the user confirms it, nothing is sent here).
+      if (trimmedEmail) onInviteResource?.(created);
     } catch (error) {
       toast.error(
         getResourceErrorMessage(
@@ -142,31 +154,58 @@ export function AssigneeResourceSection({
               <div key={group.kind}>
                 {group.items.map((resource) => {
                   const isSelected = selectedResourceIds.includes(resource.id);
+                  const canInvite =
+                    Boolean(onInviteResource) &&
+                    resource.kind === "person" &&
+                    Boolean(resource.email) &&
+                    !resource.linked;
                   return (
-                    <Button
-                      key={resource.id}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start gap-2 h-8 px-2"
-                      onClick={() => onToggleResource(resource.id)}
-                    >
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/30 bg-muted">
-                        {KindIcon ? (
-                          <KindIcon
-                            className="size-3.5 text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <span className="text-[10px] font-medium text-muted-foreground">
-                            {resource.name.slice(0, 1).toUpperCase()}
-                          </span>
+                    <div key={resource.id} className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 min-w-0 flex-1 justify-start gap-2 px-2"
+                        onClick={() => onToggleResource(resource.id)}
+                      >
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/30 bg-muted">
+                          {KindIcon ? (
+                            <KindIcon
+                              className="size-3.5 text-muted-foreground"
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              {resource.name.slice(0, 1).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm truncate">
+                          {resource.name}
+                        </span>
+                        {isSelected && (
+                          <Check className="ml-auto h-4 w-4 shrink-0" />
                         )}
-                      </div>
-                      <span className="text-sm truncate">{resource.name}</span>
-                      {isSelected && (
-                        <Check className="ml-auto h-4 w-4 shrink-0" />
-                      )}
-                    </Button>
+                      </Button>
+                      {canInvite &&
+                        (resource.invitation?.status === "pending" ? (
+                          <span className="shrink-0 px-1 text-[11px] text-muted-foreground">
+                            {t("tasks:popover.assignee.invitationPending")}
+                          </span>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            className="shrink-0 text-muted-foreground"
+                            aria-label={t(
+                              "tasks:popover.assignee.inviteResource",
+                            )}
+                            title={t("tasks:popover.assignee.inviteResource")}
+                            onClick={() => onInviteResource?.(resource)}
+                          >
+                            <Send className="size-3" aria-hidden="true" />
+                          </Button>
+                        ))}
+                    </div>
                   );
                 })}
               </div>

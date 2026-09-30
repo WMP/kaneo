@@ -1539,7 +1539,19 @@
 			"requiredByWorkspace": "वर्कस्पेस द्वारा अनिवार्य",
 			"showField": "इस प्रोजेक्ट के लिए \"{{name}}\" दिखाएँ",
 			"visibilityUpdateError": "फ़ील्ड की दृश्यता अपडेट नहीं हो सकी।",
-			"visibleOnProject": "दिखाई दे रहा"
+			"visibleOnProject": "दिखाई दे रहा",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "प्रशासन",
 		"adminUsers": {
@@ -2274,6 +2286,12 @@
 				"baselineStartDate": "आधार रेखा प्रारंभ तिथि",
 				"baselineDueDate": "आधार रेखा नियत तिथि"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2524,7 +2542,10 @@
 					"person": "व्यक्ति"
 				},
 				"resourcesHeading": "संसाधन",
-				"notInProject": "अब इस प्रोजेक्ट में नहीं है"
+				"notInProject": "अब इस प्रोजेक्ट में नहीं है",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "कार्य की स्थिति अपडेट करने में विफल"

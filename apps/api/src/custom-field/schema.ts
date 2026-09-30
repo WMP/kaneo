@@ -55,9 +55,19 @@ export const createWorkspaceCustomFieldBody = z.object({
   position: z.number().optional(),
 });
 
+// Partial edit of a definition; the field type is immutable and cannot be
+// sent. Omitted properties keep their stored value and the merged result is
+// validated with the same rules as creating a field.
 export const updateCustomFieldBody = z.object({
   name: z.string().optional(),
-  // null clears any stored colors; omitted leaves them unchanged.
+  required: z.boolean().optional(),
+  // null clears the default; omitted leaves it unchanged.
+  defaultValue: z.string().nullable().optional(),
+  // Full replacement list of options (dropdown and multiselect only);
+  // omitted leaves the options unchanged.
+  options: z.array(z.string()).optional(),
+  // null clears stored colors; omitted keeps the colors of the options that
+  // remain.
   optionColors: z.record(z.string(), z.string()).nullable().optional(),
 });
 

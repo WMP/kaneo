@@ -1,5 +1,6 @@
 import db from "../../database";
 import { activityTable } from "../../database/schema";
+import { currentActorSource } from "../actor-source";
 
 // Workspace-level activity (no task to attach to) — currently just calendar
 // changes: adding/removing a holiday and editing the working-days bitmask.
@@ -19,6 +20,7 @@ async function createWorkspaceActivity(
       userId,
       content,
       eventData: eventData ?? null,
+      ...currentActorSource(),
     })
     .returning();
   return activity;

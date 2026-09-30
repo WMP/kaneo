@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "ワークスペースで必須",
 			"showField": "このプロジェクトで「{{name}}」を表示する",
 			"visibilityUpdateError": "フィールドの表示設定の更新に失敗しました。",
-			"visibleOnProject": "表示"
+			"visibleOnProject": "表示",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "管理",
 		"adminUsers": {
@@ -2267,6 +2279,12 @@
 				"baselineStartDate": "ベースライン開始日",
 				"baselineDueDate": "ベースライン期限"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2517,7 +2535,10 @@
 					"person": "人"
 				},
 				"resourcesHeading": "リソース",
-				"notInProject": "このプロジェクトのメンバーではなくなりました"
+				"notInProject": "このプロジェクトのメンバーではなくなりました",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "ステータスの更新に失敗しました"

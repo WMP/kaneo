@@ -1540,7 +1540,19 @@
 			"requiredByWorkspace": "Obligatorio por el espacio de trabajo",
 			"showField": "Mostrar \"{{name}}\" en este proyecto",
 			"visibilityUpdateError": "Error al actualizar la visibilidad del campo.",
-			"visibleOnProject": "Visible"
+			"visibleOnProject": "Visible",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Administración",
 		"adminUsers": {
@@ -2281,6 +2293,12 @@
 				"baselineStartDate": "Fecha de inicio de referencia",
 				"baselineDueDate": "Fecha de vencimiento de referencia"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2520,7 +2538,10 @@
 					"person": "Persona"
 				},
 				"resourcesHeading": "Recursos",
-				"notInProject": "Ya no está en este proyecto"
+				"notInProject": "Ya no está en este proyecto",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Error al actualizar el estado de esta tarea"

@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "工作区要求必填",
 			"showField": "在此项目中显示“{{name}}”",
 			"visibilityUpdateError": "更新字段可见性失败。",
-			"visibleOnProject": "可见"
+			"visibleOnProject": "可见",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "管理",
 		"adminUsers": {
@@ -2267,6 +2279,12 @@
 				"baselineStartDate": "基线开始日期",
 				"baselineDueDate": "基线截止日期"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2517,7 +2535,10 @@
 					"person": "人员"
 				},
 				"resourcesHeading": "资源",
-				"notInProject": "已不在此项目中"
+				"notInProject": "已不在此项目中",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "更新任务状态失败"

@@ -1539,7 +1539,19 @@
 			"requiredByWorkspace": "İş sahəsi tərəfindən məcburidir",
 			"showField": "\"{{name}}\" sahəsini bu layihə üçün göstər",
 			"visibilityUpdateError": "Sahənin görünürlüyünü yeniləmək alınmadı.",
-			"visibleOnProject": "Görünür"
+			"visibleOnProject": "Görünür",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "İnzibatçılıq",
 		"adminUsers": {
@@ -2274,6 +2286,12 @@
 				"baselineStartDate": "Əsas başlama tarixi",
 				"baselineDueDate": "Əsas son tarix"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2524,7 +2542,10 @@
 					"person": "Şəxs"
 				},
 				"resourcesHeading": "Resurslar",
-				"notInProject": "Artıq bu layihədə deyil"
+				"notInProject": "Artıq bu layihədə deyil",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Tapşırığın vəziyyətini yeniləmək alınmadı"

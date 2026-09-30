@@ -125,6 +125,8 @@ export async function exchangeCode(
     id: createId(),
     token: sessionToken,
     userId: stored.userId,
+    // Marks the session as MCP traffic for the activity log.
+    authVia: "mcp",
     expiresAt: new Date(Date.now() + expiresIn * 1000),
     createdAt: new Date(),
     updatedAt: new Date(),

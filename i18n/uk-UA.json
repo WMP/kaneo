@@ -1541,7 +1541,19 @@
 			"requiredByWorkspace": "Обов’язкове за вимогою робочого простору",
 			"showField": "Показати «{{name}}» для цього проєкту",
 			"visibilityUpdateError": "Не вдалося оновити видимість поля.",
-			"visibleOnProject": "Видиме"
+			"visibleOnProject": "Видиме",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Адміністрування",
 		"adminUsers": {
@@ -2288,6 +2300,12 @@
 				"baselineStartDate": "Базова дата початку",
 				"baselineDueDate": "Базовий термін виконання"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2538,7 +2556,10 @@
 					"person": "Людина"
 				},
 				"resourcesHeading": "Ресурси",
-				"notInProject": "Більше не в цьому проєкті"
+				"notInProject": "Більше не в цьому проєкті",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Не вдалося оновити статус завдання"

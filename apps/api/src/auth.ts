@@ -57,6 +57,7 @@ import {
 import { unlinkUserResources } from "./resource/link-resource";
 import deleteAccountData from "./user/controllers/delete-account-data";
 import { resolveAuthSecret } from "./utils/auth-secret";
+import { authViaForNewSession } from "./utils/auth-source";
 import {
   canSendSignInEmail,
   checkRegistrationAllowed,
@@ -654,6 +655,16 @@ export const auth = betterAuth({
     openAPI(),
   ],
   session: {
+    additionalFields: {
+      // Set server-side only (`input: false`): "mcp" marks a session issued
+      // for an MCP client. `getSession` returns it so the activity log can
+      // tell MCP traffic from the web UI (see utils/auth-source.ts).
+      authVia: {
+        type: "string",
+        input: false,
+        required: false,
+      },
+    },
     cookieCache: {
       // Consult the session store on every request so password recovery
       // immediately rejects revoked cookies, including caches issued before upgrade.
@@ -674,6 +685,14 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
+    session: {
+      create: {
+        before: async (_session, ctx) => {
+          const authVia = authViaForNewSession(ctx);
+          return authVia ? { data: { authVia } } : undefined;
+        },
+      },
+    },
     user: {
       update: {
         before: async (user, ctx) => {

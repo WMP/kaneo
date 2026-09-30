@@ -1538,7 +1538,19 @@
 			"requiredByWorkspace": "Bắt buộc bởi không gian làm việc",
 			"showField": "Hiện \"{{name}}\" cho dự án này",
 			"visibilityUpdateError": "Không thể cập nhật khả năng hiển thị của trường.",
-			"visibleOnProject": "Hiển thị"
+			"visibleOnProject": "Hiển thị",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Quản trị",
 		"adminUsers": {
@@ -2267,6 +2279,12 @@
 				"baselineStartDate": "Ngày bắt đầu cơ sở",
 				"baselineDueDate": "Ngày đến hạn cơ sở"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2517,7 +2535,10 @@
 					"person": "Người"
 				},
 				"resourcesHeading": "Tài nguyên",
-				"notInProject": "Không còn trong dự án này"
+				"notInProject": "Không còn trong dự án này",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Không thể cập nhật trạng thái công việc"

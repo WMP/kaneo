@@ -1549,7 +1549,19 @@
 			"requiredByWorkspace": "Обязательно в рабочей области",
 			"showField": "Показать «{{name}}» в этом проекте",
 			"visibilityUpdateError": "Не удалось изменить видимость поля.",
-			"visibleOnProject": "Видимо"
+			"visibleOnProject": "Видимо",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Администрирование",
 		"adminUsers": {
@@ -2296,6 +2308,12 @@
 				"baselineStartDate": "Базовая дата начала",
 				"baselineDueDate": "Базовый срок выполнения"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2546,7 +2564,10 @@
 					"person": "Человек"
 				},
 				"resourcesHeading": "Ресурсы",
-				"notInProject": "Больше не в этом проекте"
+				"notInProject": "Больше не в этом проекте",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Не удалось обновить статус задачи"

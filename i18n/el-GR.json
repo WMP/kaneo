@@ -1539,7 +1539,19 @@
 			"requiredByWorkspace": "Υποχρεωτικό από τον χώρο εργασίας",
 			"showField": "Εμφάνιση του \"{{name}}\" για αυτό το έργο",
 			"visibilityUpdateError": "Αποτυχία ενημέρωσης ορατότητας πεδίου.",
-			"visibleOnProject": "Ορατό"
+			"visibleOnProject": "Ορατό",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Διαχείριση",
 		"adminUsers": {
@@ -2274,6 +2286,12 @@
 				"baselineStartDate": "Ημερομηνία έναρξης (γραμμή βάσης)",
 				"baselineDueDate": "Προθεσμία (γραμμή βάσης)"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
@@ -2524,7 +2542,10 @@
 					"person": "Πρόσωπο"
 				},
 				"resourcesHeading": "Πόροι",
-				"notInProject": "Δεν είναι πλέον σε αυτό το έργο"
+				"notInProject": "Δεν είναι πλέον σε αυτό το έργο",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Αποτυχία ενημέρωσης κατάστασης εργασίας"

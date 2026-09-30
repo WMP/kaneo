@@ -146,7 +146,12 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
 const projectPermissions = vi.hoisted(() => ({
   byProject: {} as Record<
     string,
-    { canCreate?: boolean; checking?: boolean; failed?: boolean }
+    {
+      canCreate?: boolean;
+      canInvite?: boolean;
+      checking?: boolean;
+      failed?: boolean;
+    }
   >,
 }));
 vi.mock("@/hooks/use-project-permission", () => ({
@@ -156,6 +161,7 @@ vi.mock("@/hooks/use-project-permission", () => ({
     return {
       canCreateTasks: () => allowed && !state.failed && !state.checking,
       canCreateLabels: () => allowed,
+      canInviteToProject: () => state.canInvite ?? true,
       isCheckingPermissions: state.checking ?? false,
       isError: state.failed ?? false,
     };
@@ -165,6 +171,37 @@ vi.mock("@/hooks/use-project-permission", () => ({
 vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
   default: () => ({ data: workspaceResources }),
 }));
+
+// The real dialog loads roles and projects; what matters here is what the
+// modal hands it and that it stays open, nested in the modal, after the picker
+// closes. The stand-in opens a real dialog popup like the original does.
+const inviteDialog = vi.fn();
+vi.mock("@/components/resource/resource-invite-dialog", async () => {
+  const { Dialog, DialogPopup, DialogTitle } = await import(
+    "@/components/ui/dialog"
+  );
+  return {
+    default: (props: {
+      resource: { name: string };
+      workspaceId: string;
+      defaultProjectIds?: string[];
+      canLink: boolean;
+      onClose: () => void;
+    }) => {
+      inviteDialog(props);
+      return (
+        <Dialog open onOpenChange={(next) => !next && props.onClose()}>
+          <DialogPopup>
+            <DialogTitle>{`invite ${props.resource.name}`}</DialogTitle>
+            <button type="button" onClick={props.onClose}>
+              close-invite
+            </button>
+          </DialogPopup>
+        </Dialog>
+      );
+    },
+  };
+});
 
 vi.mock("@/hooks/queries/project/use-get-projects", () => ({
   default: () => ({ data: projects }),
@@ -715,5 +752,69 @@ describe("CreateTaskModal multiple assignees", () => {
         resourceIds: ["r1"],
       });
     });
+  });
+});
+
+describe("CreateTaskModal inviting a person resource", () => {
+  const inviteLabel = "tasks:popover.assignee.inviteResource";
+  const nina = {
+    id: "r2",
+    workspaceId: "workspace-1",
+    kind: "person" as const,
+    name: "Nina",
+    email: "nina@example.com",
+    userId: null,
+    createdAt: "2026-08-05T00:00:00.000Z",
+    updatedAt: "2026-08-05T00:00:00.000Z",
+  };
+
+  const openPicker = async () => {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+    workspaceResources = [nina];
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    await screen.findByText("Nina");
+  };
+
+  it("opens the invite dialog for the project the task is created in, closing only the picker", async () => {
+    await openPicker();
+
+    fireEvent.click(screen.getByRole("button", { name: inviteLabel }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "invite Nina" }),
+    ).toBeVisible();
+    expect(inviteDialog).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        resource: expect.objectContaining({ id: "r2", name: "Nina" }),
+        workspaceId: "workspace-1",
+        defaultProjectIds: ["project-1"],
+        canLink: false,
+      }),
+    );
+    // The picker is closed; the task being written is still there.
+    await vi.waitFor(() => expect(screen.queryByText("Nina")).toBeNull());
+    expect(
+      screen.getByPlaceholderText(
+        "common:modals.createTask.taskTitlePlaceholder",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "close-invite" }));
+    expect(screen.queryByRole("dialog", { name: "invite Nina" })).toBeNull();
+  });
+
+  it("offers no invitation without invitation:create in the project", async () => {
+    projectPermissions.byProject["project-1"] = { canInvite: false };
+    await openPicker();
+
+    expect(screen.getByText("Nina")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { currentActorSource } from "../../activity/actor-source";
 import db from "../../database";
 import { activityTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
@@ -47,6 +48,7 @@ async function updateTaskTitle({
       userId: currentUserId,
       content: null,
       eventData: { oldTitle: existingTask.title, newTitle: title },
+      ...currentActorSource(),
     });
 
     return task;

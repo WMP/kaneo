@@ -135,7 +135,11 @@ const roles = (...names: string[]) => ({
 });
 
 function renderDialog(
-  overrides: { onLinkInstead?: () => void; canLink?: boolean } = {},
+  overrides: {
+    onLinkInstead?: () => void;
+    canLink?: boolean;
+    defaultProjectIds?: string[];
+  } = {},
 ) {
   const onClose = vi.fn();
   const onLinkInstead = overrides.onLinkInstead ?? vi.fn();
@@ -146,6 +150,7 @@ function renderDialog(
       onClose={onClose}
       onLinkInstead={onLinkInstead}
       canLink={overrides.canLink ?? true}
+      defaultProjectIds={overrides.defaultProjectIds}
     />,
   );
   return { onClose, onLinkInstead };
@@ -213,6 +218,27 @@ describe("ResourceInviteDialog", () => {
         ],
       }),
     );
+  });
+
+  it("also ticks the default projects it was opened for, and they can be unticked", async () => {
+    renderDialog({ defaultProjectIds: ["p3"] });
+
+    expect(screen.getByRole("checkbox", { name: "Alpha" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Beta" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Gamma" })).toBeChecked();
+    // Only viewer can be granted in Gamma, so a role has to be picked first.
+    expect(send()).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Gamma" }));
+    expect(screen.getByRole("checkbox", { name: "Gamma" })).not.toBeChecked();
+    expect(send()).toBeEnabled();
+  });
+
+  it("ignores a default project that is not listed for the caller", () => {
+    renderDialog({ defaultProjectIds: ["p-unknown"] });
+
+    expect(screen.getAllByRole("checkbox", { checked: true })).toHaveLength(2);
+    expect(screen.getByRole("checkbox", { name: "Gamma" })).not.toBeChecked();
   });
 
   it("needs an explicit role in a project where member cannot be granted", async () => {

@@ -23,6 +23,7 @@ import {
   HoverCardTrigger,
 } from "../ui/preview-card";
 import { TimelineContent, TimelineItem } from "../ui/timeline";
+import { ActorSource } from "./actor-source";
 import CommentCard from "./comment-card";
 import { isCommentActivity } from "./utils";
 
@@ -41,6 +42,9 @@ type ActivityItem = {
   externalUserAvatar?: string | null;
   externalSource?: string | null;
   externalUrl?: string | null;
+  // How the user made the change when not through the web UI.
+  actorVia?: "mcp" | "api" | null;
+  actorTokenHint?: string | null;
 };
 
 function getEventDataRecord(
@@ -651,6 +655,8 @@ function Activity({
             }
             externalSource={activity.externalSource}
             externalUrl={activity.externalUrl}
+            actorVia={isExternalComment ? null : activity.actorVia}
+            actorTokenHint={activity.actorTokenHint}
           />
         </TimelineContent>
       </TimelineItem>
@@ -673,6 +679,7 @@ function Activity({
       <ActorAvatar user={user || null} fallbackName={actorName} />
       <TimelineContent className="text-sm leading-6 text-foreground">
         <UserHoverName user={user || null} fallbackName={actorName} />{" "}
+        <ActorSource via={activity.actorVia} hint={activity.actorTokenHint} />{" "}
         {renderActivityContent({
           activity,
           workspaceUsers: workspaceUsers as WorkspaceUser[] | undefined,

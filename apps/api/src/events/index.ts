@@ -3,7 +3,15 @@ import { EventEmitter } from "node:events";
 
 const EVENTS = new EventEmitter();
 EVENTS.setMaxListeners(100);
-export const eventContext = new AsyncLocalStorage<{ initiatorId: string }>();
+export type EventContextStore = {
+  initiatorId: string;
+  // How the request was authenticated (see utils/auth-source.ts). Null or
+  // absent for the web UI; used to label activity rows.
+  actorVia?: "mcp" | "api" | null;
+  actorTokenHint?: string | null;
+};
+
+export const eventContext = new AsyncLocalStorage<EventContextStore>();
 
 export type EventPayload<T = unknown> = {
   type: string;
