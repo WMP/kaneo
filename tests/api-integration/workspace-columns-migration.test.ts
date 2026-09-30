@@ -23,16 +23,16 @@ import {
 import db from "../../apps/api/src/database";
 import { resetTestDatabase } from "./helpers/database";
 
-// Migration 0059 adds workspace columns: the table `ganttpro_workspace_column`,
+// Migration 0060 adds workspace columns: the table `ganttpro_workspace_column`,
 // `workspace.ganttpro_enforce_columns` (default false) and the nullable link
 // `column.ganttpro_workspace_column_id` (ON DELETE SET NULL, ON UPDATE CASCADE).
-// It backfills nothing. The scratch database is migrated to 0058, populated with
+// It backfills nothing. The scratch database is migrated to 0059, populated with
 // workspaces, projects, columns, tasks and a workflow rule, then upgraded; a
 // fresh database (every other integration test) is checked for the same objects.
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../apps/api/drizzle");
-const TARGET_TAG = "0059_ganttpro_workspace_columns";
+const TARGET_TAG = "0060_ganttpro_workspace_columns";
 
 function withDatabase(connectionString: string, database: string) {
   const url = new URL(connectionString);
@@ -40,7 +40,7 @@ function withDatabase(connectionString: string, database: string) {
   return url.toString();
 }
 
-describe("migration 0059 workspace columns", () => {
+describe("migration 0060 workspace columns", () => {
   const baseUrl = process.env.DATABASE_URL as string;
   const scratchName = `${new URL(baseUrl).pathname
     .replace(/^\//, "")
@@ -71,7 +71,7 @@ describe("migration 0059 workspace columns", () => {
   }
 
   beforeAll(() => {
-    priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-0058-"));
+    priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-0059-"));
     cpSync(migrationsFolder, priorFolder, { recursive: true });
     const journalPath = join(priorFolder, "meta", "_journal.json");
     const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {

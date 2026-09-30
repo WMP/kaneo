@@ -11,6 +11,7 @@ import { publishEvent } from "../../events";
 import createNotification from "../../notification/controllers/create-notification";
 import { readTaskAssignees } from "../../task/assignments";
 import { parseMentionIds } from "../../utils/parse-mentions";
+import { currentActorSource } from "../actor-source";
 
 async function createComment(
   taskId: string,
@@ -25,6 +26,7 @@ async function createComment(
       type: "comment",
       userId,
       content,
+      ...currentActorSource(),
       ...(external
         ? {
             externalUserName: external.userName,

@@ -1,5 +1,5 @@
 {
-  "id": "c237a835-5b65-474d-a93c-044cb84952a6",
+  "id": "5cd581aa-050d-412d-9542-76fae6fc0fc6",
   "prevId": "12269f43-c131-438f-ad4a-a092cd3267f5",
   "version": "7",
   "dialect": "postgresql",
@@ -206,6 +206,18 @@
         },
         "external_url": {
           "name": "external_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_via": {
+          "name": "actor_via",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_token_hint": {
+          "name": "actor_token_hint",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1108,12 +1120,6 @@
           "notNull": true,
           "default": false
         },
-        "ganttpro_workspace_column_id": {
-          "name": "ganttpro_workspace_column_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1144,21 +1150,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "column_ganttpro_workspace_column_id_idx": {
-          "name": "column_ganttpro_workspace_column_id_idx",
-          "columns": [
-            {
-              "expression": "ganttpro_workspace_column_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -1173,19 +1164,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "column_ganttpro_workspace_column_fk": {
-          "name": "column_ganttpro_workspace_column_fk",
-          "tableFrom": "column",
-          "tableTo": "ganttpro_workspace_column",
-          "columnsFrom": [
-            "ganttpro_workspace_column_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
           "onUpdate": "cascade"
         }
       },
@@ -3517,6 +3495,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "auth_via": {
+          "name": "auth_via",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -5471,13 +5455,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 62
-        },
-        "ganttpro_enforce_columns": {
-          "name": "ganttpro_enforce_columns",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         }
       },
       "indexes": {},
@@ -5641,122 +5618,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "creem_subscription_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.ganttpro_workspace_column": {
-      "name": "ganttpro_workspace_column",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "color": {
-          "name": "color",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_final": {
-          "name": "is_final",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "ganttpro_workspace_column_workspaceId_idx": {
-          "name": "ganttpro_workspace_column_workspaceId_idx",
-          "columns": [
-            {
-              "expression": "workspace_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "ganttpro_workspace_column_workspace_id_workspace_id_fk": {
-          "name": "ganttpro_workspace_column_workspace_id_workspace_id_fk",
-          "tableFrom": "ganttpro_workspace_column",
-          "tableTo": "workspace",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "ganttpro_workspace_column_workspace_id_slug_unique": {
-          "name": "ganttpro_workspace_column_workspace_id_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "workspace_id",
-            "slug"
           ]
         }
       },

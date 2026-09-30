@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ResourceInviteDialog from "@/components/resource/resource-invite-dialog";
 import {
   type AssigneeAvatarItem,
   AssigneeAvatars,
@@ -257,6 +258,13 @@ function CreateTaskModalContent({
   // the WORKSPACE role (no project is resolved for it) — see resource/index.ts.
   const { canUpdateProjects } = useWorkspacePermission();
   const canCreateResourceCapability = canUpdateProjects();
+  // The person resource whose invite dialog is open, and the assignee picker
+  // that is closed to make room for it. The dialog is rendered outside the
+  // picker so closing the picker does not unmount it.
+  const [assigneeOpen, setAssigneeOpen] = useState(false);
+  const [invitingResource, setInvitingResource] = useState<Resource | null>(
+    null,
+  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -302,12 +310,17 @@ function CreateTaskModalContent({
   const {
     canCreateTasks,
     canCreateLabels,
+    canInviteToProject,
     isCheckingPermissions: isCheckingProjectPermissions,
     isError: projectPermissionsFailed,
   } = useProjectPermission(resolvedProjectId);
   // Submitting needs a project and the right to create tasks in it.
   const canCreateTaskCapability = canCreateTasks();
   const canCreateLabelCapability = canCreateLabels();
+  // Inviting a person resource needs the workspace permission that creates
+  // resources plus invitation:create in the project; the API checks both again.
+  const canInviteResourceCapability =
+    canCreateResourceCapability && canInviteToProject();
   // The dialog always stays open so another project can be picked. Creating is
   // blocked until the chosen project says yes: while its permissions load, when
   // they cannot be read, and when it does not allow creating tasks.
@@ -1425,7 +1438,7 @@ function CreateTaskModalContent({
                 </PopoverContent>
               </Popover>
 
-              <Popover>
+              <Popover open={assigneeOpen} onOpenChange={setAssigneeOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
@@ -1458,7 +1471,7 @@ function CreateTaskModalContent({
                     )}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-56 p-1" align="start">
+                <PopoverContent className="w-72 p-1" align="start">
                   <div className="max-h-80 space-y-1 overflow-y-auto">
                     <button
                       type="button"
@@ -1469,7 +1482,7 @@ function CreateTaskModalContent({
                       }}
                     >
                       <div
-                        className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
+                        className="w-6 h-6 shrink-0 rounded-full bg-muted border border-border flex items-center justify-center"
                         title={t(
                           "common:modals.createTask.assignUnassignedTitle",
                         )}
@@ -1478,12 +1491,12 @@ function CreateTaskModalContent({
                           ?
                         </span>
                       </div>
-                      <span className="text-sm">
+                      <span className="min-w-0 truncate text-sm">
                         {t("common:modals.createTask.assignUnassigned")}
                       </span>
                       {assigneeIds.length === 0 &&
                         resourceAssigneeIds.length === 0 && (
-                          <Check className="ml-auto h-4 w-4" />
+                          <Check className="ml-auto h-4 w-4 shrink-0" />
                         )}
                     </button>
                     {workspaceUsers?.members?.map((member) => {
@@ -1510,8 +1523,12 @@ function CreateTaskModalContent({
                               {getInitials(member?.user?.name)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{member?.user?.name}</span>
-                          {isSelected && <Check className="ml-auto h-4 w-4" />}
+                          <span className="min-w-0 truncate text-sm">
+                            {member?.user?.name}
+                          </span>
+                          {isSelected && (
+                            <Check className="ml-auto h-4 w-4 shrink-0" />
+                          )}
                         </button>
                       );
                     })}
@@ -1535,6 +1552,14 @@ function CreateTaskModalContent({
                           )
                         }
                         canCreateResource={canCreateResourceCapability}
+                        onInviteResource={
+                          canInviteResourceCapability
+                            ? (resource) => {
+                                setAssigneeOpen(false);
+                                setInvitingResource(resource);
+                              }
+                            : undefined
+                        }
                       />
                     )}
                   </div>
@@ -1805,6 +1830,18 @@ function CreateTaskModalContent({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {invitingResource && workspace?.id && (
+        <ResourceInviteDialog
+          resource={invitingResource}
+          workspaceId={workspace.id}
+          defaultProjectIds={resolvedProjectId ? [resolvedProjectId] : []}
+          // Linking a resource to a member stays on the resources settings page.
+          canLink={false}
+          onLinkInstead={() => setInvitingResource(null)}
+          onClose={() => setInvitingResource(null)}
+        />
+      )}
     </Dialog>
   );
 }

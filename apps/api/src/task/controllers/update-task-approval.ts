@@ -1,5 +1,6 @@
 import { eq, getTableColumns } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { currentActorSource } from "../../activity/actor-source";
 import db from "../../database";
 import { activityTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
@@ -62,6 +63,7 @@ async function updateTaskApproval({
           newApprovalStatus: task.approvalStatus,
           approvalNote: task.approvalNote,
         },
+        ...currentActorSource(),
       });
     }
 

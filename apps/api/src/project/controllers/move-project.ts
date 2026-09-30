@@ -9,6 +9,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { currentActorSource } from "../../activity/actor-source";
 import createActivities from "../../activity/controllers/create-activities";
 import db from "../../database";
 import {
@@ -319,6 +320,7 @@ async function moveProject(
         userId: currentUserId,
         content: null,
         eventData: {},
+        ...currentActorSource(),
       })),
       tx,
     );

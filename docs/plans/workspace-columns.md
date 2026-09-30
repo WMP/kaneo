@@ -17,7 +17,7 @@ Today board columns exist only per project (`column.project_id`) and are edited 
 | Automation rules | Out of scope. Workflow rules stay per project, because integrations (repositories) belong to a project. |
 | Permissions | Reading workspace columns: `project:read` in the workspace role (every member; the project page needs the enforced flag). Managing workspace columns: `project:update` in the workspace role (same as workspace custom fields). Turning enforcement on or off and its preview: `workspace:manage_settings`. |
 
-## Data model (migration `0059_ganttpro_workspace_columns`, additive)
+## Data model (migration `0060_ganttpro_workspace_columns`, additive)
 
 - New table `ganttpro_workspace_column`: `id`, `workspace_id` (FK `workspace.id`, cascade), `name`, `slug`, `position`, `icon`, `color`, `is_final`, `created_at`, `updated_at`; unique `(workspace_id, slug)`; index on `workspace_id`.
 - `workspace.ganttpro_enforce_columns boolean not null default false`.
@@ -57,9 +57,9 @@ Other surfaces:
 
 ## Stages and verification
 
-1. API and database: schema, migration, sync, routes, lock of project column routes, project create and move. Integration tests in `tests/api-integration/` (match and move, created and removed columns, rule deletion, 409 on project column routes, propagation of create/update/reorder/delete, new project copies, project move into an enforced workspace, 403 for a member without the permission and for a user of another workspace, nothing persisted after a rejected request) and a migration upgrade test from a populated 0058 database. Unit tests for `planProjectColumnSync`. `pnpm openapi:check`, API typecheck.
+1. API and database: schema, migration, sync, routes, lock of project column routes, project create and move. Integration tests in `tests/api-integration/` (match and move, created and removed columns, rule deletion, 409 on project column routes, propagation of create/update/reorder/delete, new project copies, project move into an enforced workspace, 403 for a member without the permission and for a user of another workspace, nothing persisted after a rejected request) and a migration upgrade test from a populated 0059 database. Unit tests for `planProjectColumnSync`. `pnpm openapi:check`, API typecheck.
 2. Web: fetchers, hooks, pages, i18n, realtime invalidation. Component tests and web typecheck; `pnpm i18n:check`.
-3. Documentation: database contract (migration 0059), API contract paragraph, invariant `KAN-DATA-002` (partial).
+3. Documentation: database contract (migration 0060), API summary in the invariant row (the API contract is at its size ceiling), invariant `KAN-DATA-002` (partial).
 
 ## Known limitations
 

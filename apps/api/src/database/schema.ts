@@ -64,6 +64,11 @@ export const sessionTable = pgTable(
     activeOrganizationId: text("active_organization_id"),
     activeTeamId: text("active_team_id"),
     impersonatedBy: text("impersonated_by"),
+    // How the session was issued: "mcp" for sessions created for an MCP
+    // client (built-in OAuth exchange or the `kaneo-mcp` device flow), null
+    // otherwise. Set server-side only (`input: false` in auth.ts); the activity
+    // log uses it to tell MCP traffic apart from the web UI.
+    authVia: text("auth_via"),
   },
   (table) => [index("session_userId_idx").on(table.userId)],
 );
@@ -962,6 +967,12 @@ export const activityTable = pgTable(
     externalUserAvatar: text("external_user_avatar"),
     externalSource: text("external_source"),
     externalUrl: text("external_url"),
+    // What the acting user used for this change: "mcp" (MCP session) or "api"
+    // (API key). Null for the web UI, imports, webhooks and legacy rows.
+    actorVia: text("actor_via", { enum: ["mcp", "api"] }),
+    // Short, non-secret hint of the token used (API key `start`, or the last
+    // characters of an MCP session token). Never the full token or key.
+    actorTokenHint: text("actor_token_hint"),
   },
   (table) => [
     index("activity_task_id_idx").on(table.taskId),
