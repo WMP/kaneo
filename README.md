@@ -22,6 +22,8 @@ Kaneo to prosta platforma do zarządzania projektami, którą instalujesz na wł
 
 Ten dokument opisuje tylko **różnice** między Kaneo a Kaneo Pro. Instrukcje wspólne dla obu wersji są w [oryginalnym README Kaneo](https://github.com/usekaneo/kaneo#readme) i w [dokumentacji Kaneo](https://kaneo.app/docs/core).
 
+Zrzuty ekranu w tym dokumencie pokazują fikcyjne dane testowe (firma „Northwind Robotics”).
+
 Stan na 30.09.2026: fork ma około 300 własnych commitów ponad bazę upstream z 26.09.2026. Zmiany z upstream trafiają do forka przez cotygodniowy pull request (zobacz [Utrzymanie forka](#utrzymanie-forka)).
 
 ## Porównanie w skrócie
@@ -60,7 +62,8 @@ Wykres Gantta w Kaneo Pro jest narzędziem do planowania, nie tylko do podglądu
 - **Zadania bez dat.** Zadanie zależne z innego projektu, które nie ma dat, dostaje pozycję wyliczoną tylko do wyświetlenia.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/02-gantt-dependency-types.png" alt="Typy zależności FS, SS i FF z opóźnieniem na wykresie Gantta" />
+  <img src="docs/images/kaneo-pro/02-gantt-dependency-types.png" alt="Edycja typu zależności i opóźnienia, cieniowanie dni wolnych na wykresie Gantta" />
+  <br /><sub>Edycja typu zależności i opóźnienia. Szare kolumny to weekendy i święta z kalendarza pracy.</sub>
 </p>
 
 ### 2. Zależności między projektami
@@ -100,7 +103,7 @@ Widok Obciążenie pokazuje każdego członka obszaru roboczego i zasoby. Wybier
 
 ### 6. Kalendarz pracy
 
-Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne. Automatyczne przesuwanie zadań uwzględnia kalendarz.
+Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne (zobacz zrzut w punkcie 1). Automatyczne przesuwanie zadań uwzględnia kalendarz.
 
 <p align="center">
   <img src="docs/images/kaneo-pro/06-calendar.png" alt="Ustawienia kalendarza pracy obszaru roboczego" />
@@ -113,7 +116,12 @@ Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne
 - Opcje pola listy rozwijanej mają kolory. Wykres Gantta może użyć tych kolorów.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Pola niestandardowe obszaru roboczego" />
+  <img src="docs/images/kaneo-pro/07-custom-fields.png" alt="Wykres Gantta pokolorowany opcjami pola niestandardowego Phase" />
+  <br /><sub>Wykres Gantta pokolorowany polem „Phase” (Design, Build, Test), z kolumną pola przy liście zadań.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/07b-custom-fields-settings.png" alt="Ustawienia pól niestandardowych obszaru roboczego" />
 </p>
 
 ### 8. Zadania: wiele osób, bramki akceptacji, ograniczenia
@@ -124,7 +132,14 @@ Obszar roboczy ma dni robocze i listę świąt. Wykres Gantta cieniuje dni wolne
 - **Utrata połączenia.** Gdy połączenie z serwerem zostanie przerwane, aplikacja pokazuje komunikat. Widoki nie są wtedy po cichu puste.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/08-task-detail.png" alt="Szczegóły zadania z bramką akceptacji, ograniczeniem daty i wieloma osobami przypisanymi" />
+  <img src="docs/images/kaneo-pro/08-task-detail.png" alt="Szczegóły zadania z bramką akceptacji, postępem, planem bazowym i ograniczeniem daty" />
+  <br /><sub>Bramka akceptacji z notatką. W panelu: postęp, kamień milowy, plan bazowy i ograniczenie daty.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/08b-task-constraint.png" alt="Wybór ograniczenia daty zadania" width="49%" />
+  <img src="docs/images/kaneo-pro/08c-task-assignees.png" alt="Wiele osób przypisanych i zasób bez konta" width="49%" />
+  <br /><sub>Z lewej: ograniczenia dat SNET, FNLT i MSO. Z prawej: kilka osób przypisanych i zasób bez konta.</sub>
 </p>
 
 ### 9. Zasoby
@@ -151,7 +166,12 @@ W Kaneo każdy członek obszaru roboczego widzi wszystkie projekty. W Kaneo Pro 
 - **Ochrona przed eskalacją ról.** Zaproszenie i zmiana roli nie mogą dać roli wyższej niż rola osoby, która je wykonuje.
 
 <p align="center">
-  <img src="docs/images/kaneo-pro/10-project-members.png" alt="Członkowie projektu i okno Add people" />
+  <img src="docs/images/kaneo-pro/10-project-members.png" alt="Członkowie projektu z rolą projektu innej niż rola w obszarze roboczym" />
+  <br /><sub>Rola w projekcie może być inna niż rola w obszarze roboczym. Pod tabelą są oczekujące zaproszenia do projektu.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/kaneo-pro/10b-add-people.png" alt="Okno Add people" />
 </p>
 
 ### 11. Narzędzia MCP
