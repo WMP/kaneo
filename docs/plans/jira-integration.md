@@ -1,6 +1,6 @@
 # Plan: Jira integration
 
-Status: requested on 2026-09-30, implemented in stages on `claude/jira-integration-etryqs` (branched from `claude/gantt-pro`, to be merged back into it). Stages 1 and 2 (API foundation, then API sync: draft, send, links, status processing, proposals, webhook, poll, notifications, events) are implemented; stages 3 and 4 (web) are not. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: requested on 2026-09-30, implemented in stages on `claude/jira-integration-etryqs` (branched from `claude/gantt-pro`, to be merged back into it). Stages 1 and 2 (API foundation, then API sync: draft, send, links, status processing, proposals, webhook, poll, notifications, events) and stage 3 (web settings: connection, mapping editor at three levels, account token page) are implemented; stage 4 (web task UI) is not. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 

@@ -11,6 +11,7 @@ import {
   Settings,
   Shield,
   Tag,
+  Ticket,
   Wrench,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -105,6 +106,11 @@ function RouteComponent() {
       }),
       url: "/dashboard/settings/workspace/resources",
       icon: Wrench,
+    },
+    {
+      title: t("settings:jiraIntegration.menuTitle"),
+      url: "/dashboard/settings/workspace/jira",
+      icon: Ticket,
     },
     ...(config?.billingEnabled
       ? [
