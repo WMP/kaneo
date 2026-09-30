@@ -154,7 +154,7 @@
 					"rose": "玫红",
 					"crimson": "深红"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "选择一个选项"
 			}
 		},
 		"boolean": {
@@ -1449,9 +1449,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "可用选项",
+			"options": "选项",
+			"reorderError": "重新排序字段失败"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1954,7 +1954,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "选择日期"
 		},
 		"entity": {
 			"task": "任务"
@@ -2256,7 +2256,7 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_other": "{{count}} 个自定义字段值"
 		}
 	},
 	"invitations": {

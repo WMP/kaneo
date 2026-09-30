@@ -154,7 +154,7 @@
 					"rose": "गुलाब",
 					"crimson": "किरमिज़ी"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "एक विकल्प चुनें"
 			}
 		},
 		"boolean": {
@@ -1450,9 +1450,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "उपलब्ध विकल्प",
+			"options": "विकल्प",
+			"reorderError": "फ़ील्ड का क्रम बदलने में विफल"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1961,7 +1961,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "तारीख़ चुनें"
 		},
 		"entity": {
 			"task": "कार्य"
@@ -2264,8 +2264,8 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_one": "{{count}} कस्टम फ़ील्ड मान",
+			"ariaLabel_other": "{{count}} कस्टम फ़ील्ड मान"
 		}
 	},
 	"invitations": {

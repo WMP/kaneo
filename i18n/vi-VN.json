@@ -154,7 +154,7 @@
 					"rose": "Hồng",
 					"crimson": "Đỏ thẫm"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Chọn một tùy chọn"
 			}
 		},
 		"boolean": {
@@ -1449,9 +1449,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Tùy chọn khả dụng",
+			"options": "tùy chọn",
+			"reorderError": "Không thể sắp xếp lại các trường"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1954,7 +1954,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Chọn ngày"
 		},
 		"entity": {
 			"task": "Công việc"
@@ -2256,7 +2256,7 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_other": "{{count}} giá trị trường tùy chỉnh"
 		}
 	},
 	"invitations": {

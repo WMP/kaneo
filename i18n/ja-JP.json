@@ -154,7 +154,7 @@
 					"rose": "ローズ",
 					"crimson": "クリムゾン"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "オプションを選択"
 			}
 		},
 		"boolean": {
@@ -1449,9 +1449,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "利用可能なオプション",
+			"options": "オプション",
+			"reorderError": "フィールドの並べ替えに失敗しました"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1954,7 +1954,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "日付を選択"
 		},
 		"entity": {
 			"task": "タスク"
@@ -2256,7 +2256,7 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_other": "カスタムフィールドの値 {{count}} 件"
 		}
 	},
 	"invitations": {

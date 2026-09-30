@@ -154,7 +154,7 @@
 					"rose": "Ροζ",
 					"crimson": "Βυσσινί"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Επιλέξτε μια επιλογή"
 			}
 		},
 		"boolean": {
@@ -1450,9 +1450,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Διαθέσιμες επιλογές",
+			"options": "επιλογές",
+			"reorderError": "Αποτυχία αναδιάταξης των πεδίων"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1961,7 +1961,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Επιλέξτε ημερομηνία"
 		},
 		"entity": {
 			"task": "Εργασία"
@@ -2264,8 +2264,8 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_one": "{{count}} τιμή προσαρμοσμένου πεδίου",
+			"ariaLabel_other": "{{count}} τιμές προσαρμοσμένων πεδίων"
 		}
 	},
 	"invitations": {

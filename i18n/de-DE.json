@@ -154,7 +154,7 @@
 					"rose": "Rosa",
 					"crimson": "Karmesinrot"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Option auswählen"
 			}
 		},
 		"boolean": {
@@ -1530,9 +1530,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Verfügbare Optionen",
+			"options": "Optionen",
+			"reorderError": "Felder konnten nicht neu angeordnet werden"
 		}
 	},
 	"navigation": {
@@ -1961,7 +1961,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Datum auswählen"
 		},
 		"entity": {
 			"task": "Aufgabe"
@@ -2264,8 +2264,8 @@
 		"descriptionLoading": "Beschreibung wird geladen…",
 		"descriptionLoadError": "Die Beschreibung konnte nicht geladen werden. Versuche es erneut, um die aktuelle Version zu laden.",
 		"customFields": {
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_one": "{{count}} benutzerdefinierter Feldwert",
+			"ariaLabel_other": "{{count}} benutzerdefinierte Feldwerte"
 		}
 	},
 	"invitations": {

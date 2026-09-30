@@ -154,7 +154,7 @@
 					"rose": "Троянда",
 					"crimson": "Багряний"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Виберіть варіант"
 			}
 		},
 		"boolean": {
@@ -1452,9 +1452,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Доступні варіанти",
+			"options": "варіанти",
+			"reorderError": "Не вдалося змінити порядок полів"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1975,7 +1975,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Виберіть дату"
 		},
 		"entity": {
 			"task": "Завдання"
@@ -2280,10 +2280,10 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_few": "{{count}} custom field values",
-			"ariaLabel_many": "{{count}} custom field values",
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_few": "{{count}} значення користувацьких полів",
+			"ariaLabel_many": "{{count}} значень користувацьких полів",
+			"ariaLabel_one": "{{count}} значення користувацького поля",
+			"ariaLabel_other": "{{count}} значень користувацьких полів"
 		}
 	},
 	"invitations": {

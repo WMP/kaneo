@@ -154,7 +154,7 @@
 					"rose": "Rosa",
 					"crimson": "Cremisi"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Seleziona un'opzione"
 			}
 		},
 		"boolean": {
@@ -1451,9 +1451,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Opzioni disponibili",
+			"options": "opzioni",
+			"reorderError": "Impossibile riordinare i campi"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1968,7 +1968,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Scegli una data"
 		},
 		"entity": {
 			"task": "Attività"
@@ -2272,9 +2272,9 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_many": "{{count}} custom field values",
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_many": "{{count}} valori di campi personalizzati",
+			"ariaLabel_one": "{{count}} valore di campo personalizzato",
+			"ariaLabel_other": "{{count}} valori di campi personalizzati"
 		}
 	},
 	"invitations": {

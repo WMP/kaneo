@@ -154,7 +154,7 @@
 					"rose": "Roos",
 					"crimson": "Karmozijn"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Selecteer een optie"
 			}
 		},
 		"boolean": {
@@ -1450,9 +1450,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Beschikbare opties",
+			"options": "opties",
+			"reorderError": "Velden opnieuw ordenen mislukt"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1961,7 +1961,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Kies een datum"
 		},
 		"entity": {
 			"task": "Taak"
@@ -2264,8 +2264,8 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_one": "{{count}} waarde van aangepast veld",
+			"ariaLabel_other": "{{count}} waarden van aangepaste velden"
 		}
 	},
 	"invitations": {

@@ -154,7 +154,7 @@
 					"rose": "Gül Kurusu",
 					"crimson": "Koyu Kırmızı"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Bir seçenek belirleyin"
 			}
 		},
 		"boolean": {
@@ -1450,9 +1450,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Kullanılabilir seçenekler",
+			"options": "seçenekler",
+			"reorderError": "Alanlar yeniden sıralanamadı"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1961,7 +1961,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Tarih seçin"
 		},
 		"entity": {
 			"task": "Talep"
@@ -2264,8 +2264,8 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_one": "{{count}} özel alan değeri",
+			"ariaLabel_other": "{{count}} özel alan değeri"
 		}
 	},
 	"invitations": {

@@ -154,7 +154,7 @@
 					"rose": "Роза",
 					"crimson": "Малиновый"
 				},
-				"selectOptionPlaceholder": "Select an option"
+				"selectOptionPlaceholder": "Выберите вариант"
 			}
 		},
 		"boolean": {
@@ -1460,9 +1460,9 @@
 				"number": "Number",
 				"text": "Text"
 			},
-			"availableOptions": "Available options",
-			"options": "options",
-			"reorderError": "Failed to reorder fields"
+			"availableOptions": "Доступные варианты",
+			"options": "варианты",
+			"reorderError": "Не удалось изменить порядок полей"
 		},
 		"administration": "Administration",
 		"adminUsers": {
@@ -1983,7 +1983,7 @@
 			},
 			"customFieldUpdated": "Field updated",
 			"selectOption": "Select option",
-			"pickDate": "Pick a date"
+			"pickDate": "Выберите дату"
 		},
 		"entity": {
 			"task": "Задача"
@@ -2336,10 +2336,10 @@
 		"descriptionLoading": "Loading description…",
 		"descriptionLoadError": "The description could not be loaded. Retry to load the current version.",
 		"customFields": {
-			"ariaLabel_few": "{{count}} custom field values",
-			"ariaLabel_many": "{{count}} custom field values",
-			"ariaLabel_one": "{{count}} custom field value",
-			"ariaLabel_other": "{{count}} custom field values"
+			"ariaLabel_few": "{{count}} значения пользовательских полей",
+			"ariaLabel_many": "{{count}} значений пользовательских полей",
+			"ariaLabel_one": "{{count}} значение пользовательского поля",
+			"ariaLabel_other": "{{count}} значений пользовательских полей"
 		}
 	},
 	"invitations": {
