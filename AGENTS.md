@@ -33,7 +33,7 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 
 ## Safe working practice
 
-- Use Node.js 24 (CI and images use 24.19.0) and pnpm 10.32.1, as declared in `package.json`. Server variables come from root `.env`; local Vite overrides belong in `apps/web/.env.local`.
+- Use Node.js 24 (CI and images use 24.19.0) and pnpm 10.32.1, as declared in `package.json`. Server variables come from root `.env`; local Vite overrides belong in `apps/web/.env.development.local`, because the tracked `apps/web/.env.development` outranks `apps/web/.env.local`.
 - Never point development or test commands at production data, storage or credentials. Preserve unrelated work in a dirty worktree and stop only processes you started.
 - Root and package `lint` scripts use Biome `--write` and can change unrelated files. Prefer a targeted read-only check while iterating; inspect any formatter diff.
 - Do not commit, push or open a pull request unless explicitly requested.
