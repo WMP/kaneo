@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, FolderGit, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ActorSource, type ActorVia } from "@/components/activity/actor-source";
 import CommentEditor from "@/components/activity/comment-editor";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { GitlabIcon } from "@/components/icons/gitlab-icon";
@@ -54,6 +55,9 @@ type CommentCardProps = {
   importedBy?: string;
   externalSource?: string | null;
   externalUrl?: string | null;
+  // How the author made the comment when not through the web UI.
+  actorVia?: ActorVia;
+  actorTokenHint?: string | null;
 };
 
 export default function CommentCard({
@@ -66,6 +70,8 @@ export default function CommentCard({
   externalSource,
   externalUrl,
   importedBy,
+  actorVia,
+  actorTokenHint,
 }: CommentCardProps) {
   const { t } = useTranslation();
   const { user: currentUser } = useAuth();
@@ -197,6 +203,8 @@ export default function CommentCard({
               )}
             </HoverCardContent>
           </HoverCard>
+
+          <ActorSource via={actorVia} hint={actorTokenHint} />
 
           {sourceName && (
             <span className="rounded border px-1.5 py-0.5 text-xs text-muted-foreground">

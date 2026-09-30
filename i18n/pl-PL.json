@@ -881,6 +881,12 @@
 		}
 	},
 	"activity": {
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
+		},
 		"assignedTo": "przypisał(a) zadanie użytkownikowi {{name}}",
 		"assignedToSelf": "przypisał(a) zadanie sobie",
 		"changedDueDate": "zmienił(a) termin z {{from}} na {{to}}",

@@ -2308,6 +2308,12 @@
 				"baselineStartDate": "Базовая дата начала",
 				"baselineDueDate": "Базовый срок выполнения"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

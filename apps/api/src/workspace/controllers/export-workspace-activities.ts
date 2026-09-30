@@ -50,6 +50,8 @@ async function exportWorkspaceActivities(
       externalUserAvatar: activityTable.externalUserAvatar,
       externalSource: activityTable.externalSource,
       externalUrl: activityTable.externalUrl,
+      actorVia: activityTable.actorVia,
+      actorTokenHint: activityTable.actorTokenHint,
     })
     .from(activityTable)
     .leftJoin(taskTable, eq(activityTable.taskId, taskTable.id))

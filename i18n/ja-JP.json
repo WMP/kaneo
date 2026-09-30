@@ -2279,6 +2279,12 @@
 				"baselineStartDate": "ベースライン開始日",
 				"baselineDueDate": "ベースライン期限"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

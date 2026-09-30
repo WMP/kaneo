@@ -139,6 +139,14 @@ export const workspaceActivitySchema = z
       description: "The tool it was imported from, e.g. planka, trello, jira.",
     }),
     externalUrl: z.string().nullable(),
+    actorVia: z.enum(["mcp", "api"]).nullable().openapi({
+      description:
+        "How the user made this change when not through the web UI: mcp (an MCP client session) or api (an API key). Null for the web UI, imports and older activity.",
+    }),
+    actorTokenHint: z.string().nullable().openapi({
+      description:
+        "Short, non-secret hint of the token used: the beginning of the API key (as shown in the key settings) or the last characters of the MCP session token. Never the full token. Null when actorVia is null.",
+    }),
   })
   .openapi("WorkspaceActivity");
 

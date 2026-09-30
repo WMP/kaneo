@@ -2286,6 +2286,12 @@
 				"baselineStartDate": "Basisstartdatum",
 				"baselineDueDate": "Basisvervaldatum"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {

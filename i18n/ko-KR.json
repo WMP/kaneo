@@ -2279,6 +2279,12 @@
 				"baselineStartDate": "기준선 시작일",
 				"baselineDueDate": "기준선 마감일"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"tasks": {
