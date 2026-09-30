@@ -127,6 +127,7 @@ function AddPeopleDialog({
   const projectId = context.kind === "project" ? context.projectId : undefined;
 
   const searchId = useId();
+  const listboxId = useId();
   const workspaceRoleId = useId();
   const projectRoleId = useId();
   const emailDelivery = useInvitationEmailDelivery();
@@ -148,7 +149,8 @@ function AddPeopleDialog({
   );
 
   const trimmed = query.trim();
-  const debounced = useDebouncedValue(trimmed, DEBOUNCE_MS);
+  // Reset when the dialog opens: nothing typed before may be searched again.
+  const debounced = useDebouncedValue(trimmed, DEBOUNCE_MS, open);
   const searchable = trimmed.length >= USER_DIRECTORY_MIN_QUERY_LENGTH;
 
   const directory = useSearchUserDirectory(workspaceId, debounced, {
@@ -254,18 +256,27 @@ function AddPeopleDialog({
         : [],
     [canAdd, isProject, candidates, needle],
   );
-  const directorySuggestions = useMemo(() => {
-    if (!mayUseDirectory || !searchable) return [];
-    const known = new Set(candidateSuggestions.map((c) => c.id));
-    return (directory.data ?? []).filter((person) => !known.has(person.id));
-  }, [mayUseDirectory, searchable, directory.data, candidateSuggestions]);
-
   // The directory answer belongs to `debounced`; until it catches up with what
-  // is typed, "no match" is not known yet.
+  // is typed (still debouncing, fetching, or showing the previous query's
+  // placeholder), nothing of it is offered or selectable and "no match" is not
+  // known yet.
   const directoryPending =
     mayUseDirectory &&
     searchable &&
-    (debounced !== trimmed || directory.isFetching);
+    (debounced !== trimmed ||
+      directory.isFetching ||
+      Boolean(directory.isPlaceholderData));
+  const directorySuggestions = useMemo(() => {
+    if (!mayUseDirectory || !searchable || directoryPending) return [];
+    const known = new Set(candidateSuggestions.map((c) => c.id));
+    return (directory.data ?? []).filter((person) => !known.has(person.id));
+  }, [
+    mayUseDirectory,
+    searchable,
+    directoryPending,
+    directory.data,
+    candidateSuggestions,
+  ]);
   const typedEmail = trimmed.toLowerCase();
   const emailMatchesSuggestion = [
     ...candidateSuggestions,
@@ -287,14 +298,32 @@ function AddPeopleDialog({
     setAlreadyMemberEmail(null);
   };
 
-  const firstOption = (): Selection | null => {
-    const candidate = candidateSuggestions[0];
-    if (candidate) return { kind: "candidate", person: candidate };
-    const person = directorySuggestions[0];
-    if (person) return { kind: "directory", person };
-    if (showInviteOption) return { kind: "email", email: typedEmail };
-    return null;
-  };
+  // Every offered option in display order, for the keyboard.
+  const options: Selection[] = [
+    ...candidateSuggestions.map((person) => ({
+      kind: "candidate" as const,
+      person,
+    })),
+    ...directorySuggestions.map((person) => ({
+      kind: "directory" as const,
+      person,
+    })),
+    ...(showInviteOption
+      ? [{ kind: "email" as const, email: typedEmail }]
+      : []),
+  ];
+  const [activeIndex, setActiveIndex] = useState(-1);
+  // The offered list changed under the highlight: start again.
+  const optionsSignature = options
+    .map((option) =>
+      option.kind === "email"
+        ? `e:${option.email}`
+        : `${option.kind}:${option.person.id}`,
+    )
+    .join("|");
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on a changed list
+  useEffect(() => setActiveIndex(-1), [optionsSignature]);
+  const optionId = (index: number) => `${listboxId}-option-${index}`;
 
   // --- What the picked person needs ---------------------------------------
 
@@ -340,10 +369,31 @@ function AddPeopleDialog({
     }
   };
 
-  const errorMessage = (error: unknown, fallbackKey: string) =>
-    error instanceof ProjectMemberError
+  const errorMessage = (
+    error: unknown,
+    fallbackKey: string,
+    { adding = false }: { adding?: boolean } = {},
+  ) => {
+    const code = readCode(error);
+    // In a workspace "add them to the project" makes no sense.
+    if (code === "ALREADY_WORKSPACE_MEMBER" && !isProject) {
+      return t("team:errors.alreadyMember");
+    }
+    // The add limit is not the invitation limit the shared mapper talks about.
+    if (code === "RATE_LIMITED" && adding) {
+      return t("people:errors.addRateLimited");
+    }
+    return error instanceof ProjectMemberError
       ? getProjectMemberErrorMessage(error, t, fallbackKey)
       : getWorkspaceMemberErrorMessage(error, t, fallbackKey);
+  };
+
+  // Why the directory search failed, in words: switched off, a guest account,
+  // too many searches, or an ordinary failure.
+  const searchErrorMessage = (error: unknown) =>
+    readCode(error) === "RATE_LIMITED"
+      ? t("people:errors.searchRateLimited")
+      : getProjectMemberErrorMessage(error, t, "people:add.searchError");
 
   const submitAdd = async (
     chosen: Extract<Selection, { kind: "candidate" | "directory" }>,
@@ -457,6 +507,7 @@ function AddPeopleDialog({
           selection.kind === "email"
             ? "people:add.inviteError"
             : "people:add.addError",
+          { adding: selection.kind !== "email" },
         ),
       );
     } finally {
@@ -501,13 +552,13 @@ function AddPeopleDialog({
   const showSearching =
     searchable && directoryPending && directorySuggestions.length === 0;
   const showNoMatches =
-    trimmed.length > 0 &&
+    searchable &&
     !hasOptions &&
     !directoryPending &&
     !(isProject && canAdd && candidatesLoading && candidates === undefined);
   const showTypeHint =
-    trimmed.length === 0 &&
-    candidateSuggestions.length === 0 &&
+    !searchable &&
+    !hasOptions &&
     !(isProject && canAdd && candidatesLoading && candidates === undefined);
 
   return (
@@ -547,7 +598,9 @@ function AddPeopleDialog({
                   <InfoIcon />
                   <AlertDescription className="space-y-2">
                     <p>
-                      {t("projectInvitations:errors.alreadyWorkspaceMember")}
+                      {isProject
+                        ? t("projectInvitations:errors.alreadyWorkspaceMember")
+                        : t("team:errors.alreadyMember")}
                     </p>
                     {existingMember ? (
                       <Button
@@ -616,18 +669,47 @@ function AddPeopleDialog({
                     <SearchIcon className="pointer-events-none absolute start-2.5 top-2.5 size-4 text-muted-foreground" />
                     <Input
                       id={searchId}
+                      role="combobox"
+                      aria-expanded={hasOptions}
+                      aria-controls={hasOptions ? listboxId : undefined}
+                      aria-autocomplete="list"
+                      aria-activedescendant={
+                        hasOptions && activeIndex >= 0
+                          ? optionId(activeIndex)
+                          : undefined
+                      }
                       value={query}
                       onChange={(event) => {
                         setQuery(event.target.value);
                         setAlreadyMemberEmail(null);
                       }}
                       onKeyDown={(event) => {
+                        if (
+                          event.key === "ArrowDown" ||
+                          event.key === "ArrowUp"
+                        ) {
+                          if (options.length === 0) return;
+                          event.preventDefault();
+                          const step = event.key === "ArrowDown" ? 1 : -1;
+                          setActiveIndex((current) =>
+                            current < 0
+                              ? step === 1
+                                ? 0
+                                : options.length - 1
+                              : (current + step + options.length) %
+                                options.length,
+                          );
+                          return;
+                        }
                         if (event.key !== "Enter") return;
-                        // Enter picks the first suggestion, never submits.
+                        // Enter picks the highlighted suggestion, else the
+                        // first one, and never submits. Only what is offered
+                        // for the text as it stands can be picked.
                         event.preventDefault();
                         if (!trimmed) return;
-                        const first = firstOption();
-                        if (first) pick(first);
+                        const chosen =
+                          options[activeIndex >= 0 ? activeIndex : 0];
+                        if (chosen) pick(chosen);
                       }}
                       placeholder={t("people:add.placeholder")}
                       autoComplete="off"
@@ -657,53 +739,86 @@ function AddPeopleDialog({
 
                   {mayUseDirectory && directory.isError && searchable ? (
                     <p className="text-sm text-destructive" role="alert">
-                      {t("people:add.searchError")}
+                      {searchErrorMessage(directory.error)}
                     </p>
                   ) : null}
 
                   {hasOptions ? (
                     <div
+                      id={listboxId}
                       role="listbox"
                       aria-label={t("people:add.suggestions")}
                       className="max-h-64 space-y-0.5 overflow-y-auto rounded-md border p-1"
                     >
                       {candidateSuggestions.length > 0 ? (
-                        <fieldset className="m-0 min-w-0 border-0 p-0">
-                          <legend className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                        // biome-ignore lint/a11y/useSemanticElements: a group of options inside a listbox cannot be a fieldset
+                        <div
+                          role="group"
+                          aria-label={t("people:add.groups.workspace")}
+                        >
+                          <p
+                            aria-hidden="true"
+                            className="px-2 py-1 text-xs font-medium text-muted-foreground"
+                          >
                             {t("people:add.groups.workspace")}
-                          </legend>
-                          {candidateSuggestions.map((person) => (
+                          </p>
+                          {candidateSuggestions.map((person, index) => (
                             <SuggestionOption
                               key={`c-${person.id}`}
+                              id={optionId(index)}
+                              active={activeIndex === index}
+                              onHover={() => setActiveIndex(index)}
                               person={person}
                               onPick={() => pick({ kind: "candidate", person })}
                             />
                           ))}
-                        </fieldset>
+                        </div>
                       ) : null}
                       {directorySuggestions.length > 0 ? (
-                        <fieldset className="m-0 min-w-0 border-0 p-0">
-                          <legend className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                        // biome-ignore lint/a11y/useSemanticElements: a group of options inside a listbox cannot be a fieldset
+                        <div
+                          role="group"
+                          aria-label={t("people:add.groups.directory")}
+                        >
+                          <p
+                            aria-hidden="true"
+                            className="px-2 py-1 text-xs font-medium text-muted-foreground"
+                          >
                             {t("people:add.groups.directory")}
-                          </legend>
-                          {directorySuggestions.map((person) => (
-                            <SuggestionOption
-                              key={`d-${person.id}`}
-                              person={person}
-                              onPick={() => pick({ kind: "directory", person })}
-                            />
-                          ))}
-                        </fieldset>
+                          </p>
+                          {directorySuggestions.map((person, index) => {
+                            const position =
+                              candidateSuggestions.length + index;
+                            return (
+                              <SuggestionOption
+                                key={`d-${person.id}`}
+                                id={optionId(position)}
+                                active={activeIndex === position}
+                                onHover={() => setActiveIndex(position)}
+                                person={person}
+                                onPick={() =>
+                                  pick({ kind: "directory", person })
+                                }
+                              />
+                            );
+                          })}
+                        </div>
                       ) : null}
                       {showInviteOption ? (
-                        <button
-                          type="button"
+                        <div
+                          id={optionId(options.length - 1)}
                           role="option"
-                          aria-selected={false}
+                          tabIndex={-1}
+                          aria-selected={activeIndex === options.length - 1}
+                          onMouseMove={() => setActiveIndex(options.length - 1)}
                           onClick={() =>
                             pick({ kind: "email", email: typedEmail })
                           }
-                          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                          onKeyDown={() => undefined}
+                          className={cn(
+                            "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
+                            activeIndex === options.length - 1 && "bg-accent",
+                          )}
                         >
                           <MailPlusIcon className="size-4 shrink-0 text-muted-foreground" />
                           <span className="min-w-0">
@@ -716,7 +831,7 @@ function AddPeopleDialog({
                               {t("people:add.inviteOptionHint")}
                             </span>
                           </span>
-                        </button>
+                        </div>
                       ) : null}
                     </div>
                   ) : null}
@@ -799,20 +914,30 @@ function AddPeopleDialog({
 }
 
 function SuggestionOption({
+  id,
+  active,
+  onHover,
   person,
   onPick,
 }: {
+  id: string;
+  active: boolean;
+  onHover: () => void;
   person: Person;
   onPick: () => void;
 }) {
   return (
-    <button
-      type="button"
+    <div
+      id={id}
       role="option"
-      aria-selected={false}
+      tabIndex={-1}
+      aria-selected={active}
+      onMouseMove={onHover}
       onClick={onPick}
+      onKeyDown={() => undefined}
       className={cn(
-        "flex w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
+        "flex w-full cursor-pointer rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
+        active && "bg-accent",
       )}
     >
       <PersonCell
@@ -821,7 +946,7 @@ function SuggestionOption({
         image={person.image}
         compact
       />
-    </button>
+    </div>
   );
 }
 

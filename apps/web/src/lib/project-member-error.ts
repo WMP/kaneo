@@ -96,6 +96,9 @@ const ERROR_KEYS_BY_CODE: Record<string, string> = {
   USER_NOT_FOUND: "people:errors.userNotFound",
   USER_CANNOT_BE_ADDED: "people:errors.userCannotBeAdded",
   USER_DIRECTORY_DISABLED: "people:errors.directoryDisabled",
+  GUEST_NOT_ALLOWED: "people:errors.guestNotAllowed",
+  WORKSPACE_MEMBER_LIMIT_REACHED: "people:errors.membershipLimitReached",
+  // Better Auth's own code, when accepting an invitation hits the same limit.
   ORGANIZATION_MEMBERSHIP_LIMIT_REACHED: "people:errors.membershipLimitReached",
 };
 

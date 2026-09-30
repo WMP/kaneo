@@ -73,7 +73,7 @@ export function getWorkspaceSettingsMenuItems({
     ...(billingEnabled
       ? [
           {
-            title: "Billing",
+            title: t("settings:workspaceBilling.title"),
             url: "/dashboard/settings/workspace/billing",
             icon: CreditCard,
           },

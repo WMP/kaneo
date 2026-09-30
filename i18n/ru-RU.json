@@ -1919,6 +1919,9 @@
 		},
 		"workspaceMembers": {
 			"title": "Members"
+		},
+		"workspaceBilling": {
+			"title": "Billing"
 		}
 	},
 	"navigation": {
@@ -3602,7 +3605,10 @@
 			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
 			"membershipLimitReached": "The workspace has reached its member limit.",
 			"userCannotBeAdded": "This account cannot be added.",
-			"userNotFound": "This account does not exist any more. Search again."
+			"userNotFound": "This account does not exist any more. Search again.",
+			"addRateLimited": "You added many people in a short time. Try again later.",
+			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",
+			"searchRateLimited": "Too many searches. Try again in a moment."
 		},
 		"invitations": {
 			"workspaceSubtitle": "People invited to this workspace who have not joined yet."

@@ -2537,6 +2537,9 @@
 		},
 		"workspaceMembers": {
 			"title": "Członkowie"
+		},
+		"workspaceBilling": {
+			"title": "Rozliczenia"
 		}
 	},
 	"tasks": {
@@ -3569,7 +3572,10 @@
 			"userNotFound": "To konto już nie istnieje. Wyszukaj ponownie.",
 			"userCannotBeAdded": "Tego konta nie można dodać.",
 			"directoryDisabled": "Wyszukiwanie wszystkich kont jest wyłączone na tym serwerze. Wpisz adres e-mail, aby zaprosić osobę.",
-			"membershipLimitReached": "Obszar roboczy osiągnął limit członków."
+			"membershipLimitReached": "Obszar roboczy osiągnął limit członków.",
+			"guestNotAllowed": "Konta gościa nie mogą szukać kont ani dodawać osób. Zaloguj się na pełne konto.",
+			"addRateLimited": "Dodano wiele osób w krótkim czasie. Spróbuj ponownie później.",
+			"searchRateLimited": "Zbyt wiele wyszukiwań. Spróbuj za chwilę."
 		}
 	}
 }

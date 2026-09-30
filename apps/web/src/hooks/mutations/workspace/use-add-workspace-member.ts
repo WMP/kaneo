@@ -13,6 +13,10 @@ function useAddWorkspaceMember() {
       });
       // The people lists, the pickers of the project views and the candidates
       // of every project (a new member can be added to one).
+      // The added person no longer belongs in the directory results.
+      void queryClient.invalidateQueries({
+        queryKey: ["workspace-user-directory"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["project-members"] });
       void queryClient.invalidateQueries({
         queryKey: ["project-member-candidates"],

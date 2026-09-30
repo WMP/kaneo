@@ -44,6 +44,8 @@ let directory: {
   data: Person[] | undefined;
   isFetching: boolean;
   isError: boolean;
+  isPlaceholderData?: boolean;
+  error?: unknown;
 };
 const useSearchUserDirectory = vi.fn(
   (_workspaceId: string | undefined, _query: string, _options: unknown) =>
@@ -457,7 +459,9 @@ describe("AddPeopleDialog in a workspace", () => {
     await type("a");
     // One character is too short for a search: nothing to pick.
     fireEvent.keyDown(await field(), { key: "Enter" });
-    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(
+      screen.queryByRole("combobox", { name: "people:add.workspaceRoleLabel" }),
+    ).toBeNull();
 
     await type("ad");
     fireEvent.keyDown(await field(), { key: "Enter" });
@@ -475,10 +479,14 @@ describe("AddPeopleDialog in a workspace", () => {
         "ROLE_EXCEEDS_YOUR_PERMISSIONS",
         "projectMembers:errors.roleExceedsYourPermissions",
       ],
+      // In a workspace "add them to the project" would make no sense.
+      ["ALREADY_WORKSPACE_MEMBER", "team:errors.alreadyMember"],
+      ["GUEST_NOT_ALLOWED", "people:errors.guestNotAllowed"],
       [
-        "ALREADY_WORKSPACE_MEMBER",
-        "projectInvitations:errors.alreadyWorkspaceMember",
+        "WORKSPACE_MEMBER_LIMIT_REACHED",
+        "people:errors.membershipLimitReached",
       ],
+      ["RATE_LIMITED", "people:errors.addRateLimited"],
       ["USER_NOT_FOUND", "people:errors.userNotFound"],
       ["USER_CANNOT_BE_ADDED", "people:errors.userCannotBeAdded"],
     ] as const) {
@@ -538,11 +546,7 @@ describe("AddPeopleDialog in a workspace", () => {
     fireEvent.click(await option(/people:add\.inviteOption/));
     fireEvent.click(submitButton("people:add.sendInvitation"));
 
-    expect(
-      await screen.findByText(
-        "projectInvitations:errors.alreadyWorkspaceMember",
-      ),
-    ).toBeVisible();
+    expect(await screen.findByText("team:errors.alreadyMember")).toBeVisible();
     expect(error).not.toHaveBeenCalled();
   });
 
@@ -575,6 +579,148 @@ describe("AddPeopleDialog in a workspace", () => {
     expect(useSearchUserDirectory).toHaveBeenLastCalledWith("workspace-1", "", {
       enabled: false,
     });
+  });
+});
+
+describe("AddPeopleDialog suggestions as a combobox", () => {
+  const input = () => screen.getByPlaceholderText("people:add.placeholder");
+
+  it("moves a highlight with the arrow keys, tells it with aria-activedescendant and picks it with Enter", async () => {
+    renderWorkspace();
+    await type("ar");
+    const first = await option(/Ada Lovelace/);
+    const second = screen.getByRole("option", { name: /Grace Hopper/ });
+
+    expect(input()).toHaveAttribute("role", "combobox");
+    expect(input()).toHaveAttribute("aria-expanded", "true");
+    expect(input()).toHaveAttribute(
+      "aria-controls",
+      screen.getByRole("listbox").id,
+    );
+    expect(input()).not.toHaveAttribute("aria-activedescendant");
+
+    fireEvent.keyDown(input(), { key: "ArrowDown" });
+    expect(input()).toHaveAttribute("aria-activedescendant", first.id);
+    expect(first).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(input(), { key: "ArrowDown" });
+    expect(input()).toHaveAttribute("aria-activedescendant", second.id);
+    expect(first).toHaveAttribute("aria-selected", "false");
+
+    // Wraps around in both directions.
+    fireEvent.keyDown(input(), { key: "ArrowDown" });
+    expect(input()).toHaveAttribute("aria-activedescendant", first.id);
+    fireEvent.keyDown(input(), { key: "ArrowUp" });
+    expect(input()).toHaveAttribute("aria-activedescendant", second.id);
+
+    fireEvent.keyDown(input(), { key: "Enter" });
+    expect(screen.getByText("Grace Hopper")).toBeVisible();
+    fireEvent.click(submitButton("people:add.add"));
+    await waitFor(() =>
+      expect(addWorkspaceMember).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "u-grace" }),
+      ),
+    );
+  });
+
+  it("has no active descendant and is collapsed without suggestions", async () => {
+    directory = { data: [], isFetching: false, isError: false };
+    renderWorkspace();
+    await type("zz");
+
+    expect(input()).toHaveAttribute("aria-expanded", "false");
+    expect(input()).not.toHaveAttribute("aria-controls");
+  });
+
+  it("offers nothing, and Enter picks nothing, while the directory answer is stale", async () => {
+    directory = {
+      data: [ada],
+      isFetching: true,
+      isError: false,
+      isPlaceholderData: true,
+    };
+    renderWorkspace();
+    await type("ad");
+
+    expect(screen.queryByRole("option")).toBeNull();
+    expect(screen.getByText("people:add.searching")).toBeVisible();
+    fireEvent.keyDown(input(), { key: "Enter" });
+    expect(
+      screen.queryByRole("combobox", { name: "people:add.workspaceRoleLabel" }),
+    ).toBeNull();
+
+    // The answer arrives: the same suggestions are offered.
+    directory = { data: [ada], isFetching: false, isError: false };
+    cleanup();
+    renderWorkspace();
+    await type("ad");
+    expect(await option(/Ada Lovelace/)).toBeVisible();
+  });
+
+  it("does not offer the previous query's answer while the new text is still being debounced", async () => {
+    renderWorkspace();
+    await type("ad");
+    expect(await option(/Ada Lovelace/)).toBeVisible();
+    // The hook is asked about the debounced text; here the text moved on and
+    // the answer is the placeholder of the previous one.
+    directory = {
+      data: [ada],
+      isFetching: false,
+      isError: false,
+      isPlaceholderData: true,
+    };
+    await type("ada l");
+    expect(screen.queryByRole("option", { name: /Ada Lovelace/ })).toBeNull();
+  });
+
+  it("says nobody matches only after two characters", async () => {
+    candidates = { data: [carol] };
+    directory = { data: [], isFetching: false, isError: false };
+    renderProject();
+
+    await type("q");
+    expect(screen.queryByText("people:add.noMatchesInvite")).toBeNull();
+    expect(screen.queryByText("people:add.noMatches")).toBeNull();
+    expect(screen.getByText("people:add.hintSearchOrInvite")).toBeVisible();
+
+    await type("qz");
+    expect(screen.getByText("people:add.noMatchesInvite")).toBeVisible();
+  });
+});
+
+describe("AddPeopleDialog directory errors", () => {
+  it.each([
+    ["USER_DIRECTORY_DISABLED", "people:errors.directoryDisabled"],
+    ["GUEST_NOT_ALLOWED", "people:errors.guestNotAllowed"],
+    ["RATE_LIMITED", "people:errors.searchRateLimited"],
+    [undefined, "people:add.searchError"],
+  ])("explains %s", async (code, message) => {
+    directory = {
+      data: undefined,
+      isFetching: false,
+      isError: true,
+      error: new ProjectMemberError("raw", { code, status: code ? 403 : 500 }),
+    };
+    renderWorkspace();
+    await type("ad");
+
+    expect(screen.getByRole("alert")).toHaveTextContent(message);
+  });
+
+  it("still offers the invitation after a refused search", async () => {
+    directory = {
+      data: undefined,
+      isFetching: false,
+      isError: true,
+      error: new ProjectMemberError("raw", {
+        code: "USER_DIRECTORY_DISABLED",
+        status: 403,
+      }),
+    };
+    renderWorkspace();
+    await type("new@example.com");
+
+    expect(await option(/people:add\.inviteOption/)).toBeVisible();
   });
 });
 

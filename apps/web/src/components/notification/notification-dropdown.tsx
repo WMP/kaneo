@@ -34,6 +34,7 @@ import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { cn } from "@/lib/cn";
 import { formatRelativeTime } from "@/lib/format";
 import { getStatusLabel } from "@/lib/i18n/domain";
+import { getWorkspaceRoleLabel } from "@/lib/workspace-role-label";
 import type { Notification } from "@/types/notification";
 
 export type NotificationDropdownRef = {
@@ -153,6 +154,8 @@ export function getNotificationContent(
       case "workspace_member_added":
         return t("notifications:events.workspace_member_added.content", {
           ...eventData,
+          // A built-in role has a translated name, a custom one its own.
+          role: getWorkspaceRoleLabel(String(eventData.role ?? ""), t),
           defaultValue: notification.content ?? "",
         });
       case "task_status_changed":

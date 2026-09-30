@@ -8,6 +8,7 @@ import AddPeopleDialog from "@/components/people/add-people-dialog";
 import WorkspacePendingInvitations from "@/components/people/workspace-pending-invitations";
 import WorkspacePeopleTable from "@/components/people/workspace-people-table";
 import { Button } from "@/components/ui/button";
+import useGetConfig from "@/hooks/queries/config/use-get-config";
 import useGetFullWorkspace from "@/hooks/queries/workspace/use-get-full-workspace";
 import useGetWorkspacePeople from "@/hooks/queries/workspace/use-get-workspace-people";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
@@ -31,6 +32,10 @@ function RouteComponent() {
     useWorkspacePermission();
   const canInvite = Boolean(canInviteUsers());
   const canAdd = Boolean(canAddMembers());
+  const { data: config } = useGetConfig();
+  // In a workspace an existing account is found through the user directory, so
+  // without it (switched off) adding has nothing to offer; inviting still does.
+  const canAddFromDirectory = canAdd && config?.userDirectoryEnabled === true;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const invitations = workspace?.invitations ?? [];
   const hasPendingInvitations = invitations.some(
@@ -47,7 +52,7 @@ function RouteComponent() {
       <WorkspaceLayout
         title={t("team:members.pageTitle")}
         headerActions={
-          canInvite || canAdd ? (
+          canInvite || canAddFromDirectory ? (
             <Button
               variant="outline"
               size="xs"

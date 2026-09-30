@@ -53,6 +53,11 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
+let config: { userDirectoryEnabled: boolean } | undefined;
+vi.mock("@/hooks/queries/config/use-get-config", () => ({
+  default: () => ({ data: config }),
+}));
+
 let workspaceData:
   | { invitations: { id: string; status: string }[] }
   | undefined;
@@ -100,6 +105,7 @@ vi.mock("@/components/people/add-people-dialog", () => ({
 const Page = (Route as unknown as { component: ComponentType }).component;
 
 beforeEach(() => {
+  config = { userDirectoryEnabled: true };
   workspaceData = { invitations: [] };
   peopleState = { data: [{ id: "u1" }, { id: "u2" }], isLoading: false };
   permissions = { invite: true, add: true, cancel: true };
@@ -137,6 +143,22 @@ describe("workspace members page", () => {
     render(<Page />);
     expect(screen.getByRole("button", { name: "Add people" })).toBeVisible();
     expect(dialogProps).toMatchObject({ canAdd: false, canInvite: true });
+  });
+
+  it("has no button for somebody who can only add while the user directory is off", () => {
+    config = { userDirectoryEnabled: false };
+    permissions = { invite: false, add: true, cancel: false };
+    render(<Page />);
+
+    expect(screen.queryByRole("button", { name: "Add people" })).toBeNull();
+  });
+
+  it("keeps the button for somebody who can invite while the user directory is off", () => {
+    config = { userDirectoryEnabled: false };
+    permissions = { invite: true, add: true, cancel: false };
+    render(<Page />);
+
+    expect(screen.getByRole("button", { name: "Add people" })).toBeVisible();
   });
 
   it("has no button for somebody who can neither add nor invite", () => {
