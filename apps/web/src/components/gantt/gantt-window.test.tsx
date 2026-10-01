@@ -215,6 +215,29 @@ describe("Gantt window UI", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("disables the period start field with a hint when every task fits in one period", () => {
+    m.tasks = [task("Short", "2026-09-14", "2026-09-18")];
+    show();
+    const field = screen.getByLabelText("tasks:gantt.periodStart");
+    expect(field).toBeDisabled();
+    expect(field).toHaveAccessibleDescription("tasks:gantt.periodStartLocked");
+    expect(
+      screen.getByRole("button", { name: "tasks:gantt.previousPeriod" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "tasks:gantt.nextPeriod" }),
+    ).toBeDisabled();
+  });
+
+  it("keeps the period start field editable when the project spans several periods", () => {
+    m.tasks = [task("Long", "2025-01-01", "2027-12-31")];
+    show();
+    const field = screen.getByLabelText("tasks:gantt.periodStart");
+    expect(field).not.toBeDisabled();
+    expect(field).toHaveAttribute("min");
+    expect(field).toHaveAttribute("max");
+  });
+
   it("shades the completed portion of a task bar according to its progress", () => {
     m.tasks = [task("Partial", "2026-09-14", "2026-09-18", { progress: 40 })];
     const { container } = show();

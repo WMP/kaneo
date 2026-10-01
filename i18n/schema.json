@@ -9726,6 +9726,9 @@
 						"periodStart": {
 							"type": "string"
 						},
+						"periodStartLocked": {
+							"type": "string"
+						},
 						"showTaskDates": {
 							"type": "string"
 						},
@@ -9797,6 +9800,7 @@
 						"previousPeriod",
 						"nextPeriod",
 						"periodStart",
+						"periodStartLocked",
 						"showTaskDates",
 						"legendBlocking",
 						"legendRelated",

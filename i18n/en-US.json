@@ -2727,6 +2727,7 @@
 			"previousPeriod": "Previous period",
 			"nextPeriod": "Next period",
 			"periodStart": "Timeline start date",
+			"periodStartLocked": "All tasks fit in one period, so the start date cannot be moved",
 			"showTaskDates": "Show task dates",
 			"legendBlocking": "Blocking",
 			"legendRelated": "Related",

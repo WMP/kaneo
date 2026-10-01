@@ -394,6 +394,17 @@ export function buildGanttRange(
   };
 }
 
+// Whether the window's start can be moved at all. When every task fits in a
+// single window the paging bounds collapse (`minimumStart` equals
+// `maximumStart`), so a date input bounded by them would look editable while
+// refusing every change; callers disable the control instead.
+export function canMoveGanttWindowStart(range: {
+  minimumStart: Date;
+  maximumStart: Date;
+}): boolean {
+  return range.minimumStart.getTime() < range.maximumStart.getTime();
+}
+
 // The width-dependent half of the timeline: cheap to recompute (a string
 // template and a multiplication), unlike the day range above, so this is
 // fine to re-derive on every zoom step.

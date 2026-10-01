@@ -2720,6 +2720,7 @@
 			"previousPeriod": "Periodo precedente",
 			"nextPeriod": "Periodo successivo",
 			"periodStart": "Data di inizio della timeline",
+			"periodStartLocked": "Tutte le attività rientrano in un solo periodo, quindi la data di inizio non può essere spostata",
 			"showTaskDates": "Mostra le date delle attività",
 			"legendBlocking": "Bloccante",
 			"legendRelated": "Correlata",

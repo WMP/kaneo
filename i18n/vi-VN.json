@@ -2706,6 +2706,7 @@
 			"previousPeriod": "Kỳ trước",
 			"nextPeriod": "Kỳ sau",
 			"periodStart": "Ngày bắt đầu dòng thời gian",
+			"periodStartLocked": "Tất cả công việc nằm gọn trong một giai đoạn nên không thể dời ngày bắt đầu",
 			"showTaskDates": "Hiển thị ngày của công việc",
 			"legendBlocking": "Chặn",
 			"legendRelated": "Liên quan",

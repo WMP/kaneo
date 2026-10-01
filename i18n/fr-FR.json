@@ -2720,6 +2720,7 @@
 			"previousPeriod": "Période précédente",
 			"nextPeriod": "Période suivante",
 			"periodStart": "Date de début de la chronologie",
+			"periodStartLocked": "Toutes les tâches tiennent dans une seule période, la date de début ne peut donc pas être déplacée",
 			"showTaskDates": "Afficher les dates des tâches",
 			"legendBlocking": "Bloquant",
 			"legendRelated": "Lié",

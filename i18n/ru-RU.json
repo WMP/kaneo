@@ -2743,6 +2743,7 @@
 			"previousPeriod": "Предыдущий период",
 			"nextPeriod": "Следующий период",
 			"periodStart": "Дата начала шкалы",
+			"periodStartLocked": "Все задачи помещаются в один период, поэтому дату начала нельзя изменить",
 			"showTaskDates": "Показывать даты задач",
 			"legendBlocking": "Блокирует",
 			"legendRelated": "Связано",

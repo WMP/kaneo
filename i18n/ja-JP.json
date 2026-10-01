@@ -2719,6 +2719,7 @@
 			"previousPeriod": "前の期間",
 			"nextPeriod": "次の期間",
 			"periodStart": "タイムラインの開始日",
+			"periodStartLocked": "すべてのタスクが1つの期間に収まるため、開始日は変更できません",
 			"showTaskDates": "タスクの日付を表示",
 			"legendBlocking": "ブロック中",
 			"legendRelated": "関連",

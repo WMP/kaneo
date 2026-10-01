@@ -2709,6 +2709,7 @@
 			"previousPeriod": "Periodo anterior",
 			"nextPeriod": "Periodo siguiente",
 			"periodStart": "Fecha de inicio de la línea de tiempo",
+			"periodStartLocked": "Todas las tareas caben en un solo periodo, por lo que la fecha de inicio no se puede mover",
 			"showTaskDates": "Mostrar fechas de las tareas",
 			"legendBlocking": "Bloqueante",
 			"legendRelated": "Relacionada",

@@ -2702,6 +2702,7 @@
 			"previousPeriod": "Vorige periode",
 			"nextPeriod": "Volgende periode",
 			"periodStart": "Startdatum van tijdlijn",
+			"periodStartLocked": "Alle taken passen in één periode, dus de startdatum kan niet worden verschoven",
 			"showTaskDates": "Taakdatums tonen",
 			"legendBlocking": "Blokkerend",
 			"legendRelated": "Gerelateerd",

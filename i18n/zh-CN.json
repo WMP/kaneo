@@ -2719,6 +2719,7 @@
 			"previousPeriod": "上一时段",
 			"nextPeriod": "下一时段",
 			"periodStart": "时间线开始日期",
+			"periodStartLocked": "所有任务都在同一时间段内，因此无法移动开始日期",
 			"showTaskDates": "显示任务日期",
 			"legendBlocking": "阻塞",
 			"legendRelated": "相关",
