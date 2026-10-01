@@ -37,7 +37,7 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 - Root and package `lint` scripts use Biome `--write` and can change unrelated files. Prefer a targeted read-only check while iterating; inspect any formatter diff.
 - Do not commit, push or open a pull request unless explicitly requested.
 
-Run the smallest meaningful checks during implementation, then the affected package gates before a requested PR. Report the behavior changed, checks actually run, checks not run, and known limitations. Do not claim a behavior is protected by CI without identifying the job and its test. When you implement or fix behavior, refactor risky code, or write or review tests, follow the [reliable-tests skill](.claude/skills/reliable-tests/SKILL.md).
+Run the smallest meaningful checks during implementation, then the affected package gates before a requested PR. Report the behavior changed, checks actually run, checks not run, and known limitations. Do not claim a behavior is protected by CI without identifying the job and its test. When you implement or fix behavior, refactor risky code, or write or review tests, follow the [reliable-tests skill](.claude/skills/reliable-tests/SKILL.md). After a behavior change, have its tests written or reviewed with that skill before you report the work as done, also when you already wrote tests; in Claude Code, delegate this to the [test-author agent](.claude/agents/test-author.md).
 
 When opening a requested PR, name the affected IDs from the invariant index and their current statuses in the PR description, or say `None` if none applies. Do not mark a gap as enforced merely because this PR updates a document.
 

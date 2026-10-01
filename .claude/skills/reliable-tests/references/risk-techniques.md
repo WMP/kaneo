@@ -110,6 +110,21 @@ node .claude/skills/reliable-tests/scripts/mutation-probe.mjs --mutants <mutants
 - Read the evidence lines of each `KILLED` mutant: the failing test must be the one that covers the changed behavior.
 - A timeout stops only the direct child process; check for left-over test processes after a timeout. The default timeout is 600 s (`--timeout` changes it).
 
+### Revert check for tests written after the implementation
+
+`--revert <base>` adds one more run: the changed production files go back to their version at `<base>` (the commit before the change), and the test files keep their current version. Production files are the paths that `.claude/skills/reliable-tests/scripts/change-scope.mjs` classifies as production: source files under `apps/api/src`, `apps/web/src` and `packages/*/src`, and migrations in `apps/api/drizzle/`. `--revert-path <path>` (repeatable) limits the revert to the given files. You can give `--mutants` in the same run.
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/kaneo_revert_test \
+  node .claude/skills/reliable-tests/scripts/mutation-probe.mjs --revert origin/main \
+  --setup "pnpm exec turbo run build --filter=@kaneo/api^..." \
+  -- pnpm --filter @kaneo/api exec vitest run --config vitest.integration.config.ts ../../tests/api-integration/<file>
+```
+
+- `KILLED`: the new tests fail on the old code, so they detect the change. Read the evidence lines: the failure must be the asserted behavior, not a missing export, a module that the old version does not have, or a load error.
+- `SURVIVED`: the new tests also pass on the old code. They do not test the change, or the change has no effect that this test level can see.
+- A change in `packages/permissions` or `packages/email` needs the build inside the test command (see above). Otherwise the tests use the `dist/` that `--setup` built from the new code, and the revert has no effect.
+
 ## Coverage and performance
 
 - Coverage: `pnpm --filter @kaneo/api test:coverage` runs the API unit tests with the v8 provider and writes `apps/api/coverage`. Use it to find branches in the changed code that no test executes. Other packages have no coverage setup. Do not add thresholds.

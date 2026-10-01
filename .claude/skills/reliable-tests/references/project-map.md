@@ -62,6 +62,16 @@ Measured on 4 CPUs at `626f426`: API unit 123 files in about 22 s, web 185 files
 - Time zone as an explicit parameter: `tests/api/calendar-feed/ical.test.ts`. Date-only reminders at several offsets with `vi.useFakeTimers({ toFake: ["Date"] })`: `tests/api-integration/date-only-reminders.test.ts`.
 - External HTTP without the Internet: `vi.stubGlobal("fetch", ...)`, or a local `node:http` server as in `tests/api/utils/outbound-request.test.ts`.
 
+## Agent automation in Claude Code
+
+- `.claude/agents/test-author.md`: a subagent that writes the tests for a change that is already implemented, in a fresh context with this skill preloaded (`effort: medium`). Without a `model` field, Claude Code uses the `CLAUDE_CODE_SUBAGENT_MODEL` environment variable, else the model of the main conversation.
+- `.claude/settings.json` registers a Stop hook, `.claude/skills/reliable-tests/scripts/require-tests-hook.mjs`. It asks the main agent once per turn to have the tests written or reviewed with this skill, preferably by `test-author`, when:
+  - the branch (merge base with `origin/main`, else `main`, plus uncommitted and untracked files) changes production files (`.claude/skills/reliable-tests/scripts/change-scope.mjs`);
+  - at least one of them changed during this session, judged by the file modification time against the first transcript entry (without a transcript time, every production change of the branch counts);
+  - and it changed after the last use of this skill or `test-author` in the transcript, or the session has no such use.
+- Tests that the implementing agent wrote alone do not satisfy the hook. It fails open on errors. It does not see a deleted file or the quality of the tests. `KANEO_REQUIRE_TESTS=off` in the environment of Claude Code turns it off. Self-tests: `node --test .claude/skills/reliable-tests/scripts/require-tests-hook.test.mjs`.
+- Project hooks run only after the user trusts the workspace. Other agent tools read `AGENTS.md` but do not run the hook or the subagent.
+
 ## What CI enforces
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`, and Nightly reuses it. Jobs: `lint` (`biome ci .`), `i18n` (`pnpm i18n:check`), `openapi` (`pnpm openapi:check`), `typecheck`, `unit` (the guards and `pnpm test`), `build`, `integration` (PostgreSQL 16), `storage` (MinIO), `docker-build` (browser, realtime with and without Redis, upgrade from the latest upstream release), `split-images`, `workflows` (actionlint, shellcheck, zizmor), `secret-scan` and `peekareq-tests`. Local results cannot show that these jobs passed for a commit. `main` is a protected branch; which checks are required is not visible from the repository.

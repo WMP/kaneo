@@ -3,8 +3,18 @@
 //
 // Usage:
 //   node .claude/skills/reliable-tests/scripts/mutation-probe.mjs \
-//     --mutants <mutants.json> [--setup "<shell command>"] [--timeout <seconds>] \
-//     [--no-install] [--keep] [--json <out.json>] -- <test command> [args...]
+//     [--mutants <mutants.json>] [--revert <ref> [--revert-path <path>]...] \
+//     [--setup "<shell command>"] [--timeout <seconds>] [--no-install] [--keep] \
+//     [--json <out.json>] -- <test command> [args...]
+//
+// At least one of --mutants and --revert is required. With --revert <ref> the
+// probe also runs the tests once with the changed production files restored to
+// <ref> (the state before the change); test files keep their current version.
+// A test that detects the change fails on that old state (KILLED). The files are
+// every production path or derived file (generated route tree, .d.ts, migration
+// metadata; see isRevertPath in change-scope.mjs) that differs between <ref> and
+// the probed state, or exactly the --revert-path paths. A path that does not
+// exist at <ref> is deleted for the run. The revert result comes first.
 //
 // The caller's state (HEAD plus uncommitted tracked changes, via
 // `git stash create`) is checked out in a temporary detached worktree and the
@@ -16,21 +26,25 @@
 // setup or runtime error, or timeout; not evidence of detection), INVALID
 // (the mutant could not be applied).
 //
-// Exit codes: 0 every mutant KILLED; 1 any mutant SURVIVED, ERROR or INVALID;
+// Exit codes: 0 every mutant and the revert result KILLED; 1 any entry SURVIVED, ERROR or INVALID;
 // 2 usage error, failed install or setup, red baseline or failed revert.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { isRevertPath, resolveBase } from "./change-scope.mjs";
 
 const USAGE =
-  'Usage: mutation-probe.mjs --mutants <mutants.json> [--setup "<cmd>"] [--timeout <s>] [--no-install] [--keep] [--json <out.json>] -- <test command> [args...]';
+  'Usage: mutation-probe.mjs [--mutants <mutants.json>] [--revert <ref> [--revert-path <path>]...] [--setup "<cmd>"] [--timeout <s>] [--no-install] [--keep] [--json <out.json>] -- <test command> [args...]  (at least one of --mutants and --revert)';
 const NODE_TEST_NOTE =
   "check the cause: node:test also counts a file that fails to load as a failed test";
 const FOOTER =
   "Inspect every KILLED result: the failure must come from the behavior the mutant changed. Classify every SURVIVED mutant as a real gap, an equivalent mutant, behavior outside the contract, or a tool problem.";
+const REVERT_FOOTER =
+  "A KILLED revert result means that the tests fail on the old code; check that the failure is the asserted behavior, not a missing export or a load error.";
 const MAX_BUFFER = 512 * 1024 * 1024;
+const MAX_DESCRIBED = 5;
 
 class ProbeError extends Error {
   constructor(message, code = 2) {
@@ -44,6 +58,8 @@ export function parseArgs(argv) {
   const head = sep === -1 ? argv : argv.slice(0, sep);
   const opts = {
     mutants: null,
+    revert: null,
+    revertPaths: [],
     setup: null,
     timeout: 600,
     install: true,
@@ -61,6 +77,8 @@ export function parseArgs(argv) {
   for (; i < head.length; i += 1) {
     const flag = head[i];
     if (flag === "--mutants") opts.mutants = value(flag);
+    else if (flag === "--revert") opts.revert = value(flag);
+    else if (flag === "--revert-path") opts.revertPaths.push(value(flag));
     else if (flag === "--setup") opts.setup = value(flag);
     else if (flag === "--json") opts.json = value(flag);
     else if (flag === "--timeout") opts.timeout = Number(value(flag));
@@ -68,8 +86,12 @@ export function parseArgs(argv) {
     else if (flag === "--keep") opts.keep = true;
     else throw new ProbeError(`Unknown option ${flag}\n${USAGE}`);
   }
-  if (!opts.mutants || opts.command.length === 0)
-    throw new ProbeError(`--mutants and a test command are required\n${USAGE}`);
+  if (opts.revertPaths.length > 0 && !opts.revert)
+    throw new ProbeError(`--revert-path needs --revert\n${USAGE}`);
+  if ((!opts.mutants && !opts.revert) || opts.command.length === 0)
+    throw new ProbeError(
+      `At least one of --mutants and --revert, and a test command are required\n${USAGE}`,
+    );
   if (!(opts.timeout > 0))
     throw new ProbeError(`--timeout must be a positive number\n${USAGE}`);
   return opts;
@@ -118,6 +140,13 @@ function git(args, cwd) {
   const r = tryGit(args, cwd);
   if (r.status !== 0)
     throw new ProbeError(`git ${args.join(" ")} failed: ${r.stderr.trim()}`);
+  return r.stdout;
+}
+
+function gitBuffer(args, cwd) {
+  const r = spawnSync("git", args, { cwd, maxBuffer: MAX_BUFFER });
+  if (r.status !== 0)
+    throw new ProbeError(`git ${args.join(" ")} failed: ${r.stderr}`.trim());
   return r.stdout;
 }
 
@@ -256,7 +285,7 @@ function copyUntracked(root, wt) {
       verbatimSymlinks: true,
     });
   }
-  return files.length;
+  return files;
 }
 
 function installDependencies(wt) {
@@ -298,6 +327,107 @@ function cleanup(state) {
   tryGit(["worktree", "prune"], state.root);
 }
 
+function resolveRevertBase(root, ref) {
+  try {
+    return resolveBase(root, ref);
+  } catch (error) {
+    throw new ProbeError(error.message);
+  }
+}
+
+function checkRevertPath(file) {
+  const rel = path.posix.normalize(file.split(path.sep).join("/"));
+  if (path.isAbsolute(file) || rel === "." || rel === ".." || rel.startsWith("../"))
+    throw new ProbeError(`--revert-path must be inside the repository: ${file}`);
+  return rel;
+}
+
+function changedProduction(root, ref, snapshot, untracked) {
+  const out = git(["diff", "--name-status", "--no-renames", "-z", ref, snapshot], root);
+  const parts = out.split("\0");
+  const files = [];
+  for (let i = 0; i + 1 < parts.length; i += 2) files.push(parts[i + 1]);
+  return [...new Set([...files, ...untracked])].filter(isRevertPath);
+}
+
+function readState(target) {
+  try {
+    return { content: fs.readFileSync(target), mode: fs.statSync(target).mode };
+  } catch {
+    return null;
+  }
+}
+
+function writeState(target, state) {
+  if (!state) return fs.rmSync(target, { force: true });
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, state.content);
+  fs.chmodSync(target, state.mode);
+}
+
+function existsAt(root, ref, file) {
+  return tryGit(["cat-file", "-e", `${ref}:${file}`], root).status === 0;
+}
+
+function applyRevert(root, ref, wt, files) {
+  const saved = files.map((file) => [file, readState(path.join(wt, file))]);
+  const restore = () => {
+    for (const [file, state] of saved) writeState(path.join(wt, file), state);
+  };
+  try {
+    for (const file of files) {
+      const target = path.join(wt, file);
+      if (!existsAt(root, ref, file)) fs.rmSync(target, { force: true });
+      else {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, gitBuffer(["show", `${ref}:${file}`], root));
+      }
+    }
+  } catch (error) {
+    restore();
+    throw error;
+  }
+  return restore;
+}
+
+function describeRevert(files, short) {
+  const listed = files.slice(0, MAX_DESCRIBED).join(", ");
+  const more = files.length > MAX_DESCRIBED ? `, ... and ${files.length - MAX_DESCRIBED} more` : "";
+  const noun = files.length === 1 ? "file" : "files";
+  return `revert ${files.length} production ${noun} to ${short}: ${listed}${more}`;
+}
+
+function probeRevert(opts, wt, ctx) {
+  const short = ctx.revertBase.slice(0, 7);
+  const result = {
+    id: `revert-to-${short}`,
+    status: "INVALID",
+    description: "",
+    evidence: [],
+    notes: [],
+  };
+  if (ctx.files.length === 0) {
+    result.description = `revert production files to ${short}`;
+    result.evidence = [`no production file differs from ${short}`];
+    return result;
+  }
+  result.description = describeRevert(ctx.files, short);
+  const restore = applyRevert(ctx.root, ctx.revertBase, wt, ctx.files);
+  let run;
+  try {
+    run = runTests(opts.command, wt, opts.timeout);
+  } finally {
+    restore();
+  }
+  assertClean(wt, result.id);
+  result.status = classify(run);
+  if (result.status === "SURVIVED") return result;
+  result.evidence = evidence(run.output);
+  if (run.timedOut) result.evidence.unshift(`timed out after ${opts.timeout} s`);
+  result.notes = notesFor(run.output);
+  return result;
+}
+
 function renderReport(info, results) {
   const lines = [
     "Mutation probe report",
@@ -305,6 +435,7 @@ function renderReport(info, results) {
     `  HEAD SHA: ${info.head}`,
     `  uncommitted changes included: ${info.dirty ? "yes" : "no"}`,
     `  untracked files copied: ${info.untracked}`,
+    ...(info.revertBase ? [`  revert base: ${info.revertBase}`] : []),
     `  test command: ${info.command.join(" ")}`,
     `  baseline: ${info.baseline}`,
     "",
@@ -316,12 +447,17 @@ function renderReport(info, results) {
     lines.push("");
   }
   lines.push(FOOTER);
+  if (info.revertBase) lines.push(REVERT_FOOTER);
   return lines;
 }
 
 function execute(opts, state) {
-  const mutants = loadMutants(opts.mutants);
+  const mutants = opts.mutants ? loadMutants(opts.mutants) : [];
+  const revertPaths = opts.revertPaths.map(checkRevertPath);
   state.root = git(["rev-parse", "--show-toplevel"], process.cwd()).trim();
+  const revertBase = opts.revert
+    ? resolveRevertBase(state.root, opts.revert)
+    : null;
   const stash = git(["stash", "create"], state.root).trim();
   const head = git(["rev-parse", "HEAD"], state.root).trim();
   const snapshot = stash || head;
@@ -329,18 +465,27 @@ function execute(opts, state) {
   const wt = path.join(state.parent, "wt");
   git(["worktree", "add", "--detach", "--quiet", wt, snapshot], state.root);
   state.wt = wt;
-  const untracked = copyUntracked(state.root, wt);
+  const copied = copyUntracked(state.root, wt);
   if (opts.install) installDependencies(wt);
   if (opts.setup) runSetup(opts.setup, wt);
   const base = runTests(opts.command, wt, opts.timeout);
   if (base.status !== 0 || base.timedOut)
     throw new ProbeError(`BASELINE NOT GREEN\n${tail(base.output, 30)}`);
-  const results = mutants.map((m) => probeOne(m, opts, wt));
+  const results = [];
+  if (revertBase) {
+    const files =
+      revertPaths.length > 0
+        ? [...new Set(revertPaths)]
+        : changedProduction(state.root, revertBase, snapshot, copied);
+    results.push(probeRevert(opts, wt, { root: state.root, revertBase, files }));
+  }
+  for (const m of mutants) results.push(probeOne(m, opts, wt));
   const info = {
     snapshot,
     head,
     dirty: Boolean(stash),
-    untracked,
+    untracked: copied.length,
+    ...(revertBase ? { revertBase } : {}),
     command: opts.command,
     baseline: "green (exit 0)",
   };

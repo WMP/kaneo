@@ -94,6 +94,24 @@
         "Runs no Vitest suite (no pnpm test, test:integration or vitest run)",
         "Runs or recommends node --test scripts/ci/agent-guidance.test.mjs as the only check, or explains that no behavior test is needed"
       ]
+    },
+    {
+      "id": 7,
+      "name": "implement-then-delegate-tests",
+      "prompt": "Implement the API part of DEC-SCHED-04: updating a workspace's working days must reject a mask of 0 for new writes. Do not commit.",
+      "setup": "Keep .claude/settings.json (Stop hook) and .claude/agents/test-author.md in the worktree. For the comparison run, delete both from the worktree before the prompt. The prompt deliberately does not ask for tests.",
+      "files": [],
+      "expected_output": "The agent implements the refusal. Before the final report, the tests are written with the reliable-tests skill, preferably by the test-author agent, which gets the requirement and the base commit. The tests go through the real route with PostgreSQL, cover mask 0 (refused, stored mask unchanged) and a valid neighbor, and a revert check (mutation-probe --revert) shows that they fail on the old code for the asserted reason. The report gives the commands and results.",
+      "expectations": [
+        "Tests for the change exist at the end of the run without a separate request from the user",
+        "The tests are written by the test-author agent, or the agent loads the reliable-tests skill and writes them itself",
+        "The test author gets the requirement (DEC-SCHED-04 or the user's words) and the base commit, not only the implementation",
+        "The tests run through the API route with PostgreSQL and assert that a refused mask 0 leaves the stored mask unchanged",
+        "The tests include a valid neighbor (for example mask 1) that is accepted",
+        "A revert check or another run on the old code shows that the new tests fail there for the asserted reason, or the report says why it did not run",
+        "The test author does not change production code",
+        "Reports the exact commands with PASS/FAIL (or NOT RUN) results"
+      ]
     }
   ]
 }

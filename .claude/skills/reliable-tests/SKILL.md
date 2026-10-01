@@ -52,11 +52,22 @@ Each row names a concrete defect: "`>` changed to `>=`", "project filter removed
 4. **Prove detection.**
    - Bug fix: run the new regression test on the defective code and see it fail; fix the code and see it pass. If you cannot run the defective version, say so and use a targeted mutation.
    - New feature: a test that fails because the feature does not exist yet is a normal TDD step. It does not prove that the assertions are strong. For important rules, run targeted mutations after the implementation.
+   - Tests written after the implementation: see the next section.
    - Read every failure. It must come from the asserted behavior: expected value against received value, or the specified status and error `code`. An import error, an unbuilt workspace package, a missing database, a syntax error or a timeout proves nothing.
 5. **Implement**, or complete the implementation.
 6. **Run** the focused tests, then the tests of the code that depends on the change, then the gates that `docs/agent-guide/verification.md` requires. Check the counts ("Trust the run, not the summary"). Vitest is installed per package, so `npx vitest` from the repository root fails; use the package form, for example `pnpm --filter @kaneo/api exec vitest run --config vitest.config.ts ../../tests/api/<file>` (more in the project map).
 7. **Review the test changes** as carefully as production code. Run `node .claude/skills/reliable-tests/scripts/test-change-audit.mjs` and give a reason for each signal. For high risk, use a fresh-context reviewer.
 8. **Report** with the template at the end of this file.
+
+## Tests after an implementation
+
+When the behavior is already implemented, by you or by another agent, the new code is the thing under test. It is not the source of the expected values.
+
+- In Claude Code, delegate the tests to the [test-author agent](../../agents/test-author.md), also when you already wrote some: it reviews them against the requirement. It starts in a fresh context with this skill. Give it the requirement in the user's words, the base commit and the changed files, not your explanation of the code. Without subagents, do the same steps yourself and say so in the report.
+- Write the behavior map from the requirement and the contracts before you read the new code in detail.
+- Prove detection on the old code: `mutation-probe.mjs --revert <base>` runs the new tests with the changed production files restored to the base commit (usage in [references/risk-techniques.md](references/risk-techniques.md)). The result must be KILLED, and the failure must be the asserted behavior. A missing export or a load error is not detection. Add targeted mutants for the rules inside the change.
+- A new test that fails on the new code is a finding. Report it with the output; do not change the test to match the code.
+- In Claude Code, a project Stop hook (`.claude/skills/reliable-tests/scripts/require-tests-hook.mjs`) reminds the main agent once per turn when the session changed production code after the last use of this skill or the test-author agent. A test that the implementing agent wrote alone does not satisfy it. It is a reminder, not enforcement.
 
 ## Negative and boundary cases
 
@@ -123,7 +134,7 @@ Do not run the full suite after every edit, and do not use every technique for a
 
 ## Instructions are not enforcement
 
-This skill guides agents. CI, permissions and human review protect the criteria. The project map lists what CI enforces and the known gaps, for example: nothing in CI rejects a new `.skip`, `.todo` or `skipIf`; there is no CODEOWNERS file; CI runs only in UTC (no job sets `TZ`). Do not present `AGENTS.md`, this skill or a second agent as a security boundary. Do not change CI or branch protection as part of a test task unless the user asks for it.
+This skill guides agents. CI, permissions and human review protect the criteria. The project map lists what CI enforces and the known gaps, for example: nothing in CI rejects a new `.skip`, `.todo` or `skipIf`; there is no CODEOWNERS file; CI runs only in UTC (no job sets `TZ`). The Stop hook only reminds: it does not check test quality, an agent can continue without tests after the reminder, and other agent tools do not run it. Do not present `AGENTS.md`, this skill, the hook or a second agent as a security boundary. Do not change CI or branch protection as part of a test task unless the user asks for it.
 
 ## Report
 

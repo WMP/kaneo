@@ -16,8 +16,11 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const auditScript = path.join(here, "test-change-audit.mjs");
 const probeScript = path.join(here, "mutation-probe.mjs");
+// NODE_TEST_CONTEXT would make a nested `node --test` run as a plain script.
 const env = Object.fromEntries(
-  Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+  Object.entries(process.env).filter(
+    ([key]) => !key.startsWith("GIT_") && key !== "NODE_TEST_CONTEXT",
+  ),
 );
 
 const git = (cwd, ...args) =>
@@ -270,4 +273,203 @@ test("probe: rejects escaping paths and bad usage", (t) => {
   assert.equal(r.results.up.status, "INVALID", r.out);
   assert.equal(r.results.abs.status, "INVALID");
   assert.equal(runScript(probeScript, [], repo).status, 2);
+});
+
+// ---- probe: --revert ------------------------------------------------------
+
+const AGE = "packages/demo/src/age.mjs";
+const OTHER = "packages/demo/src/other.mjs";
+const ageOld = "export const isAdult = (age) => age > 18;\n";
+const ageNew = "export const isAdult = (age) => age >= 18;\n";
+const otherOld = "export const name = () => 'old';\n";
+const otherNew = "export const name = () => 'new';\n";
+const ageTest = (assertion) => `import assert from "node:assert/strict";
+import test from "node:test";
+import { isAdult } from "./age.mjs";
+
+test("isAdult", () => {
+  assert.equal(${assertion}, true);
+});
+`;
+const demoCommand = ["node", "--test", "packages/demo/src/*.test.mjs"];
+const demoBase = { [AGE]: ageOld, [OTHER]: otherOld, "README.md": "# demo\n" };
+
+// A repository whose base commit holds the old production code, plus the sha.
+function makeDemo(t, files = demoBase) {
+  const repo = makeRepo(t, files);
+  return { repo, base: git(repo, "rev-parse", "HEAD").trim() };
+}
+
+function commitAll(repo, message) {
+  git(repo, "add", "-A");
+  git(repo, "commit", "-q", "-m", message);
+}
+
+function revertProbe(t, repo, args, command = demoCommand) {
+  const jsonFile = path.join(tempDir(t, "reliable-tests-out-"), "out.json");
+  const full = ["--no-install", "--json", jsonFile, ...args, "--", ...command];
+  const r = runScript(probeScript, full, repo);
+  let data = {};
+  try {
+    data = JSON.parse(readFileSync(jsonFile, "utf8"));
+  } catch {}
+  return { ...r, data, entry: data.results?.[0] };
+}
+
+test("revert: a committed test that detects the change is KILLED", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  commitAll(repo, "change");
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.equal(r.status, 0, r.out);
+  assert.equal(r.entry.status, "KILLED");
+  assert.equal(r.entry.id, `revert-to-${base.slice(0, 7)}`);
+  assert.equal(r.data.revertBase, base);
+  assert.match(r.out, new RegExp(`revert base: ${base}`));
+  assert.match(r.out, /A KILLED revert result means that the tests fail on the old code/);
+});
+
+test("revert: an untracked test and an uncommitted change are KILLED", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.equal(r.status, 0, r.out);
+  assert.equal(r.entry.status, "KILLED");
+  assert.match(r.entry.description, /revert 1 production file to [0-9a-f]{7}: packages\/demo\/src\/age\.mjs/);
+});
+
+test("revert: a test that does not detect the change SURVIVED", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(30)"));
+  commitAll(repo, "change");
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.equal(r.status, 1, r.out);
+  assert.equal(r.entry.status, "SURVIVED");
+});
+
+test("revert: a new production module is deleted and is not a clean detection", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, "packages/demo/src/extra.mjs", "export const extra = () => 1;\n");
+  write(
+    repo,
+    "packages/demo/src/extra.test.mjs",
+    `import assert from "node:assert/strict";
+import test from "node:test";
+import { extra } from "./extra.mjs";
+
+test("extra", () => {
+  assert.equal(extra(), 1);
+});
+`,
+  );
+  commitAll(repo, "add module");
+  const r = revertProbe(t, repo, ["--revert", base]);
+  const { status, notes } = r.entry;
+  assert.match(r.entry.description, /extra\.mjs/);
+  const loadError = status === "KILLED" && notes.some((n) => /node:test also counts/.test(n));
+  assert.ok(status === "ERROR" || loadError, `${status}\n${r.out}`);
+});
+
+test("revert: --revert-path limits the files that are reverted", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, OTHER, otherNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  commitAll(repo, "change both");
+  const all = revertProbe(t, repo, ["--revert", base]);
+  assert.match(all.entry.description, /revert 2 production files/);
+  const one = revertProbe(t, repo, ["--revert", base, "--revert-path", AGE]);
+  assert.equal(one.entry.status, "KILLED", one.out);
+  assert.match(one.entry.description, /revert 1 production file /);
+  assert.match(one.entry.description, /age\.mjs/);
+  assert.doesNotMatch(one.entry.description, /other\.mjs/);
+});
+
+test("revert: no production difference is INVALID", (t) => {
+  const { repo, base } = makeDemo(t, {
+    ...demoBase,
+    "packages/demo/src/age.test.mjs": ageTest("isAdult(30)"),
+  });
+  write(repo, "README.md", "# changed\n");
+  commitAll(repo, "docs");
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.equal(r.status, 1, r.out);
+  assert.equal(r.entry.status, "INVALID");
+  assert.equal(r.entry.evidence[0], `no production file differs from ${base.slice(0, 7)}`);
+});
+
+test("revert: an unknown ref exits 2", (t) => {
+  const { repo } = makeDemo(t);
+  const r = revertProbe(t, repo, ["--revert", "no-such-ref"]);
+  assert.equal(r.status, 2, r.out);
+  assert.match(r.out, /Unknown base ref: no-such-ref/);
+});
+
+test("revert: the caller's working tree stays unchanged", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/extra.mjs", "export const extra = () => 1;\n");
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  const files = [AGE, "packages/demo/src/extra.mjs", "packages/demo/src/age.test.mjs"];
+  const snapshot = () => ({
+    status: git(repo, "status", "--porcelain"),
+    stashes: git(repo, "stash", "list"),
+    contents: files.map((f) => readFileSync(path.join(repo, f), "utf8")),
+  });
+  const before = snapshot();
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.equal(r.entry.status, "KILLED", r.out);
+  assert.match(r.entry.description, /extra\.mjs/);
+  assert.deepEqual(snapshot(), before);
+});
+
+test("revert: usage errors exit 2", (t) => {
+  const { repo, base } = makeDemo(t);
+  const withoutRevert = revertProbe(t, repo, ["--revert-path", AGE]);
+  assert.equal(withoutRevert.status, 2, withoutRevert.out);
+  assert.match(withoutRevert.out, /--revert-path needs --revert/);
+  const neither = revertProbe(t, repo, []);
+  assert.equal(neither.status, 2, neither.out);
+  assert.match(neither.out, /--mutants and --revert/);
+  const escaping = revertProbe(t, repo, ["--revert", base, "--revert-path", "../x.mjs"]);
+  assert.equal(escaping.status, 2, escaping.out);
+});
+
+test("revert: together with mutants the revert result comes first", (t) => {
+  const { repo, base } = makeDemo(t);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  commitAll(repo, "change");
+  const mutants = path.join(tempDir(t, "reliable-tests-mut-"), "m.json");
+  const mutant = { id: "flip", file: AGE, search: ">=", replace: "<" };
+  writeFileSync(mutants, JSON.stringify({ mutants: [mutant] }));
+  const r = revertProbe(t, repo, ["--revert", base, "--mutants", mutants]);
+  assert.equal(r.status, 0, r.out);
+  assert.deepEqual(
+    r.data.results.map((m) => m.status),
+    ["KILLED", "KILLED"],
+  );
+  assert.equal(r.data.results[1].id, "flip");
+});
+
+test("revert: a new migration reverts its SQL file and the journal", (t) => {
+  const journalOld = '{"entries":[]}\n';
+  const journalNew = '{"entries":["0001_x"]}\n';
+  const { repo, base } = makeDemo(t, {
+    ...demoBase,
+    "apps/api/drizzle/meta/_journal.json": journalOld,
+  });
+  write(repo, "apps/api/drizzle/0001_x.sql", "select 1;\n");
+  write(repo, "apps/api/drizzle/meta/_journal.json", journalNew);
+  write(repo, AGE, ageNew);
+  write(repo, "packages/demo/src/age.test.mjs", ageTest("isAdult(18)"));
+  commitAll(repo, "add migration");
+  const r = revertProbe(t, repo, ["--revert", base]);
+  assert.match(r.entry.description, /revert 3 production files/);
+  assert.match(r.entry.description, /apps\/api\/drizzle\/0001_x\.sql/);
+  assert.match(r.entry.description, /apps\/api\/drizzle\/meta\/_journal\.json/);
+  assert.match(r.entry.description, /age\.mjs/);
 });
