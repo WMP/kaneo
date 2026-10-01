@@ -73,7 +73,7 @@ Components: the resolved `components`, plus `labelComponentMappings` applied to 
 
 Value conversion to Jira JSON (`apps/api/src/jira-integration/field-values.ts`): `string`/`text` → string, `number` → number, `date` → `YYYY-MM-DD`, `datetime` → ISO 8601, `option` → `{ value }`, `options` → `[{ value }]`, `labels` → string array, `components` → `[{ name }]`, `priority` → `{ name }`, `user` → `{ name }` on Server or `{ accountId }` on Cloud, `users` → array of those. `project` → `{ key }` and `issuetype` → `{ id }` are set from the dialog. Kaneo multiselect values (JSON array in text) become arrays; booleans become the strings `"true"`/`"false"` unless a `valueMap` maps them.
 
-## Data model (migration `0059_ganttpro_jira_integration`, additive)
+## Data model (migration `20260930053654_ganttpro_jira_integration`, additive)
 
 - `ganttpro_jira_connection(id, workspace_id → workspace cascade UNIQUE, base_url, deployment CHECK in ('server','cloud'), is_active default true, polling_enabled default true, webhook_secret, created_at, updated_at)`.
 - `ganttpro_jira_user_token(id, connection_id → connection cascade, user_id → user cascade, encrypted_token, email NULL, jira_account_id NULL, jira_username NULL, jira_display_name NULL, last_verified_at NULL, last_error NULL, created_at, updated_at)`, unique `(connection_id, user_id)`.
