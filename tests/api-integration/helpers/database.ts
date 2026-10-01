@@ -1,9 +1,9 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sql } from "drizzle-orm";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client } from "pg";
 import db from "../../../apps/api/src/database";
+import { runMigrations } from "../../../apps/api/src/database/run-migrations";
 import * as events from "../../../apps/api/src/events";
 import { retryTransaction } from "../../../apps/api/src/utils/retry-transaction";
 
@@ -67,7 +67,7 @@ export async function ensureTestDatabaseMigrated() {
   if (!migrationPromise) {
     migrationPromise = (async () => {
       await ensureTestDatabaseExists();
-      await migrate(db, {
+      await runMigrations(db, {
         migrationsFolder,
       });
     })();

@@ -8,6 +8,8 @@ export default defineConfig({
   out: "./drizzle",
   schema: "./src/database/schema.ts",
   dialect: "postgresql",
+  // New migrations are named <UTC timestamp>_<name>; 0000-0059 are frozen.
+  migrations: { prefix: "timestamp" },
   dbCredentials: {
     url: resolveDatabaseConnectionString(),
   },
