@@ -2726,6 +2726,7 @@
 			"previousPeriod": "Əvvəlki dövr",
 			"nextPeriod": "Növbəti dövr",
 			"periodStart": "Zaman xəttinin başlama tarixi",
+			"periodStartLocked": "Bütün tapşırıqlar bir dövrə sığır, buna görə başlanğıc tarixini dəyişmək mümkün deyil",
 			"showTaskDates": "Tapşırıq tarixlərini göstər",
 			"legendBlocking": "Bloklayıcı",
 			"legendRelated": "Əlaqəli",

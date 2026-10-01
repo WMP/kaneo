@@ -2706,6 +2706,7 @@
 			"previousPeriod": "Periode sebelumnya",
 			"nextPeriod": "Periode berikutnya",
 			"periodStart": "Tanggal mulai linimasa",
+			"periodStartLocked": "Semua tugas muat dalam satu periode, sehingga tanggal mulai tidak dapat digeser",
 			"showTaskDates": "Tampilkan tanggal tugas",
 			"legendBlocking": "Memblokir",
 			"legendRelated": "Terkait",

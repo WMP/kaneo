@@ -2713,6 +2713,7 @@
 			"previousPeriod": "पिछली अवधि",
 			"nextPeriod": "अगली अवधि",
 			"periodStart": "टाइमलाइन की शुरुआती तारीख़",
+			"periodStartLocked": "सभी कार्य एक ही अवधि में समा जाते हैं, इसलिए शुरुआती तारीख़ बदली नहीं जा सकती",
 			"showTaskDates": "कार्य की तारीख़ें दिखाएँ",
 			"legendBlocking": "अवरोधक",
 			"legendRelated": "संबंधित",

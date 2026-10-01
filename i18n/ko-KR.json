@@ -2719,6 +2719,7 @@
 			"previousPeriod": "이전 기간",
 			"nextPeriod": "다음 기간",
 			"periodStart": "타임라인 시작일",
+			"periodStartLocked": "모든 작업이 한 기간에 들어가므로 시작일을 변경할 수 없습니다",
 			"showTaskDates": "작업 날짜 표시",
 			"legendBlocking": "차단 중",
 			"legendRelated": "관련",
