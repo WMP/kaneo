@@ -6,6 +6,8 @@ import {
   projectTable,
 } from "../../database/schema";
 import { isFullAccess } from "../../utils/project-access";
+import { readEnforcementShared } from "../../workspace-column/enforcement-lock";
+import { loadWorkspaceColumns } from "../../workspace-column/sync";
 
 export const DEFAULT_PROJECT_COLUMNS = [
   { name: "To Do", slug: "to-do", position: 0, isFinal: false },
@@ -35,6 +37,12 @@ async function createProject(
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(1524, hashtext(${workspaceId}))`,
     );
+
+    // Shared lock on the workspace row, held until commit: a workspace that is
+    // turning enforcement on (or editing its columns) finishes first, or waits
+    // for this project. The columns are read after the lock.
+    await readEnforcementShared(tx, workspaceId);
+    const workspaceColumns = await loadWorkspaceColumns(tx, workspaceId);
 
     // New projects go to the bottom of the workspace's ordering.
     const [{ maxPosition } = { maxPosition: null }] = await tx
@@ -67,14 +75,31 @@ async function createProject(
         });
       }
 
-      for (const col of DEFAULT_PROJECT_COLUMNS) {
-        await tx.insert(columnTable).values({
-          projectId: createdProject.id,
-          name: col.name,
-          slug: col.slug,
-          position: col.position,
-          isFinal: col.isFinal,
-        });
+      // Workspace columns are copied, linked, whether or not they are
+      // enforced; a workspace without any keeps the default columns.
+      if (workspaceColumns.length > 0) {
+        await tx.insert(columnTable).values(
+          workspaceColumns.map((col) => ({
+            projectId: createdProject.id,
+            name: col.name,
+            slug: col.slug,
+            position: col.position,
+            icon: col.icon,
+            color: col.color,
+            isFinal: col.isFinal,
+            workspaceColumnId: col.id,
+          })),
+        );
+      } else {
+        for (const col of DEFAULT_PROJECT_COLUMNS) {
+          await tx.insert(columnTable).values({
+            projectId: createdProject.id,
+            name: col.name,
+            slug: col.slug,
+            position: col.position,
+            isFinal: col.isFinal,
+          });
+        }
       }
     }
 

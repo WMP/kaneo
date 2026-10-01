@@ -2,6 +2,7 @@ import {
   Calendar,
   CircleAlert,
   History,
+  Link2,
   ShieldQuestion,
   UserRound,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import {
   getPriorityLabel,
   getStatusLabel,
 } from "@/lib/i18n/domain";
+import { safeJiraUrl } from "@/lib/jira-format";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   HoverCard,
@@ -77,6 +79,10 @@ function getActivityTypeIcon(type: string) {
       return <ShieldQuestion className={iconClass} />;
     case "due_date_changed":
       return <Calendar className={iconClass} />;
+    case "jira_issue_created":
+    case "jira_issue_updated":
+    case "jira_issue_unlinked":
+      return <Link2 className={iconClass} />;
     case "assignee_changed":
     case "unassigned":
       return <UserRound className={iconClass} />;
@@ -259,6 +265,29 @@ function ActorAvatar({
         {getInitials(fallbackName)}
       </AvatarFallback>
     </Avatar>
+  );
+}
+
+// The key of a Jira issue, linked to it when the activity carries a web URL.
+function JiraIssueKey({
+  issueKey,
+  issueUrl,
+}: {
+  issueKey: string;
+  issueUrl: string | null;
+}) {
+  if (!issueUrl) {
+    return <span className="font-medium text-foreground">{issueKey}</span>;
+  }
+  return (
+    <a
+      href={issueUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-foreground underline-offset-2 hover:text-primary hover:underline"
+    >
+      {issueKey}
+    </a>
   );
 }
 
@@ -563,6 +592,62 @@ function renderActivityContent({
     );
   }
 
+  if (
+    activity.type === "jira_issue_created" ||
+    activity.type === "jira_issue_updated" ||
+    activity.type === "jira_issue_unlinked"
+  ) {
+    const issueKey =
+      typeof eventData?.issueKey === "string" ? eventData.issueKey : null;
+    if (issueKey) {
+      const label = {
+        jira_issue_created: t("activity:jira.issueCreated"),
+        jira_issue_updated: t("activity:jira.issueUpdated"),
+        jira_issue_unlinked: t("activity:jira.issueUnlinked"),
+      }[activity.type];
+      return (
+        <span className="text-sm text-muted-foreground">
+          {label}{" "}
+          <JiraIssueKey
+            issueKey={issueKey}
+            issueUrl={safeJiraUrl(
+              typeof eventData?.issueUrl === "string"
+                ? eventData.issueUrl
+                : null,
+            )}
+          />
+        </span>
+      );
+    }
+  }
+
+  if (activity.type === "jira_status_changed") {
+    const issueKey =
+      typeof eventData?.issueKey === "string" ? eventData.issueKey : null;
+    const toStatus =
+      typeof eventData?.toStatus === "string" ? eventData.toStatus : null;
+    if (issueKey && toStatus) {
+      const fromStatus =
+        typeof eventData?.fromStatus === "string" && eventData.fromStatus
+          ? eventData.fromStatus
+          : null;
+      return (
+        <span className="text-sm text-muted-foreground">
+          {fromStatus
+            ? t("activity:jira.statusChanged", {
+                issueKey,
+                from: fromStatus,
+                to: toStatus,
+              })
+            : t("activity:jira.statusChangedNoFrom", {
+                issueKey,
+                to: toStatus,
+              })}
+        </span>
+      );
+    }
+  }
+
   if (activity.type === "relation_created") {
     return (
       <span className="text-sm text-muted-foreground">
@@ -619,7 +704,12 @@ function Activity({
     : null;
 
   const isExternalComment = Boolean(activity.externalSource);
-  const actorName = user?.user?.name || t("common:people.someone");
+  // A status change seen in Jira has no Kaneo user behind it.
+  const actorName =
+    user?.user?.name ||
+    (activity.type === "jira_status_changed" && !activity.userId
+      ? t("activity:jira.actor")
+      : t("common:people.someone"));
 
   if (isCommentActivity(activity)) {
     const commentUser = isExternalComment

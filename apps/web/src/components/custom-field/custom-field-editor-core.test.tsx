@@ -265,6 +265,110 @@ describe("CustomFieldEditorCore", () => {
       });
     });
 
+    describe("option colors", () => {
+      const SWATCH = "settings:customFields.optionColorAriaLabel";
+      const SAVE = "settings:customFields.saveButton";
+      const colored = () =>
+        field({
+          id: "field-1",
+          type: "dropdown",
+          options: ["low", "high"],
+          optionColors: { low: "green", high: "red" },
+        });
+
+      it("shows the stored color of each option while editing", () => {
+        renderEditable([colored()]);
+        const form = openEditor();
+
+        const swatches = within(form).getAllByRole("button", { name: SWATCH });
+        expect(swatches).toHaveLength(2);
+        expect(swatches[0].style.backgroundColor).not.toBe("");
+        expect(swatches[1].style.backgroundColor).not.toBe("");
+        expect(swatches[0].style.backgroundColor).not.toBe(
+          swatches[1].style.backgroundColor,
+        );
+        expect(
+          within(form).getByText("settings:customFields.optionColorsLabel"),
+        ).toBeInTheDocument();
+        expect(within(form).getByText("low")).toBeInTheDocument();
+        expect(within(form).getByText("high")).toBeInTheDocument();
+      });
+
+      it("sends the changed color of an option on save", async () => {
+        const onUpdate = renderEditable([colored()]);
+        const form = openEditor();
+
+        fireEvent.click(
+          within(form).getAllByRole("button", { name: SWATCH })[0],
+        );
+        fireEvent.click(
+          await screen.findByRole("button", { name: "Lavender" }),
+        );
+        fireEvent.click(within(form).getByRole("button", { name: SAVE }));
+
+        await waitFor(() => expect(onUpdate).toHaveBeenCalledTimes(1));
+        expect(onUpdate).toHaveBeenCalledWith("field-1", {
+          optionColors: { low: "purple", high: "red" },
+        });
+      });
+
+      it("sends the colors together with a changed options list", async () => {
+        const onUpdate = renderEditable([colored()]);
+        const form = openEditor();
+
+        fireEvent.change(
+          within(form).getByLabelText("settings:customFields.optionsLabel"),
+          { target: { value: "low, urgent" } },
+        );
+        // "high" was removed and "urgent" is new and uncolored.
+        const swatches = within(form).getAllByRole("button", { name: SWATCH });
+        expect(swatches).toHaveLength(2);
+        expect(swatches[1].style.backgroundColor).toBe("");
+        fireEvent.click(swatches[1]);
+        fireEvent.click(await screen.findByRole("button", { name: "Amber" }));
+        fireEvent.click(within(form).getByRole("button", { name: SAVE }));
+
+        await waitFor(() => expect(onUpdate).toHaveBeenCalledTimes(1));
+        expect(onUpdate).toHaveBeenCalledWith("field-1", {
+          options: ["low", "urgent"],
+          optionColors: { low: "green", urgent: "yellow" },
+        });
+      });
+
+      it("drops the color of a removed option without sending a color change", async () => {
+        const onUpdate = renderEditable([colored()]);
+        const form = openEditor();
+
+        fireEvent.change(
+          within(form).getByLabelText("settings:customFields.optionsLabel"),
+          { target: { value: "low" } },
+        );
+        expect(
+          within(form).getAllByRole("button", { name: SWATCH }),
+        ).toHaveLength(1);
+        fireEvent.click(within(form).getByRole("button", { name: SAVE }));
+
+        await waitFor(() => expect(onUpdate).toHaveBeenCalledTimes(1));
+        // The API prunes the colors of removed options when none are sent.
+        expect(onUpdate).toHaveBeenCalledWith("field-1", { options: ["low"] });
+      });
+
+      it("offers no color controls for a multiselect field", () => {
+        renderEditable([
+          field({
+            id: "field-1",
+            type: "multiselect",
+            options: ["a", "b"],
+          }),
+        ]);
+        const form = openEditor();
+
+        expect(
+          within(form).queryByRole("button", { name: SWATCH }),
+        ).not.toBeInTheDocument();
+      });
+    });
+
     it("clears the stored default when it is emptied", async () => {
       const onUpdate = renderEditable([
         field({ id: "field-1", defaultValue: "n/a" }),

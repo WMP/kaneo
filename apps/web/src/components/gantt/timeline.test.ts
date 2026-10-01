@@ -11,6 +11,7 @@ import {
   buildGanttHeaderColumns,
   buildGanttRange,
   buildGanttTimeline,
+  canMoveGanttWindowStart,
   computeInsetBarBox,
   computeProgressFillPercent,
   deriveTaskSchedule,
@@ -198,6 +199,64 @@ describe("buildGanttRange extraBoundsTasks (external related tasks)", () => {
 
   it("still returns null when both the own tasks and the bounds tasks are empty", () => {
     expect(buildGanttRange([], 1, null, parseISO("2026-09-20"))).toBeNull();
+  });
+});
+
+describe("canMoveGanttWindowStart (period-start date field bounds)", () => {
+  // Issue #20: the period-start <input type="date"> is bounded by
+  // minimumStart/maximumStart. When the whole project fits in one window,
+  // the paging bounds collapse to a single start date, so the field
+  // accepts no change at all.
+  const today = parseISO("2026-09-20");
+
+  it.each(GANTT_UNITS)(
+    "reproduces minimumStart === maximumStart in %s view for a project that fits in one window",
+    (unit) => {
+      const range = buildGanttRange(
+        [span("2026-09-14", "2026-09-18")],
+        1,
+        null,
+        today,
+        unit,
+      );
+      expect(range?.minimumStart).toEqual(range?.maximumStart);
+      expect(range?.hasPrevious).toBe(false);
+      expect(range?.hasNext).toBe(false);
+      expect(range && canMoveGanttWindowStart(range)).toBe(false);
+    },
+  );
+
+  it.each(GANTT_UNITS)(
+    "allows moving the start in %s view once the project outgrows one window",
+    (unit) => {
+      const range = buildGanttRange(
+        [span("2020-01-01", "2032-12-31")],
+        1,
+        null,
+        today,
+        unit,
+      );
+      expect(range?.minimumStart.getTime()).toBeLessThan(
+        range?.maximumStart.getTime() ?? 0,
+      );
+      expect(range && canMoveGanttWindowStart(range)).toBe(true);
+    },
+  );
+
+  it("becomes movable when an external related task widens the bounds", () => {
+    const range = buildGanttRange(
+      [span("2026-09-14", "2026-09-18")],
+      1,
+      null,
+      today,
+      "week",
+      [span("2027-06-01", "2027-06-05")],
+    );
+    expect(range && canMoveGanttWindowStart(range)).toBe(true);
+  });
+
+  it("has no range to move for a project without dated tasks", () => {
+    expect(buildGanttRange([], 1, null, today, "week")).toBeNull();
   });
 });
 

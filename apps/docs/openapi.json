@@ -2227,7 +2227,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted."
+            "description": "One of: comment, created, moved, status_changed, priority_changed, assignee_changed, unassigned, due_date_changed, title_changed, description_changed, approval_changed, updated, relation_created, relation_updated, relation_deleted, jira_issue_created, jira_issue_updated, jira_issue_unlinked, jira_status_changed."
           },
           "createdAt": {
             "type": "string",
@@ -2544,7 +2544,7 @@
           },
           "type": {
             "type": "string",
-            "description": "One of: info, task_created, workspace_created, workspace_member_added, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment."
+            "description": "One of: info, task_created, workspace_created, workspace_member_added, task_status_changed, task_assignee_changed, time_entry_created, due_date_reminder, task_overdue, task_mention, task_comment, jira_status_proposal."
           },
           "eventData": {
             "description": "Type-specific payload, e.g. { taskTitle, oldStatus, newStatus, projectId, workspaceId }."
@@ -3806,6 +3806,1666 @@
           "updated",
           "skipped"
         ]
+      },
+      "JiraConnection": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          },
+          "deployment": {
+            "type": "string",
+            "enum": [
+              "server",
+              "cloud"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "pollingEnabled": {
+            "type": "boolean"
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "Where Jira should POST issue events. Only returned to callers with workspace:manage_settings."
+          },
+          "webhookSecret": {
+            "type": "string",
+            "description": "Secret carried in the webhook URL. Only returned to callers with workspace:manage_settings."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "baseUrl",
+          "deployment",
+          "isActive",
+          "pollingEnabled",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PutJiraConnection": {
+        "type": "object",
+        "properties": {
+          "baseUrl": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "deployment": {
+            "type": "string",
+            "enum": [
+              "server",
+              "cloud"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "pollingEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "baseUrl",
+          "deployment"
+        ]
+      },
+      "JiraError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "JIRA_NOT_CONFIGURED, JIRA_TOKEN_MISSING, JIRA_TOKEN_INVALID, JIRA_ENCRYPTION_KEY_MISSING, JIRA_REQUEST_FAILED, JIRA_ISSUE_ALREADY_LINKED, JIRA_NOT_LINKED, PROPOSAL_NOT_PENDING or STATUS_REQUIRED."
+          },
+          "message": {
+            "type": "string"
+          },
+          "jiraStatus": {
+            "type": "number",
+            "description": "HTTP status Jira answered with, for JIRA_REQUEST_FAILED."
+          },
+          "errorMessages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "JiraDeleteResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "JiraMappingLevel": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/JiraMappingConfig"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ResolvedJiraMapping"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "config",
+          "parent",
+          "updatedAt"
+        ]
+      },
+      "JiraMappingConfig": {
+        "type": "object",
+        "properties": {
+          "jiraProjectKey": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "issueTypeId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "issueTypeName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "components": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "maxItems": 100
+          },
+          "fieldMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraFieldMapping"
+            },
+            "maxItems": 100
+          },
+          "statusMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraStatusMapping"
+            },
+            "maxItems": 200
+          },
+          "userMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraUserMapping"
+            },
+            "maxItems": 1000
+          },
+          "labelComponentMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraLabelComponentMapping"
+            },
+            "maxItems": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "JiraFieldMapping": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "object",
+            "properties": {
+              "fieldId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "fieldName": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "type": {
+                "$ref": "#/components/schemas/JiraFieldType"
+              }
+            },
+            "required": [
+              "fieldId",
+              "type"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/JiraFieldSource"
+          },
+          "valueMap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "defaultValue": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "maxItems": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "target",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "JiraFieldType": {
+        "type": "string",
+        "enum": [
+          "string",
+          "text",
+          "number",
+          "date",
+          "datetime",
+          "option",
+          "options",
+          "labels",
+          "components",
+          "priority",
+          "user",
+          "users"
+        ]
+      },
+      "JiraFieldSource": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "builtin"
+                ]
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "title",
+                  "description",
+                  "priority",
+                  "status",
+                  "dueDate",
+                  "startDate",
+                  "labels",
+                  "assignee",
+                  "progress"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "field"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "custom"
+                ]
+              },
+              "customFieldId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "kind",
+              "customFieldId"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "none"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        ]
+      },
+      "JiraStatusMapping": {
+        "type": "object",
+        "properties": {
+          "jiraStatusId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "jiraStatusName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "kaneoStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "jiraStatusName",
+          "kaneoStatus"
+        ],
+        "additionalProperties": false
+      },
+      "JiraUserMapping": {
+        "type": "object",
+        "properties": {
+          "kaneoUserId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "jiraUser": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "kaneoUserId",
+          "jiraUser"
+        ],
+        "additionalProperties": false
+      },
+      "JiraLabelComponentMapping": {
+        "type": "object",
+        "properties": {
+          "kaneoLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "jiraComponent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "kaneoLabel",
+          "jiraComponent"
+        ],
+        "additionalProperties": false
+      },
+      "ResolvedJiraMapping": {
+        "type": "object",
+        "properties": {
+          "jiraProjectKey": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "origin": {
+                "$ref": "#/components/schemas/JiraMappingOrigin"
+              }
+            },
+            "required": [
+              "value",
+              "origin"
+            ]
+          },
+          "issueTypeId": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "origin": {
+                "$ref": "#/components/schemas/JiraMappingOrigin"
+              }
+            },
+            "required": [
+              "value",
+              "origin"
+            ]
+          },
+          "issueTypeName": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "origin": {
+                "$ref": "#/components/schemas/JiraMappingOrigin"
+              }
+            },
+            "required": [
+              "value",
+              "origin"
+            ]
+          },
+          "components": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "origin": {
+                "$ref": "#/components/schemas/JiraMappingOrigin"
+              }
+            },
+            "required": [
+              "value",
+              "origin"
+            ]
+          },
+          "fieldMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "object",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "fieldName": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "type": {
+                      "$ref": "#/components/schemas/JiraFieldType"
+                    }
+                  },
+                  "required": [
+                    "fieldId",
+                    "type"
+                  ]
+                },
+                "source": {
+                  "$ref": "#/components/schemas/JiraFieldSource"
+                },
+                "valueMap": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "defaultValue": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 5000
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "maxItems": 100
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "origin": {
+                  "$ref": "#/components/schemas/JiraMappingOrigin"
+                }
+              },
+              "required": [
+                "target",
+                "source",
+                "origin"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "statusMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "jiraStatusId": {
+                  "type": "string"
+                },
+                "jiraStatusName": {
+                  "type": "string"
+                },
+                "kaneoStatus": {
+                  "type": "string"
+                },
+                "origin": {
+                  "$ref": "#/components/schemas/JiraMappingOrigin"
+                }
+              },
+              "required": [
+                "jiraStatusName",
+                "kaneoStatus",
+                "origin"
+              ]
+            }
+          },
+          "userMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kaneoUserId": {
+                  "type": "string"
+                },
+                "jiraUser": {
+                  "type": "string"
+                },
+                "origin": {
+                  "$ref": "#/components/schemas/JiraMappingOrigin"
+                }
+              },
+              "required": [
+                "kaneoUserId",
+                "jiraUser",
+                "origin"
+              ]
+            }
+          },
+          "labelComponentMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kaneoLabel": {
+                  "type": "string"
+                },
+                "jiraComponent": {
+                  "type": "string"
+                },
+                "origin": {
+                  "$ref": "#/components/schemas/JiraMappingOrigin"
+                }
+              },
+              "required": [
+                "kaneoLabel",
+                "jiraComponent",
+                "origin"
+              ]
+            }
+          }
+        },
+        "required": [
+          "jiraProjectKey",
+          "issueTypeId",
+          "issueTypeName",
+          "components",
+          "fieldMappings",
+          "statusMappings",
+          "userMappings",
+          "labelComponentMappings"
+        ],
+        "description": "The levels above this one merged (default, workspace, and for a user also the workspace), with the origin of every value."
+      },
+      "JiraMappingOrigin": {
+        "type": "string",
+        "enum": [
+          "default",
+          "workspace",
+          "project",
+          "user"
+        ]
+      },
+      "JiraResolvedMapping": {
+        "type": "object",
+        "properties": {
+          "mapping": {
+            "$ref": "#/components/schemas/ResolvedJiraMapping"
+          }
+        },
+        "required": [
+          "mapping"
+        ]
+      },
+      "JiraTokenStatus": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "jiraAccountId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jiraUsername": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jiraDisplayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "connected",
+          "jiraAccountId",
+          "jiraUsername",
+          "jiraDisplayName",
+          "email",
+          "lastVerifiedAt",
+          "lastError"
+        ],
+        "description": "The Jira identity of the caller's token. The token itself is never returned."
+      },
+      "PutJiraToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Personal access token (Server / Data Center) or API token (Cloud). Verified against /rest/api/2/myself, stored encrypted and never returned."
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email",
+            "description": "Atlassian account email. Required for Jira Cloud."
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "JiraMetaProjectList": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "key",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "projects"
+        ]
+      },
+      "JiraMetaIssueTypeList": {
+        "type": "object",
+        "properties": {
+          "issueTypes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "subtask": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "issueTypes"
+        ]
+      },
+      "JiraMetaFieldList": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fieldId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "hasDefaultValue": {
+                  "type": "boolean"
+                },
+                "schema": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "string"
+                    },
+                    "system": {
+                      "type": "string"
+                    },
+                    "custom": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "allowedValues": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "required": [
+                "fieldId",
+                "name",
+                "required",
+                "hasDefaultValue",
+                "schema",
+                "allowedValues"
+              ]
+            }
+          }
+        },
+        "required": [
+          "fields"
+        ]
+      },
+      "JiraMetaStatusList": {
+        "type": "object",
+        "properties": {
+          "statuses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "category"
+              ]
+            }
+          }
+        },
+        "required": [
+          "statuses"
+        ]
+      },
+      "JiraMetaComponentList": {
+        "type": "object",
+        "properties": {
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "components"
+        ]
+      },
+      "JiraMetaUserList": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "accountId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "displayName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "emailAddress": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "accountId",
+                "displayName",
+                "emailAddress"
+              ]
+            }
+          }
+        },
+        "required": [
+          "users"
+        ]
+      },
+      "JiraTaskInfo": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "pendingProposal": {
+            "$ref": "#/components/schemas/JiraStatusProposal"
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraStatusProposal"
+            },
+            "description": "The 10 most recent proposals, newest first."
+          },
+          "sync": {
+            "$ref": "#/components/schemas/JiraSyncHint"
+          }
+        },
+        "required": [
+          "link",
+          "pendingProposal",
+          "proposals",
+          "sync"
+        ]
+      },
+      "JiraIssueLink": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "issueId": {
+            "type": "string"
+          },
+          "issueKey": {
+            "type": "string"
+          },
+          "issueUrl": {
+            "type": "string"
+          },
+          "jiraProjectKey": {
+            "type": "string"
+          },
+          "lastStatusId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastStatusName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "syncError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdByUserId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Whose Jira token the poll uses to read this issue. Null when that person was deleted."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "issueId",
+          "issueKey",
+          "issueUrl",
+          "jiraProjectKey",
+          "lastStatusId",
+          "lastStatusName",
+          "lastSyncedAt",
+          "syncError",
+          "createdByUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "JiraStatusProposal": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "linkId": {
+            "type": "string"
+          },
+          "fromStatusName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toStatusId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toStatusName": {
+            "type": "string"
+          },
+          "proposedStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The Kaneo status the Jira status maps to. Null when it is not mapped: whoever accepts chooses one."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected",
+              "superseded"
+            ]
+          },
+          "jiraChangedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jiraChangedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "webhook",
+              "poll",
+              "manual"
+            ]
+          },
+          "resolvedByUserId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolvedStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolvedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "linkId",
+          "fromStatusName",
+          "toStatusId",
+          "toStatusName",
+          "proposedStatus",
+          "state",
+          "jiraChangedBy",
+          "jiraChangedAt",
+          "source",
+          "resolvedByUserId",
+          "resolvedStatus",
+          "resolvedAt",
+          "createdAt"
+        ],
+        "description": "A status change seen in Jira. The task's status only changes when a person with task:update accepts it."
+      },
+      "JiraSyncHint": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "pollingEnabled": {
+            "type": "boolean"
+          },
+          "creatorTokenState": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "missing",
+              "invalid"
+            ],
+            "description": "State of the token of the person who linked the issue, which the poll uses. Missing or invalid: the poll skips this link."
+          }
+        },
+        "required": [
+          "pollingEnabled",
+          "creatorTokenState"
+        ]
+      },
+      "JiraDraft": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "connection": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "deployment": {
+                "type": "string",
+                "enum": [
+                  "server",
+                  "cloud"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "baseUrl",
+              "deployment"
+            ]
+          },
+          "tokenConnected": {
+            "type": "boolean"
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "jiraProjectKey": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              },
+              "issueTypeId": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              },
+              "issueTypeName": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/JiraMappingOrigin"
+                  }
+                },
+                "required": [
+                  "value",
+                  "origin"
+                ]
+              }
+            },
+            "required": [
+              "jiraProjectKey",
+              "issueTypeId",
+              "issueTypeName"
+            ]
+          },
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraDraftField"
+            }
+          },
+          "missingRequired": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fieldId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mapped": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "fieldId",
+                "name",
+                "mapped"
+              ]
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          },
+          "createMeta": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "jiraProjectKey": {
+                "type": "string"
+              },
+              "issueTypeId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "jiraProjectKey",
+              "issueTypeId"
+            ],
+            "description": "The Jira project and issue type the required flags and allowed values were read for, or null when they could not be read."
+          }
+        },
+        "required": [
+          "taskId",
+          "connection",
+          "tokenConnected",
+          "target",
+          "link",
+          "fields",
+          "missingRequired",
+          "warnings",
+          "createMeta"
+        ]
+      },
+      "JiraDraftField": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JiraFieldType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The editable Kaneo-side value, before the mapping's value map is applied."
+          },
+          "jiraValue": {
+            "description": "What would be sent to Jira for `value`, or null when nothing is sent."
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "task",
+              "default",
+              "empty"
+            ],
+            "description": "task: the task's own value; default: the mapping's default value; empty: nothing to send."
+          },
+          "mappingOrigin": {
+            "$ref": "#/components/schemas/JiraMappingOrigin"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "allowedValues": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "fieldId",
+          "fieldName",
+          "type",
+          "value",
+          "origin",
+          "mappingOrigin"
+        ]
+      },
+      "JiraSendResult": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "boolean",
+            "description": "True when a new issue was created, false for an update."
+          },
+          "link": {
+            "$ref": "#/components/schemas/JiraIssueLink"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "created",
+          "link",
+          "warnings"
+        ]
+      },
+      "JiraSend": {
+        "type": "object",
+        "properties": {
+          "jiraProjectKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Required to create an issue; ignored when the task is already linked."
+          },
+          "issueTypeId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Required to create an issue; ignored when the task is already linked."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JiraSendField"
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "fields"
+        ]
+      },
+      "JiraSendField": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JiraFieldType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                "maxItems": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fieldId",
+          "type",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "JiraRefreshResult": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "boolean",
+            "description": "True when the read found a status the task's link did not know yet."
+          },
+          "info": {
+            "$ref": "#/components/schemas/JiraTaskInfo"
+          }
+        },
+        "required": [
+          "changed",
+          "info"
+        ]
+      },
+      "JiraProposalResult": {
+        "type": "object",
+        "properties": {
+          "proposal": {
+            "$ref": "#/components/schemas/JiraStatusProposal"
+          }
+        },
+        "required": [
+          "proposal"
+        ]
+      },
+      "JiraAcceptProposal": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The Kaneo status to set. Defaults to the status the proposal mapped; required when it has none."
+          }
+        }
       },
       "GenericWebhookIntegration": {
         "type": [
@@ -5452,6 +7112,326 @@
           "taskId",
           "fieldId",
           "value"
+        ]
+      },
+      "WorkspaceColumns": {
+        "type": "object",
+        "properties": {
+          "enforced": {
+            "type": "boolean",
+            "description": "True when every project of the workspace has exactly these columns and cannot change them."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumn"
+            }
+          }
+        },
+        "required": [
+          "enforced",
+          "columns"
+        ]
+      },
+      "WorkspaceColumn": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Stable identifier derived from the name; tasks store it as their status once the column is copied into a project."
+          },
+          "position": {
+            "type": "number",
+            "description": "Board order, ascending."
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isFinal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "slug",
+          "position",
+          "icon",
+          "color",
+          "isFinal",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "WorkspaceColumnEnforcementPreview": {
+        "type": "object",
+        "properties": {
+          "fallbackColumnId": {
+            "type": "string"
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumnSyncProject"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "projects": {
+                "type": "number"
+              },
+              "projectsChanged": {
+                "type": "number"
+              },
+              "columnsCreated": {
+                "type": "number"
+              },
+              "columnsRemoved": {
+                "type": "number"
+              },
+              "columnsUpdated": {
+                "type": "number"
+              },
+              "tasksMoved": {
+                "type": "number"
+              },
+              "workflowRulesDeleted": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "projects",
+              "projectsChanged",
+              "columnsCreated",
+              "columnsRemoved",
+              "columnsUpdated",
+              "tasksMoved",
+              "workflowRulesDeleted"
+            ]
+          }
+        },
+        "required": [
+          "fallbackColumnId",
+          "projects",
+          "totals"
+        ]
+      },
+      "WorkspaceColumnSyncProject": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "create": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "workspaceColumnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "workspaceColumnId",
+                "name",
+                "slug"
+              ]
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "taskCount": {
+                  "type": "number"
+                },
+                "workflowRuleCount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "columnId",
+                "name",
+                "slug",
+                "taskCount",
+                "workflowRuleCount"
+              ]
+            }
+          },
+          "update": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string"
+                },
+                "workspaceColumnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "newName": {
+                  "type": "string"
+                },
+                "newSlug": {
+                  "type": "string"
+                },
+                "matchedBy": {
+                  "type": "string",
+                  "enum": [
+                    "link",
+                    "slug",
+                    "name"
+                  ]
+                },
+                "taskCount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "columnId",
+                "workspaceColumnId",
+                "name",
+                "slug",
+                "newName",
+                "newSlug",
+                "matchedBy",
+                "taskCount"
+              ]
+            }
+          },
+          "tasksMoved": {
+            "type": "number"
+          },
+          "workflowRulesDeleted": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectName",
+          "changed",
+          "create",
+          "remove",
+          "update",
+          "tasksMoved",
+          "workflowRulesDeleted"
+        ]
+      },
+      "WorkspaceColumnEnforcementResult": {
+        "type": "object",
+        "properties": {
+          "enforced": {
+            "type": "boolean"
+          },
+          "fallbackColumnId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumnSyncProject"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "projects": {
+                "type": "number"
+              },
+              "projectsChanged": {
+                "type": "number"
+              },
+              "columnsCreated": {
+                "type": "number"
+              },
+              "columnsRemoved": {
+                "type": "number"
+              },
+              "columnsUpdated": {
+                "type": "number"
+              },
+              "tasksMoved": {
+                "type": "number"
+              },
+              "workflowRulesDeleted": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "projects",
+              "projectsChanged",
+              "columnsCreated",
+              "columnsRemoved",
+              "columnsUpdated",
+              "tasksMoved",
+              "workflowRulesDeleted"
+            ]
+          }
+        },
+        "required": [
+          "enforced",
+          "fallbackColumnId",
+          "projects",
+          "totals"
         ]
       },
       "Resource": {
@@ -11911,7 +13891,7 @@
           "Tasks"
         ],
         "summary": "Update task",
-        "description": "Replace every field of a task. Use the single-field routes for narrower edits.",
+        "description": "Replace every field of a task, except the assignees: `userId` only sets the primary assignee and never removes the other assignees (see the field). Use the single-field routes for narrower edits.",
         "parameters": [
           {
             "schema": {
@@ -11964,7 +13944,8 @@
                     "maximum": 2147483646
                   },
                   "userId": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "The primary assignee. Omit to leave the assignees untouched. The same id as the current primary assignee changes nothing. A different id replaces only the previous primary assignee: the other user and resource assignees are kept. An empty string unassigns the primary assignee and keeps the others (the first remaining user, if any, becomes the primary). Use PUT /api/task/{id}/assignees to set the whole assignee list."
                   },
                   "progress": {
                     "type": "integer",
@@ -13388,7 +15369,7 @@
           "Columns"
         ],
         "summary": "Create column",
-        "description": "Add a column to the end of a project's board. The slug is derived from the name.",
+        "description": "Add a column to the end of a project's board. The slug is derived from the name. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -13461,8 +15442,13 @@
             }
           },
           "409": {
-            "description": "The slug is reserved, or already used in this project",
+            "description": "The slug is reserved or already used in this project, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -13480,7 +15466,7 @@
           "Columns"
         ],
         "summary": "Reorder columns",
-        "description": "Set new positions for a project's columns and return the whole board in its new order.",
+        "description": "Set new positions for a project's columns and return the whole board in its new order. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -13561,6 +15547,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -13572,7 +15573,7 @@
           "Columns"
         ],
         "summary": "Update column",
-        "description": "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them.",
+        "description": "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -13646,6 +15647,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
@@ -13655,7 +15671,7 @@
           "Columns"
         ],
         "summary": "Delete column",
-        "description": "Delete an empty column. A column holding tasks is refused until they are moved or deleted.",
+        "description": "Delete an empty column. A column holding tasks is refused until they are moved or deleted. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -13701,8 +15717,13 @@
             }
           },
           "409": {
-            "description": "The column still contains tasks",
+            "description": "The column still contains tasks, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -17520,6 +19541,2452 @@
           "404": {
             "description": "Project not found",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/connection": {
+      "get": {
+        "operationId": "getJiraConnection",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the Jira connection",
+        "description": "Get the workspace's Jira connection, or null when none is configured. Every workspace member gets the base URL, deployment and flags; the webhook URL and secret are only returned to callers with workspace:manage_settings.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The connection, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraConnection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putJiraConnection",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Create or update the Jira connection",
+        "description": "Create or update the workspace's Jira connection. The base URL is normalized and must use https unless KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS is enabled. A webhook secret is generated on create. Changing the base URL or the deployment removes every stored user token, so a credential is never sent to an address it was not given for.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutJiraConnection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraConnection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body or base URL",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing workspace:manage_settings",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteJiraConnection",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Delete the Jira connection",
+        "description": "Remove the connection together with every user token, issue link and status proposal. Mappings are kept.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The connection was removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDeleteResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing workspace:manage_settings",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The workspace has no Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/connection/rotate-webhook-secret": {
+      "post": {
+        "operationId": "rotateJiraWebhookSecret",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Rotate the Jira webhook secret",
+        "description": "Generate a new webhook secret. The previous webhook URL stops working; update the webhook in Jira.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The connection with its new secret",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraConnection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing workspace:manage_settings",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The workspace has no Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/mapping": {
+      "get": {
+        "operationId": "getJiraWorkspaceMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the workspace Jira mapping",
+        "description": "Get the workspace-level mapping of Kaneo fields to Jira fields, with the built-in defaults it inherits from.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putJiraWorkspaceMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Set the workspace Jira mapping",
+        "description": "Replace the workspace-level mapping. Custom fields must belong to the workspace.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "$ref": "#/components/schemas/JiraMappingConfig"
+                  }
+                },
+                "required": [
+                  "config"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid mapping, or an unknown custom field",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing workspace:manage_settings",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/project/{projectId}/mapping": {
+      "get": {
+        "operationId": "getJiraProjectMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the project Jira mapping",
+        "description": "Get the project-level mapping and, as `parent`, the default and workspace levels merged with the origin of every value.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing project:read",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putJiraProjectMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Set the project Jira mapping",
+        "description": "Replace the project-level mapping. Custom fields must be effective fields of the project and mapped Kaneo statuses must be statuses of the project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "$ref": "#/components/schemas/JiraMappingConfig"
+                  }
+                },
+                "required": [
+                  "config"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid mapping, an unknown custom field or an invalid status",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing project:update",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/project/{projectId}/resolved-mapping": {
+      "get": {
+        "operationId": "getJiraResolvedMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the resolved Jira mapping",
+        "description": "The mapping that applies to the caller's sends from this project: default, workspace, project and the caller's own level merged, every value with its origin. Status mappings ignore the user level.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The resolved mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraResolvedMapping"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing project:read",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/me/token": {
+      "get": {
+        "operationId": "getJiraTokenStatus",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the caller's Jira token status",
+        "description": "Whether the caller has a Jira token in this workspace and which Jira identity it belongs to. The token is never returned.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's token status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraTokenStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putJiraToken",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Set the caller's Jira token",
+        "description": "Verify the token against /rest/api/2/myself and store it encrypted for the caller. Jira Cloud also needs the Atlassian email. Answers 503 JIRA_ENCRYPTION_KEY_MISSING when the server has no NOTIFICATION_SECRET_ENCRYPTION_KEY; the token is never stored in plaintext.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutJiraToken"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The verified token's status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraTokenStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or the email is missing for Jira Cloud",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The workspace has no Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteJiraToken",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Delete the caller's Jira token",
+        "description": "Remove the caller's own token. Other people's tokens are not reachable.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The token was removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/me/mapping": {
+      "get": {
+        "operationId": "getJiraUserMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the caller's Jira mapping",
+        "description": "The caller's user-level mapping, applied to their own sends in this workspace, with the default and workspace levels as `parent`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putJiraUserMapping",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Set the caller's Jira mapping",
+        "description": "Replace the caller's user-level mapping. Status mappings are rejected at this level: a status proposal belongs to the task, not to a person.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "$ref": "#/components/schemas/JiraMappingConfig"
+                  }
+                },
+                "required": [
+                  "config"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMappingLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid mapping, status mappings, or an unknown custom field",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/projects": {
+      "get": {
+        "operationId": "listJiraProjects",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "List Jira projects",
+        "description": "Jira projects visible to the caller's own token, for pickers.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jira projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaProjectList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/issue-types": {
+      "get": {
+        "operationId": "listJiraIssueTypes",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "List Jira issue types",
+        "description": "Issue types of a Jira project, read with the caller's token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "projectKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issue types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaIssueTypeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/fields": {
+      "get": {
+        "operationId": "listJiraCreateFields",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "List Jira create fields",
+        "description": "Fields Jira offers when creating an issue of this type in this project, with required flags and allowed values.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "projectKey",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "issueTypeId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaFieldList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/statuses": {
+      "get": {
+        "operationId": "listJiraStatuses",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "List Jira statuses",
+        "description": "Statuses used by a Jira project, each listed once across its issue types.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "projectKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaStatusList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/components": {
+      "get": {
+        "operationId": "listJiraComponents",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "List Jira components",
+        "description": "Components of a Jira project, read with the caller's token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "projectKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Components",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaComponentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/workspace/{workspaceId}/meta/users": {
+      "get": {
+        "operationId": "searchJiraUsers",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Search Jira users",
+        "description": "Search Jira users, or the users assignable in a project when projectKey is given, with the caller's token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": ""
+            },
+            "required": false,
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "projectKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jira users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraMetaUserList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query, or Jira URL not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No (active) Jira connection in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}": {
+      "get": {
+        "operationId": "getJiraTaskInfo",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Get the Jira state of a task",
+        "description": "The Jira issue the task is linked to, its pending status proposal and the 10 most recent proposals. Answers with no link when the workspace has no Jira connection.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task's Jira state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraTaskInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/draft": {
+      "get": {
+        "operationId": "getJiraDraft",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Preview what would be sent to Jira",
+        "description": "Every mapped field with its value, where the value comes from (the task, the mapping's default, or nothing) and, when Jira's create metadata can be read with the caller's own token, which fields are required and what they allow. A Jira failure is a warning, not an error. The mapping is resolved for the caller: default, workspace, project and the caller's own level.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Jira project to read the create metadata of, instead of the mapped one."
+            },
+            "required": false,
+            "description": "Jira project to read the create metadata of, instead of the mapped one.",
+            "name": "jiraProjectKey",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Issue type to read the create metadata of, instead of the mapped one."
+            },
+            "required": false,
+            "description": "Issue type to read the create metadata of, instead of the mapped one.",
+            "name": "issueTypeId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDraft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/send": {
+      "post": {
+        "operationId": "sendTaskToJira",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Send a task to Jira",
+        "description": "Create the Jira issue, or update the linked one (without project and issue type), with the CALLER's own Jira token. Only typed field values are accepted; they are converted to Jira's JSON on the server and empty values are left out. Stores the link and writes the activity jira_issue_created or jira_issue_updated.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JiraSend"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The issue was created or updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraSendResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or a value that does not fit its field type",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token (JIRA_TOKEN_MISSING), or the issue is already linked to a task (JIRA_ISSUE_ALREADY_LINKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/refresh": {
+      "post": {
+        "operationId": "refreshJiraTask",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Read the Jira status now",
+        "description": "Read the linked issue's status with the caller's own token and process a change like the webhook and the poll do: activity, and a status proposal. The task's status is never changed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task's Jira state after the read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraRefreshResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task, task not linked (JIRA_NOT_LINKED), or no (active) Jira connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The caller has no Jira token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Jira rejected the caller's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Jira could not be reached or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server has no token encryption key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/task/{taskId}/link": {
+      "delete": {
+        "operationId": "unlinkJiraIssue",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Unlink the Jira issue",
+        "description": "Remove the link between the task and its Jira issue, with its proposals. The Jira issue is not touched.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The link was removed, or there was none",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraDeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Workspace ID could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/proposal/{proposalId}/accept": {
+      "post": {
+        "operationId": "acceptJiraStatusProposal",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Accept a Jira status proposal",
+        "description": "Set the task's status through the normal status change (events, activity, notifications and realtime apply, attributed to the caller) and mark the proposal accepted. The status defaults to the proposal's mapped status and is required when it has none (STATUS_REQUIRED). Needs task:update in the task's project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "proposalId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JiraAcceptProposal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The accepted proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraProposalResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No status given for an unmapped proposal (STATUS_REQUIRED), or an invalid status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The proposal is no longer pending (PROPOSAL_NOT_PENDING)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jira-integration/proposal/{proposalId}/reject": {
+      "post": {
+        "operationId": "rejectJiraStatusProposal",
+        "tags": [
+          "Jira"
+        ],
+        "summary": "Reject a Jira status proposal",
+        "description": "Mark the proposal rejected; the task's status stays as it is. Needs task:update in the task's project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "proposalId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The rejected proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraProposalResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the task's project, or missing task permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The proposal is no longer pending (PROPOSAL_NOT_PENDING)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JiraError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -22102,6 +26569,651 @@
           "404": {
             "description": "Unknown project or custom field",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}": {
+      "get": {
+        "operationId": "getWorkspaceColumns",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Get workspace columns",
+        "description": "Get the board columns defined for a workspace, ordered by position, and whether the workspace enforces them in every project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace columns and enforcement flag",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumns"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Create workspace column",
+        "description": "Add a column to the end of the workspace columns. The slug is derived from the name. When the workspace enforces its columns, the column is created in every project. Errors carry a `code`: 409 WORKSPACE_COLUMN_SLUG_CONFLICT, 409 WORKSPACE_COLUMN_RESERVED_SLUG.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "isFinal": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The slug is reserved, or already used in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/reorder": {
+      "put": {
+        "operationId": "reorderWorkspaceColumns",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Reorder workspace columns",
+        "description": "Set new positions for workspace columns and return all of them in the new order. When the workspace enforces its columns, every project gets the same positions.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "position": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "position"
+                      ]
+                    },
+                    "description": "Every column keeps its new position. Columns from another workspace are rejected with 404."
+                  }
+                },
+                "required": [
+                  "columns"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reordered columns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceColumn"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A column does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/enforcement-preview": {
+      "get": {
+        "operationId": "previewWorkspaceColumnEnforcement",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Preview column enforcement",
+        "description": "Dry run of turning enforcement on: per project the columns that would be created, removed or changed, the tasks that would move to the fallback column and the workflow rules that would be deleted. Only projects the caller can see are listed. Errors carry a `code`: 400 WORKSPACE_COLUMNS_EMPTY.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workspace column that receives the tasks of project columns without a match. Defaults to the first workspace column by position."
+            },
+            "required": false,
+            "description": "Workspace column that receives the tasks of project columns without a match. Defaults to the first workspace column by position.",
+            "name": "fallbackColumnId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What enforcement would change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumnEnforcementPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace has no columns, or the workspace could not be determined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The fallback column is not a workspace column",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/enforcement": {
+      "put": {
+        "operationId": "setWorkspaceColumnEnforcement",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Turn column enforcement on or off",
+        "description": "Turning enforcement on matches the columns of every project to the workspace columns in one transaction (a column linked to the workspace column, then the same slug, then the same name), creates the missing ones, moves the tasks of unmatched columns to the fallback column and deletes those columns together with their workflow rules. Turning it off only clears the flag. Errors carry a `code`: 400 WORKSPACE_COLUMNS_EMPTY.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enforced": {
+                    "type": "boolean"
+                  },
+                  "fallbackColumnId": {
+                    "type": "string",
+                    "description": "Only used when turning enforcement on. Defaults to the first workspace column by position."
+                  }
+                },
+                "required": [
+                  "enforced"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumnEnforcementResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or the workspace has no columns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The fallback column is not a workspace column",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/{columnId}": {
+      "put": {
+        "operationId": "updateWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Update workspace column",
+        "description": "Update a workspace column. Omitted fields are left unchanged; icon and color accept null to clear them. The slug never changes. When the workspace enforces its columns, every project column linked to it gets the same values.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "columnId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "icon": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "color": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "isFinal": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The column does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Delete workspace column",
+        "description": "Delete a workspace column. When the workspace enforces its columns, the column disappears from every project: tasks in it move to the column passed as moveTasksTo (409 WORKSPACE_COLUMN_NOT_EMPTY when a task exists and none is given), workflow rules on it are deleted, and the last column cannot be deleted (409 WORKSPACE_COLUMN_LAST). Without enforcement projects keep their columns.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "columnId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workspace column that receives the tasks of the deleted column in every project. Needed when the workspace enforces its columns and a task exists in the column."
+            },
+            "required": false,
+            "description": "Workspace column that receives the tasks of the deleted column in every project. Needed when the workspace enforces its columns and a task exists in the column.",
+            "name": "moveTasksTo",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "moveTasksTo is the column being deleted",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The column, or the column to move tasks to, does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tasks would be left without a column, or this is the last column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

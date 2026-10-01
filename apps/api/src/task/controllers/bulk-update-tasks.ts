@@ -178,6 +178,8 @@ async function bulkUpdateTasks({
         });
 
         for (const task of projectTasks) {
+          if (task.status === value) continue;
+
           await publishEvent("task.status_changed", {
             taskId: task.id,
             projectId,

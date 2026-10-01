@@ -132,6 +132,14 @@ export function useProjectWebSocket(
 
             if (message.type === "PROJECT_UPDATED") {
               queryClient.invalidateQueries({ queryKey: ["projects"] });
+              // Workspace column enforcement (and any project column change)
+              // publishes it: the project's columns and the enforced flag.
+              queryClient.invalidateQueries({
+                queryKey: ["columns", message.projectId],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["workspace-columns"],
+              });
               return;
             }
 
@@ -180,6 +188,16 @@ export function useProjectWebSocket(
             if (message.type === "TASK_UPDATED" && message.taskId) {
               queryClient.invalidateQueries({
                 queryKey: ["external-links", message.taskId],
+              });
+              // jira.* events (a status seen in Jira, a link, a resolved
+              // proposal) arrive as TASK_UPDATED. Only a mounted query is
+              // refetched, so this costs nothing for a task without Jira. The
+              // activity feed gets the entry the change wrote.
+              queryClient.invalidateQueries({
+                queryKey: ["jira-task", message.taskId],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["activities", message.taskId],
               });
             }
 

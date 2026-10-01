@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/node";
 import { Cron } from "croner";
 import { enforceActivityRetention } from "./activity-retention";
 import { checkDueDateReminders } from "./due-date-reminders";
+import { pollJiraStatuses } from "./jira-status-poll";
 import { checkProjectWebhookReminders } from "./project-webhook-reminders";
 import { reconcileWorkspaceSeats } from "./seat-reconciliation";
 import { checkTrialReminders } from "./trial-reminders";
@@ -58,6 +59,11 @@ export function initializeScheduler(): void {
       withCheckIn("project-webhook-reminders", checkProjectWebhookReminders),
     ),
   );
+  // Reads the Jira issues linked to tasks under a job lease, so one instance
+  // polls at a time (see scheduler/jira-status-poll.ts).
+  jobs.push(
+    new Cron("*/5 * * * *", withCheckIn("jira-status-poll", pollJiraStatuses)),
+  );
   jobs.push(
     new Cron(
       "17 * * * *",
@@ -77,7 +83,7 @@ export function initializeScheduler(): void {
     ),
   );
   console.log(
-    "⏰ Scheduler started (reminders every 5 minutes, seat reconciliation and trial reminders hourly, activity retention daily)",
+    "⏰ Scheduler started (reminders and Jira status polling every 5 minutes, seat reconciliation and trial reminders hourly, activity retention daily)",
   );
 }
 

@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Maximize2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SendToJiraButton } from "@/components/jira/send-to-jira-button";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
@@ -76,6 +77,13 @@ export default function TaskDetailsSheet({
             </span>
           </div>
           <div className="flex items-center gap-1">
+            {currentTaskId && (
+              <SendToJiraButton
+                taskId={currentTaskId}
+                projectId={projectId}
+                workspaceId={workspaceId}
+              />
+            )}
             {currentTaskId && (
               <TaskDeleteButton
                 taskId={currentTaskId}

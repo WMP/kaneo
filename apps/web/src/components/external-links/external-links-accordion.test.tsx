@@ -55,7 +55,7 @@ function renderResources(externalLinks: ExternalLink[] = []) {
 
 async function submitResource() {
   fireEvent.click(
-    screen.getByRole("button", { name: "settings:externalLinks.addResource" }),
+    screen.getByRole("button", { name: "settings:externalLinks.addLink" }),
   );
   const input = await screen.findByLabelText("settings:externalLinks.url");
   fireEvent.change(input, {
@@ -69,7 +69,7 @@ describe("manual task resources", () => {
     renderResources();
     fireEvent.click(
       screen.getByRole("button", {
-        name: "settings:externalLinks.addResource",
+        name: "settings:externalLinks.addLink",
       }),
     );
     fireEvent.change(
@@ -86,7 +86,7 @@ describe("manual task resources", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(
       screen.getByRole("button", {
-        name: "settings:externalLinks.addResource",
+        name: "settings:externalLinks.addLink",
       }),
     );
     expect(
@@ -102,7 +102,7 @@ describe("manual task resources", () => {
     renderResources();
     expect(
       screen.queryByRole("button", {
-        name: "settings:externalLinks.addResource",
+        name: "settings:externalLinks.addLink",
       }),
     ).toBeNull();
   });

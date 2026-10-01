@@ -99,9 +99,9 @@ export function buildFullTaskUpdateBody(
     throw new Error("Cannot update task: missing projectId.");
   }
 
-  // When patch.userId is explicitly null, we set userId to "" so the API clears assignee; the API
-  // treats "" as unassigned (userId || null). When patch.userId is undefined, keep existing.userId
-  // unchanged (leave assignee as-is).
+  // When patch.userId is explicitly null, we set userId to "" so the API unassigns the PRIMARY
+  // assignee (the task's other assignees are kept). When patch.userId is undefined, keep
+  // existing.userId (the unchanged primary, which leaves the assignees as they are).
   const userId =
     patch.userId !== undefined
       ? patch.userId === null

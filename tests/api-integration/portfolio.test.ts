@@ -141,6 +141,80 @@ describe("API integration: workspace portfolio", () => {
     ]);
   });
 
+  it("orders a project's tasks by schedule, undated tasks last", async () => {
+    const member = await createWorkspaceMember();
+    const { project } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+    const { project: other } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+      name: "Other",
+      slug: "other",
+    });
+
+    // Every task keeps the default position, so the old (position, id) order
+    // was effectively random. Insert them deliberately out of schedule order.
+    const day = (value: string) => new Date(`${value}T00:00:00.000Z`);
+    await seedTask(project.id, { title: "Zeta undated", number: 1 });
+    await seedTask(project.id, {
+      title: "Design freeze review",
+      startDate: day("2026-02-10"),
+      dueDate: day("2026-02-20"),
+      number: 2,
+    });
+    await seedTask(project.id, {
+      title: "Requirements and safety concept",
+      startDate: day("2026-01-10"),
+      dueDate: day("2026-01-25"),
+      number: 3,
+    });
+    await seedTask(project.id, { title: "Alpha undated", number: 4 });
+    await seedTask(project.id, {
+      title: "Same start, later due",
+      startDate: day("2026-01-10"),
+      dueDate: day("2026-01-30"),
+      number: 5,
+    });
+    await seedTask(project.id, {
+      title: "Due date only",
+      dueDate: day("2026-01-05"),
+      number: 6,
+    });
+    await seedTask(project.id, {
+      title: "Alpha same dates",
+      startDate: day("2026-01-10"),
+      dueDate: day("2026-01-25"),
+      number: 7,
+    });
+    await seedTask(other.id, {
+      title: "Other project task",
+      startDate: day("2026-01-01"),
+      number: 1,
+    });
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/project/portfolio?workspaceId=${member.workspace.id}`,
+    );
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as PortfolioResponse;
+    const tasks = payload.projects.find(
+      (entry) => entry.id === project.id,
+    )?.tasks;
+
+    expect(tasks?.map((task) => task.title)).toEqual([
+      "Due date only",
+      "Alpha same dates",
+      "Requirements and safety concept",
+      "Same start, later due",
+      "Design freeze review",
+      "Alpha undated",
+      "Zeta undated",
+    ]);
+  });
+
   it("excludes archived tasks from the timeline", async () => {
     const member = await createWorkspaceMember();
     const { project } = await createProjectFixture({

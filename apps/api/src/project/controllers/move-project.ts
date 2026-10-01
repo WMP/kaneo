@@ -14,6 +14,7 @@ import createActivities from "../../activity/controllers/create-activities";
 import db from "../../database";
 import {
   assetTable,
+  columnTable,
   invitationProjectTable,
   labelTable,
   projectMemberTable,
@@ -26,6 +27,8 @@ import {
 } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { unusableProjectRoles } from "../../utils/project-access";
+import { readEnforcementShared } from "../../workspace-column/enforcement-lock";
+import { syncProjectToWorkspaceColumns } from "../../workspace-column/sync";
 import { closeProjectConnections } from "../../ws";
 
 async function moveProject(
@@ -47,6 +50,14 @@ async function moveProject(
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(1524, hashtext(${workspaceId}))`,
       );
+    }
+    // Shared lock on both workspace rows, before any column or task row is
+    // touched: an enforcement toggle or workspace column edit on either side
+    // finishes first (or waits), and the target's flag stays valid until commit.
+    let targetEnforced = false;
+    for (const workspaceId of [sourceWorkspaceId, targetWorkspaceId].sort()) {
+      const enforced = await readEnforcementShared(tx, workspaceId);
+      if (workspaceId === targetWorkspaceId) targetEnforced = enforced === true;
     }
     // Locked for the life of the transaction: the request was authorized
     // against the source workspace, so a concurrent move would invalidate that
@@ -217,6 +228,23 @@ async function moveProject(
       throw new HTTPException(409, {
         message: "Project was moved to another workspace, please try again",
       });
+    }
+
+    // The columns were linked to the source workspace's columns. Unlink them;
+    // when the target enforces its columns the project is matched to them (by
+    // slug, then name) with the first target column as the fallback, without
+    // per-task events.
+    await tx
+      .update(columnTable)
+      .set({ workspaceColumnId: null })
+      .where(
+        and(
+          eq(columnTable.projectId, id),
+          isNotNull(columnTable.workspaceColumnId),
+        ),
+      );
+    if (targetEnforced) {
+      await syncProjectToWorkspaceColumns(tx, id, targetWorkspaceId);
     }
 
     // Project members must belong to the workspace the project now lives in,

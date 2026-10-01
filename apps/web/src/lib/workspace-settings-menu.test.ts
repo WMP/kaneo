@@ -43,6 +43,22 @@ describe("getWorkspaceSettingsMenuItems", () => {
     expect(urls).toContain("/dashboard/settings/workspace/roles");
   });
 
+  it("has a Jira entry that leads to the workspace Jira settings, before Billing", () => {
+    const items = getWorkspaceSettingsMenuItems({
+      t,
+      workspaceId: "ws-1",
+      billingEnabled: true,
+    });
+
+    const urls = items.map((item) => item.url);
+    const jira = urls.indexOf("/dashboard/settings/workspace/jira");
+    expect(jira).toBeGreaterThan(-1);
+    expect(items[jira]?.title).toBe("settings:jiraIntegration.menuTitle");
+    expect(jira).toBeLessThan(
+      urls.indexOf("/dashboard/settings/workspace/billing"),
+    );
+  });
+
   it("adds Billing only when billing is enabled", () => {
     const without = getWorkspaceSettingsMenuItems({
       t,
@@ -61,5 +77,20 @@ describe("getWorkspaceSettingsMenuItems", () => {
     expect(withBilling.at(-1)?.url).toBe(
       "/dashboard/settings/workspace/billing",
     );
+  });
+
+  it("has a Workflow entry next to Labels and Custom Fields", () => {
+    const items = getWorkspaceSettingsMenuItems({
+      t,
+      workspaceId: "ws-1",
+      billingEnabled: false,
+    });
+    const urls = items.map((item) => item.url);
+    const workflow = urls.indexOf("/dashboard/settings/workspace/workflow");
+
+    expect(workflow).toBe(
+      urls.indexOf("/dashboard/settings/workspace/custom-fields") + 1,
+    );
+    expect(items[workflow].title).toBe("Workflow");
   });
 });

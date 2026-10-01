@@ -8,9 +8,11 @@ import {
   buildUpdatePayload,
   canSaveDraft,
   draftFromField,
+  hasOptionColors,
   hasOptions,
   resolveDraft,
 } from "./custom-field-form-utils";
+import OptionColorSwatch from "./option-color-swatch";
 import type { CustomFieldDefinition, UpdateCustomFieldPayload } from "./types";
 
 type CustomFieldEditFormProps = {
@@ -22,8 +24,8 @@ type CustomFieldEditFormProps = {
   onCancel: () => void;
 };
 
-/** Inline edit form for one custom field definition: name, options, default
- * value and required. The type is shown read-only — it cannot change after
+/** Inline edit form for one custom field definition: name, options, option
+ * colors (single-select dropdown), default value and required. The type is shown read-only — it cannot change after
  * creation. The form holds an uncommitted draft; nothing is sent until Save. */
 export default function CustomFieldEditForm({
   field,
@@ -41,6 +43,8 @@ export default function CustomFieldEditForm({
 
   const resolved = resolveDraft(field, draft);
   const showOptions = hasOptions(field.type);
+  const showOptionColors =
+    hasOptionColors(field.type) && resolved.options.length > 0;
   const idPrefix = `custom-field-edit-${field.id}`;
 
   function handleSubmit(event: React.FormEvent) {
@@ -119,6 +123,36 @@ export default function CustomFieldEditForm({
             placeholder={t("settings:customFields.optionsPlaceholder")}
             className="h-8 text-sm"
           />
+        </div>
+      )}
+
+      {showOptionColors && (
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs text-muted-foreground">
+            {t("settings:customFields.optionColorsLabel")}
+          </span>
+          {resolved.options.map((option) => (
+            <div key={option} className="flex items-center gap-1.5">
+              <OptionColorSwatch
+                color={resolved.optionColors[option]}
+                ariaLabel={t("settings:customFields.optionColorAriaLabel", {
+                  option,
+                })}
+                onSelect={(colorValue) =>
+                  setDraft({
+                    ...draft,
+                    optionColors: {
+                      ...draft.optionColors,
+                      [option]: colorValue,
+                    },
+                  })
+                }
+              />
+              <span className="max-w-32 truncate text-xs text-muted-foreground">
+                {option}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 

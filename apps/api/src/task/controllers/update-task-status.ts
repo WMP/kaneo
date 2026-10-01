@@ -26,6 +26,8 @@ async function updateTaskStatus({
 
   await assertValidTaskStatus(status, existingTask.projectId);
 
+  if (existingTask.status === status) return existingTask;
+
   const column = await db.query.columnTable.findFirst({
     where: and(
       eq(columnTable.projectId, existingTask.projectId),

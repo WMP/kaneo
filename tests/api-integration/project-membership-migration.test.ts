@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -21,6 +20,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
 // Proves migration 0056 on a populated database: a scratch database is
 // migrated to 0055, populated with workspaces holding every kind of member and
@@ -76,13 +76,13 @@ describe("migration 0056 project membership", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     const before = await scratch.query(
       "SELECT to_regclass('public.ganttpro_project_member') AS t",
     );
     expect(before.rows[0].t).toBeNull();
     await populate(scratch);
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
     return scratch;
   }
 

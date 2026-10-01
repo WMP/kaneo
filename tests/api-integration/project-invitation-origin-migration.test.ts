@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -21,6 +20,7 @@ import {
   it,
 } from "vitest";
 import db from "../../apps/api/src/database";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 import { resetTestDatabase } from "./helpers/database";
 
 // Migration 0057 adds `ganttpro_invitation_origin` and a trigger that cancels a
@@ -130,13 +130,13 @@ describe("migration 0057 invitation origin", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     const before = await scratch.query(
       "SELECT to_regclass('public.ganttpro_invitation_origin') AS t",
     );
     expect(before.rows[0].t).toBeNull();
     await seed(scratch);
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
     return scratch;
   }
 

@@ -79,6 +79,34 @@ describe("buildUpdatePayload", () => {
     });
   });
 
+  it("sends changed option colors and ignores removed options' colors", () => {
+    const f = field({
+      type: "dropdown",
+      defaultValue: null,
+      options: ["a", "b"],
+      optionColors: { a: "red", b: "green" },
+    });
+    const base = draftFromField(f);
+    expect(
+      buildUpdatePayload(f, {
+        ...base,
+        optionColors: { ...base.optionColors, a: "pink" },
+      }),
+    ).toEqual({ optionColors: { a: "pink", b: "green" } });
+    // Removing "b" leaves only a surviving, unchanged color: nothing to send.
+    expect(buildUpdatePayload(f, { ...base, optionsText: "a" })).toEqual({
+      options: ["a"],
+    });
+    // A color picked for an option that was then removed is not sent.
+    expect(
+      buildUpdatePayload(f, {
+        ...base,
+        optionsText: "a",
+        optionColors: { ...base.optionColors, b: "pink" },
+      }),
+    ).toEqual({ options: ["a"] });
+  });
+
   it("clears a default with null", () => {
     const f = field();
     expect(
