@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -21,6 +20,7 @@ import {
   it,
 } from "vitest";
 import db from "../../apps/api/src/database";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 import { resetTestDatabase } from "./helpers/database";
 
 // Migration 0059 adds the nullable `activity.actor_via`, `activity.actor_token_hint`
@@ -112,7 +112,7 @@ describe("migration 0059 actor source", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     expect(await columnCount(scratch)).toBe(0);
 
     await scratch.query(
@@ -138,7 +138,7 @@ describe("migration 0059 actor source", () => {
       [new Date(Date.now() + 3_600_000), now],
     );
 
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
 
     expect(await columnCount(scratch)).toBe(3);
     const activity = await scratch.query(
