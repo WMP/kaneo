@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TaskLayout from "@/components/common/task-layout";
+import { SendToJiraButton } from "@/components/jira/send-to-jira-button";
 import PageTitle from "@/components/page-title";
 import TaskDeleteButton from "@/components/task/task-delete-button";
 import TaskDetailsContent from "@/components/task/task-details-content";
@@ -76,11 +77,18 @@ function RouteComponent() {
       workspaceId={workspaceId}
       headerActions={
         !isLoading && task ? (
-          <TaskDeleteButton
-            taskId={taskId}
-            projectId={projectId}
-            onDeleted={handleDeleted}
-          />
+          <>
+            <SendToJiraButton
+              taskId={taskId}
+              projectId={projectId}
+              workspaceId={workspaceId}
+            />
+            <TaskDeleteButton
+              taskId={taskId}
+              projectId={projectId}
+              onDeleted={handleDeleted}
+            />
+          </>
         ) : null
       }
       rightSidebar={

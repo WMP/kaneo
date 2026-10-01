@@ -129,6 +129,18 @@ function buildDeliveryContent(notification: {
             : "A task status changed in Kaneo.",
       };
     }
+    case "jira_status_proposal": {
+      const issueKey = getStringValue(notification.eventData, "issueKey");
+      const toStatus = getStringValue(notification.eventData, "toStatus");
+      const taskTitle = getStringValue(notification.eventData, "taskTitle");
+      return {
+        title: "Jira status changed",
+        body:
+          issueKey && toStatus
+            ? `${issueKey} is now "${toStatus}"${taskTitle ? ` (${taskTitle})` : ""}. Review the proposed status in Kaneo.`
+            : "The status of a linked Jira issue changed. Review it in Kaneo.",
+      };
+    }
     case "task_assignee_changed": {
       const taskTitle = getStringValue(notification.eventData, "taskTitle");
       return {

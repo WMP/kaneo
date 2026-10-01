@@ -58,7 +58,8 @@ Kaneo supports many optional configuration options including:
 - Access control settings
 - CORS configuration
 - Redis for horizontal scaling
-- Private-network notification receivers (`KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS=true` lets ntfy/Gotify/webhook destinations and self-managed Gitea/GitLab instances resolve to private addresses; off by default to prevent SSRF)
+- Private-network notification receivers (`KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS=true` lets ntfy/Gotify/webhook destinations and self-managed Gitea/GitLab/Jira instances resolve to private addresses; off by default to prevent SSRF). A Jira Server or Data Center on a private network, or reached over plain `http`, needs it.
+- Jira integration: every user's personal Jira token is stored encrypted with `NOTIFICATION_SECRET_ENCRYPTION_KEY` (the key that also protects notification secrets). Without it, saving a token answers 503 `JIRA_ENCRYPTION_KEY_MISSING` and nothing is stored; changing the key makes stored tokens unreadable, so people enter them again. The webhook Jira calls is `/api/jira-integration/webhook/<connection id>?secret=<secret>` on `KANEO_API_URL`; without it the linked issues are still read every 5 minutes.
 
 #### Redis Configuration
 

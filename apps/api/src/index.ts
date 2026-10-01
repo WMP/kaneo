@@ -41,6 +41,10 @@ import gitlabIntegration, {
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
+import jiraIntegration, {
+  handleJiraWebhookRoute,
+  jiraWebhookBodyLimit,
+} from "./jira-integration";
 import label from "./label";
 import mattermostIntegration from "./mattermost-integration";
 import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
@@ -403,6 +407,13 @@ export function createApp() {
   api.post(
     "/gitlab-integration/webhook/:integrationId",
     handleGitlabWebhookRoute,
+  );
+
+  // Public, like the other webhooks: the secret in the URL is the credential.
+  api.post(
+    "/jira-integration/webhook/:connectionId",
+    jiraWebhookBodyLimit,
+    handleJiraWebhookRoute,
   );
 
   const invitationPublicApi = api.get("/invitation/public/:id", async (c) => {
@@ -776,6 +787,7 @@ export function createApp() {
     "/gitlab-integration",
     gitlabIntegration,
   );
+  const jiraIntegrationApi = api.route("/jira-integration", jiraIntegration);
   const genericWebhookIntegrationApi = api.route(
     "/generic-webhook-integration",
     genericWebhookIntegration,
@@ -952,6 +964,7 @@ export function createApp() {
     gitlabIntegrationApi,
     invitationApi,
     invitationPublicApi,
+    jiraIntegrationApi,
     labelApi,
     notificationApi,
     notificationPreferencesApi,
@@ -1098,6 +1111,7 @@ const {
   gitlabIntegrationApi,
   invitationApi,
   invitationPublicApi,
+  jiraIntegrationApi,
   labelApi,
   mattermostIntegrationApi,
   notificationApi,
@@ -1152,6 +1166,7 @@ export type AppType =
   | typeof githubIntegrationApi
   | typeof giteaIntegrationApi
   | typeof gitlabIntegrationApi
+  | typeof jiraIntegrationApi
   | typeof genericWebhookIntegrationApi
   | typeof discordIntegrationApi
   | typeof mattermostIntegrationApi
