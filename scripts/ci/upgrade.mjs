@@ -110,11 +110,14 @@ if (mode === "seed") {
   if (backgroundUpload.status === 404) {
     console.log("Source release has no project backgrounds; not seeding one");
   } else {
+    // A Response body can be read once; the assertion message is evaluated
+    // eagerly, so read the text a single time and parse it afterwards.
+    const backgroundBody = await backgroundUpload.text();
     assert.ok(
       backgroundUpload.ok,
-      `Background upload: ${backgroundUpload.status} ${await backgroundUpload.text()}`,
+      `Background upload: ${backgroundUpload.status} ${backgroundBody}`,
     );
-    const target = await backgroundUpload.json();
+    const target = JSON.parse(backgroundBody);
     await putObject(target, bytes);
     await client.json(
       `/api/project/${project.id}/background-upload/finalize`,
@@ -139,12 +142,13 @@ if (mode === "seed") {
   if (feedResponse.status === 404) {
     console.log("Source release has no calendar feeds; not seeding one");
   } else {
+    const feedBody = await feedResponse.text();
     assert.equal(
       feedResponse.status,
       201,
-      `Calendar feed: ${feedResponse.status} ${await feedResponse.text()}`,
+      `Calendar feed: ${feedResponse.status} ${feedBody}`,
     );
-    feed = await feedResponse.json();
+    feed = JSON.parse(feedBody);
     assert.equal(
       (await fetch(`${origin}/api/calendar-feed/${feed.token}/calendar.ics`))
         .status,
