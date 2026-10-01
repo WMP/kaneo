@@ -103,6 +103,21 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Check migration timestamp order
+        id: order
+        if: steps.decide.outputs.needed == 'true'
+        run: |
+          # Drizzle applies a migration only when its journal `when` is newer
+          # than the newest one a database already recorded; an older one is
+          # skipped silently. Compare upstream's journal with ours.
+          git show "upstream/$UPSTREAM_BRANCH:apps/api/drizzle/meta/_journal.json" > "$RUNNER_TEMP/upstream-journal.json"
+          if node scripts/ci/check-migration-order.mjs apps/api/drizzle/meta/_journal.json --incoming "$RUNNER_TEMP/upstream-journal.json" > "$RUNNER_TEMP/migration-order.txt" 2>&1; then
+            echo "failed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+            cat "$RUNNER_TEMP/migration-order.txt"
+          fi
+
       - name: Push upstream mirror branch
         id: mirror
         if: steps.decide.outputs.needed == 'true'
@@ -121,6 +136,7 @@ jobs:
           # Passed via env (not inline ${{ }}) so backticks in the report are
           # never evaluated by the shell.
           MIGRATION_REPORT: ${{ steps.migrations.outputs.report }}
+          ORDER_FAILED: ${{ steps.order.outputs.failed }}
         run: |
           title="Sync upstream/${UPSTREAM_BRANCH} into ${TARGET_BRANCH} ($(date -u +%Y-%m-%d))"
           {
@@ -140,6 +156,19 @@ jobs:
             echo ""
             echo "### Migrations"
             printf '%s\n' "$MIGRATION_REPORT"
+            echo ""
+            echo "### Migration timestamp order"
+            if [ "$ORDER_FAILED" = "true" ]; then
+              echo "⚠️ **Existing databases would silently skip a merged migration — fix before merging.**"
+              echo ""
+              echo '```text'
+              cat "$RUNNER_TEMP/migration-order.txt"
+              echo '```'
+              echo ""
+              echo "The CI \`unit\` job also fails on the merged journal until every migration is newer than all before it."
+            else
+              echo "✅ No upstream migration is older than the newest migration in \`$TARGET_BRANCH\`."
+            fi
           } > /tmp/sync-pr-body.md
           existing="$(gh pr list --base "$TARGET_BRANCH" --head "$HEAD_BRANCH" --state open --json number --jq '.[0].number' || true)"
           if [ -n "$existing" ]; then
@@ -148,3 +177,10 @@ jobs:
           else
             gh pr create --base "$TARGET_BRANCH" --head "$HEAD_BRANCH" --title "$title" --body-file /tmp/sync-pr-body.md
           fi
+
+      - name: Fail when a merged migration would be skipped
+        if: steps.order.outputs.failed == 'true'
+        run: |
+          echo "::error title=Migration order::An upstream migration is older than the newest migration in $TARGET_BRANCH; existing databases would skip it. See the sync pull request."
+          cat "$RUNNER_TEMP/migration-order.txt"
+          exit 1

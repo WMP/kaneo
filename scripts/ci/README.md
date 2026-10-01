@@ -28,6 +28,12 @@ the previous image. It runs the MinIO binary directly with temporary test data.
   example a release commit containing `[skip ci]`), dispatch **CI** on main before
   dispatching **Release**. Dry runs don't wait or publish.
 
+- `check-migration-order.mjs`: fails when a journal entry after the upstream
+  baseline has a `when` that is not newer than every earlier entry, because
+  Drizzle would silently skip it on existing databases. The unit test runs it
+  against the real journal, and `upstream-sync.yml` runs it with `--incoming
+  <upstream journal>` to flag upstream migrations older than our newest one.
+
 Helm validation also executes the existing secret and upgrade-rendering
 regression checks. Configure the new job checks as required in GitHub if they
 should block merging; editing workflows alone does not change branch
