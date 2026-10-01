@@ -62,6 +62,40 @@ describe("bulk task event snapshots", () => {
     );
   });
 
+  it("does not publish status_changed for tasks already in the target status", async () => {
+    const { user, workspace } = await createWorkspaceMember();
+    const { project } = await createProjectFixture({
+      workspaceId: workspace.id,
+    });
+    const [same, different] = await db
+      .insert(schema.taskTable)
+      .values([
+        {
+          projectId: project.id,
+          title: "Already there",
+          status: "in-progress",
+          number: 1,
+        },
+        { projectId: project.id, title: "Queued", status: "to-do", number: 2 },
+      ])
+      .returning();
+    await bulkUpdateTasks({
+      taskIds: [same.id, different.id],
+      operation: "updateStatus",
+      value: "in-progress",
+      userId: user.id,
+    });
+    const statusEvents = publish.mock.calls.filter(
+      ([name]) => (name as string) === "task.status_changed",
+    );
+    expect(statusEvents).toHaveLength(1);
+    expect(statusEvents[0][1]).toMatchObject({
+      taskId: different.id,
+      oldStatus: "to-do",
+      newStatus: "in-progress",
+    });
+  });
+
   it("preserves differing old priorities and titles in a single bulk operation", async () => {
     const { user, workspace } = await createWorkspaceMember();
     const { project } = await createProjectFixture({

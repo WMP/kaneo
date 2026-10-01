@@ -93,6 +93,12 @@ const ERROR_KEYS_BY_CODE: Record<string, string> = {
   GUEST_CANNOT_INVITE: "projectInvitations:errors.guestCannotInvite",
   DISPOSABLE_EMAIL_NOT_ALLOWED: "projectInvitations:errors.disposableEmail",
   PROJECT_INVITATION_NOT_APPLIED: "projectInvitations:errors.notApplied",
+  USER_CANNOT_BE_ADDED: "people:errors.userCannotBeAdded",
+  USER_DIRECTORY_DISABLED: "people:errors.directoryDisabled",
+  GUEST_NOT_ALLOWED: "people:errors.guestNotAllowed",
+  WORKSPACE_MEMBER_LIMIT_REACHED: "people:errors.membershipLimitReached",
+  // Better Auth's own code, when accepting an invitation hits the same limit.
+  ORGANIZATION_MEMBERSHIP_LIMIT_REACHED: "people:errors.membershipLimitReached",
 };
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;

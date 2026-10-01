@@ -96,7 +96,14 @@ vi.mock("@/components/ui/tooltip", async () => {
   };
 });
 
-function renderCommentCard(externalSource?: string, importedBy?: string) {
+function renderCommentCard(
+  externalSource?: string,
+  importedBy?: string,
+  actor?: {
+    actorVia?: "mcp" | "api" | null;
+    actorTokenHint?: string | null;
+  },
+) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -109,6 +116,8 @@ function renderCommentCard(externalSource?: string, importedBy?: string) {
       <CommentCard
         externalSource={externalSource}
         importedBy={importedBy}
+        actorVia={actor?.actorVia}
+        actorTokenHint={actor?.actorTokenHint}
         commentId="comment-1"
         taskId="task-1"
         content="Test comment"
@@ -140,6 +149,30 @@ describe("CommentCard", () => {
     renderCommentCard();
     expect(
       screen.queryByText(/activity:comment.importedFrom/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows where a comment came from when it was not written in the web UI", () => {
+    renderCommentCard(undefined, undefined, {
+      actorVia: "mcp",
+      actorTokenHint: "…a1b2",
+    });
+
+    expect(
+      screen.getByText(
+        "activity:actorVia.suffixWithHint activity:actorVia.mcp …a1b2",
+      ),
+    ).toBeVisible();
+  });
+
+  it("shows no source suffix for a web UI comment", () => {
+    renderCommentCard(undefined, undefined, {
+      actorVia: null,
+      actorTokenHint: null,
+    });
+
+    expect(
+      screen.queryByTestId("activity-actor-source"),
     ).not.toBeInTheDocument();
   });
 

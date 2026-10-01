@@ -96,8 +96,8 @@ function roleExceeds(message: string): HTTPException {
 
 // `assertCanAssignRole` speaks Better Auth's `APIError`, which a Hono route
 // would turn into a 500: translate it.
-async function assertWorkspaceRoleWithinCaller(
-  access: ProjectAccess,
+export async function assertWorkspaceRoleWithinCaller(
+  access: Pick<ProjectAccess, "workspaceId">,
   actorUserId: string,
   workspaceRole: string,
   executor?: SelectExecutor,

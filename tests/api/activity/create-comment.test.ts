@@ -5,6 +5,8 @@ const mockInsert = vi.fn();
 const mockPublishEvent = vi.fn();
 const mockCreateNotification = vi.fn();
 const mockReadTaskAssignees = vi.fn();
+const mockEventStore = vi.fn();
+const mockInsertValues = vi.fn();
 
 vi.mock("../../../apps/api/src/database", () => ({
   default: {
@@ -15,6 +17,7 @@ vi.mock("../../../apps/api/src/database", () => ({
 
 vi.mock("../../../apps/api/src/events", () => ({
   publishEvent: (...args: unknown[]) => mockPublishEvent(...args),
+  eventContext: { getStore: () => mockEventStore() },
 }));
 
 vi.mock(
@@ -39,7 +42,10 @@ function makeQueryStub(rows: unknown[]) {
     from: () => stub,
     innerJoin: () => stub,
     where: () => resolved,
-    values: () => stub,
+    values: (...args: unknown[]) => {
+      mockInsertValues(...args);
+      return stub;
+    },
     returning: () => resolved,
   };
   return stub;
@@ -157,5 +163,41 @@ describe("createComment", () => {
     await createComment("task-1", "commenter-1", "Looks good");
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
+  });
+
+  it("records how the commenter authenticated", async () => {
+    mockEventStore.mockReturnValue({
+      initiatorId: "commenter-1",
+      actorVia: "mcp",
+      actorTokenHint: "…a1b2",
+    });
+    mockSelect
+      .mockReturnValueOnce(makeQueryStub([{ name: "Commenter" }]))
+      .mockReturnValueOnce(makeQueryStub([TASK_ROW]));
+    mockReadTaskAssignees.mockResolvedValue(new Map());
+
+    await createComment("task-1", "commenter-1", "From an agent");
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "comment",
+        actorVia: "mcp",
+        actorTokenHint: "…a1b2",
+      }),
+    );
+  });
+
+  it("records no source for a comment outside a request", async () => {
+    mockEventStore.mockReturnValue(undefined);
+    mockSelect
+      .mockReturnValueOnce(makeQueryStub([{ name: "Commenter" }]))
+      .mockReturnValueOnce(makeQueryStub([TASK_ROW]));
+    mockReadTaskAssignees.mockResolvedValue(new Map());
+
+    await createComment("task-1", "commenter-1", "Web comment");
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ actorVia: null, actorTokenHint: null }),
+    );
   });
 });

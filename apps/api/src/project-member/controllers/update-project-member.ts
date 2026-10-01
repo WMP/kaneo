@@ -36,6 +36,8 @@ async function updateProjectMember({
   const [existing] = await db
     .select({
       role: projectMemberTable.role,
+      workspaceRole: workspaceUserTable.role,
+      joinedAt: projectMemberTable.createdAt,
       name: userTable.name,
       email: userTable.email,
       image: userTable.image,
@@ -103,6 +105,8 @@ async function updateProjectMember({
     email: existing.email,
     image: existing.image,
     role: updated.role,
+    workspaceRole: existing.workspaceRole,
+    joinedAt: existing.joinedAt,
     source: "project" as const,
     active: true,
   };

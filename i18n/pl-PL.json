@@ -576,6 +576,10 @@
 				"contentWithTask": "Rozpoczęto śledzenie czasu dla zadania: {{taskTitle}}",
 				"contentWithoutTask": "Rozpoczęto śledzenie czasu dla zadania"
 			},
+			"workspace_member_added": {
+				"title": "Dodano Cię do obszaru roboczego",
+				"content": "{{inviterName}} dodał(a) Cię do obszaru {{workspaceName}} z rolą: {{role}}"
+			},
 			"jira_status_proposal": {
 				"title": "Zmiana statusu w Jira",
 				"content": "Zgłoszenie Jira {{issueKey}} ma teraz status „{{toStatus}}” (zadanie „{{taskTitle}}”). Sprawdź proponowany status."
@@ -735,9 +739,7 @@
 			"viewer": "Obserwator"
 		},
 		"members": {
-			"pageTitle": "Członkowie",
-			"inviteMember": "Zaproś członka",
-			"you": "Ty"
+			"pageTitle": "Członkowie"
 		},
 		"invitations": {
 			"pendingBadge": "oczekujące",
@@ -761,20 +763,14 @@
 			"rejectedBadge": "odrzucone"
 		},
 		"inviteModal": {
-			"title": "Zaproś członka zespołu",
-			"emailLabel": "E-mail",
-			"emailPlaceholder": "wspolpracownik@firma.pl",
 			"sendInvitation": "Wyślij zaproszenie",
 			"success": "Zaproszenie zostało wysłane",
-			"error": "Nie udało się zaprosić członka zespołu",
 			"createdTitle": "Zaproszenie utworzone",
 			"shareLinkDescription": "Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego.",
 			"done": "Gotowe",
-			"invalidEmail": "Wpisz poprawny adres e-mail",
 			"noSmtpNotice": "Ten serwer nie ma skonfigurowanej poczty. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
 			"successNoEmail": "Zaproszenie zostało utworzone. E-mail nie został wysłany.",
 			"shareLinkDescriptionNoEmail": "E-mail nie został wysłany. Udostępnij ten link adresowi {{email}}, aby mógł dołączyć do obszaru roboczego.",
-			"roleLabel": "Rola",
 			"rolesLoading": "Wczytywanie ról...",
 			"rolesError": "Nie udało się wczytać ról, które możesz nadać. Spróbuj ponownie później.",
 			"noAssignableRoles": "Nie możesz nadać żadnej roli, więc nie możesz wysłać zaproszenia.",
@@ -788,15 +784,6 @@
 		"membersTable": {
 			"emptyTitle": "Brak członków zespołu",
 			"emptyDescription": "Zaproś pierwszego członka zespołu, aby zacząć.",
-			"columns": {
-				"name": "Nazwa",
-				"role": "Rola",
-				"joined": "Dołączył",
-				"actions": "Działania"
-			},
-			"memberRolePending": "{{role}} (oczekuje)",
-			"ariaCancelInvitation": "Anuluj zaproszenie",
-			"ariaInvitationActions": "Działania związane z zaproszeniem",
 			"ariaRemoveMember": "Usuń członka",
 			"ariaChangeRole": "Zmień rolę: {{name}}",
 			"rolesLoadError": "Nie udało się wczytać ról, które możesz nadać, więc teraz nie można zmieniać ról.",
@@ -890,6 +877,15 @@
 			"acceptSuccess": "Zaproszenie zaakceptowane! Witamy w zespole.",
 			"rejectError": "Nie udało się odrzucić zaproszenia",
 			"rejectSuccess": "Zaproszenie odrzucone"
+		},
+		"memberAddedEmail": {
+			"subject": "{{inviterName}} dodał(a) Cię do obszaru roboczego {{workspaceName}} w Kaneo",
+			"preview": "Dodano Cię do obszaru roboczego {{workspaceName}} w Kaneo",
+			"title": "Jesteś w obszarze {{workspaceName}}",
+			"subtitle": "{{inviterName}} dodał(a) Cię do obszaru roboczego {{workspaceName}} z rolą: {{role}}.",
+			"cta": "Otwórz obszar roboczy",
+			"ignore": "Jeśli to niespodzianka, możesz w każdej chwili opuścić obszar roboczy.",
+			"footer": "Obszar roboczy Kaneo"
 		}
 	},
 	"activity": {
@@ -1031,6 +1027,12 @@
 			"issueUnlinked": "odłączył(a) zgłoszenie Jira",
 			"statusChanged": "zmieniła status {{issueKey}} z {{from}} na {{to}}",
 			"statusChangedNoFrom": "zmieniła status {{issueKey}} na {{to}}"
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		}
 	},
 	"settings": {
@@ -1093,6 +1095,7 @@
 			}
 		},
 		"apiKeys": "Klucze API",
+		"mcp": "MCP",
 		"columnEditor": {
 			"add": "Dodaj",
 			"doneColumn": "Kolumna ukończona",
@@ -1124,6 +1127,51 @@
 			"subtitle": "Zarządzaj kluczami API i zasobami dla deweloperów.",
 			"title": "Ustawienia deweloperskie",
 			"unnamedKey": "Klucz bez nazwy"
+		},
+		"mcpPage": {
+			"pageTitle": "MCP",
+			"title": "MCP",
+			"subtitle": "Połącz klientów AI z Kaneo. Połączony klient może zarządzać przestrzeniami roboczymi, projektami, zadaniami, komentarzami i etykietami w Twoim imieniu. Logujesz się w przeglądarce i jawnie zatwierdzasz dostęp, więc w poleceniach nie jest potrzebny żaden token.",
+			"copy": "Kopiuj",
+			"copied": "Skopiowano",
+			"copyAria": "Kopiuj: {{label}}",
+			"toastCopied": "Skopiowano do schowka",
+			"copyFailed": "Nie udało się skopiować automatycznie. Zaznacz tekst i naciśnij Ctrl+C.",
+			"docsLink": "Przeczytaj dokumentację MCP",
+			"serverUrl": {
+				"title": "Adres serwera",
+				"description": "Punkt końcowy MCP (Streamable HTTP) tej instancji Kaneo."
+			},
+			"claudeCode": {
+				"title": "Claude Code",
+				"description": "Dodaj Kaneo jako serwer MCP przez HTTP.",
+				"afterAdd": "Następnie uruchom claude, wpisz /mcp, wybierz kaneo i uwierzytelnij się w przeglądarce.",
+				"allowedToolsLabel": "Claude Code bez zatwierdzania każdego narzędzia",
+				"allowedToolsNote": "Opcjonalnie: pomija pytania o zgodę dla każdego narzędzia Kaneo. Używaj ostrożnie."
+			},
+			"codex": {
+				"title": "Codex",
+				"description": "Dodaj Kaneo jako serwer MCP, a następnie zaloguj się w przeglądarce.",
+				"addLabel": "Codex: dodanie serwera",
+				"loginLabel": "Codex: logowanie",
+				"configNote": "Możesz też dodać poniższy wpis do ~/.codex/config.toml i uruchomić polecenie logowania.",
+				"configLabel": "Codex: config.toml"
+			},
+			"desktop": {
+				"title": "Claude Desktop i claude.ai",
+				"description": "Użyj własnego konektora.",
+				"steps": "Otwórz Ustawienia, następnie Konektory, wybierz Dodaj własny konektor i wklej adres serwera.",
+				"note": "Ta opcja wymaga, aby instancja była dostępna z internetu przez HTTPS."
+			},
+			"cursor": {
+				"title": "Cursor i inni klienci",
+				"description": "Dodaj ten wpis do konfiguracji MCP klientów obsługujących serwery HTTP."
+			},
+			"stdio": {
+				"title": "Lokalny serwer stdio",
+				"description": "Dla klientów bez transportu HTTP.",
+				"note": "Używa logowania urządzenia i wymaga Node.js 24 lub nowszego."
+			}
 		},
 		"discordIntegration": {
 			"channelHint": "Opcjonalna etykieta pomocnicza. Discord określa docelowy kanał na podstawie konfiguracji webhooka.",
@@ -1165,19 +1213,19 @@
 		},
 		"externalLinks": {
 			"adding": "Dodawanie...",
-			"addResource": "Dodaj zasób",
+			"addLink": "Dodaj link",
 			"branch": "Gałąź",
 			"cancel": "Anuluj",
 			"draft": "Wersja robocza",
-			"empty": "Brak zasobów powiązanych z tym zadaniem.",
+			"empty": "Brak linków powiązanych z tym zadaniem.",
 			"issue": "Zgłoszenie",
 			"merged": "Scalone",
 			"open": "Otwarte",
-			"resources": "Zasoby",
+			"links": "Linki",
 			"titleOptional": "Tytuł (opcjonalnie)",
 			"url": "URL",
 			"remove": "Usuń {{title}}",
-			"removeError": "Nie udało się usunąć linku do zasobu."
+			"removeError": "Nie udało się usunąć linku."
 		},
 		"genericWebhookIntegration": {
 			"connect": "Połącz webhook",
@@ -2304,7 +2352,19 @@
 			"hiddenOnProject": "Ukryte",
 			"hideField": "Ukryj „{{name}}\" dla tego projektu",
 			"showField": "Pokaż „{{name}}\" dla tego projektu",
-			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola."
+			"visibilityUpdateError": "Nie udało się zaktualizować widoczności pola.",
+			"editFieldAriaLabel": "Edytuj pole własne „{{name}}\"",
+			"editFormAriaLabel": "Edycja pola własnego „{{name}}\"",
+			"nameLabel": "Nazwa",
+			"typeLabel": "Typ",
+			"typeReadOnlyHint": "Typu nie można zmienić po utworzeniu pola.",
+			"optionsLabel": "Opcje",
+			"defaultValueLabel": "Wartość domyślna",
+			"saveButton": "Zapisz",
+			"cancelButton": "Anuluj",
+			"saving": "Zapisywanie…",
+			"updateSuccess": "Pole własne zostało zaktualizowane.",
+			"updateError": "Nie udało się zaktualizować pola własnego."
 		},
 		"administration": "Administracja",
 		"adminUsers": {
@@ -2814,6 +2874,12 @@
 			"loadError": "Nie udało się załadować kanałów kalendarza ani etykiet. Spróbuj ponownie.",
 			"deletedLabel": "Usunięta etykieta",
 			"permissionRequired": "Do zarządzania kanałami kalendarza potrzebujesz uprawnienia do udostępniania projektu."
+		},
+		"workspaceMembers": {
+			"title": "Członkowie"
+		},
+		"workspaceBilling": {
+			"title": "Rozliczenia"
 		}
 	},
 	"tasks": {
@@ -3107,6 +3173,7 @@
 			"previousPeriod": "Poprzedni okres",
 			"nextPeriod": "Następny okres",
 			"periodStart": "Data początkowa osi czasu",
+			"periodStartLocked": "Wszystkie zadania mieszczą się w jednym okresie, więc daty początkowej nie można przesunąć",
 			"showTaskDates": "Pokaż daty zadań",
 			"legendBlocking": "Blokujące",
 			"legendRelated": "Powiązane",
@@ -3199,7 +3266,10 @@
 				"newResourceNamePlaceholder": "Nazwa",
 				"newResourceEmailPlaceholder": "E-mail (opcjonalnie)",
 				"createResource": "Utwórz",
-				"createResourceError": "Nie udało się utworzyć zasobu"
+				"createResourceError": "Nie udało się utworzyć zasobu",
+				"assignedCount": "Przypisano: {{count}}",
+				"inviteResource": "Zaproś do projektu",
+				"invitationPending": "Zaproszenie wysłane"
 			},
 			"dueDate": {
 				"clear": "Wyczyść datę",
@@ -3769,16 +3839,7 @@
 		"loading": "Wczytywanie członków...",
 		"loadError": "Nie udało się wczytać członków projektu.",
 		"retry": "Spróbuj ponownie",
-		"addMember": "Dodaj członka",
-		"inviteByEmail": "Zaproś e-mailem",
 		"table": {
-			"columns": {
-				"member": "Członek",
-				"role": "Rola w projekcie"
-			},
-			"you": "Ty",
-			"fullAccess": "Pełny dostęp",
-			"fullAccessHint": "Ma dostęp do wszystkich projektów przez swoją rolę w obszarze roboczym. Zmienisz ją w członkach obszaru roboczego.",
 			"inactive": "nieaktywny",
 			"inactiveHint": "Ta rola nie daje już dostępu. Wybierz inną rolę albo usuń osobę.",
 			"emptyTitle": "Brak członków",
@@ -3804,27 +3865,6 @@
 			"success": "Opuszczono projekt",
 			"error": "Nie udało się opuścić projektu"
 		},
-		"addDialog": {
-			"title": "Dodaj członka projektu",
-			"description": "Wybierz członka obszaru roboczego i rolę w projekcie.",
-			"memberLabel": "Członek obszaru roboczego",
-			"searchPlaceholder": "Szukaj po imieniu lub e-mailu",
-			"noCandidates": "Wszyscy w tym obszarze roboczym mają już dostęp do tego projektu.",
-			"noMatches": "Nikt nie pasuje do wyszukiwania.",
-			"loading": "Wczytywanie osób...",
-			"loadError": "Nie udało się wczytać osób, które możesz dodać.",
-			"roleLabel": "Rola w projekcie",
-			"rolePlaceholder": "Wybierz rolę",
-			"rolesLoading": "Wczytywanie ról...",
-			"rolesError": "Nie udało się wczytać ról, które możesz nadawać.",
-			"noAssignableRoles": "Nie możesz nadać żadnej roli.",
-			"rolePickRequired": "Wybierz rolę w projekcie.",
-			"roleUnavailable": "Wybrana rola nie jest już dostępna. Wybierz inną.",
-			"submit": "Dodaj członka",
-			"submitting": "Dodawanie...",
-			"success": "Członek został dodany do projektu",
-			"error": "Nie udało się dodać członka"
-		},
 		"noAccess": {
 			"title": "Nie masz dostępu do tego projektu",
 			"description": "Poproś administratora projektu lub obszaru roboczego o dodanie Cię.",
@@ -3834,10 +3874,6 @@
 			"title": "Brak dostępu do projektów",
 			"description": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu.",
 			"descriptionCanCreate": "Nie masz jeszcze dostępu do żadnego projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu albo utwórz własny projekt."
-		},
-		"workspaceInvite": {
-			"info": "Osoby bez pełnego dostępu widzą tylko projekty, do których zostały dodane. Aby zaprosić kogoś do jednego projektu, użyj opcji Zaproś e-mailem w ustawieniach projektu.",
-			"link": "Otwórz ustawienia projektu"
 		},
 		"errors": {
 			"roleExceedsYourPermissions": "Nie możesz nadać roli z większymi uprawnieniami niż Twoje.",
@@ -3881,40 +3917,14 @@
 			"rolesRetry": "Spróbuj ponownie"
 		},
 		"invite": {
-			"title": "Zaproś do projektu",
-			"description": "Zaproś osobę, której nie ma jeszcze w obszarze roboczym. Dostanie role wybrane poniżej.",
-			"emailLabel": "E-mail",
-			"emailPlaceholder": "kolega@firma.pl",
-			"invalidEmail": "Wpisz poprawny adres e-mail",
-			"workspaceRoleLabel": "Rola w obszarze roboczym",
-			"workspaceRoleHint": "Co osoba może robić w obszarze roboczym.",
-			"projectRoleLabel": "Rola w projekcie",
-			"projectRoleHint": "Co osoba może robić w tym projekcie.",
-			"rolePlaceholder": "Wybierz rolę",
-			"noSmtpNotice": "E-mail nie jest skonfigurowany na tym serwerze. Zaproszenie nie zostanie wysłane e-mailem. Skopiuj link i wyślij go sam.",
-			"submit": "Wyślij zaproszenie",
-			"submitting": "Wysyłanie...",
-			"createdTitle": "Zaproszenie zostało utworzone",
 			"createdSent": "Zaproszenie zostało wysłane do {{email}}.",
 			"createdNotSent": "Zaproszenie dla {{email}} zostało utworzone. E-mail nie został wysłany. Udostępnij link poniżej.",
 			"createdSendFailed": "Zaproszenie dla {{email}} zostało utworzone, ale nie udało się wysłać e-maila. Udostępnij link poniżej albo wyślij zaproszenie ponownie z listy.",
 			"addedToExisting": "{{email}} ma już oczekujące zaproszenie. Ten projekt został do niego dodany. Drugi e-mail nie został wysłany. W razie potrzeby udostępnij link.",
-			"done": "Gotowe",
-			"addAsMember": "Dodaj jako członka",
-			"error": "Nie udało się wysłać zaproszenia",
-			"workspaceRolesLoading": "Wczytywanie ról w obszarze roboczym...",
-			"workspaceRolesError": "Nie udało się wczytać ról w obszarze roboczym, które możesz nadawać.",
-			"noAssignableWorkspaceRoles": "Nie możesz nadać żadnej roli w obszarze roboczym, więc nie możesz zapraszać osób.",
-			"workspaceRolePickRequired": "Wybierz rolę w obszarze roboczym.",
-			"workspaceRoleUnavailable": "Wybrana rola w obszarze roboczym nie jest już dostępna. Wybierz inną.",
-			"projectRolesLoading": "Wczytywanie ról w projekcie...",
-			"projectRolesError": "Nie udało się wczytać ról w projekcie, które możesz nadawać.",
-			"noAssignableProjectRoles": "Nie możesz nadać żadnej roli w projekcie, więc nie możesz zapraszać osób.",
-			"projectRolePickRequired": "Wybierz rolę w projekcie.",
-			"projectRoleUnavailable": "Wybrana rola w projekcie nie jest już dostępna. Wybierz inną."
+			"addAsMember": "Dodaj jako członka"
 		},
 		"errors": {
-			"alreadyWorkspaceMember": "Ta osoba jest już członkiem obszaru roboczego. Dodaj ją do projektu przez Dodaj członka.",
+			"alreadyWorkspaceMember": "Ta osoba jest już członkiem obszaru roboczego. Dodaj ją do projektu.",
 			"roleConflict": "Oczekujące zaproszenie dla tego adresu e-mail już istnieje z inną rolą w obszarze roboczym. Anuluj je albo użyj tej samej roli.",
 			"workspaceInvitationExists": "Ten adres e-mail ma już oczekujące zaproszenie do obszaru roboczego. Dodać do niego projekt może tylko osoba, która może zapraszać do obszaru roboczego.",
 			"expired": "To zaproszenie wygasło. Zaproś osobę ponownie.",
@@ -3932,6 +3942,93 @@
 			"projectRole": "{{project}}, rola: {{role}}",
 			"alreadyMemberTitle": "Jesteś już członkiem",
 			"alreadyMemberDescription": "Jesteś już członkiem obszaru {{workspaceName}}, więc to zaproszenie nie doda Cię do projektu. Poproś administratora obszaru roboczego o dodanie Cię do projektu."
+		}
+	},
+	"people": {
+		"loading": "Wczytuję osoby...",
+		"loadError": "Nie udało się wczytać osób z tego obszaru roboczego.",
+		"retry": "Spróbuj ponownie",
+		"table": {
+			"columns": {
+				"person": "Osoba",
+				"workspaceRole": "Rola w obszarze",
+				"projectRole": "Rola w projekcie",
+				"projects": "Projekty",
+				"joined": "Data dołączenia"
+			},
+			"you": "Ty",
+			"fullAccess": "Pełny dostęp",
+			"fullAccessHint": "Ma dostęp do wszystkich projektów dzięki roli w obszarze.",
+			"noProjects": "Brak projektów",
+			"moreProjects_one": "+{{count}} więcej",
+			"moreProjects_few": "+{{count}} więcej",
+			"moreProjects_many": "+{{count}} więcej",
+			"moreProjects_other": "+{{count}} więcej"
+		},
+		"invitations": {
+			"workspaceSubtitle": "Osoby zaproszone do tego obszaru roboczego, które jeszcze nie dołączyły."
+		},
+		"add": {
+			"open": "Dodaj osoby",
+			"title": "Dodaj osoby",
+			"description": "Szukaj po imieniu lub e-mailu. Wybierz osobę, aby dodać ją od razu. Wpisz adres e-mail, aby wysłać zaproszenie.",
+			"fieldLabel": "Imię lub e-mail",
+			"placeholder": "Szukaj po imieniu lub e-mailu",
+			"suggestions": "Podpowiedzi",
+			"groups": {
+				"workspace": "W tym obszarze roboczym",
+				"directory": "Inne konta na tym serwerze"
+			},
+			"inviteOption": "Wyślij zaproszenie na {{email}}",
+			"inviteOptionHint": "Nie znaleziono konta. Osoba dostanie e-mail z zaproszeniem.",
+			"searching": "Szukam...",
+			"searchError": "Nie udało się przeszukać kont. Spróbuj ponownie.",
+			"loadError": "Nie udało się wczytać osób, które możesz dodać.",
+			"retry": "Spróbuj ponownie",
+			"noMatches": "Nikt nie pasuje do wyszukiwania.",
+			"noMatchesInvite": "Nikt nie pasuje. Wpisz pełny adres e-mail, aby wysłać zaproszenie.",
+			"hintSearchOrInvite": "Wpisz co najmniej 2 znaki, aby szukać. Albo wpisz adres e-mail, aby zaprosić osobę.",
+			"hintSearch": "Wpisz co najmniej 2 znaki, aby szukać.",
+			"hintInviteOnly": "Wpisz adres e-mail, aby wysłać zaproszenie.",
+			"hintNothing": "Nie możesz tu dodawać osób.",
+			"selectedLabel": "Osoba",
+			"change": "Zmień",
+			"willAdd": "Osoba zostanie dodana od razu, bez zaproszenia.",
+			"willInvite": "Zaproszenie zostanie wysłane na {{email}}.",
+			"workspaceRoleLabel": "Rola w obszarze",
+			"workspaceRoleHint": "Co osoba może robić w obszarze roboczym.",
+			"projectRoleLabel": "Rola w projekcie",
+			"projectRoleHint": "Co osoba może robić w tym projekcie.",
+			"roles": {
+				"placeholder": "Wybierz rolę",
+				"workspaceLoading": "Wczytuję role w obszarze...",
+				"workspaceError": "Nie udało się wczytać ról w obszarze, które możesz nadać.",
+				"workspaceNone": "Nie możesz nadać żadnej roli w obszarze.",
+				"workspacePickRequired": "Wybierz rolę w obszarze.",
+				"workspaceUnavailable": "Wybrana rola w obszarze jest już niedostępna. Wybierz inną.",
+				"projectLoading": "Wczytuję role w projekcie...",
+				"projectError": "Nie udało się wczytać ról w projekcie, które możesz nadać.",
+				"projectNone": "Nie możesz nadać żadnej roli w projekcie.",
+				"projectPickRequired": "Wybierz rolę w projekcie.",
+				"projectUnavailable": "Wybrana rola w projekcie jest już niedostępna. Wybierz inną."
+			},
+			"add": "Dodaj",
+			"adding": "Dodaję...",
+			"sendInvitation": "Wyślij zaproszenie",
+			"sending": "Wysyłam...",
+			"added": "Dodano: {{name}}.",
+			"addedEmailed": "Dodano: {{name}}. Osoba dostała e-mail.",
+			"addedEmailFailed": "Dodano: {{name}}, ale nie udało się wysłać e-maila.",
+			"addError": "Nie udało się dodać osoby",
+			"inviteError": "Nie udało się wysłać zaproszenia"
+		},
+		"errors": {
+			"userCannotBeAdded": "Tego konta nie można dodać. Wyszukaj ponownie albo zaproś osobę e-mailem.",
+			"directoryDisabled": "Wyszukiwanie wszystkich kont jest wyłączone na tym serwerze. Wpisz adres e-mail, aby zaprosić osobę.",
+			"membershipLimitReached": "Obszar roboczy osiągnął limit członków.",
+			"guestNotAllowed": "Konta gościa nie mogą szukać kont ani dodawać osób. Zaloguj się na pełne konto.",
+			"addRateLimited": "Dodano wiele osób w krótkim czasie. Spróbuj ponownie później.",
+			"searchRateLimited": "Zbyt wiele wyszukiwań. Spróbuj za chwilę."
 		}
 	}
 }

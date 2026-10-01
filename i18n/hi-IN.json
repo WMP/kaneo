@@ -1440,20 +1440,20 @@
 			"gitlabHint": "GitLab वेबहुक इवेंट होने पर लिंक किए गए कार्य को किसी कॉलम में ले जाएँ।"
 		},
 		"externalLinks": {
-			"resources": "संसाधन",
 			"issue": "इश्यू",
 			"branch": "ब्रांच",
 			"merged": "मर्ज किया",
 			"draft": "ड्राफ़्ट",
 			"open": "खुला",
 			"adding": "जोड़ रहे हैं...",
-			"addResource": "संसाधन जोड़ें",
+			"addLink": "लिंक जोड़ें",
 			"cancel": "रद्द करें",
-			"empty": "इस कार्य से कोई संसाधन लिंक नहीं है।",
+			"empty": "इस कार्य से कोई लिंक जुड़ा नहीं है।",
 			"titleOptional": "शीर्षक (वैकल्पिक)",
 			"url": "URL",
 			"remove": "{{title}} हटाएँ",
-			"removeError": "संसाधन लिंक हटाया नहीं जा सका।"
+			"removeError": "लिंक हटाया नहीं जा सका।",
+			"links": "लिंक"
 		},
 		"mattermostIntegration": {
 			"channelHint": "आपके संदर्भ के लिए वैकल्पिक लेबल। असली गंतव्य चैनल Mattermost में वेबहुक सेटअप से तय होता है।",
@@ -1541,7 +1541,19 @@
 			"requiredByWorkspace": "वर्कस्पेस द्वारा अनिवार्य",
 			"showField": "इस प्रोजेक्ट के लिए \"{{name}}\" दिखाएँ",
 			"visibilityUpdateError": "फ़ील्ड की दृश्यता अपडेट नहीं हो सकी।",
-			"visibleOnProject": "दिखाई दे रहा"
+			"visibleOnProject": "दिखाई दे रहा",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "प्रशासन",
 		"adminUsers": {
@@ -1904,6 +1916,58 @@
 				"title": "इस संसाधन का लिंक हटाएँ?"
 			},
 			"unlinkAction": "लिंक हटाएँ"
+		},
+		"workspaceMembers": {
+			"title": "Members"
+		},
+		"workspaceBilling": {
+			"title": "Billing"
+		},
+		"mcp": "MCP",
+		"mcpPage": {
+			"claudeCode": {
+				"afterAdd": "Then start claude, run /mcp, choose kaneo and authenticate in the browser.",
+				"allowedToolsLabel": "Claude Code without per-tool approval",
+				"allowedToolsNote": "Optional: this skips the per-tool approval prompts for Kaneo tools. Use with care.",
+				"description": "Add Kaneo as an HTTP MCP server.",
+				"title": "Claude Code"
+			},
+			"codex": {
+				"addLabel": "Codex add server",
+				"configLabel": "Codex config.toml",
+				"configNote": "Alternatively, add this to ~/.codex/config.toml and run the login command.",
+				"description": "Add Kaneo as an MCP server, then sign in from the browser.",
+				"loginLabel": "Codex login",
+				"title": "Codex"
+			},
+			"copied": "Copied",
+			"copy": "Copy",
+			"copyAria": "Copy {{label}}",
+			"copyFailed": "Couldn't copy automatically. Select the text and press Ctrl+C.",
+			"cursor": {
+				"description": "Add this entry to the MCP configuration of clients that support HTTP servers.",
+				"title": "Cursor and other clients"
+			},
+			"desktop": {
+				"description": "Use a custom connector.",
+				"note": "This option requires the instance to be reachable from the internet over HTTPS.",
+				"steps": "Open Settings, then Connectors, choose Add custom connector and paste the server URL.",
+				"title": "Claude Desktop and claude.ai"
+			},
+			"docsLink": "Read the MCP documentation",
+			"pageTitle": "MCP",
+			"serverUrl": {
+				"description": "The Streamable HTTP MCP endpoint of this Kaneo instance.",
+				"title": "Server URL"
+			},
+			"stdio": {
+				"description": "For clients without HTTP transport.",
+				"note": "Uses device login and requires Node.js 24 or newer.",
+				"title": "Local stdio server"
+			},
+			"subtitle": "Connect AI clients to Kaneo. A connected client can manage workspaces, projects, tasks, comments and labels as you. You sign in in your browser and approve access explicitly, so no token is needed in the commands.",
+			"title": "MCP",
+			"toastCopied": "Copied to clipboard"
 		},
 		"jiraIntegration": {
 			"account": {
@@ -2345,6 +2409,10 @@
 				"contentWithTask": "कार्य पर समय ट्रैकिंग शुरू: {{taskTitle}}",
 				"contentWithoutTask": "एक कार्य पर समय ट्रैकिंग शुरू"
 			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
+			},
 			"jira_status_proposal": {
 				"content": "Jira issue {{issueKey}} is now \"{{toStatus}}\" (task \"{{taskTitle}}\"). Review the proposed status.",
 				"title": "Jira status changed"
@@ -2482,6 +2550,12 @@
 				"baselineStartDate": "आधार रेखा प्रारंभ तिथि",
 				"baselineDueDate": "आधार रेखा नियत तिथि"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		},
 		"jira": {
 			"actor": "Jira",
@@ -2740,7 +2814,10 @@
 					"person": "व्यक्ति"
 				},
 				"resourcesHeading": "संसाधन",
-				"notInProject": "अब इस प्रोजेक्ट में नहीं है"
+				"notInProject": "अब इस प्रोजेक्ट में नहीं है",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "कार्य की स्थिति अपडेट करने में विफल"
@@ -2908,6 +2985,7 @@
 			"previousPeriod": "पिछली अवधि",
 			"nextPeriod": "अगली अवधि",
 			"periodStart": "टाइमलाइन की शुरुआती तारीख़",
+			"periodStartLocked": "सभी कार्य एक ही अवधि में समा जाते हैं, इसलिए शुरुआती तारीख़ बदली नहीं जा सकती",
 			"showTaskDates": "कार्य की तारीख़ें दिखाएँ",
 			"legendBlocking": "अवरोधक",
 			"legendRelated": "संबंधित",
@@ -3234,6 +3312,15 @@
 			"acceptSuccess": "निमंत्रण स्वीकार किया! टीम में स्वागत है।",
 			"rejectError": "निमंत्रण अस्वीकार करने में विफल",
 			"rejectSuccess": "निमंत्रण अस्वीकार किया गया"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3387,9 +3474,7 @@
 			"viewer": "दर्शक"
 		},
 		"members": {
-			"pageTitle": "सदस्य",
-			"inviteMember": "सदस्य आमंत्रित करें",
-			"you": "आप"
+			"pageTitle": "सदस्य"
 		},
 		"invitations": {
 			"pendingBadge": "लंबित",
@@ -3413,21 +3498,15 @@
 			"rejectedBadge": "अस्वीकृत"
 		},
 		"inviteModal": {
-			"title": "टीम सदस्य आमंत्रित करें",
-			"emailLabel": "ईमेल",
-			"emailPlaceholder": "colleague@company.com",
 			"sendInvitation": "निमंत्रण भेजें",
 			"success": "निमंत्रण सफलतापूर्वक भेजा गया",
-			"error": "टीम सदस्य आमंत्रित करने में विफल",
 			"createdTitle": "निमंत्रण बनाया गया",
 			"shareLinkDescription": "यह लिंक {{email}} के साथ साझा करें ताकि वे वर्कस्पेस में शामिल हो सकें।",
 			"done": "हो गया",
-			"invalidEmail": "मान्य ईमेल पता दर्ज करें",
 			"noSmtpNotice": "इस सर्वर पर ईमेल कॉन्फ़िगर नहीं है। आमंत्रण ईमेल नहीं किया जाएगा; लिंक कॉपी करके खुद भेजें।",
 			"shareLinkDescriptionNoEmail": "कोई ईमेल नहीं भेजा गया। यह लिंक {{email}} के साथ साझा करें ताकि वे वर्कस्पेस से जुड़ सकें।",
 			"successNoEmail": "आमंत्रण बन गया। कोई ईमेल नहीं भेजा गया।",
 			"noAssignableRoles": "आप कोई भी भूमिका नहीं दे सकते, इसलिए लोगों को आमंत्रित नहीं कर सकते।",
-			"roleLabel": "भूमिका",
 			"rolesError": "जो भूमिकाएँ आप दे सकते हैं वे लोड नहीं हो सकीं। बाद में पुनः प्रयास करें।",
 			"rolesLoading": "भूमिकाएँ लोड हो रही हैं...",
 			"sending": "भेज रहे हैं...",
@@ -3440,15 +3519,6 @@
 		"membersTable": {
 			"emptyTitle": "अभी तक कोई टीम सदस्य नहीं",
 			"emptyDescription": "शुरू करने के लिए अपने पहले टीम सदस्य को आमंत्रित करें।",
-			"columns": {
-				"name": "नाम",
-				"role": "भूमिका",
-				"joined": "शामिल हुए",
-				"actions": "कार्रवाइयाँ"
-			},
-			"memberRolePending": "{{role}} (लंबित)",
-			"ariaCancelInvitation": "निमंत्रण रद्द करें",
-			"ariaInvitationActions": "निमंत्रण कार्रवाइयाँ",
 			"ariaRemoveMember": "सदस्य हटाएँ",
 			"removeDialogTitle": "टीम सदस्य हटाएँ?",
 			"removeDialogDescription": "क्या आप वाकई {{name}} को वर्कस्पेस से हटाना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।",
@@ -3767,33 +3837,7 @@
 			"addedToExisting": "{{email}} का आमंत्रण पहले से लंबित है। इस प्रोजेक्ट को उसमें जोड़ दिया गया। दूसरा ईमेल नहीं भेजा गया। ज़रूरत हो तो लिंक साझा करें।",
 			"createdNotSent": "{{email}} के लिए आमंत्रण बन गया। कोई ईमेल नहीं भेजा गया। नीचे दिया लिंक साझा करें।",
 			"createdSendFailed": "{{email}} के लिए आमंत्रण बन गया, लेकिन ईमेल नहीं भेजा जा सका। नीचे दिया लिंक साझा करें या सूची से दोबारा भेजें।",
-			"createdSent": "आमंत्रण {{email}} को भेज दिया गया।",
-			"createdTitle": "आमंत्रण बन गया",
-			"description": "ऐसे किसी व्यक्ति को आमंत्रित करें जो अभी वर्कस्पेस में नहीं है। उसे नीचे चुनी गई भूमिकाएँ मिलेंगी।",
-			"done": "हो गया",
-			"emailLabel": "ईमेल",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "आमंत्रण भेजा नहीं जा सका",
-			"invalidEmail": "मान्य ईमेल पता दर्ज करें",
-			"noSmtpNotice": "इस सर्वर पर ईमेल कॉन्फ़िगर नहीं है। आमंत्रण ईमेल नहीं किया जाएगा। लिंक कॉपी करके खुद भेजें।",
-			"projectRoleHint": "व्यक्ति इस प्रोजेक्ट में क्या कर सकता है।",
-			"projectRoleLabel": "प्रोजेक्ट भूमिका",
-			"rolePlaceholder": "भूमिका चुनें",
-			"submit": "आमंत्रण भेजें",
-			"submitting": "भेज रहे हैं...",
-			"title": "प्रोजेक्ट में आमंत्रित करें",
-			"workspaceRoleHint": "व्यक्ति वर्कस्पेस में क्या कर सकता है।",
-			"workspaceRoleLabel": "वर्कस्पेस भूमिका",
-			"noAssignableProjectRoles": "आप कोई प्रोजेक्ट भूमिका नहीं दे सकते, इसलिए लोगों को आमंत्रित नहीं कर सकते।",
-			"noAssignableWorkspaceRoles": "आप कोई वर्कस्पेस भूमिका नहीं दे सकते, इसलिए लोगों को आमंत्रित नहीं कर सकते।",
-			"projectRolePickRequired": "प्रोजेक्ट भूमिका चुनें।",
-			"projectRolesError": "जो प्रोजेक्ट भूमिकाएँ आप दे सकते हैं वे लोड नहीं हो सकीं।",
-			"projectRolesLoading": "प्रोजेक्ट भूमिकाएँ लोड हो रही हैं...",
-			"projectRoleUnavailable": "आपकी चुनी हुई प्रोजेक्ट भूमिका अब उपलब्ध नहीं है। कोई दूसरी चुनें।",
-			"workspaceRolePickRequired": "वर्कस्पेस भूमिका चुनें।",
-			"workspaceRolesError": "जो वर्कस्पेस भूमिकाएँ आप दे सकते हैं वे लोड नहीं हो सकीं।",
-			"workspaceRolesLoading": "वर्कस्पेस भूमिकाएँ लोड हो रही हैं...",
-			"workspaceRoleUnavailable": "आपकी चुनी हुई वर्कस्पेस भूमिका अब उपलब्ध नहीं है। कोई दूसरी चुनें।"
+			"createdSent": "आमंत्रण {{email}} को भेज दिया गया।"
 		},
 		"list": {
 			"ariaActions": "{{email}} के आमंत्रण के लिए कार्रवाइयाँ",
@@ -3819,28 +3863,6 @@
 		"title": "लंबित आमंत्रण"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "कोई वर्कस्पेस सदस्य और प्रोजेक्ट भूमिका चुनें।",
-			"error": "सदस्य को जोड़ा नहीं जा सका",
-			"loadError": "जिन लोगों को आप जोड़ सकते हैं वे लोड नहीं हो सके।",
-			"loading": "लोग लोड हो रहे हैं...",
-			"memberLabel": "वर्कस्पेस सदस्य",
-			"noAssignableRoles": "आप कोई भी भूमिका नहीं दे सकते।",
-			"noCandidates": "इस वर्कस्पेस में सभी के पास पहले से इस प्रोजेक्ट का एक्सेस है।",
-			"noMatches": "आपकी खोज से कोई मेल नहीं खाता।",
-			"roleLabel": "प्रोजेक्ट भूमिका",
-			"rolePickRequired": "प्रोजेक्ट भूमिका चुनें।",
-			"rolePlaceholder": "भूमिका चुनें",
-			"rolesError": "जो भूमिकाएँ आप दे सकते हैं वे लोड नहीं हो सकीं।",
-			"rolesLoading": "भूमिकाएँ लोड हो रही हैं...",
-			"roleUnavailable": "आपकी चुनी हुई भूमिका अब उपलब्ध नहीं है। कोई दूसरी चुनें।",
-			"searchPlaceholder": "नाम या ईमेल से खोजें",
-			"submit": "सदस्य जोड़ें",
-			"submitting": "जोड़ रहे हैं...",
-			"success": "सदस्य प्रोजेक्ट में जोड़ दिया गया",
-			"title": "प्रोजेक्ट सदस्य जोड़ें"
-		},
-		"addMember": "सदस्य जोड़ें",
 		"errors": {
 			"alreadyProjectMember": "यह व्यक्ति पहले से इस प्रोजेक्ट का सदस्य है।",
 			"cannotChangeOwnRole": "आप अपनी प्रोजेक्ट भूमिका नहीं बदल सकते।",
@@ -3856,7 +3878,6 @@
 			"unknownRole": "यह भूमिका मौजूद नहीं है। पेज रीलोड करें और कोई दूसरी चुनें।",
 			"userHasFullAccess": "इस व्यक्ति के पास पहले से हर प्रोजेक्ट का पूरा एक्सेस है।"
 		},
-		"inviteByEmail": "ईमेल से आमंत्रित करें",
 		"leaveDialog": {
 			"description": "आपका इस प्रोजेक्ट का एक्सेस चला जाएगा। प्रोजेक्ट एडमिन या वर्कस्पेस एडमिन आपको फिर से जोड़ सकता है।",
 			"error": "प्रोजेक्ट छोड़ा नहीं जा सका",
@@ -3887,14 +3908,8 @@
 		"table": {
 			"ariaActions": "{{name}} के लिए कार्रवाइयाँ",
 			"ariaChangeRole": "{{name}} की प्रोजेक्ट भूमिका बदलें",
-			"columns": {
-				"member": "सदस्य",
-				"role": "प्रोजेक्ट भूमिका"
-			},
 			"emptyDescription": "कोई वर्कस्पेस सदस्य जोड़ें या किसी को ईमेल से आमंत्रित करें।",
 			"emptyTitle": "अभी कोई सदस्य नहीं",
-			"fullAccess": "पूरा एक्सेस",
-			"fullAccessHint": "वर्कस्पेस भूमिका के ज़रिए हर प्रोजेक्ट का एक्सेस है। इसे वर्कस्पेस सदस्यों में बदलें।",
 			"inactive": "निष्क्रिय",
 			"inactiveHint": "यह भूमिका अब कोई एक्सेस नहीं देती। कोई दूसरी भूमिका चुनें या व्यक्ति को हटाएँ।",
 			"leaveProject": "प्रोजेक्ट छोड़ें",
@@ -3902,14 +3917,94 @@
 			"rolesLoadError": "जो भूमिकाएँ आप दे सकते हैं वे लोड नहीं हो सकीं, इसलिए अभी भूमिकाएँ नहीं बदली जा सकतीं।",
 			"rolesRetry": "पुनः प्रयास करें",
 			"roleUpdateError": "प्रोजेक्ट भूमिका अपडेट नहीं हो सकी",
-			"roleUpdateSuccess": "प्रोजेक्ट भूमिका अपडेट हो गई",
-			"you": "आप"
+			"roleUpdateSuccess": "प्रोजेक्ट भूमिका अपडेट हो गई"
 		},
 		"title": "सदस्य",
-		"workspaceInvite": {
-			"info": "जिन लोगों के पास पूरा एक्सेस नहीं है, वे केवल वही प्रोजेक्ट देखते हैं जिनमें उन्हें जोड़ा गया है। किसी को एक प्रोजेक्ट में आमंत्रित करने के लिए प्रोजेक्ट सेटिंग में \"ईमेल से आमंत्रित करें\" का उपयोग करें।",
-			"link": "प्रोजेक्ट सेटिंग खोलें"
-		},
 		"abilitiesError": "जाँच नहीं हो सकी कि आप यहाँ क्या कर सकते हैं। कुछ कार्रवाइयाँ छिपी हो सकती हैं।"
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"addRateLimited": "You added many people in a short time. Try again later.",
+			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",
+			"searchRateLimited": "Too many searches. Try again in a moment."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

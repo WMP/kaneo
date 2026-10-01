@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CustomFieldEditor from "./custom-field-editor";
 
@@ -153,6 +160,35 @@ describe("CustomFieldEditor (project)", () => {
 
     expect(m.create).toHaveBeenCalledWith(
       expect.objectContaining({ projectId: "project-1", name: "Risk" }),
+    );
+  });
+
+  it("edits only the project's own fields, through the update hook", async () => {
+    render(<CustomFieldEditor projectId="project-1" />);
+
+    // Inherited workspace fields are edited in the workspace settings; only
+    // the project's own field has an Edit button here.
+    const editButtons = screen.getAllByRole("button", {
+      name: "settings:customFields.editFieldAriaLabel",
+    });
+    expect(editButtons).toHaveLength(1);
+
+    fireEvent.click(editButtons[0]);
+    const form = screen.getByRole("form", {
+      name: "settings:customFields.editFormAriaLabel",
+    });
+    fireEvent.change(
+      within(form).getByLabelText("settings:customFields.nameLabel"),
+      { target: { value: "Effort" } },
+    );
+    fireEvent.click(
+      within(form).getByRole("button", {
+        name: "settings:customFields.saveButton",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(m.update).toHaveBeenCalledWith({ id: "own-1", name: "Effort" }),
     );
   });
 });

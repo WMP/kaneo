@@ -1,4 +1,4 @@
-import { z } from "../openapi";
+import { nullableResponseTimestamp, z } from "../openapi";
 
 export const projectMemberSchema = z
   .object({
@@ -9,6 +9,14 @@ export const projectMemberSchema = z
     role: z.string().openapi({
       description:
         "For a project member, the project role. For a full-access member, their workspace role.",
+    }),
+    workspaceRole: z.string().openapi({
+      description:
+        "The person's workspace role, for every row (for a full-access member it equals `role`).",
+    }),
+    joinedAt: nullableResponseTimestamp.openapi({
+      description:
+        "When the person was added to the project. Null for a full-access member, who did not join the project but reaches it through their workspace role.",
     }),
     source: z.enum(["project", "full-access"]).openapi({
       description:
@@ -22,6 +30,23 @@ export const projectMemberSchema = z
   .openapi("ProjectMember");
 
 export const projectMemberListSchema = z.array(projectMemberSchema);
+
+export const addedProjectMemberSchema = projectMemberSchema
+  .extend({
+    workspaceMemberAdded: z.boolean().openapi({
+      description:
+        "True when the person was not a workspace member and was added to the workspace as well (the request carried workspaceRole).",
+    }),
+    emailAttempted: z.boolean().openapi({
+      description:
+        "Only meaningful when workspaceMemberAdded: false when no email was sent because SMTP is not configured.",
+    }),
+    emailSent: z.boolean().openapi({
+      description:
+        "Only meaningful when workspaceMemberAdded: true when the 'added to the workspace' email was handed to the mail server.",
+    }),
+  })
+  .openapi("AddedProjectMember");
 
 export const projectAccessSchema = z
   .object({

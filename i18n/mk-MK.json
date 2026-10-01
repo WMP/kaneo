@@ -1205,20 +1205,20 @@
 			"gitlabHint": "Кога ќе се случи настан на GitLab webhook, премести ја поврзаната задача во колона."
 		},
 		"externalLinks": {
-			"resources": "Ресурси",
 			"issue": "Issue",
 			"branch": "Гранка",
 			"merged": "Споен",
 			"draft": "Нацрт",
 			"open": "Отворен",
 			"adding": "Се додава...",
-			"addResource": "Додај ресурс",
+			"addLink": "Додај врска",
 			"cancel": "Откажи",
-			"empty": "Нема ресурси поврзани со оваа задача.",
+			"empty": "Нема врски поврзани со оваа задача.",
 			"titleOptional": "Наслов (незадолжително)",
 			"url": "URL",
 			"remove": "Отстрани {{title}}",
-			"removeError": "Врската до ресурсот не можеше да се отстрани."
+			"removeError": "Врската не можеше да се отстрани.",
+			"links": "Врски"
 		},
 		"workspaceRoles": {
 			"pageTitle": "Улоги",
@@ -1541,7 +1541,19 @@
 			"requiredByWorkspace": "Задолжително според работниот простор",
 			"showField": "Прикажи „{{name}}“ за овој проект",
 			"visibilityUpdateError": "Видливоста на полето не можеше да се ажурира.",
-			"visibleOnProject": "Видливо"
+			"visibleOnProject": "Видливо",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Администрација",
 		"adminUsers": {
@@ -1904,6 +1916,58 @@
 				"title": "Да се прекине врската на овој ресурс?"
 			},
 			"unlinkAction": "Прекини врска"
+		},
+		"workspaceMembers": {
+			"title": "Members"
+		},
+		"workspaceBilling": {
+			"title": "Billing"
+		},
+		"mcp": "MCP",
+		"mcpPage": {
+			"claudeCode": {
+				"afterAdd": "Then start claude, run /mcp, choose kaneo and authenticate in the browser.",
+				"allowedToolsLabel": "Claude Code without per-tool approval",
+				"allowedToolsNote": "Optional: this skips the per-tool approval prompts for Kaneo tools. Use with care.",
+				"description": "Add Kaneo as an HTTP MCP server.",
+				"title": "Claude Code"
+			},
+			"codex": {
+				"addLabel": "Codex add server",
+				"configLabel": "Codex config.toml",
+				"configNote": "Alternatively, add this to ~/.codex/config.toml and run the login command.",
+				"description": "Add Kaneo as an MCP server, then sign in from the browser.",
+				"loginLabel": "Codex login",
+				"title": "Codex"
+			},
+			"copied": "Copied",
+			"copy": "Copy",
+			"copyAria": "Copy {{label}}",
+			"copyFailed": "Couldn't copy automatically. Select the text and press Ctrl+C.",
+			"cursor": {
+				"description": "Add this entry to the MCP configuration of clients that support HTTP servers.",
+				"title": "Cursor and other clients"
+			},
+			"desktop": {
+				"description": "Use a custom connector.",
+				"note": "This option requires the instance to be reachable from the internet over HTTPS.",
+				"steps": "Open Settings, then Connectors, choose Add custom connector and paste the server URL.",
+				"title": "Claude Desktop and claude.ai"
+			},
+			"docsLink": "Read the MCP documentation",
+			"pageTitle": "MCP",
+			"serverUrl": {
+				"description": "The Streamable HTTP MCP endpoint of this Kaneo instance.",
+				"title": "Server URL"
+			},
+			"stdio": {
+				"description": "For clients without HTTP transport.",
+				"note": "Uses device login and requires Node.js 24 or newer.",
+				"title": "Local stdio server"
+			},
+			"subtitle": "Connect AI clients to Kaneo. A connected client can manage workspaces, projects, tasks, comments and labels as you. You sign in in your browser and approve access explicitly, so no token is needed in the commands.",
+			"title": "MCP",
+			"toastCopied": "Copied to clipboard"
 		},
 		"jiraIntegration": {
 			"account": {
@@ -2337,6 +2401,10 @@
 				"title": "Задачата е задоцнета",
 				"content": "{{taskTitle}} го помина крајниот рок"
 			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
+			},
 			"jira_status_proposal": {
 				"content": "Jira issue {{issueKey}} is now \"{{toStatus}}\" (task \"{{taskTitle}}\"). Review the proposed status.",
 				"title": "Jira status changed"
@@ -2482,6 +2550,12 @@
 				"baselineStartDate": "Датум на почеток (базна линија)",
 				"baselineDueDate": "Краен рок (базна линија)"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		},
 		"jira": {
 			"actor": "Jira",
@@ -2740,7 +2814,10 @@
 					"person": "Лице"
 				},
 				"resourcesHeading": "Ресурси",
-				"notInProject": "Веќе не е во овој проект"
+				"notInProject": "Веќе не е во овој проект",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Неуспешно ажурирање на статус на задача"
@@ -2908,6 +2985,7 @@
 			"previousPeriod": "Претходен период",
 			"nextPeriod": "Следен период",
 			"periodStart": "Датум на почеток на временската линија",
+			"periodStartLocked": "Сите задачи се вклопуваат во еден период, па датумот на почеток не може да се помести",
 			"showTaskDates": "Прикажи датуми на задачите",
 			"legendBlocking": "Блокирачки",
 			"legendRelated": "Поврзано",
@@ -3234,6 +3312,15 @@
 			"acceptSuccess": "Поканата е прифатена! Добредојде во тимот.",
 			"rejectError": "Неуспешно одбивање на покана",
 			"rejectSuccess": "Поканата е одбиена"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3387,9 +3474,7 @@
 			"viewer": "Прегледувач"
 		},
 		"members": {
-			"pageTitle": "Членови",
-			"inviteMember": "Покани член",
-			"you": "Ти"
+			"pageTitle": "Членови"
 		},
 		"invitations": {
 			"linkLabel": "Линк за покана",
@@ -3413,21 +3498,15 @@
 			"rejectedBadge": "одбиена"
 		},
 		"inviteModal": {
-			"title": "Покани член на тим",
-			"emailLabel": "Е-пошта",
-			"emailPlaceholder": "kolega@kompanija.com",
 			"sendInvitation": "Испрати покана",
 			"success": "Поканата е успешно испратена",
-			"error": "Неуспешно поканување на член на тим",
 			"createdTitle": "Поканата е креирана",
 			"shareLinkDescription": "Сподели го овој линк со {{email}} за да може да се приклучи на работниот простор.",
 			"done": "Готово",
-			"invalidEmail": "Внеси важечка адреса на е-пошта",
 			"noSmtpNotice": "Е-поштата не е конфигурирана на овој сервер. Поканата нема да биде испратена по е-пошта; копирај ја врската и испрати ја сам/а.",
 			"shareLinkDescriptionNoEmail": "Не е испратена е-пошта. Сподели ја оваа врска со {{email}} за да може да се придружи на работниот простор.",
 			"successNoEmail": "Поканата е креирана. Не е испратена е-пошта.",
 			"noAssignableRoles": "Не можеш да доделиш ниту една улога, па не можеш да поканиш луѓе.",
-			"roleLabel": "Улога",
 			"rolesError": "Улогите што можеш да ги доделиш не можеа да се вчитаат. Обиди се повторно подоцна.",
 			"rolesLoading": "Се вчитуваат улогите...",
 			"sending": "Се испраќа...",
@@ -3440,14 +3519,6 @@
 		"membersTable": {
 			"emptyTitle": "Нема членови на тим засега",
 			"emptyDescription": "Покани го твојот прв член на тимот за да започнеш.",
-			"columns": {
-				"name": "Име",
-				"role": "Улога",
-				"joined": "Приклучен",
-				"actions": "Акции"
-			},
-			"memberRolePending": "{{role}} (На чекање)",
-			"ariaCancelInvitation": "Откажи покана",
 			"ariaRemoveMember": "Отстрани член",
 			"removeDialogTitle": "Отстрани член на тим?",
 			"removeDialogDescription": "Дали си сигурен дека сакаш да го отстраниш {{name}} од работниот простор? Оваа акција не може да се врати.",
@@ -3459,7 +3530,6 @@
 			"removeError": "Неуспешно отстранување на член на тим",
 			"cancelInviteSuccess": "Поканата е успешно откажана",
 			"cancelInviteError": "Неуспешно откажување на покана",
-			"ariaInvitationActions": "Акции за поканата",
 			"roleUpdateSuccess": "Улогата е ажурирана",
 			"roleUpdateError": "Неуспешно ажурирање на улогата",
 			"ariaChangeRole": "Промени ја улогата на {{name}}",
@@ -3767,33 +3837,7 @@
 			"addedToExisting": "{{email}} веќе има покана што чека. Овој проект е додаден во неа. Не е испратена втора е-пошта. Сподели ја врската ако е потребно.",
 			"createdNotSent": "Поканата е креирана за {{email}}. Не е испратена е-пошта. Сподели ја врската подолу.",
 			"createdSendFailed": "Поканата е креирана за {{email}}, но е-поштата не можеше да се испрати. Сподели ја врската подолу или испрати ја повторно од листата.",
-			"createdSent": "Поканата е испратена до {{email}}.",
-			"createdTitle": "Поканата е креирана",
-			"description": "Покани некој што сè уште не е во работниот простор. Ќе ги добие улогите што ќе ги избереш подолу.",
-			"done": "Готово",
-			"emailLabel": "Е-пошта",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Поканата не можеше да се испрати",
-			"invalidEmail": "Внеси важечка адреса на е-пошта",
-			"noSmtpNotice": "Е-поштата не е конфигурирана на овој сервер. Поканата нема да биде испратена по е-пошта. Копирај ја врската и испрати ја сам/а.",
-			"projectRoleHint": "Што може да прави лицето во овој проект.",
-			"projectRoleLabel": "Улога во проектот",
-			"rolePlaceholder": "Избери улога",
-			"submit": "Испрати покана",
-			"submitting": "Се испраќа...",
-			"title": "Покани во проект",
-			"workspaceRoleHint": "Што може да прави лицето во работниот простор.",
-			"workspaceRoleLabel": "Улога во работниот простор",
-			"noAssignableProjectRoles": "Не можеш да доделиш ниту една улога во проектот, па не можеш да поканиш луѓе.",
-			"noAssignableWorkspaceRoles": "Не можеш да доделиш ниту една улога во работниот простор, па не можеш да поканиш луѓе.",
-			"projectRolePickRequired": "Избери ја улогата во проектот.",
-			"projectRolesError": "Улогите во проектот што можеш да ги доделиш не можеа да се вчитаат.",
-			"projectRolesLoading": "Се вчитуваат улогите во проектот...",
-			"projectRoleUnavailable": "Избраната улога во проектот повеќе не е достапна. Избери друга.",
-			"workspaceRolePickRequired": "Избери ја улогата во работниот простор.",
-			"workspaceRolesError": "Улогите во работниот простор што можеш да ги доделиш не можеа да се вчитаат.",
-			"workspaceRolesLoading": "Се вчитуваат улогите во работниот простор...",
-			"workspaceRoleUnavailable": "Избраната улога во работниот простор повеќе не е достапна. Избери друга."
+			"createdSent": "Поканата е испратена до {{email}}."
 		},
 		"list": {
 			"ariaActions": "Дејства за поканата на {{email}}",
@@ -3819,28 +3863,6 @@
 		"title": "Покани што чекаат"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Избери член на работниот простор и улога во проектот.",
-			"error": "Членот не можеше да се додаде",
-			"loadError": "Луѓето што можеш да ги додадеш не можеа да се вчитаат.",
-			"loading": "Се вчитуваат луѓето...",
-			"memberLabel": "Член на работниот простор",
-			"noAssignableRoles": "Не можеш да доделиш ниту една улога.",
-			"noCandidates": "Сите во овој работен простор веќе имаат пристап до овој проект.",
-			"noMatches": "Никој не одговара на твоето пребарување.",
-			"roleLabel": "Улога во проектот",
-			"rolePickRequired": "Избери ја улогата во проектот.",
-			"rolePlaceholder": "Избери улога",
-			"rolesError": "Улогите што можеш да ги доделиш не можеа да се вчитаат.",
-			"rolesLoading": "Се вчитуваат улогите...",
-			"roleUnavailable": "Избраната улога повеќе не е достапна. Избери друга.",
-			"searchPlaceholder": "Пребарај по име или е-пошта",
-			"submit": "Додај член",
-			"submitting": "Се додава...",
-			"success": "Членот е додаден во проектот",
-			"title": "Додај член на проектот"
-		},
-		"addMember": "Додај член",
 		"errors": {
 			"alreadyProjectMember": "Ова лице е веќе член на овој проект.",
 			"cannotChangeOwnRole": "Не можеш да ја промениш сопствената улога во проектот.",
@@ -3856,7 +3878,6 @@
 			"unknownRole": "Оваа улога не постои. Вчитај ја страницата повторно и избери друга.",
 			"userHasFullAccess": "Ова лице веќе има целосен пристап до секој проект."
 		},
-		"inviteByEmail": "Покани по е-пошта",
 		"leaveDialog": {
 			"description": "Ќе го изгубиш пристапот до овој проект. Администратор на проектот или на работниот простор може повторно да те додаде.",
 			"error": "Не можеше да се напушти проектот",
@@ -3887,14 +3908,8 @@
 		"table": {
 			"ariaActions": "Дејства за {{name}}",
 			"ariaChangeRole": "Промени ја улогата во проектот на {{name}}",
-			"columns": {
-				"member": "Член",
-				"role": "Улога во проектот"
-			},
 			"emptyDescription": "Додај член на работниот простор или покани некого по е-пошта.",
 			"emptyTitle": "Сè уште нема членови",
-			"fullAccess": "Целосен пристап",
-			"fullAccessHint": "Има пристап до секој проект преку својата улога во работниот простор. Промени ја во членовите на работниот простор.",
 			"inactive": "неактивна",
 			"inactiveHint": "Оваа улога повеќе не дава пристап. Избери друга улога или отстрани го лицето.",
 			"leaveProject": "Напушти го проектот",
@@ -3902,14 +3917,94 @@
 			"rolesLoadError": "Улогите што можеш да ги доделиш не можеа да се вчитаат, па улогите не можат да се менуваат сега.",
 			"rolesRetry": "Обиди се повторно",
 			"roleUpdateError": "Улогата во проектот не можеше да се ажурира",
-			"roleUpdateSuccess": "Улогата во проектот е ажурирана",
-			"you": "Ти"
+			"roleUpdateSuccess": "Улогата во проектот е ажурирана"
 		},
 		"title": "Членови",
-		"workspaceInvite": {
-			"info": "Луѓето без целосен пристап гледаат само проекти во кои се додадени. За да поканиш некого во еден проект, користи Покани по е-пошта во поставките на проектот.",
-			"link": "Отвори ги поставките на проектот"
-		},
 		"abilitiesError": "Не можеше да се провери што можеш да правиш овде. Некои дејства може да се скриени."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"addRateLimited": "You added many people in a short time. Try again later.",
+			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",
+			"searchRateLimited": "Too many searches. Try again in a moment."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

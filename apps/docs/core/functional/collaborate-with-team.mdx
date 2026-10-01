@@ -5,14 +5,25 @@ description: Invite members, assign ownership, and keep team execution aligned
 
 Good collaboration in Kaneo comes from clear ownership and consistent project conventions.
 
-## 1. Invite members
+## 1. Add people to the workspace
 
 In your workspace:
 
-1. Open **Members**.
-2. Click **Invite member**.
-3. Send invitations to teammates.
-4. Track active and pending members in the members table.
+1. Open **Members** (also under **Settings -> Workspace -> Members**).
+2. Click **Add people**.
+3. Type a name or an email address. Matching accounts appear as you type.
+4. Pick a person, choose their workspace role and click **Add**. They are in the workspace right away, without an invitation. They get a notification in Kaneo and, when the server sends email, an email with a link to the workspace.
+5. If nobody matches and you typed a full email address, choose **Send invitation to ...** instead. The person gets an invitation by email. If the server does not send email, copy the link from the window and send it yourself.
+
+The members table lists everyone with their workspace role, the **projects** they belong to (with their role in each project, or the **Full access** badge) and when they joined. The Projects column names only projects you can open and appears for people who manage members. Pending invitations are listed below the table: copy the link, send it again, invite again after it expired, or cancel it.
+
+You need the right to add members to add an existing account, and the right to invite members to send an invitation. You can only give a workspace role with the same permissions as yours or fewer, and nobody can give the owner role.
+
+<Warning>
+  **Privacy and consent:** the search in **Add people** looks through all accounts of the server by name and email, also accounts that are in no workspace with you. It shows only the name, email and picture, at most 20 matches, and never guest accounts, banned accounts or people who are in the workspace already. Anybody who can add members can use it, and **adding needs no consent of the person**: they are in your workspace at once and only get a notification and an email. On a server where anybody can register and create a workspace, that means any user can see the name and email of every account and add accounts to their own workspace. Administrators of a server that is open to people who should not know about each other should set `DISABLE_USER_DIRECTORY=true` and/or `DISABLE_WORKSPACE_CREATION=true` (on Kaneo Cloud the search is off unless `ENABLE_USER_DIRECTORY=true`). Without the search you cannot add accounts to a workspace directly: people are invited by email instead, and workspace members can still be added to projects. See [environment variables](/core/installation/environment-variables).
+
+  Guest accounts can never search accounts or add people. Nobody can add more than 30 people per 10 minutes. A workspace holds at most 100 members by default, which also limits accepting invitations.
+</Warning>
 
 ### Invite a person you already track as a resource
 
@@ -49,24 +60,19 @@ Manage who is in a project under **Settings -> Projects -> (choose the project) 
 - People with the **Full access** badge reach every project through their workspace role. You cannot change or remove them here. Change their workspace role under **Members** in the workspace.
 - A member marked **inactive** has a role that gives no access any more, for example because the role was deleted. Choose a new role for them or remove them.
 
-**Add a person who is already in the workspace**
+**Add people to the project**
 
-1. Click **Add member**.
-2. Search for the person and select them.
-3. Choose their role in the project.
-4. Click **Add member**.
+1. Click **Add people**.
+2. Type a name or an email address. Workspace members who are not in the project yet are listed right away.
+3. Pick a person and choose their role in the project. Click **Add**.
 
-**Invite a person who is not in the workspace yet**
+If you are also allowed to add members to the workspace and the account search is on, the same field finds accounts that are not in the workspace yet. Then you choose the workspace role too, and **Add** puts the person in the workspace and in the project in one step. They are notified like any new member.
 
-1. Click **Invite by email**.
-2. Enter the email address.
-3. Choose the role in the workspace. It applies to the whole workspace.
-4. Choose the role in the project. It applies only to this project.
-5. Click **Send invitation**.
-
-If your server sends email, the person gets a message. If it does not, copy the invitation link from the window and send it yourself. The person opens the link, signs in or creates an account, and accepts. The invitation page shows the project and the role.
+If nobody matches and you typed a full email address, choose **Send invitation to ...**, then choose the role in the workspace (it applies to the whole workspace) and the role in the project (only this project). If your server sends email, the person gets a message. If it does not, copy the invitation link from the window and send it yourself. The person opens the link, signs in or creates an account, and accepts. The invitation page shows the project and the role.
 
 If the person is already in the workspace, Kaneo says so and offers **Add as member** instead.
+
+The table shows each person's role in the project, their workspace role and when they joined the project.
 
 **Follow up on invitations**
 
@@ -74,7 +80,7 @@ Pending invitations are listed below the members. For each one you can:
 
 - copy the link;
 - send it again, which also extends it by 48 hours;
-- invite again, if it has expired (an expired invitation cannot be sent again);
+- invite again, if it has expired (an expired invitation cannot be sent again; the window opens with the address and roles filled in);
 - cancel it.
 
 **Change or remove a member, or leave a project**

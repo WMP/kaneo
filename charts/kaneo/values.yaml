@@ -100,6 +100,9 @@ kaneo:
     disableRegistration: false
     disablePasswordRegistration: false
     disableEmailOtpSignIn: false
+    # Turn off the searchable list of all accounts that people who may add
+    # workspace members use in "Add people". It reveals that an account exists.
+    disableUserDirectory: false
     # Database configuration
     database:
       # Use external PostgreSQL (set postgresql.enabled to false)

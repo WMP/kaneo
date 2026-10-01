@@ -43,8 +43,12 @@ vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
 // Comments pull in the rich-text editor's extension chain (which touches the
 // real i18n singleton at import time), and this suite only exercises
 // system-event rendering, so keep it out of the module graph entirely.
+const commentCardProps = vi.fn();
 vi.mock("./comment-card", () => ({
-  default: () => null,
+  default: (props: Record<string, unknown>) => {
+    commentCardProps(props);
+    return null;
+  },
 }));
 
 // getConstraintTypeLabel (and its siblings) call the i18next singleton
@@ -95,7 +99,19 @@ function renderActivity(activity: ReturnType<typeof baseActivity>) {
 
 describe("Activity", () => {
   beforeEach(() => {
-    useGetWorkspaceMembers.mockReturnValue({ data: [] });
+    commentCardProps.mockClear();
+    useGetWorkspaceMembers.mockReturnValue({
+      data: [
+        {
+          user: {
+            id: "user-1",
+            name: "Marcin Janowski",
+            email: "marcin@example.com",
+            image: null,
+          },
+        },
+      ],
+    });
   });
 
   it("renders a field-level before/after list for a schedule update", () => {
@@ -238,5 +254,98 @@ describe("Activity", () => {
     expect(
       screen.getByText("Jira status changed from A to B"),
     ).toBeInTheDocument();
+  });
+
+  describe("actor source", () => {
+    const actor = { userId: "user-1", type: "unassigned" };
+
+    it("shows only the name for a change made in the web UI", () => {
+      renderActivity(
+        baseActivity({ ...actor, actorVia: null, actorTokenHint: null }),
+      );
+
+      expect(screen.getByText("Marcin Janowski")).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("activity-actor-source"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows only the name for older rows without the fields", () => {
+      renderActivity(baseActivity(actor));
+
+      expect(
+        screen.queryByTestId("activity-actor-source"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows MCP with the last token characters next to the name", () => {
+      renderActivity(
+        baseActivity({ ...actor, actorVia: "mcp", actorTokenHint: "…a1b2" }),
+      );
+
+      expect(screen.getByText("Marcin Janowski")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-actor-source")).toHaveTextContent(
+        "(MCP · …a1b2)",
+      );
+      expect(screen.getByText("unassigned the task")).toBeInTheDocument();
+    });
+
+    it("shows API with the start of the key", () => {
+      renderActivity(
+        baseActivity({
+          ...actor,
+          actorVia: "api",
+          actorTokenHint: "kaneo_ab…",
+        }),
+      );
+
+      expect(screen.getByTestId("activity-actor-source")).toHaveTextContent(
+        "(API · kaneo_ab…)",
+      );
+    });
+
+    it("shows the source alone when there is no hint", () => {
+      renderActivity(
+        baseActivity({ ...actor, actorVia: "api", actorTokenHint: null }),
+      );
+
+      expect(screen.getByTestId("activity-actor-source")).toHaveTextContent(
+        /^\(API\)$/,
+      );
+    });
+
+    it("hands the source of a comment to the comment card", () => {
+      renderActivity(
+        baseActivity({
+          ...actor,
+          type: "comment",
+          content: "Hello",
+          actorVia: "mcp",
+          actorTokenHint: "…a1b2",
+        }),
+      );
+
+      expect(commentCardProps).toHaveBeenCalledWith(
+        expect.objectContaining({ actorVia: "mcp", actorTokenHint: "…a1b2" }),
+      );
+    });
+
+    it("does not label an imported comment as MCP or API", () => {
+      renderActivity(
+        baseActivity({
+          ...actor,
+          type: "comment",
+          content: "Imported",
+          externalSource: "github",
+          externalUserName: "octocat",
+          actorVia: "mcp",
+          actorTokenHint: "…a1b2",
+        }),
+      );
+
+      expect(commentCardProps).toHaveBeenCalledWith(
+        expect.objectContaining({ actorVia: null }),
+      );
+    });
   });
 });

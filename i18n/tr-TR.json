@@ -1205,20 +1205,20 @@
 			"gitlabHint": "Bir GitLab webhook olayı gerçekleştiğinde bağlı talebi bir sütuna taşı."
 		},
 		"externalLinks": {
-			"resources": "Kaynaklar",
 			"issue": "Sorun",
 			"branch": "Dal",
 			"merged": "Birleştirildi",
 			"draft": "Taslak",
 			"open": "Açık",
 			"adding": "Ekleniyor...",
-			"addResource": "Kaynak ekle",
+			"addLink": "Bağlantı ekle",
 			"cancel": "İptal",
-			"empty": "Bu talebe bağlı kaynak yok.",
+			"empty": "Bu talebe bağlı bağlantı yok.",
 			"titleOptional": "Başlık (isteğe bağlı)",
 			"url": "URL",
 			"remove": "{{title}} öğesini kaldır",
-			"removeError": "Kaynak bağlantısı kaldırılamadı."
+			"removeError": "Bağlantı kaldırılamadı.",
+			"links": "Bağlantılar"
 		},
 		"workspaceRoles": {
 			"pageTitle": "Roller",
@@ -1541,7 +1541,19 @@
 			"requiredByWorkspace": "Çalışma alanı tarafından zorunlu kılındı",
 			"showField": "\"{{name}}\" alanını bu proje için göster",
 			"visibilityUpdateError": "Alan görünürlüğü güncellenemedi.",
-			"visibleOnProject": "Görünür"
+			"visibleOnProject": "Görünür",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Yönetim",
 		"adminUsers": {
@@ -1904,6 +1916,58 @@
 				"title": "Bu kaynağın bağlantısı kaldırılsın mı?"
 			},
 			"unlinkAction": "Bağlantıyı kaldır"
+		},
+		"workspaceMembers": {
+			"title": "Members"
+		},
+		"workspaceBilling": {
+			"title": "Billing"
+		},
+		"mcp": "MCP",
+		"mcpPage": {
+			"claudeCode": {
+				"afterAdd": "Then start claude, run /mcp, choose kaneo and authenticate in the browser.",
+				"allowedToolsLabel": "Claude Code without per-tool approval",
+				"allowedToolsNote": "Optional: this skips the per-tool approval prompts for Kaneo tools. Use with care.",
+				"description": "Add Kaneo as an HTTP MCP server.",
+				"title": "Claude Code"
+			},
+			"codex": {
+				"addLabel": "Codex add server",
+				"configLabel": "Codex config.toml",
+				"configNote": "Alternatively, add this to ~/.codex/config.toml and run the login command.",
+				"description": "Add Kaneo as an MCP server, then sign in from the browser.",
+				"loginLabel": "Codex login",
+				"title": "Codex"
+			},
+			"copied": "Copied",
+			"copy": "Copy",
+			"copyAria": "Copy {{label}}",
+			"copyFailed": "Couldn't copy automatically. Select the text and press Ctrl+C.",
+			"cursor": {
+				"description": "Add this entry to the MCP configuration of clients that support HTTP servers.",
+				"title": "Cursor and other clients"
+			},
+			"desktop": {
+				"description": "Use a custom connector.",
+				"note": "This option requires the instance to be reachable from the internet over HTTPS.",
+				"steps": "Open Settings, then Connectors, choose Add custom connector and paste the server URL.",
+				"title": "Claude Desktop and claude.ai"
+			},
+			"docsLink": "Read the MCP documentation",
+			"pageTitle": "MCP",
+			"serverUrl": {
+				"description": "The Streamable HTTP MCP endpoint of this Kaneo instance.",
+				"title": "Server URL"
+			},
+			"stdio": {
+				"description": "For clients without HTTP transport.",
+				"note": "Uses device login and requires Node.js 24 or newer.",
+				"title": "Local stdio server"
+			},
+			"subtitle": "Connect AI clients to Kaneo. A connected client can manage workspaces, projects, tasks, comments and labels as you. You sign in in your browser and approve access explicitly, so no token is needed in the commands.",
+			"title": "MCP",
+			"toastCopied": "Copied to clipboard"
 		},
 		"jiraIntegration": {
 			"account": {
@@ -2337,6 +2401,10 @@
 				"title": "Talep gecikti",
 				"content": "{{taskTitle}} talebinin bitiş tarihi geçti"
 			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
+			},
 			"jira_status_proposal": {
 				"content": "Jira issue {{issueKey}} is now \"{{toStatus}}\" (task \"{{taskTitle}}\"). Review the proposed status.",
 				"title": "Jira status changed"
@@ -2482,6 +2550,12 @@
 				"baselineStartDate": "Referans başlangıç tarihi",
 				"baselineDueDate": "Referans bitiş tarihi"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		},
 		"jira": {
 			"actor": "Jira",
@@ -2740,7 +2814,10 @@
 					"person": "Kişi"
 				},
 				"resourcesHeading": "Kaynaklar",
-				"notInProject": "Artık bu projede değil"
+				"notInProject": "Artık bu projede değil",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Talep durumu güncellenemedi"
@@ -2908,6 +2985,7 @@
 			"previousPeriod": "Önceki dönem",
 			"nextPeriod": "Sonraki dönem",
 			"periodStart": "Zaman çizelgesi başlangıç tarihi",
+			"periodStartLocked": "Tüm görevler tek bir döneme sığıyor, bu nedenle başlangıç tarihi değiştirilemez",
 			"showTaskDates": "Talep tarihlerini göster",
 			"legendBlocking": "Engelleyici",
 			"legendRelated": "İlgili",
@@ -3234,6 +3312,15 @@
 			"sameEmail": "Daveti, bu mesajı alan e-posta adresiyle kabul edebilirsiniz.",
 			"ignore": "Bu davet beklenmedikse bu e-postayı güvenle yok sayabilirsiniz.",
 			"footer": "Kaneo çalışma alanı daveti"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3387,9 +3474,7 @@
 			"viewer": "Görüntüleyici"
 		},
 		"members": {
-			"pageTitle": "Üyeler",
-			"inviteMember": "Üye davet et",
-			"you": "Siz"
+			"pageTitle": "Üyeler"
 		},
 		"invitations": {
 			"linkLabel": "Davet bağlantısı",
@@ -3413,21 +3498,15 @@
 			"rejectedBadge": "reddedildi"
 		},
 		"inviteModal": {
-			"title": "Ekip Üyesi Davet Et",
-			"emailLabel": "E-posta",
-			"emailPlaceholder": "arkadas@sirket.com",
 			"sendInvitation": "Davet Gönder",
 			"success": "Davet başarıyla gönderildi",
-			"error": "Ekip üyesi davet edilemedi",
 			"createdTitle": "Davet oluşturuldu",
 			"shareLinkDescription": "Bu bağlantıyı {{email}} ile paylaşın, böylece çalışma alanına katılabilir.",
 			"done": "Bitti",
-			"invalidEmail": "Geçerli bir e-posta adresi girin",
 			"noSmtpNotice": "Bu sunucuda e-posta yapılandırılmamış. Davet e-postayla gönderilmeyecek; bağlantıyı kopyalayıp kendiniz gönderin.",
 			"shareLinkDescriptionNoEmail": "E-posta gönderilmedi. Çalışma alanına katılabilmesi için bu bağlantıyı {{email}} ile paylaşın.",
 			"successNoEmail": "Davet oluşturuldu. E-posta gönderilmedi.",
 			"noAssignableRoles": "Hiçbir rol atayamadığınız için kişi davet edemezsiniz.",
-			"roleLabel": "Rol",
 			"rolesError": "Atayabileceğiniz roller yüklenemedi. Daha sonra tekrar deneyin.",
 			"rolesLoading": "Roller yükleniyor...",
 			"sending": "Gönderiliyor...",
@@ -3440,14 +3519,6 @@
 		"membersTable": {
 			"emptyTitle": "Henüz ekip üyesi yok",
 			"emptyDescription": "Başlamak için ilk ekip üyenizi davet edin.",
-			"columns": {
-				"name": "Ad",
-				"role": "Rol",
-				"joined": "Katılım",
-				"actions": "İşlemler"
-			},
-			"memberRolePending": "{{role}} (Beklemede)",
-			"ariaCancelInvitation": "Daveti iptal et",
 			"ariaRemoveMember": "Üyeyi kaldır",
 			"removeDialogTitle": "Ekip Üyesi Kaldırılsın mı?",
 			"removeDialogDescription": "{{name}} kişisini çalışma alanından kaldırmak istediğinizden emin misiniz? Bu işlem geri alınamaz.",
@@ -3461,7 +3532,6 @@
 			"cancelInviteError": "Davet iptal edilemedi",
 			"roleUpdateSuccess": "Rol güncellendi",
 			"roleUpdateError": "Rol güncellenemedi",
-			"ariaInvitationActions": "Davet işlemleri",
 			"ariaChangeRole": "{{name}} için rolü değiştir",
 			"rolesLoadError": "Atayabileceğiniz roller yüklenemedi, bu nedenle roller şu anda değiştirilemiyor.",
 			"rolesRetry": "Tekrar dene"
@@ -3767,33 +3837,7 @@
 			"addedToExisting": "{{email}} adresinin zaten bekleyen bir daveti var. Bu proje ona eklendi. İkinci bir e-posta gönderilmedi. Gerekirse bağlantıyı paylaşın.",
 			"createdNotSent": "{{email}} için davet oluşturuldu. E-posta gönderilmedi. Aşağıdaki bağlantıyı paylaşın.",
 			"createdSendFailed": "{{email}} için davet oluşturuldu ancak e-posta gönderilemedi. Aşağıdaki bağlantıyı paylaşın veya listeden yeniden gönderin.",
-			"createdSent": "Davet {{email}} adresine gönderildi.",
-			"createdTitle": "Davet oluşturuldu",
-			"description": "Henüz çalışma alanında olmayan birini davet edin. Aşağıda seçtiğiniz rolleri alır.",
-			"done": "Bitti",
-			"emailLabel": "E-posta",
-			"emailPlaceholder": "colleague@company.com",
-			"error": "Davet gönderilemedi",
-			"invalidEmail": "Geçerli bir e-posta adresi girin",
-			"noSmtpNotice": "Bu sunucuda e-posta yapılandırılmamış. Davet e-postayla gönderilmeyecek. Bağlantıyı kopyalayıp kendiniz gönderin.",
-			"projectRoleHint": "Kişinin bu projede neler yapabileceği.",
-			"projectRoleLabel": "Proje rolü",
-			"rolePlaceholder": "Bir rol seçin",
-			"submit": "Davet gönder",
-			"submitting": "Gönderiliyor...",
-			"title": "Projeye davet et",
-			"workspaceRoleHint": "Kişinin çalışma alanında neler yapabileceği.",
-			"workspaceRoleLabel": "Çalışma alanı rolü",
-			"noAssignableProjectRoles": "Hiçbir proje rolü atayamadığınız için kişi davet edemezsiniz.",
-			"noAssignableWorkspaceRoles": "Hiçbir çalışma alanı rolü atayamadığınız için kişi davet edemezsiniz.",
-			"projectRolePickRequired": "Proje rolünü seçin.",
-			"projectRolesError": "Atayabileceğiniz proje rolleri yüklenemedi.",
-			"projectRolesLoading": "Proje rolleri yükleniyor...",
-			"projectRoleUnavailable": "Seçtiğiniz proje rolü artık kullanılamıyor. Başka bir rol seçin.",
-			"workspaceRolePickRequired": "Çalışma alanı rolünü seçin.",
-			"workspaceRolesError": "Atayabileceğiniz çalışma alanı rolleri yüklenemedi.",
-			"workspaceRolesLoading": "Çalışma alanı rolleri yükleniyor...",
-			"workspaceRoleUnavailable": "Seçtiğiniz çalışma alanı rolü artık kullanılamıyor. Başka bir rol seçin."
+			"createdSent": "Davet {{email}} adresine gönderildi."
 		},
 		"list": {
 			"ariaActions": "{{email}} davetine yönelik işlemler",
@@ -3819,28 +3863,6 @@
 		"title": "Bekleyen davetler"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Bir çalışma alanı üyesi ve bir proje rolü seçin.",
-			"error": "Üye eklenemedi",
-			"loadError": "Ekleyebileceğiniz kişiler yüklenemedi.",
-			"loading": "Kişiler yükleniyor...",
-			"memberLabel": "Çalışma alanı üyesi",
-			"noAssignableRoles": "Hiçbir rol atayamazsınız.",
-			"noCandidates": "Bu çalışma alanındaki herkesin bu projeye zaten erişimi var.",
-			"noMatches": "Aramanızla eşleşen kimse yok.",
-			"roleLabel": "Proje rolü",
-			"rolePickRequired": "Proje rolünü seçin.",
-			"rolePlaceholder": "Bir rol seçin",
-			"rolesError": "Atayabileceğiniz roller yüklenemedi.",
-			"rolesLoading": "Roller yükleniyor...",
-			"roleUnavailable": "Seçtiğiniz rol artık kullanılamıyor. Başka bir rol seçin.",
-			"searchPlaceholder": "Ada veya e-postaya göre ara",
-			"submit": "Üye ekle",
-			"submitting": "Ekleniyor...",
-			"success": "Üye projeye eklendi",
-			"title": "Proje üyesi ekle"
-		},
-		"addMember": "Üye ekle",
 		"errors": {
 			"alreadyProjectMember": "Bu kişi zaten bu projenin üyesi.",
 			"cannotChangeOwnRole": "Kendi proje rolünüzü değiştiremezsiniz.",
@@ -3856,7 +3878,6 @@
 			"unknownRole": "Bu rol mevcut değil. Sayfayı yenileyin ve başka bir rol seçin.",
 			"userHasFullAccess": "Bu kişi zaten her projeye tam erişime sahip."
 		},
-		"inviteByEmail": "E-postayla davet et",
 		"leaveDialog": {
 			"description": "Bu projeye erişiminizi kaybedeceksiniz. Bir proje yöneticisi veya çalışma alanı yöneticisi sizi tekrar ekleyebilir.",
 			"error": "Projeden ayrılamadınız",
@@ -3887,14 +3908,8 @@
 		"table": {
 			"ariaActions": "{{name}} için işlemler",
 			"ariaChangeRole": "{{name}} kişisinin proje rolünü değiştir",
-			"columns": {
-				"member": "Üye",
-				"role": "Proje rolü"
-			},
 			"emptyDescription": "Bir çalışma alanı üyesi ekleyin veya e-postayla birini davet edin.",
 			"emptyTitle": "Henüz üye yok",
-			"fullAccess": "Tam erişim",
-			"fullAccessHint": "Çalışma alanı rolü sayesinde her projeye erişebilir. Bunu çalışma alanı üyeleri altından değiştirin.",
 			"inactive": "etkin değil",
 			"inactiveHint": "Bu rol artık erişim sağlamıyor. Başka bir rol seçin veya kişiyi kaldırın.",
 			"leaveProject": "Projeden ayrıl",
@@ -3902,14 +3917,94 @@
 			"rolesLoadError": "Atayabileceğiniz roller yüklenemedi, bu nedenle roller şu anda değiştirilemiyor.",
 			"rolesRetry": "Tekrar dene",
 			"roleUpdateError": "Proje rolü güncellenemedi",
-			"roleUpdateSuccess": "Proje rolü güncellendi",
-			"you": "Siz"
+			"roleUpdateSuccess": "Proje rolü güncellendi"
 		},
 		"title": "Üyeler",
-		"workspaceInvite": {
-			"info": "Tam erişimi olmayan kişiler yalnızca eklendikleri projeleri görür. Birini tek bir projeye davet etmek için proje ayarlarındaki E-postayla davet et seçeneğini kullanın.",
-			"link": "Proje ayarlarını aç"
-		},
 		"abilitiesError": "Burada neler yapabileceğiniz kontrol edilemedi. Bazı işlemler gizlenmiş olabilir."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"addRateLimited": "You added many people in a short time. Try again later.",
+			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",
+			"searchRateLimited": "Too many searches. Try again in a moment."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

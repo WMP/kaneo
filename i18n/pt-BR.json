@@ -1441,20 +1441,20 @@
 			"gitlabHint": "Quando ocorrer um evento de webhook do GitLab, mova a tarefa vinculada para uma coluna."
 		},
 		"externalLinks": {
-			"resources": "Recursos",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Mesclado",
 			"draft": "Rascunho",
 			"open": "Aberto",
 			"adding": "Adicionando...",
-			"addResource": "Adicionar recurso",
+			"addLink": "Adicionar link",
 			"cancel": "Cancelar",
-			"empty": "Nenhum recurso vinculado a esta tarefa.",
+			"empty": "Nenhum link vinculado a esta tarefa.",
 			"titleOptional": "Título (opcional)",
 			"url": "URL",
 			"remove": "Remover {{title}}",
-			"removeError": "Falha ao remover o link do recurso."
+			"removeError": "Falha ao remover o link.",
+			"links": "Links"
 		},
 		"mattermostIntegration": {
 			"channelHint": "Rótulo opcional para sua referência. O Mattermost define o canal de destino real na configuração do webhook.",
@@ -1542,7 +1542,19 @@
 			"requiredByWorkspace": "Obrigatório pelo espaço de trabalho",
 			"showField": "Exibir \"{{name}}\" neste projeto",
 			"visibilityUpdateError": "Falha ao atualizar a visibilidade do campo.",
-			"visibleOnProject": "Visível"
+			"visibleOnProject": "Visível",
+			"cancelButton": "Cancel",
+			"defaultValueLabel": "Default value",
+			"editFieldAriaLabel": "Edit custom field \"{{name}}\"",
+			"editFormAriaLabel": "Editing custom field \"{{name}}\"",
+			"nameLabel": "Name",
+			"optionsLabel": "Options",
+			"saveButton": "Save",
+			"saving": "Saving...",
+			"typeLabel": "Type",
+			"typeReadOnlyHint": "The type cannot be changed after the field is created.",
+			"updateError": "Failed to update custom field.",
+			"updateSuccess": "Custom field updated."
 		},
 		"administration": "Administração",
 		"adminUsers": {
@@ -1907,6 +1919,58 @@
 				"title": "Desvincular este recurso?"
 			},
 			"unlinkAction": "Desvincular"
+		},
+		"workspaceMembers": {
+			"title": "Members"
+		},
+		"workspaceBilling": {
+			"title": "Billing"
+		},
+		"mcp": "MCP",
+		"mcpPage": {
+			"claudeCode": {
+				"afterAdd": "Then start claude, run /mcp, choose kaneo and authenticate in the browser.",
+				"allowedToolsLabel": "Claude Code without per-tool approval",
+				"allowedToolsNote": "Optional: this skips the per-tool approval prompts for Kaneo tools. Use with care.",
+				"description": "Add Kaneo as an HTTP MCP server.",
+				"title": "Claude Code"
+			},
+			"codex": {
+				"addLabel": "Codex add server",
+				"configLabel": "Codex config.toml",
+				"configNote": "Alternatively, add this to ~/.codex/config.toml and run the login command.",
+				"description": "Add Kaneo as an MCP server, then sign in from the browser.",
+				"loginLabel": "Codex login",
+				"title": "Codex"
+			},
+			"copied": "Copied",
+			"copy": "Copy",
+			"copyAria": "Copy {{label}}",
+			"copyFailed": "Couldn't copy automatically. Select the text and press Ctrl+C.",
+			"cursor": {
+				"description": "Add this entry to the MCP configuration of clients that support HTTP servers.",
+				"title": "Cursor and other clients"
+			},
+			"desktop": {
+				"description": "Use a custom connector.",
+				"note": "This option requires the instance to be reachable from the internet over HTTPS.",
+				"steps": "Open Settings, then Connectors, choose Add custom connector and paste the server URL.",
+				"title": "Claude Desktop and claude.ai"
+			},
+			"docsLink": "Read the MCP documentation",
+			"pageTitle": "MCP",
+			"serverUrl": {
+				"description": "The Streamable HTTP MCP endpoint of this Kaneo instance.",
+				"title": "Server URL"
+			},
+			"stdio": {
+				"description": "For clients without HTTP transport.",
+				"note": "Uses device login and requires Node.js 24 or newer.",
+				"title": "Local stdio server"
+			},
+			"subtitle": "Connect AI clients to Kaneo. A connected client can manage workspaces, projects, tasks, comments and labels as you. You sign in in your browser and approve access explicitly, so no token is needed in the commands.",
+			"title": "MCP",
+			"toastCopied": "Copied to clipboard"
 		},
 		"jiraIntegration": {
 			"account": {
@@ -2351,6 +2415,10 @@
 				"contentWithTask": "Registro de tempo iniciado na tarefa: {{taskTitle}}",
 				"contentWithoutTask": "Registro de tempo iniciado em uma tarefa"
 			},
+			"workspace_member_added": {
+				"content": "{{inviterName}} added you to {{workspaceName}} as {{role}}",
+				"title": "Added to a workspace"
+			},
 			"jira_status_proposal": {
 				"content": "Jira issue {{issueKey}} is now \"{{toStatus}}\" (task \"{{taskTitle}}\"). Review the proposed status.",
 				"title": "Jira status changed"
@@ -2489,6 +2557,12 @@
 				"baselineStartDate": "Data de início da linha de base",
 				"baselineDueDate": "Data de vencimento da linha de base"
 			}
+		},
+		"actorVia": {
+			"api": "API",
+			"mcp": "MCP",
+			"suffix": "({{via}})",
+			"suffixWithHint": "({{via}} · {{hint}})"
 		},
 		"jira": {
 			"actor": "Jira",
@@ -2747,7 +2821,10 @@
 					"person": "Pessoa"
 				},
 				"resourcesHeading": "Recursos",
-				"notInProject": "Não está mais neste projeto"
+				"notInProject": "Não está mais neste projeto",
+				"assignedCount": "{{count}} assigned",
+				"invitationPending": "Invitation sent",
+				"inviteResource": "Invite to project"
 			},
 			"status": {
 				"updateError": "Falha ao atualizar o status da tarefa"
@@ -2915,6 +2992,7 @@
 			"previousPeriod": "Período anterior",
 			"nextPeriod": "Próximo período",
 			"periodStart": "Data de início da linha do tempo",
+			"periodStartLocked": "Todas as tarefas cabem em um único período, então a data de início não pode ser movida",
 			"showTaskDates": "Mostrar datas das tarefas",
 			"legendBlocking": "Bloqueando",
 			"legendRelated": "Relacionado",
@@ -3244,6 +3322,15 @@
 			"acceptSuccess": "Convite aceito! Bem-vindo à equipe.",
 			"rejectError": "Falha ao rejeitar convite",
 			"rejectSuccess": "Convite rejeitado"
+		},
+		"memberAddedEmail": {
+			"cta": "Open workspace",
+			"footer": "Kaneo workspace",
+			"ignore": "If this wasn't expected, you can leave the workspace at any time.",
+			"preview": "You were added to {{workspaceName}} on Kaneo",
+			"subject": "{{inviterName}} added you to {{workspaceName}} on Kaneo",
+			"subtitle": "{{inviterName}} added you to {{workspaceName}} as {{role}}.",
+			"title": "You are now in {{workspaceName}}"
 		}
 	},
 	"workspace": {
@@ -3398,9 +3485,7 @@
 			"viewer": "Visualizador"
 		},
 		"members": {
-			"pageTitle": "Membros",
-			"inviteMember": "Convidar membro",
-			"you": "Você"
+			"pageTitle": "Membros"
 		},
 		"invitations": {
 			"pendingBadge": "pendente",
@@ -3424,21 +3509,15 @@
 			"rejectedBadge": "recusado"
 		},
 		"inviteModal": {
-			"title": "Convidar membro da equipe",
-			"emailLabel": "E-mail",
-			"emailPlaceholder": "colega@empresa.com",
 			"sendInvitation": "Enviar convite",
 			"success": "Convite enviado com sucesso",
-			"error": "Falha ao convidar membro da equipe",
 			"createdTitle": "Convite criado",
 			"shareLinkDescription": "Compartilhe este link com {{email}} para que ele possa entrar no espaço de trabalho.",
 			"done": "Concluído",
-			"invalidEmail": "Informe um endereço de e-mail válido",
 			"noSmtpNotice": "O e-mail não está configurado neste servidor. O convite não será enviado por e-mail; copie o link e envie você mesmo.",
 			"shareLinkDescriptionNoEmail": "Nenhum e-mail foi enviado. Compartilhe este link com {{email}} para que a pessoa possa entrar no espaço de trabalho.",
 			"successNoEmail": "Convite criado. Nenhum e-mail foi enviado.",
 			"noAssignableRoles": "Você não pode atribuir nenhuma função, então não pode convidar pessoas.",
-			"roleLabel": "Função",
 			"rolesError": "Não foi possível carregar as funções que você pode atribuir. Tente novamente mais tarde.",
 			"rolesLoading": "Carregando funções...",
 			"sending": "Enviando...",
@@ -3451,15 +3530,6 @@
 		"membersTable": {
 			"emptyTitle": "Ainda não há membros na equipe",
 			"emptyDescription": "Convide seu primeiro membro da equipe para começar.",
-			"columns": {
-				"name": "Nome",
-				"role": "Função",
-				"joined": "Entrou em",
-				"actions": "Ações"
-			},
-			"memberRolePending": "{{role}} (Pendente)",
-			"ariaCancelInvitation": "Cancelar convite",
-			"ariaInvitationActions": "Ações do convite",
 			"ariaRemoveMember": "Remover membro",
 			"removeDialogTitle": "Remover membro da equipe?",
 			"removeDialogDescription": "Tem certeza de que deseja remover {{name}} do espaço de trabalho? Esta ação não pode ser desfeita.",
@@ -3778,33 +3848,7 @@
 			"addedToExisting": "{{email}} já tem um convite pendente. Este projeto foi adicionado a ele. Nenhum segundo e-mail foi enviado. Compartilhe o link, se necessário.",
 			"createdNotSent": "Convite criado para {{email}}. Nenhum e-mail foi enviado. Compartilhe o link abaixo.",
 			"createdSendFailed": "Convite criado para {{email}}, mas não foi possível enviar o e-mail. Compartilhe o link abaixo ou reenvie-o pela lista.",
-			"createdSent": "Convite enviado para {{email}}.",
-			"createdTitle": "Convite criado",
-			"description": "Convide alguém que ainda não está no espaço de trabalho. A pessoa recebe as funções que você escolher abaixo.",
-			"done": "Concluído",
-			"emailLabel": "E-mail",
-			"emailPlaceholder": "colega@empresa.com",
-			"error": "Não foi possível enviar o convite",
-			"invalidEmail": "Informe um endereço de e-mail válido",
-			"noSmtpNotice": "O e-mail não está configurado neste servidor. O convite não será enviado por e-mail. Copie o link e envie você mesmo.",
-			"projectRoleHint": "O que a pessoa pode fazer neste projeto.",
-			"projectRoleLabel": "Função no projeto",
-			"rolePlaceholder": "Selecione uma função",
-			"submit": "Enviar convite",
-			"submitting": "Enviando...",
-			"title": "Convidar para o projeto",
-			"workspaceRoleHint": "O que a pessoa pode fazer no espaço de trabalho.",
-			"workspaceRoleLabel": "Função no espaço de trabalho",
-			"noAssignableProjectRoles": "Você não pode atribuir nenhuma função do projeto, então não pode convidar pessoas.",
-			"noAssignableWorkspaceRoles": "Você não pode atribuir nenhuma função do espaço de trabalho, então não pode convidar pessoas.",
-			"projectRolePickRequired": "Escolha a função no projeto.",
-			"projectRolesError": "Não foi possível carregar as funções do projeto que você pode atribuir.",
-			"projectRolesLoading": "Carregando funções do projeto...",
-			"projectRoleUnavailable": "A função no projeto escolhida não está mais disponível. Escolha outra.",
-			"workspaceRolePickRequired": "Escolha a função no espaço de trabalho.",
-			"workspaceRolesError": "Não foi possível carregar as funções do espaço de trabalho que você pode atribuir.",
-			"workspaceRolesLoading": "Carregando funções do espaço de trabalho...",
-			"workspaceRoleUnavailable": "A função do espaço de trabalho escolhida não está mais disponível. Escolha outra."
+			"createdSent": "Convite enviado para {{email}}."
 		},
 		"list": {
 			"ariaActions": "Ações para o convite de {{email}}",
@@ -3830,28 +3874,6 @@
 		"title": "Convites pendentes"
 	},
 	"projectMembers": {
-		"addDialog": {
-			"description": "Escolha um membro do espaço de trabalho e uma função no projeto.",
-			"error": "Não foi possível adicionar o membro",
-			"loadError": "Não foi possível carregar as pessoas que você pode adicionar.",
-			"loading": "Carregando pessoas...",
-			"memberLabel": "Membro do espaço de trabalho",
-			"noAssignableRoles": "Você não pode atribuir nenhuma função.",
-			"noCandidates": "Todos neste espaço de trabalho já têm acesso a este projeto.",
-			"noMatches": "Ninguém corresponde à sua busca.",
-			"roleLabel": "Função no projeto",
-			"rolePickRequired": "Escolha a função no projeto.",
-			"rolePlaceholder": "Selecione uma função",
-			"rolesError": "Não foi possível carregar as funções que você pode atribuir.",
-			"rolesLoading": "Carregando funções...",
-			"roleUnavailable": "A função escolhida não está mais disponível. Escolha outra.",
-			"searchPlaceholder": "Buscar por nome ou e-mail",
-			"submit": "Adicionar membro",
-			"submitting": "Adicionando...",
-			"success": "Membro adicionado ao projeto",
-			"title": "Adicionar membro ao projeto"
-		},
-		"addMember": "Adicionar membro",
 		"errors": {
 			"alreadyProjectMember": "Esta pessoa já é membro deste projeto.",
 			"cannotChangeOwnRole": "Você não pode alterar sua própria função no projeto.",
@@ -3867,7 +3889,6 @@
 			"unknownRole": "Esta função não existe. Recarregue a página e escolha outra.",
 			"userHasFullAccess": "Esta pessoa já tem acesso total a todos os projetos."
 		},
-		"inviteByEmail": "Convidar por e-mail",
 		"leaveDialog": {
 			"description": "Você perderá o acesso a este projeto. Um administrador do projeto ou do espaço de trabalho pode adicionar você novamente.",
 			"error": "Não foi possível sair do projeto",
@@ -3898,14 +3919,8 @@
 		"table": {
 			"ariaActions": "Ações para {{name}}",
 			"ariaChangeRole": "Alterar função de {{name}} no projeto",
-			"columns": {
-				"member": "Membro",
-				"role": "Função no projeto"
-			},
 			"emptyDescription": "Adicione um membro do espaço de trabalho ou convide alguém por e-mail.",
 			"emptyTitle": "Nenhum membro ainda",
-			"fullAccess": "Acesso total",
-			"fullAccessHint": "Tem acesso a todos os projetos por meio da função no espaço de trabalho. Altere-a em membros do espaço de trabalho.",
 			"inactive": "inativa",
 			"inactiveHint": "Esta função não dá mais nenhum acesso. Escolha outra função ou remova a pessoa.",
 			"leaveProject": "Sair do projeto",
@@ -3913,14 +3928,95 @@
 			"rolesLoadError": "Não foi possível carregar as funções que você pode atribuir, então as funções não podem ser alteradas agora.",
 			"rolesRetry": "Tentar novamente",
 			"roleUpdateError": "Não foi possível atualizar a função no projeto",
-			"roleUpdateSuccess": "Função no projeto atualizada",
-			"you": "Você"
+			"roleUpdateSuccess": "Função no projeto atualizada"
 		},
 		"title": "Membros",
-		"workspaceInvite": {
-			"info": "Pessoas sem acesso total veem apenas os projetos aos quais foram adicionadas. Para convidar alguém para um único projeto, use Convidar por e-mail nas configurações do projeto.",
-			"link": "Abrir configurações do projeto"
-		},
 		"abilitiesError": "Não foi possível verificar o que você pode fazer aqui. Algumas ações podem estar ocultas."
+	},
+	"people": {
+		"add": {
+			"add": "Add",
+			"added": "{{name}} was added.",
+			"addedEmailed": "{{name}} was added and got an email.",
+			"addedEmailFailed": "{{name}} was added, but the email could not be sent.",
+			"addError": "Could not add the person",
+			"adding": "Adding...",
+			"change": "Change",
+			"description": "Search by name or email. Pick a person to add them now, or enter an email address to send an invitation.",
+			"fieldLabel": "Name or email",
+			"groups": {
+				"directory": "Other accounts on this server",
+				"workspace": "In this workspace"
+			},
+			"hintInviteOnly": "Enter an email address to send an invitation.",
+			"hintNothing": "You cannot add people here.",
+			"hintSearch": "Type at least 2 characters to search.",
+			"hintSearchOrInvite": "Type at least 2 characters to search, or enter an email address to invite someone.",
+			"inviteError": "Could not send the invitation",
+			"inviteOption": "Send invitation to {{email}}",
+			"inviteOptionHint": "No account found. They get an email to join.",
+			"loadError": "Could not load the people you can add.",
+			"noMatches": "No one matches your search.",
+			"noMatchesInvite": "No one matches. Enter a full email address to send an invitation.",
+			"open": "Add people",
+			"placeholder": "Search by name or email",
+			"projectRoleHint": "What the person can do in this project.",
+			"projectRoleLabel": "Project role",
+			"retry": "Retry",
+			"roles": {
+				"placeholder": "Select a role",
+				"projectError": "Could not load the project roles you can assign.",
+				"projectLoading": "Loading project roles...",
+				"projectNone": "You cannot assign any project role.",
+				"projectPickRequired": "Choose the project role.",
+				"projectUnavailable": "The project role you chose is no longer available. Pick another one.",
+				"workspaceError": "Could not load the workspace roles you can assign.",
+				"workspaceLoading": "Loading workspace roles...",
+				"workspaceNone": "You cannot assign any workspace role.",
+				"workspacePickRequired": "Choose the workspace role.",
+				"workspaceUnavailable": "The workspace role you chose is no longer available. Pick another one."
+			},
+			"searchError": "Could not search the accounts. Try again.",
+			"searching": "Searching...",
+			"selectedLabel": "Person",
+			"sending": "Sending...",
+			"sendInvitation": "Send invitation",
+			"suggestions": "Suggestions",
+			"title": "Add people",
+			"willAdd": "They are added right away, without an invitation.",
+			"willInvite": "An invitation is sent to {{email}}.",
+			"workspaceRoleHint": "What the person can do in the workspace.",
+			"workspaceRoleLabel": "Workspace role"
+		},
+		"errors": {
+			"directoryDisabled": "Searching all accounts is turned off on this server. Enter an email address to invite someone.",
+			"membershipLimitReached": "The workspace has reached its member limit.",
+			"userCannotBeAdded": "This account cannot be added.",
+			"addRateLimited": "You added many people in a short time. Try again later.",
+			"guestNotAllowed": "Guest accounts cannot search accounts or add people. Sign in with a full account.",
+			"searchRateLimited": "Too many searches. Try again in a moment."
+		},
+		"invitations": {
+			"workspaceSubtitle": "People invited to this workspace who have not joined yet."
+		},
+		"loadError": "Could not load the people of this workspace.",
+		"loading": "Loading people...",
+		"retry": "Retry",
+		"table": {
+			"columns": {
+				"joined": "Joined",
+				"person": "Person",
+				"projectRole": "Project role",
+				"projects": "Projects",
+				"workspaceRole": "Workspace role"
+			},
+			"fullAccess": "Full access",
+			"fullAccessHint": "Has access to every project through their workspace role.",
+			"moreProjects_many": "+{{count}} more",
+			"moreProjects_one": "+{{count}} more",
+			"moreProjects_other": "+{{count}} more",
+			"noProjects": "No projects",
+			"you": "You"
+		}
 	}
 }

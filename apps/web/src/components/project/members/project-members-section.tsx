@@ -1,20 +1,19 @@
-import { MailPlusIcon, UserPlusIcon } from "lucide-react";
+import { UserPlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import AddPeopleDialog from "@/components/people/add-people-dialog";
+import ProjectPendingInvitations from "@/components/people/project-pending-invitations";
+import ProjectPeopleTable from "@/components/people/project-people-table";
 import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import type { ProjectInvitationListItem } from "@/fetchers/project-invitation/get-project-invitations";
 import useGetProjectInvitations from "@/hooks/queries/project-invitation/use-get-project-invitations";
-import useGetMemberCandidates from "@/hooks/queries/project-member/use-get-member-candidates";
 import useGetProjectMembers from "@/hooks/queries/project-member/use-get-project-members";
 import useGetAssignableRoles from "@/hooks/queries/workspace/use-get-assignable-roles";
 import { useProjectMemberAbilities } from "@/hooks/use-project-member-abilities";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { isForbiddenError } from "@/lib/http-error";
 import ProjectNoAccess from "../project-no-access";
-import AddProjectMemberDialog from "./add-project-member-dialog";
-import InviteToProjectDialog from "./invite-to-project-dialog";
-import ProjectInvitationsList from "./project-invitations-list";
-import ProjectMembersTable from "./project-members-table";
 
 type Props = {
   projectId: string;
@@ -33,6 +32,7 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const abilities = useProjectMemberAbilities(projectId);
+  const { canAddMembers } = useWorkspacePermission();
   const {
     data: members,
     error: membersError,
@@ -42,38 +42,25 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
   const { data: invitations } = useGetProjectInvitations(projectId, {
     enabled: abilities.canViewInvitations,
   });
-  const { data: candidates } = useGetMemberCandidates(projectId, {
-    enabled: abilities.canAdd,
-  });
   const {
     data: workspaceRoles,
     isError: workspaceRolesFailed,
     refetch: refetchWorkspaceRoles,
   } = useGetAssignableRoles(abilities.canInvite ? workspaceId : undefined);
 
-  const [addOpen, setAddOpen] = useState(false);
-  const [addInitial, setAddInitial] = useState<
-    { userId?: string; role?: string } | undefined
-  >(undefined);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [invitePrefill, setInvitePrefill] = useState<InvitePrefill | undefined>(
-    undefined,
-  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [prefill, setPrefill] = useState<InvitePrefill | undefined>(undefined);
 
   if (isForbiddenError(membersError)) {
     return <ProjectNoAccess workspaceId={workspaceId} />;
   }
 
-  const openAdd = (initial?: { userId?: string; role?: string }) => {
-    setAddInitial(initial);
-    setAddOpen(true);
-  };
-  const openInvite = (prefill?: InvitePrefill) => {
-    setInvitePrefill(prefill);
-    setInviteOpen(true);
+  const openDialog = (next?: InvitePrefill) => {
+    setPrefill(next);
+    setDialogOpen(true);
   };
   const handleInviteAgain = (invitation: ProjectInvitationListItem) =>
-    openInvite({
+    openDialog({
       email: invitation.email,
       workspaceRole: invitation.workspaceRole,
       projectRole: invitation.projectRole,
@@ -90,30 +77,15 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
             {t("projectMembers:title")}
           </h2>
           {showActions ? (
-            <div className="flex items-center gap-2">
-              {abilities.canAdd ? (
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="gap-1"
-                  onClick={() => openAdd()}
-                >
-                  <UserPlusIcon className="size-3" />
-                  {t("projectMembers:addMember")}
-                </Button>
-              ) : null}
-              {abilities.canInvite ? (
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="gap-1"
-                  onClick={() => openInvite()}
-                >
-                  <MailPlusIcon className="size-3" />
-                  {t("projectMembers:inviteByEmail")}
-                </Button>
-              ) : null}
-            </div>
+            <Button
+              variant="outline"
+              size="xs"
+              className="gap-1"
+              onClick={() => openDialog()}
+            >
+              <UserPlusIcon className="size-3" />
+              {t("people:add.open")}
+            </Button>
           ) : null}
         </div>
 
@@ -154,7 +126,7 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
               </Button>
             </div>
           ) : (
-            <ProjectMembersTable
+            <ProjectPeopleTable
               projectId={projectId}
               workspaceId={workspaceId}
               members={members}
@@ -186,7 +158,7 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
             </p>
           </div>
           <div className="rounded-md border border-border">
-            <ProjectInvitationsList
+            <ProjectPendingInvitations
               projectId={projectId}
               workspaceId={workspaceId}
               invitations={invitations ?? []}
@@ -207,31 +179,15 @@ function ProjectMembersSection({ projectId, workspaceId, onLeft }: Props) {
         </section>
       ) : null}
 
-      {abilities.canAdd ? (
-        <AddProjectMemberDialog
-          open={addOpen}
-          onClose={() => setAddOpen(false)}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          initial={addInitial}
-        />
-      ) : null}
-      {abilities.canInvite ? (
-        <InviteToProjectDialog
-          open={inviteOpen}
-          onClose={() => setInviteOpen(false)}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          prefill={invitePrefill}
-          candidates={abilities.canAdd ? candidates : undefined}
-          onAddExistingMember={
-            abilities.canAdd
-              ? ({ userId, role }) => {
-                  setInviteOpen(false);
-                  openAdd({ userId, role });
-                }
-              : undefined
-          }
+      {abilities.canAdd || abilities.canInvite ? (
+        <AddPeopleDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          context={{ kind: "project", workspaceId, projectId }}
+          canAdd={abilities.canAdd}
+          canInvite={abilities.canInvite}
+          canAddToWorkspace={Boolean(canAddMembers())}
+          prefill={prefill}
         />
       ) : null}
     </div>

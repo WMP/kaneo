@@ -235,7 +235,7 @@ function ResourcesPreview({ merged }: { merged: boolean }) {
     <div className="w-full">
       <div className="flex items-center gap-1 h-8 text-sm text-muted-foreground">
         <ChevronDown className="size-4" />
-        {messages.settings.externalLinks.resources}
+        {messages.settings.externalLinks.links}
       </div>
       <div className="flex flex-col gap-2 mt-2">
         {["issue", "pull_request"].map((type) => (

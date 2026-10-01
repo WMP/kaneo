@@ -3,6 +3,11 @@ import { APIError } from "better-auth/api";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { auth } from "../auth";
+import {
+  apiKeyAuthSource,
+  NO_AUTH_SOURCE,
+  sessionAuthSource,
+} from "./auth-source";
 import { verifyApiKey } from "./verify-api-key";
 
 // User is tagged on Sentry's isolation scope; the per-request isolation
@@ -84,6 +89,7 @@ export async function authenticateApiRequest(c: Context): Promise<void> {
       enabled: key.enabled,
       permissions: key.permissions,
     });
+    c.set("authSource", apiKeyAuthSource(key.start));
     attachUserToScope(key.userId);
     return;
   }
@@ -102,6 +108,7 @@ export async function authenticateApiRequest(c: Context): Promise<void> {
         enabled: key.enabled,
         permissions: key.permissions,
       });
+      c.set("authSource", apiKeyAuthSource(key.start));
       attachUserToScope(key.userId);
       return;
     }
@@ -111,6 +118,7 @@ export async function authenticateApiRequest(c: Context): Promise<void> {
       c.set("session", sessionResult.session);
       c.set("userId", sessionResult.user.id);
       c.set("userEmail", sessionResult.user.email ?? "");
+      c.set("authSource", sessionAuthSource(sessionResult.session, token));
       attachUserToScope(sessionResult.user.id);
       return;
     }
@@ -122,6 +130,8 @@ export async function authenticateApiRequest(c: Context): Promise<void> {
   c.set("session", sessionResult?.session ?? null);
   c.set("userId", sessionResult?.user?.id ?? "");
   c.set("userEmail", sessionResult?.user?.email ?? "");
+  // Cookie session: the web UI.
+  c.set("authSource", NO_AUTH_SOURCE);
 
   if (!sessionResult?.user) {
     throw new HTTPException(401, { message: "Unauthorized" });

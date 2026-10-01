@@ -1,15 +1,75 @@
-import { and, eq, getTableColumns, sql } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { currentActorSource } from "../../activity/actor-source";
 import db from "../../database";
-import { activityTable, columnTable, taskTable } from "../../database/schema";
+import {
+  activityTable,
+  columnTable,
+  taskAssignmentTable,
+  taskTable,
+} from "../../database/schema";
 import { publishEvent } from "../../events";
 import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
 import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
-import { setTaskAssignees } from "../assignments";
+import { type AssigneeTarget, setTaskAssignees } from "../assignments";
 import { boardDescription, descriptionDeferred } from "../description-pages";
 import { buildScheduleChanges } from "../diff-schedule-fields";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { assertTaskPosition } from "./next-task-position";
+
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * Replaces only the task's primary user assignee, keeping every other user and
+ * resource assignment (existing rows stay, so their units/work are kept). The
+ * new primary goes first in the list; the previous primary is dropped, and a
+ * new primary that already was a secondary assignee is not duplicated. A null
+ * new primary just removes the previous one, so when other users remain the
+ * first of them becomes the primary mirror, as everywhere else
+ * (`setTaskAssignees`). Returns the resulting `task.userId`.
+ */
+async function replacePrimaryAssignee(
+  tx: Transaction,
+  taskId: string,
+  previousPrimaryUserId: string | null,
+  nextPrimaryUserId: string | null,
+): Promise<string | null> {
+  const currentRows = await tx
+    .select({
+      userId: taskAssignmentTable.userId,
+      resourceId: taskAssignmentTable.resourceId,
+    })
+    .from(taskAssignmentTable)
+    .where(eq(taskAssignmentTable.taskId, taskId))
+    .orderBy(asc(taskAssignmentTable.createdAt), asc(taskAssignmentTable.id));
+
+  const keptUsers: AssigneeTarget[] = [];
+  const keptResources: AssigneeTarget[] = [];
+  for (const row of currentRows) {
+    if (row.userId !== null) {
+      if (row.userId !== previousPrimaryUserId) {
+        keptUsers.push({ userId: row.userId });
+      }
+    } else if (row.resourceId !== null) {
+      keptResources.push({ resourceId: row.resourceId });
+    }
+  }
+
+  // setTaskAssignees dedupes, so a new primary that already is in keptUsers
+  // moves to the front instead of appearing twice.
+  const targets: AssigneeTarget[] = [
+    ...(nextPrimaryUserId ? [{ userId: nextPrimaryUserId }] : []),
+    ...keptUsers,
+    ...keptResources,
+  ];
+
+  const saved = await setTaskAssignees(tx, taskId, targets);
+  const primary = saved.find(
+    (target): target is { userId: string } => "userId" in target,
+  );
+
+  return primary?.userId ?? null;
+}
 
 async function updateTask(
   id: string,
@@ -69,14 +129,26 @@ async function updateTask(
 
   await assertValidTaskStatus(status, projectId);
 
-  const normalizedUserId = userId?.trim() || undefined;
+  // The body's userId is the PRIMARY assignee only (the task.userId mirror):
+  //   - omitted: the assignees are not touched at all;
+  //   - blank: the primary assignee is unassigned;
+  //   - otherwise: the new primary assignee, a no-op when it already is.
+  // Whenever the primary changes, the rest of the assignee list (other users,
+  // resources) is kept; see `replacePrimaryAssignee`. The full list is edited
+  // through PUT /api/task/{id}/assignees.
+  const assigneeUntouched = userId === undefined;
+  const nextPrimaryUserId = userId?.trim() || null;
 
   // Only a NEW assignee is checked (they must be able to open the project). The
   // web client sends the current assignee back with every edit, so checking them
   // would make every edit of a task fail once they lost their membership or left
   // the workspace.
-  if (normalizedUserId && normalizedUserId !== existingTask.userId) {
-    await assertProjectAssignableUser(normalizedUserId, projectId);
+  if (
+    !assigneeUntouched &&
+    nextPrimaryUserId &&
+    nextPrimaryUserId !== existingTask.userId
+  ) {
+    await assertProjectAssignableUser(nextPrimaryUserId, projectId);
   }
 
   const column = await db.query.columnTable.findFirst({
@@ -98,7 +170,7 @@ async function updateTask(
   // compliance-relevant audit trail that a fire-and-forget event subscriber
   // cannot guarantee exists).
   const updatedTask = await db.transaction(async (tx) => {
-    const [task] = await tx
+    const [updatedRow] = await tx
       .update(taskTable)
       .set({
         title,
@@ -114,7 +186,6 @@ async function updateTask(
         isMilestone,
         constraintType,
         constraintDate,
-        userId: normalizedUserId ?? null,
         approvalStatus: nextApprovalStatus,
         approvalNote: nextApprovalNote,
       })
@@ -125,11 +196,16 @@ async function updateTask(
         descriptionDeferred,
       });
 
-    if (!task) {
+    if (!updatedRow) {
       throw new HTTPException(500, {
         message: "Failed to update task",
       });
     }
+
+    // The UPDATE above holds the task row and does not write userId, so the
+    // returned userId is the current primary assignee even if another request
+    // changed it since existingTask was read.
+    let task = updatedRow;
 
     if (approvalStatusChanged) {
       await tx.insert(activityTable).values({
@@ -142,14 +218,19 @@ async function updateTask(
           newApprovalStatus: task.approvalStatus,
           approvalNote: task.approvalNote,
         },
+        ...currentActorSource(),
       });
     }
 
-    await setTaskAssignees(
-      tx,
-      task.id,
-      normalizedUserId ? [{ userId: normalizedUserId }] : [],
-    );
+    if (!assigneeUntouched && nextPrimaryUserId !== task.userId) {
+      const primaryUserId = await replacePrimaryAssignee(
+        tx,
+        task.id,
+        task.userId,
+        nextPrimaryUserId,
+      );
+      task = { ...task, userId: primaryUserId };
+    }
 
     return task;
   });

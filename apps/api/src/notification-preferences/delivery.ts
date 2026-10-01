@@ -102,6 +102,21 @@ function buildDeliveryContent(notification: {
           : "A new workspace was created in Kaneo.",
       };
     }
+    case "workspace_member_added": {
+      const workspaceName = getStringValue(
+        notification.eventData,
+        "workspaceName",
+      );
+      const inviterName = getStringValue(notification.eventData, "inviterName");
+      const role = getStringValue(notification.eventData, "role");
+      return {
+        title: "Added to a workspace",
+        body:
+          workspaceName && inviterName
+            ? `${inviterName} added you to ${workspaceName}${role ? ` as ${role}` : ""}.`
+            : "You were added to a workspace in Kaneo.",
+      };
+    }
     case "task_status_changed": {
       const taskTitle = getStringValue(notification.eventData, "taskTitle");
       const oldStatus = getStringValue(notification.eventData, "oldStatus");

@@ -1,30 +1,18 @@
-import { format, isValid, parseISO } from "date-fns";
 import {
   CalendarIcon,
   CheckSquare,
   GripVertical,
   Hash,
   List,
+  Pencil,
   Plus,
   Trash2,
   Type,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Combobox,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxPopup,
-  ComboboxValue,
-} from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -36,70 +24,18 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/preview-card";
-import labelColors from "@/constants/label-colors";
-import { formatDateMedium } from "@/lib/format";
-import { resolveLabelColor } from "@/lib/label-color";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import CustomFieldDefaultValueInput from "./custom-field-default-value-input";
+import CustomFieldEditForm from "./custom-field-edit-form";
+import { parseOptionsText } from "./custom-field-form-utils";
+import OptionColorSwatch from "./option-color-swatch";
 import type {
   CreateCustomFieldPayload,
   CustomFieldDefinition,
   CustomFieldType,
+  UpdateCustomFieldPayload,
 } from "./types";
-
-/** A small color-dot button that opens the shared label palette (see
- * constants/label-colors.ts) to assign a color to one dropdown option.
- * Reused for both the create form (uncommitted colors) and existing fields
- * (persisted immediately via onSelect). */
-function OptionColorSwatch({
-  color,
-  ariaLabel,
-  onSelect,
-}: {
-  color: string | undefined;
-  ariaLabel: string;
-  onSelect: (colorValue: string) => void;
-}) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={ariaLabel}
-          className={cn(
-            "size-3.5 shrink-0 rounded-full border transition-transform hover:scale-110",
-            color
-              ? "border-transparent"
-              : "border-dashed border-muted-foreground/50",
-          )}
-          style={
-            color ? { backgroundColor: resolveLabelColor(color) } : undefined
-          }
-        />
-      </PopoverTrigger>
-      <PopoverContent className="w-40" align="start">
-        <div className="flex flex-wrap gap-1.5 p-1">
-          {labelColors.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              title={c.label}
-              aria-label={c.label}
-              className={cn(
-                "size-6 rounded-full border-2 transition-[scale,border-color]",
-                color === c.value
-                  ? "border-foreground scale-110"
-                  : "border-transparent hover:scale-110",
-              )}
-              style={{ backgroundColor: c.color }}
-              onClick={() => onSelect(c.value)}
-            />
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 const CUSTOM_FIELD_TYPES: Array<{
   value: CustomFieldType;
@@ -128,10 +64,17 @@ export type CustomFieldEditorCoreProps = {
     fieldId: string,
     optionColors: Record<string, string>,
   ) => Promise<unknown>;
+  /** Saves the edited properties of one field (name, required, default value,
+   * options). The type is immutable and never sent. */
+  onUpdate: (
+    fieldId: string,
+    payload: UpdateCustomFieldPayload,
+  ) => Promise<unknown>;
 };
 
 /** The reusable "manage a flat list of custom field definitions" UI: a
- * drag-to-reorder list with delete/color-swatch actions, plus a create form.
+ * drag-to-reorder list with edit/delete/color-swatch actions, plus a create
+ * form. One row at a time can be switched into an inline edit form.
  * Used both by the project editor (its own fields) and the workspace editor
  * (workspace-level fields) — the two differ only in which fields they pass
  * in and where their mutations are scoped, via the callbacks above. */
@@ -144,6 +87,7 @@ export default function CustomFieldEditorCore({
   deleting: deletingField,
   onReorder,
   onUpdateOptionColor,
+  onUpdate,
 }: CustomFieldEditorCoreProps) {
   const { t } = useTranslation();
 
@@ -162,6 +106,10 @@ export default function CustomFieldEditorCore({
     Record<string, string>
   >({});
   const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
+  // The one row currently shown as an inline edit form, and whether its save
+  // request is in flight.
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [pendingFields, setPendingFields] = useState<
@@ -194,16 +142,7 @@ export default function CustomFieldEditorCore({
       if (!name.trim()) return;
 
       const options =
-        type === "dropdown"
-          ? Array.from(
-              new Set(
-                optionsText
-                  .split(",")
-                  .map((v) => v.trim())
-                  .filter(Boolean),
-              ),
-            )
-          : undefined;
+        type === "dropdown" ? parseOptionsText(optionsText) : undefined;
 
       let apiDefaultValue: string | undefined;
 
@@ -265,6 +204,41 @@ export default function CustomFieldEditorCore({
     }
   }
 
+  // A field that disappears (deleted elsewhere, refetch) closes its editor.
+  const editingField = editingFieldId
+    ? (customFields.find((field) => field.id === editingFieldId) ?? null)
+    : null;
+  const isEditing = editingField !== null;
+
+  function closeEditor(fieldId: string) {
+    setEditingFieldId(null);
+    // The form unmounts; hand focus back to the row's Edit button.
+    requestAnimationFrame(() => {
+      document.getElementById(`custom-field-edit-button-${fieldId}`)?.focus();
+    });
+  }
+
+  async function handleSaveEdit(
+    fieldId: string,
+    payload: UpdateCustomFieldPayload,
+  ) {
+    try {
+      setSavingEdit(true);
+      await onUpdate(fieldId, payload);
+      toast.success(t("settings:customFields.updateSuccess"));
+      closeEditor(fieldId);
+    } catch (error) {
+      // Stay in edit mode so the draft is not lost.
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : t("settings:customFields.updateError"),
+      );
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     try {
       setDeletingFieldId(id);
@@ -285,7 +259,7 @@ export default function CustomFieldEditorCore({
     e: React.DragEvent<HTMLDivElement>,
     index: number,
   ) => {
-    if (isReordering) return;
+    if (isReordering || isEditing) return;
 
     if (!pendingFields && customFields) {
       setPendingFields(customFields);
@@ -390,16 +364,10 @@ export default function CustomFieldEditorCore({
   const hasExtraInput =
     type === "dropdown" || type === "date" || type === "boolean";
 
-  const dropdownOptions = useMemo(() => {
-    return Array.from(
-      new Set(
-        optionsText
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean),
-      ),
-    );
-  }, [optionsText]);
+  const dropdownOptions = useMemo(
+    () => parseOptionsText(optionsText),
+    [optionsText],
+  );
 
   // Colors only apply to a single-select dropdown; drop stale entries once
   // an option is renamed/removed or the field stops being a plain dropdown.
@@ -517,12 +485,31 @@ export default function CustomFieldEditorCore({
                 ? defaultParsedValues.length > 0
                 : Boolean(defaultDisplayValue));
 
+            if (field.id === editingField?.id) {
+              return (
+                // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
+                <div
+                  key={field.id}
+                  role="listitem"
+                  className="flex items-start gap-2 rounded-md border border-border bg-sidebar p-3"
+                >
+                  <FieldIcon className="mt-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <CustomFieldEditForm
+                    field={field}
+                    saving={savingEdit}
+                    onSave={(payload) => void handleSaveEdit(field.id, payload)}
+                    onCancel={() => closeEditor(field.id)}
+                  />
+                </div>
+              );
+            }
+
             return (
               // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
               <div
                 key={field.id}
                 role="listitem"
-                draggable={!isReordering}
+                draggable={!isReordering && !isEditing}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragEnd={handleDragEnd}
@@ -665,6 +652,20 @@ export default function CustomFieldEditorCore({
                 </div>
                 <Button
                   type="button"
+                  id={`custom-field-edit-button-${field.id}`}
+                  variant="ghost"
+                  size="sm"
+                  aria-label={t("settings:customFields.editFieldAriaLabel", {
+                    name: field.name,
+                  })}
+                  disabled={isEditing || deletingFieldId === field.id}
+                  onClick={() => setEditingFieldId(field.id)}
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   disabled={deletingField || deletingFieldId === field.id}
@@ -742,275 +743,23 @@ export default function CustomFieldEditorCore({
           />
         )}
 
-        {type === "date" && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-8 w-48 flex-[2_0_0] justify-start bg-background text-left text-sm font-normal",
-                  !(typeof defaultValue === "string" && defaultValue) &&
-                    "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-                {typeof defaultValue === "string" &&
-                defaultValue &&
-                isValid(parseISO(defaultValue))
-                  ? formatDateMedium(parseISO(defaultValue))
-                  : t("tasks:detail.pickDate", "Pick a date")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="start" className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={
-                  typeof defaultValue === "string" &&
-                  defaultValue &&
-                  isValid(parseISO(defaultValue))
-                    ? parseISO(defaultValue)
-                    : undefined
-                }
-                onSelect={(date) => {
-                  setDefaultValue(date ? format(date, "yyyy-MM-dd") : "");
-                }}
-                captionLayout="dropdown"
-              />
-            </PopoverContent>
-          </Popover>
-        )}
-
-        {type === "boolean" ? (
-          <div className="inline-flex h-8 w-48 flex-[2_0_0] items-center overflow-hidden rounded-lg border text-xs">
-            {(["true", "false"] as const).map((val) => {
-              const isSelected = defaultValue === val;
-              return (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => setDefaultValue(val)}
-                  className={cn(
-                    "flex-1 h-full flex items-center justify-center capitalize transition-colors",
-                    isSelected
-                      ? "bg-foreground text-background font-medium"
-                      : "text-muted-foreground hover:bg-muted",
-                  )}
-                  aria-pressed={isSelected}
-                >
-                  {val === "true"
-                    ? t("common:boolean.true", "True")
-                    : t("common:boolean.false", "False")}
-                </button>
-              );
-            })}
-          </div>
-        ) : type === "dropdown" ? (
+        {type !== "dropdown" ? (
+          <CustomFieldDefaultValueInput
+            type={type}
+            value={defaultValue}
+            onChange={setDefaultValue}
+            options={dropdownOptions}
+            clearable={!required}
+          />
+        ) : (
           <>
-            <Combobox
-              key={isMultiple ? "multi" : "single"}
-              multiple={isMultiple}
-              autoHighlight
-              items={dropdownOptions}
-              value={
-                isMultiple
-                  ? Array.isArray(defaultValue)
-                    ? defaultValue
-                    : []
-                  : typeof defaultValue === "string"
-                    ? defaultValue
-                    : ""
-              }
-              onValueChange={(value) => {
-                setDefaultValue(isMultiple ? (value ?? []) : (value ?? ""));
-              }}
-              disabled={dropdownOptions.length === 0}
-            >
-              <ComboboxChips
-                className={cn(
-                  "h-8 min-w-0 w-48 flex-[2_0_0] select-none cursor-default",
-                  "overflow-hidden",
-                  "flex-nowrap",
-                )}
-              >
-                <ComboboxValue>
-                  {(values: string[] | string) => {
-                    const selected: string[] = isMultiple
-                      ? Array.isArray(values)
-                        ? values.filter((v) => v !== "")
-                        : []
-                      : typeof values === "string" && values !== ""
-                        ? [values]
-                        : [];
-
-                    const MAX_VISIBLE_CHIPS = 3;
-                    const visibleChips = selected.slice(0, MAX_VISIBLE_CHIPS);
-                    const hiddenCount = selected.length - MAX_VISIBLE_CHIPS;
-
-                    return (
-                      <>
-                        {visibleChips.map((value) => {
-                          if (isMultiple) {
-                            return (
-                              <div
-                                key={value}
-                                className={cn(
-                                  "min-w-0 max-w-full flex-1 shrink basis-0",
-                                  "inline-flex items-center overflow-hidden",
-                                  "rounded-md bg-secondary px-1.5 py-0.5",
-                                  "select-none cursor-default",
-                                )}
-                              >
-                                <span className="block min-w-0 max-w-full truncate text-xs text-secondary-foreground">
-                                  {value}
-                                </span>
-                              </div>
-                            );
-                          }
-                          return (
-                            <div
-                              key={value}
-                              className={cn(
-                                "min-w-0 max-w-full flex-1 shrink basis-0",
-                                "inline-flex items-center overflow-hidden",
-                                "ps-1.5",
-                                "select-none cursor-default",
-                              )}
-                            >
-                              <span className="block min-w-0 max-w-full truncate text-xs">
-                                {value}
-                              </span>
-                            </div>
-                          );
-                        })}
-
-                        {selected.length > MAX_VISIBLE_CHIPS && (
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <button
-                                type="button"
-                                className="shrink-0 inline-flex items-center gap-1 text-xs font-medium cursor-pointer text-foreground/50 pe-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                }}
-                                onPointerDown={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                }}
-                              >
-                                {t("settings:customFields.moreOptions", {
-                                  hiddenCount,
-                                })}
-                              </button>
-                            </HoverCardTrigger>
-
-                            <HoverCardContent
-                              side="top"
-                              align="start"
-                              className="flex max-w-xs flex-wrap gap-1 overflow-hidden"
-                            >
-                              <div className="min-w-0 space-y-1.5">
-                                <div className="text-xs font-medium text-muted-foreground">
-                                  {t(
-                                    "settings:customFields.availableOptions",
-                                    "Available options",
-                                  )}
-                                </div>
-
-                                <div className="flex min-w-0 max-h-48 flex-wrap gap-x-1.5 gap-y-1.5 overflow-y-auto overflow-x-hidden">
-                                  {selected
-                                    .slice(MAX_VISIBLE_CHIPS)
-                                    .map((value) => (
-                                      <div
-                                        key={value}
-                                        className={cn(
-                                          "min-w-0 max-w-full",
-                                          "inline-flex items-center overflow-hidden",
-                                          "rounded bg-secondary px-1.5 py-0.5",
-                                          "select-none cursor-default",
-                                        )}
-                                      >
-                                        <span className="block min-w-0 max-w-[14rem] truncate text-xs">
-                                          {value}
-                                        </span>
-                                      </div>
-                                    ))}
-                                </div>
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        )}
-
-                        <ComboboxChipsInput
-                          className={cn(
-                            "min-w-0 flex-1 caret-transparent",
-                            selected.length > 0 && "hidden",
-                            "pointer-events-none",
-                            "placeholder:text-foreground/50",
-                            isMultiple && "text-transparent",
-                          )}
-                          placeholder={
-                            dropdownOptions.length === 0
-                              ? t(
-                                  "settings:customFields.noOptionsPlaceholder",
-                                  "No options",
-                                )
-                              : selected.length === 0
-                                ? t(
-                                    "settings:customFields.defaultValuePlaceholder",
-                                    "Default value",
-                                  )
-                                : undefined
-                          }
-                        />
-
-                        {!isMultiple && !required && selected.length > 0 && (
-                          <button
-                            type="button"
-                            className="ml-auto shrink-0 rounded-sm p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDefaultValue("");
-                            }}
-                            aria-label={t(
-                              "settings:customFields.clearDefault",
-                              "Clear",
-                            )}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </>
-                    );
-                  }}
-                </ComboboxValue>
-              </ComboboxChips>
-
-              <ComboboxPopup>
-                <ComboboxEmpty>
-                  {t(
-                    "settings:customFields.noOptionsPlaceholder",
-                    "No options",
-                  )}
-                </ComboboxEmpty>
-
-                <ComboboxList>
-                  {(option: string) => (
-                    <ComboboxItem
-                      className="min-w-0 max-w-full"
-                      key={`field_option_${option}`}
-                      value={option}
-                    >
-                      <span className="block max-w-38 truncate">{option}</span>
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
-              </ComboboxPopup>
-            </Combobox>
+            <CustomFieldDefaultValueInput
+              type={isMultiple ? "multiselect" : "dropdown"}
+              value={defaultValue}
+              onChange={setDefaultValue}
+              options={dropdownOptions}
+              clearable={!required}
+            />
             <Checkbox
               id="dropdown-multiple"
               checked={isMultiple}
@@ -1028,23 +777,6 @@ export default function CustomFieldEditorCore({
               {t("settings:customFields.multiple")}
             </label>
           </>
-        ) : type === "number" ? (
-          <Input
-            value={typeof defaultValue === "string" ? defaultValue : ""}
-            type="number"
-            onChange={(e) => setDefaultValue(e.target.value)}
-            placeholder={t("settings:customFields.defaultValuePlaceholder")}
-            className="h-8 text-sm w-48 flex-[2_0_0]"
-          />
-        ) : (
-          type !== "date" && (
-            <Input
-              value={defaultValue}
-              onChange={(e) => setDefaultValue(e.target.value)}
-              placeholder={t("settings:customFields.defaultValuePlaceholder")}
-              className="h-8 text-sm w-48 flex-[2_0_0]"
-            />
-          )
         )}
 
         <div className="flex items-center gap-2 shrink-0">

@@ -48,6 +48,19 @@ export function createFixedWindowRateLimiter({
         ),
       };
     },
+    // What `hit` would answer, without counting an attempt. For a request
+    // that must pass several limits: ask all of them, then `hit` all of them.
+    peek(key: string, now: number = Date.now()): RateLimitResult {
+      const bucket = buckets.get(key);
+      const live = bucket && bucket.resetAt > now ? bucket : undefined;
+      return {
+        allowed: (live?.count ?? 0) + 1 <= max,
+        retryAfterSeconds: Math.max(
+          1,
+          Math.ceil(((live?.resetAt ?? now + windowMs) - now) / 1000),
+        ),
+      };
+    },
     reset() {
       buckets.clear();
     },

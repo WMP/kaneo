@@ -30,6 +30,9 @@ const CAPABILITIES = {
   manageSettings: { workspace: ["manage_settings"] },
   deleteWorkspace: { workspace: ["delete"] },
   inviteUsers: { invitation: ["create"] },
+  // Adding an existing account without an invitation, and the user directory
+  // that finds it: the WORKSPACE role's member:create.
+  addMembers: { member: ["create"] },
   cancelInvitations: { invitation: ["cancel"] },
   manageTeam: { member: ["update", "delete"] },
   removeMembers: { member: ["delete"] },
@@ -113,6 +116,7 @@ export function useWorkspacePermission() {
       canManageSettings: () => can.manageSettings,
       canDeleteWorkspace: () => can.deleteWorkspace,
       canInviteUsers: () => can.inviteUsers,
+      canAddMembers: () => can.addMembers,
       canCancelInvitations: () => can.cancelInvitations,
       canManageTeam: () => can.manageTeam,
       canRemoveMembers: () => can.removeMembers,

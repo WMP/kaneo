@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# A fork without releases of its own tests the upgrade from the project its
+# installations come from; KANEO_UPGRADE_SOURCE_REPO names that repository.
+source_repo=${KANEO_UPGRADE_SOURCE_REPO:-$GITHUB_REPOSITORY}
+if [[ ! "$source_repo" =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]]; then
+  echo "KANEO_UPGRADE_SOURCE_REPO must be owner/name, got $source_repo" >&2
+  exit 1
+fi
 # The standard GitHub latest release excludes prereleases and package-only releases.
-tag=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+tag=$(gh api "repos/$source_repo/releases/latest" --jq .tag_name)
 version=${tag#v}
 node scripts/security/validate-release-version.mjs "$version" --new-version
 if [[ "$tag" != "v$version" ]]; then
   echo "Expected a stable Kaneo vX.Y.Z release, got $tag" >&2
   exit 1
 fi
-owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+owner=$(printf '%s' "${source_repo%%/*}" | tr '[:upper:]' '[:lower:]')
 image="ghcr.io/$owner/kaneo:$version"
 docker pull "$image"
 # Record and use the pulled digest so a mutable tag cannot change the baseline mid-test.

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { JiraTaskPanel } from "@/components/jira/jira-task-panel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KbdSequence } from "@/components/ui/kbd";
@@ -42,7 +41,6 @@ import {
 } from "@/lib/due-date-status";
 import { findAssignee } from "@/lib/find-assignee";
 import { formatDateShort } from "@/lib/format";
-import { getInitials } from "@/lib/get-initials";
 import {
   getApprovalStatusLabel,
   getPriorityLabel,
@@ -54,6 +52,7 @@ import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 import TaskApprovalPopover from "./task-approval-popover";
 import TaskAssigneePopover from "./task-assignee-popover";
+import TaskAssigneeTriggerContent from "./task-assignee-trigger-content";
 import TaskBaselinePopover from "./task-baseline-popover";
 import TaskConstraintPopover from "./task-constraint-popover";
 import TaskDueDatePopover from "./task-due-date-popover";
@@ -378,31 +377,10 @@ export default function TaskPropertiesSidebar({
                     size="sm"
                     className="justify-start h-7 px-1.5 gap-1.5"
                   >
-                    {task.userId ? (
-                      <Avatar className="h-[16px] w-[16px]">
-                        <AvatarImage
-                          src={assignee?.user?.image ?? ""}
-                          alt={assignee?.user?.name || ""}
-                        />
-                        <AvatarFallback className="text-[9px] font-medium border border-border/30 flex-shrink-0 h-[16px] w-[16px]">
-                          {getInitials(
-                            assignee?.user?.name || task.assigneeName,
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div
-                        className="w-[16px] h-[16px] rounded-full bg-muted border border-border flex items-center justify-center flex-shrink-0"
-                        title={t("tasks:popover.assignee.unassigned")}
-                      >
-                        <span className="text-[8px] font-medium">?</span>
-                      </div>
-                    )}
-                    <span className="text-xs font-semibold truncate max-w-[100px]">
-                      {assignee?.user?.name ||
-                        task.assigneeName ||
-                        t("tasks:popover.assignee.unassigned")}
-                    </span>
+                    <TaskAssigneeTriggerContent
+                      task={task}
+                      assignee={assignee}
+                    />
                   </Button>
                 </TaskAssigneePopover>
               )}
@@ -571,31 +549,10 @@ export default function TaskPropertiesSidebar({
                       size="sm"
                       className="justify-start h-7 px-1.5 gap-1.5"
                     >
-                      {task.userId ? (
-                        <Avatar className="h-[16px] w-[16px]">
-                          <AvatarImage
-                            src={assignee?.user?.image ?? ""}
-                            alt={assignee?.user?.name || ""}
-                          />
-                          <AvatarFallback className="text-[9px] font-medium border border-border/30 shrink-0 h-[16px] w-[16px]">
-                            {getInitials(
-                              assignee?.user?.name || task.assigneeName,
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div
-                          className="w-[16px] h-[16px] rounded-full bg-muted border border-border flex items-center justify-center shrink-0"
-                          title={t("tasks:popover.assignee.unassigned")}
-                        >
-                          <span className="text-[8px] font-medium">?</span>
-                        </div>
-                      )}
-                      <span className="text-xs font-semibold truncate max-w-[100px]">
-                        {assignee?.user?.name ||
-                          task.assigneeName ||
-                          t("tasks:popover.assignee.unassigned")}
-                      </span>
+                      <TaskAssigneeTriggerContent
+                        task={task}
+                        assignee={assignee}
+                      />
                     </Button>
                   </TaskAssigneePopover>
                 )}
@@ -766,31 +723,10 @@ export default function TaskPropertiesSidebar({
                       size="sm"
                       className="justify-start h-7 px-1.5 gap-1.5 w-full"
                     >
-                      {task.userId ? (
-                        <Avatar className="h-[16px] w-[16px]">
-                          <AvatarImage
-                            src={assignee?.user?.image ?? ""}
-                            alt={assignee?.user?.name || ""}
-                          />
-                          <AvatarFallback className="text-[9px] font-medium border border-border/30 shrink-0 h-[16px] w-[16px]">
-                            {getInitials(
-                              assignee?.user?.name || task.assigneeName,
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div
-                          className="w-[16px] h-[16px] rounded-full bg-muted border border-border flex items-center justify-center shrink-0"
-                          title={t("tasks:popover.assignee.unassigned")}
-                        >
-                          <span className="text-[8px] font-medium">?</span>
-                        </div>
-                      )}
-                      <span className="text-xs font-semibold truncate max-w-[100px]">
-                        {assignee?.user?.name ||
-                          task.assigneeName ||
-                          t("tasks:popover.assignee.unassigned")}
-                      </span>
+                      <TaskAssigneeTriggerContent
+                        task={task}
+                        assignee={assignee}
+                      />
                     </Button>
                   </TaskAssigneePopover>
                 )}

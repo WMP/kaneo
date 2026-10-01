@@ -122,17 +122,6 @@ function SettingsLayout() {
             >
               <TabsList className="bg-sidebar gap-2">
                 <TabsTrigger
-                  value="account"
-                  className="[&[data-state=active]]:rounded-md [&[data-state=active]]:border [&[data-state=active]]:border-border [&[data-state=active]]:bg-card"
-                  onClick={() =>
-                    navigate({
-                      to: "/dashboard/settings/account/information",
-                    })
-                  }
-                >
-                  {t("settings:account")}
-                </TabsTrigger>
-                <TabsTrigger
                   value="workspace"
                   className="[&[data-state=active]]:rounded-md [&[data-state=active]]:border [&[data-state=active]]:border-border [&[data-state=active]]:bg-card"
                   onClick={() =>
@@ -154,6 +143,17 @@ function SettingsLayout() {
                   }
                 >
                   {t("navigation:sidebar.projects")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="account"
+                  className="[&[data-state=active]]:rounded-md [&[data-state=active]]:border [&[data-state=active]]:border-border [&[data-state=active]]:bg-card"
+                  onClick={() =>
+                    navigate({
+                      to: "/dashboard/settings/account/information",
+                    })
+                  }
+                >
+                  {t("settings:account")}
                 </TabsTrigger>
                 {hasAdminAccess ? (
                   <TabsTrigger

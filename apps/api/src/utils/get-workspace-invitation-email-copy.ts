@@ -4,6 +4,7 @@ import frFR from "../../../../i18n/fr-FR.json";
 import jaJP from "../../../../i18n/ja-JP.json";
 import ptBR from "../../../../i18n/pt-BR.json";
 import viVN from "../../../../i18n/vi-VN.json";
+import { pickEmailCopy } from "./email-copy";
 
 const messages = {
   de: deDE.invitations.email,
@@ -12,16 +13,8 @@ const messages = {
   ja: jaJP.invitations.email,
   pt: ptBR.invitations.email,
   vi: viVN.invitations.email,
-} as const;
+};
 
 export function getWorkspaceInvitationEmailCopy(locale?: string | null) {
-  const normalizedLocale = locale?.toLowerCase();
-
-  if (normalizedLocale?.startsWith("de")) return messages.de;
-  if (normalizedLocale?.startsWith("fr")) return messages.fr;
-  if (normalizedLocale?.startsWith("ja")) return messages.ja;
-  if (normalizedLocale?.startsWith("pt")) return messages.pt;
-  if (normalizedLocale?.startsWith("vi")) return messages.vi;
-
-  return messages.en;
+  return pickEmailCopy(messages, "en", locale);
 }

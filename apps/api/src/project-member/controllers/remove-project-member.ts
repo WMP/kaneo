@@ -48,6 +48,8 @@ async function removeProjectMember({
   const [existing] = await db
     .select({
       role: projectMemberTable.role,
+      workspaceRole: workspaceUserTable.role,
+      joinedAt: projectMemberTable.createdAt,
       name: userTable.name,
       email: userTable.email,
       image: userTable.image,
@@ -104,6 +106,8 @@ async function removeProjectMember({
     email: existing.email,
     image: existing.image,
     role: existing.role,
+    workspaceRole: existing.workspaceRole,
+    joinedAt: existing.joinedAt,
     source: "project" as const,
     active: !inert,
   };

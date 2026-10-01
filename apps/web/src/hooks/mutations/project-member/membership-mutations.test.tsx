@@ -81,6 +81,24 @@ describe("adding a member", () => {
     expect(has(["project-member-candidates", "project-1"])).toBe(true);
   });
 
+  it("refreshes the user directory, so an added account is not offered again", async () => {
+    addProjectMember.mockResolvedValueOnce({});
+    const { result } = renderHook(() => useAddProjectMember("workspace-1"), {
+      wrapper,
+    });
+
+    await act(() =>
+      result.current.mutateAsync({
+        projectId: "project-1",
+        userId: "u",
+        role: "member",
+        workspaceRole: "viewer",
+      }),
+    );
+
+    expect(has(["workspace-user-directory"])).toBe(true);
+  });
+
   it("settles as soon as the members list is refreshed, without waiting for the rest", async () => {
     addProjectMember.mockResolvedValue({});
     vi.mocked(queryClient.invalidateQueries).mockImplementation(

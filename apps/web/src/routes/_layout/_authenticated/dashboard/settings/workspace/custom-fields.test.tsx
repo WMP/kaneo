@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import type { ComponentType } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Route } from "./custom-fields";
@@ -105,6 +112,32 @@ describe("workspace custom fields settings", () => {
 
     expect(m.create).toHaveBeenCalledWith(
       expect.objectContaining({ workspaceId: "workspace-1", name: "Region" }),
+    );
+  });
+
+  it("edits a workspace field through the workspace update hook", async () => {
+    render(<Component />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:customFields.editFieldAriaLabel",
+      }),
+    );
+    const form = screen.getByRole("form", {
+      name: "settings:customFields.editFormAriaLabel",
+    });
+    fireEvent.change(
+      within(form).getByLabelText("settings:customFields.nameLabel"),
+      { target: { value: "Tier" } },
+    );
+    fireEvent.click(
+      within(form).getByRole("button", {
+        name: "settings:customFields.saveButton",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(m.update).toHaveBeenCalledWith({ id: "wf-1", name: "Tier" }),
     );
   });
 });

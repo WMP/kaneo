@@ -10,10 +10,77 @@ export const workspaceMemberSchema = z
       description:
         "The member's workspace role: a built-in role (owner, admin, member, guest) or a custom role name.",
     }),
+    memberId: z.string().openapi({
+      description:
+        "The id of the membership row (Better Auth member id), as update-member-role expects it. `id` is the user id.",
+    }),
+    joinedAt: responseTimestamp,
+    fullAccess: z.boolean().optional().openapi({
+      description:
+        "Only with include=projects, for a caller who manages members: true when the person reaches every project of the workspace through their workspace role (owner, instance administrator, or a role granting workspace:manage_settings).",
+    }),
+    projects: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          role: z.string().openapi({ description: "The project role." }),
+        }),
+      )
+      .optional()
+      .openapi({
+        description:
+          "Only with include=projects, for a caller who manages members: the projects the person is a member of with their project role, limited to the projects the caller can open. Empty for a full-access person.",
+      }),
   })
   .openapi("WorkspaceMember");
 
 export const workspaceMemberListSchema = z.array(workspaceMemberSchema);
+
+export const addedWorkspaceMemberSchema = workspaceMemberSchema
+  .omit({ fullAccess: true, projects: true })
+  .extend({
+    emailAttempted: z.boolean().openapi({
+      description:
+        "False when nothing was sent because SMTP is not configured on this instance.",
+    }),
+    emailSent: z.boolean().openapi({
+      description:
+        "True when the email 'you were added to the workspace' was handed to the mail server. A failing relay is logged and never fails the request.",
+    }),
+  })
+  .openapi("AddedWorkspaceMember");
+
+export const workspaceInvitationProjectsSchema = z
+  .array(
+    z.object({
+      invitationId: z.string(),
+      projects: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          role: z.string().openapi({
+            description: "The project role the invitation grants there.",
+          }),
+        }),
+      ),
+    }),
+  )
+  .openapi("WorkspaceInvitationProjects", {
+    description:
+      "Per pending invitation of the workspace that grants projects: those projects with the project role, limited to the projects the caller can open. Invitations that grant none are left out.",
+  });
+
+export const userDirectoryEntrySchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    image: z.string().nullable(),
+  })
+  .openapi("UserDirectoryEntry");
+
+export const userDirectoryListSchema = z.array(userDirectoryEntrySchema);
 
 export const assignableRolesSchema = z
   .object({
@@ -72,6 +139,14 @@ export const workspaceActivitySchema = z
       description: "The tool it was imported from, e.g. planka, trello, jira.",
     }),
     externalUrl: z.string().nullable(),
+    actorVia: z.enum(["mcp", "api"]).nullable().openapi({
+      description:
+        "How the user made this change when not through the web UI: mcp (an MCP client session) or api (an API key). Null for the web UI, imports and older activity.",
+    }),
+    actorTokenHint: z.string().nullable().openapi({
+      description:
+        "Short, non-secret hint of the token used: the beginning of the API key (as shown in the key settings) or the last characters of the MCP session token. Never the full token. Null when actorVia is null.",
+    }),
   })
   .openapi("WorkspaceActivity");
 

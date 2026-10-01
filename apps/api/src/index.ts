@@ -77,6 +77,7 @@ import timeEntry from "./time-entry";
 import user from "./user";
 import getAvatar from "./user/controllers/get-avatar";
 import { reconcileMigrationJournal } from "./utils/adopt-existing-database";
+import type { AuthSource } from "./utils/auth-source";
 import { authenticateApiRequest } from "./utils/authenticate-api-request";
 import {
   authorizeAssetAccess,
@@ -123,6 +124,7 @@ type AppVariables = {
     session: Session | null;
     userId: string;
     apiKey?: ApiKey;
+    authSource?: AuthSource;
   };
 };
 
@@ -133,6 +135,7 @@ type ApiVariables = {
     userId: string;
     userEmail: string;
     apiKey?: ApiKey;
+    authSource?: AuthSource;
   };
 };
 
@@ -734,7 +737,15 @@ export function createApp() {
         const windowId = c.req.header("X-Kaneo-Window-Id");
         const userId = c.get("userId");
         const initiatorId = windowId ? `${userId}:${windowId}` : userId;
-        return await eventContext.run({ initiatorId }, next);
+        const authSource = c.get("authSource");
+        return await eventContext.run(
+          {
+            initiatorId,
+            actorVia: authSource?.via ?? null,
+            actorTokenHint: authSource?.tokenHint ?? null,
+          },
+          next,
+        );
       } catch (error) {
         if (!(error instanceof HTTPException)) {
           console.error("API authentication failed:", error);

@@ -17,5 +17,9 @@ export const configSchema = z
     customOAuthAutoLogin: z.boolean(),
     customOAuthLogoutUrl: z.string().nullable(),
     billingEnabled: z.boolean(),
+    userDirectoryEnabled: z.boolean().openapi({
+      description:
+        "Whether people who may add workspace members can search all accounts of the instance by name or email. False when DISABLE_USER_DIRECTORY is set, and on Kaneo Cloud unless ENABLE_USER_DIRECTORY is set.",
+    }),
   })
   .openapi("Config");

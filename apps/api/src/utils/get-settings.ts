@@ -2,6 +2,7 @@ import { isSmtpConfigured } from "@kaneo/email";
 import { config } from "dotenv-mono";
 import { isBillingEnabled } from "../billing/config";
 import { isGithubSsoConfigured } from "./github-sso-env";
+import { isUserDirectoryEnabled } from "./user-directory";
 
 config();
 
@@ -34,6 +35,7 @@ function getSettings() {
     customOAuthAutoLogin: process.env.CUSTOM_OAUTH_AUTO_LOGIN === "true",
     customOAuthLogoutUrl: process.env.CUSTOM_OAUTH_LOGOUT_URL || null,
     billingEnabled: isBillingEnabled(),
+    userDirectoryEnabled: isUserDirectoryEnabled(),
   };
 }
 

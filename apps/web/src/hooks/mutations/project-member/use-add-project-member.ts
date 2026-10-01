@@ -8,8 +8,17 @@ function useAddProjectMember(workspaceId?: string) {
     mutationFn: addProjectMember,
     // Also on failure: a 409 means the person was added (or gained full
     // access) meanwhile, and the lists must show what is stored.
-    onSettled: (_data, _error, { projectId }) =>
-      invalidateProjectMembership(queryClient, { projectId, workspaceId }),
+    onSettled: (_data, _error, { projectId }) => {
+      // A person added to the workspace through the project no longer belongs
+      // in the directory results.
+      void queryClient.invalidateQueries({
+        queryKey: ["workspace-user-directory"],
+      });
+      return invalidateProjectMembership(queryClient, {
+        projectId,
+        workspaceId,
+      });
+    },
   });
 }
 

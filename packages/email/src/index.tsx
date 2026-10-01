@@ -1,6 +1,7 @@
 export { OTP_EXPIRY_SECONDS } from "./otp-expiry";
 export {
   sendMagicLinkEmail,
+  sendMemberAddedEmail,
   sendNotificationEmail,
   sendOtpEmail,
   sendPasswordResetEmail,

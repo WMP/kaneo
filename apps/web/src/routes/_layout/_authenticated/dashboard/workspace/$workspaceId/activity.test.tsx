@@ -113,6 +113,8 @@ function activityRow(overrides: Record<string, unknown> = {}) {
     externalUserAvatar: null,
     externalSource: null,
     externalUrl: null,
+    actorVia: null,
+    actorTokenHint: null,
     ...overrides,
   };
 }

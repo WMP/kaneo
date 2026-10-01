@@ -19,6 +19,14 @@ This starts both the API (port 1337) and web app (port 5173). Both will automati
 
 Kaneo uses a **single `.env` file** in the root of the project for all environment variables. This file is shared by both the API and web services.
 
+### Shell variables and `pnpm dev`
+
+`pnpm dev` runs through Turborepo, which hands each app only the variables it knows about. Variables exported in your shell (for example `DISABLE_REGISTRATION=true pnpm dev`) reach the apps and take precedence over the same name in `.env`:
+
+- **API:** the settings the API reads (`AUTH_SECRET`, `DATABASE_URL`, `DISABLE_*`, `ENABLE_*`, `KANEO_*`, `REDIS_*`, `S3_*`, `SMTP_*`, OAuth, billing and Sentry settings) are listed in `globalPassThroughEnv` in `turbo.json`. When you add an API setting with a new name, add it there too (a pattern such as `PREFIX_*` works); `scripts/ci/turbo-env.test.mjs` fails otherwise.
+- **Web:** `VITE_*` variables are recognised by Turborepo from the Vite app, so they are passed on and, because they are baked into the bundle, also change the build cache key. Do not add them to `globalPassThroughEnv`, which would let a cached build be reused with different values.
+- Any other variable is removed from the app environment. Put it in `.env` (API) or `apps/web/.env.local` (web).
+
 ### Required Variables
 
 For development, you'll need at minimum:
@@ -37,7 +45,7 @@ If your app uses a device client ID that is not included in the defaults, set `D
 ### Development-Specific Variables
 
 For local development, the web app also supports:
-- `VITE_API_URL` - API URL for development (defaults to `http://localhost:1337` if not set)
+- `VITE_API_URL` - API URL for development (defaults to `http://localhost:1337` if not set). May also be exported in the shell.
 - `VITE_APP_URL` - App URL for generating links (optional)
 
 ### Optional Variables
@@ -102,6 +110,15 @@ Hosted multi-tenant instances should enable the cloud abuse gates. Self-hosted i
 - `TURNSTILE_SECRET_KEY` - Cloudflare Turnstile secret key (API container, server-side verification). When unset, captcha verification is skipped.
 - `KANEO_TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, on the **web container**. The production web image bakes the literal placeholder `KANEO_TURNSTILE_SITE_KEY` into the bundle; `apps/web/env.sh` swaps it for the runtime value when the container starts.
 - `VITE_TURNSTILE_SITE_KEY` - Local dev only. Set in `apps/web/.env` when running `pnpm dev`; Vite reads this at build/dev time. Not used in the production image.
+
+#### User directory (adding people)
+
+"Add people" (workspace and project members) can search **all accounts of the instance** by name or email, for people whose workspace role grants `member:create`, so they can add an existing account without an invitation. The search returns at most 20 accounts (id, name, email, image), needs 2+ characters and leaves out guest accounts, banned accounts and people already in the workspace. **Privacy:** it reveals that an account exists, also one that shares no workspace with the searcher, and adding an account needs no consent of that person. Because the creator of a workspace is its owner (and so holds `member:create`), on an instance where anybody can register and create a workspace ANY user can read every account's name and email and add accounts to their own workspace. That suits a company instance; **on an instance open to untrusted users set `DISABLE_USER_DIRECTORY=true` and/or `DISABLE_WORKSPACE_CREATION=true`**. Guest accounts are always refused, and one person can add 30 accounts per 10 minutes.
+
+- `DISABLE_USER_DIRECTORY` - Set to `true` to turn the search off everywhere. Adding an account that is not in the workspace yet (without an invitation) is then refused as well: people are invited by email, and workspace members can still be added to projects. Wins over `ENABLE_USER_DIRECTORY`.
+- `ENABLE_USER_DIRECTORY` - Only read when `KANEO_CLOUD=true`, where the search is off by default. Set to `true` to turn it on there.
+
+`GET /api/config` reports the result as `userDirectoryEnabled`.
 
 #### Background jobs
 

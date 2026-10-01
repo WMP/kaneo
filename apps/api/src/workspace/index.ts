@@ -6,28 +6,45 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
+import { codedErrorResponse } from "../utils/coded-error";
 import { accessibleProjectIds } from "../utils/project-access";
-import { requireWorkspacePermission } from "../utils/require-workspace-permission";
+import {
+  hasWorkspacePermission,
+  requireWorkspacePermission,
+} from "../utils/require-workspace-permission";
 import { toCsv } from "../utils/to-csv";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
+import addWorkspaceMemberCtrl from "./controllers/add-workspace-member";
 import exportWorkspaceActivities from "./controllers/export-workspace-activities";
 import getAssignableRolesCtrl from "./controllers/get-assignable-roles";
 import getWorkspaceActivities from "./controllers/get-workspace-activities";
 import getWorkspaceActivityRetention from "./controllers/get-workspace-activity-retention";
 import getWorkspaceMembersCtrl from "./controllers/get-workspace-members";
+import listInvitationProjectsCtrl from "./controllers/list-invitation-projects";
+import searchUserDirectoryCtrl, {
+  assertUserDirectoryEnabled,
+} from "./controllers/search-user-directory";
 import updateWorkspaceActivityRetention from "./controllers/update-workspace-activity-retention";
+import { assertActorNotGuest } from "./direct-add";
+import { requireUserDirectoryRateLimit } from "./rate-limit";
 import {
+  addedWorkspaceMemberSchema,
   assignableRolesSchema,
+  userDirectoryListSchema,
   workspaceActivityExportSchema,
   workspaceActivityListSchema,
   workspaceActivityRetentionSchema,
+  workspaceInvitationProjectsSchema,
   workspaceMemberListSchema,
 } from "./response";
 import {
+  addWorkspaceMemberBody,
   updateWorkspaceActivityRetentionBody,
+  userDirectoryQuery,
   workspaceActivityExportQuery,
   workspaceActivityQuery,
   workspaceIdParam,
+  workspaceMembersQuery,
 } from "./schema";
 
 const EXPORT_CSV_COLUMNS = [
@@ -57,11 +74,102 @@ const getWorkspaceMembersRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Get workspace members",
   description:
-    "Get the members of a workspace, with their role. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member).",
+    "Get the members of a workspace, with their role and join date. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member). With include=projects, a caller who manages members (or has full access) also gets, per member, the projects they belong to with their project role (only projects the caller can open) and whether they have full access.",
+  middleware: [workspaceAccess.fromParam("workspaceId")] as const,
+  request: { params: workspaceIdParam, query: workspaceMembersQuery },
+  responses: {
+    200: jsonResponse("List of workspace members", workspaceMemberListSchema),
+    400: errorResponse("Workspace ID could not be determined"),
+    403: errorResponse("No access to the workspace"),
+  },
+});
+
+const userDirectoryErrorCodes =
+  "403 USER_DIRECTORY_DISABLED, 403 GUEST_NOT_ALLOWED, 400 QUERY_TOO_SHORT, 429 RATE_LIMITED";
+
+const searchUserDirectoryRoute = createRoute({
+  method: "get",
+  operationId: "searchUserDirectory",
+  path: "/{workspaceId}/user-directory",
+  tags: ["Workspaces"],
+  summary: "Search the accounts of the instance",
+  description: `Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. A guest (anonymous) account is refused on every instance. Errors carry a \`code\`: ${userDirectoryErrorCodes}. The shared permission check answers plain text 403.`,
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ member: ["create"] }),
+    async (_c, next) => {
+      assertUserDirectoryEnabled();
+      return next();
+    },
+    async (c, next) => {
+      await assertActorNotGuest(c.get("userId"));
+      return next();
+    },
+    requireUserDirectoryRateLimit,
+  ] as const,
+  request: { params: workspaceIdParam, query: userDirectoryQuery },
+  responses: {
+    200: jsonResponse("Matching accounts", userDirectoryListSchema),
+    400: codedErrorResponse(
+      "Query shorter than 2 characters (QUERY_TOO_SHORT)",
+    ),
+    403: codedErrorResponse(
+      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), or the directory is disabled (USER_DIRECTORY_DISABLED)",
+    ),
+    429: codedErrorResponse("Too many searches (RATE_LIMITED)"),
+  },
+});
+
+const addWorkspaceMemberRoute = createRoute({
+  method: "post",
+  operationId: "addWorkspaceMember",
+  path: "/{workspaceId}/members",
+  tags: ["Workspaces"],
+  summary: "Add an existing account to the workspace",
+  description:
+    "Add an existing account of this instance to the workspace with a workspace role, without an invitation. Requires member:create in the caller's WORKSPACE role (an API key must allow it too). The role must exist, must not be owner, and every permission it carries must also be held by the caller (owners and instance administrators may grant any role except owner). The person gets an in-app notification and, where SMTP is configured, an email; a failing email never fails the request (see emailAttempted and emailSent). Project memberships or resource links an earlier membership of the person left in this workspace are dropped first. Adding gives no project access of its own: add the person to projects separately (or use POST /project/{id}/members with workspaceRole). A guest (anonymous) caller is refused on every instance, and every caller may add at most 30 people per 10 minutes (shared with the project route when it adds to the workspace). The workspace member limit (100 by default, also applied when an invitation is accepted) answers 403 WORKSPACE_MEMBER_LIMIT_REACHED. On Kaneo Cloud the gates of invitations apply too (disposable addresses, 5 per minute per user). Adding an account that is not a member yet needs the user directory to be enabled (403 USER_DIRECTORY_DISABLED otherwise: invite the person by email instead). An unknown, anonymous or banned account all answer the same 404 USER_CANNOT_BE_ADDED. Errors carry a `code`: 400 OWNER_ROLE_NOT_ALLOWED, 400 UNKNOWN_ROLE, 404 USER_CANNOT_BE_ADDED, 403 GUEST_NOT_ALLOWED, 403 USER_DIRECTORY_DISABLED, 403 ROLE_EXCEEDS_YOUR_PERMISSIONS, 403 WORKSPACE_MEMBER_LIMIT_REACHED, 409 ALREADY_WORKSPACE_MEMBER, 400 DISPOSABLE_EMAIL_NOT_ALLOWED (cloud), 429 RATE_LIMITED. The shared permission check answers plain text 403.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ member: ["create"] }),
+  ] as const,
+  request: {
+    params: workspaceIdParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: addWorkspaceMemberBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The new member", addedWorkspaceMemberSchema),
+    400: codedErrorResponse("Invalid body, owner role, or unknown role"),
+    403: codedErrorResponse(
+      "No access to the workspace, missing member:create permission, a guest caller (GUEST_NOT_ALLOWED), the user directory is disabled (USER_DIRECTORY_DISABLED), the role exceeds the caller's permissions, or the member limit (WORKSPACE_MEMBER_LIMIT_REACHED)",
+    ),
+    404: codedErrorResponse(
+      "The account cannot be added: unknown, anonymous or banned (USER_CANNOT_BE_ADDED)",
+    ),
+    409: codedErrorResponse("The person already is a member of the workspace"),
+    429: codedErrorResponse(
+      "Too many adds from this user (30 per 10 minutes; on cloud also the invitation limit)",
+    ),
+  },
+});
+
+const getInvitationProjectsRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceInvitationProjects",
+  path: "/{workspaceId}/invitation-projects",
+  tags: ["Workspaces"],
+  summary: "Get the projects of the pending invitations",
+  description:
+    "For the pending invitations list: per pending invitation that was made for projects (through the project invitation routes), the projects it grants with the project role. Only for a caller who holds invitation:create or invitation:cancel in their workspace role (anybody else gets an empty list), and only projects the caller can open are named.",
   middleware: [workspaceAccess.fromParam("workspaceId")] as const,
   request: { params: workspaceIdParam },
   responses: {
-    200: jsonResponse("List of workspace members", workspaceMemberListSchema),
+    200: jsonResponse(
+      "Projects per pending invitation",
+      workspaceInvitationProjectsSchema,
+    ),
     400: errorResponse("Workspace ID could not be determined"),
     403: errorResponse("No access to the workspace"),
   },
@@ -211,6 +319,41 @@ const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
         c.get("workspaceId"),
         c.get("userId"),
         await accessibleProjectIds(c.get("userId"), c.get("workspaceId")),
+        { withProjects: c.req.valid("query").include === "projects" },
+      ),
+      200,
+    ),
+  )
+  .openapi(getInvitationProjectsRoute, async (c) =>
+    c.json(
+      await listInvitationProjectsCtrl({
+        workspaceId: c.get("workspaceId"),
+        viewerProjectIds: await accessibleProjectIds(
+          c.get("userId"),
+          c.get("workspaceId"),
+        ),
+        mayManageInvitations:
+          (await hasWorkspacePermission(c, { invitation: ["create"] })) ||
+          (await hasWorkspacePermission(c, { invitation: ["cancel"] })),
+      }),
+      200,
+    ),
+  )
+  .openapi(addWorkspaceMemberRoute, async (c) =>
+    c.json(
+      await addWorkspaceMemberCtrl({
+        workspaceId: c.get("workspaceId"),
+        actorUserId: c.get("userId"),
+        ...c.req.valid("json"),
+      }),
+      200,
+    ),
+  )
+  .openapi(searchUserDirectoryRoute, async (c) =>
+    c.json(
+      await searchUserDirectoryCtrl(
+        c.get("workspaceId"),
+        c.req.valid("query").q,
       ),
       200,
     ),

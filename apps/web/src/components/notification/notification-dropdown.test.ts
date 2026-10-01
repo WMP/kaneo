@@ -44,7 +44,46 @@ function notification(
   } as unknown as Notification;
 }
 
+describe("workspace member added role", () => {
+  const roleT = (key: string, options?: Record<string, unknown>) =>
+    key.endsWith("workspace_member_added.content")
+      ? `as ${options?.role}`
+      : key;
+
+  it("translates a built-in role name and capitalizes a custom one", () => {
+    const base = { workspaceName: "Acme", inviterName: "Olivia" };
+    expect(
+      getNotificationContent(
+        notification("workspace_member_added", { ...base, role: "member" }),
+        roleT,
+      ),
+    ).toBe("as team:roles.member");
+    expect(
+      getNotificationContent(
+        notification("workspace_member_added", { ...base, role: "qa-lead" }),
+        roleT,
+      ),
+    ).toBe("as Qa-Lead");
+  });
+});
+
 describe("notification display content", () => {
+  it("renders the workspace member added notification from its event data", () => {
+    const item = notification("workspace_member_added", {
+      workspaceId: "ws-1",
+      workspaceName: "Acme",
+      inviterName: "Olivia",
+      role: "member",
+    });
+
+    expect(getNotificationTitle(item, t)).toBe(
+      "notifications:events.workspace_member_added.title",
+    );
+    expect(getNotificationContent(item, t)).toBe(
+      "notifications:events.workspace_member_added.content",
+    );
+  });
+
   it("renders configured due-date lead times", () => {
     const item = notification("due_date_reminder", {
       taskTitle: "Launch website",

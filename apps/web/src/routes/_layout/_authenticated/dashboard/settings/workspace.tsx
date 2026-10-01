@@ -5,15 +5,6 @@ import {
   redirect,
   useLocation,
 } from "@tanstack/react-router";
-import {
-  CreditCard,
-  ListChecks,
-  Settings,
-  Shield,
-  Tag,
-  Ticket,
-  Wrench,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import SettingsSidebar from "@/components/SettingsSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,6 +22,7 @@ import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
+import { getWorkspaceSettingsMenuItems } from "@/lib/workspace-settings-menu";
 import type Workspace from "@/types/workspace";
 
 export const Route = createFileRoute(
@@ -77,51 +69,11 @@ function RouteComponent() {
   const { workspace, role } = useWorkspacePermission();
   const { data: config } = useGetConfig();
   const location = useLocation();
-  const menuItems = [
-    {
-      title: t("settings:workspaceGeneral.title"),
-      url: "/dashboard/settings/workspace/general",
-      icon: Settings,
-    },
-    {
-      title: t("settings:workspaceRoles.title", { defaultValue: "Roles" }),
-      url: "/dashboard/settings/workspace/roles",
-      icon: Shield,
-    },
-    {
-      title: t("settings:workspaceLabels.title", { defaultValue: "Labels" }),
-      url: "/dashboard/settings/workspace/labels",
-      icon: Tag,
-    },
-    {
-      title: t("settings:workspaceCustomFields.title", {
-        defaultValue: "Custom Fields",
-      }),
-      url: "/dashboard/settings/workspace/custom-fields",
-      icon: ListChecks,
-    },
-    {
-      title: t("settings:workspaceResources.title", {
-        defaultValue: "Resources",
-      }),
-      url: "/dashboard/settings/workspace/resources",
-      icon: Wrench,
-    },
-    {
-      title: t("settings:jiraIntegration.menuTitle"),
-      url: "/dashboard/settings/workspace/jira",
-      icon: Ticket,
-    },
-    ...(config?.billingEnabled
-      ? [
-          {
-            title: "Billing",
-            url: "/dashboard/settings/workspace/billing",
-            icon: CreditCard,
-          },
-        ]
-      : []),
-  ];
+  const menuItems = getWorkspaceSettingsMenuItems({
+    t,
+    workspaceId: workspace?.id,
+    billingEnabled: Boolean(config?.billingEnabled),
+  });
   const isActivePath = (path: string) => location.pathname === path;
   const workspaceInitials = getInitials(workspace?.name, "WS");
 
