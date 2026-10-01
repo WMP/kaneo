@@ -19,6 +19,14 @@ This starts both the API (port 1337) and web app (port 5173). Both will automati
 
 Kaneo uses a **single `.env` file** in the root of the project for all environment variables. This file is shared by both the API and web services.
 
+### Shell variables and `pnpm dev`
+
+`pnpm dev` runs through Turborepo, which hands each app only the variables it knows about. Variables exported in your shell (for example `DISABLE_REGISTRATION=true pnpm dev`) reach the apps and take precedence over the same name in `.env`:
+
+- **API:** the settings the API reads (`AUTH_SECRET`, `DATABASE_URL`, `DISABLE_*`, `ENABLE_*`, `KANEO_*`, `REDIS_*`, `S3_*`, `SMTP_*`, OAuth, billing and Sentry settings) are listed in `globalPassThroughEnv` in `turbo.json`. When you add an API setting with a new name, add it there too (a pattern such as `PREFIX_*` works); `scripts/ci/turbo-env.test.mjs` fails otherwise.
+- **Web:** `VITE_*` variables are recognised by Turborepo from the Vite app, so they are passed on and, because they are baked into the bundle, also change the build cache key. Do not add them to `globalPassThroughEnv`, which would let a cached build be reused with different values.
+- Any other variable is removed from the app environment. Put it in `.env` (API) or `apps/web/.env.local` (web).
+
 ### Required Variables
 
 For development, you'll need at minimum:
@@ -37,7 +45,7 @@ If your app uses a device client ID that is not included in the defaults, set `D
 ### Development-Specific Variables
 
 For local development, the web app also supports:
-- `VITE_API_URL` - API URL for development (defaults to `http://localhost:1337` if not set)
+- `VITE_API_URL` - API URL for development (defaults to `http://localhost:1337` if not set). May also be exported in the shell.
 - `VITE_APP_URL` - App URL for generating links (optional)
 
 ### Optional Variables
