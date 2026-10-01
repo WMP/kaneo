@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import db from "../../database";
 import {
@@ -102,7 +102,18 @@ async function getPortfolio(
         ne(taskTable.status, HIDDEN_TASK_STATUS),
       ),
     )
-    .orderBy(asc(taskTable.position), asc(taskTable.id));
+    // Schedule order, not board order: `position` only ranks a task inside its
+    // own column, so it says little across a whole project and ties fall back
+    // to a random id. Sort by the effective start (a due-date-only task starts
+    // where it ends), then due date, then title; undated tasks go last. The id
+    // keeps the order deterministic for identical titles. The web timeline
+    // keeps this order as-is (see buildPortfolioRows).
+    .orderBy(
+      sql`coalesce(${taskTable.startDate}, ${taskTable.dueDate}) asc nulls last`,
+      sql`${taskTable.dueDate} asc nulls last`,
+      asc(taskTable.title),
+      asc(taskTable.id),
+    );
 
   const tasksByProject = new Map<string, PortfolioTask[]>();
   for (const task of tasks) {
