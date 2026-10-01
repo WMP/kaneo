@@ -421,6 +421,13 @@
       "when": 1790798841632,
       "tag": "0059_ganttpro_actor_source",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1790831457040,
+      "tag": "0060_ganttpro_adopt_upstream_assets",
+      "breakpoints": true
     }
   ]
 }
