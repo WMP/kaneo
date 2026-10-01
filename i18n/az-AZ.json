@@ -1476,20 +1476,20 @@
 			"gitlabHint": "GitLab Webhook-unun hadisəsi baş verdikdə əlaqəli tapşırığı sütuna köçür."
 		},
 		"externalLinks": {
-			"resources": "Resurslar",
+			"links": "Keçidlər",
 			"issue": "Məsələ",
 			"branch": "Budaq",
 			"merged": "Birləşdirilib",
 			"draft": "Qaralama",
 			"open": "Açıq",
 			"adding": "Əlavə edilir...",
-			"addResource": "Resurs əlavə et",
+			"addLink": "Keçid əlavə et",
 			"cancel": "Ləğv et",
-			"empty": "Bu tapşırıqla əlaqəli resurs yoxdur.",
+			"empty": "Bu tapşırıqla əlaqəli keçid yoxdur.",
 			"titleOptional": "Başlıq (ixtiyari)",
 			"url": "URL",
 			"remove": "{{title}} keçidini çıxar",
-			"removeError": "Resurs keçidini çıxarmaq alınmadı."
+			"removeError": "Keçidi çıxarmaq alınmadı."
 		},
 		"customFields": {
 			"addButton": "Əlavə et",

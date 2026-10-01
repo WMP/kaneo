@@ -1197,19 +1197,19 @@
 		},
 		"externalLinks": {
 			"adding": "Dodawanie...",
-			"addResource": "Dodaj zasób",
+			"addLink": "Dodaj link",
 			"branch": "Gałąź",
 			"cancel": "Anuluj",
 			"draft": "Wersja robocza",
-			"empty": "Brak zasobów powiązanych z tym zadaniem.",
+			"empty": "Brak linków powiązanych z tym zadaniem.",
 			"issue": "Zgłoszenie",
 			"merged": "Scalone",
 			"open": "Otwarte",
-			"resources": "Zasoby",
+			"links": "Linki",
 			"titleOptional": "Tytuł (opcjonalnie)",
 			"url": "URL",
 			"remove": "Usuń {{title}}",
-			"removeError": "Nie udało się usunąć linku do zasobu."
+			"removeError": "Nie udało się usunąć linku."
 		},
 		"genericWebhookIntegration": {
 			"connect": "Połącz webhook",

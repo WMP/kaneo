@@ -1889,20 +1889,20 @@
 			}
 		},
 		"externalLinks": {
-			"resources": "Resources",
+			"links": "Links",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Merged",
 			"draft": "Draft",
 			"open": "Open",
-			"addResource": "Add resource",
+			"addLink": "Add link",
 			"url": "URL",
 			"titleOptional": "Title (optional)",
 			"cancel": "Cancel",
 			"adding": "Adding...",
-			"empty": "No resources linked to this task.",
+			"empty": "No links added to this task.",
 			"remove": "Remove {{title}}",
-			"removeError": "Failed to remove the resource link."
+			"removeError": "Failed to remove the link."
 		},
 		"security": "Security",
 		"securityPage": {
