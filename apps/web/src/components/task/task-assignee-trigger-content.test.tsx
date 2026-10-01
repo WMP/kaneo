@@ -44,6 +44,14 @@ const resource = (id: string, name: string) => ({
   work: null,
 });
 
+const user = (id: string, name: string) => ({
+  userId: id,
+  name,
+  image: null,
+  units: 100,
+  work: null,
+});
+
 describe("TaskAssigneeTriggerContent", () => {
   it("shows the placeholder and the unassigned label for a task nobody is assigned to", () => {
     render(<TaskAssigneeTriggerContent task={makeTask()} />);
@@ -94,6 +102,47 @@ describe("TaskAssigneeTriggerContent", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("Alice")).toBeNull();
     expect(screen.queryByText("tasks:popover.assignee.unassigned")).toBeNull();
+  });
+
+  it("shows at most two full-size avatars with readable initials and a +N badge for the rest", () => {
+    const { container } = render(
+      <TaskAssigneeTriggerContent
+        task={makeTask({
+          assignees: [
+            user("u1", "Carol Irving"),
+            user("u2", "Mark Moss"),
+            user("u3", "Anna Rose"),
+            resource("r1", "Marcin Baran"),
+          ],
+        })}
+      />,
+    );
+
+    const avatars = container.querySelectorAll('[data-slot="avatar"]');
+    expect(avatars).toHaveLength(2);
+    for (const avatar of avatars) {
+      expect(avatar).toHaveClass("size-5");
+      expect(avatar).not.toHaveClass("size-4");
+    }
+    expect(screen.getByText("CI")).toBeInTheDocument();
+    expect(screen.getByText("MM")).toBeInTheDocument();
+    expect(screen.queryByText("AR")).toBeNull();
+    expect(screen.getByText("+2")).toBeInTheDocument();
+    expect(
+      screen.getByText("tasks:popover.assignee.assignedCount|4"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows no +N badge when every assignee fits", () => {
+    render(
+      <TaskAssigneeTriggerContent
+        task={makeTask({
+          assignees: [resource("r1", "Marcin Baran"), resource("r2", "Ola")],
+        })}
+      />,
+    );
+
+    expect(screen.queryByText(/^\+/)).toBeNull();
   });
 
   it("counts several resources when no user is assigned", () => {
