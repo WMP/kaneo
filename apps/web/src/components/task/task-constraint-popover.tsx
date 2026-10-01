@@ -103,7 +103,7 @@ export default function TaskConstraintPopover({
       }}
     >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-64 p-0" align="start">
+      <PopoverContent className="min-w-64 p-0" align="start">
         <div className="p-1">
           {TASK_CONSTRAINT_TYPES.map((type) => (
             <Button
