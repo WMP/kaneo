@@ -435,6 +435,13 @@
       "when": 1790845515001,
       "tag": "20261001090514_ganttpro_workspace_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1790848997200,
+      "tag": "20261001100317_ganttpro_adopt_upstream_assets",
+      "breakpoints": true
     }
   ]
 }

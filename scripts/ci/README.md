@@ -18,7 +18,9 @@ the previous image. It runs the MinIO binary directly with temporary test data.
 - `upgrade.sh` / `upgrade.mjs`: resolve the latest stable GitHub release to an
   image digest, seed it through public APIs, then replace it with the candidate
   image on the same database. Verify account credentials, owner membership,
-  project/task fields, comments, private image bytes and subsequent writes.
+  project/task fields, comments, private image bytes, the project background
+  and calendar feed subscription URL (seeded only when the source release has
+  them) and subsequent writes.
   The release comes from `KANEO_UPGRADE_SOURCE_REPO` (default: the current
   repository); this fork's CI sets it to `usekaneo/kaneo` because the fork
   publishes no releases.
