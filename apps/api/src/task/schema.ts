@@ -136,7 +136,18 @@ export const updateTaskBody = z
     status: z.string(),
     projectId: z.string(),
     position: z.number().int().min(0).max(MAX_TASK_POSITION),
-    userId: z.string().optional(),
+    userId: z
+      .string()
+      .optional()
+      .openapi({
+        description:
+          "The primary assignee. Omit to leave the assignees untouched. " +
+          "The same id as the current primary assignee changes nothing. A different id " +
+          "replaces only the previous primary assignee: the other user and resource " +
+          "assignees are kept. An empty string unassigns the primary assignee and keeps the others " +
+          "(the first remaining user, if any, becomes the primary). Use " +
+          "PUT /api/task/{id}/assignees to set the whole assignee list.",
+      }),
     // Optional and left untouched when omitted (unlike the other fields on
     // this full-replace route): an older client that has never heard of
     // progress/milestones must not silently reset them on every edit.

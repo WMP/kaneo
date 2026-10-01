@@ -1437,20 +1437,20 @@
 			"gitlabHint": "Khi có sự kiện webhook GitLab, chuyển công việc được liên kết sang một cột."
 		},
 		"externalLinks": {
-			"resources": "Tài nguyên",
+			"links": "Liên kết",
 			"issue": "Issue",
 			"branch": "Nhánh",
 			"merged": "Đã gộp",
 			"draft": "Bản nháp",
 			"open": "Đang mở",
 			"adding": "Đang thêm...",
-			"addResource": "Thêm tài nguyên",
+			"addLink": "Thêm liên kết",
 			"cancel": "Hủy",
-			"empty": "Chưa có tài nguyên nào được liên kết với công việc này.",
+			"empty": "Chưa có liên kết nào cho công việc này.",
 			"titleOptional": "Tiêu đề (không bắt buộc)",
 			"url": "URL",
 			"remove": "Gỡ {{title}}",
-			"removeError": "Không thể gỡ liên kết tài nguyên."
+			"removeError": "Không thể gỡ liên kết."
 		},
 		"mattermostIntegration": {
 			"channelHint": "Nhãn tùy chọn để bạn tham khảo. Kênh đích thực tế do cấu hình webhook trong Mattermost quyết định.",
@@ -2706,6 +2706,7 @@
 			"previousPeriod": "Kỳ trước",
 			"nextPeriod": "Kỳ sau",
 			"periodStart": "Ngày bắt đầu dòng thời gian",
+			"periodStartLocked": "Tất cả công việc nằm gọn trong một giai đoạn nên không thể dời ngày bắt đầu",
 			"showTaskDates": "Hiển thị ngày của công việc",
 			"legendBlocking": "Chặn",
 			"legendRelated": "Liên quan",

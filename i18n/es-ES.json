@@ -978,20 +978,20 @@
 			"gitlabHint": "Cuando se produzca un evento de webhook de GitLab, mueve la tarea vinculada a una columna."
 		},
 		"externalLinks": {
-			"resources": "Recursos",
+			"links": "Enlaces",
 			"issue": "Incidencia",
 			"branch": "Rama",
 			"merged": "Fusionado",
 			"draft": "Borrador",
 			"open": "Abierta",
 			"adding": "Añadiendo...",
-			"addResource": "Añadir recurso",
+			"addLink": "Añadir enlace",
 			"cancel": "Cancelar",
-			"empty": "No hay recursos vinculados a esta tarea.",
+			"empty": "No hay enlaces vinculados a esta tarea.",
 			"titleOptional": "Título (opcional)",
 			"url": "URL",
 			"remove": "Quitar {{title}}",
-			"removeError": "Error al quitar el enlace del recurso."
+			"removeError": "Error al quitar el enlace."
 		},
 		"notifications": "Notificaciones",
 		"notificationsPage": {
@@ -2709,6 +2709,7 @@
 			"previousPeriod": "Periodo anterior",
 			"nextPeriod": "Periodo siguiente",
 			"periodStart": "Fecha de inicio de la línea de tiempo",
+			"periodStartLocked": "Todas las tareas caben en un solo periodo, por lo que la fecha de inicio no se puede mover",
 			"showTaskDates": "Mostrar fechas de las tareas",
 			"legendBlocking": "Bloqueante",
 			"legendRelated": "Relacionada",

@@ -148,3 +148,72 @@ test("documented Node and pnpm versions agree with CI and the devcontainer", () 
   assert.ok(read("AGENTS.md").includes(`Node.js ${requiredMajor}`));
   assert.ok(read("AGENTS.md").includes(`pnpm ${packageManagerVersion}`));
 });
+
+// Letters that occur in Polish but not in the other languages that can
+// legitimately appear in English documentation. ó/Ó are deliberately absent:
+// Spanish, Portuguese, Hungarian, Irish and others use them too.
+const polishLetters = /[ąćęłńśźżĄĆĘŁŃŚŹŻ]/u;
+
+// 1-based numbers of the lines that contain a Polish-specific letter. The text
+// is normalized first so a decomposed letter (base letter plus combining mark)
+// is caught as well.
+const polishLines = (text) =>
+  text
+    .normalize("NFC")
+    .split(/\r?\n/)
+    .flatMap((line, index) => (polishLetters.test(line) ? [index + 1] : []));
+
+// Without this check a broken pattern would let the documentation scan below
+// pass vacuously. The Polish samples are deliberate test data.
+test("Polish letter detection flags Polish text and ignores other languages", () => {
+  assert.deepEqual(polishLines("Zażółć gęślą jaźń"), [1]);
+  for (const letter of "ąćęłńśźżĄĆĘŁŃŚŹŻ") {
+    assert.deepEqual(polishLines(`Word ${letter}`), [1], `${letter} is missed`);
+  }
+  // Decomposed spelling: base letters plus combining ogonek (U+0328) and
+  // combining acute accent (U+0301).
+  assert.deepEqual(polishLines("ge\u0328s\u0301la\u0328"), [1]);
+  assert.deepEqual(polishLines("one\r\nzażółć\r\nthree\nłódź\n"), [2, 4]);
+
+  assert.deepEqual(polishLines("Café – “Phase” → Déjà vu, naïve"), []);
+  assert.deepEqual(polishLines("Gyógyszer, Ó Móra, móvil, über, småland"), []);
+  assert.deepEqual(polishLines("│   ├── api/  # Thanks! 🚀"), []);
+});
+
+// Scope: the root documentation, everything below docs/ and the Cursor rules.
+// The i18n catalogs legitimately hold other languages, and apps/ and packages/
+// are out of scope, so none of them is scanned.
+test("repository documentation is written in English", () => {
+  const rootFiles = [
+    "README.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    "ENVIRONMENT_SETUP.md",
+  ].filter((filename) => existsSync(path.join(root, filename)));
+  const docsFiles = readdirSync(path.join(root, "docs"), { recursive: true })
+    .map((entry) => `docs/${entry.split(path.sep).join("/")}`)
+    .filter(
+      (filename) =>
+        filename.endsWith(".md") &&
+        statSync(path.join(root, filename)).isFile(),
+    )
+    .sort();
+  const ruleFiles = readdirSync(path.join(root, ".cursor/rules"))
+    .filter((filename) => filename.endsWith(".mdc"))
+    .map((filename) => `.cursor/rules/${filename}`)
+    .sort();
+  assert.ok(
+    docsFiles.includes(`${guideDirectory}/README.md`),
+    "the scan must reach Markdown files below docs/",
+  );
+
+  const offenders = [...rootFiles, ...docsFiles, ...ruleFiles].flatMap(
+    (filename) =>
+      polishLines(read(filename)).map((line) => `${filename}:${line}`),
+  );
+  assert.ok(
+    offenders.length === 0,
+    `Polish text found in repository documentation; see the English-content rule in AGENTS.md:\n${offenders.join("\n")}`,
+  );
+});

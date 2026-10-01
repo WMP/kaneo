@@ -978,20 +978,20 @@
 			"gitlabHint": "Wanneer er een GitLab-webhookgebeurtenis plaatsvindt, verplaats je de gekoppelde taak naar een kolom."
 		},
 		"externalLinks": {
-			"resources": "Bronnen",
+			"links": "Links",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Samengevoegd",
 			"draft": "Concept",
 			"open": "Open",
 			"adding": "Toevoegen...",
-			"addResource": "Resource toevoegen",
+			"addLink": "Link toevoegen",
 			"cancel": "Annuleren",
-			"empty": "Geen resources aan deze taak gekoppeld.",
+			"empty": "Geen links aan deze taak gekoppeld.",
 			"titleOptional": "Titel (optioneel)",
 			"url": "URL",
 			"remove": "{{title}} verwijderen",
-			"removeError": "Verwijderen van de resourcelink mislukt."
+			"removeError": "Verwijderen van de link mislukt."
 		},
 		"notifications": "Meldingen",
 		"notificationsPage": {
@@ -2702,6 +2702,7 @@
 			"previousPeriod": "Vorige periode",
 			"nextPeriod": "Volgende periode",
 			"periodStart": "Startdatum van tijdlijn",
+			"periodStartLocked": "Alle taken passen in één periode, dus de startdatum kan niet worden verschoven",
 			"showTaskDates": "Taakdatums tonen",
 			"legendBlocking": "Blokkerend",
 			"legendRelated": "Gerelateerd",

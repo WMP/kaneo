@@ -1475,20 +1475,20 @@
 			"gitlabHint": "发生 GitLab Webhook 事件时，将关联的任务移动到某一列。"
 		},
 		"externalLinks": {
-			"resources": "资源",
+			"links": "链接",
 			"issue": "Issue",
 			"branch": "分支",
 			"merged": "已合并",
 			"draft": "草稿",
 			"open": "打开",
 			"adding": "添加中...",
-			"addResource": "添加资源",
+			"addLink": "添加链接",
 			"cancel": "取消",
-			"empty": "此任务未关联任何资源。",
+			"empty": "此任务未关联任何链接。",
 			"titleOptional": "标题（可选）",
 			"url": "URL",
 			"remove": "移除 {{title}}",
-			"removeError": "移除资源链接失败。"
+			"removeError": "移除链接失败。"
 		},
 		"customFields": {
 			"addButton": "添加",
@@ -2719,6 +2719,7 @@
 			"previousPeriod": "上一时段",
 			"nextPeriod": "下一时段",
 			"periodStart": "时间线开始日期",
+			"periodStartLocked": "所有任务都在同一时间段内，因此无法移动开始日期",
 			"showTaskDates": "显示任务日期",
 			"legendBlocking": "阻塞",
 			"legendRelated": "相关",

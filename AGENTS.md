@@ -27,12 +27,13 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 - Follow a behavior change through its relevant surfaces: API schema/controller, permissions, typed client, UI/cache, events/realtime, MCP/integrations, database migration, documentation and translations. Check reverse actions and deletion where they apply; do not expand scope just to touch every surface.
 - Use `@hono/zod-openapi` and the `apiRouter()` pattern for public routes, `@kaneo/permissions` for workspace permissions, `@kaneo/libs` for typed web requests, and `publishEvent()` for mutations that drive activity or realtime. Details and exceptions live in the linked contracts.
 - Add user-facing text through static i18n keys in `i18n/en-US.json`, and translate each new or changed value into every locale in `i18n/` in the same change. An English placeholder in another locale is not a translation. Preserve accessibility and verify the relevant UI states.
+- Write repository content in English (code, comments, documentation including the README, commit messages and PR text), whatever language the conversation uses. Other languages belong only in the i18n catalogs.
 - Existing installations and data matter. Generate a new Drizzle migration for schema changes, review its SQL and OpenAPI output where applicable, and test the upgrade path.
 - When a user reports a recurring agent mistake, fix the behavior and add a meaningful regression check; document the rule in the appropriate contract. Prefer a type, constraint, lint rule or test to another long instruction.
 
 ## Safe working practice
 
-- Use Node.js 24 (CI and images use 24.19.0) and pnpm 10.32.1, as declared in `package.json`. Server variables come from root `.env`; local Vite overrides belong in `apps/web/.env.local`.
+- Use Node.js 24 (CI and images use 24.19.0) and pnpm 10.32.1, as declared in `package.json`. Server variables come from root `.env`; local Vite overrides belong in `apps/web/.env.development.local`, because the tracked `apps/web/.env.development` outranks `apps/web/.env.local`.
 - Never point development or test commands at production data, storage or credentials. Preserve unrelated work in a dirty worktree and stop only processes you started.
 - Root and package `lint` scripts use Biome `--write` and can change unrelated files. Prefer a targeted read-only check while iterating; inspect any formatter diff.
 - Do not commit, push or open a pull request unless explicitly requested.

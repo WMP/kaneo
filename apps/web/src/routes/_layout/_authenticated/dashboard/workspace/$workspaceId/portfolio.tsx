@@ -13,6 +13,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -37,6 +38,7 @@ import {
   buildGanttGridMetrics,
   buildGanttHeaderColumns,
   buildGanttRange,
+  canMoveGanttWindowStart,
   computeInsetBarBox,
   GANTT_UNITS,
   type GanttUnit,
@@ -99,6 +101,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   const { t } = useTranslation();
+  const periodStartHintId = useId();
   const { workspaceId } = Route.useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -426,18 +429,37 @@ function RouteComponent() {
                 >
                   <ChevronLeft className="size-4" />
                 </Button>
-                <input
-                  type="date"
-                  aria-label={t("tasks:gantt.periodStart")}
-                  className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-                  min={format(range.minimumStart, "yyyy-MM-dd")}
-                  max={format(range.maximumStart, "yyyy-MM-dd")}
-                  value={format(range.rangeStart, "yyyy-MM-dd")}
-                  onChange={(event) => {
-                    const date = parseTaskDate(event.target.value);
-                    if (date) showDate(date);
-                  }}
-                />
+                {canMoveGanttWindowStart(range) ? (
+                  <input
+                    type="date"
+                    aria-label={t("tasks:gantt.periodStart")}
+                    className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+                    min={format(range.minimumStart, "yyyy-MM-dd")}
+                    max={format(range.maximumStart, "yyyy-MM-dd")}
+                    value={format(range.rangeStart, "yyyy-MM-dd")}
+                    onChange={(event) => {
+                      const date = parseTaskDate(event.target.value);
+                      if (date) showDate(date);
+                    }}
+                  />
+                ) : (
+                  // Every task fits in one period, so min equals max and the
+                  // field could not accept any change: show it disabled with
+                  // a hint instead of an editable-looking control.
+                  <span title={t("tasks:gantt.periodStartLocked")}>
+                    <input
+                      type="date"
+                      disabled
+                      aria-label={t("tasks:gantt.periodStart")}
+                      aria-describedby={periodStartHintId}
+                      className="h-9 rounded-md border border-border bg-background px-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                      value={format(range.rangeStart, "yyyy-MM-dd")}
+                    />
+                    <span id={periodStartHintId} className="sr-only">
+                      {t("tasks:gantt.periodStartLocked")}
+                    </span>
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">
                   – {format(range.rangeEnd, "MMM d, yyyy")}
                 </span>

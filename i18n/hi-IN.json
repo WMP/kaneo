@@ -1438,20 +1438,20 @@
 			"gitlabHint": "GitLab वेबहुक इवेंट होने पर लिंक किए गए कार्य को किसी कॉलम में ले जाएँ।"
 		},
 		"externalLinks": {
-			"resources": "संसाधन",
+			"links": "लिंक",
 			"issue": "इश्यू",
 			"branch": "ब्रांच",
 			"merged": "मर्ज किया",
 			"draft": "ड्राफ़्ट",
 			"open": "खुला",
 			"adding": "जोड़ रहे हैं...",
-			"addResource": "संसाधन जोड़ें",
+			"addLink": "लिंक जोड़ें",
 			"cancel": "रद्द करें",
-			"empty": "इस कार्य से कोई संसाधन लिंक नहीं है।",
+			"empty": "इस कार्य से कोई लिंक जुड़ा नहीं है।",
 			"titleOptional": "शीर्षक (वैकल्पिक)",
 			"url": "URL",
 			"remove": "{{title}} हटाएँ",
-			"removeError": "संसाधन लिंक हटाया नहीं जा सका।"
+			"removeError": "लिंक हटाया नहीं जा सका।"
 		},
 		"mattermostIntegration": {
 			"channelHint": "आपके संदर्भ के लिए वैकल्पिक लेबल। असली गंतव्य चैनल Mattermost में वेबहुक सेटअप से तय होता है।",
@@ -2713,6 +2713,7 @@
 			"previousPeriod": "पिछली अवधि",
 			"nextPeriod": "अगली अवधि",
 			"periodStart": "टाइमलाइन की शुरुआती तारीख़",
+			"periodStartLocked": "सभी कार्य एक ही अवधि में समा जाते हैं, इसलिए शुरुआती तारीख़ बदली नहीं जा सकती",
 			"showTaskDates": "कार्य की तारीख़ें दिखाएँ",
 			"legendBlocking": "अवरोधक",
 			"legendRelated": "संबंधित",

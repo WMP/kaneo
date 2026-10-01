@@ -1439,20 +1439,20 @@
 			"gitlabHint": "Quando ocorrer um evento de webhook do GitLab, mova a tarefa vinculada para uma coluna."
 		},
 		"externalLinks": {
-			"resources": "Recursos",
+			"links": "Links",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Mesclado",
 			"draft": "Rascunho",
 			"open": "Aberto",
 			"adding": "Adicionando...",
-			"addResource": "Adicionar recurso",
+			"addLink": "Adicionar link",
 			"cancel": "Cancelar",
-			"empty": "Nenhum recurso vinculado a esta tarefa.",
+			"empty": "Nenhum link vinculado a esta tarefa.",
 			"titleOptional": "Título (opcional)",
 			"url": "URL",
 			"remove": "Remover {{title}}",
-			"removeError": "Falha ao remover o link do recurso."
+			"removeError": "Falha ao remover o link."
 		},
 		"mattermostIntegration": {
 			"channelHint": "Rótulo opcional para sua referência. O Mattermost define o canal de destino real na configuração do webhook.",
@@ -2720,6 +2720,7 @@
 			"previousPeriod": "Período anterior",
 			"nextPeriod": "Próximo período",
 			"periodStart": "Data de início da linha do tempo",
+			"periodStartLocked": "Todas as tarefas cabem em um único período, então a data de início não pode ser movida",
 			"showTaskDates": "Mostrar datas das tarefas",
 			"legendBlocking": "Bloqueando",
 			"legendRelated": "Relacionado",

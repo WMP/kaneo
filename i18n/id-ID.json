@@ -1203,20 +1203,20 @@
 			"gitlabHint": "Saat event webhook GitLab terjadi, pindahkan tugas yang ditautkan ke sebuah kolom."
 		},
 		"externalLinks": {
-			"resources": "Sumber daya",
+			"links": "Tautan",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Digabung",
 			"draft": "Draf",
 			"open": "Terbuka",
 			"adding": "Menambahkan...",
-			"addResource": "Tambah sumber daya",
+			"addLink": "Tambah tautan",
 			"cancel": "Batal",
-			"empty": "Tidak ada sumber daya yang ditautkan ke tugas ini.",
+			"empty": "Belum ada tautan untuk tugas ini.",
 			"titleOptional": "Judul (opsional)",
 			"url": "URL",
 			"remove": "Hapus {{title}}",
-			"removeError": "Gagal menghapus tautan sumber daya."
+			"removeError": "Gagal menghapus tautan."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Peran",
@@ -2706,6 +2706,7 @@
 			"previousPeriod": "Periode sebelumnya",
 			"nextPeriod": "Periode berikutnya",
 			"periodStart": "Tanggal mulai linimasa",
+			"periodStartLocked": "Semua tugas muat dalam satu periode, sehingga tanggal mulai tidak dapat digeser",
 			"showTaskDates": "Tampilkan tanggal tugas",
 			"legendBlocking": "Memblokir",
 			"legendRelated": "Terkait",

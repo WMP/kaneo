@@ -86,7 +86,35 @@ export type EditDraft = {
   required: boolean;
   optionsText: string;
   defaultValue: DefaultDraft;
+  /** Option value -> color token. May hold entries of options the user has
+   * since removed from the text; resolveDraft prunes them. */
+  optionColors: Record<string, string>;
 };
+
+/** Only a single-select dropdown stores option colors. */
+export function hasOptionColors(type: CustomFieldType): boolean {
+  return type === "dropdown";
+}
+
+function pruneColorsToOptions(
+  colors: Record<string, string>,
+  options: string[],
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(colors).filter(([option]) => options.includes(option)),
+  );
+}
+
+function sameColors(
+  a: Record<string, string>,
+  b: Record<string, string>,
+): boolean {
+  const keys = Object.keys(a);
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => a[key] === b[key])
+  );
+}
 
 export function draftFromField(field: CustomFieldDefinition): EditDraft {
   return {
@@ -94,10 +122,14 @@ export function draftFromField(field: CustomFieldDefinition): EditDraft {
     required: field.required,
     optionsText: (field.options ?? []).join(", "),
     defaultValue: readStoredDefault(field.type, field.defaultValue),
+    optionColors: { ...(field.optionColors ?? {}) },
   };
 }
 
-/** The edit draft with its default pruned to the current options. */
+/** The edit draft with its default and option colors pruned to the current
+ * options. Colors are keyed by option value, so a renamed option is a removed
+ * one plus a new one: the form cannot tell them apart and the new option
+ * starts without a color. */
 export function resolveDraft(
   field: CustomFieldDefinition,
   draft: EditDraft,
@@ -106,6 +138,7 @@ export function resolveDraft(
   required: boolean;
   options: string[];
   defaultValue: DefaultDraft;
+  optionColors: Record<string, string>;
 } {
   const options = hasOptions(field.type)
     ? parseOptionsText(draft.optionsText)
@@ -119,6 +152,9 @@ export function resolveDraft(
       draft.defaultValue,
       options,
     ),
+    optionColors: hasOptionColors(field.type)
+      ? pruneColorsToOptions(draft.optionColors, options)
+      : {},
   };
 }
 
@@ -156,6 +192,19 @@ export function buildUpdatePayload(
       resolved.options.length !== current.length ||
       resolved.options.some((option, index) => option !== current[index]);
     if (changed) payload.options = resolved.options;
+  }
+
+  // Colors of removed options need no entry here: the API prunes them when
+  // `optionColors` is omitted. Send the map only when the user changed the
+  // color of an option that survives.
+  if (hasOptionColors(field.type)) {
+    const stored = pruneColorsToOptions(
+      field.optionColors ?? {},
+      resolved.options,
+    );
+    if (!sameColors(resolved.optionColors, stored)) {
+      payload.optionColors = resolved.optionColors;
+    }
   }
 
   const nextDefault = toApiDefaultValue(field.type, resolved.defaultValue);

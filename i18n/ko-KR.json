@@ -1203,20 +1203,20 @@
 			"gitlabHint": "GitLab 웹훅 이벤트가 발생하면 연결된 작업을 컬럼으로 이동합니다."
 		},
 		"externalLinks": {
-			"resources": "리소스",
+			"links": "링크",
 			"issue": "이슈",
 			"branch": "브랜치",
 			"merged": "병합됨",
 			"draft": "초안",
 			"open": "열림",
 			"adding": "추가하는 중...",
-			"addResource": "리소스 추가",
+			"addLink": "링크 추가",
 			"cancel": "취소",
-			"empty": "이 작업에 연결된 리소스가 없습니다.",
+			"empty": "이 작업에 연결된 링크가 없습니다.",
 			"titleOptional": "제목(선택)",
 			"url": "URL",
 			"remove": "{{title}} 제거",
-			"removeError": "리소스 링크를 제거하지 못했습니다."
+			"removeError": "링크를 제거하지 못했습니다."
 		},
 		"workspaceRoles": {
 			"pageTitle": "역할",
@@ -2719,6 +2719,7 @@
 			"previousPeriod": "이전 기간",
 			"nextPeriod": "다음 기간",
 			"periodStart": "타임라인 시작일",
+			"periodStartLocked": "모든 작업이 한 기간에 들어가므로 시작일을 변경할 수 없습니다",
 			"showTaskDates": "작업 날짜 표시",
 			"legendBlocking": "차단 중",
 			"legendRelated": "관련",

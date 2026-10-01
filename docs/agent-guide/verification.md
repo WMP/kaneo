@@ -5,6 +5,8 @@ Use Node.js 24.19.0 (supported engine: Node 24+) and pnpm 10.32.1. From the repo
 | Change | Focused check | Broader check when appropriate |
 | --- | --- | --- |
 | Agent instructions or contracts | `node --test scripts/ci/agent-guidance.test.mjs` | `node --test scripts/ci/*.test.mjs` |
+| README or its screenshots | `node --test scripts/ci/readme.test.mjs` | the `update-readme` skill in `.claude/skills/update-readme/SKILL.md` |
+| Demo data or the demo tool | `node --test scripts/ci/demo-data.test.mjs` | seed a disposable instance with `node scripts/demo/seed.mjs --reset` (see `scripts/demo/README.md`) |
 | API utility/route | `pnpm --filter @kaneo/api exec vitest run --config vitest.config.ts <test-file>` | `pnpm --filter @kaneo/api typecheck`; API integration job for routing/DB |
 | Migration, journal or upstream sync | `pnpm --filter @kaneo/api exec vitest run --config vitest.config.ts ../../tests/api/database/migration-journal.test.ts` | `tests/api-integration/migration-runner.test.ts` and the relevant `tests/api-integration/*-migration.test.ts` with disposable PostgreSQL |
 | PostgreSQL behavior | `pnpm --filter @kaneo/api exec vitest run --config vitest.integration.config.ts <test-file>` | `pnpm test:integration` with disposable PostgreSQL |
