@@ -83,6 +83,40 @@ describe("requireTaskAssigneePermission", () => {
     expect(mockPermissionMiddleware).toHaveBeenCalledTimes(1);
   });
 
+  it("skips the permission check when userId is omitted, because the assignees are left alone", async () => {
+    mockSelect.mockReturnValue(makeSelectChain([{ userId: "user-1" }]));
+    const next = vi.fn();
+
+    await requireTaskAssigneePermission(
+      makeContext({ title: "Renamed" }),
+      next,
+    );
+
+    expect(mockRequireWorkspacePermission).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires task:assign when a blank userId would unassign the primary", async () => {
+    mockSelect.mockReturnValue(makeSelectChain([{ userId: "user-1" }]));
+    const next = vi.fn();
+
+    await requireTaskAssigneePermission(makeContext({ userId: "  " }), next);
+
+    expect(mockRequireWorkspacePermission).toHaveBeenCalledWith({
+      task: ["assign"],
+    });
+  });
+
+  it("skips the permission check when a blank userId is sent for a task without a primary", async () => {
+    mockSelect.mockReturnValue(makeSelectChain([{ userId: null }]));
+    const next = vi.fn();
+
+    await requireTaskAssigneePermission(makeContext({ userId: "" }), next);
+
+    expect(mockRequireWorkspacePermission).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
   it("skips the permission check when the userIds array matches the current assignee set", async () => {
     mockSelect.mockReturnValue(makeSelectChain([{ userId: "user-1" }]));
     const next = vi.fn();

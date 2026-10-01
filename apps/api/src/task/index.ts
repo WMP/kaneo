@@ -272,7 +272,7 @@ const updateTaskRoute = createRoute({
   tags: ["Tasks"],
   summary: "Update task",
   description:
-    "Replace every field of a task. Use the single-field routes for narrower edits.",
+    "Replace every field of a task, except the assignees: `userId` only sets the primary assignee and never removes the other assignees (see the field). Use the single-field routes for narrower edits.",
   middleware: [
     workspaceAccess.fromTask(),
     requireWorkspacePermission({ task: ["update"] }),

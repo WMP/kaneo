@@ -11911,7 +11911,7 @@
           "Tasks"
         ],
         "summary": "Update task",
-        "description": "Replace every field of a task. Use the single-field routes for narrower edits.",
+        "description": "Replace every field of a task, except the assignees: `userId` only sets the primary assignee and never removes the other assignees (see the field). Use the single-field routes for narrower edits.",
         "parameters": [
           {
             "schema": {
@@ -11964,7 +11964,8 @@
                     "maximum": 2147483646
                   },
                   "userId": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "The primary assignee. Omit to leave the assignees untouched. The same id as the current primary assignee changes nothing. A different id replaces only the previous primary assignee: the other user and resource assignees are kept. An empty string unassigns the primary assignee and keeps the others (the first remaining user, if any, becomes the primary). Use PUT /api/task/{id}/assignees to set the whole assignee list."
                   },
                   "progress": {
                     "type": "integer",
