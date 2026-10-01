@@ -41,10 +41,13 @@ export type CreateCustomFieldPayload = {
 // What the inline edit form in CustomFieldEditorCore sends for one field: only
 // the properties the user changed (the API merges it over the stored
 // definition). The type is immutable and never part of it. `defaultValue:
-// null` clears the default; `options` is the full replacement list.
+// null` clears the default; `options` is the full replacement list;
+// `optionColors` is the full option value -> color map of a single-select
+// dropdown (omitted keeps the stored colors of the surviving options).
 export type UpdateCustomFieldPayload = {
   name?: string;
   required?: boolean;
   defaultValue?: string | null;
   options?: string[];
+  optionColors?: Record<string, string>;
 };

@@ -3,6 +3,10 @@ import type { AssigneeProfile } from "@/lib/find-assignee";
 import type Task from "@/types/task";
 import { AssigneeAvatars, resolveTaskAssignees } from "./assignee-avatars";
 
+// The trigger is a small button: only two avatars, at a size where a full
+// two-letter initials label stays readable, then a "+K" bubble for the rest.
+const TRIGGER_MAX_AVATARS = 2;
+
 type TaskAssigneeTriggerContentProps = {
   task: Task;
   /** The project member behind `task.userId`, when still listed: their current
@@ -47,7 +51,12 @@ export function TaskAssigneeTriggerContent({
 
   return (
     <>
-      <AssigneeAvatars assignees={assignees} avatarClassName="size-4" />
+      <AssigneeAvatars
+        assignees={assignees}
+        max={TRIGGER_MAX_AVATARS}
+        avatarClassName="size-5"
+        className="-space-x-1"
+      />
       <span className="text-xs font-semibold truncate max-w-[100px]">
         {assignees.length === 1 && assignees[0].name
           ? assignees[0].name

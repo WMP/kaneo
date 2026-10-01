@@ -2,10 +2,19 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { getDatabase } from "../database";
+import { LEGACY_WATERMARK_LAST_TAG } from "../database/run-migrations";
 
 type JournalEntry = { idx: number; when: number; tag: string };
 type Journal = { entries: JournalEntry[] };
+
+// What the function needs from a node-postgres Drizzle database, whatever its
+// schema type: the application database and a scratch one both fit.
+type Executor = Pick<NodePgDatabase, "execute">;
+type JournalDatabase = Executor & {
+  transaction<T>(callback: (tx: Executor) => Promise<T>): Promise<T>;
+};
 
 // Any migration this fork adds carries "ganttpro" in its tag; everything else
 // is an upstream baseline migration.
@@ -18,36 +27,39 @@ function firstCell<T>(result: { rows?: unknown[] }): T | undefined {
 }
 
 /**
- * Reconcile Drizzle's migration journal before migrate() runs, so this fork's
- * image starts cleanly against a database created by the original upstream
- * project.
+ * Reconcile Drizzle's migration journal before runMigrations() runs, so this
+ * fork's image starts cleanly against a database whose recorded migrations do
+ * not line up with this fork's journal.
  *
- * The problem: this fork regenerated its migration files, so the `when`
- * timestamps in drizzle/meta/_journal.json for the upstream baseline
- * (0000..0050) no longer match the `created_at` values a real upstream-created
- * database recorded when it applied those same migrations. Drizzle's migrator
- * decides what to run by comparing the single MAX(created_at) in
- * drizzle.__drizzle_migrations against each migration's `when`. When our
- * baseline `when` values are newer than everything the database recorded, the
- * migrator concludes NOTHING is applied and re-runs from 0000 — which fails
- * with `relation "account" already exists`.
+ * The journal entries 0000..0050 are byte-identical to upstream's, `when`
+ * included, so a database created or upgraded by upstream (or by this fork) has
+ * recorded rows with exactly those `created_at` values. For such a database
+ * this function does nothing. The runner then applies whatever the database has
+ * not recorded yet, including the fork's own ganttpro migrations.
  *
- * The fix: when the schema already exists but the journal's newest entry is
- * older than our baseline's newest `when`, rewrite the baseline journal rows to
- * our own (hash, when) values without touching any table. migrate() then sees
- * the baseline as applied and runs only this fork's own ganttpro_* migrations.
+ * It only acts on an older fork installation that built its schema from a
+ * regenerated baseline: `public.account` exists, but the journal table has no
+ * rows or none of its `created_at` values equals a baseline entry's `when`
+ * (the baseline is the non-fork entries up to LEGACY_WATERMARK_LAST_TAG).
+ * Without help the runner would apply the baseline again from 0000 and fail
+ * with `relation "account" already exists`. In that case the baseline rows are
+ * rewritten to this journal's (hash, when) values without touching any table,
+ * so that only the migrations the database really lacks run.
  *
  * Safety: this only ever writes to drizzle.__drizzle_migrations (Drizzle's own
  * bookkeeping), never to application data. It is idempotent and self-guarding:
- *  - does nothing on a fresh database (no `account` table) — migrate() builds
- *    everything from 0000;
- *  - does nothing once the journal's newest entry already covers our baseline
- *    (a database built from this fork, or already reconciled);
- *  - only runs migrate()'s own ganttpro migrations afterwards.
+ *  - does nothing on a fresh database (no `account` table), where the runner
+ *    builds everything from 0000;
+ *  - does nothing once any recorded `created_at` equals a baseline `when`
+ *    (a database built by upstream or by this fork, or already reconciled);
+ *  - never deletes rows of fork migrations that were already applied.
+ *
+ * `database` defaults to the application database; tests pass a scratch one.
  */
-export async function reconcileMigrationJournal(migrationsFolder: string) {
-  const db = getDatabase();
-
+export async function reconcileMigrationJournal(
+  migrationsFolder: string,
+  db: JournalDatabase = getDatabase(),
+) {
   // Match the exact table Drizzle's node-postgres migrator uses.
   await db.execute(sql`CREATE SCHEMA IF NOT EXISTS "drizzle"`);
   await db.execute(
@@ -58,14 +70,23 @@ export async function reconcileMigrationJournal(migrationsFolder: string) {
     sql`SELECT to_regclass('public.account') AS t`,
   );
   if (firstCell<{ t: string | null }>(accountResult)?.t == null) {
-    return; // Fresh database — let migrate() build everything from 0000.
+    return; // Fresh database — let the runner build everything from 0000.
   }
 
   const journal = JSON.parse(
     readFileSync(join(migrationsFolder, "meta", "_journal.json"), "utf8"),
   ) as Journal;
+  // The baseline is the upstream history that the runner decides by Drizzle's
+  // watermark rule: the non-fork entries up to LEGACY_WATERMARK_LAST_TAG. Later
+  // entries are never recorded here; the runner applies them.
+  const cutoff = journal.entries.find(
+    (entry) => entry.tag === LEGACY_WATERMARK_LAST_TAG,
+  );
+  if (!cutoff) {
+    return; // runMigrations() reports the missing entry.
+  }
   const baseline = journal.entries
-    .filter((entry) => !isForkMigration(entry.tag))
+    .filter((entry) => entry.idx <= cutoff.idx && !isForkMigration(entry.tag))
     .sort((a, b) => a.idx - b.idx);
   if (baseline.length === 0) {
     return;
@@ -73,24 +94,23 @@ export async function reconcileMigrationJournal(migrationsFolder: string) {
   const forkEntries = journal.entries.filter((entry) =>
     isForkMigration(entry.tag),
   );
-  const baselineMaxWhen = Math.max(...baseline.map((entry) => entry.when));
+  const baselineWhens = new Set(baseline.map((entry) => entry.when));
   const minForkWhen = forkEntries.length
     ? Math.min(...forkEntries.map((entry) => entry.when))
     : Number.POSITIVE_INFINITY;
 
-  const maxResult = await db.execute(
-    sql`SELECT max(created_at) AS m FROM "drizzle"."__drizzle_migrations"`,
+  const recordedResult = await db.execute<{ created_at: string | null }>(
+    sql`SELECT created_at FROM "drizzle"."__drizzle_migrations"`,
   );
-  const rawMax = firstCell<{ m: string | number | null }>(maxResult)?.m;
-  const dbMax = rawMax == null ? null : Number(rawMax);
+  const recorded = recordedResult.rows;
 
-  // The journal already marks our baseline (or newer) as applied — leave it be.
-  if (dbMax != null && dbMax >= baselineMaxWhen) {
+  // Some recorded migration is one of our baseline entries — leave it be.
+  if (recorded.some((row) => baselineWhens.has(Number(row.created_at)))) {
     return;
   }
 
   console.log(
-    `🔄 Reconciling Drizzle journal for a pre-existing database (newest recorded migration ${dbMax ?? "none"} < baseline ${baselineMaxWhen}); recording the upstream baseline as applied so only this fork's migrations run.`,
+    `🔄 Reconciling Drizzle journal for a pre-existing database (${recorded.length} recorded migrations, none of them a baseline entry); recording the baseline as applied so only the missing migrations run.`,
   );
 
   await db.transaction(async (tx) => {
@@ -116,6 +136,6 @@ export async function reconcileMigrationJournal(migrationsFolder: string) {
   });
 
   console.log(
-    "✅ Journal reconciled; migrate() will apply only the remaining migrations.",
+    "✅ Journal reconciled; runMigrations() will apply only the remaining migrations.",
   );
 }

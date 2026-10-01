@@ -524,7 +524,7 @@ export function registerTools(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
+        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
       inputSchema: updateTaskSchema,
     },
     async (args) => {

@@ -41,6 +41,7 @@ import { Route as LayoutAuthenticatedDashboardWorkspaceWorkspaceIdRouteImport } 
 import { Route as LayoutAuthenticatedDashboardWorkspaceCreateRouteImport } from './routes/_layout/_authenticated/dashboard/workspace/create'
 import { Route as LayoutAuthenticatedDashboardSettingsAccountDeveloperRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/developer'
 import { Route as LayoutAuthenticatedDashboardSettingsAccountInformationRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/information'
+import { Route as LayoutAuthenticatedDashboardSettingsAccountJiraRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/jira'
 import { Route as LayoutAuthenticatedDashboardSettingsAccountMcpRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/mcp'
 import { Route as LayoutAuthenticatedDashboardSettingsAccountNotificationsRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/notifications'
 import { Route as LayoutAuthenticatedDashboardSettingsAccountPreferencesRouteImport } from './routes/_layout/_authenticated/dashboard/settings/account/preferences'
@@ -49,6 +50,7 @@ import { Route as LayoutAuthenticatedDashboardSettingsAdminUsersRouteImport } fr
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceBillingRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/billing'
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/custom-fields'
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/general'
+import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceJiraRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/jira'
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/labels'
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/resources'
 import { Route as LayoutAuthenticatedDashboardSettingsWorkspaceRolesRouteImport } from './routes/_layout/_authenticated/dashboard/settings/workspace/roles'
@@ -247,6 +249,12 @@ const LayoutAuthenticatedDashboardSettingsAccountInformationRoute =
     path: '/information',
     getParentRoute: () => LayoutAuthenticatedDashboardSettingsAccountRoute,
   } as any)
+const LayoutAuthenticatedDashboardSettingsAccountJiraRoute =
+  LayoutAuthenticatedDashboardSettingsAccountJiraRouteImport.update({
+    id: '/jira',
+    path: '/jira',
+    getParentRoute: () => LayoutAuthenticatedDashboardSettingsAccountRoute,
+  } as any)
 const LayoutAuthenticatedDashboardSettingsAccountMcpRoute =
   LayoutAuthenticatedDashboardSettingsAccountMcpRouteImport.update({
     id: '/mcp',
@@ -293,6 +301,12 @@ const LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute =
   LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRouteImport.update({
     id: '/general',
     path: '/general',
+    getParentRoute: () => LayoutAuthenticatedDashboardSettingsWorkspaceRoute,
+  } as any)
+const LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute =
+  LayoutAuthenticatedDashboardSettingsWorkspaceJiraRouteImport.update({
+    id: '/jira',
+    path: '/jira',
     getParentRoute: () => LayoutAuthenticatedDashboardSettingsWorkspaceRoute,
   } as any)
 const LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute =
@@ -498,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/workspace/create': typeof LayoutAuthenticatedDashboardWorkspaceCreateRoute
   '/dashboard/settings/account/developer': typeof LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute
   '/dashboard/settings/account/information': typeof LayoutAuthenticatedDashboardSettingsAccountInformationRoute
+  '/dashboard/settings/account/jira': typeof LayoutAuthenticatedDashboardSettingsAccountJiraRoute
   '/dashboard/settings/account/mcp': typeof LayoutAuthenticatedDashboardSettingsAccountMcpRoute
   '/dashboard/settings/account/notifications': typeof LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute
   '/dashboard/settings/account/preferences': typeof LayoutAuthenticatedDashboardSettingsAccountPreferencesRoute
@@ -506,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings/workspace/billing': typeof LayoutAuthenticatedDashboardSettingsWorkspaceBillingRoute
   '/dashboard/settings/workspace/custom-fields': typeof LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute
   '/dashboard/settings/workspace/general': typeof LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute
+  '/dashboard/settings/workspace/jira': typeof LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute
   '/dashboard/settings/workspace/labels': typeof LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute
   '/dashboard/settings/workspace/resources': typeof LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute
   '/dashboard/settings/workspace/roles': typeof LayoutAuthenticatedDashboardSettingsWorkspaceRolesRoute
@@ -558,6 +574,7 @@ export interface FileRoutesByTo {
   '/dashboard/workspace/create': typeof LayoutAuthenticatedDashboardWorkspaceCreateRoute
   '/dashboard/settings/account/developer': typeof LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute
   '/dashboard/settings/account/information': typeof LayoutAuthenticatedDashboardSettingsAccountInformationRoute
+  '/dashboard/settings/account/jira': typeof LayoutAuthenticatedDashboardSettingsAccountJiraRoute
   '/dashboard/settings/account/mcp': typeof LayoutAuthenticatedDashboardSettingsAccountMcpRoute
   '/dashboard/settings/account/notifications': typeof LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute
   '/dashboard/settings/account/preferences': typeof LayoutAuthenticatedDashboardSettingsAccountPreferencesRoute
@@ -566,6 +583,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings/workspace/billing': typeof LayoutAuthenticatedDashboardSettingsWorkspaceBillingRoute
   '/dashboard/settings/workspace/custom-fields': typeof LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute
   '/dashboard/settings/workspace/general': typeof LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute
+  '/dashboard/settings/workspace/jira': typeof LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute
   '/dashboard/settings/workspace/labels': typeof LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute
   '/dashboard/settings/workspace/resources': typeof LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute
   '/dashboard/settings/workspace/roles': typeof LayoutAuthenticatedDashboardSettingsWorkspaceRolesRoute
@@ -623,6 +641,7 @@ export interface FileRoutesById {
   '/_layout/_authenticated/dashboard/workspace/create': typeof LayoutAuthenticatedDashboardWorkspaceCreateRoute
   '/_layout/_authenticated/dashboard/settings/account/developer': typeof LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute
   '/_layout/_authenticated/dashboard/settings/account/information': typeof LayoutAuthenticatedDashboardSettingsAccountInformationRoute
+  '/_layout/_authenticated/dashboard/settings/account/jira': typeof LayoutAuthenticatedDashboardSettingsAccountJiraRoute
   '/_layout/_authenticated/dashboard/settings/account/mcp': typeof LayoutAuthenticatedDashboardSettingsAccountMcpRoute
   '/_layout/_authenticated/dashboard/settings/account/notifications': typeof LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute
   '/_layout/_authenticated/dashboard/settings/account/preferences': typeof LayoutAuthenticatedDashboardSettingsAccountPreferencesRoute
@@ -631,6 +650,7 @@ export interface FileRoutesById {
   '/_layout/_authenticated/dashboard/settings/workspace/billing': typeof LayoutAuthenticatedDashboardSettingsWorkspaceBillingRoute
   '/_layout/_authenticated/dashboard/settings/workspace/custom-fields': typeof LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute
   '/_layout/_authenticated/dashboard/settings/workspace/general': typeof LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute
+  '/_layout/_authenticated/dashboard/settings/workspace/jira': typeof LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute
   '/_layout/_authenticated/dashboard/settings/workspace/labels': typeof LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute
   '/_layout/_authenticated/dashboard/settings/workspace/resources': typeof LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute
   '/_layout/_authenticated/dashboard/settings/workspace/roles': typeof LayoutAuthenticatedDashboardSettingsWorkspaceRolesRoute
@@ -688,6 +708,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspace/create'
     | '/dashboard/settings/account/developer'
     | '/dashboard/settings/account/information'
+    | '/dashboard/settings/account/jira'
     | '/dashboard/settings/account/mcp'
     | '/dashboard/settings/account/notifications'
     | '/dashboard/settings/account/preferences'
@@ -696,6 +717,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings/workspace/billing'
     | '/dashboard/settings/workspace/custom-fields'
     | '/dashboard/settings/workspace/general'
+    | '/dashboard/settings/workspace/jira'
     | '/dashboard/settings/workspace/labels'
     | '/dashboard/settings/workspace/resources'
     | '/dashboard/settings/workspace/roles'
@@ -748,6 +770,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspace/create'
     | '/dashboard/settings/account/developer'
     | '/dashboard/settings/account/information'
+    | '/dashboard/settings/account/jira'
     | '/dashboard/settings/account/mcp'
     | '/dashboard/settings/account/notifications'
     | '/dashboard/settings/account/preferences'
@@ -756,6 +779,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings/workspace/billing'
     | '/dashboard/settings/workspace/custom-fields'
     | '/dashboard/settings/workspace/general'
+    | '/dashboard/settings/workspace/jira'
     | '/dashboard/settings/workspace/labels'
     | '/dashboard/settings/workspace/resources'
     | '/dashboard/settings/workspace/roles'
@@ -812,6 +836,7 @@ export interface FileRouteTypes {
     | '/_layout/_authenticated/dashboard/workspace/create'
     | '/_layout/_authenticated/dashboard/settings/account/developer'
     | '/_layout/_authenticated/dashboard/settings/account/information'
+    | '/_layout/_authenticated/dashboard/settings/account/jira'
     | '/_layout/_authenticated/dashboard/settings/account/mcp'
     | '/_layout/_authenticated/dashboard/settings/account/notifications'
     | '/_layout/_authenticated/dashboard/settings/account/preferences'
@@ -820,6 +845,7 @@ export interface FileRouteTypes {
     | '/_layout/_authenticated/dashboard/settings/workspace/billing'
     | '/_layout/_authenticated/dashboard/settings/workspace/custom-fields'
     | '/_layout/_authenticated/dashboard/settings/workspace/general'
+    | '/_layout/_authenticated/dashboard/settings/workspace/jira'
     | '/_layout/_authenticated/dashboard/settings/workspace/labels'
     | '/_layout/_authenticated/dashboard/settings/workspace/resources'
     | '/_layout/_authenticated/dashboard/settings/workspace/roles'
@@ -1082,6 +1108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAuthenticatedDashboardSettingsAccountInformationRouteImport
       parentRoute: typeof LayoutAuthenticatedDashboardSettingsAccountRoute
     }
+    '/_layout/_authenticated/dashboard/settings/account/jira': {
+      id: '/_layout/_authenticated/dashboard/settings/account/jira'
+      path: '/jira'
+      fullPath: '/dashboard/settings/account/jira'
+      preLoaderRoute: typeof LayoutAuthenticatedDashboardSettingsAccountJiraRouteImport
+      parentRoute: typeof LayoutAuthenticatedDashboardSettingsAccountRoute
+    }
     '/_layout/_authenticated/dashboard/settings/account/mcp': {
       id: '/_layout/_authenticated/dashboard/settings/account/mcp'
       path: '/mcp'
@@ -1136,6 +1169,13 @@ declare module '@tanstack/react-router' {
       path: '/general'
       fullPath: '/dashboard/settings/workspace/general'
       preLoaderRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRouteImport
+      parentRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceRoute
+    }
+    '/_layout/_authenticated/dashboard/settings/workspace/jira': {
+      id: '/_layout/_authenticated/dashboard/settings/workspace/jira'
+      path: '/jira'
+      fullPath: '/dashboard/settings/workspace/jira'
+      preLoaderRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceJiraRouteImport
       parentRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceRoute
     }
     '/_layout/_authenticated/dashboard/settings/workspace/labels': {
@@ -1305,6 +1345,7 @@ declare module '@tanstack/react-router' {
 interface LayoutAuthenticatedDashboardSettingsAccountRouteChildren {
   LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute: typeof LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute
   LayoutAuthenticatedDashboardSettingsAccountInformationRoute: typeof LayoutAuthenticatedDashboardSettingsAccountInformationRoute
+  LayoutAuthenticatedDashboardSettingsAccountJiraRoute: typeof LayoutAuthenticatedDashboardSettingsAccountJiraRoute
   LayoutAuthenticatedDashboardSettingsAccountMcpRoute: typeof LayoutAuthenticatedDashboardSettingsAccountMcpRoute
   LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute: typeof LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute
   LayoutAuthenticatedDashboardSettingsAccountPreferencesRoute: typeof LayoutAuthenticatedDashboardSettingsAccountPreferencesRoute
@@ -1317,6 +1358,8 @@ const LayoutAuthenticatedDashboardSettingsAccountRouteChildren: LayoutAuthentica
       LayoutAuthenticatedDashboardSettingsAccountDeveloperRoute,
     LayoutAuthenticatedDashboardSettingsAccountInformationRoute:
       LayoutAuthenticatedDashboardSettingsAccountInformationRoute,
+    LayoutAuthenticatedDashboardSettingsAccountJiraRoute:
+      LayoutAuthenticatedDashboardSettingsAccountJiraRoute,
     LayoutAuthenticatedDashboardSettingsAccountMcpRoute:
       LayoutAuthenticatedDashboardSettingsAccountMcpRoute,
     LayoutAuthenticatedDashboardSettingsAccountNotificationsRoute:
@@ -1381,6 +1424,7 @@ interface LayoutAuthenticatedDashboardSettingsWorkspaceRouteChildren {
   LayoutAuthenticatedDashboardSettingsWorkspaceBillingRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceBillingRoute
   LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute
   LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute
+  LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute
   LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute
   LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute
   LayoutAuthenticatedDashboardSettingsWorkspaceRolesRoute: typeof LayoutAuthenticatedDashboardSettingsWorkspaceRolesRoute
@@ -1395,6 +1439,8 @@ const LayoutAuthenticatedDashboardSettingsWorkspaceRouteChildren: LayoutAuthenti
       LayoutAuthenticatedDashboardSettingsWorkspaceCustomFieldsRoute,
     LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute:
       LayoutAuthenticatedDashboardSettingsWorkspaceGeneralRoute,
+    LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute:
+      LayoutAuthenticatedDashboardSettingsWorkspaceJiraRoute,
     LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute:
       LayoutAuthenticatedDashboardSettingsWorkspaceLabelsRoute,
     LayoutAuthenticatedDashboardSettingsWorkspaceResourcesRoute:

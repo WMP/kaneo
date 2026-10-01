@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -21,18 +20,22 @@ import {
   it,
 } from "vitest";
 import db from "../../apps/api/src/database";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 import { resetTestDatabase } from "./helpers/database";
 
-// Migration 0060 adds workspace columns: the table `ganttpro_workspace_column`,
+// Migration 20261001090514_ganttpro_workspace_columns adds workspace columns: the table `ganttpro_workspace_column`,
 // `workspace.ganttpro_enforce_columns` (default false) and the nullable link
 // `column.ganttpro_workspace_column_id` (ON DELETE SET NULL, ON UPDATE CASCADE).
-// It backfills nothing. The scratch database is migrated to 0059, populated with
-// workspaces, projects, columns, tasks and a workflow rule, then upgraded; a
-// fresh database (every other integration test) is checked for the same objects.
+// It backfills nothing. The scratch database is migrated to the previous newest
+// entry (20260930053654_ganttpro_jira_integration), populated with workspaces,
+// projects, columns, tasks and a workflow rule, then upgraded with the runner
+// that the API uses at start-up; a fresh database (every other integration
+// test) is checked for the same objects.
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../apps/api/drizzle");
-const TARGET_TAG = "0060_ganttpro_workspace_columns";
+const TARGET_TAG = "20261001090514_ganttpro_workspace_columns";
+const PREVIOUS_TAG = "20260930053654_ganttpro_jira_integration";
 
 function withDatabase(connectionString: string, database: string) {
   const url = new URL(connectionString);
@@ -40,7 +43,7 @@ function withDatabase(connectionString: string, database: string) {
   return url.toString();
 }
 
-describe("migration 0060 workspace columns", () => {
+describe("migration ganttpro_workspace_columns", () => {
   const baseUrl = process.env.DATABASE_URL as string;
   const scratchName = `${new URL(baseUrl).pathname
     .replace(/^\//, "")
@@ -71,7 +74,7 @@ describe("migration 0060 workspace columns", () => {
   }
 
   beforeAll(() => {
-    priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-0059-"));
+    priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-jira-"));
     cpSync(migrationsFolder, priorFolder, { recursive: true });
     const journalPath = join(priorFolder, "meta", "_journal.json");
     const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {
@@ -79,6 +82,8 @@ describe("migration 0060 workspace columns", () => {
     };
     const cut = journal.entries.findIndex((entry) => entry.tag === TARGET_TAG);
     expect(cut).toBeGreaterThan(0);
+    // The database to upgrade is at the Jira migration, the previous newest entry.
+    expect(journal.entries[cut - 1].tag).toBe(PREVIOUS_TAG);
     journal.entries = journal.entries.slice(0, cut);
     writeFileSync(journalPath, JSON.stringify(journal));
   });
@@ -131,7 +136,7 @@ describe("migration 0060 workspace columns", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     const before = await scratch.query(
       `SELECT count(*)::int AS n FROM information_schema.columns
        WHERE (table_name = 'column' AND column_name = 'ganttpro_workspace_column_id')
@@ -143,7 +148,7 @@ describe("migration 0060 workspace columns", () => {
     );
     expect(tableBefore.rows[0].name).toBeNull();
     await seed(scratch);
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
     return scratch;
   }
 

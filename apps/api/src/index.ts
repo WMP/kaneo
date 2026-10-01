@@ -9,7 +9,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import * as Sentry from "@sentry/node";
 import type { Session, User } from "better-auth/types";
 import { eq, sql } from "drizzle-orm";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
 import { cors } from "hono/cors";
@@ -26,6 +25,7 @@ import config from "./config";
 import customField from "./custom-field";
 import db, { getDatabase, schema } from "./database";
 import { prepareDatabaseStartup } from "./database/prepare-database-startup";
+import { runMigrations } from "./database/run-migrations";
 import { waitForDatabase } from "./database/wait-for-database";
 import discordIntegration from "./discord-integration";
 import { eventContext } from "./events";
@@ -41,6 +41,10 @@ import gitlabIntegration, {
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
+import jiraIntegration, {
+  handleJiraWebhookRoute,
+  jiraWebhookBodyLimit,
+} from "./jira-integration";
 import label from "./label";
 import mattermostIntegration from "./mattermost-integration";
 import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
@@ -404,6 +408,13 @@ export function createApp() {
   api.post(
     "/gitlab-integration/webhook/:integrationId",
     handleGitlabWebhookRoute,
+  );
+
+  // Public, like the other webhooks: the secret in the URL is the credential.
+  api.post(
+    "/jira-integration/webhook/:connectionId",
+    jiraWebhookBodyLimit,
+    handleJiraWebhookRoute,
   );
 
   const invitationPublicApi = api.get("/invitation/public/:id", async (c) => {
@@ -777,6 +788,7 @@ export function createApp() {
     "/gitlab-integration",
     gitlabIntegration,
   );
+  const jiraIntegrationApi = api.route("/jira-integration", jiraIntegration);
   const genericWebhookIntegrationApi = api.route(
     "/generic-webhook-integration",
     genericWebhookIntegration,
@@ -954,6 +966,7 @@ export function createApp() {
     gitlabIntegrationApi,
     invitationApi,
     invitationPublicApi,
+    jiraIntegrationApi,
     labelApi,
     notificationApi,
     notificationPreferencesApi,
@@ -996,17 +1009,18 @@ export async function runStartupTasks() {
       await migrateSessionColumn();
 
       const migrationsFolder = `${currentDir}/../drizzle`;
-      // Reconcile the Drizzle journal for a pre-existing upstream-created
-      // database whose recorded migration timestamps don't line up with the
-      // standard migrator comparison, so migrate() below only runs this fork's
-      // own migrations instead of restarting from 0000 and hitting "already
-      // exists". No-op on fresh or already-aligned databases.
+      // Rewrite the journal rows of an older fork installation whose recorded
+      // baseline does not match this journal, so runMigrations() below does not
+      // restart from 0000 and hit "already exists". No-op on fresh databases and
+      // on databases that recorded any baseline migration (created by upstream
+      // or by this fork).
       await reconcileMigrationJournal(migrationsFolder);
 
+      // Records every applied migration, so a migration merged with an older
+      // `when` than the newest applied one still runs (see
+      // database/run-migrations.ts).
       console.log("🔄 Migrating database...");
-      await migrate(getDatabase(), {
-        migrationsFolder,
-      });
+      await runMigrations(getDatabase(), { migrationsFolder });
       console.log("✅ Database migrated successfully!");
     },
   });
@@ -1100,6 +1114,7 @@ const {
   gitlabIntegrationApi,
   invitationApi,
   invitationPublicApi,
+  jiraIntegrationApi,
   labelApi,
   mattermostIntegrationApi,
   notificationApi,
@@ -1155,6 +1170,7 @@ export type AppType =
   | typeof githubIntegrationApi
   | typeof giteaIntegrationApi
   | typeof gitlabIntegrationApi
+  | typeof jiraIntegrationApi
   | typeof genericWebhookIntegrationApi
   | typeof discordIntegrationApi
   | typeof mattermostIntegrationApi

@@ -121,7 +121,14 @@ export async function requireTaskAssigneePermission(c: Context, next: Next) {
     return next();
   }
 
-  const nextAssignee = typeof body.userId === "string" ? body.userId : null;
+  // PUT /api/task/{id} leaves the assignees alone when userId is omitted, so
+  // that is not an assignment change. A blank userId unassigns the primary.
+  if (body.userId === undefined) {
+    return next();
+  }
+
+  const nextAssignee =
+    typeof body.userId === "string" ? body.userId.trim() || null : null;
 
   if (existingTask.userId !== nextAssignee) {
     return requireWorkspacePermission({ task: ["assign"] })(c, next);

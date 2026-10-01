@@ -12,6 +12,12 @@ const t = (key: string, options?: Record<string, unknown>) => {
   if (key === "notifications:events.due_date_reminder.content") {
     return `${options?.taskTitle} is due in ${options?.leadTime}`;
   }
+  if (key === "notifications:events.jira_status_proposal.title") {
+    return "Jira status changed";
+  }
+  if (key === "notifications:events.jira_status_proposal.content") {
+    return `Jira issue ${options?.issueKey} is now "${options?.toStatus}" (task "${options?.taskTitle}")`;
+  }
   if (key === "notifications:events.task_comment.title") {
     return `${options?.commenterName} commented on your task`;
   }
@@ -102,6 +108,38 @@ describe("notification display content", () => {
     expect(getNotificationTitle(item, t)).toBe("Mina commented on your task");
     expect(getNotificationContent(item, t)).toBe(
       "New comment on Launch website: Ready for review",
+    );
+  });
+
+  it("renders a Jira status proposal from its event data", () => {
+    const item = notification("jira_status_proposal", {
+      taskTitle: "Launch website",
+      projectId: "project-1",
+      workspaceId: "workspace-1",
+      issueKey: "PROJ-7",
+      fromStatus: "In Progress",
+      toStatus: "Done",
+      proposedStatus: "done",
+      proposalId: "proposal-1",
+    });
+
+    expect(getNotificationTitle(item, t)).toBe("Jira status changed");
+    expect(getNotificationContent(item, t)).toBe(
+      'Jira issue PROJ-7 is now "Done" (task "Launch website")',
+    );
+  });
+
+  it("falls back to the stored text for a Jira proposal without event data", () => {
+    const item = {
+      ...notification("jira_status_proposal", {}),
+      eventData: null,
+      title: "Jira status changed",
+      content: "The status of a linked Jira issue changed.",
+    } as unknown as Notification;
+
+    expect(getNotificationTitle(item, t)).toBe("Jira status changed");
+    expect(getNotificationContent(item, t)).toBe(
+      "The status of a linked Jira issue changed.",
     );
   });
 });

@@ -189,6 +189,16 @@ export function useProjectWebSocket(
               queryClient.invalidateQueries({
                 queryKey: ["external-links", message.taskId],
               });
+              // jira.* events (a status seen in Jira, a link, a resolved
+              // proposal) arrive as TASK_UPDATED. Only a mounted query is
+              // refetched, so this costs nothing for a task without Jira. The
+              // activity feed gets the entry the change wrote.
+              queryClient.invalidateQueries({
+                queryKey: ["jira-task", message.taskId],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["activities", message.taskId],
+              });
             }
 
             if (message.type === "COMMENT_UPDATED") {

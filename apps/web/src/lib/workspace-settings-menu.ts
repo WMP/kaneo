@@ -5,6 +5,7 @@ import {
   Settings,
   Shield,
   Tag,
+  Ticket,
   Users,
   Workflow,
   Wrench,
@@ -77,6 +78,11 @@ export function getWorkspaceSettingsMenuItems({
       }),
       url: "/dashboard/settings/workspace/resources",
       icon: Wrench,
+    },
+    {
+      title: t("settings:jiraIntegration.menuTitle"),
+      url: "/dashboard/settings/workspace/jira",
+      icon: Ticket,
     },
     ...(billingEnabled
       ? [

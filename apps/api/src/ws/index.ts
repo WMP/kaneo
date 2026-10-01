@@ -647,6 +647,13 @@ const taskUpdateEvents = [
   "comment.created",
   "comment.deleted",
   "comment.updated",
+  // Jira integration: a linked issue changed, or its proposal was resolved.
+  // The payload carries ids and status names only, never a token or secret.
+  "jira.issue_linked",
+  "jira.issue_unlinked",
+  "jira.status_changed",
+  "jira.status_proposal_created",
+  "jira.status_proposal_resolved",
 ];
 
 subscribeToEvent<{

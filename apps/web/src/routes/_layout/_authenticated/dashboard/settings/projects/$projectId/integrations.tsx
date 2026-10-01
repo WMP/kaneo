@@ -6,6 +6,7 @@ import {
   Radio,
   Send,
   Server,
+  Ticket,
   Webhook,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -18,6 +19,7 @@ import { GenericWebhookIntegrationSettings } from "@/components/project/generic-
 import { GiteaIntegrationSettings } from "@/components/project/gitea-integration-settings";
 import { GitHubIntegrationSettings } from "@/components/project/github-integration-settings";
 import { GitlabIntegrationSettings } from "@/components/project/gitlab-integration-settings";
+import { JiraIntegrationSettings } from "@/components/project/jira-integration-settings";
 import { MattermostIntegrationSettings } from "@/components/project/mattermost-integration-settings";
 import { SlackIntegrationSettings } from "@/components/project/slack-integration-settings";
 import { TelegramIntegrationSettings } from "@/components/project/telegram-integration-settings";
@@ -73,6 +75,14 @@ function RouteComponent() {
             title={t("settings:projectIntegrations.gitlabSectionTitle")}
           >
             <GitlabIntegrationSettings projectId={projectId} />
+          </IntegrationSection>
+
+          <IntegrationSection
+            icon={<Ticket className="size-4" />}
+            subtitle={t("settings:projectIntegrations.jiraSectionSubtitle")}
+            title={t("settings:projectIntegrations.jiraSectionTitle")}
+          >
+            <JiraIntegrationSettings projectId={projectId} />
           </IntegrationSection>
 
           <IntegrationSection
