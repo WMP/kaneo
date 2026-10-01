@@ -1044,7 +1044,13 @@
 			"automationTitle": "Regole di Automazione",
 			"automationDescription": "Mappa eventi di integrazione alle colonne. Quando si verifica un evento, l'attività collegata si sposta nella colonna specificata.",
 			"customFieldsDescription": "Gestisci i campi personalizzati di questo progetto. Trascina  per riordinare.",
-			"customFieldsTitle": "Campi personalizzati"
+			"customFieldsTitle": "Campi personalizzati",
+			"enforced": {
+				"description": "Questo workspace impone le sue colonne, quindi ogni progetto ha esattamente le colonne del workspace e qui non possono essere modificate. Modificale nelle impostazioni del flusso di lavoro del workspace.",
+				"descriptionNoAccess": "Questo workspace impone le sue colonne, quindi ogni progetto ha esattamente le colonne del workspace e qui non possono essere modificate. Chiedi a un amministratore del workspace di modificarle.",
+				"manageLink": "Apri le impostazioni del flusso di lavoro del workspace",
+				"title": "Le colonne sono gestite dal workspace"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Seleziona progetto",
@@ -1070,7 +1076,11 @@
 			"on": "Attivo",
 			"off": "Disattivo",
 			"newColumnPlaceholder": "Nuovo nome colonna...",
-			"add": "Aggiungi"
+			"add": "Aggiungi",
+			"deleteAria": "Elimina la colonna {{name}}",
+			"moveDownAria": "Sposta la colonna {{name}} in basso",
+			"moveUpAria": "Sposta la colonna {{name}} in alto",
+			"nameAria": "Nome della colonna {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2229,6 +2239,72 @@
 				"subtitle": "Collega questo workspace a un'istanza Jira e definisci come le attività di Kaneo vengono mappate sulle issue di Jira.",
 				"title": "Integrazione Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "I nuovi progetti iniziano con queste colonne. Trascina una colonna o usa i pulsanti freccia per riordinare. Attiva \"Colonna completata\" per le fasi che rappresentano lavoro concluso.",
+			"columnsEnforcedHint": "L'imposizione è attiva: ogni modifica qui viene applicata subito a tutti i progetti del workspace.",
+			"columnsTitle": "Colonne",
+			"deleteDialog": {
+				"confirm": "Elimina colonna",
+				"description": "La colonna viene rimossa dalle colonne del workspace. I progetti esistenti mantengono le proprie colonne.",
+				"descriptionEnforced": "La colonna viene rimossa da ogni progetto. Le attività al suo interno vengono spostate nella colonna che scegli e le regole del flusso di lavoro collegate vengono eliminate.",
+				"moveTasksTo": "Sposta le attività in",
+				"needsTarget": "Alcune attività usano ancora questa colonna. Scegli dove spostarle.",
+				"title": "Eliminare la colonna \"{{name}}\"?"
+			},
+			"disableDialog": {
+				"confirm": "Interrompi l'imposizione",
+				"description": "I progetti mantengono le colonne attuali e possono modificarle di nuovo. Le colonne restano collegate a quelle del workspace, quindi imporle di nuovo le ripristina esattamente.",
+				"title": "Interrompere l'imposizione delle colonne del workspace?"
+			},
+			"empty": "Nessuna colonna del workspace per ora. Finché non ne aggiungi, i nuovi progetti iniziano con le colonne predefinite.",
+			"enableDialog": {
+				"columnsCreated": "Colonne create: {{created}}",
+				"columnsRemoved": "Colonne rimosse: {{removed}}",
+				"columnsUpdated": "Colonne rinominate o aggiornate: {{updated}}",
+				"confirm": "Imponi le colonne",
+				"confirming": "Imposizione in corso...",
+				"description": "Ogni progetto avrà esattamente le colonne del workspace. Una colonna di progetto viene abbinata a una colonna del workspace tramite il collegamento, poi tramite lo slug, poi tramite il nome. Le colonne mancanti vengono create; quelle senza corrispondenza vengono rimosse.",
+				"fallbackHelp": "Le attività di una colonna di progetto che non corrisponde a nessuna colonna del workspace vengono spostate in questa colonna prima che la colonna del progetto venga eliminata.",
+				"fallbackLabel": "Sposta le attività delle colonne rimosse in",
+				"movedTasksNote": "Le attività spostate non generano una voce di attività né un evento di integrazione. Sono elencati solo i progetti che puoi vedere.",
+				"noChanges": "Ogni progetto ha già esattamente le colonne del workspace.",
+				"previewError": "Impossibile determinare cosa cambierebbe.",
+				"previewLoading": "Verifica delle modifiche in corso...",
+				"projectsAria": "Progetti che cambieranno",
+				"rulesDeleted": "Regole del flusso di lavoro eliminate: {{rules}}",
+				"rulesWarningDescription": "{{rules}} regole del flusso di lavoro sono collegate a colonne che verranno rimosse. Vengono eliminate insieme a quelle colonne e non possono essere ripristinate.",
+				"rulesWarningTitle": "Le regole del flusso di lavoro verranno eliminate",
+				"summary": "{{changed}} progetti su {{total}} cambieranno",
+				"tasksMoved": "Attività spostate: {{moved}}",
+				"title": "Imporre le colonne del workspace?"
+			},
+			"enforcement": {
+				"description": "Quando è attivo, ogni progetto di questo workspace ha esattamente queste colonne e non può aggiungerle, rinominarle, riordinarle o eliminarle. Le regole del flusso di lavoro restano per progetto.",
+				"disabledToast": "Le colonne del workspace non sono più imposte",
+				"disableError": "Impossibile interrompere l'imposizione delle colonne del workspace",
+				"enabledToast": "Le colonne del workspace sono ora imposte in ogni progetto",
+				"enableError": "Impossibile imporre le colonne del workspace",
+				"noColumnsHint": "Aggiungi almeno una colonna prima di poterle imporre.",
+				"noPermission": "Solo chi può gestire le impostazioni del workspace può modificare l'imposizione.",
+				"statusOff": "Non imposte",
+				"statusOn": "Imposte",
+				"switchLabel": "Imponi le colonne del workspace",
+				"title": "Imposizione"
+			},
+			"errors": {
+				"empty": "Aggiungi prima almeno una colonna del workspace.",
+				"enforced": "Questo workspace impone le sue colonne. Modificale nelle impostazioni del flusso di lavoro del workspace.",
+				"last": "L'ultima colonna non può essere eliminata finché le colonne sono imposte.",
+				"notEmpty": "Alcune attività usano ancora questa colonna. Scegli una colonna in cui spostarle.",
+				"reservedSlug": "Questo nome è riservato. Scegli un altro nome.",
+				"slugConflict": "Nel workspace esiste già una colonna con questo nome."
+			},
+			"loadError": "Impossibile caricare le colonne del workspace.",
+			"pageTitle": "Impostazioni del flusso di lavoro del workspace",
+			"retry": "Riprova",
+			"subtitle": "Definisci le colonne della bacheca una sola volta per tutto il workspace e, se vuoi, imponile in ogni progetto.",
+			"title": "Flusso di lavoro"
 		}
 	},
 	"navigation": {

@@ -78,4 +78,19 @@ describe("getWorkspaceSettingsMenuItems", () => {
       "/dashboard/settings/workspace/billing",
     );
   });
+
+  it("has a Workflow entry next to Labels and Custom Fields", () => {
+    const items = getWorkspaceSettingsMenuItems({
+      t,
+      workspaceId: "ws-1",
+      billingEnabled: false,
+    });
+    const urls = items.map((item) => item.url);
+    const workflow = urls.indexOf("/dashboard/settings/workspace/workflow");
+
+    expect(workflow).toBe(
+      urls.indexOf("/dashboard/settings/workspace/custom-fields") + 1,
+    );
+    expect(items[workflow].title).toBe("Workflow");
+  });
 });

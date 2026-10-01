@@ -4,6 +4,7 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
+import { codedErrorResponse } from "../utils/coded-error";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import createColumn from "./controllers/create-column";
@@ -45,7 +46,7 @@ const createColumnRoute = createRoute({
   tags: ["Columns"],
   summary: "Create column",
   description:
-    "Add a column to the end of a project's board. The slug is derived from the name.",
+    "Add a column to the end of a project's board. The slug is derived from the name. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -63,7 +64,9 @@ const createColumnRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    409: errorResponse("The slug is reserved, or already used in this project"),
+    409: codedErrorResponse(
+      "The slug is reserved or already used in this project, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+    ),
   },
 });
 
@@ -74,7 +77,7 @@ const reorderColumnsRoute = createRoute({
   tags: ["Columns"],
   summary: "Reorder columns",
   description:
-    "Set new positions for a project's columns and return the whole board in its new order.",
+    "Set new positions for a project's columns and return the whole board in its new order. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -92,6 +95,9 @@ const reorderColumnsRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
+    409: codedErrorResponse(
+      "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+    ),
   },
 });
 
@@ -102,7 +108,7 @@ const updateColumnRoute = createRoute({
   tags: ["Columns"],
   summary: "Update column",
   description:
-    "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them.",
+    "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
   middleware: [
     workspaceAccess.fromColumn("id"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -120,6 +126,9 @@ const updateColumnRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
+    409: codedErrorResponse(
+      "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+    ),
   },
 });
 
@@ -130,7 +139,7 @@ const deleteColumnRoute = createRoute({
   tags: ["Columns"],
   summary: "Delete column",
   description:
-    "Delete an empty column. A column holding tasks is refused until they are moved or deleted.",
+    "Delete an empty column. A column holding tasks is refused until they are moved or deleted. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
   middleware: [
     workspaceAccess.fromColumn("id"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -144,7 +153,9 @@ const deleteColumnRoute = createRoute({
     403: errorResponse(
       "No workspace access, or missing project:update permission",
     ),
-    409: errorResponse("The column still contains tasks"),
+    409: codedErrorResponse(
+      "The column still contains tasks, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+    ),
   },
 });
 

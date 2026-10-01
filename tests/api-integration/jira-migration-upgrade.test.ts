@@ -101,10 +101,21 @@ describe("Jira migration upgrade", () => {
     return { pool, db: drizzle(pool) };
   }
 
+  // The scenarios below describe the state of the branch when the Jira
+  // migration was its newest entry, so a copy ends at that entry: later
+  // migrations are neither applied nor expected in the results.
   function copyFolder() {
     const folder = mkdtempSync(join(tmpdir(), "kaneo-jira-migration-"));
     folders.push(folder);
     cpSync(migrationsFolder, folder, { recursive: true });
+    const journal = readJournal(folder);
+    const jiraIdx = journal.entries.findIndex(({ tag }) => tag === JIRA_TAG);
+    expect(jiraIdx).toBeGreaterThan(0);
+    for (const later of journal.entries.slice(jiraIdx + 1)) {
+      rmSync(join(folder, `${later.tag}.sql`));
+    }
+    journal.entries = journal.entries.slice(0, jiraIdx + 1);
+    writeJournal(folder, journal);
     return folder;
   }
 
@@ -205,7 +216,10 @@ describe("Jira migration upgrade", () => {
 
     // The same database starts the merged branch: only main's migration is
     // missing. Running Jira's CREATE TABLE again would fail the start.
-    const applied = await runMigrations(scratch.db, { migrationsFolder });
+    const head = copyFolder();
+    const applied = await runMigrations(scratch.db, {
+      migrationsFolder: head,
+    });
 
     expect(applied).toEqual([ACTOR_SOURCE_TAG]);
     for (const table of JIRA_TABLES) {
@@ -217,7 +231,9 @@ describe("Jira migration upgrade", () => {
     expect(await columnExists(scratch.pool, "session", "auth_via")).toBe(true);
     const whens = await recordedWhens(scratch.pool);
     expect(whens.filter((when) => when === JIRA_WHEN)).toHaveLength(1);
-    expect(await runMigrations(scratch.db, { migrationsFolder })).toEqual([]);
+    expect(await runMigrations(scratch.db, { migrationsFolder: head })).toEqual(
+      [],
+    );
   }, 120_000);
 
   it("runs after main's migration on a database that already applied 0059_ganttpro_actor_source", async () => {
@@ -234,13 +250,18 @@ describe("Jira migration upgrade", () => {
     const recorded = await recordedWhens(scratch.pool);
     expect(Math.max(...recorded)).toBeGreaterThan(JIRA_WHEN);
 
-    const applied = await runMigrations(scratch.db, { migrationsFolder });
+    const head = copyFolder();
+    const applied = await runMigrations(scratch.db, {
+      migrationsFolder: head,
+    });
 
     expect(applied).toEqual([JIRA_TAG]);
     for (const table of JIRA_TABLES) {
       expect(await tableExists(scratch.pool, table)).toBe(true);
     }
-    expect(await runMigrations(scratch.db, { migrationsFolder })).toEqual([]);
+    expect(await runMigrations(scratch.db, { migrationsFolder: head })).toEqual(
+      [],
+    );
   }, 120_000);
 
   it("creates the Jira tables and main's columns on a fresh database", async () => {

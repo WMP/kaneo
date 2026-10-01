@@ -1042,7 +1042,13 @@
 			"automationTitle": "自动化规则",
 			"automationDescription": "将集成事件映射到列。当事件发生时，关联的任务会移动到指定的列。",
 			"customFieldsDescription": "管理此项目的自定义字段。拖动可重新排序。",
-			"customFieldsTitle": "自定义字段"
+			"customFieldsTitle": "自定义字段",
+			"enforced": {
+				"description": "此工作区强制使用其列，因此每个项目的列都与工作区的列完全一致，无法在此处更改。请在工作区的工作流设置中更改。",
+				"descriptionNoAccess": "此工作区强制使用其列，因此每个项目的列都与工作区的列完全一致，无法在此处更改。请联系工作区管理员进行更改。",
+				"manageLink": "打开工作区工作流设置",
+				"title": "列由工作区管理"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "选择项目",
@@ -1068,7 +1074,11 @@
 			"on": "开",
 			"off": "关",
 			"newColumnPlaceholder": "新列名称…",
-			"add": "添加"
+			"add": "添加",
+			"deleteAria": "删除列 {{name}}",
+			"moveDownAria": "将列 {{name}} 下移",
+			"moveUpAria": "将列 {{name}} 上移",
+			"nameAria": "列 {{name}} 的名称"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2223,6 +2233,72 @@
 				"subtitle": "将此工作区连接到 Jira 实例，并定义 Kaneo 任务如何映射到 Jira 问题。",
 				"title": "Jira 集成"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "新项目将以这些列开始。拖动列或使用箭头按钮可调整顺序。对表示已完成工作的阶段，请开启“完成列”。",
+			"columnsEnforcedHint": "强制已开启：此处的每项更改都会立即应用到工作区的所有项目。",
+			"columnsTitle": "列",
+			"deleteDialog": {
+				"confirm": "删除列",
+				"description": "该列将从工作区的列中移除。现有项目保留各自的列。",
+				"descriptionEnforced": "该列将从每个项目中移除。其中的任务会移到你选择的列，针对该列的工作流规则将被删除。",
+				"moveTasksTo": "将任务移至",
+				"needsTarget": "仍有任务使用此列。请选择任务的去向。",
+				"title": "删除列“{{name}}”？"
+			},
+			"disableDialog": {
+				"confirm": "停止强制",
+				"description": "项目保留当前的列，并且可以再次更改。这些列仍与工作区的列保持关联，因此再次强制会将其原样恢复。",
+				"title": "停止强制使用工作区的列？"
+			},
+			"empty": "还没有工作区的列。在你添加之前，新项目将以默认列开始。",
+			"enableDialog": {
+				"columnsCreated": "已创建的列：{{created}}",
+				"columnsRemoved": "已移除的列：{{removed}}",
+				"columnsUpdated": "已重命名或更新的列：{{updated}}",
+				"confirm": "强制使用列",
+				"confirming": "正在强制...",
+				"description": "每个项目都将拥有与工作区完全一致的列。项目的列会依次按关联、别名（slug）、名称与工作区的列匹配。缺少的列会被创建；没有匹配项的列会被移除。",
+				"fallbackHelp": "如果项目的某一列与工作区的任何列都不匹配，其中的任务会在该项目列被删除之前移到此列。",
+				"fallbackLabel": "将已移除列中的任务移至",
+				"movedTasksNote": "被移动的任务不会产生活动记录或集成事件。仅列出你可以看到的项目。",
+				"noChanges": "每个项目已经与工作区的列完全一致。",
+				"previewError": "无法确定会有哪些更改。",
+				"previewLoading": "正在检查将发生的更改...",
+				"projectsAria": "将发生更改的项目",
+				"rulesDeleted": "已删除的工作流规则：{{rules}}",
+				"rulesWarningDescription": "有 {{rules}} 条工作流规则关联到将被移除的列。它们会随这些列一并删除，且无法恢复。",
+				"rulesWarningTitle": "工作流规则将被删除",
+				"summary": "{{total}} 个项目中有 {{changed}} 个将发生更改",
+				"tasksMoved": "已移动的任务：{{moved}}",
+				"title": "强制使用工作区的列？"
+			},
+			"enforcement": {
+				"description": "开启后，此工作区的每个项目都与这些列完全一致，且无法添加、重命名、重新排序或删除列。工作流规则仍按项目独立设置。",
+				"disabledToast": "工作区的列不再被强制使用",
+				"disableError": "无法停止强制使用工作区的列",
+				"enabledToast": "工作区的列现已在每个项目中强制使用",
+				"enableError": "无法强制使用工作区的列",
+				"noColumnsHint": "请先添加至少一列，才能强制使用。",
+				"noPermission": "只有能够管理工作区设置的人才能更改强制设置。",
+				"statusOff": "未强制",
+				"statusOn": "已强制",
+				"switchLabel": "强制使用工作区的列",
+				"title": "强制"
+			},
+			"errors": {
+				"empty": "请先添加至少一个工作区的列。",
+				"enforced": "此工作区强制使用其列。请在工作区的工作流设置中更改。",
+				"last": "强制使用列期间，无法删除最后一列。",
+				"notEmpty": "仍有任务使用此列。请选择要将任务移入的列。",
+				"reservedSlug": "此名称为保留名称。请选择其他名称。",
+				"slugConflict": "工作区中已存在同名的列。"
+			},
+			"loadError": "无法加载工作区的列。",
+			"pageTitle": "工作区工作流设置",
+			"retry": "重试",
+			"subtitle": "只需为整个工作区定义一次看板的列，并可按需在每个项目中强制使用。",
+			"title": "工作流"
 		}
 	},
 	"navigation": {

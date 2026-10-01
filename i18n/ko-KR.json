@@ -808,7 +808,13 @@
 			"automationTitle": "자동화 규칙",
 			"automationDescription": "연동 이벤트를 컬럼에 매핑합니다. 이벤트가 발생하면 연결된 작업이 지정된 컬럼으로 이동합니다.",
 			"customFieldsDescription": "이 프로젝트의 사용자 정의 필드를 관리합니다. 드래그하여 순서를 바꿉니다.",
-			"customFieldsTitle": "사용자 정의 필드"
+			"customFieldsTitle": "사용자 정의 필드",
+			"enforced": {
+				"description": "이 워크스페이스는 컬럼을 강제하므로 모든 프로젝트가 워크스페이스 컬럼과 정확히 같은 컬럼을 가지며, 여기서는 변경할 수 없습니다. 워크스페이스 워크플로 설정에서 변경하세요.",
+				"descriptionNoAccess": "이 워크스페이스는 컬럼을 강제하므로 모든 프로젝트가 워크스페이스 컬럼과 정확히 같은 컬럼을 가지며, 여기서는 변경할 수 없습니다. 워크스페이스 관리자에게 변경을 요청하세요.",
+				"manageLink": "워크스페이스 워크플로 설정 열기",
+				"title": "컬럼은 워크스페이스에서 관리됩니다"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "프로젝트 선택",
@@ -834,7 +840,11 @@
 			"on": "켜짐",
 			"off": "꺼짐",
 			"newColumnPlaceholder": "새 컬럼 이름...",
-			"add": "추가"
+			"add": "추가",
+			"deleteAria": "컬럼 {{name}} 삭제",
+			"moveDownAria": "컬럼 {{name}} 아래로 이동",
+			"moveUpAria": "컬럼 {{name}} 위로 이동",
+			"nameAria": "컬럼 {{name}}의 이름"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2223,6 +2233,72 @@
 				"subtitle": "이 워크스페이스를 Jira 인스턴스에 연결하고 Kaneo 작업이 Jira 이슈에 매핑되는 방식을 정의하세요.",
 				"title": "Jira 연동"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "새 프로젝트는 이 컬럼들로 시작합니다. 컬럼을 드래그하거나 화살표 버튼으로 순서를 바꾸세요. 완료된 작업을 나타내는 단계에는 \"완료 컬럼\"을 켜세요.",
+			"columnsEnforcedHint": "강제가 켜져 있습니다. 여기서 하는 모든 변경은 워크스페이스의 모든 프로젝트에 즉시 적용됩니다.",
+			"columnsTitle": "컬럼",
+			"deleteDialog": {
+				"confirm": "컬럼 삭제",
+				"description": "이 컬럼은 워크스페이스 컬럼에서 제거됩니다. 기존 프로젝트는 자체 컬럼을 유지합니다.",
+				"descriptionEnforced": "이 컬럼은 모든 프로젝트에서 제거됩니다. 컬럼 안의 작업은 선택한 컬럼으로 이동하고, 이 컬럼의 워크플로 규칙은 삭제됩니다.",
+				"moveTasksTo": "작업을 이동할 컬럼",
+				"needsTarget": "이 컬럼을 사용하는 작업이 아직 있습니다. 이동할 곳을 선택하세요.",
+				"title": "컬럼 \"{{name}}\"을(를) 삭제할까요?"
+			},
+			"disableDialog": {
+				"confirm": "강제 중단",
+				"description": "프로젝트는 현재 컬럼을 유지하며 다시 변경할 수 있습니다. 컬럼은 워크스페이스 컬럼과 계속 연결되어 있으므로 다시 강제하면 그대로 복원됩니다.",
+				"title": "워크스페이스 컬럼 강제를 중단할까요?"
+			},
+			"empty": "아직 워크스페이스 컬럼이 없습니다. 추가하기 전까지 새 프로젝트는 기본 컬럼으로 시작합니다.",
+			"enableDialog": {
+				"columnsCreated": "생성된 컬럼: {{created}}",
+				"columnsRemoved": "제거된 컬럼: {{removed}}",
+				"columnsUpdated": "이름이 바뀌거나 업데이트된 컬럼: {{updated}}",
+				"confirm": "컬럼 강제",
+				"confirming": "강제하는 중...",
+				"description": "모든 프로젝트가 워크스페이스 컬럼과 정확히 같은 컬럼을 갖게 됩니다. 프로젝트 컬럼은 연결, 슬러그, 이름 순으로 워크스페이스 컬럼과 대응됩니다. 없는 컬럼은 생성되고, 대응되지 않는 컬럼은 제거됩니다.",
+				"fallbackHelp": "어떤 워크스페이스 컬럼과도 일치하지 않는 프로젝트 컬럼의 작업은 해당 프로젝트 컬럼이 삭제되기 전에 이 컬럼으로 이동됩니다.",
+				"fallbackLabel": "제거되는 컬럼의 작업을 이동할 컬럼",
+				"movedTasksNote": "이동된 작업에는 활동 기록과 연동 이벤트가 생성되지 않습니다. 볼 수 있는 프로젝트만 표시됩니다.",
+				"noChanges": "모든 프로젝트가 이미 워크스페이스 컬럼과 정확히 같은 컬럼을 갖고 있습니다.",
+				"previewError": "무엇이 바뀔지 확인하지 못했습니다.",
+				"previewLoading": "변경될 내용을 확인하는 중...",
+				"projectsAria": "변경될 프로젝트",
+				"rulesDeleted": "삭제된 워크플로 규칙: {{rules}}",
+				"rulesWarningDescription": "제거될 컬럼에 연결된 워크플로 규칙이 {{rules}}개 있습니다. 규칙은 해당 컬럼과 함께 삭제되며 복원할 수 없습니다.",
+				"rulesWarningTitle": "워크플로 규칙이 삭제됩니다",
+				"summary": "프로젝트 {{total}}개 중 {{changed}}개가 변경됩니다",
+				"tasksMoved": "이동된 작업: {{moved}}",
+				"title": "워크스페이스 컬럼을 강제할까요?"
+			},
+			"enforcement": {
+				"description": "켜면 이 워크스페이스의 모든 프로젝트가 정확히 이 컬럼들을 가지며, 컬럼을 추가, 이름 변경, 순서 변경 또는 삭제할 수 없습니다. 워크플로 규칙은 프로젝트별로 유지됩니다.",
+				"disabledToast": "워크스페이스 컬럼이 더 이상 강제되지 않습니다",
+				"disableError": "워크스페이스 컬럼 강제를 중단하지 못했습니다",
+				"enabledToast": "이제 워크스페이스 컬럼이 모든 프로젝트에 강제됩니다",
+				"enableError": "워크스페이스 컬럼을 강제하지 못했습니다",
+				"noColumnsHint": "컬럼을 강제하려면 먼저 컬럼을 하나 이상 추가하세요.",
+				"noPermission": "강제 설정은 워크스페이스 설정을 관리할 수 있는 사람만 변경할 수 있습니다.",
+				"statusOff": "강제 안 함",
+				"statusOn": "강제됨",
+				"switchLabel": "워크스페이스 컬럼 강제",
+				"title": "강제"
+			},
+			"errors": {
+				"empty": "먼저 워크스페이스 컬럼을 하나 이상 추가하세요.",
+				"enforced": "이 워크스페이스는 컬럼을 강제합니다. 워크스페이스 워크플로 설정에서 변경하세요.",
+				"last": "컬럼이 강제되는 동안에는 마지막 컬럼을 삭제할 수 없습니다.",
+				"notEmpty": "이 컬럼을 사용하는 작업이 아직 있습니다. 작업을 이동할 컬럼을 선택하세요.",
+				"reservedSlug": "이 이름은 예약되어 있습니다. 다른 이름을 선택하세요.",
+				"slugConflict": "이 이름의 컬럼이 워크스페이스에 이미 있습니다."
+			},
+			"loadError": "워크스페이스 컬럼을 불러오지 못했습니다.",
+			"pageTitle": "워크스페이스 워크플로 설정",
+			"retry": "다시 시도",
+			"subtitle": "보드 컬럼을 워크스페이스 전체에 한 번만 정의하고, 원하면 모든 프로젝트에 강제하세요.",
+			"title": "워크플로"
 		}
 	},
 	"navigation": {

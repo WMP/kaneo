@@ -1044,7 +1044,13 @@
 			"automationTitle": "Regras de automação",
 			"automationDescription": "Mapeie eventos de integração para colunas. Quando um evento ocorrer, a tarefa vinculada será movida para a coluna especificada.",
 			"customFieldsDescription": "Gerencie os campos personalizados deste projeto. Arraste  para reordenar.",
-			"customFieldsTitle": "Campos personalizados"
+			"customFieldsTitle": "Campos personalizados",
+			"enforced": {
+				"description": "Este espaço de trabalho impõe suas colunas, então cada projeto tem exatamente as colunas do espaço de trabalho e elas não podem ser alteradas aqui. Altere-as nas configurações de fluxo de trabalho do espaço de trabalho.",
+				"descriptionNoAccess": "Este espaço de trabalho impõe suas colunas, então cada projeto tem exatamente as colunas do espaço de trabalho e elas não podem ser alteradas aqui. Peça a um administrador do espaço de trabalho para alterá-las.",
+				"manageLink": "Abrir as configurações de fluxo de trabalho do espaço de trabalho",
+				"title": "As colunas são gerenciadas pelo espaço de trabalho"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Selecionar projeto",
@@ -1070,7 +1076,11 @@
 			"on": "Ativado",
 			"off": "Desativado",
 			"newColumnPlaceholder": "Nome da nova coluna...",
-			"add": "Adicionar"
+			"add": "Adicionar",
+			"deleteAria": "Excluir a coluna {{name}}",
+			"moveDownAria": "Mover a coluna {{name}} para baixo",
+			"moveUpAria": "Mover a coluna {{name}} para cima",
+			"nameAria": "Nome da coluna {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2229,6 +2239,72 @@
 				"subtitle": "Conecte este espaço de trabalho a uma instância do Jira e defina como as tarefas do Kaneo são mapeadas para as issues do Jira.",
 				"title": "Integração com o Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Novos projetos começam com estas colunas. Arraste uma coluna ou use os botões de seta para reordenar. Ative \"Coluna de concluído\" nas etapas que representam trabalho finalizado.",
+			"columnsEnforcedHint": "A imposição está ativada: cada alteração aqui é aplicada imediatamente a todos os projetos do espaço de trabalho.",
+			"columnsTitle": "Colunas",
+			"deleteDialog": {
+				"confirm": "Excluir coluna",
+				"description": "A coluna é removida das colunas do espaço de trabalho. Os projetos existentes mantêm suas próprias colunas.",
+				"descriptionEnforced": "A coluna é removida de todos os projetos. As tarefas nela são movidas para a coluna que você escolher, e as regras de fluxo de trabalho associadas são excluídas.",
+				"moveTasksTo": "Mover tarefas para",
+				"needsTarget": "Ainda há tarefas nesta coluna. Escolha para onde elas vão.",
+				"title": "Excluir a coluna \"{{name}}\"?"
+			},
+			"disableDialog": {
+				"confirm": "Parar de impor",
+				"description": "Os projetos mantêm suas colunas atuais e podem alterá-las novamente. As colunas continuam vinculadas às do espaço de trabalho, então impor de novo as restaura exatamente.",
+				"title": "Parar de impor as colunas do espaço de trabalho?"
+			},
+			"empty": "Ainda não há colunas do espaço de trabalho. Até você adicionar algumas, novos projetos começam com as colunas padrão.",
+			"enableDialog": {
+				"columnsCreated": "Colunas criadas: {{created}}",
+				"columnsRemoved": "Colunas removidas: {{removed}}",
+				"columnsUpdated": "Colunas renomeadas ou atualizadas: {{updated}}",
+				"confirm": "Impor colunas",
+				"confirming": "Impondo...",
+				"description": "Cada projeto terá exatamente as colunas do espaço de trabalho. Uma coluna de projeto é associada a uma coluna do espaço de trabalho pelo vínculo, depois pelo slug e depois pelo nome. Colunas ausentes são criadas; colunas sem correspondência são removidas.",
+				"fallbackHelp": "As tarefas de uma coluna de projeto que não corresponde a nenhuma coluna do espaço de trabalho são movidas para esta coluna antes de a coluna do projeto ser excluída.",
+				"fallbackLabel": "Mover as tarefas das colunas removidas para",
+				"movedTasksNote": "Tarefas movidas não geram entrada de atividade nem evento de integração. Apenas os projetos que você pode ver são listados.",
+				"noChanges": "Todos os projetos já têm exatamente as colunas do espaço de trabalho.",
+				"previewError": "Não foi possível determinar o que mudaria.",
+				"previewLoading": "Verificando o que vai mudar...",
+				"projectsAria": "Projetos que vão mudar",
+				"rulesDeleted": "Regras de fluxo de trabalho excluídas: {{rules}}",
+				"rulesWarningDescription": "{{rules}} regras de fluxo de trabalho estão associadas a colunas que serão removidas. Elas são excluídas junto com essas colunas e não podem ser restauradas.",
+				"rulesWarningTitle": "Regras de fluxo de trabalho serão excluídas",
+				"summary": "{{changed}} de {{total}} projetos vão mudar",
+				"tasksMoved": "Tarefas movidas: {{moved}}",
+				"title": "Impor as colunas do espaço de trabalho?"
+			},
+			"enforcement": {
+				"description": "Quando ativado, todos os projetos deste espaço de trabalho têm exatamente estas colunas e não podem adicioná-las, renomeá-las, reordená-las nem excluí-las. As regras de fluxo de trabalho continuam por projeto.",
+				"disabledToast": "As colunas do espaço de trabalho não são mais impostas",
+				"disableError": "Falha ao parar de impor as colunas do espaço de trabalho",
+				"enabledToast": "As colunas do espaço de trabalho agora são impostas em todos os projetos",
+				"enableError": "Falha ao impor as colunas do espaço de trabalho",
+				"noColumnsHint": "Adicione pelo menos uma coluna antes de poder impô-las.",
+				"noPermission": "Somente pessoas que podem gerenciar as configurações do espaço de trabalho podem alterar a imposição.",
+				"statusOff": "Não impostas",
+				"statusOn": "Impostas",
+				"switchLabel": "Impor as colunas do espaço de trabalho",
+				"title": "Imposição"
+			},
+			"errors": {
+				"empty": "Primeiro adicione pelo menos uma coluna do espaço de trabalho.",
+				"enforced": "Este espaço de trabalho impõe suas colunas. Altere-as nas configurações de fluxo de trabalho do espaço de trabalho.",
+				"last": "A última coluna não pode ser excluída enquanto as colunas forem impostas.",
+				"notEmpty": "Ainda há tarefas nesta coluna. Escolha uma coluna para movê-las.",
+				"reservedSlug": "Este nome é reservado. Escolha outro nome.",
+				"slugConflict": "Já existe uma coluna com este nome no espaço de trabalho."
+			},
+			"loadError": "Não foi possível carregar as colunas do espaço de trabalho.",
+			"pageTitle": "Configurações de fluxo de trabalho do espaço de trabalho",
+			"retry": "Tentar novamente",
+			"subtitle": "Defina as colunas do quadro uma vez para todo o espaço de trabalho e, se quiser, imponha-as em todos os projetos.",
+			"title": "Fluxo de trabalho"
 		}
 	},
 	"navigation": {

@@ -1042,7 +1042,13 @@
 			"automationTitle": "Quy tắc tự động hóa",
 			"automationDescription": "Ánh xạ sự kiện tích hợp với các cột. Khi một sự kiện xảy ra, công việc liên kết sẽ chuyển sang cột được chỉ định.",
 			"customFieldsDescription": "Quản lý các trường tùy chỉnh của dự án này. Kéo  để sắp xếp lại.",
-			"customFieldsTitle": "Trường tùy chỉnh"
+			"customFieldsTitle": "Trường tùy chỉnh",
+			"enforced": {
+				"description": "Không gian làm việc này áp dụng bắt buộc các cột của nó, nên mọi dự án có đúng các cột của không gian làm việc và không thể thay đổi tại đây. Hãy thay đổi trong cài đặt quy trình làm việc của không gian làm việc.",
+				"descriptionNoAccess": "Không gian làm việc này áp dụng bắt buộc các cột của nó, nên mọi dự án có đúng các cột của không gian làm việc và không thể thay đổi tại đây. Hãy nhờ quản trị viên không gian làm việc thay đổi.",
+				"manageLink": "Mở cài đặt quy trình làm việc của không gian làm việc",
+				"title": "Các cột do không gian làm việc quản lý"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Chọn dự án",
@@ -1068,7 +1074,11 @@
 			"on": "Bật",
 			"off": "Tắt",
 			"newColumnPlaceholder": "Tên cột mới...",
-			"add": "Thêm"
+			"add": "Thêm",
+			"deleteAria": "Xóa cột {{name}}",
+			"moveDownAria": "Di chuyển cột {{name}} xuống",
+			"moveUpAria": "Di chuyển cột {{name}} lên",
+			"nameAria": "Tên của cột {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2223,6 +2233,72 @@
 				"subtitle": "Kết nối không gian làm việc này với một phiên bản Jira và xác định cách các công việc Kaneo được ánh xạ tới issue Jira.",
 				"title": "Tích hợp Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Dự án mới bắt đầu với các cột này. Kéo một cột hoặc dùng các nút mũi tên để sắp xếp lại. Bật \"Cột hoàn thành\" cho các giai đoạn thể hiện công việc đã hoàn tất.",
+			"columnsEnforcedHint": "Áp dụng bắt buộc đang bật: mọi thay đổi tại đây được áp dụng ngay cho tất cả dự án của không gian làm việc.",
+			"columnsTitle": "Cột",
+			"deleteDialog": {
+				"confirm": "Xóa cột",
+				"description": "Cột sẽ bị gỡ khỏi các cột của không gian làm việc. Các dự án hiện có vẫn giữ cột riêng của chúng.",
+				"descriptionEnforced": "Cột sẽ bị gỡ khỏi mọi dự án. Các công việc trong cột được chuyển sang cột bạn chọn và các quy tắc quy trình làm việc của cột bị xóa.",
+				"moveTasksTo": "Chuyển công việc đến",
+				"needsTarget": "Vẫn còn công việc dùng cột này. Hãy chọn nơi chuyển đến.",
+				"title": "Xóa cột \"{{name}}\"?"
+			},
+			"disableDialog": {
+				"confirm": "Ngừng áp dụng bắt buộc",
+				"description": "Các dự án giữ nguyên cột hiện tại và có thể thay đổi lại. Các cột vẫn liên kết với cột của không gian làm việc, nên áp dụng bắt buộc lại sẽ khôi phục chúng chính xác.",
+				"title": "Ngừng áp dụng bắt buộc cột của không gian làm việc?"
+			},
+			"empty": "Chưa có cột nào của không gian làm việc. Cho đến khi bạn thêm, dự án mới bắt đầu với các cột mặc định.",
+			"enableDialog": {
+				"columnsCreated": "Cột đã tạo: {{created}}",
+				"columnsRemoved": "Cột đã gỡ: {{removed}}",
+				"columnsUpdated": "Cột đã đổi tên hoặc cập nhật: {{updated}}",
+				"confirm": "Áp dụng bắt buộc cột",
+				"confirming": "Đang áp dụng...",
+				"description": "Mọi dự án sẽ có đúng các cột của không gian làm việc. Cột của dự án được khớp với cột của không gian làm việc theo liên kết, rồi đến slug, rồi đến tên. Cột còn thiếu sẽ được tạo; cột không khớp sẽ bị gỡ.",
+				"fallbackHelp": "Công việc trong cột dự án không khớp với cột nào của không gian làm việc sẽ được chuyển sang cột này trước khi cột dự án bị xóa.",
+				"fallbackLabel": "Chuyển công việc của các cột bị gỡ đến",
+				"movedTasksNote": "Công việc được chuyển không tạo mục hoạt động và không tạo sự kiện tích hợp. Chỉ liệt kê các dự án bạn có thể xem.",
+				"noChanges": "Mọi dự án đã có đúng các cột của không gian làm việc.",
+				"previewError": "Không thể xác định những gì sẽ thay đổi.",
+				"previewLoading": "Đang kiểm tra những gì sẽ thay đổi...",
+				"projectsAria": "Các dự án sẽ thay đổi",
+				"rulesDeleted": "Quy tắc quy trình làm việc đã xóa: {{rules}}",
+				"rulesWarningDescription": "{{rules}} quy tắc quy trình làm việc gắn với các cột sẽ bị gỡ. Chúng bị xóa cùng các cột đó và không thể khôi phục.",
+				"rulesWarningTitle": "Các quy tắc quy trình làm việc sẽ bị xóa",
+				"summary": "{{changed}} trên {{total}} dự án sẽ thay đổi",
+				"tasksMoved": "Công việc đã chuyển: {{moved}}",
+				"title": "Áp dụng bắt buộc cột của không gian làm việc?"
+			},
+			"enforcement": {
+				"description": "Khi bật, mọi dự án của không gian làm việc này có đúng các cột này và không thể thêm, đổi tên, sắp xếp lại hoặc xóa cột. Quy tắc quy trình làm việc vẫn theo từng dự án.",
+				"disabledToast": "Cột của không gian làm việc không còn được áp dụng bắt buộc",
+				"disableError": "Không thể ngừng áp dụng bắt buộc cột của không gian làm việc",
+				"enabledToast": "Cột của không gian làm việc nay được áp dụng bắt buộc trong mọi dự án",
+				"enableError": "Không thể áp dụng bắt buộc cột của không gian làm việc",
+				"noColumnsHint": "Hãy thêm ít nhất một cột trước khi có thể áp dụng bắt buộc.",
+				"noPermission": "Chỉ những người có thể quản lý cài đặt không gian làm việc mới có thể thay đổi việc áp dụng bắt buộc.",
+				"statusOff": "Không bắt buộc",
+				"statusOn": "Bắt buộc",
+				"switchLabel": "Áp dụng bắt buộc cột của không gian làm việc",
+				"title": "Áp dụng bắt buộc"
+			},
+			"errors": {
+				"empty": "Hãy thêm ít nhất một cột của không gian làm việc trước.",
+				"enforced": "Không gian làm việc này áp dụng bắt buộc các cột của nó. Hãy thay đổi trong cài đặt quy trình làm việc của không gian làm việc.",
+				"last": "Không thể xóa cột cuối cùng khi các cột đang được áp dụng bắt buộc.",
+				"notEmpty": "Vẫn còn công việc dùng cột này. Hãy chọn một cột để chuyển chúng đến.",
+				"reservedSlug": "Tên này đã được dành riêng. Hãy chọn tên khác.",
+				"slugConflict": "Không gian làm việc đã có một cột với tên này."
+			},
+			"loadError": "Không thể tải các cột của không gian làm việc.",
+			"pageTitle": "Cài đặt quy trình làm việc của không gian làm việc",
+			"retry": "Thử lại",
+			"subtitle": "Xác định các cột của bảng một lần cho toàn bộ không gian làm việc và, nếu muốn, áp dụng bắt buộc trong mọi dự án.",
+			"title": "Quy trình làm việc"
 		}
 	},
 	"navigation": {

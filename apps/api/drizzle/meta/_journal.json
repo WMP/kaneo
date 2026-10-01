@@ -428,6 +428,13 @@
       "when": 1790746614721,
       "tag": "20260930053654_ganttpro_jira_integration",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1790845515001,
+      "tag": "20261001090514_ganttpro_workspace_columns",
+      "breakpoints": true
     }
   ]
 }

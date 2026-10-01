@@ -705,7 +705,13 @@
 			"automationTitle": "Reglas de automatización",
 			"automationDescription": "Mapea eventos de integración y columnas integration. Cuando un evento ocurre, la tarea vinculada se moverá a la columna especificada.",
 			"customFieldsDescription": "Gestiona los campos personalizados de este proyecto. Arrastra para reordenar.",
-			"customFieldsTitle": "Campos personalizados"
+			"customFieldsTitle": "Campos personalizados",
+			"enforced": {
+				"description": "Este espacio de trabajo impone sus columnas, así que cada proyecto tiene exactamente las columnas del espacio de trabajo y no se pueden cambiar aquí. Cámbialas en los ajustes de flujo de trabajo del espacio de trabajo.",
+				"descriptionNoAccess": "Este espacio de trabajo impone sus columnas, así que cada proyecto tiene exactamente las columnas del espacio de trabajo y no se pueden cambiar aquí. Pide a un administrador del espacio de trabajo que las cambie.",
+				"manageLink": "Abrir los ajustes de flujo de trabajo del espacio de trabajo",
+				"title": "Las columnas las gestiona el espacio de trabajo"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Selecciona proyecto",
@@ -731,7 +737,11 @@
 			"on": "Activado",
 			"off": "Desactivado",
 			"newColumnPlaceholder": "Nombre de la nueva columna...",
-			"add": "Añadir"
+			"add": "Añadir",
+			"deleteAria": "Eliminar la columna {{name}}",
+			"moveDownAria": "Mover la columna {{name}} hacia abajo",
+			"moveUpAria": "Mover la columna {{name}} hacia arriba",
+			"nameAria": "Nombre de la columna {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2229,6 +2239,72 @@
 				"subtitle": "Conecta este espacio de trabajo con una instancia de Jira y define cómo se asignan las tareas de Kaneo a las incidencias de Jira.",
 				"title": "Integración con Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Los proyectos nuevos empiezan con estas columnas. Arrastra una columna o usa los botones de flecha para reordenarlas. Activa «Columna finalizada» en las etapas que representan trabajo completado.",
+			"columnsEnforcedHint": "La imposición está activada: cada cambio aquí se aplica de inmediato a todos los proyectos del espacio de trabajo.",
+			"columnsTitle": "Columnas",
+			"deleteDialog": {
+				"confirm": "Eliminar columna",
+				"description": "La columna se elimina de las columnas del espacio de trabajo. Los proyectos existentes conservan sus propias columnas.",
+				"descriptionEnforced": "La columna se elimina de todos los proyectos. Las tareas que contiene pasan a la columna que elijas y se eliminan las reglas de flujo de trabajo asociadas.",
+				"moveTasksTo": "Mover las tareas a",
+				"needsTarget": "Aún hay tareas en esta columna. Elige a dónde van.",
+				"title": "¿Eliminar la columna «{{name}}»?"
+			},
+			"disableDialog": {
+				"confirm": "Dejar de imponer",
+				"description": "Los proyectos conservan sus columnas actuales y pueden volver a cambiarlas. Las columnas siguen vinculadas a las del espacio de trabajo, así que al volver a imponerlas se restauran exactamente.",
+				"title": "¿Dejar de imponer las columnas del espacio de trabajo?"
+			},
+			"empty": "Todavía no hay columnas del espacio de trabajo. Hasta que añadas alguna, los proyectos nuevos empiezan con las columnas predeterminadas.",
+			"enableDialog": {
+				"columnsCreated": "Columnas creadas: {{created}}",
+				"columnsRemoved": "Columnas eliminadas: {{removed}}",
+				"columnsUpdated": "Columnas renombradas o actualizadas: {{updated}}",
+				"confirm": "Imponer columnas",
+				"confirming": "Imponiendo...",
+				"description": "Cada proyecto tendrá exactamente las columnas del espacio de trabajo. Una columna de proyecto se empareja con una del espacio de trabajo por su vínculo, luego por su slug y luego por su nombre. Las columnas que faltan se crean; las que no tienen pareja se eliminan.",
+				"fallbackHelp": "Las tareas de una columna de proyecto que no coincide con ninguna columna del espacio de trabajo se mueven a esta columna antes de eliminar la columna del proyecto.",
+				"fallbackLabel": "Mover las tareas de las columnas eliminadas a",
+				"movedTasksNote": "Las tareas movidas no generan entrada de actividad ni evento de integración. Solo se muestran los proyectos que puedes ver.",
+				"noChanges": "Todos los proyectos ya tienen exactamente las columnas del espacio de trabajo.",
+				"previewError": "No se pudo determinar qué cambiaría.",
+				"previewLoading": "Comprobando qué cambiará...",
+				"projectsAria": "Proyectos que cambiarán",
+				"rulesDeleted": "Reglas de flujo de trabajo eliminadas: {{rules}}",
+				"rulesWarningDescription": "{{rules}} reglas de flujo de trabajo están asociadas a columnas que se van a eliminar. Se eliminan junto con esas columnas y no se pueden restaurar.",
+				"rulesWarningTitle": "Se eliminarán reglas de flujo de trabajo",
+				"summary": "Cambiarán {{changed}} de {{total}} proyectos",
+				"tasksMoved": "Tareas movidas: {{moved}}",
+				"title": "¿Imponer las columnas del espacio de trabajo?"
+			},
+			"enforcement": {
+				"description": "Cuando está activado, todos los proyectos de este espacio de trabajo tienen exactamente estas columnas y no pueden añadirlas, renombrarlas, reordenarlas ni eliminarlas. Las reglas de flujo de trabajo siguen siendo por proyecto.",
+				"disabledToast": "Las columnas del espacio de trabajo ya no se imponen",
+				"disableError": "No se pudo dejar de imponer las columnas del espacio de trabajo",
+				"enabledToast": "Las columnas del espacio de trabajo ahora se imponen en todos los proyectos",
+				"enableError": "No se pudieron imponer las columnas del espacio de trabajo",
+				"noColumnsHint": "Añade al menos una columna antes de poder imponerlas.",
+				"noPermission": "Solo quienes pueden gestionar los ajustes del espacio de trabajo pueden cambiar la imposición.",
+				"statusOff": "No impuestas",
+				"statusOn": "Impuestas",
+				"switchLabel": "Imponer las columnas del espacio de trabajo",
+				"title": "Imposición"
+			},
+			"errors": {
+				"empty": "Primero añade al menos una columna del espacio de trabajo.",
+				"enforced": "Este espacio de trabajo impone sus columnas. Cámbialas en los ajustes de flujo de trabajo del espacio de trabajo.",
+				"last": "La última columna no se puede eliminar mientras se imponen las columnas.",
+				"notEmpty": "Aún hay tareas en esta columna. Elige una columna a la que moverlas.",
+				"reservedSlug": "Este nombre está reservado. Elige otro nombre.",
+				"slugConflict": "Ya existe una columna con este nombre en el espacio de trabajo."
+			},
+			"loadError": "No se pudieron cargar las columnas del espacio de trabajo.",
+			"pageTitle": "Ajustes de flujo de trabajo del espacio de trabajo",
+			"retry": "Reintentar",
+			"subtitle": "Define las columnas del tablero una sola vez para todo el espacio de trabajo y, si quieres, impónlas en todos los proyectos.",
+			"title": "Flujo de trabajo"
 		}
 	},
 	"navigation": {

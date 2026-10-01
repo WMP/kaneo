@@ -888,7 +888,13 @@
 			"automationTitle": "Automatisierungsregeln",
 			"automationDescription": "Ordne Integrationsereignisse Spalten zu. Wenn ein Ereignis eintritt, wird die verknüpfte Aufgabe in die angegebene Spalte verschoben.",
 			"customFieldsDescription": "Verwalte die benutzerdefinierten Felder dieses Projekts. Ziehe sie, um sie neu anzuordnen.",
-			"customFieldsTitle": "Benutzerdefinierte Felder"
+			"customFieldsTitle": "Benutzerdefinierte Felder",
+			"enforced": {
+				"description": "Dieser Workspace erzwingt seine Spalten, daher hat jedes Projekt genau die Workspace-Spalten und sie lassen sich hier nicht ändern. Ändere sie in den Workflow-Einstellungen des Workspaces.",
+				"descriptionNoAccess": "Dieser Workspace erzwingt seine Spalten, daher hat jedes Projekt genau die Workspace-Spalten und sie lassen sich hier nicht ändern. Bitte eine Workspace-Administratorin oder einen Workspace-Administrator, sie zu ändern.",
+				"manageLink": "Workflow-Einstellungen des Workspaces öffnen",
+				"title": "Spalten werden vom Workspace verwaltet"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Projekt auswählen",
@@ -914,7 +920,11 @@
 			"on": "Ein",
 			"off": "Aus",
 			"newColumnPlaceholder": "Neuer Spaltenname...",
-			"add": "Hinzufügen"
+			"add": "Hinzufügen",
+			"deleteAria": "Spalte {{name}} löschen",
+			"moveDownAria": "Spalte {{name}} nach unten verschieben",
+			"moveUpAria": "Spalte {{name}} nach oben verschieben",
+			"nameAria": "Name der Spalte {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2226,6 +2236,72 @@
 				"subtitle": "Verbinde diesen Workspace mit einer Jira-Instanz und lege fest, wie Kaneo-Aufgaben Jira-Tickets zugeordnet werden.",
 				"title": "Jira-Integration"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Neue Projekte starten mit diesen Spalten. Ziehe eine Spalte oder verwende die Pfeiltasten, um die Reihenfolge zu ändern. Aktiviere „Fertige Spalte“ für Phasen, die abgeschlossene Arbeit darstellen.",
+			"columnsEnforcedHint": "Erzwingung ist aktiv: Jede Änderung hier wird sofort auf alle Projekte des Workspaces angewendet.",
+			"columnsTitle": "Spalten",
+			"deleteDialog": {
+				"confirm": "Spalte löschen",
+				"description": "Die Spalte wird aus den Workspace-Spalten entfernt. Bestehende Projekte behalten ihre eigenen Spalten.",
+				"descriptionEnforced": "Die Spalte wird aus jedem Projekt entfernt. Aufgaben darin werden in die gewählte Spalte verschoben, und Workflow-Regeln dafür werden gelöscht.",
+				"moveTasksTo": "Aufgaben verschieben nach",
+				"needsTarget": "Es gibt noch Aufgaben in dieser Spalte. Wähle, wohin sie verschoben werden.",
+				"title": "Spalte „{{name}}“ löschen?"
+			},
+			"disableDialog": {
+				"confirm": "Nicht mehr erzwingen",
+				"description": "Projekte behalten ihre aktuellen Spalten und können sie wieder ändern. Die Spalten bleiben mit den Workspace-Spalten verknüpft, sodass erneutes Erzwingen sie exakt wiederherstellt.",
+				"title": "Erzwingung der Workspace-Spalten beenden?"
+			},
+			"empty": "Noch keine Workspace-Spalten. Bis du welche hinzufügst, starten neue Projekte mit den Standardspalten.",
+			"enableDialog": {
+				"columnsCreated": "Erstellte Spalten: {{created}}",
+				"columnsRemoved": "Entfernte Spalten: {{removed}}",
+				"columnsUpdated": "Umbenannte oder aktualisierte Spalten: {{updated}}",
+				"confirm": "Spalten erzwingen",
+				"confirming": "Wird erzwungen...",
+				"description": "Jedes Projekt erhält genau die Workspace-Spalten. Eine Projektspalte wird einer Workspace-Spalte über ihre Verknüpfung, dann über ihren Slug und dann über ihren Namen zugeordnet. Fehlende Spalten werden erstellt, Spalten ohne Entsprechung werden entfernt.",
+				"fallbackHelp": "Aufgaben in einer Projektspalte, die keiner Workspace-Spalte entspricht, werden in diese Spalte verschoben, bevor die Projektspalte gelöscht wird.",
+				"fallbackLabel": "Aufgaben entfernter Spalten verschieben nach",
+				"movedTasksNote": "Verschobene Aufgaben erzeugen weder einen Aktivitätseintrag noch ein Integrationsereignis. Es werden nur Projekte aufgeführt, die du sehen kannst.",
+				"noChanges": "Jedes Projekt hat bereits genau die Workspace-Spalten.",
+				"previewError": "Die Änderungen konnten nicht ermittelt werden.",
+				"previewLoading": "Änderungen werden geprüft...",
+				"projectsAria": "Projekte, die sich ändern",
+				"rulesDeleted": "Gelöschte Workflow-Regeln: {{rules}}",
+				"rulesWarningDescription": "{{rules}} Workflow-Regeln sind mit Spalten verknüpft, die entfernt werden. Sie werden zusammen mit diesen Spalten gelöscht und können nicht wiederhergestellt werden.",
+				"rulesWarningTitle": "Workflow-Regeln werden gelöscht",
+				"summary": "{{changed}} von {{total}} Projekten ändern sich",
+				"tasksMoved": "Verschobene Aufgaben: {{moved}}",
+				"title": "Workspace-Spalten erzwingen?"
+			},
+			"enforcement": {
+				"description": "Wenn aktiv, hat jedes Projekt dieses Workspaces genau diese Spalten und kann keine hinzufügen, umbenennen, neu anordnen oder löschen. Workflow-Regeln bleiben projektbezogen.",
+				"disabledToast": "Workspace-Spalten werden nicht mehr erzwungen",
+				"disableError": "Die Erzwingung der Workspace-Spalten konnte nicht beendet werden",
+				"enabledToast": "Workspace-Spalten werden jetzt in jedem Projekt erzwungen",
+				"enableError": "Die Workspace-Spalten konnten nicht erzwungen werden",
+				"noColumnsHint": "Füge mindestens eine Spalte hinzu, bevor du sie erzwingen kannst.",
+				"noPermission": "Nur Personen, die die Workspace-Einstellungen verwalten dürfen, können die Erzwingung ändern.",
+				"statusOff": "Nicht erzwungen",
+				"statusOn": "Erzwungen",
+				"switchLabel": "Workspace-Spalten erzwingen",
+				"title": "Erzwingung"
+			},
+			"errors": {
+				"empty": "Füge zuerst mindestens eine Workspace-Spalte hinzu.",
+				"enforced": "Dieser Workspace erzwingt seine Spalten. Ändere sie in den Workflow-Einstellungen des Workspaces.",
+				"last": "Die letzte Spalte kann nicht gelöscht werden, solange Spalten erzwungen werden.",
+				"notEmpty": "Es gibt noch Aufgaben in dieser Spalte. Wähle eine Spalte, in die sie verschoben werden.",
+				"reservedSlug": "Dieser Name ist reserviert. Wähle einen anderen Namen.",
+				"slugConflict": "Im Workspace existiert bereits eine Spalte mit diesem Namen."
+			},
+			"loadError": "Die Workspace-Spalten konnten nicht geladen werden.",
+			"pageTitle": "Workflow-Einstellungen des Workspaces",
+			"retry": "Erneut versuchen",
+			"subtitle": "Lege die Board-Spalten einmal für den gesamten Workspace fest und erzwinge sie bei Bedarf in jedem Projekt.",
+			"title": "Workflow"
 		}
 	},
 	"navigation": {

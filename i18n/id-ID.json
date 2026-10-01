@@ -808,7 +808,13 @@
 			"automationTitle": "Aturan Otomatisasi",
 			"automationDescription": "Petakan event integrasi ke kolom. Saat event terjadi, tugas tertaut berpindah ke kolom yang ditentukan.",
 			"customFieldsDescription": "Kelola kolom kustom untuk proyek ini. Seret  untuk mengurutkan ulang.",
-			"customFieldsTitle": "Kolom Kustom"
+			"customFieldsTitle": "Kolom Kustom",
+			"enforced": {
+				"description": "Ruang kerja ini memberlakukan kolomnya, sehingga setiap proyek memiliki persis kolom ruang kerja dan kolom tidak dapat diubah di sini. Ubah di pengaturan alur kerja ruang kerja.",
+				"descriptionNoAccess": "Ruang kerja ini memberlakukan kolomnya, sehingga setiap proyek memiliki persis kolom ruang kerja dan kolom tidak dapat diubah di sini. Minta administrator ruang kerja untuk mengubahnya.",
+				"manageLink": "Buka pengaturan alur kerja ruang kerja",
+				"title": "Kolom dikelola oleh ruang kerja"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Pilih proyek",
@@ -834,7 +840,11 @@
 			"on": "Aktif",
 			"off": "Nonaktif",
 			"newColumnPlaceholder": "Nama kolom baru...",
-			"add": "Tambah"
+			"add": "Tambah",
+			"deleteAria": "Hapus kolom {{name}}",
+			"moveDownAria": "Pindahkan kolom {{name}} ke bawah",
+			"moveUpAria": "Pindahkan kolom {{name}} ke atas",
+			"nameAria": "Nama kolom {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2223,6 +2233,72 @@
 				"subtitle": "Hubungkan ruang kerja ini ke instans Jira dan tentukan cara tugas Kaneo dipetakan ke isu Jira.",
 				"title": "Integrasi Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Proyek baru dimulai dengan kolom-kolom ini. Seret kolom atau gunakan tombol panah untuk mengurutkan ulang. Aktifkan \"Kolom selesai\" untuk tahap yang menandakan pekerjaan telah selesai.",
+			"columnsEnforcedHint": "Pemberlakuan aktif: setiap perubahan di sini langsung diterapkan ke semua proyek di ruang kerja.",
+			"columnsTitle": "Kolom",
+			"deleteDialog": {
+				"confirm": "Hapus kolom",
+				"description": "Kolom dihapus dari kolom ruang kerja. Proyek yang sudah ada tetap memiliki kolomnya sendiri.",
+				"descriptionEnforced": "Kolom dihapus dari setiap proyek. Tugas di dalamnya dipindahkan ke kolom yang Anda pilih, dan aturan alur kerja pada kolom itu dihapus.",
+				"moveTasksTo": "Pindahkan tugas ke",
+				"needsTarget": "Masih ada tugas yang menggunakan kolom ini. Pilih tujuannya.",
+				"title": "Hapus kolom \"{{name}}\"?"
+			},
+			"disableDialog": {
+				"confirm": "Hentikan pemberlakuan",
+				"description": "Proyek tetap memiliki kolomnya saat ini dan dapat mengubahnya lagi. Kolom tetap terhubung ke kolom ruang kerja, sehingga memberlakukan lagi akan memulihkannya persis seperti semula.",
+				"title": "Hentikan pemberlakuan kolom ruang kerja?"
+			},
+			"empty": "Belum ada kolom ruang kerja. Sampai Anda menambahkannya, proyek baru dimulai dengan kolom default.",
+			"enableDialog": {
+				"columnsCreated": "Kolom dibuat: {{created}}",
+				"columnsRemoved": "Kolom dihapus: {{removed}}",
+				"columnsUpdated": "Kolom diganti namanya atau diperbarui: {{updated}}",
+				"confirm": "Berlakukan kolom",
+				"confirming": "Memberlakukan...",
+				"description": "Setiap proyek akan memiliki persis kolom ruang kerja. Kolom proyek dicocokkan dengan kolom ruang kerja melalui tautannya, lalu slug-nya, lalu namanya. Kolom yang belum ada dibuat; kolom tanpa kecocokan dihapus.",
+				"fallbackHelp": "Tugas di kolom proyek yang tidak cocok dengan kolom ruang kerja mana pun dipindahkan ke kolom ini sebelum kolom proyek dihapus.",
+				"fallbackLabel": "Pindahkan tugas dari kolom yang dihapus ke",
+				"movedTasksNote": "Tugas yang dipindahkan tidak mendapat entri aktivitas maupun peristiwa integrasi. Hanya proyek yang dapat Anda lihat yang ditampilkan.",
+				"noChanges": "Setiap proyek sudah memiliki persis kolom ruang kerja.",
+				"previewError": "Tidak dapat menentukan apa yang akan berubah.",
+				"previewLoading": "Memeriksa apa yang akan berubah...",
+				"projectsAria": "Proyek yang akan berubah",
+				"rulesDeleted": "Aturan alur kerja dihapus: {{rules}}",
+				"rulesWarningDescription": "{{rules}} aturan alur kerja terhubung ke kolom yang akan dihapus. Aturan itu dihapus bersama kolomnya dan tidak dapat dipulihkan.",
+				"rulesWarningTitle": "Aturan alur kerja akan dihapus",
+				"summary": "{{changed}} dari {{total}} proyek akan berubah",
+				"tasksMoved": "Tugas dipindahkan: {{moved}}",
+				"title": "Berlakukan kolom ruang kerja?"
+			},
+			"enforcement": {
+				"description": "Jika aktif, setiap proyek di ruang kerja ini memiliki persis kolom-kolom ini dan tidak dapat menambah, mengganti nama, mengurutkan ulang, atau menghapusnya. Aturan alur kerja tetap per proyek.",
+				"disabledToast": "Kolom ruang kerja tidak lagi diberlakukan",
+				"disableError": "Gagal menghentikan pemberlakuan kolom ruang kerja",
+				"enabledToast": "Kolom ruang kerja kini diberlakukan di setiap proyek",
+				"enableError": "Gagal memberlakukan kolom ruang kerja",
+				"noColumnsHint": "Tambahkan setidaknya satu kolom sebelum Anda dapat memberlakukannya.",
+				"noPermission": "Hanya orang yang dapat mengelola pengaturan ruang kerja yang dapat mengubah pemberlakuan.",
+				"statusOff": "Tidak diberlakukan",
+				"statusOn": "Diberlakukan",
+				"switchLabel": "Berlakukan kolom ruang kerja",
+				"title": "Pemberlakuan"
+			},
+			"errors": {
+				"empty": "Tambahkan setidaknya satu kolom ruang kerja terlebih dahulu.",
+				"enforced": "Ruang kerja ini memberlakukan kolomnya. Ubah di pengaturan alur kerja ruang kerja.",
+				"last": "Kolom terakhir tidak dapat dihapus selama kolom diberlakukan.",
+				"notEmpty": "Masih ada tugas yang menggunakan kolom ini. Pilih kolom tujuan untuk memindahkannya.",
+				"reservedSlug": "Nama ini dicadangkan. Pilih nama lain.",
+				"slugConflict": "Kolom dengan nama ini sudah ada di ruang kerja."
+			},
+			"loadError": "Tidak dapat memuat kolom ruang kerja.",
+			"pageTitle": "Pengaturan Alur Kerja Ruang Kerja",
+			"retry": "Coba lagi",
+			"subtitle": "Tentukan kolom papan sekali untuk seluruh ruang kerja dan, jika mau, berlakukan di setiap proyek.",
+			"title": "Alur Kerja"
 		}
 	},
 	"navigation": {

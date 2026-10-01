@@ -3,17 +3,10 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable } from "../../database/schema";
 import { VIRTUAL_STATUSES } from "../../task/validate-task-fields";
+import { assertProjectColumnsEditable } from "../../workspace-column/enforcement-lock";
+import { toSlug } from "../slug";
 
-export function toSlug(name: string): string {
-  const slug = name
-    .normalize("NFKC")
-    .toLowerCase()
-    .trim()
-    .replace(/[^\p{L}\p{M}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return /[\p{L}\p{N}]/u.test(slug) ? slug : "";
-}
+export { toSlug };
 
 async function createColumn({
   projectId,
@@ -42,40 +35,48 @@ async function createColumn({
     });
   }
 
-  const existing = await db
-    .select({ id: columnTable.id })
-    .from(columnTable)
-    .where(
-      sql`${columnTable.projectId} = ${projectId} AND ${columnTable.slug} = ${slug}`,
-    );
+  // One transaction: the enforcement flag is read under a shared lock together
+  // with the write, so a workspace turning enforcement on cannot interleave.
+  const created = await db.transaction(async (tx) => {
+    await assertProjectColumnsEditable(tx, projectId);
 
-  if (existing.length > 0) {
-    throw new HTTPException(409, {
-      message: `Column with slug "${slug}" already exists in this project`,
-    });
-  }
+    const existing = await tx
+      .select({ id: columnTable.id })
+      .from(columnTable)
+      .where(
+        sql`${columnTable.projectId} = ${projectId} AND ${columnTable.slug} = ${slug}`,
+      );
 
-  const [maxPos] = await db
-    .select({
-      maxPosition: sql<number>`COALESCE(MAX(${columnTable.position}), -1)`,
-    })
-    .from(columnTable)
-    .where(eq(columnTable.projectId, projectId));
+    if (existing.length > 0) {
+      throw new HTTPException(409, {
+        message: `Column with slug "${slug}" already exists in this project`,
+      });
+    }
 
-  const position = (maxPos?.maxPosition ?? -1) + 1;
+    const [maxPos] = await tx
+      .select({
+        maxPosition: sql<number>`COALESCE(MAX(${columnTable.position}), -1)`,
+      })
+      .from(columnTable)
+      .where(eq(columnTable.projectId, projectId));
 
-  const [created] = await db
-    .insert(columnTable)
-    .values({
-      projectId,
-      name,
-      slug,
-      position,
-      icon: icon || null,
-      color: color || null,
-      isFinal: isFinal ?? false,
-    })
-    .returning();
+    const position = (maxPos?.maxPosition ?? -1) + 1;
+
+    const [inserted] = await tx
+      .insert(columnTable)
+      .values({
+        projectId,
+        name,
+        slug,
+        position,
+        icon: icon || null,
+        color: color || null,
+        isFinal: isFinal ?? false,
+      })
+      .returning();
+
+    return inserted;
+  });
 
   if (!created) {
     throw new HTTPException(500, { message: "Failed to create column" });

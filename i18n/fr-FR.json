@@ -808,7 +808,13 @@
 			"automationTitle": "Règles d'automatisation",
 			"automationDescription": "Mappez les événements d'intégration aux colonnes. Lorsqu'un événement se produit, la tâche liée se déplace vers la colonne spécifiée.",
 			"customFieldsDescription": "Gérez les champs personnalisés de ce projet. Faites glisser  pour réorganiser.",
-			"customFieldsTitle": "Champs personnalisés"
+			"customFieldsTitle": "Champs personnalisés",
+			"enforced": {
+				"description": "Cet espace de travail impose ses colonnes : chaque projet a exactement les colonnes de l'espace de travail et elles ne peuvent pas être modifiées ici. Modifiez-les dans les paramètres de flux de travail de l'espace de travail.",
+				"descriptionNoAccess": "Cet espace de travail impose ses colonnes : chaque projet a exactement les colonnes de l'espace de travail et elles ne peuvent pas être modifiées ici. Demandez à un administrateur de l'espace de travail de les modifier.",
+				"manageLink": "Ouvrir les paramètres de flux de travail de l'espace de travail",
+				"title": "Les colonnes sont gérées par l'espace de travail"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Sélectionner un projet",
@@ -834,7 +840,11 @@
 			"on": "Activé",
 			"off": "Désactivé",
 			"newColumnPlaceholder": "Nouveau nom de colonne...",
-			"add": "Ajouter"
+			"add": "Ajouter",
+			"deleteAria": "Supprimer la colonne {{name}}",
+			"moveDownAria": "Déplacer la colonne {{name}} vers le bas",
+			"moveUpAria": "Déplacer la colonne {{name}} vers le haut",
+			"nameAria": "Nom de la colonne {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2229,6 +2239,72 @@
 				"subtitle": "Connectez cet espace de travail à une instance Jira et définissez comment les tâches Kaneo correspondent aux tickets Jira.",
 				"title": "Intégration Jira"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Les nouveaux projets démarrent avec ces colonnes. Faites glisser une colonne ou utilisez les boutons fléchés pour les réordonner. Activez « Colonne terminée » pour les étapes qui représentent un travail achevé.",
+			"columnsEnforcedHint": "L'application forcée est activée : chaque modification ici est appliquée immédiatement à tous les projets de l'espace de travail.",
+			"columnsTitle": "Colonnes",
+			"deleteDialog": {
+				"confirm": "Supprimer la colonne",
+				"description": "La colonne est retirée des colonnes de l'espace de travail. Les projets existants conservent leurs propres colonnes.",
+				"descriptionEnforced": "La colonne est retirée de chaque projet. Les tâches qu'elle contient sont déplacées vers la colonne de votre choix, et les règles de flux de travail associées sont supprimées.",
+				"moveTasksTo": "Déplacer les tâches vers",
+				"needsTarget": "Des tâches utilisent encore cette colonne. Choisissez où elles vont.",
+				"title": "Supprimer la colonne « {{name}} » ?"
+			},
+			"disableDialog": {
+				"confirm": "Ne plus imposer",
+				"description": "Les projets conservent leurs colonnes actuelles et peuvent à nouveau les modifier. Les colonnes restent liées à celles de l'espace de travail : les imposer à nouveau les restaure à l'identique.",
+				"title": "Ne plus imposer les colonnes de l'espace de travail ?"
+			},
+			"empty": "Aucune colonne d'espace de travail pour l'instant. Tant que vous n'en ajoutez pas, les nouveaux projets démarrent avec les colonnes par défaut.",
+			"enableDialog": {
+				"columnsCreated": "Colonnes créées : {{created}}",
+				"columnsRemoved": "Colonnes supprimées : {{removed}}",
+				"columnsUpdated": "Colonnes renommées ou mises à jour : {{updated}}",
+				"confirm": "Imposer les colonnes",
+				"confirming": "Application en cours...",
+				"description": "Chaque projet recevra exactement les colonnes de l'espace de travail. Une colonne de projet est associée à une colonne de l'espace de travail par son lien, puis par son identifiant (slug), puis par son nom. Les colonnes manquantes sont créées ; celles sans correspondance sont supprimées.",
+				"fallbackHelp": "Les tâches d'une colonne de projet qui ne correspond à aucune colonne de l'espace de travail sont déplacées vers cette colonne avant la suppression de la colonne du projet.",
+				"fallbackLabel": "Déplacer les tâches des colonnes supprimées vers",
+				"movedTasksNote": "Les tâches déplacées ne génèrent ni entrée d'activité ni événement d'intégration. Seuls les projets que vous pouvez voir sont listés.",
+				"noChanges": "Chaque projet a déjà exactement les colonnes de l'espace de travail.",
+				"previewError": "Impossible de déterminer ce qui changerait.",
+				"previewLoading": "Vérification des changements...",
+				"projectsAria": "Projets qui vont changer",
+				"rulesDeleted": "Règles de flux de travail supprimées : {{rules}}",
+				"rulesWarningDescription": "{{rules}} règles de flux de travail sont associées à des colonnes qui vont être supprimées. Elles sont supprimées avec ces colonnes et ne peuvent pas être restaurées.",
+				"rulesWarningTitle": "Des règles de flux de travail seront supprimées",
+				"summary": "{{changed}} projets sur {{total}} vont changer",
+				"tasksMoved": "Tâches déplacées : {{moved}}",
+				"title": "Imposer les colonnes de l'espace de travail ?"
+			},
+			"enforcement": {
+				"description": "Lorsque cette option est activée, chaque projet de cet espace de travail a exactement ces colonnes et ne peut ni en ajouter, ni les renommer, ni les réordonner, ni les supprimer. Les règles de flux de travail restent propres à chaque projet.",
+				"disabledToast": "Les colonnes de l'espace de travail ne sont plus imposées",
+				"disableError": "Impossible d'arrêter d'imposer les colonnes de l'espace de travail",
+				"enabledToast": "Les colonnes de l'espace de travail sont désormais imposées dans chaque projet",
+				"enableError": "Impossible d'imposer les colonnes de l'espace de travail",
+				"noColumnsHint": "Ajoutez au moins une colonne avant de pouvoir les imposer.",
+				"noPermission": "Seules les personnes autorisées à gérer les paramètres de l'espace de travail peuvent modifier l'application des colonnes.",
+				"statusOff": "Non imposées",
+				"statusOn": "Imposées",
+				"switchLabel": "Imposer les colonnes de l'espace de travail",
+				"title": "Application des colonnes"
+			},
+			"errors": {
+				"empty": "Ajoutez d'abord au moins une colonne d'espace de travail.",
+				"enforced": "Cet espace de travail impose ses colonnes. Modifiez-les dans les paramètres de flux de travail de l'espace de travail.",
+				"last": "La dernière colonne ne peut pas être supprimée tant que les colonnes sont imposées.",
+				"notEmpty": "Des tâches utilisent encore cette colonne. Choisissez une colonne vers laquelle les déplacer.",
+				"reservedSlug": "Ce nom est réservé. Choisissez un autre nom.",
+				"slugConflict": "Une colonne portant ce nom existe déjà dans l'espace de travail."
+			},
+			"loadError": "Impossible de charger les colonnes de l'espace de travail.",
+			"pageTitle": "Paramètres de flux de travail de l'espace de travail",
+			"retry": "Réessayer",
+			"subtitle": "Définissez une seule fois les colonnes du tableau pour tout l'espace de travail et, si vous le souhaitez, imposez-les dans chaque projet.",
+			"title": "Flux de travail"
 		}
 	},
 	"navigation": {

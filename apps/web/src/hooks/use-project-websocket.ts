@@ -132,6 +132,14 @@ export function useProjectWebSocket(
 
             if (message.type === "PROJECT_UPDATED") {
               queryClient.invalidateQueries({ queryKey: ["projects"] });
+              // Workspace column enforcement (and any project column change)
+              // publishes it: the project's columns and the enforced flag.
+              queryClient.invalidateQueries({
+                queryKey: ["columns", message.projectId],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["workspace-columns"],
+              });
               return;
             }
 

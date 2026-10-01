@@ -808,7 +808,13 @@
 			"automationTitle": "Otomasyon Kuralları",
 			"automationDescription": "Entegrasyon olaylarını sütunlarla eşleştirin. Bir olay gerçekleştiğinde, bağlı talep belirtilen sütuna taşınır.",
 			"customFieldsDescription": "Bu projenin özel alanlarını yönetin. Yeniden sıralamak için  simgesini sürükleyin.",
-			"customFieldsTitle": "Özel Alanlar"
+			"customFieldsTitle": "Özel Alanlar",
+			"enforced": {
+				"description": "Bu çalışma alanı sütunlarını zorunlu kılıyor, bu yüzden her projede tam olarak çalışma alanının sütunları bulunur ve burada değiştirilemezler. Bunları çalışma alanının iş akışı ayarlarından değiştirin.",
+				"descriptionNoAccess": "Bu çalışma alanı sütunlarını zorunlu kılıyor, bu yüzden her projede tam olarak çalışma alanının sütunları bulunur ve burada değiştirilemezler. Değiştirmesi için çalışma alanı yöneticisinden yardım isteyin.",
+				"manageLink": "Çalışma alanı iş akışı ayarlarını aç",
+				"title": "Sütunlar çalışma alanı tarafından yönetiliyor"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Proje seç",
@@ -834,7 +840,11 @@
 			"on": "Açık",
 			"off": "Kapalı",
 			"newColumnPlaceholder": "Yeni sütun adı...",
-			"add": "Ekle"
+			"add": "Ekle",
+			"deleteAria": "{{name}} sütununu sil",
+			"moveDownAria": "{{name}} sütununu aşağı taşı",
+			"moveUpAria": "{{name}} sütununu yukarı taşı",
+			"nameAria": "{{name}} sütununun adı"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2226,6 +2236,72 @@
 				"subtitle": "Bu çalışma alanını bir Jira örneğine bağlayın ve Kaneo görevlerinin Jira kayıtlarına nasıl eşleneceğini tanımlayın.",
 				"title": "Jira entegrasyonu"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Yeni projeler bu sütunlarla başlar. Sırayı değiştirmek için bir sütunu sürükleyin veya ok düğmelerini kullanın. Tamamlanmış işi temsil eden aşamalar için \"Tamamlandı sütunu\" seçeneğini açın.",
+			"columnsEnforcedHint": "Zorunlu kılma açık: buradaki her değişiklik çalışma alanındaki tüm projelere hemen uygulanır.",
+			"columnsTitle": "Sütunlar",
+			"deleteDialog": {
+				"confirm": "Sütunu sil",
+				"description": "Sütun çalışma alanı sütunlarından kaldırılır. Mevcut projeler kendi sütunlarını korur.",
+				"descriptionEnforced": "Sütun her projeden kaldırılır. İçindeki görevler seçtiğiniz sütuna taşınır ve sütunla ilgili iş akışı kuralları silinir.",
+				"moveTasksTo": "Görevleri şuraya taşı",
+				"needsTarget": "Görevler hâlâ bu sütunu kullanıyor. Nereye taşınacaklarını seçin.",
+				"title": "\"{{name}}\" sütunu silinsin mi?"
+			},
+			"disableDialog": {
+				"confirm": "Zorunlu kılmayı durdur",
+				"description": "Projeler mevcut sütunlarını korur ve onları yeniden değiştirebilir. Sütunlar çalışma alanı sütunlarına bağlı kalır, bu nedenle yeniden zorunlu kılmak onları birebir geri yükler.",
+				"title": "Çalışma alanı sütunlarını zorunlu kılmayı durdurmak istiyor musunuz?"
+			},
+			"empty": "Henüz çalışma alanı sütunu yok. Siz ekleyene kadar yeni projeler varsayılan sütunlarla başlar.",
+			"enableDialog": {
+				"columnsCreated": "Oluşturulan sütunlar: {{created}}",
+				"columnsRemoved": "Kaldırılan sütunlar: {{removed}}",
+				"columnsUpdated": "Yeniden adlandırılan veya güncellenen sütunlar: {{updated}}",
+				"confirm": "Sütunları zorunlu kıl",
+				"confirming": "Zorunlu kılınıyor...",
+				"description": "Her proje tam olarak çalışma alanı sütunlarına sahip olacak. Bir proje sütunu, bir çalışma alanı sütunuyla önce bağlantısı, sonra slug değeri, sonra adı üzerinden eşleştirilir. Eksik sütunlar oluşturulur; eşleşmeyen sütunlar kaldırılır.",
+				"fallbackHelp": "Hiçbir çalışma alanı sütunuyla eşleşmeyen bir proje sütunundaki görevler, proje sütunu silinmeden önce bu sütuna taşınır.",
+				"fallbackLabel": "Kaldırılan sütunların görevlerini şuraya taşı",
+				"movedTasksNote": "Taşınan görevler için etkinlik kaydı ve entegrasyon olayı oluşturulmaz. Yalnızca görebildiğiniz projeler listelenir.",
+				"noChanges": "Her projede zaten tam olarak çalışma alanı sütunları var.",
+				"previewError": "Nelerin değişeceği belirlenemedi.",
+				"previewLoading": "Nelerin değişeceği kontrol ediliyor...",
+				"projectsAria": "Değişecek projeler",
+				"rulesDeleted": "Silinen iş akışı kuralları: {{rules}}",
+				"rulesWarningDescription": "{{rules}} iş akışı kuralı kaldırılacak sütunlara bağlı. Bu kurallar sütunlarla birlikte silinir ve geri yüklenemez.",
+				"rulesWarningTitle": "İş akışı kuralları silinecek",
+				"summary": "{{total}} projeden {{changed}} tanesi değişecek",
+				"tasksMoved": "Taşınan görevler: {{moved}}",
+				"title": "Çalışma alanı sütunları zorunlu kılınsın mı?"
+			},
+			"enforcement": {
+				"description": "Açıkken, bu çalışma alanındaki her projede tam olarak bu sütunlar bulunur ve sütun eklenemez, yeniden adlandırılamaz, yeniden sıralanamaz veya silinemez. İş akışı kuralları proje bazında kalır.",
+				"disabledToast": "Çalışma alanı sütunları artık zorunlu değil",
+				"disableError": "Çalışma alanı sütunlarını zorunlu kılma durdurulamadı",
+				"enabledToast": "Çalışma alanı sütunları artık her projede zorunlu",
+				"enableError": "Çalışma alanı sütunları zorunlu kılınamadı",
+				"noColumnsHint": "Sütunları zorunlu kılabilmek için en az bir sütun ekleyin.",
+				"noPermission": "Zorunlu kılmayı yalnızca çalışma alanı ayarlarını yönetebilen kişiler değiştirebilir.",
+				"statusOff": "Zorunlu değil",
+				"statusOn": "Zorunlu",
+				"switchLabel": "Çalışma alanı sütunlarını zorunlu kıl",
+				"title": "Zorunlu kılma"
+			},
+			"errors": {
+				"empty": "Önce en az bir çalışma alanı sütunu ekleyin.",
+				"enforced": "Bu çalışma alanı sütunlarını zorunlu kılıyor. Bunları çalışma alanı iş akışı ayarlarından değiştirin.",
+				"last": "Sütunlar zorunlu kılınırken son sütun silinemez.",
+				"notEmpty": "Görevler hâlâ bu sütunu kullanıyor. Görevleri taşımak için bir sütun seçin.",
+				"reservedSlug": "Bu ad ayrılmış. Başka bir ad seçin.",
+				"slugConflict": "Çalışma alanında bu ada sahip bir sütun zaten var."
+			},
+			"loadError": "Çalışma alanı sütunları yüklenemedi.",
+			"pageTitle": "Çalışma Alanı İş Akışı Ayarları",
+			"retry": "Tekrar dene",
+			"subtitle": "Pano sütunlarını tüm çalışma alanı için bir kez tanımlayın ve isterseniz her projede zorunlu kılın.",
+			"title": "İş Akışı"
 		}
 	},
 	"navigation": {

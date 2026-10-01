@@ -97,6 +97,7 @@ import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
 import workflowRule from "./workflow-rule";
 import workload from "./workload";
 import workspace from "./workspace";
+import workspaceColumn from "./workspace-column";
 import {
   addConnection,
   addUserConnection,
@@ -812,6 +813,7 @@ export function createApp() {
   const workspaceApi = api.route("/workspace", workspace);
   const workloadApi = api.route("/workload", workload);
   const customFieldApi = api.route("/custom-field", customField);
+  const workspaceColumnApi = api.route("/workspace-column", workspaceColumn);
   const resourceApi = api.route("/resource", resource);
   const userApi = api.route("/user", user);
 
@@ -985,6 +987,7 @@ export function createApp() {
     workspaceApi,
     workloadApi,
     customFieldApi,
+    workspaceColumnApi,
     resourceApi,
     oauthApi,
   };
@@ -1132,6 +1135,7 @@ const {
   workspaceApi,
   workloadApi,
   customFieldApi,
+  workspaceColumnApi,
   resourceApi,
   oauthApi,
 } = createdApp;
@@ -1179,6 +1183,7 @@ export type AppType =
   | typeof workspaceApi
   | typeof workloadApi
   | typeof customFieldApi
+  | typeof workspaceColumnApi
   | typeof resourceApi
   | typeof userApi
   | typeof publicProjectApi

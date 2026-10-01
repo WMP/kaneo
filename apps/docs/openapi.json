@@ -7114,6 +7114,326 @@
           "value"
         ]
       },
+      "WorkspaceColumns": {
+        "type": "object",
+        "properties": {
+          "enforced": {
+            "type": "boolean",
+            "description": "True when every project of the workspace has exactly these columns and cannot change them."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumn"
+            }
+          }
+        },
+        "required": [
+          "enforced",
+          "columns"
+        ]
+      },
+      "WorkspaceColumn": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Stable identifier derived from the name; tasks store it as their status once the column is copied into a project."
+          },
+          "position": {
+            "type": "number",
+            "description": "Board order, ascending."
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isFinal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "slug",
+          "position",
+          "icon",
+          "color",
+          "isFinal",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "WorkspaceColumnEnforcementPreview": {
+        "type": "object",
+        "properties": {
+          "fallbackColumnId": {
+            "type": "string"
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumnSyncProject"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "projects": {
+                "type": "number"
+              },
+              "projectsChanged": {
+                "type": "number"
+              },
+              "columnsCreated": {
+                "type": "number"
+              },
+              "columnsRemoved": {
+                "type": "number"
+              },
+              "columnsUpdated": {
+                "type": "number"
+              },
+              "tasksMoved": {
+                "type": "number"
+              },
+              "workflowRulesDeleted": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "projects",
+              "projectsChanged",
+              "columnsCreated",
+              "columnsRemoved",
+              "columnsUpdated",
+              "tasksMoved",
+              "workflowRulesDeleted"
+            ]
+          }
+        },
+        "required": [
+          "fallbackColumnId",
+          "projects",
+          "totals"
+        ]
+      },
+      "WorkspaceColumnSyncProject": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "create": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "workspaceColumnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "workspaceColumnId",
+                "name",
+                "slug"
+              ]
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "taskCount": {
+                  "type": "number"
+                },
+                "workflowRuleCount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "columnId",
+                "name",
+                "slug",
+                "taskCount",
+                "workflowRuleCount"
+              ]
+            }
+          },
+          "update": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string"
+                },
+                "workspaceColumnId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "newName": {
+                  "type": "string"
+                },
+                "newSlug": {
+                  "type": "string"
+                },
+                "matchedBy": {
+                  "type": "string",
+                  "enum": [
+                    "link",
+                    "slug",
+                    "name"
+                  ]
+                },
+                "taskCount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "columnId",
+                "workspaceColumnId",
+                "name",
+                "slug",
+                "newName",
+                "newSlug",
+                "matchedBy",
+                "taskCount"
+              ]
+            }
+          },
+          "tasksMoved": {
+            "type": "number"
+          },
+          "workflowRulesDeleted": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectName",
+          "changed",
+          "create",
+          "remove",
+          "update",
+          "tasksMoved",
+          "workflowRulesDeleted"
+        ]
+      },
+      "WorkspaceColumnEnforcementResult": {
+        "type": "object",
+        "properties": {
+          "enforced": {
+            "type": "boolean"
+          },
+          "fallbackColumnId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceColumnSyncProject"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "projects": {
+                "type": "number"
+              },
+              "projectsChanged": {
+                "type": "number"
+              },
+              "columnsCreated": {
+                "type": "number"
+              },
+              "columnsRemoved": {
+                "type": "number"
+              },
+              "columnsUpdated": {
+                "type": "number"
+              },
+              "tasksMoved": {
+                "type": "number"
+              },
+              "workflowRulesDeleted": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "projects",
+              "projectsChanged",
+              "columnsCreated",
+              "columnsRemoved",
+              "columnsUpdated",
+              "tasksMoved",
+              "workflowRulesDeleted"
+            ]
+          }
+        },
+        "required": [
+          "enforced",
+          "fallbackColumnId",
+          "projects",
+          "totals"
+        ]
+      },
       "Resource": {
         "type": "object",
         "properties": {
@@ -15049,7 +15369,7 @@
           "Columns"
         ],
         "summary": "Create column",
-        "description": "Add a column to the end of a project's board. The slug is derived from the name.",
+        "description": "Add a column to the end of a project's board. The slug is derived from the name. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -15122,8 +15442,13 @@
             }
           },
           "409": {
-            "description": "The slug is reserved, or already used in this project",
+            "description": "The slug is reserved or already used in this project, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -15141,7 +15466,7 @@
           "Columns"
         ],
         "summary": "Reorder columns",
-        "description": "Set new positions for a project's columns and return the whole board in its new order.",
+        "description": "Set new positions for a project's columns and return the whole board in its new order. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -15222,6 +15547,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -15233,7 +15573,7 @@
           "Columns"
         ],
         "summary": "Update column",
-        "description": "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them.",
+        "description": "Update a column. Omitted fields are left unchanged; icon and color accept null to clear them. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -15307,6 +15647,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
@@ -15316,7 +15671,7 @@
           "Columns"
         ],
         "summary": "Delete column",
-        "description": "Delete an empty column. A column holding tasks is refused until they are moved or deleted.",
+        "description": "Delete an empty column. A column holding tasks is refused until they are moved or deleted. Refused with 409 WORKSPACE_COLUMNS_ENFORCED when the workspace enforces its columns.",
         "parameters": [
           {
             "schema": {
@@ -15362,8 +15717,13 @@
             }
           },
           "409": {
-            "description": "The column still contains tasks",
+            "description": "The column still contains tasks, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -26209,6 +26569,651 @@
           "404": {
             "description": "Unknown project or custom field",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}": {
+      "get": {
+        "operationId": "getWorkspaceColumns",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Get workspace columns",
+        "description": "Get the board columns defined for a workspace, ordered by position, and whether the workspace enforces them in every project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace columns and enforcement flag",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumns"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace could not be determined",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Create workspace column",
+        "description": "Add a column to the end of the workspace columns. The slug is derived from the name. When the workspace enforces its columns, the column is created in every project. Errors carry a `code`: 409 WORKSPACE_COLUMN_SLUG_CONFLICT, 409 WORKSPACE_COLUMN_RESERVED_SLUG.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "isFinal": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The slug is reserved, or already used in this workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/reorder": {
+      "put": {
+        "operationId": "reorderWorkspaceColumns",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Reorder workspace columns",
+        "description": "Set new positions for workspace columns and return all of them in the new order. When the workspace enforces its columns, every project gets the same positions.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "position": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "position"
+                      ]
+                    },
+                    "description": "Every column keeps its new position. Columns from another workspace are rejected with 404."
+                  }
+                },
+                "required": [
+                  "columns"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reordered columns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceColumn"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A column does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/enforcement-preview": {
+      "get": {
+        "operationId": "previewWorkspaceColumnEnforcement",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Preview column enforcement",
+        "description": "Dry run of turning enforcement on: per project the columns that would be created, removed or changed, the tasks that would move to the fallback column and the workflow rules that would be deleted. Only projects the caller can see are listed. Errors carry a `code`: 400 WORKSPACE_COLUMNS_EMPTY.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workspace column that receives the tasks of project columns without a match. Defaults to the first workspace column by position."
+            },
+            "required": false,
+            "description": "Workspace column that receives the tasks of project columns without a match. Defaults to the first workspace column by position.",
+            "name": "fallbackColumnId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What enforcement would change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumnEnforcementPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace has no columns, or the workspace could not be determined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The fallback column is not a workspace column",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/enforcement": {
+      "put": {
+        "operationId": "setWorkspaceColumnEnforcement",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Turn column enforcement on or off",
+        "description": "Turning enforcement on matches the columns of every project to the workspace columns in one transaction (a column linked to the workspace column, then the same slug, then the same name), creates the missing ones, moves the tasks of unmatched columns to the fallback column and deletes those columns together with their workflow rules. Turning it off only clears the flag. Errors carry a `code`: 400 WORKSPACE_COLUMNS_EMPTY.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enforced": {
+                    "type": "boolean"
+                  },
+                  "fallbackColumnId": {
+                    "type": "string",
+                    "description": "Only used when turning enforcement on. Defaults to the first workspace column by position."
+                  }
+                },
+                "required": [
+                  "enforced"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumnEnforcementResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or the workspace has no columns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The fallback column is not a workspace column",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace-column/{workspaceId}/{columnId}": {
+      "put": {
+        "operationId": "updateWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Update workspace column",
+        "description": "Update a workspace column. Omitted fields are left unchanged; icon and color accept null to clear them. The slug never changes. When the workspace enforces its columns, every project column linked to it gets the same values.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "columnId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "icon": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "color": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "isFinal": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The column does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWorkspaceColumn",
+        "tags": [
+          "Workspace Columns"
+        ],
+        "summary": "Delete workspace column",
+        "description": "Delete a workspace column. When the workspace enforces its columns, the column disappears from every project: tasks in it move to the column passed as moveTasksTo (409 WORKSPACE_COLUMN_NOT_EMPTY when a task exists and none is given), workflow rules on it are deleted, and the last column cannot be deleted (409 WORKSPACE_COLUMN_LAST). Without enforcement projects keep their columns.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "columnId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workspace column that receives the tasks of the deleted column in every project. Needed when the workspace enforces its columns and a task exists in the column."
+            },
+            "required": false,
+            "description": "Workspace column that receives the tasks of the deleted column in every project. Needed when the workspace enforces its columns and a task exists in the column.",
+            "name": "moveTasksTo",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceColumn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "moveTasksTo is the column being deleted",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The column, or the column to move tasks to, does not belong to this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tasks would be left without a column, or this is the last column",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

@@ -705,7 +705,13 @@
 			"automationTitle": "Automatiseringsregels",
 			"automationDescription": "Koppel integratie-gebeurtenissen aan kolommen. Bij een gebeurtenis verplaatst de taak automatisch naar de gekozen kolom.",
 			"customFieldsDescription": "Beheer de aangepaste velden voor dit project. Sleep  om de volgorde te wijzigen.",
-			"customFieldsTitle": "Aangepaste velden"
+			"customFieldsTitle": "Aangepaste velden",
+			"enforced": {
+				"description": "Deze werkruimte dwingt haar kolommen af, dus elk project heeft precies de kolommen van de werkruimte en ze kunnen hier niet worden gewijzigd. Wijzig ze in de workflow-instellingen van de werkruimte.",
+				"descriptionNoAccess": "Deze werkruimte dwingt haar kolommen af, dus elk project heeft precies de kolommen van de werkruimte en ze kunnen hier niet worden gewijzigd. Vraag een beheerder van de werkruimte om ze te wijzigen.",
+				"manageLink": "Workflow-instellingen van de werkruimte openen",
+				"title": "Kolommen worden beheerd door de werkruimte"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Project selecteren",
@@ -731,7 +737,11 @@
 			"on": "Aan",
 			"off": "Uit",
 			"newColumnPlaceholder": "Nieuwe kolomnaam...",
-			"add": "Toevoegen"
+			"add": "Toevoegen",
+			"deleteAria": "Kolom {{name}} verwijderen",
+			"moveDownAria": "Kolom {{name}} omlaag verplaatsen",
+			"moveUpAria": "Kolom {{name}} omhoog verplaatsen",
+			"nameAria": "Naam van kolom {{name}}"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2226,6 +2236,72 @@
 				"subtitle": "Verbind deze werkruimte met een Jira-instantie en bepaal hoe Kaneo-taken aan Jira-issues worden gekoppeld.",
 				"title": "Jira-integratie"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Nieuwe projecten starten met deze kolommen. Sleep een kolom of gebruik de pijltjesknoppen om de volgorde te wijzigen. Schakel \"Gereed-kolom\" in voor fasen die afgerond werk voorstellen.",
+			"columnsEnforcedHint": "Afdwingen staat aan: elke wijziging hier wordt direct toegepast op alle projecten van de werkruimte.",
+			"columnsTitle": "Kolommen",
+			"deleteDialog": {
+				"confirm": "Kolom verwijderen",
+				"description": "De kolom wordt verwijderd uit de kolommen van de werkruimte. Bestaande projecten behouden hun eigen kolommen.",
+				"descriptionEnforced": "De kolom wordt uit elk project verwijderd. Taken daarin worden verplaatst naar de kolom die je kiest en workflowregels voor de kolom worden verwijderd.",
+				"moveTasksTo": "Taken verplaatsen naar",
+				"needsTarget": "Er staan nog taken in deze kolom. Kies waar ze naartoe gaan.",
+				"title": "Kolom \"{{name}}\" verwijderen?"
+			},
+			"disableDialog": {
+				"confirm": "Niet meer afdwingen",
+				"description": "Projecten behouden hun huidige kolommen en kunnen ze weer wijzigen. De kolommen blijven gekoppeld aan de kolommen van de werkruimte, dus opnieuw afdwingen herstelt ze exact.",
+				"title": "Kolommen van de werkruimte niet meer afdwingen?"
+			},
+			"empty": "Nog geen kolommen van de werkruimte. Totdat je er toevoegt, starten nieuwe projecten met de standaardkolommen.",
+			"enableDialog": {
+				"columnsCreated": "Aangemaakte kolommen: {{created}}",
+				"columnsRemoved": "Verwijderde kolommen: {{removed}}",
+				"columnsUpdated": "Hernoemde of bijgewerkte kolommen: {{updated}}",
+				"confirm": "Kolommen afdwingen",
+				"confirming": "Afdwingen...",
+				"description": "Elk project krijgt precies de kolommen van de werkruimte. Een projectkolom wordt gekoppeld aan een kolom van de werkruimte via de koppeling, daarna via de slug en daarna via de naam. Ontbrekende kolommen worden aangemaakt; kolommen zonder overeenkomst worden verwijderd.",
+				"fallbackHelp": "Taken in een projectkolom die bij geen enkele kolom van de werkruimte past, worden naar deze kolom verplaatst voordat de projectkolom wordt verwijderd.",
+				"fallbackLabel": "Taken van verwijderde kolommen verplaatsen naar",
+				"movedTasksNote": "Verplaatste taken krijgen geen activiteitsvermelding en geen integratiegebeurtenis. Alleen projecten die je kunt zien worden getoond.",
+				"noChanges": "Elk project heeft al precies de kolommen van de werkruimte.",
+				"previewError": "Kon niet bepalen wat er zou veranderen.",
+				"previewLoading": "Controleren wat er verandert...",
+				"projectsAria": "Projecten die veranderen",
+				"rulesDeleted": "Verwijderde workflowregels: {{rules}}",
+				"rulesWarningDescription": "{{rules}} workflowregels zijn gekoppeld aan kolommen die worden verwijderd. Ze worden samen met die kolommen verwijderd en kunnen niet worden hersteld.",
+				"rulesWarningTitle": "Workflowregels worden verwijderd",
+				"summary": "{{changed}} van {{total}} projecten veranderen",
+				"tasksMoved": "Verplaatste taken: {{moved}}",
+				"title": "Kolommen van de werkruimte afdwingen?"
+			},
+			"enforcement": {
+				"description": "Indien ingeschakeld heeft elk project van deze werkruimte precies deze kolommen en kan het geen kolommen toevoegen, hernoemen, herordenen of verwijderen. Workflowregels blijven per project.",
+				"disabledToast": "Kolommen van de werkruimte worden niet meer afgedwongen",
+				"disableError": "Het niet meer afdwingen van de kolommen van de werkruimte is mislukt",
+				"enabledToast": "Kolommen van de werkruimte worden nu in elk project afgedwongen",
+				"enableError": "Het afdwingen van de kolommen van de werkruimte is mislukt",
+				"noColumnsHint": "Voeg minstens één kolom toe voordat je ze kunt afdwingen.",
+				"noPermission": "Alleen mensen die de werkruimte-instellingen mogen beheren, kunnen het afdwingen wijzigen.",
+				"statusOff": "Niet afgedwongen",
+				"statusOn": "Afgedwongen",
+				"switchLabel": "Kolommen van de werkruimte afdwingen",
+				"title": "Afdwingen"
+			},
+			"errors": {
+				"empty": "Voeg eerst minstens één kolom van de werkruimte toe.",
+				"enforced": "Deze werkruimte dwingt haar kolommen af. Wijzig ze in de workflow-instellingen van de werkruimte.",
+				"last": "De laatste kolom kan niet worden verwijderd zolang kolommen worden afgedwongen.",
+				"notEmpty": "Er staan nog taken in deze kolom. Kies een kolom om ze naartoe te verplaatsen.",
+				"reservedSlug": "Deze naam is gereserveerd. Kies een andere naam.",
+				"slugConflict": "Er bestaat al een kolom met deze naam in de werkruimte."
+			},
+			"loadError": "Kon de kolommen van de werkruimte niet laden.",
+			"pageTitle": "Workflow-instellingen van de werkruimte",
+			"retry": "Opnieuw proberen",
+			"subtitle": "Definieer de bordkolommen één keer voor de hele werkruimte en dwing ze desgewenst af in elk project.",
+			"title": "Workflow"
 		}
 	},
 	"navigation": {

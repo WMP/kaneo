@@ -43,7 +43,7 @@ it("refreshes resource links when another client updates a task", () => {
   }
 });
 
-it("refreshes the Jira state and the activity of a task another client changed", () => {
+function stubSocket() {
   const sockets: FakeWebSocket[] = [];
   class FakeWebSocket {
     onmessage: ((event: { data: string }) => void) | null = null;
@@ -53,6 +53,34 @@ it("refreshes the Jira state and the activity of a task another client changed",
     }
   }
   vi.stubGlobal("WebSocket", FakeWebSocket);
+  return sockets;
+}
+
+it("refreshes the project's columns and the enforced flag on PROJECT_UPDATED", () => {
+  const sockets = stubSocket();
+  invalidateQueries.mockClear();
+  try {
+    renderHook(() => useProjectWebSocket("project-1"));
+    sockets[0].onmessage?.({
+      data: JSON.stringify({ type: "PROJECT_UPDATED", projectId: "project-1" }),
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["columns", "project-1"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["workspace-columns"],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["tasks", "project-1"],
+    });
+  } finally {
+    cleanup();
+    vi.unstubAllGlobals();
+  }
+});
+
+it("refreshes the Jira state and the activity of a task another client changed", () => {
+  const sockets = stubSocket();
   invalidateQueries.mockClear();
   try {
     renderHook(() => useProjectWebSocket("project-1"));

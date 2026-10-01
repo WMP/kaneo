@@ -1043,7 +1043,13 @@
 			"automationTitle": "Avtomatlaşdırma qaydaları",
 			"automationDescription": "İnteqrasiya hadisələrini sütunlarla əlaqələndirin. Hadisə baş verdikdə əlaqəli tapşırıq göstərilən sütuna keçir.",
 			"customFieldsDescription": "Bu layihənin xüsusi sahələrini idarə edin. Yenidən sıralamaq üçün sürüşdürün.",
-			"customFieldsTitle": "Xüsusi sahələr"
+			"customFieldsTitle": "Xüsusi sahələr",
+			"enforced": {
+				"description": "Bu iş sahəsi öz sütunlarını məcburi edir, buna görə hər layihədə məhz iş sahəsinin sütunları olur və onları burada dəyişmək olmur. Onları iş sahəsinin iş axını parametrlərində dəyişin.",
+				"descriptionNoAccess": "Bu iş sahəsi öz sütunlarını məcburi edir, buna görə hər layihədə məhz iş sahəsinin sütunları olur və onları burada dəyişmək olmur. İş sahəsinin administratorundan onları dəyişməsini xahiş edin.",
+				"manageLink": "İş sahəsinin iş axını parametrlərini aç",
+				"title": "Sütunları iş sahəsi idarə edir"
+			}
 		},
 		"projectSwitcher": {
 			"selectProject": "Layihə seç",
@@ -1069,7 +1075,11 @@
 			"on": "Aktiv",
 			"off": "Sönülü",
 			"newColumnPlaceholder": "Yeni sütunun adı...",
-			"add": "Əlavə et"
+			"add": "Əlavə et",
+			"deleteAria": "{{name}} sütununu sil",
+			"moveDownAria": "{{name}} sütununu aşağı köçür",
+			"moveUpAria": "{{name}} sütununu yuxarı köçür",
+			"nameAria": "{{name}} sütununun adı"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -2226,6 +2236,72 @@
 				"subtitle": "Bu iş sahəsini Jira nümunəsinə qoşun və Kaneo tapşırıqlarının Jira məsələlərinə necə uyğunlaşdırılacağını müəyyən edin.",
 				"title": "Jira inteqrasiyası"
 			}
+		},
+		"workspaceWorkflow": {
+			"columnsDescription": "Yeni layihələr bu sütunlarla başlayır. Sıranı dəyişmək üçün sütunu sürüşdürün və ya ox düymələrindən istifadə edin. Tamamlanmış işi göstərən mərhələlər üçün \"Tamamlanma sütunu\" seçimini aktiv edin.",
+			"columnsEnforcedHint": "Məcburi tətbiq aktivdir: burada edilən hər dəyişiklik dərhal iş sahəsinin bütün layihələrinə tətbiq olunur.",
+			"columnsTitle": "Sütunlar",
+			"deleteDialog": {
+				"confirm": "Sütunu sil",
+				"description": "Sütun iş sahəsinin sütunlarından silinir. Mövcud layihələr öz sütunlarını saxlayır.",
+				"descriptionEnforced": "Sütun hər layihədən silinir. Onun içindəki tapşırıqlar seçdiyiniz sütuna köçürülür və sütunla bağlı iş axını qaydaları silinir.",
+				"moveTasksTo": "Tapşırıqların köçürüləcəyi sütun",
+				"needsTarget": "Tapşırıqlar hələ də bu sütundan istifadə edir. Onların hara köçürüləcəyini seçin.",
+				"title": "\"{{name}}\" sütunu silinsin?"
+			},
+			"disableDialog": {
+				"confirm": "Məcburi tətbiqi dayandır",
+				"description": "Layihələr cari sütunlarını saxlayır və onları yenidən dəyişə bilər. Sütunlar iş sahəsinin sütunları ilə əlaqəli qalır, buna görə yenidən məcburi etmək onları dəqiq bərpa edir.",
+				"title": "İş sahəsi sütunlarının məcburi tətbiqi dayandırılsın?"
+			},
+			"empty": "Hələ iş sahəsi sütunu yoxdur. Siz əlavə edənə qədər yeni layihələr standart sütunlarla başlayır.",
+			"enableDialog": {
+				"columnsCreated": "Yaradılan sütunlar: {{created}}",
+				"columnsRemoved": "Silinən sütunlar: {{removed}}",
+				"columnsUpdated": "Adı dəyişdirilən və ya yenilənən sütunlar: {{updated}}",
+				"confirm": "Sütunları məcburi et",
+				"confirming": "Məcburi edilir...",
+				"description": "Hər layihə məhz iş sahəsinin sütunlarını alacaq. Layihə sütunu iş sahəsi sütunu ilə əvvəlcə əlaqəsinə, sonra slug-ına, sonra adına görə uyğunlaşdırılır. Çatışmayan sütunlar yaradılır; uyğunluğu olmayan sütunlar silinir.",
+				"fallbackHelp": "İş sahəsinin heç bir sütununa uyğun gəlməyən layihə sütunundakı tapşırıqlar layihə sütunu silinməzdən əvvəl bu sütuna köçürülür.",
+				"fallbackLabel": "Silinən sütunların tapşırıqlarının köçürüləcəyi sütun",
+				"movedTasksNote": "Köçürülən tapşırıqlar üçün fəaliyyət qeydi və inteqrasiya hadisəsi yaranmır. Yalnız görə bildiyiniz layihələr göstərilir.",
+				"noChanges": "Hər layihədə artıq məhz iş sahəsinin sütunları var.",
+				"previewError": "Nəyin dəyişəcəyini müəyyən etmək mümkün olmadı.",
+				"previewLoading": "Nəyin dəyişəcəyi yoxlanılır...",
+				"projectsAria": "Dəyişəcək layihələr",
+				"rulesDeleted": "Silinən iş axını qaydaları: {{rules}}",
+				"rulesWarningDescription": "{{rules}} iş axını qaydası silinəcək sütunlara bağlıdır. Onlar həmin sütunlarla birlikdə silinir və bərpa edilə bilməz.",
+				"rulesWarningTitle": "İş axını qaydaları silinəcək",
+				"summary": "{{total}} layihədən {{changed}} layihə dəyişəcək",
+				"tasksMoved": "Köçürülən tapşırıqlar: {{moved}}",
+				"title": "İş sahəsi sütunları məcburi edilsin?"
+			},
+			"enforcement": {
+				"description": "Aktiv olduqda, bu iş sahəsinin hər layihəsində məhz bu sütunlar olur və onları əlavə etmək, adını dəyişmək, sırasını dəyişmək və ya silmək mümkün olmur. İş axını qaydaları layihə üzrə qalır.",
+				"disabledToast": "İş sahəsi sütunları artıq məcburi deyil",
+				"disableError": "İş sahəsi sütunlarının məcburi tətbiqini dayandırmaq alınmadı",
+				"enabledToast": "İş sahəsi sütunları indi hər layihədə məcburidir",
+				"enableError": "İş sahəsi sütunlarını məcburi etmək alınmadı",
+				"noColumnsHint": "Sütunları məcburi etməzdən əvvəl ən azı bir sütun əlavə edin.",
+				"noPermission": "Məcburi tətbiqi yalnız iş sahəsi parametrlərini idarə edə bilən şəxslər dəyişə bilər.",
+				"statusOff": "Məcburi deyil",
+				"statusOn": "Məcburidir",
+				"switchLabel": "İş sahəsi sütunlarını məcburi et",
+				"title": "Məcburi tətbiq"
+			},
+			"errors": {
+				"empty": "Əvvəlcə ən azı bir iş sahəsi sütunu əlavə edin.",
+				"enforced": "Bu iş sahəsi öz sütunlarını məcburi edir. Onları iş sahəsinin iş axını parametrlərində dəyişin.",
+				"last": "Sütunlar məcburi olduqda sonuncu sütunu silmək olmaz.",
+				"notEmpty": "Tapşırıqlar hələ də bu sütundan istifadə edir. Onları köçürmək üçün sütun seçin.",
+				"reservedSlug": "Bu ad ehtiyatdadır. Başqa ad seçin.",
+				"slugConflict": "İş sahəsində bu adlı sütun artıq mövcuddur."
+			},
+			"loadError": "İş sahəsi sütunlarını yükləmək mümkün olmadı.",
+			"pageTitle": "İş sahəsinin iş axını parametrləri",
+			"retry": "Yenidən cəhd et",
+			"subtitle": "Lövhə sütunlarını bütün iş sahəsi üçün bir dəfə təyin edin və istəsəniz, hər layihədə məcburi edin.",
+			"title": "İş axını"
 		}
 	},
 	"navigation": {
