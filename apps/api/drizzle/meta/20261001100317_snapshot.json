@@ -1,6 +1,6 @@
 {
-  "id": "f48f38eb-b4e8-4c8e-9e95-ef16a2773dec",
-  "prevId": "5cd581aa-050d-412d-9542-76fae6fc0fc6",
+  "id": "ca6020b2-e728-402a-9c56-98cb2111fb84",
+  "prevId": "b184c06a-2070-4d96-ad45-f750f1f593ef",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1120,6 +1120,12 @@
           "notNull": true,
           "default": false
         },
+        "ganttpro_workspace_column_id": {
+          "name": "ganttpro_workspace_column_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1150,6 +1156,21 @@
           "with": {},
           "method": "btree",
           "concurrently": false
+        },
+        "column_ganttpro_workspace_column_id_idx": {
+          "name": "column_ganttpro_workspace_column_id_idx",
+          "columns": [
+            {
+              "expression": "ganttpro_workspace_column_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -1165,6 +1186,19 @@
           ],
           "onUpdate": "cascade",
           "onDelete": "cascade"
+        },
+        "column_ganttpro_workspace_column_fk": {
+          "name": "column_ganttpro_workspace_column_fk",
+          "tableFrom": "column",
+          "columnsFrom": [
+            "ganttpro_workspace_column_id"
+          ],
+          "tableTo": "ganttpro_workspace_column",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -2390,6 +2424,813 @@
           "value": "NOT (\"ganttpro_invitation_project\".\"role\" ~ '(^|,)\\s*owner\\s*(,|$)')"
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_jira_connection": {
+      "name": "ganttpro_jira_connection",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_url": {
+          "name": "base_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deployment": {
+          "name": "deployment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "polling_enabled": {
+          "name": "polling_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "webhook_secret": {
+          "name": "webhook_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ganttpro_jira_connection_workspace_id_workspace_id_fk": {
+          "name": "ganttpro_jira_connection_workspace_id_workspace_id_fk",
+          "tableFrom": "ganttpro_jira_connection",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "tableTo": "workspace",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ganttpro_jira_connection_workspace_unique": {
+          "name": "ganttpro_jira_connection_workspace_unique",
+          "columns": [
+            "workspace_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ganttpro_jira_connection_deployment_check": {
+          "name": "ganttpro_jira_connection_deployment_check",
+          "value": "\"ganttpro_jira_connection\".\"deployment\" IN ('server', 'cloud')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_jira_issue_link": {
+      "name": "ganttpro_jira_issue_link",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issue_key": {
+          "name": "issue_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issue_url": {
+          "name": "issue_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "jira_project_key": {
+          "name": "jira_project_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_status_id": {
+          "name": "last_status_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_status_name": {
+          "name": "last_status_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_synced_at": {
+          "name": "last_synced_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sync_error": {
+          "name": "sync_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ganttpro_jira_issue_link_issue_key_idx": {
+          "name": "ganttpro_jira_issue_link_issue_key_idx",
+          "columns": [
+            {
+              "expression": "issue_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "ganttpro_jira_issue_link_created_by_idx": {
+          "name": "ganttpro_jira_issue_link_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "ganttpro_jira_issue_link_task_id_task_id_fk": {
+          "name": "ganttpro_jira_issue_link_task_id_task_id_fk",
+          "tableFrom": "ganttpro_jira_issue_link",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "tableTo": "task",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_issue_link_created_by_user_id_user_id_fk": {
+          "name": "ganttpro_jira_issue_link_created_by_user_id_user_id_fk",
+          "tableFrom": "ganttpro_jira_issue_link",
+          "columnsFrom": [
+            "created_by_user_id"
+          ],
+          "tableTo": "user",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
+        },
+        "ganttpro_jira_issue_link_connection_fk": {
+          "name": "ganttpro_jira_issue_link_connection_fk",
+          "tableFrom": "ganttpro_jira_issue_link",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "tableTo": "ganttpro_jira_connection",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ganttpro_jira_issue_link_task_unique": {
+          "name": "ganttpro_jira_issue_link_task_unique",
+          "columns": [
+            "task_id"
+          ],
+          "nullsNotDistinct": false
+        },
+        "ganttpro_jira_issue_link_connection_issue_unique": {
+          "name": "ganttpro_jira_issue_link_connection_issue_unique",
+          "columns": [
+            "connection_id",
+            "issue_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_jira_mapping": {
+      "name": "ganttpro_jira_mapping",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "config": {
+          "name": "config",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ganttpro_jira_mapping_project_id_idx": {
+          "name": "ganttpro_jira_mapping_project_id_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "ganttpro_jira_mapping_user_id_idx": {
+          "name": "ganttpro_jira_mapping_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "ganttpro_jira_mapping_workspace_id_workspace_id_fk": {
+          "name": "ganttpro_jira_mapping_workspace_id_workspace_id_fk",
+          "tableFrom": "ganttpro_jira_mapping",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "tableTo": "workspace",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_mapping_project_id_project_id_fk": {
+          "name": "ganttpro_jira_mapping_project_id_project_id_fk",
+          "tableFrom": "ganttpro_jira_mapping",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "tableTo": "project",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_mapping_user_id_user_id_fk": {
+          "name": "ganttpro_jira_mapping_user_id_user_id_fk",
+          "tableFrom": "ganttpro_jira_mapping",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "user",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_mapping_updated_by_user_id_fk": {
+          "name": "ganttpro_jira_mapping_updated_by_user_id_fk",
+          "tableFrom": "ganttpro_jira_mapping",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "tableTo": "user",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ganttpro_jira_mapping_scope_unique": {
+          "name": "ganttpro_jira_mapping_scope_unique",
+          "columns": [
+            "workspace_id",
+            "scope",
+            "project_id",
+            "user_id"
+          ],
+          "nullsNotDistinct": true
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ganttpro_jira_mapping_scope_check": {
+          "name": "ganttpro_jira_mapping_scope_check",
+          "value": "\"ganttpro_jira_mapping\".\"scope\" IN ('workspace', 'project', 'user')"
+        },
+        "ganttpro_jira_mapping_project_id_check": {
+          "name": "ganttpro_jira_mapping_project_id_check",
+          "value": "(\"ganttpro_jira_mapping\".\"scope\" = 'project') = (\"ganttpro_jira_mapping\".\"project_id\" IS NOT NULL)"
+        },
+        "ganttpro_jira_mapping_user_id_check": {
+          "name": "ganttpro_jira_mapping_user_id_check",
+          "value": "(\"ganttpro_jira_mapping\".\"scope\" = 'user') = (\"ganttpro_jira_mapping\".\"user_id\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_jira_status_proposal": {
+      "name": "ganttpro_jira_status_proposal",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link_id": {
+          "name": "link_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "from_status_name": {
+          "name": "from_status_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "to_status_id": {
+          "name": "to_status_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "to_status_name": {
+          "name": "to_status_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposed_status": {
+          "name": "proposed_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "jira_changed_by": {
+          "name": "jira_changed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jira_changed_at": {
+          "name": "jira_changed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resolved_by_user_id": {
+          "name": "resolved_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_status": {
+          "name": "resolved_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ganttpro_jira_status_proposal_task_state_idx": {
+          "name": "ganttpro_jira_status_proposal_task_state_idx",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "state",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "ganttpro_jira_status_proposal_link_id_idx": {
+          "name": "ganttpro_jira_status_proposal_link_id_idx",
+          "columns": [
+            {
+              "expression": "link_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "ganttpro_jira_status_proposal_one_pending_uidx": {
+          "name": "ganttpro_jira_status_proposal_one_pending_uidx",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"ganttpro_jira_status_proposal\".\"state\" = 'pending'",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "ganttpro_jira_status_proposal_task_id_task_id_fk": {
+          "name": "ganttpro_jira_status_proposal_task_id_task_id_fk",
+          "tableFrom": "ganttpro_jira_status_proposal",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "tableTo": "task",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_status_proposal_resolved_by_user_id_user_id_fk": {
+          "name": "ganttpro_jira_status_proposal_resolved_by_user_id_user_id_fk",
+          "tableFrom": "ganttpro_jira_status_proposal",
+          "columnsFrom": [
+            "resolved_by_user_id"
+          ],
+          "tableTo": "user",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
+        },
+        "ganttpro_jira_status_proposal_link_fk": {
+          "name": "ganttpro_jira_status_proposal_link_fk",
+          "tableFrom": "ganttpro_jira_status_proposal",
+          "columnsFrom": [
+            "link_id"
+          ],
+          "tableTo": "ganttpro_jira_issue_link",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "ganttpro_jira_status_proposal_state_check": {
+          "name": "ganttpro_jira_status_proposal_state_check",
+          "value": "\"ganttpro_jira_status_proposal\".\"state\" IN ('pending', 'accepted', 'rejected', 'superseded')"
+        },
+        "ganttpro_jira_status_proposal_source_check": {
+          "name": "ganttpro_jira_status_proposal_source_check",
+          "value": "\"ganttpro_jira_status_proposal\".\"source\" IN ('webhook', 'poll', 'manual')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_jira_user_token": {
+      "name": "ganttpro_jira_user_token",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "encrypted_token": {
+          "name": "encrypted_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jira_account_id": {
+          "name": "jira_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jira_username": {
+          "name": "jira_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jira_display_name": {
+          "name": "jira_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_verified_at": {
+          "name": "last_verified_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ganttpro_jira_user_token_user_id_idx": {
+          "name": "ganttpro_jira_user_token_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "ganttpro_jira_user_token_connection_fk": {
+          "name": "ganttpro_jira_user_token_connection_fk",
+          "tableFrom": "ganttpro_jira_user_token",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "tableTo": "ganttpro_jira_connection",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "ganttpro_jira_user_token_user_fk": {
+          "name": "ganttpro_jira_user_token_user_fk",
+          "tableFrom": "ganttpro_jira_user_token",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "user",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ganttpro_jira_user_token_connection_user_unique": {
+          "name": "ganttpro_jira_user_token_connection_user_unique",
+          "columns": [
+            "connection_id",
+            "user_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.job_lease": {
@@ -5455,6 +6296,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": 62
+        },
+        "ganttpro_enforce_columns": {
+          "name": "ganttpro_enforce_columns",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -5617,6 +6465,122 @@
           "name": "workspace_billing_creem_subscription_id_unique",
           "columns": [
             "creem_subscription_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ganttpro_workspace_column": {
+      "name": "ganttpro_workspace_column",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_final": {
+          "name": "is_final",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ganttpro_workspace_column_workspaceId_idx": {
+          "name": "ganttpro_workspace_column_workspaceId_idx",
+          "columns": [
+            {
+              "expression": "workspace_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "ganttpro_workspace_column_workspace_id_workspace_id_fk": {
+          "name": "ganttpro_workspace_column_workspace_id_workspace_id_fk",
+          "tableFrom": "ganttpro_workspace_column",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "tableTo": "workspace",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ganttpro_workspace_column_workspace_id_slug_unique": {
+          "name": "ganttpro_workspace_column_workspace_id_slug_unique",
+          "columns": [
+            "workspace_id",
+            "slug"
           ],
           "nullsNotDistinct": false
         }

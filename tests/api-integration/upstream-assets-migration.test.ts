@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
 import {
   afterAll,
@@ -20,17 +19,22 @@ import {
   expect,
   it,
 } from "vitest";
+import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
-// Migration 0060 copies project backgrounds and calendar feeds written by
-// upstream Kaneo v2.28+ (project.background_*, calendar_feed) into the columns
-// and table this fork reads (project.ganttpro_background_*, ganttpro_calendar_feed).
-// The scratch database is migrated to 0059, receives the upstream objects with
-// data exactly as upstream's migrations 0052 and 0053 define them, and is then
-// upgraded. A database without the upstream objects must upgrade untouched.
+// Migration 20261001100317_ganttpro_adopt_upstream_assets copies project
+// backgrounds and calendar feeds written by upstream Kaneo v2.28+
+// (project.background_*, calendar_feed) into the columns and table this fork
+// reads (project.ganttpro_background_*, ganttpro_calendar_feed). The scratch
+// database is migrated to the previous newest entry
+// (20261001090514_ganttpro_workspace_columns), receives the upstream objects
+// with data exactly as upstream's migrations 0052 and 0053 define them, and is
+// then upgraded with the runner that the API uses at start-up. A database
+// without the upstream objects must upgrade untouched.
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../apps/api/drizzle");
-const TARGET_TAG = "0060_ganttpro_adopt_upstream_assets";
+const TARGET_TAG = "20261001100317_ganttpro_adopt_upstream_assets";
+const PREVIOUS_TAG = "20261001090514_ganttpro_workspace_columns";
 
 function withDatabase(connectionString: string, database: string) {
   const url = new URL(connectionString);
@@ -38,13 +42,14 @@ function withDatabase(connectionString: string, database: string) {
   return url.toString();
 }
 
-describe("migration 0060 adopt upstream assets", () => {
+describe("migration ganttpro_adopt_upstream_assets", () => {
   const baseUrl = process.env.DATABASE_URL as string;
   const scratchName = `${new URL(baseUrl).pathname
     .replace(/^\//, "")
     .replace(/_test$/, "")}_upstream_assets_upgrade_test`;
   const scratchUrl = withDatabase(baseUrl, scratchName);
   let priorFolder = "";
+  let targetWhen = 0;
   let pool: Pool | null = null;
 
   async function withAdmin<T>(fn: (client: Client) => Promise<T>) {
@@ -69,14 +74,20 @@ describe("migration 0060 adopt upstream assets", () => {
   }
 
   beforeAll(() => {
-    priorFolder = mkdtempSync(join(tmpdir(), "kaneo-migrations-0059-"));
+    priorFolder = mkdtempSync(
+      join(tmpdir(), "kaneo-migrations-workspace-columns-"),
+    );
     cpSync(migrationsFolder, priorFolder, { recursive: true });
     const journalPath = join(priorFolder, "meta", "_journal.json");
     const journal = JSON.parse(readFileSync(journalPath, "utf8")) as {
-      entries: { tag: string }[];
+      entries: { tag: string; when: number }[];
     };
     const cut = journal.entries.findIndex((entry) => entry.tag === TARGET_TAG);
     expect(cut).toBeGreaterThan(0);
+    // The database to upgrade is at the workspace columns migration, the
+    // previous newest entry.
+    expect(journal.entries[cut - 1].tag).toBe(PREVIOUS_TAG);
+    targetWhen = journal.entries[cut].when;
     journal.entries = journal.entries.slice(0, cut);
     writeFileSync(journalPath, JSON.stringify(journal));
   });
@@ -164,7 +175,7 @@ describe("migration 0060 adopt upstream assets", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     await createUpstreamObjects(scratch);
     await seedWorkspace(scratch);
 
@@ -198,7 +209,7 @@ describe("migration 0060 adopt upstream assets", () => {
       [now],
     );
 
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
 
     expect(await backgrounds(scratch)).toEqual([
       {
@@ -268,7 +279,7 @@ describe("migration 0060 adopt upstream assets", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     await seedWorkspace(scratch);
     await scratch.query(
       `UPDATE project SET ganttpro_background_object_key = $1, ganttpro_background_mime_type = 'image/png', ganttpro_background_version = 'f1' WHERE id = 'p1'`,
@@ -284,7 +295,7 @@ describe("migration 0060 adopt upstream assets", () => {
     );
     expect(absent.rows[0]).toEqual({ t: null, columns: 0 });
 
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
 
     expect((await backgrounds(scratch))[0]).toEqual({
       id: "p1",
@@ -306,7 +317,7 @@ describe("migration 0060 adopt upstream assets", () => {
     const scratch = new Pool({ connectionString: scratchUrl });
     pool = scratch;
     const scratchDb = drizzle(scratch);
-    await migrate(scratchDb, { migrationsFolder: priorFolder });
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
     await createUpstreamObjects(scratch);
     await scratch.query(`DROP TABLE "calendar_feed"`);
     await seedWorkspace(scratch);
@@ -315,7 +326,7 @@ describe("migration 0060 adopt upstream assets", () => {
       [keyOf("p1", "v1")],
     );
 
-    await migrate(scratchDb, { migrationsFolder });
+    await runMigrations(scratchDb, { migrationsFolder });
 
     expect((await backgrounds(scratch))[0]).toEqual({
       id: "p1",
@@ -324,5 +335,44 @@ describe("migration 0060 adopt upstream assets", () => {
       version: "v1",
     });
     expect(await feeds(scratch)).toEqual([]);
+  });
+
+  it("adopts the data on a database that recorded a newer migration than this one", async () => {
+    const scratch = new Pool({ connectionString: scratchUrl });
+    pool = scratch;
+    const scratchDb = drizzle(scratch);
+    await runMigrations(scratchDb, { migrationsFolder: priorFolder });
+    await createUpstreamObjects(scratch);
+    await seedWorkspace(scratch);
+    await scratch.query(
+      `UPDATE project SET background_object_key = $1, background_mime_type = 'image/png', background_version = 'v1' WHERE id = 'p1'`,
+      [keyOf("p1", "v1")],
+    );
+    await scratch.query(
+      `INSERT INTO calendar_feed (id, project_id, token, label_ids, created_at) VALUES ('cf1', 'p1', 'upstream-token-1', '[]', $1)`,
+      [now],
+    );
+    // A migration of a later upstream release is recorded with a `when` newer
+    // than this migration's. Drizzle's own migrator would skip this migration
+    // on such a database; the runner applies every entry whose `when` is not
+    // recorded.
+    await scratch.query(
+      `INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES ('later-upstream-migration', $1)`,
+      [targetWhen + 24 * 60 * 60 * 1000],
+    );
+
+    const applied = await runMigrations(scratchDb, { migrationsFolder });
+
+    expect(applied).toEqual([TARGET_TAG]);
+    expect((await backgrounds(scratch))[0]).toEqual({
+      id: "p1",
+      key: keyOf("p1", "v1"),
+      mime: "image/png",
+      version: "v1",
+    });
+    expect(
+      (await feeds(scratch)).map((feed: { token: string }) => feed.token),
+    ).toEqual(["upstream-token-1"]);
+    expect(await runMigrations(scratchDb, { migrationsFolder })).toEqual([]);
   });
 });
