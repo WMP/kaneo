@@ -1437,20 +1437,20 @@
 			"gitlabHint": "GitLabのWebhookイベントが発生したら、リンクされたタスクを列に移動します。"
 		},
 		"externalLinks": {
-			"resources": "リソース",
+			"links": "リンク",
 			"issue": "イシュー",
 			"branch": "ブランチ",
 			"merged": "マージ済み",
 			"draft": "下書き",
 			"open": "オープン",
 			"adding": "追加中...",
-			"addResource": "リソースを追加",
+			"addLink": "リンクを追加",
 			"cancel": "キャンセル",
-			"empty": "このタスクにリンクされたリソースはありません。",
+			"empty": "このタスクにはリンクがありません。",
 			"titleOptional": "タイトル（任意）",
 			"url": "URL",
 			"remove": "{{title}} を削除",
-			"removeError": "リソースリンクの削除に失敗しました。"
+			"removeError": "リンクの削除に失敗しました。"
 		},
 		"mattermostIntegration": {
 			"channelHint": "参照用の任意のラベルです。実際の投稿先チャンネルはMattermostのWebhook設定で決まります。",

@@ -1203,20 +1203,20 @@
 			"gitlabHint": "Lorsqu'un événement de webhook GitLab se produit, déplacer la tâche liée vers une colonne."
 		},
 		"externalLinks": {
-			"resources": "Ressources",
+			"links": "Liens",
 			"issue": "Problème",
 			"branch": "Branche",
 			"merged": "Fusionné",
 			"draft": "Brouillon",
 			"open": "Ouvert",
 			"adding": "Ajout...",
-			"addResource": "Ajouter une ressource",
+			"addLink": "Ajouter un lien",
 			"cancel": "Annuler",
-			"empty": "Aucune ressource liée à cette tâche.",
+			"empty": "Aucun lien associé à cette tâche.",
 			"titleOptional": "Titre (facultatif)",
 			"url": "URL",
 			"remove": "Supprimer {{title}}",
-			"removeError": "Échec de la suppression du lien de la ressource."
+			"removeError": "Échec de la suppression du lien."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Rôles",

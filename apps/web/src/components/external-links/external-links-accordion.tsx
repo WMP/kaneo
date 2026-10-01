@@ -64,7 +64,7 @@ export function ExternalLinksAccordion({
 }: ExternalLinksAccordionProps) {
   const { t } = useTranslation();
   const { canUpdateTasks } = useProjectPermission(projectId);
-  const canAddResource = canUpdateTasks();
+  const canAddLink = canUpdateTasks();
   const [isOpen, setIsOpen] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [url, setUrl] = useState("");
@@ -100,7 +100,7 @@ export function ExternalLinksAccordion({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canAddResource || createExternalLink.isPending) return;
+    if (!canAddLink || createExternalLink.isPending) return;
 
     createExternalLink.mutate(
       {
@@ -184,12 +184,12 @@ export function ExternalLinksAccordion({
                 <ChevronRight className="size-4 text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {t("settings:externalLinks.resources")}
+                {t("settings:externalLinks.links")}
               </span>
             </Button>
           </CollapsibleTrigger>
 
-          {canAddResource && (
+          {canAddLink && (
             <Button
               type="button"
               variant="ghost"
@@ -198,7 +198,7 @@ export function ExternalLinksAccordion({
               onClick={() => setIsDialogOpen(true)}
             >
               <Plus className="size-4" />
-              {t("settings:externalLinks.addResource")}
+              {t("settings:externalLinks.addLink")}
             </Button>
           )}
         </div>
@@ -236,7 +236,7 @@ export function ExternalLinksAccordion({
 
                     {getStatusBadge(link)}
                   </a>
-                  {canAddResource &&
+                  {canAddLink &&
                     link.integrationId === null &&
                     link.resourceType === "url" && (
                       <Button
@@ -266,15 +266,13 @@ export function ExternalLinksAccordion({
       </Collapsible>
 
       <Dialog
-        open={isDialogOpen && canAddResource}
+        open={isDialogOpen && canAddLink}
         onOpenChange={handleDialogChange}
       >
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>
-                {t("settings:externalLinks.addResource")}
-              </DialogTitle>
+              <DialogTitle>{t("settings:externalLinks.addLink")}</DialogTitle>
             </DialogHeader>
 
             <div className="grid gap-4 py-4">
@@ -321,7 +319,7 @@ export function ExternalLinksAccordion({
               >
                 {createExternalLink.isPending
                   ? t("settings:externalLinks.adding")
-                  : t("settings:externalLinks.addResource")}
+                  : t("settings:externalLinks.addLink")}
               </Button>
             </DialogFooter>
           </form>

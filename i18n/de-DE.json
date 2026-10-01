@@ -1283,20 +1283,20 @@
 			"gitlabHint": "Wenn ein GitLab-Webhook-Ereignis eintritt, wird die verknüpfte Aufgabe in eine Spalte verschoben."
 		},
 		"externalLinks": {
-			"resources": "Ressourcen",
+			"links": "Links",
 			"issue": "Issue",
 			"branch": "Branch",
 			"merged": "Zusammengeführt",
 			"draft": "Entwurf",
 			"open": "Offen",
 			"adding": "Wird hinzugefügt...",
-			"addResource": "Ressource hinzufügen",
+			"addLink": "Link hinzufügen",
 			"cancel": "Abbrechen",
-			"empty": "Keine Ressourcen mit dieser Aufgabe verknüpft.",
+			"empty": "Keine Links mit dieser Aufgabe verknüpft.",
 			"titleOptional": "Titel (optional)",
 			"url": "URL",
 			"remove": "{{title}} entfernen",
-			"removeError": "Ressourcenlink konnte nicht entfernt werden."
+			"removeError": "Link konnte nicht entfernt werden."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Rollen",

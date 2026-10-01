@@ -1439,20 +1439,20 @@
 			"gitlabHint": "Quando si verifica un evento webhook di GitLab, sposta l'attività collegata in una colonna."
 		},
 		"externalLinks": {
-			"resources": "Risorse",
+			"links": "Link",
 			"issue": "Issue",
 			"branch": "Ramo",
 			"merged": "Unito",
 			"draft": "Bozza",
 			"open": "Aperto",
 			"adding": "Aggiunta in corso...",
-			"addResource": "Aggiungi risorsa",
+			"addLink": "Aggiungi link",
 			"cancel": "Annulla",
-			"empty": "Nessuna risorsa collegata a questa attività.",
+			"empty": "Nessun link collegato a questa attività.",
 			"titleOptional": "Titolo (facoltativo)",
 			"url": "URL",
 			"remove": "Rimuovi {{title}}",
-			"removeError": "Rimozione del link alla risorsa fallita."
+			"removeError": "Rimozione del link fallita."
 		},
 		"mattermostIntegration": {
 			"channelHint": "Etichetta facoltativa a tuo riferimento. Il canale di destinazione effettivo è determinato dalla configurazione del webhook in Mattermost.",

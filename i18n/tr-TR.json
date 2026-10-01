@@ -1203,20 +1203,20 @@
 			"gitlabHint": "Bir GitLab webhook olayı gerçekleştiğinde bağlı talebi bir sütuna taşı."
 		},
 		"externalLinks": {
-			"resources": "Kaynaklar",
+			"links": "Bağlantılar",
 			"issue": "Sorun",
 			"branch": "Dal",
 			"merged": "Birleştirildi",
 			"draft": "Taslak",
 			"open": "Açık",
 			"adding": "Ekleniyor...",
-			"addResource": "Kaynak ekle",
+			"addLink": "Bağlantı ekle",
 			"cancel": "İptal",
-			"empty": "Bu talebe bağlı kaynak yok.",
+			"empty": "Bu talebe bağlı bağlantı yok.",
 			"titleOptional": "Başlık (isteğe bağlı)",
 			"url": "URL",
 			"remove": "{{title}} öğesini kaldır",
-			"removeError": "Kaynak bağlantısı kaldırılamadı."
+			"removeError": "Bağlantı kaldırılamadı."
 		},
 		"workspaceRoles": {
 			"pageTitle": "Roller",
