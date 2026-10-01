@@ -24,73 +24,18 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/preview-card";
-import labelColors from "@/constants/label-colors";
-import { resolveLabelColor } from "@/lib/label-color";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import CustomFieldDefaultValueInput from "./custom-field-default-value-input";
 import CustomFieldEditForm from "./custom-field-edit-form";
 import { parseOptionsText } from "./custom-field-form-utils";
+import OptionColorSwatch from "./option-color-swatch";
 import type {
   CreateCustomFieldPayload,
   CustomFieldDefinition,
   CustomFieldType,
   UpdateCustomFieldPayload,
 } from "./types";
-
-/** A small color-dot button that opens the shared label palette (see
- * constants/label-colors.ts) to assign a color to one dropdown option.
- * Reused for both the create form (uncommitted colors) and existing fields
- * (persisted immediately via onSelect). */
-function OptionColorSwatch({
-  color,
-  ariaLabel,
-  onSelect,
-}: {
-  color: string | undefined;
-  ariaLabel: string;
-  onSelect: (colorValue: string) => void;
-}) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={ariaLabel}
-          className={cn(
-            "size-3.5 shrink-0 rounded-full border transition-transform hover:scale-110",
-            color
-              ? "border-transparent"
-              : "border-dashed border-muted-foreground/50",
-          )}
-          style={
-            color ? { backgroundColor: resolveLabelColor(color) } : undefined
-          }
-        />
-      </PopoverTrigger>
-      <PopoverContent className="w-40" align="start">
-        <div className="flex flex-wrap gap-1.5 p-1">
-          {labelColors.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              title={c.label}
-              aria-label={c.label}
-              className={cn(
-                "size-6 rounded-full border-2 transition-[scale,border-color]",
-                color === c.value
-                  ? "border-foreground scale-110"
-                  : "border-transparent hover:scale-110",
-              )}
-              style={{ backgroundColor: c.color }}
-              onClick={() => onSelect(c.value)}
-            />
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 const CUSTOM_FIELD_TYPES: Array<{
   value: CustomFieldType;
