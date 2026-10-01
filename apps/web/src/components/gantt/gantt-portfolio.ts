@@ -47,8 +47,8 @@ export type PortfolioProjectRow = {
   name: string;
   slug: string;
   icon: string | null;
-  /** This project's tasks that have a derivable schedule, in their original
-   * (position) order. A task with neither startDate nor dueDate has no
+  /** This project's tasks that have a derivable schedule, in the order the
+   * API returns them (start date, due date, title). A task with neither startDate nor dueDate has no
    * position to plot and is left out — same as the per-project Gantt. */
   tasks: ScheduledPortfolioTask[];
   /** Tasks left out of `tasks` because they have no derivable schedule (the
