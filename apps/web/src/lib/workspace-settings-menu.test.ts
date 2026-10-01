@@ -43,6 +43,22 @@ describe("getWorkspaceSettingsMenuItems", () => {
     expect(urls).toContain("/dashboard/settings/workspace/roles");
   });
 
+  it("has a Jira entry that leads to the workspace Jira settings, before Billing", () => {
+    const items = getWorkspaceSettingsMenuItems({
+      t,
+      workspaceId: "ws-1",
+      billingEnabled: true,
+    });
+
+    const urls = items.map((item) => item.url);
+    const jira = urls.indexOf("/dashboard/settings/workspace/jira");
+    expect(jira).toBeGreaterThan(-1);
+    expect(items[jira]?.title).toBe("settings:jiraIntegration.menuTitle");
+    expect(jira).toBeLessThan(
+      urls.indexOf("/dashboard/settings/workspace/billing"),
+    );
+  });
+
   it("adds Billing only when billing is enabled", () => {
     const without = getWorkspaceSettingsMenuItems({
       t,
