@@ -190,6 +190,11 @@ jobs:
   verify:
     name: Verify nightly build
     if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    # A reusable workflow's jobs cannot exceed the caller's grant, even jobs
+    # skipped at runtime; ci.yml's secret-scan job requests security-events.
+    permissions:
+      contents: read
+      security-events: write
 
     uses: ./.github/workflows/ci.yml # zizmor: ignore[self-repository] $/-syntax not parsed by pinned actionlint v1.7.12; revisit when supported
 
