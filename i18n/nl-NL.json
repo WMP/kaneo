@@ -2955,7 +2955,7 @@
 			},
 			"estimate": {
 				"label": "Schatting",
-				"description": "Geplande inspanning. Een werkdag telt 8 uur. Bepaalt de lengte van taken zonder datums in het Gantt-diagram.",
+				"description": "Geplande inspanning. Een werkdag heeft 8 uur. Bepaalt de balklengte in het Gantt-diagram voor taken zonder datums of met alleen een startdatum of einddatum.",
 				"amountLabel": "Geschatte hoeveelheid",
 				"unitLabel": "Eenheid van de schatting",
 				"units": {
@@ -2964,7 +2964,9 @@
 				},
 				"clear": "Schatting wissen",
 				"updateSuccess": "Schatting van de taak bijgewerkt",
-				"updateError": "Bijwerken van de schatting van de taak is mislukt"
+				"updateError": "Bijwerken van de schatting van de taak is mislukt",
+				"exclusiveHint": "Met een schatting stel je een startdatum of een einddatum in, niet beide. Verwijder de schatting om beide datums in te stellen.",
+				"blockedByDates": "Wis de startdatum of einddatum om een schatting in te stellen."
 			},
 			"constraint": {
 				"currentDate": "Huidig: {{date}}",

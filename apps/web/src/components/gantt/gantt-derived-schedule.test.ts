@@ -4,6 +4,7 @@ import {
   type DerivedScheduleSource,
   deriveUndatedSuccessorSchedules,
 } from "./gantt-derived-schedule";
+import { deriveTaskScheduleWithEstimate } from "./gantt-estimated-span";
 
 function day(n: number): Date {
   // Whole UTC days from a fixed epoch, so deltas are easy to reason about in
@@ -416,5 +417,33 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
     });
 
     expect(derived.size).toBe(0);
+  });
+});
+
+describe("deriveUndatedSuccessorSchedules anchored on an estimated single-date task", () => {
+  it("places a successor after the span an estimate gives a start-only task", () => {
+    // B has only a start (Thu Oct 8) and a 3-day estimate: Thu-Mon. The caller
+    // feeds that derived span in as B's dated schedule, so the undated C is
+    // placed from B's computed end, not from its one-day marker.
+    const monFri = (date: Date) => date.getDay() >= 1 && date.getDay() <= 5;
+    const bSpan = deriveTaskScheduleWithEstimate(
+      {
+        startDate: "2026-10-08",
+        dueDate: null,
+        estimateMinutes: 3 * 8 * 60,
+      },
+      monFri,
+    );
+    if (!bSpan) throw new Error("expected a derived span");
+    expect(bSpan.end.getDate()).toBe(12);
+
+    const derived = deriveUndatedSuccessorSchedules({
+      edges: [edge("b", "c", "fs", 0)],
+      datedScheduleById: new Map([["b", bSpan]]),
+      undatedCandidateIds: ["c"],
+      isWorkingDay: monFri,
+    });
+
+    expect(derived.get("c")?.start.getDate()).toBe(12);
   });
 });

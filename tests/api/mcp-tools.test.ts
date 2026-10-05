@@ -179,6 +179,20 @@ describe("MCP tool catalog", () => {
     expect(lastRequest().body).toEqual({});
   });
 
+  it("surfaces the API's estimate-versus-date-range 400 as a tool error", async () => {
+    const message =
+      "A task with an effort estimate cannot have both a start date and a due date. Remove the estimate or clear one of the dates.";
+    apiFetch.mockResolvedValueOnce(new Response(message, { status: 400 }));
+
+    const result = await call("update_task_due_date", {
+      taskId: "t1",
+      dueDate: "2026-09-01T10:00:00Z",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toContain(message);
+  });
+
   it("rejects a due date that is not an ISO date-time", async () => {
     const result = await call("update_task_due_date", {
       taskId: "t1",

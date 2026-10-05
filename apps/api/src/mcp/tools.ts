@@ -639,7 +639,7 @@ export function registerMcpTools(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
+        "Update a task (fetches current task, merges fields, then full update). A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error. Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
       inputSchema: z
         .object({
           taskId: nonEmptyString,
@@ -1154,7 +1154,8 @@ export function registerMcpTools(
   registerTool(
     "update_task_due_date",
     {
-      description: "Set a task's due date. Omit dueDate to clear it.",
+      description:
+        "Set a task's due date. Omit dueDate to clear it. A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error.",
       inputSchema: z.object({
         taskId: nonEmptyString,
         dueDate: optionalIsoDateTimeSchema,

@@ -45,6 +45,11 @@ import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
 import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
+import {
+  deriveTaskScheduleWithEstimate,
+  type EstimatedSingleDate,
+  getEstimatedSingleDate,
+} from "@/components/gantt/gantt-estimated-span";
 import { GanttExternalRailEntry } from "@/components/gantt/gantt-external-rail-entry";
 import type { ExternalGanttTask } from "@/components/gantt/gantt-external-task-bar";
 import { GanttExternalTaskBar } from "@/components/gantt/gantt-external-task-bar";
@@ -75,7 +80,6 @@ import {
   buildGanttRange,
   canMoveGanttWindowStart,
   computeInsetBarBox,
-  deriveTaskSchedule,
   GANTT_UNITS,
   type GanttUnit,
   getBarEdgeInsetPx,
@@ -258,14 +262,17 @@ function RouteComponent() {
     let start: Date | null = null;
     let end: Date | null = null;
     for (const task of tasks) {
-      const schedule = deriveTaskSchedule(task.startDate, task.dueDate);
+      const schedule = deriveTaskScheduleWithEstimate(
+        task,
+        workingDayPredicate,
+      );
       if (!schedule) continue;
       if (!start || schedule.start < start) start = schedule.start;
       if (!end || schedule.end > end) end = schedule.end;
     }
     if (!start || !end) return null;
     return differenceInCalendarDays(end, start) + 1;
-  }, [project]);
+  }, [project, workingDayPredicate]);
   // The unit actually rendered: the viewer's persisted choice once they've
   // ever touched the segmented control (see ganttTimelineUnitTouched),
   // otherwise a per-project default computed fresh from this project's own
@@ -552,8 +559,25 @@ function RouteComponent() {
   const ownScheduleByTaskId = useMemo(() => {
     const map = new Map<string, ScheduleSpan>();
     for (const task of allTasks) {
-      const schedule = deriveTaskSchedule(task.startDate, task.dueDate);
+      // A task with an estimate and exactly one own date is sized by its
+      // estimate (display only, see gantt-estimated-span.ts).
+      const schedule = deriveTaskScheduleWithEstimate(
+        task,
+        workingDayPredicate,
+      );
       if (schedule) map.set(task.id, schedule);
+    }
+    return map;
+  }, [allTasks, workingDayPredicate]);
+
+  // Own tasks that have an estimate and exactly one own date, keyed by id: the
+  // cascade re-derives their span when it shifts them, and a cascade write
+  // sends only their own date (see handleTaskDatesCommitted).
+  const estimatedSingleDateById = useMemo(() => {
+    const map = new Map<string, EstimatedSingleDate>();
+    for (const task of allTasks) {
+      const estimated = getEstimatedSingleDate(task);
+      if (estimated) map.set(task.id, estimated);
     }
     return map;
   }, [allTasks]);
@@ -793,9 +817,9 @@ function RouteComponent() {
         // computeCriticalPath then drops, leaving the far end lone and
         // spuriously trivially critical.
         if (!ownScheduleByTaskId.has(counterpart.id)) continue;
-        const schedule = deriveTaskSchedule(
-          candidate.startDate,
-          candidate.dueDate,
+        const schedule = deriveTaskScheduleWithEstimate(
+          candidate,
+          workingDayPredicate,
         );
         if (!schedule) continue;
         external.set(candidate.id, {
@@ -806,7 +830,7 @@ function RouteComponent() {
       }
     }
     return [...external.values()];
-  }, [taskRelations, projectId, ownScheduleByTaskId]);
+  }, [taskRelations, projectId, ownScheduleByTaskId, workingDayPredicate]);
 
   // Same "blocks" edges as blocksEdges above, but keeping each relation's own
   // id (computeCriticalPath needs one to identify which edges came out
@@ -901,15 +925,29 @@ function RouteComponent() {
         tasksById,
         isWorkingDay: workingDayPredicate,
         pinnedTaskIds,
+        estimatedTasks: estimatedSingleDateById,
       });
       if (shifts.size === 0) return;
 
+      // A shifted task that has an estimate and one own date keeps its other
+      // date empty: only the date it has is sent (the shifted span's other end
+      // is derived on screen and must not be persisted, the API refuses a
+      // full range for an estimated task).
       const scheduleUpdates = [...shifts.entries()].map(
-        ([taskId, schedule]) => ({
-          taskId,
-          startDate: toIsoDay(schedule.start),
-          dueDate: toIsoDay(schedule.end),
-        }),
+        ([taskId, schedule]) => {
+          const estimated = estimatedSingleDateById.get(taskId);
+          if (estimated?.anchor === "start") {
+            return { taskId, startDate: toIsoDay(schedule.start) };
+          }
+          if (estimated?.anchor === "due") {
+            return { taskId, dueDate: toIsoDay(schedule.end) };
+          }
+          return {
+            taskId,
+            startDate: toIsoDay(schedule.start),
+            dueDate: toIsoDay(schedule.end),
+          };
+        },
       );
 
       bulkUpdateSchedule
@@ -933,6 +971,7 @@ function RouteComponent() {
       t,
       workingDayPredicate,
       pinnedTaskIds,
+      estimatedSingleDateById,
     ],
   );
 
@@ -985,9 +1024,9 @@ function RouteComponent() {
       if (relation.relationType === "subtask") continue;
       for (const candidate of [relation.sourceTask, relation.targetTask]) {
         if (!candidate) continue;
-        const schedule = deriveTaskSchedule(
-          candidate.startDate,
-          candidate.dueDate,
+        const schedule = deriveTaskScheduleWithEstimate(
+          candidate,
+          workingDayPredicate,
         );
         if (schedule) {
           // Any dated endpoint (own or cross-project) can anchor a derivation.
@@ -2723,6 +2762,7 @@ function RouteComponent() {
                               }
                               onLinkDragStart={handleLinkDragStart}
                               onDatesCommitted={handleTaskDatesCommitted}
+                              isWorkingDay={workingDayPredicate}
                               gateWarnings={gateWarningsByTaskId.get(task.id)}
                               barColor={
                                 customFieldColorByTaskId.get(task.id) ??

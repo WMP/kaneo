@@ -11,7 +11,10 @@ import {
 import { publishEvent } from "../../events";
 import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
-import type { EstimateUnit } from "../estimate";
+import {
+  assertEstimateExcludesDateRange,
+  type EstimateUnit,
+} from "../estimate";
 import {
   assertRequiredCustomFields,
   assertValidTaskStatus,
@@ -72,6 +75,8 @@ async function createTask({
   estimateUnit?: EstimateUnit;
   customFields?: CustomFieldInput[];
 }) {
+  assertEstimateExcludesDateRange({ estimateMinutes, startDate, dueDate });
+
   const resolvedStatus = status || "to-do";
   const resolvedPriority = priority || "no-priority";
   const normalizedCustomFields = deduplicateCustomFields(customFields);

@@ -90,3 +90,31 @@ export function formatEstimate(
     { value },
   );
 }
+
+// A task with an estimate must not have a complete date range (the API and a
+// database check enforce it, see docs/agent-guide/scheduling.md). These two
+// predicates drive the disabled pickers/inputs so the UI never offers the
+// forbidden combination.
+
+type MaybeDate = string | Date | null | undefined;
+
+/** True when both a start and a due date are set. */
+export function hasFullDateRange(
+  startDate: MaybeDate,
+  dueDate: MaybeDate,
+): boolean {
+  return Boolean(startDate) && Boolean(dueDate);
+}
+
+/**
+ * True when the date picker for `ownDate` must be disabled: the task has an
+ * estimate, this date is empty and the OTHER date is already set (setting it
+ * would complete the range). A date that is already set stays editable.
+ */
+export function isDateBlockedByEstimate(
+  estimateMinutes: number | null | undefined,
+  ownDate: MaybeDate,
+  otherDate: MaybeDate,
+): boolean {
+  return estimateMinutes != null && !ownDate && Boolean(otherDate);
+}

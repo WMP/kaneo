@@ -214,4 +214,55 @@ describe("TaskEstimatePopover", () => {
       }),
     ).not.toBeInTheDocument();
   });
+
+  it("shows the estimate/date-range rule as help text", async () => {
+    await openPopover(makeTask({ startDate: "2026-07-20T00:00:00.000Z" }));
+
+    expect(
+      screen.getByText("tasks:popover.estimate.exclusiveHint"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "tasks:popover.estimate.amountLabel",
+      }),
+    ).toBeEnabled();
+  });
+
+  it("disables the field with a hint while both dates are set", async () => {
+    const input = await openPopover(
+      makeTask({
+        startDate: "2026-07-20T00:00:00.000Z",
+        dueDate: "2026-07-24T00:00:00.000Z",
+      }),
+    );
+
+    expect(input).toBeDisabled();
+    expect(
+      screen.getByText("tasks:popover.estimate.blockedByDates"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "tasks:popover.estimate.units.days" }),
+    ).toBeDisabled();
+
+    fireEvent.change(input, { target: { value: "2" } });
+    fireEvent.blur(input);
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
+  it("shows the API's refusal as an error toast and reverts the field", async () => {
+    updateTask.mockRejectedValue(
+      new Error("A task with an effort estimate cannot have both dates."),
+    );
+    const input = await openPopover(makeTask());
+
+    fireEvent.change(input, { target: { value: "2" } });
+    fireEvent.blur(input);
+
+    await vi.waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith(
+        "A task with an effort estimate cannot have both dates.",
+      ),
+    );
+    expect(input).toHaveValue("");
+  });
 });

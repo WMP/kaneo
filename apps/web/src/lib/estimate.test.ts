@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   estimateToWorkingDays,
   formatEstimate,
+  hasFullDateRange,
+  isDateBlockedByEstimate,
   MAX_ESTIMATE_MINUTES,
   minutesToUnitValue,
   parseEstimateInput,
@@ -67,5 +69,26 @@ describe("estimate helpers", () => {
     expect(formatEstimate(60, undefined, t)).toBe(
       "tasks:estimate.valueHours|1",
     );
+  });
+});
+
+describe("estimate versus date range", () => {
+  it("detects a complete date range", () => {
+    expect(hasFullDateRange("2026-10-05", "2026-10-09")).toBe(true);
+    expect(hasFullDateRange("2026-10-05", null)).toBe(false);
+    expect(hasFullDateRange(null, "2026-10-09")).toBe(false);
+    expect(hasFullDateRange(null, null)).toBe(false);
+  });
+
+  it("blocks only the empty date picker of an estimated task with the other date set", () => {
+    // estimate + start only: the due picker is blocked, the start picker is not.
+    expect(isDateBlockedByEstimate(60, null, "2026-10-05")).toBe(true);
+    expect(isDateBlockedByEstimate(60, "2026-10-05", null)).toBe(false);
+    // A zero estimate is still an estimate.
+    expect(isDateBlockedByEstimate(0, null, "2026-10-05")).toBe(true);
+    // No estimate, or no date yet: nothing is blocked.
+    expect(isDateBlockedByEstimate(null, null, "2026-10-05")).toBe(false);
+    expect(isDateBlockedByEstimate(undefined, null, "2026-10-05")).toBe(false);
+    expect(isDateBlockedByEstimate(60, null, null)).toBe(false);
   });
 });

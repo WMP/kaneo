@@ -2973,7 +2973,7 @@
 			},
 			"estimate": {
 				"label": "Stima",
-				"description": "Impegno pianificato. Un giorno lavorativo equivale a 8 ore. Determina la durata delle attività senza date nel diagramma di Gantt.",
+				"description": "Impegno pianificato. Un giorno lavorativo ha 8 ore. Determina la lunghezza della barra nel diagramma di Gantt per le attività senza date o con solo la data di inizio o di scadenza.",
 				"amountLabel": "Valore della stima",
 				"unitLabel": "Unità della stima",
 				"units": {
@@ -2982,7 +2982,9 @@
 				},
 				"clear": "Rimuovi stima",
 				"updateSuccess": "Stima dell'attività aggiornata",
-				"updateError": "Impossibile aggiornare la stima dell'attività"
+				"updateError": "Impossibile aggiornare la stima dell'attività",
+				"exclusiveHint": "Con una stima, imposta la data di inizio o quella di scadenza, non entrambe. Rimuovi la stima per impostare entrambe le date.",
+				"blockedByDates": "Cancella la data di inizio o di scadenza per impostare una stima."
 			},
 			"constraint": {
 				"currentDate": "Attuale: {{date}}",

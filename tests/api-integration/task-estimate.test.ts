@@ -2,6 +2,10 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
+import {
+  ESTIMATE_DATE_RANGE_CONFLICT_MESSAGE,
+  isEstimateDateRangeViolation,
+} from "../../apps/api/src/task/estimate";
 import { mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import {
@@ -271,6 +275,328 @@ describe("task effort estimate", () => {
     expect(relations[0]?.targetTask).toMatchObject({
       estimateMinutes: 600,
       estimateUnit: "hours",
+    });
+  });
+
+  describe("estimate and a complete date range are mutually exclusive", () => {
+    const START = "2026-03-02T00:00:00.000Z";
+    const DUE = "2026-03-06T00:00:00.000Z";
+    const CONFLICT = ESTIMATE_DATE_RANGE_CONFLICT_MESSAGE;
+
+    function postTask(projectId: string, extra: Record<string, unknown>) {
+      return createApp().app.request(`/api/task/${projectId}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Estimated",
+          description: "",
+          priority: "low",
+          status: "to-do",
+          ...extra,
+        }),
+      });
+    }
+
+    function bulk(body: Record<string, unknown>) {
+      return createApp().app.request("/api/task/bulk", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    }
+
+    async function seedTask(
+      projectId: string,
+      values: Partial<typeof schema.taskTable.$inferInsert>,
+      number = 10,
+    ) {
+      const [row] = await db
+        .insert(schema.taskTable)
+        .values({
+          projectId,
+          title: `Seed ${number}`,
+          status: "to-do",
+          number,
+          ...values,
+        })
+        .returning();
+      if (!row) throw new Error("seed failed");
+      return row;
+    }
+
+    it("rejects a create with an estimate and both dates, creating nothing", async () => {
+      const { project } = await setupProject();
+
+      const response = await postTask(project.id, {
+        title: "Both",
+        estimateMinutes: 480,
+        startDate: START,
+        dueDate: DUE,
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe(CONFLICT);
+      expect(
+        await db.query.taskTable.findFirst({
+          where: eq(schema.taskTable.title, "Both"),
+        }),
+      ).toBeUndefined();
+    });
+
+    it.each([
+      ["start only", { startDate: START }],
+      ["due only", { dueDate: DUE }],
+      ["no dates", {}],
+    ])("creates a task with an estimate and %s", async (_name, dates) => {
+      const { project } = await setupProject();
+
+      const response = await postTask(project.id, {
+        estimateMinutes: 960,
+        estimateUnit: "days",
+        ...dates,
+      });
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ estimateMinutes: 960 });
+    });
+
+    it("creates a fully dated task without an estimate", async () => {
+      const { project } = await setupProject();
+
+      const response = await postTask(project.id, {
+        startDate: START,
+        dueDate: DUE,
+      });
+
+      expect(response.status).toBe(200);
+    });
+
+    it("rejects adding the second date to an estimated task on update", async () => {
+      const { project, task } = await setup();
+      expect(
+        (
+          await putTask(task.id, project.id, {
+            estimateMinutes: 480,
+            startDate: START,
+          })
+        ).status,
+      ).toBe(200);
+      m.publish.mockClear();
+
+      const response = await putTask(task.id, project.id, {
+        startDate: START,
+        dueDate: DUE,
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe(CONFLICT);
+      expect(await persisted(task.id)).toMatchObject({
+        estimateMinutes: 480,
+        dueDate: null,
+      });
+      expect(m.publish).not.toHaveBeenCalled();
+    });
+
+    it("rejects adding an estimate to a fully dated task, and a combined estimate + dates update", async () => {
+      const { project, task } = await setup();
+      await putTask(task.id, project.id, { startDate: START, dueDate: DUE });
+
+      const addEstimate = await putTask(task.id, project.id, {
+        startDate: START,
+        dueDate: DUE,
+        estimateMinutes: 60,
+      });
+      expect(addEstimate.status).toBe(400);
+      expect(await addEstimate.text()).toBe(CONFLICT);
+
+      // An omitted estimate keeps the stored one, so dates are checked
+      // against it as well.
+      await putTask(task.id, project.id, { estimateMinutes: 60 });
+      const fullRange = await putTask(task.id, project.id, {
+        startDate: START,
+        dueDate: DUE,
+      });
+      expect(fullRange.status).toBe(400);
+      expect(await persisted(task.id)).toMatchObject({
+        estimateMinutes: 60,
+        startDate: null,
+        dueDate: null,
+      });
+    });
+
+    it("allows clearing the estimate in the same update that sets both dates", async () => {
+      const { project, task } = await setup();
+      await putTask(task.id, project.id, { estimateMinutes: 60 });
+
+      const response = await putTask(task.id, project.id, {
+        estimateMinutes: null,
+        startDate: START,
+        dueDate: DUE,
+      });
+
+      expect(response.status).toBe(200);
+      expect(await persisted(task.id)).toMatchObject({ estimateMinutes: null });
+    });
+
+    it("guards the dedicated due-date route against the stored start date and estimate", async () => {
+      const { project } = await setup();
+      const estimated = await seedTask(project.id, {
+        estimateMinutes: 480,
+        startDate: new Date(START),
+      });
+      const plain = await seedTask(
+        project.id,
+        { startDate: new Date(START) },
+        11,
+      );
+
+      const rejected = await createApp().app.request(
+        `/api/task/due-date/${estimated.id}`,
+        {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ dueDate: DUE }),
+        },
+      );
+      expect(rejected.status).toBe(400);
+      expect(await rejected.text()).toBe(CONFLICT);
+      expect((await persisted(estimated.id))?.dueDate).toBeNull();
+
+      const accepted = await createApp().app.request(
+        `/api/task/due-date/${plain.id}`,
+        {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ dueDate: DUE }),
+        },
+      );
+      expect(accepted.status).toBe(200);
+    });
+
+    it("rejects a bulk full-range schedule for an estimated task and writes nothing", async () => {
+      const { project } = await setup();
+      const estimated = await seedTask(project.id, {
+        estimateMinutes: 480,
+        startDate: new Date(START),
+      });
+      const plain = await seedTask(
+        project.id,
+        { startDate: new Date(START), dueDate: new Date(DUE) },
+        11,
+      );
+
+      const response = await bulk({
+        taskIds: [estimated.id, plain.id],
+        operation: "updateSchedule",
+        scheduleUpdates: [
+          { taskId: plain.id, startDate: "2026-04-01", dueDate: "2026-04-03" },
+          { taskId: estimated.id, startDate: START, dueDate: DUE },
+        ],
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe(CONFLICT);
+      expect(await persisted(plain.id)).toMatchObject({
+        startDate: new Date(START),
+        dueDate: new Date(DUE),
+      });
+      expect((await persisted(estimated.id))?.dueDate).toBeNull();
+    });
+
+    it("accepts bulk start-only and due-only schedule entries for estimated tasks", async () => {
+      const { project } = await setup();
+      const startOnly = await seedTask(project.id, {
+        estimateMinutes: 480,
+        startDate: new Date(START),
+      });
+      const dueOnly = await seedTask(
+        project.id,
+        { estimateMinutes: 960, dueDate: new Date(DUE) },
+        11,
+      );
+
+      const response = await bulk({
+        taskIds: [startOnly.id, dueOnly.id],
+        operation: "updateSchedule",
+        scheduleUpdates: [
+          { taskId: startOnly.id, startDate: "2026-03-09T00:00:00.000Z" },
+          { taskId: dueOnly.id, dueDate: "2026-03-13T00:00:00.000Z" },
+        ],
+      });
+
+      expect(response.status).toBe(200);
+      expect(await persisted(startOnly.id)).toMatchObject({
+        startDate: new Date("2026-03-09T00:00:00.000Z"),
+        dueDate: null,
+      });
+      expect(await persisted(dueOnly.id)).toMatchObject({
+        startDate: null,
+        dueDate: new Date("2026-03-13T00:00:00.000Z"),
+      });
+    });
+
+    it("rejects the bulk updateDueDate operation when it would complete the range of an estimated task", async () => {
+      const { project } = await setup();
+      const estimated = await seedTask(project.id, {
+        estimateMinutes: 480,
+        startDate: new Date(START),
+      });
+
+      const response = await bulk({
+        taskIds: [estimated.id],
+        operation: "updateDueDate",
+        value: DUE,
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe(CONFLICT);
+      expect((await persisted(estimated.id))?.dueDate).toBeNull();
+    });
+
+    it("duplicates an estimated single-date task without a constraint error", async () => {
+      const { project } = await setupProject();
+      const created = await postTask(project.id, {
+        estimateMinutes: 480,
+        dueDate: DUE,
+      });
+      const estimated = (await created.json()) as { id: string };
+
+      const response = await createApp().app.request(
+        `/api/task/duplicate/${estimated.id}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        },
+      );
+
+      expect(response.status).toBe(200);
+    });
+
+    it("lets the database refuse a direct write of the forbidden state", async () => {
+      const { project, task } = await setup();
+
+      await expect(
+        db.insert(schema.taskTable).values({
+          projectId: project.id,
+          title: "Direct",
+          number: 99,
+          estimateMinutes: 60,
+          startDate: new Date(START),
+          dueDate: new Date(DUE),
+        }),
+      ).rejects.toSatisfy(isEstimateDateRangeViolation);
+
+      await db
+        .update(schema.taskTable)
+        .set({ estimateMinutes: 60, startDate: new Date(START) })
+        .where(eq(schema.taskTable.id, task.id));
+      await expect(
+        db
+          .update(schema.taskTable)
+          .set({ dueDate: new Date(DUE) })
+          .where(eq(schema.taskTable.id, task.id)),
+      ).rejects.toSatisfy(isEstimateDateRangeViolation);
     });
   });
 });

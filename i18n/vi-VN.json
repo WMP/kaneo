@@ -2959,7 +2959,7 @@
 			},
 			"estimate": {
 				"label": "Ước tính",
-				"description": "Khối lượng công việc dự kiến. Một ngày làm việc là 8 giờ. Dùng để xác định độ dài của công việc không có ngày trên biểu đồ Gantt.",
+				"description": "Công sức dự kiến. Một ngày làm việc có 8 giờ. Quyết định độ dài thanh trên biểu đồ Gantt của công việc không có ngày hoặc chỉ có ngày bắt đầu hoặc hạn chót.",
 				"amountLabel": "Số lượng ước tính",
 				"unitLabel": "Đơn vị ước tính",
 				"units": {
@@ -2968,7 +2968,9 @@
 				},
 				"clear": "Xóa ước tính",
 				"updateSuccess": "Đã cập nhật ước tính công việc",
-				"updateError": "Không thể cập nhật ước tính công việc"
+				"updateError": "Không thể cập nhật ước tính công việc",
+				"exclusiveHint": "Khi có ước tính, chỉ đặt ngày bắt đầu hoặc hạn chót, không đặt cả hai. Hãy xóa ước tính để đặt cả hai ngày.",
+				"blockedByDates": "Hãy xóa ngày bắt đầu hoặc hạn chót để đặt ước tính."
 			},
 			"constraint": {
 				"currentDate": "Hiện tại: {{date}}",

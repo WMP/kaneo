@@ -2928,7 +2928,7 @@
 			},
 			"estimate": {
 				"label": "Estimate",
-				"description": "Planned effort. A work day is 8 hours. Sizes tasks without dates on the Gantt chart.",
+				"description": "Planned effort. A work day is 8 hours. Sets the Gantt bar length of a task with no dates or with only a start or a due date.",
 				"amountLabel": "Estimate amount",
 				"unitLabel": "Estimate unit",
 				"units": {
@@ -2937,7 +2937,9 @@
 				},
 				"clear": "Clear estimate",
 				"updateSuccess": "Task estimate updated",
-				"updateError": "Failed to update task estimate"
+				"updateError": "Failed to update task estimate",
+				"exclusiveHint": "With an estimate, set either a start or a due date, not both. Remove the estimate to set both dates.",
+				"blockedByDates": "Clear the start or due date to set an estimate."
 			},
 			"milestone": {
 				"label": "Milestone",

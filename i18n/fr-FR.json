@@ -2973,7 +2973,7 @@
 			},
 			"estimate": {
 				"label": "Estimation",
-				"description": "Charge de travail prévue. Un jour ouvré correspond à 8 heures. Détermine la durée des tâches sans dates dans le diagramme de Gantt.",
+				"description": "Charge prévue. Un jour ouvré compte 8 heures. Détermine la longueur de la barre dans le diagramme de Gantt d'une tâche sans date ou avec seulement une date de début ou d'échéance.",
 				"amountLabel": "Valeur de l'estimation",
 				"unitLabel": "Unité de l'estimation",
 				"units": {
@@ -2982,7 +2982,9 @@
 				},
 				"clear": "Effacer l'estimation",
 				"updateSuccess": "Estimation de la tâche mise à jour",
-				"updateError": "Échec de la mise à jour de l'estimation de la tâche"
+				"updateError": "Échec de la mise à jour de l'estimation de la tâche",
+				"exclusiveHint": "Avec une estimation, définissez soit une date de début, soit une échéance, pas les deux. Supprimez l'estimation pour définir les deux dates.",
+				"blockedByDates": "Effacez la date de début ou l'échéance pour définir une estimation."
 			},
 			"constraint": {
 				"currentDate": "Actuelle : {{date}}",

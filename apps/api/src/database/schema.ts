@@ -665,8 +665,9 @@ export const taskTable = pgTable(
     // how the user entered the value ("hours" | "days", validated at the API
     // layer) so the UI can show it back the same way; the stored quantity is
     // always minutes. Display-only on the Gantt: it gives an undated task
-    // with a `blocks` predecessor a bar length, but is never persisted as
-    // dates. Non-negative via the check constraint below.
+    // with a `blocks` predecessor, or a task with exactly one own date, a
+    // bar length, but is never persisted as dates. Non-negative via the
+    // check constraint below.
     estimateMinutes: integer("ganttpro_estimate_minutes"),
     estimateUnit: text("ganttpro_estimate_unit").notNull().default("hours"),
     // A milestone renders as a single diamond marker at its date rather than
@@ -714,6 +715,13 @@ export const taskTable = pgTable(
     check(
       "ganttpro_task_estimate_minutes_range",
       sql`${table.estimateMinutes} IS NULL OR ${table.estimateMinutes} >= 0`,
+    ),
+    // A task with an estimate must not have a complete date range: the Gantt
+    // derives the missing end from the estimate. See task/estimate.ts, which
+    // maps a violation to a 400 and mirrors the constraint name.
+    check(
+      "ganttpro_task_estimate_no_full_date_range",
+      sql`${table.estimateMinutes} IS NULL OR ${table.startDate} IS NULL OR ${table.dueDate} IS NULL`,
     ),
   ],
 );

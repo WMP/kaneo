@@ -2966,7 +2966,7 @@
 			},
 			"estimate": {
 				"label": "Tahmin",
-				"description": "Planlanan iş yükü. Bir iş günü 8 saattir. Tarihi olmayan görevlerin Gantt grafiğindeki uzunluğunu belirler.",
+				"description": "Planlanan efor. Bir iş günü 8 saattir. Tarihi olmayan ya da yalnızca başlangıç veya bitiş tarihi olan görevlerin Gantt grafiğindeki çubuk uzunluğunu belirler.",
 				"amountLabel": "Tahmin miktarı",
 				"unitLabel": "Tahmin birimi",
 				"units": {
@@ -2975,7 +2975,9 @@
 				},
 				"clear": "Tahmini temizle",
 				"updateSuccess": "Görev tahmini güncellendi",
-				"updateError": "Görev tahmini güncellenemedi"
+				"updateError": "Görev tahmini güncellenemedi",
+				"exclusiveHint": "Tahmin varken başlangıç ya da bitiş tarihinden yalnızca birini belirleyin, ikisini birden değil. İki tarihi de belirlemek için tahmini kaldırın.",
+				"blockedByDates": "Tahmin belirlemek için başlangıç veya bitiş tarihini temizleyin."
 			},
 			"constraint": {
 				"currentDate": "Mevcut: {{date}}",

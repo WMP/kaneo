@@ -2959,7 +2959,7 @@
 			},
 			"estimate": {
 				"label": "预估工时",
-				"description": "计划投入的工作量。一个工作日为 8 小时。用于确定没有日期的任务在甘特图上的长度。",
+				"description": "计划工作量。一个工作日为 8 小时。决定没有日期、或只有开始日期或截止日期的任务在甘特图中的条形长度。",
 				"amountLabel": "预估数值",
 				"unitLabel": "预估单位",
 				"units": {
@@ -2968,7 +2968,9 @@
 				},
 				"clear": "清除预估",
 				"updateSuccess": "任务预估已更新",
-				"updateError": "任务预估更新失败"
+				"updateError": "任务预估更新失败",
+				"exclusiveHint": "设置了估算后，只能设置开始日期或截止日期之一，不能同时设置。移除估算后才能设置两个日期。",
+				"blockedByDates": "清除开始日期或截止日期后才能设置估算。"
 			},
 			"constraint": {
 				"currentDate": "当前:{{date}}",

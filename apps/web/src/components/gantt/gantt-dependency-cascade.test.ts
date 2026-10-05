@@ -560,3 +560,128 @@ describe("computeDependencyCascade", () => {
     expect(shifts.size).toBe(0);
   });
 });
+
+describe("computeDependencyCascade with estimated single-date tasks", () => {
+  // 2026-10-05 is a Monday; local dates so the Mon-Fri predicate lines up.
+  const local = (dayOfMonth: number) => new Date(2026, 9, dayOfMonth);
+  const MON_FRI = (date: Date) => date.getDay() >= 1 && date.getDay() <= 5;
+  const DAY = 8 * 60;
+  const key = (date: Date) =>
+    `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  const fs: CascadeEdge[] = [
+    {
+      sourceTaskId: "a",
+      targetTaskId: "b",
+      dependencyType: "fs",
+      lagDays: 0,
+    },
+  ];
+
+  it("re-derives a start-only task's end from its shifted own date", () => {
+    // B: start Thu 8, 3 days => Thu, Fri, Mon (end Mon 12, 4 calendar days).
+    // A now finishes Mon 12 => B.start must move to Mon 12 (delta 4). Keeping
+    // the calendar span would end B on Fri 16; the estimate says Mon-Wed.
+    const tasksById = new Map([
+      ["a", { start: local(5), end: local(12) }],
+      ["b", { start: local(8), end: local(12) }],
+    ]);
+
+    const preserved = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: fs,
+      tasksById,
+      isWorkingDay: MON_FRI,
+    });
+    expect(key(preserved.get("b")?.end as Date)).toBe("2026-10-16");
+
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: fs,
+      tasksById,
+      isWorkingDay: MON_FRI,
+      estimatedTasks: new Map([
+        ["b", { anchor: "start" as const, estimateMinutes: 3 * DAY }],
+      ]),
+    });
+
+    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-12");
+    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-14");
+  });
+
+  it("keeps a due-only task's re-derived start at or after the constraint", () => {
+    // B: due Wed 7, 3 days => Mon 5 - Wed 7. A finishes Fri 9 => B.start must
+    // be >= Fri 9. The calendar-preserving shift ends B on Sun 11, where three
+    // working days back would start Thu 8 (too early): the due date moves on
+    // to Tue 13 (Fri 9, Mon 12, Tue 13).
+    const tasksById = new Map([
+      ["a", { start: local(5), end: local(9) }],
+      ["b", { start: local(5), end: local(7) }],
+    ]);
+
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: fs,
+      tasksById,
+      isWorkingDay: MON_FRI,
+      estimatedTasks: new Map([
+        ["b", { anchor: "due" as const, estimateMinutes: 3 * DAY }],
+      ]),
+    });
+
+    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-9");
+    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-13");
+  });
+
+  it("anchors the next dependent on the re-derived span of an estimated task", () => {
+    // A -> B (estimated, start-only) -> C (dated). C follows B's re-derived end.
+    const edges: CascadeEdge[] = [
+      ...fs,
+      {
+        sourceTaskId: "b",
+        targetTaskId: "c",
+        dependencyType: "fs",
+        lagDays: 0,
+      },
+    ];
+    const tasksById = new Map([
+      ["a", { start: local(5), end: local(12) }],
+      ["b", { start: local(8), end: local(12) }],
+      ["c", { start: local(12), end: local(13) }],
+    ]);
+
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges,
+      tasksById,
+      isWorkingDay: MON_FRI,
+      estimatedTasks: new Map([
+        ["b", { anchor: "start" as const, estimateMinutes: 3 * DAY }],
+      ]),
+    });
+
+    // B ends Wed 14, so C (fs, lag 0) starts Wed 14: delta 2, span preserved.
+    expect(key(shifts.get("c")?.start as Date)).toBe("2026-10-14");
+    expect(key(shifts.get("c")?.end as Date)).toBe("2026-10-15");
+  });
+
+  it("is unchanged for tasks that are not in estimatedTasks", () => {
+    const tasksById = new Map([
+      ["a", { start: local(5), end: local(12) }],
+      ["b", { start: local(8), end: local(12) }],
+    ]);
+    const without = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: fs,
+      tasksById,
+      isWorkingDay: MON_FRI,
+    });
+    const withEmpty = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: fs,
+      tasksById,
+      isWorkingDay: MON_FRI,
+      estimatedTasks: new Map(),
+    });
+    expect(withEmpty).toEqual(without);
+  });
+});

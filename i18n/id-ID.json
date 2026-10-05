@@ -2959,7 +2959,7 @@
 			},
 			"estimate": {
 				"label": "Estimasi",
-				"description": "Perkiraan usaha yang direncanakan. Satu hari kerja adalah 8 jam. Menentukan panjang tugas tanpa tanggal pada bagan Gantt.",
+				"description": "Upaya yang direncanakan. Satu hari kerja adalah 8 jam. Menentukan panjang bilah di bagan Gantt untuk tugas tanpa tanggal atau hanya dengan tanggal mulai atau tenggat.",
 				"amountLabel": "Jumlah estimasi",
 				"unitLabel": "Satuan estimasi",
 				"units": {
@@ -2968,7 +2968,9 @@
 				},
 				"clear": "Hapus estimasi",
 				"updateSuccess": "Estimasi tugas diperbarui",
-				"updateError": "Gagal memperbarui estimasi tugas"
+				"updateError": "Gagal memperbarui estimasi tugas",
+				"exclusiveHint": "Dengan estimasi, atur tanggal mulai atau tenggat saja, tidak keduanya. Hapus estimasi untuk mengatur kedua tanggal.",
+				"blockedByDates": "Hapus tanggal mulai atau tenggat untuk mengatur estimasi."
 			},
 			"constraint": {
 				"currentDate": "Saat ini: {{date}}",

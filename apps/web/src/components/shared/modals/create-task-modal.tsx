@@ -4,6 +4,7 @@ import {
   CalendarIcon,
   Check,
   FolderKanban,
+  Hourglass,
   Plus,
   Search,
   Tag,
@@ -18,6 +19,7 @@ import {
   AssigneeAvatars,
 } from "@/components/task/assignee-avatars";
 import { AssigneeResourceSection } from "@/components/task/assignee-resource-section";
+import EstimateEditor from "@/components/task/estimate-editor";
 import TaskDescriptionEditor from "@/components/task/task-description-editor";
 import {
   Accordion,
@@ -96,6 +98,12 @@ import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
+import {
+  type EstimateUnit,
+  formatEstimate,
+  hasFullDateRange,
+  isDateBlockedByEstimate,
+} from "@/lib/estimate";
 import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { resolveLabelColor } from "@/lib/label-color";
@@ -277,6 +285,12 @@ function CreateTaskModalContent({
   const primaryAssigneeId = assigneeIds[0] ?? "";
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  // Effort estimate (whole minutes) and the unit it is shown in. A task with
+  // an estimate cannot have both dates, so the pickers and this field block
+  // each other (see lib/estimate.ts).
+  const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
+  const [estimateUnit, setEstimateUnit] = useState<EstimateUnit>("hours");
+  const [estimateOpen, setEstimateOpen] = useState(false);
   const [createMore, setCreateMore] = useState(false);
   const [labels, setLabels] = useState<Label[]>([]);
   const [draftTask, setDraftTask] = useState<Task | null>(null);
@@ -420,6 +434,20 @@ function CreateTaskModalContent({
     },
   );
 
+  // Estimate and a complete date range are mutually exclusive.
+  const startDateBlocked = isDateBlockedByEstimate(
+    estimateMinutes,
+    startDate,
+    dueDate,
+  );
+  const dueDateBlocked = isDateBlockedByEstimate(
+    estimateMinutes,
+    dueDate,
+    startDate,
+  );
+  const estimateBlocked = hasFullDateRange(startDate, dueDate);
+  const exclusiveHint = t("tasks:popover.estimate.exclusiveHint");
+
   const hasUnsavedChanges = Boolean(
     title.trim() ||
       description.trim() ||
@@ -428,6 +456,7 @@ function CreateTaskModalContent({
       resourceAssigneeIds.length > 0 ||
       startDate ||
       dueDate ||
+      estimateMinutes !== null ||
       selectedProjectId ||
       labels.length > 0 ||
       draftTask ||
@@ -560,6 +589,7 @@ function CreateTaskModalContent({
       projectId: resolvedProjectId,
       startDate: startDate ? startDate.toISOString() : undefined,
       dueDate: dueDate ? dueDate.toISOString() : undefined,
+      ...(estimateMinutes !== null ? { estimateMinutes, estimateUnit } : {}),
       status: draftStatus,
       customFields: Object.entries(customFieldValues)
         .filter(([_, value]) => value.trim() !== "")
@@ -601,6 +631,8 @@ function CreateTaskModalContent({
     deleteTask,
     startDate,
     dueDate,
+    estimateMinutes,
+    estimateUnit,
     priority,
     resolvedProjectId,
     projectBlocksCreating,
@@ -644,6 +676,10 @@ function CreateTaskModalContent({
               priority,
               startDate: startDate ? startDate.toISOString() : null,
               dueDate: dueDate ? dueDate.toISOString() : null,
+              // The draft may have been created before the estimate changed;
+              // null clears it.
+              estimateMinutes,
+              estimateUnit,
               projectId: resolvedProjectId,
               customFieldValues: Object.entries(customFieldValues)
                 .filter(([_, value]) => value.trim() !== "")
@@ -659,6 +695,9 @@ function CreateTaskModalContent({
               projectId: resolvedProjectId,
               startDate: startDate ? startDate.toISOString() : undefined,
               dueDate: dueDate ? dueDate.toISOString() : undefined,
+              ...(estimateMinutes !== null
+                ? { estimateMinutes, estimateUnit }
+                : {}),
               status: taskStatus,
               customFields: Object.entries(customFieldValues)
                 .filter(([_, value]) => value.trim() !== "")
@@ -733,6 +772,8 @@ function CreateTaskModalContent({
         setResourceAssigneeIds([]);
         setStartDate(undefined);
         setDueDate(undefined);
+        setEstimateMinutes(null);
+        setEstimateUnit("hours");
         setLabels([]);
         setLabelsStep("select");
         setSearchValue("");
@@ -1356,8 +1397,13 @@ function CreateTaskModalContent({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
+                    disabled={startDateBlocked}
+                    title={startDateBlocked ? exclusiveHint : undefined}
+                    aria-describedby={
+                      startDateBlocked ? "create-task-estimate-hint" : undefined
+                    }
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50",
+                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent",
                       startDate
                         ? "bg-accent/30 text-foreground"
                         : "text-muted-foreground",
@@ -1570,8 +1616,13 @@ function CreateTaskModalContent({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
+                    disabled={dueDateBlocked}
+                    title={dueDateBlocked ? exclusiveHint : undefined}
+                    aria-describedby={
+                      dueDateBlocked ? "create-task-estimate-hint" : undefined
+                    }
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50",
+                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent",
                       dueDate
                         ? "bg-accent/30 text-foreground"
                         : "text-muted-foreground",
@@ -1607,6 +1658,52 @@ function CreateTaskModalContent({
                         {t("common:modals.createTask.clearDueDate")}
                       </Button>
                     </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              <Popover open={estimateOpen} onOpenChange={setEstimateOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={estimateBlocked}
+                    title={
+                      estimateBlocked
+                        ? t("tasks:popover.estimate.blockedByDates")
+                        : undefined
+                    }
+                    aria-label={t("tasks:popover.estimate.label")}
+                    aria-describedby={
+                      estimateBlocked ? "create-task-estimate-hint" : undefined
+                    }
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent",
+                      estimateMinutes !== null
+                        ? "bg-accent/30 text-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    <Hourglass className="w-3.5 h-3.5" />
+                    <span>
+                      {estimateMinutes !== null
+                        ? formatEstimate(estimateMinutes, estimateUnit, t)
+                        : t("tasks:properties.estimate")}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  {estimateOpen && (
+                    <EstimateEditor
+                      minutes={estimateMinutes}
+                      unit={estimateUnit}
+                      onSave={(minutes, unit) => {
+                        setEstimateMinutes(minutes);
+                        setEstimateUnit(unit);
+                      }}
+                      disabled={estimateBlocked}
+                      disabledHint={t("tasks:popover.estimate.blockedByDates")}
+                      hint={exclusiveHint}
+                    />
                   )}
                 </PopoverContent>
               </Popover>
@@ -1750,6 +1847,16 @@ function CreateTaskModalContent({
                 </PopoverContent>
               </Popover>
             </div>
+            {(estimateMinutes !== null || estimateBlocked) && (
+              <p
+                id="create-task-estimate-hint"
+                className="m-0 pb-2 text-xs text-muted-foreground"
+              >
+                {estimateBlocked
+                  ? t("tasks:popover.estimate.blockedByDates")
+                  : exclusiveHint}
+              </p>
+            )}
           </div>
 
           {projectAccessMessage && (

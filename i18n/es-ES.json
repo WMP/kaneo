@@ -2962,7 +2962,7 @@
 			},
 			"estimate": {
 				"label": "Estimación",
-				"description": "Esfuerzo planificado. Un día laborable equivale a 8 horas. Define la duración de las tareas sin fechas en el diagrama de Gantt.",
+				"description": "Esfuerzo planificado. Un día laborable tiene 8 horas. Define la longitud de la barra en el diagrama de Gantt de una tarea sin fechas o con solo fecha de inicio o de vencimiento.",
 				"amountLabel": "Cantidad estimada",
 				"unitLabel": "Unidad de la estimación",
 				"units": {
@@ -2971,7 +2971,9 @@
 				},
 				"clear": "Quitar estimación",
 				"updateSuccess": "Estimación de la tarea actualizada",
-				"updateError": "No se pudo actualizar la estimación de la tarea"
+				"updateError": "No se pudo actualizar la estimación de la tarea",
+				"exclusiveHint": "Con una estimación, establece la fecha de inicio o la de vencimiento, no ambas. Quita la estimación para establecer las dos fechas.",
+				"blockedByDates": "Borra la fecha de inicio o de vencimiento para establecer una estimación."
 			},
 			"constraint": {
 				"currentDate": "Actual: {{date}}",

@@ -66,6 +66,7 @@ import type {
   CascadeDependencyType,
   CascadeEdge,
 } from "./gantt-dependency-cascade";
+import { addWorkingDays, MAX_WALK_DAYS } from "./gantt-estimated-span";
 
 export type DerivedScheduleSource = {
   start: Date;
@@ -95,10 +96,6 @@ export type DeriveUndatedSuccessorSchedulesInput = {
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-// Defensive bound on any day-by-day walk, matching computeDependencyCascade's
-// forward nudge: a real calendar has a working day within a week.
-const MAX_WALK_DAYS = 366;
 
 function addDaysExact(date: Date, days: number): Date {
   return new Date(date.getTime() + days * MS_PER_DAY);
@@ -192,19 +189,7 @@ export function deriveUndatedSuccessorSchedules({
     date: Date,
     steps: number,
     direction: 1 | -1,
-  ): Date => {
-    if (steps <= 0) return date;
-    if (!isWorkingDay) return addDaysExact(date, direction * steps);
-    let current = date;
-    let remaining = steps;
-    let walked = 0;
-    while (remaining > 0 && walked < MAX_WALK_DAYS) {
-      current = addDaysExact(current, direction);
-      walked++;
-      if (isWorkingDay(current)) remaining--;
-    }
-    return current;
-  };
+  ): Date => addWorkingDays(date, steps, direction, isWorkingDay);
 
   // Incoming "blocks" edges per candidate, and the candidate-to-candidate
   // successors used to process chains in dependency order. An edge whose

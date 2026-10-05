@@ -1,5 +1,5 @@
 {
-  "id": "64443702-a90f-4439-bf7e-f6e01e1be456",
+  "id": "0fd4ac85-042d-4fea-acc3-be2453016efd",
   "prevId": "ca6020b2-e728-402a-9c56-98cb2111fb84",
   "version": "7",
   "dialect": "postgresql",
@@ -5038,6 +5038,10 @@
         "ganttpro_task_estimate_minutes_range": {
           "name": "ganttpro_task_estimate_minutes_range",
           "value": "\"task\".\"ganttpro_estimate_minutes\" IS NULL OR \"task\".\"ganttpro_estimate_minutes\" >= 0"
+        },
+        "ganttpro_task_estimate_no_full_date_range": {
+          "name": "ganttpro_task_estimate_no_full_date_range",
+          "value": "\"task\".\"ganttpro_estimate_minutes\" IS NULL OR \"task\".\"start_date\" IS NULL OR \"task\".\"due_date\" IS NULL"
         }
       },
       "isRLSEnabled": false

@@ -3416,7 +3416,7 @@
 			},
 			"estimate": {
 				"label": "Szacunek",
-				"description": "Planowany nakład pracy. Dzień roboczy to 8 godzin. Wyznacza długość zadań bez dat na wykresie Gantta.",
+				"description": "Planowany nakład pracy. Dzień roboczy to 8 godzin. Określa długość paska na wykresie Gantta dla zadania bez dat lub tylko z datą rozpoczęcia albo terminem.",
 				"amountLabel": "Wartość szacunku",
 				"unitLabel": "Jednostka szacunku",
 				"units": {
@@ -3425,7 +3425,9 @@
 				},
 				"clear": "Wyczyść szacunek",
 				"updateSuccess": "Zaktualizowano szacunek zadania",
-				"updateError": "Nie udało się zaktualizować szacunku zadania"
+				"updateError": "Nie udało się zaktualizować szacunku zadania",
+				"exclusiveHint": "Przy oszacowaniu ustaw datę rozpoczęcia albo termin, nie obie. Usuń oszacowanie, aby ustawić obie daty.",
+				"blockedByDates": "Wyczyść datę rozpoczęcia lub termin, aby ustawić oszacowanie."
 			},
 			"constraint": {
 				"currentDate": "{{date}}",

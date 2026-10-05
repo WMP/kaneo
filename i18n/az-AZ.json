@@ -2966,7 +2966,7 @@
 			},
 			"estimate": {
 				"label": "Təxmin",
-				"description": "Planlaşdırılan əmək həcmi. Bir iş günü 8 saatdır. Tarixi olmayan tapşırıqların Gantt diaqramındakı uzunluğunu müəyyən edir.",
+				"description": "Planlaşdırılan əmək həcmi. Bir iş günü 8 saatdır. Tarixi olmayan və ya yalnız başlanğıc ya da bitmə tarixi olan tapşırığın Gantt diaqramındakı uzunluğunu müəyyən edir.",
 				"amountLabel": "Təxmin dəyəri",
 				"unitLabel": "Təxmin vahidi",
 				"units": {
@@ -2975,7 +2975,9 @@
 				},
 				"clear": "Təxmini sil",
 				"updateSuccess": "Tapşırığın təxmini yeniləndi",
-				"updateError": "Tapşırığın təxmini yenilənə bilmədi"
+				"updateError": "Tapşırığın təxmini yenilənə bilmədi",
+				"exclusiveHint": "Təxmin olduqda başlanğıc və ya bitmə tarixindən yalnız birini təyin edin, hər ikisini yox. Hər iki tarixi təyin etmək üçün təxmini silin.",
+				"blockedByDates": "Təxmin təyin etmək üçün başlanğıc və ya bitmə tarixini silin."
 			},
 			"constraint": {
 				"currentDate": "Cari: {{date}}",

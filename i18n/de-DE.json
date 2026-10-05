@@ -2966,7 +2966,7 @@
 			},
 			"estimate": {
 				"label": "Schätzung",
-				"description": "Geplanter Aufwand. Ein Arbeitstag hat 8 Stunden. Bestimmt die Länge von Aufgaben ohne Termine im Gantt-Diagramm.",
+				"description": "Geplanter Aufwand. Ein Arbeitstag hat 8 Stunden. Bestimmt die Balkenlänge im Gantt-Diagramm für Aufgaben ohne Termine oder mit nur einem Start- oder Fälligkeitsdatum.",
 				"amountLabel": "Schätzwert",
 				"unitLabel": "Einheit der Schätzung",
 				"units": {
@@ -2975,7 +2975,9 @@
 				},
 				"clear": "Schätzung entfernen",
 				"updateSuccess": "Schätzung der Aufgabe aktualisiert",
-				"updateError": "Schätzung der Aufgabe konnte nicht aktualisiert werden"
+				"updateError": "Schätzung der Aufgabe konnte nicht aktualisiert werden",
+				"exclusiveHint": "Mit einer Schätzung kann nur ein Start- oder ein Fälligkeitsdatum gesetzt werden, nicht beide. Entfernen Sie die Schätzung, um beide Termine zu setzen.",
+				"blockedByDates": "Entfernen Sie das Start- oder Fälligkeitsdatum, um eine Schätzung festzulegen."
 			},
 			"constraint": {
 				"currentDate": "Aktuell: {{date}}",

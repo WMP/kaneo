@@ -119,7 +119,10 @@ export const bulkUpdateBody = z.object({
         "Per-task start/due dates for the `updateSchedule` operation — e.g. " +
         "a Gantt drag that cascades forward through `blocks` dependencies. " +
         "Required by that operation; ignored by every other one. Every " +
-        "taskId here must also be in `taskIds`.",
+        "taskId here must also be in `taskIds`. An entry replaces both dates " +
+        "of the task (an omitted or null date is cleared); for a task that " +
+        "has an effort estimate it must carry at most one date (400 " +
+        "otherwise).",
     }),
 });
 
@@ -141,7 +144,7 @@ export const createTaskBody = z.object({
     .nullable()
     .optional()
     .openapi({
-      description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}); omit or null for no estimate.`,
+      description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}); omit or null for no estimate. A task with an estimate cannot have both startDate and dueDate (400).`,
     }),
   estimateUnit: estimateUnit.optional().openapi({
     description: 'Defaults to "hours".',
@@ -187,7 +190,7 @@ export const updateTaskBody = z
       .nullable()
       .optional()
       .openapi({
-        description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}). Omit to leave the estimate untouched; null clears it.`,
+        description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}). Omit to leave the estimate untouched; null clears it. A task with an estimate cannot have both startDate and dueDate (400); the stored estimate is checked against the dates of this request.`,
       }),
     estimateUnit: estimateUnit.optional().openapi({
       description: "Omit to leave the estimate unit untouched.",
