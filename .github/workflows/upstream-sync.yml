@@ -150,11 +150,28 @@ jobs:
       - name: Push upstream mirror branch
         id: mirror
         if: steps.decide.outputs.needed == 'true'
+        env:
+          # GITHUB_TOKEN can never receive the `workflows` permission, so GitHub
+          # rejects a push that adds or changes a file in .github/workflows
+          # (upstream does this from time to time). To push those commits, create
+          # a fine-grained PAT (or GitHub App token) with "Contents: write" and
+          # "Workflows: write" on this repository and store it as the repository
+          # secret UPSTREAM_SYNC_TOKEN.
+          SYNC_TOKEN: ${{ secrets.UPSTREAM_SYNC_TOKEN }}
         run: |
           sync_branch="upstream-sync/${UPSTREAM_BRANCH}-$(date -u +%Y%m%d)-${{ steps.decide.outputs.upstream_short }}"
           echo "branch=$sync_branch" >> "$GITHUB_OUTPUT"
+          push_target=origin
+          if [ -n "$SYNC_TOKEN" ]; then
+            push_target="https://x-access-token:${SYNC_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
           # Idempotent: force the mirror branch to the exact upstream tip.
-          git push --force origin "upstream/$UPSTREAM_BRANCH:refs/heads/$sync_branch"
+          if ! git push --force "$push_target" "upstream/$UPSTREAM_BRANCH:refs/heads/$sync_branch"; then
+            if [ -z "$SYNC_TOKEN" ]; then
+              echo "::error::Push failed. If the message mentions the \`workflows\` permission, upstream changed a file in .github/workflows. Add the repository secret UPSTREAM_SYNC_TOKEN (see the comment in this step)."
+            fi
+            exit 1
+          fi
 
       - name: Open or update the sync pull request
         if: steps.decide.outputs.needed == 'true'
