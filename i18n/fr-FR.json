@@ -2627,6 +2627,7 @@
 				"startDate": "Date de début",
 				"dueDate": "Date d'échéance",
 				"progress": "Progression",
+				"estimateMinutes": "Estimation",
 				"isMilestone": "Jalon",
 				"constraintType": "Type de contrainte",
 				"constraintDate": "Date de contrainte",
@@ -2810,6 +2811,7 @@
 			"removeRelation": "Supprimer la relation",
 			"related": "Liée",
 			"blocks": "Bloquée",
+			"blockedBy": "Bloqué par",
 			"selectTask": "Sélectionnez une tâche à lier",
 			"types": {
 				"blocks": "bloqué",
@@ -2868,7 +2870,12 @@
 			"milestone": "Jalon",
 			"progress": "Avancement",
 			"constraint": "Contrainte",
-			"approval": "Approbation"
+			"approval": "Approbation",
+			"estimate": "Estimation"
+		},
+		"estimate": {
+			"valueHours": "{{value}} h",
+			"valueDays": "{{value}} j"
 		},
 		"move": {
 			"title": "Déplacer la tâche",
@@ -2963,6 +2970,19 @@
 				"updateError": "Échec de la mise à jour de l'avancement de la tâche",
 				"updateSuccess": "Avancement de la tâche mis à jour",
 				"exactLabel": "Pourcentage d'achèvement exact"
+			},
+			"estimate": {
+				"label": "Estimation",
+				"description": "Charge de travail prévue. Un jour ouvré correspond à 8 heures. Détermine la durée des tâches sans dates dans le diagramme de Gantt.",
+				"amountLabel": "Valeur de l'estimation",
+				"unitLabel": "Unité de l'estimation",
+				"units": {
+					"hours": "Heures",
+					"days": "Jours"
+				},
+				"clear": "Effacer l'estimation",
+				"updateSuccess": "Estimation de la tâche mise à jour",
+				"updateError": "Échec de la mise à jour de l'estimation de la tâche"
 			},
 			"constraint": {
 				"currentDate": "Actuelle : {{date}}",
@@ -3118,7 +3138,11 @@
 			"barColorSourceNone": "Aucune",
 			"barColorSourceFirstLabel": "Premier label",
 			"externalTaskDerivedTitle": "{{title}} — tâche liée dans {{projectName}} ; cette position est dérivée de sa dépendance, car la tâche n'a pas de dates propres (lecture seule ici)",
-			"externalTaskDerivedRailNote": "Position issue de la dépendance"
+			"externalTaskDerivedRailNote": "Position issue de la dépendance",
+			"externalTaskDerivedEstimateTitle": "{{title}} — tâche liée dans {{projectName}} ; sa position et sa durée sont dérivées de sa dépendance et de son estimation de {{estimate}}, car la tâche n'a pas de dates propres (lecture seule ici)",
+			"derivedTaskTitle": "{{title}} — cette position est dérivée de sa dépendance, car la tâche n'a pas de dates propres (lecture seule ici)",
+			"derivedTaskEstimateTitle": "{{title}} — sa position et sa durée sont dérivées de sa dépendance et de son estimation de {{estimate}}, car la tâche n'a pas de dates propres (lecture seule ici)",
+			"derivedEstimateRailNote": "Issue de la dépendance · {{estimate}}"
 		},
 		"delete": {
 			"title": "Supprimer la tâche ?",

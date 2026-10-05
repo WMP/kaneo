@@ -2627,6 +2627,7 @@
 				"startDate": "Data de início",
 				"dueDate": "Data de vencimento",
 				"progress": "Progresso",
+				"estimateMinutes": "Estimativa",
 				"isMilestone": "Marco",
 				"constraintType": "Tipo de restrição",
 				"constraintDate": "Data de restrição",
@@ -2810,6 +2811,7 @@
 			"removeRelation": "Remover relação",
 			"related": "Relacionado",
 			"blocks": "Bloqueia",
+			"blockedBy": "Bloqueado por",
 			"selectTask": "Selecione uma tarefa para vincular",
 			"types": {
 				"blocks": "bloqueia",
@@ -2868,7 +2870,12 @@
 			"milestone": "Marco",
 			"progress": "Progresso",
 			"constraint": "Restrição",
-			"approval": "Aprovação"
+			"approval": "Aprovação",
+			"estimate": "Estimativa"
+		},
+		"estimate": {
+			"valueHours": "{{value}} h",
+			"valueDays": "{{value}} d"
 		},
 		"move": {
 			"title": "Mover tarefa",
@@ -2963,6 +2970,19 @@
 				"updateError": "Falha ao atualizar o progresso da tarefa",
 				"updateSuccess": "Progresso da tarefa atualizado",
 				"exactLabel": "Percentual exato concluído"
+			},
+			"estimate": {
+				"label": "Estimativa",
+				"description": "Esforço planejado. Um dia útil tem 8 horas. Define a duração das tarefas sem datas no gráfico de Gantt.",
+				"amountLabel": "Valor da estimativa",
+				"unitLabel": "Unidade da estimativa",
+				"units": {
+					"hours": "Horas",
+					"days": "Dias"
+				},
+				"clear": "Limpar estimativa",
+				"updateSuccess": "Estimativa da tarefa atualizada",
+				"updateError": "Falha ao atualizar a estimativa da tarefa"
 			},
 			"constraint": {
 				"currentDate": "Atual: {{date}}",
@@ -3118,7 +3138,11 @@
 			"barColorSourceNone": "Nenhuma",
 			"barColorSourceFirstLabel": "Primeira etiqueta",
 			"externalTaskDerivedTitle": "{{title}} — tarefa relacionada em {{projectName}}; esta posição é derivada da dependência, pois a tarefa não tem datas próprias (somente leitura aqui)",
-			"externalTaskDerivedRailNote": "Posição derivada da dependência"
+			"externalTaskDerivedRailNote": "Posição derivada da dependência",
+			"externalTaskDerivedEstimateTitle": "{{title}} — tarefa relacionada em {{projectName}}; sua posição e duração são derivadas da dependência e da estimativa de {{estimate}}, pois a tarefa não tem datas próprias (somente leitura aqui)",
+			"derivedTaskTitle": "{{title}} — esta posição é derivada da dependência, pois a tarefa não tem datas próprias (somente leitura aqui)",
+			"derivedTaskEstimateTitle": "{{title}} — sua posição e duração são derivadas da dependência e da estimativa de {{estimate}}, pois a tarefa não tem datas próprias (somente leitura aqui)",
+			"derivedEstimateRailNote": "Derivada da dependência · {{estimate}}"
 		},
 		"delete": {
 			"title": "Excluir tarefa?",

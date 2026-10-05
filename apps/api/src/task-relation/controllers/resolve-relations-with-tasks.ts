@@ -29,6 +29,8 @@ type TaskSummary = {
   startDate: Date | null;
   dueDate: Date | null;
   isMilestone: boolean;
+  estimateMinutes: number | null;
+  estimateUnit: string;
   approvalStatus: string;
 };
 
@@ -68,6 +70,8 @@ async function resolveRelationsWithTasks(
         startDate: taskTable.startDate,
         dueDate: taskTable.dueDate,
         isMilestone: taskTable.isMilestone,
+        estimateMinutes: taskTable.estimateMinutes,
+        estimateUnit: taskTable.estimateUnit,
         approvalStatus: taskTable.approvalStatus,
       })
       .from(taskTable)

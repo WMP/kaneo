@@ -1013,6 +1013,7 @@
 				"startDate": "Data rozpoczęcia",
 				"dueDate": "Termin",
 				"progress": "Postęp",
+				"estimateMinutes": "Szacunek",
 				"isMilestone": "Kamień milowy",
 				"constraintType": "Typ ograniczenia",
 				"constraintDate": "Data ograniczenia",
@@ -3257,6 +3258,10 @@
 			"externalTaskTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}} (tylko do odczytu)",
 			"externalTaskDerivedTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}}; pozycję wyznaczono z zależności, ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
 			"externalTaskDerivedRailNote": "Pozycja z zależności",
+			"externalTaskDerivedEstimateTitle": "{{title}} — powiązane zadanie w projekcie {{projectName}}; jego pozycję i długość wyznaczono z zależności oraz szacunku ({{estimate}}), ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
+			"derivedTaskTitle": "{{title}} — pozycję wyznaczono z zależności, ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
+			"derivedTaskEstimateTitle": "{{title}} — jego pozycję i długość wyznaczono z zależności oraz szacunku ({{estimate}}), ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
+			"derivedEstimateRailNote": "Z zależności · {{estimate}}",
 			"legendBaseline": "Plan bazowy",
 			"legendMilestone": "Kamień milowy",
 			"milestoneAriaLabel": "{{title}}: kamień milowy, otwórz zadanie",
@@ -3409,6 +3414,19 @@
 				"updateSuccess": "Zaktualizowano postęp zadania",
 				"exactLabel": "Dokładny procent ukończenia"
 			},
+			"estimate": {
+				"label": "Szacunek",
+				"description": "Planowany nakład pracy. Dzień roboczy to 8 godzin. Wyznacza długość zadań bez dat na wykresie Gantta.",
+				"amountLabel": "Wartość szacunku",
+				"unitLabel": "Jednostka szacunku",
+				"units": {
+					"hours": "Godziny",
+					"days": "Dni"
+				},
+				"clear": "Wyczyść szacunek",
+				"updateSuccess": "Zaktualizowano szacunek zadania",
+				"updateError": "Nie udało się zaktualizować szacunku zadania"
+			},
 			"constraint": {
 				"currentDate": "{{date}}",
 				"label": "Ograniczenie",
@@ -3459,10 +3477,16 @@
 			"milestone": "Kamień milowy",
 			"progress": "Postęp",
 			"constraint": "Ograniczenie",
-			"approval": "Zatwierdzenie"
+			"approval": "Zatwierdzenie",
+			"estimate": "Szacunek"
+		},
+		"estimate": {
+			"valueHours": "{{value}} godz.",
+			"valueDays": "{{value}} dn."
 		},
 		"relations": {
 			"blocks": "Blokuje",
+			"blockedBy": "Blokowane przez",
 			"empty": "Brak powiązanych zadań",
 			"linkError": "Nie udało się powiązać zadania",
 			"noTasksFound": "Nie znaleziono zadań",

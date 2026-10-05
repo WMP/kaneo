@@ -2620,6 +2620,7 @@
 				"startDate": "प्रारंभ तिथि",
 				"dueDate": "नियत तिथि",
 				"progress": "प्रगति",
+				"estimateMinutes": "अनुमान",
 				"isMilestone": "माइलस्टोन",
 				"constraintType": "बाधा प्रकार",
 				"constraintDate": "बाधा तिथि",
@@ -2803,6 +2804,7 @@
 			"removeRelation": "संबंध हटाएँ",
 			"related": "संबंधित",
 			"blocks": "ब्लॉक करता है",
+			"blockedBy": "ब्लॉक किया गया",
 			"selectTask": "लिंक करने के लिए कार्य चुनें",
 			"types": {
 				"blocks": "ब्लॉक करता है",
@@ -2861,7 +2863,12 @@
 			"milestone": "माइलस्टोन",
 			"progress": "प्रगति",
 			"constraint": "बाधा",
-			"approval": "अनुमोदन"
+			"approval": "अनुमोदन",
+			"estimate": "अनुमान"
+		},
+		"estimate": {
+			"valueHours": "{{value}} घंटे",
+			"valueDays": "{{value}} दिन"
 		},
 		"move": {
 			"title": "कार्य ले जाएँ",
@@ -2956,6 +2963,19 @@
 				"updateError": "कार्य प्रगति अपडेट करने में विफल",
 				"updateSuccess": "कार्य प्रगति अपडेट की गई",
 				"exactLabel": "सटीक प्रतिशत पूर्ण"
+			},
+			"estimate": {
+				"label": "अनुमान",
+				"description": "नियोजित कार्य-प्रयास। एक कार्यदिवस 8 घंटे का होता है। इससे बिना तारीख़ वाले कार्यों की अवधि Gantt चार्ट में तय होती है।",
+				"amountLabel": "अनुमान की मात्रा",
+				"unitLabel": "अनुमान की इकाई",
+				"units": {
+					"hours": "घंटे",
+					"days": "दिन"
+				},
+				"clear": "अनुमान हटाएँ",
+				"updateSuccess": "कार्य का अनुमान अपडेट हुआ",
+				"updateError": "कार्य का अनुमान अपडेट करने में विफल"
 			},
 			"constraint": {
 				"currentDate": "वर्तमान: {{date}}",
@@ -3109,7 +3129,11 @@
 			"barColorSourceNone": "कोई नहीं",
 			"barColorSourceFirstLabel": "पहला लेबल",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}} का संबंधित कार्य; इसकी कोई अपनी तारीख़ नहीं है, इसलिए यह स्थान इसकी निर्भरता से लिया गया है (यहाँ केवल पढ़ने के लिए)",
-			"externalTaskDerivedRailNote": "स्थान निर्भरता से लिया गया"
+			"externalTaskDerivedRailNote": "स्थान निर्भरता से लिया गया",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} का संबंधित कार्य; इसकी कोई अपनी तारीख़ नहीं है, इसलिए इसका स्थान और अवधि इसकी निर्भरता और {{estimate}} के अनुमान से तय की गई है (यहाँ केवल पढ़ने के लिए)",
+			"derivedTaskTitle": "{{title}} — इसकी कोई अपनी तारीख़ नहीं है, इसलिए यह स्थान इसकी निर्भरता से लिया गया है (यहाँ केवल पढ़ने के लिए)",
+			"derivedTaskEstimateTitle": "{{title}} — इसकी कोई अपनी तारीख़ नहीं है, इसलिए इसका स्थान और अवधि इसकी निर्भरता और {{estimate}} के अनुमान से तय की गई है (यहाँ केवल पढ़ने के लिए)",
+			"derivedEstimateRailNote": "निर्भरता से लिया गया · {{estimate}}"
 		},
 		"delete": {
 			"title": "कार्य हटाएँ?",

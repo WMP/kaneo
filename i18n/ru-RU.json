@@ -2642,6 +2642,7 @@
 				"startDate": "Дата начала",
 				"dueDate": "Срок выполнения",
 				"progress": "Прогресс",
+				"estimateMinutes": "Оценка",
 				"isMilestone": "Веха",
 				"constraintType": "Тип ограничения",
 				"constraintDate": "Дата ограничения",
@@ -2825,6 +2826,7 @@
 			"removeRelation": "Удалить связь",
 			"related": "Связана",
 			"blocks": "Блокирует",
+			"blockedBy": "Заблокирована",
 			"selectTask": "Выберите задачу для связывания",
 			"types": {
 				"blocks": "блокирует",
@@ -2883,7 +2885,12 @@
 			"milestone": "Веха",
 			"progress": "Прогресс",
 			"constraint": "Ограничение",
-			"approval": "Утверждение"
+			"approval": "Утверждение",
+			"estimate": "Оценка"
+		},
+		"estimate": {
+			"valueHours": "{{value}} ч",
+			"valueDays": "{{value}} дн."
 		},
 		"move": {
 			"title": "Переместить задачу",
@@ -2978,6 +2985,19 @@
 				"updateError": "Не удалось обновить прогресс задачи",
 				"updateSuccess": "Прогресс задачи обновлён",
 				"exactLabel": "Точный процент выполнения"
+			},
+			"estimate": {
+				"label": "Оценка",
+				"description": "Плановая трудоёмкость. Рабочий день равен 8 часам. Определяет длину задач без дат на диаграмме Ганта.",
+				"amountLabel": "Значение оценки",
+				"unitLabel": "Единица оценки",
+				"units": {
+					"hours": "Часы",
+					"days": "Дни"
+				},
+				"clear": "Очистить оценку",
+				"updateSuccess": "Оценка задачи обновлена",
+				"updateError": "Не удалось обновить оценку задачи"
 			},
 			"constraint": {
 				"currentDate": "Текущая: {{date}}",
@@ -3143,7 +3163,11 @@
 			"barColorSourceNone": "Нет",
 			"barColorSourceFirstLabel": "Первая метка",
 			"externalTaskDerivedTitle": "{{title}} — связанная задача в проекте {{projectName}}; её положение определено зависимостью, так как у задачи нет собственных дат (здесь только для чтения)",
-			"externalTaskDerivedRailNote": "Положение по зависимости"
+			"externalTaskDerivedRailNote": "Положение по зависимости",
+			"externalTaskDerivedEstimateTitle": "{{title}} — связанная задача в проекте {{projectName}}; её положение и длина определены зависимостью и оценкой ({{estimate}}), так как у задачи нет собственных дат (здесь только для чтения)",
+			"derivedTaskTitle": "{{title}} — её положение определено зависимостью, так как у задачи нет собственных дат (здесь только для чтения)",
+			"derivedTaskEstimateTitle": "{{title}} — её положение и длина определены зависимостью и оценкой ({{estimate}}), так как у задачи нет собственных дат (здесь только для чтения)",
+			"derivedEstimateRailNote": "По зависимости · {{estimate}}"
 		},
 		"delete": {
 			"title": "Удалить задачу?",

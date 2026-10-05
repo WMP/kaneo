@@ -2620,6 +2620,7 @@
 				"startDate": "Startdatum",
 				"dueDate": "Fälligkeitsdatum",
 				"progress": "Fortschritt",
+				"estimateMinutes": "Schätzung",
 				"isMilestone": "Meilenstein",
 				"constraintType": "Einschränkungstyp",
 				"constraintDate": "Einschränkungsdatum",
@@ -2803,6 +2804,7 @@
 			"removeRelation": "Beziehung entfernen",
 			"related": "Verwandt",
 			"blocks": "Blockiert",
+			"blockedBy": "Blockiert von",
 			"selectTask": "Wähle eine Aufgabe zum Verknüpfen aus",
 			"types": {
 				"blocks": "blockiert",
@@ -2861,7 +2863,12 @@
 			"milestone": "Meilenstein",
 			"progress": "Fortschritt",
 			"constraint": "Einschränkung",
-			"approval": "Freigabe"
+			"approval": "Freigabe",
+			"estimate": "Schätzung"
+		},
+		"estimate": {
+			"valueHours": "{{value}} Std.",
+			"valueDays": "{{value}} T"
 		},
 		"move": {
 			"title": "Aufgabe verschieben",
@@ -2956,6 +2963,19 @@
 				"updateError": "Aufgabenfortschritt konnte nicht aktualisiert werden",
 				"updateSuccess": "Aufgabenfortschritt aktualisiert",
 				"exactLabel": "Exakter Prozentsatz abgeschlossen"
+			},
+			"estimate": {
+				"label": "Schätzung",
+				"description": "Geplanter Aufwand. Ein Arbeitstag hat 8 Stunden. Bestimmt die Länge von Aufgaben ohne Termine im Gantt-Diagramm.",
+				"amountLabel": "Schätzwert",
+				"unitLabel": "Einheit der Schätzung",
+				"units": {
+					"hours": "Stunden",
+					"days": "Tage"
+				},
+				"clear": "Schätzung entfernen",
+				"updateSuccess": "Schätzung der Aufgabe aktualisiert",
+				"updateError": "Schätzung der Aufgabe konnte nicht aktualisiert werden"
 			},
 			"constraint": {
 				"currentDate": "Aktuell: {{date}}",
@@ -3109,7 +3129,11 @@
 			"barColorSourceNone": "Keine",
 			"barColorSourceFirstLabel": "Erstes Label",
 			"externalTaskDerivedTitle": "{{title}} — verwandte Aufgabe in {{projectName}}; diese Position leitet sich aus der Abhängigkeit ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
-			"externalTaskDerivedRailNote": "Position aus Abhängigkeit"
+			"externalTaskDerivedRailNote": "Position aus Abhängigkeit",
+			"externalTaskDerivedEstimateTitle": "{{title}} — verwandte Aufgabe in {{projectName}}; Position und Länge leiten sich aus der Abhängigkeit und der Schätzung von {{estimate}} ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
+			"derivedTaskTitle": "{{title}} — diese Position leitet sich aus der Abhängigkeit ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
+			"derivedTaskEstimateTitle": "{{title}} — Position und Länge leiten sich aus der Abhängigkeit und der Schätzung von {{estimate}} ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
+			"derivedEstimateRailNote": "Aus Abhängigkeit abgeleitet · {{estimate}}"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",

@@ -2613,6 +2613,7 @@
 				"startDate": "시작일",
 				"dueDate": "마감일",
 				"progress": "진행률",
+				"estimateMinutes": "예상 시간",
 				"isMilestone": "마일스톤",
 				"constraintType": "제약 유형",
 				"constraintDate": "제약 날짜",
@@ -2796,6 +2797,7 @@
 			"removeRelation": "관계 제거",
 			"related": "관련",
 			"blocks": "차단",
+			"blockedBy": "차단됨",
 			"selectTask": "연결할 작업 선택",
 			"types": {
 				"blocks": "차단함",
@@ -2854,7 +2856,12 @@
 			"milestone": "마일스톤",
 			"progress": "진행률",
 			"constraint": "제약 조건",
-			"approval": "승인"
+			"approval": "승인",
+			"estimate": "예상 시간"
+		},
+		"estimate": {
+			"valueHours": "{{value}}시간",
+			"valueDays": "{{value}}일"
 		},
 		"move": {
 			"title": "작업 이동",
@@ -2949,6 +2956,19 @@
 				"updateError": "작업 진행률 업데이트에 실패했습니다",
 				"updateSuccess": "작업 진행률이 업데이트되었습니다",
 				"exactLabel": "정확한 완료율"
+			},
+			"estimate": {
+				"label": "예상 시간",
+				"description": "계획된 작업량입니다. 근무일 하루는 8시간입니다. 날짜가 없는 작업의 간트 차트 길이를 정하는 데 사용됩니다.",
+				"amountLabel": "예상 시간 값",
+				"unitLabel": "예상 시간 단위",
+				"units": {
+					"hours": "시간",
+					"days": "일"
+				},
+				"clear": "예상 시간 지우기",
+				"updateSuccess": "작업 예상 시간을 업데이트했습니다",
+				"updateError": "작업 예상 시간 업데이트에 실패했습니다"
 			},
 			"constraint": {
 				"currentDate": "현재: {{date}}",
@@ -3113,7 +3133,11 @@
 			"barColorSourceNone": "없음",
 			"barColorSourceFirstLabel": "첫 번째 라벨",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}}의 관련 작업입니다. 자체 날짜가 없어 종속성에서 위치가 정해집니다(여기서는 읽기 전용)",
-			"externalTaskDerivedRailNote": "종속성에서 위치 결정"
+			"externalTaskDerivedRailNote": "종속성에서 위치 결정",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}}의 관련 작업입니다. 자체 날짜가 없어 위치와 길이가 종속성과 예상 시간({{estimate}})에서 정해집니다(여기서는 읽기 전용)",
+			"derivedTaskTitle": "{{title}} — 자체 날짜가 없어 종속성에서 위치가 정해집니다(여기서는 읽기 전용)",
+			"derivedTaskEstimateTitle": "{{title}} — 자체 날짜가 없어 위치와 길이가 종속성과 예상 시간({{estimate}})에서 정해집니다(여기서는 읽기 전용)",
+			"derivedEstimateRailNote": "종속성에서 결정 · {{estimate}}"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",

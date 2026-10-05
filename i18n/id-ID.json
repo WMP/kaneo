@@ -2613,6 +2613,7 @@
 				"startDate": "Tanggal mulai",
 				"dueDate": "Tanggal jatuh tempo",
 				"progress": "Progres",
+				"estimateMinutes": "Estimasi",
 				"isMilestone": "Tonggak",
 				"constraintType": "Jenis batasan",
 				"constraintDate": "Tanggal batasan",
@@ -2796,6 +2797,7 @@
 			"removeRelation": "Hapus relasi",
 			"related": "Terkait",
 			"blocks": "Memblokir",
+			"blockedBy": "Diblokir oleh",
 			"selectTask": "Pilih tugas untuk ditautkan",
 			"types": {
 				"blocks": "memblokir",
@@ -2854,7 +2856,12 @@
 			"milestone": "Tonggak",
 			"progress": "Progres",
 			"constraint": "Batasan",
-			"approval": "Persetujuan"
+			"approval": "Persetujuan",
+			"estimate": "Estimasi"
+		},
+		"estimate": {
+			"valueHours": "{{value}} jam",
+			"valueDays": "{{value}} hari"
 		},
 		"move": {
 			"title": "Pindahkan tugas",
@@ -2949,6 +2956,19 @@
 				"updateError": "Gagal memperbarui progres tugas",
 				"updateSuccess": "Progres tugas diperbarui",
 				"exactLabel": "Persentase selesai yang tepat"
+			},
+			"estimate": {
+				"label": "Estimasi",
+				"description": "Perkiraan usaha yang direncanakan. Satu hari kerja adalah 8 jam. Menentukan panjang tugas tanpa tanggal pada bagan Gantt.",
+				"amountLabel": "Jumlah estimasi",
+				"unitLabel": "Satuan estimasi",
+				"units": {
+					"hours": "Jam",
+					"days": "Hari"
+				},
+				"clear": "Hapus estimasi",
+				"updateSuccess": "Estimasi tugas diperbarui",
+				"updateError": "Gagal memperbarui estimasi tugas"
 			},
 			"constraint": {
 				"currentDate": "Saat ini: {{date}}",
@@ -3100,7 +3120,11 @@
 			"barColorSourceNone": "Tidak ada",
 			"barColorSourceFirstLabel": "Label pertama",
 			"externalTaskDerivedTitle": "{{title}} — tugas terkait di {{projectName}}; posisi ini diturunkan dari dependensinya karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
-			"externalTaskDerivedRailNote": "Posisi dari dependensi"
+			"externalTaskDerivedRailNote": "Posisi dari dependensi",
+			"externalTaskDerivedEstimateTitle": "{{title}} — tugas terkait di {{projectName}}; posisi dan panjangnya diturunkan dari dependensi dan estimasinya ({{estimate}}) karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
+			"derivedTaskTitle": "{{title}} — posisi ini diturunkan dari dependensinya karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
+			"derivedTaskEstimateTitle": "{{title}} — posisi dan panjangnya diturunkan dari dependensi dan estimasinya ({{estimate}}) karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
+			"derivedEstimateRailNote": "Dari dependensi · {{estimate}}"
 		},
 		"delete": {
 			"title": "Hapus Tugas?",

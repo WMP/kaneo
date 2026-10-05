@@ -2620,6 +2620,7 @@
 				"startDate": "Başlangıç tarihi",
 				"dueDate": "Bitiş tarihi",
 				"progress": "İlerleme",
+				"estimateMinutes": "Tahmin",
 				"isMilestone": "Kilometre taşı",
 				"constraintType": "Kısıtlama türü",
 				"constraintDate": "Kısıtlama tarihi",
@@ -2803,6 +2804,7 @@
 			"removeRelation": "İlişkiyi kaldır",
 			"related": "İlişkili",
 			"blocks": "Engeller",
+			"blockedBy": "Engellenen",
 			"selectTask": "Bağlanacak bir talep seç",
 			"types": {
 				"blocks": "engeller",
@@ -2861,7 +2863,12 @@
 			"milestone": "Kilometre taşı",
 			"progress": "İlerleme",
 			"constraint": "Kısıtlama",
-			"approval": "Onay"
+			"approval": "Onay",
+			"estimate": "Tahmin"
+		},
+		"estimate": {
+			"valueHours": "{{value}} sa",
+			"valueDays": "{{value}} g"
 		},
 		"move": {
 			"title": "Talebi taşı",
@@ -2956,6 +2963,19 @@
 				"updateError": "Görev ilerlemesi güncellenemedi",
 				"updateSuccess": "Görev ilerlemesi güncellendi",
 				"exactLabel": "Tam tamamlanma yüzdesi"
+			},
+			"estimate": {
+				"label": "Tahmin",
+				"description": "Planlanan iş yükü. Bir iş günü 8 saattir. Tarihi olmayan görevlerin Gantt grafiğindeki uzunluğunu belirler.",
+				"amountLabel": "Tahmin miktarı",
+				"unitLabel": "Tahmin birimi",
+				"units": {
+					"hours": "Saat",
+					"days": "Gün"
+				},
+				"clear": "Tahmini temizle",
+				"updateSuccess": "Görev tahmini güncellendi",
+				"updateError": "Görev tahmini güncellenemedi"
 			},
 			"constraint": {
 				"currentDate": "Mevcut: {{date}}",
@@ -3109,7 +3129,11 @@
 			"barColorSourceNone": "Yok",
 			"barColorSourceFirstLabel": "İlk etiket",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}} projesindeki ilgili talep; kendi tarihleri olmadığı için bu konum bağımlılığından türetilmiştir (burada salt okunur)",
-			"externalTaskDerivedRailNote": "Konum bağımlılıktan"
+			"externalTaskDerivedRailNote": "Konum bağımlılıktan",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} projesindeki ilgili görev; kendi tarihleri olmadığı için konumu ve uzunluğu bağımlılığından ve {{estimate}} tahmininden türetilmiştir (burada salt okunur)",
+			"derivedTaskTitle": "{{title}} — kendi tarihleri olmadığı için bu konum bağımlılığından türetilmiştir (burada salt okunur)",
+			"derivedTaskEstimateTitle": "{{title}} — kendi tarihleri olmadığı için konumu ve uzunluğu bağımlılığından ve {{estimate}} tahmininden türetilmiştir (burada salt okunur)",
+			"derivedEstimateRailNote": "Bağımlılıktan · {{estimate}}"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",

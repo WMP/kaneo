@@ -1,5 +1,6 @@
 import { client } from "@kaneo/libs";
 import type { InferRequestType } from "hono/client";
+import { isEstimateUnit } from "@/lib/estimate";
 import { HttpError } from "@/lib/http-error";
 import type Task from "@/types/task";
 
@@ -32,6 +33,11 @@ async function updateTask(taskId: string, task: Task) {
       projectId: task.projectId,
       progress: task.progress ?? 0,
       isMilestone: task.isMilestone ?? false,
+      // Undefined leaves the stored estimate untouched; null clears it.
+      estimateMinutes: task.estimateMinutes,
+      estimateUnit: isEstimateUnit(task.estimateUnit)
+        ? task.estimateUnit
+        : undefined,
       constraintType: task.constraintType as
         | UpdateTaskConstraintType
         | undefined,

@@ -141,6 +141,18 @@ describe("Activity", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows an estimate change in hours", () => {
+    renderActivity(
+      baseActivity({
+        eventData: {
+          changes: { estimateMinutes: { from: null, to: 90 } },
+        },
+      }),
+    );
+
+    expect(screen.getByText("Estimate: — → 1.5h")).toBeInTheDocument();
+  });
+
   it("lists a boolean and unrecognized fields readably", () => {
     renderActivity(
       baseActivity({

@@ -660,6 +660,15 @@ export const taskTable = pgTable(
     // helper), so out-of-range values can only reach the database through a
     // path that skips the API.
     progress: integer("ganttpro_progress").default(0).notNull(),
+    // Effort estimate in whole minutes (null = no estimate). A work day is 8
+    // hours (480 minutes), see task/estimate.ts. `estimateUnit` only records
+    // how the user entered the value ("hours" | "days", validated at the API
+    // layer) so the UI can show it back the same way; the stored quantity is
+    // always minutes. Display-only on the Gantt: it gives an undated task
+    // with a `blocks` predecessor a bar length, but is never persisted as
+    // dates. Non-negative via the check constraint below.
+    estimateMinutes: integer("ganttpro_estimate_minutes"),
+    estimateUnit: text("ganttpro_estimate_unit").notNull().default("hours"),
     // A milestone renders as a single diamond marker at its date rather than
     // a spanning bar; see gantt-task-bar rendering on the web side.
     isMilestone: boolean("ganttpro_is_milestone").default(false).notNull(),
@@ -701,6 +710,10 @@ export const taskTable = pgTable(
     check(
       "ganttpro_task_progress_range",
       sql`${table.progress} >= 0 AND ${table.progress} <= 100`,
+    ),
+    check(
+      "ganttpro_task_estimate_minutes_range",
+      sql`${table.estimateMinutes} IS NULL OR ${table.estimateMinutes} >= 0`,
     ),
   ],
 );

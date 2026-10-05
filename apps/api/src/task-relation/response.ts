@@ -37,6 +37,13 @@ const relatedTaskSchema = z
       description:
         "Renders as a diamond marker on the Gantt chart, same as an own task.",
     }),
+    estimateMinutes: z.number().int().min(0).nullable().openapi({
+      description:
+        "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate.",
+    }),
+    estimateUnit: z.string().openapi({
+      description: "How the estimate is entered and shown: `hours` or `days`.",
+    }),
     approvalStatus: z.string().openapi({
       description:
         "Client-approval gate: one of none, pending, approved, rejected. Used to warn when a `blocks` relation's source task is not yet approved.",

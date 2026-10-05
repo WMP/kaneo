@@ -440,3 +440,161 @@ describe("TaskRelations link errors", () => {
     );
   });
 });
+
+describe("TaskRelations link creation direction", () => {
+  const sameProjectTask = {
+    id: "task-b",
+    title: "Task B",
+    status: "done",
+    priority: null,
+    number: 2,
+    projectId: CURRENT_PROJECT_ID,
+    userId: null,
+    assigneeName: null,
+  };
+
+  function openPicker() {
+    renderRelations();
+    fireEvent.click(screen.getByRole("button", { name: "" }));
+  }
+
+  beforeEach(() => {
+    mocks.taskRelations.mockReturnValue({ data: [] });
+    mocks.createRelation.mockResolvedValue(undefined);
+    mocks.projectTasks.mockReturnValue({
+      data: {
+        columns: [{ ...CURRENT_PROJECT_COLUMNS[0], tasks: [sameProjectTask] }],
+      },
+    });
+  });
+
+  it("creates a related link from this task to the picked one by default", async () => {
+    openPicker();
+    fireEvent.click(screen.getByText("Task B"));
+
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-current",
+        targetTaskId: "task-b",
+        relationType: "related",
+      }),
+    );
+  });
+
+  it("creates a blocks dependency from this task to the picked one for Blocks", async () => {
+    openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blocks" }),
+    );
+    fireEvent.click(screen.getByText("Task B"));
+
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-current",
+        targetTaskId: "task-b",
+        relationType: "blocks",
+        dependencyType: "fs",
+        lagDays: 0,
+      }),
+    );
+  });
+
+  it("creates a blocks relation with the ends swapped for Blocked by", async () => {
+    openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blockedBy" }),
+    );
+    fireEvent.click(screen.getByText("Task B"));
+
+    // The picked task is the blocker (source); this task is blocked (target).
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-b",
+        targetTaskId: "task-current",
+        relationType: "blocks",
+        dependencyType: "fs",
+        lagDays: 0,
+      }),
+    );
+  });
+
+  it("sends the chosen dependency type and lag for Blocked by", async () => {
+    openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blockedBy" }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "tasks:relations.dependency.lagLabel",
+      }),
+      { target: { value: "2" } },
+    );
+    fireEvent.click(screen.getByText("Task B"));
+
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-b",
+        targetTaskId: "task-current",
+        relationType: "blocks",
+        dependencyType: "fs",
+        lagDays: 2,
+      }),
+    );
+  });
+
+  it("shows the dependency controls for Blocks and Blocked by, but not for Related", () => {
+    openPicker();
+    const lag = () =>
+      screen.queryByRole("spinbutton", {
+        name: "tasks:relations.dependency.lagLabel",
+      });
+
+    expect(lag()).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blocks" }),
+    );
+    expect(lag()).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blockedBy" }),
+    );
+    expect(lag()).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.related" }),
+    );
+    expect(lag()).not.toBeInTheDocument();
+  });
+
+  it("shows the circular-dependency message when Blocked by would close a cycle", async () => {
+    mocks.createRelation.mockRejectedValueOnce(
+      new HttpError(409, "This dependency would create a circular dependency"),
+    );
+    openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blockedBy" }),
+    );
+    fireEvent.click(screen.getByText("Task B"));
+
+    await waitFor(() =>
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        "tasks:relations.circularDependencyError",
+      ),
+    );
+  });
+
+  it("shows the generic link error for a duplicate Blocked by relation", async () => {
+    mocks.createRelation.mockRejectedValueOnce(
+      new HttpError(409, "This relation already exists"),
+    );
+    openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.blockedBy" }),
+    );
+    fireEvent.click(screen.getByText("Task B"));
+
+    await waitFor(() =>
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        "tasks:relations.linkError",
+      ),
+    );
+  });
+});

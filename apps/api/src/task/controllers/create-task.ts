@@ -11,6 +11,7 @@ import {
 import { publishEvent } from "../../events";
 import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { setTaskAssignees } from "../assignments";
+import type { EstimateUnit } from "../estimate";
 import {
   assertRequiredCustomFields,
   assertValidTaskStatus,
@@ -52,6 +53,8 @@ async function createTask({
   priority,
   progress,
   isMilestone,
+  estimateMinutes,
+  estimateUnit,
   customFields,
 }: {
   projectId: string;
@@ -65,6 +68,8 @@ async function createTask({
   priority?: string;
   progress?: number;
   isMilestone?: boolean;
+  estimateMinutes?: number | null;
+  estimateUnit?: EstimateUnit;
   customFields?: CustomFieldInput[];
 }) {
   const resolvedStatus = status || "to-do";
@@ -145,6 +150,8 @@ async function createTask({
         priority: resolvedPriority,
         progress: progress ?? 0,
         isMilestone: isMilestone ?? false,
+        estimateMinutes: estimateMinutes ?? null,
+        estimateUnit: estimateUnit ?? "hours",
         number: taskNumber,
         position: nextPosition,
       })

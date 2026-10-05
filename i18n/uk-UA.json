@@ -2634,6 +2634,7 @@
 				"startDate": "Дата початку",
 				"dueDate": "Термін виконання",
 				"progress": "Прогрес",
+				"estimateMinutes": "Оцінка",
 				"isMilestone": "Віха",
 				"constraintType": "Тип обмеження",
 				"constraintDate": "Дата обмеження",
@@ -2817,6 +2818,7 @@
 			"removeRelation": "Видалити зв'язок",
 			"related": "Пов'язано",
 			"blocks": "Блокує",
+			"blockedBy": "Заблоковано",
 			"selectTask": "Обрати завдання для зв'язування",
 			"types": {
 				"blocks": "блокує",
@@ -2875,7 +2877,12 @@
 			"milestone": "Віха",
 			"progress": "Прогрес",
 			"constraint": "Обмеження",
-			"approval": "Затвердження"
+			"approval": "Затвердження",
+			"estimate": "Оцінка"
+		},
+		"estimate": {
+			"valueHours": "{{value}} год",
+			"valueDays": "{{value}} дн."
 		},
 		"move": {
 			"title": "Перемістити завдання",
@@ -2970,6 +2977,19 @@
 				"updateError": "Не вдалося оновити прогрес завдання",
 				"updateSuccess": "Прогрес завдання оновлено",
 				"exactLabel": "Точний відсоток виконання"
+			},
+			"estimate": {
+				"label": "Оцінка",
+				"description": "Планова трудомісткість. Робочий день дорівнює 8 годинам. Визначає довжину завдань без дат на діаграмі Ганта.",
+				"amountLabel": "Значення оцінки",
+				"unitLabel": "Одиниця оцінки",
+				"units": {
+					"hours": "Години",
+					"days": "Дні"
+				},
+				"clear": "Очистити оцінку",
+				"updateSuccess": "Оцінку завдання оновлено",
+				"updateError": "Не вдалося оновити оцінку завдання"
 			},
 			"constraint": {
 				"currentDate": "Поточна: {{date}}",
@@ -3127,7 +3147,11 @@
 			"barColorSourceNone": "Немає",
 			"barColorSourceFirstLabel": "Перша мітка",
 			"externalTaskDerivedTitle": "{{title}} — пов’язане завдання в {{projectName}}; позицію визначено за його залежністю, оскільки в завдання немає власних дат (тут лише для читання)",
-			"externalTaskDerivedRailNote": "Позиція за залежністю"
+			"externalTaskDerivedRailNote": "Позиція за залежністю",
+			"externalTaskDerivedEstimateTitle": "{{title}} — пов’язане завдання в {{projectName}}; його позицію та довжину визначено за залежністю й оцінкою ({{estimate}}), оскільки в завдання немає власних дат (тут лише для читання)",
+			"derivedTaskTitle": "{{title}} — позицію визначено за його залежністю, оскільки в завдання немає власних дат (тут лише для читання)",
+			"derivedTaskEstimateTitle": "{{title}} — його позицію та довжину визначено за залежністю й оцінкою ({{estimate}}), оскільки в завдання немає власних дат (тут лише для читання)",
+			"derivedEstimateRailNote": "За залежністю · {{estimate}}"
 		},
 		"delete": {
 			"title": "Видалити завдання?",

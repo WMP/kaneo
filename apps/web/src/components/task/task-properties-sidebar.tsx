@@ -8,6 +8,7 @@ import {
   Flag,
   GitBranch,
   History,
+  Hourglass,
   Percent,
   Plus,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import {
   getDueDateStatus,
   isTaskCompleted,
 } from "@/lib/due-date-status";
+import { formatEstimate } from "@/lib/estimate";
 import { findAssignee } from "@/lib/find-assignee";
 import { formatDateShort } from "@/lib/format";
 import {
@@ -56,6 +58,7 @@ import TaskAssigneeTriggerContent from "./task-assignee-trigger-content";
 import TaskBaselinePopover from "./task-baseline-popover";
 import TaskConstraintPopover from "./task-constraint-popover";
 import TaskDueDatePopover from "./task-due-date-popover";
+import TaskEstimatePopover from "./task-estimate-popover";
 import TaskLabelsPopover from "./task-labels-popover";
 import TaskMilestonePopover from "./task-milestone-popover";
 import TaskMovePopover from "./task-move-popover";
@@ -142,6 +145,26 @@ function TaskScheduleButtons({
           <span className="text-xs font-semibold">{task.progress ?? 0}%</span>
         </Button>
       </TaskProgressPopover>
+      <TaskEstimatePopover task={task}>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={t("tasks:popover.estimate.label")}
+          className={buttonClassName}
+        >
+          <Hourglass className="w-3.5 h-3.5 text-muted-foreground" />
+          <span
+            className={cn(
+              "text-xs font-semibold",
+              task.estimateMinutes == null && "text-muted-foreground",
+            )}
+          >
+            {task.estimateMinutes == null
+              ? t("tasks:properties.estimate")
+              : formatEstimate(task.estimateMinutes, task.estimateUnit, t)}
+          </span>
+        </Button>
+      </TaskEstimatePopover>
       <TaskMilestonePopover task={task}>
         <Button
           variant="ghost"

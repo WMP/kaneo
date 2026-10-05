@@ -45,6 +45,7 @@ import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
 import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
+import { GanttExternalRailEntry } from "@/components/gantt/gantt-external-rail-entry";
 import type { ExternalGanttTask } from "@/components/gantt/gantt-external-task-bar";
 import { GanttExternalTaskBar } from "@/components/gantt/gantt-external-task-bar";
 import {
@@ -939,12 +940,16 @@ function RouteComponent() {
   // this board, so a cross-project edge would otherwise always be dropped
   // for lack of a box. Pull in the far end of every such relation as an
   // extra, read-only Gantt row instead. A far end with its own date is placed
-  // there directly; a DATELESS far end that is the successor of a dated
+  // there directly; a DATELESS far end that is the successor of a placed
   // "blocks" predecessor is placed at the position that dependency implies
   // (see gantt-derived-schedule.ts) — so an FS successor with no start of its
   // own still shows, right after its predecessor, rather than vanishing with
-  // its dependency line. A dateless far end with no dated predecessor still
-  // can't be positioned and is left out.
+  // its dependency line. Its effort estimate, when it has one, gives that bar
+  // its length (in working days). The same derivation covers this project's
+  // OWN dateless tasks that are the successor of a "blocks" relation: they have
+  // no bar of their own, so they get the same display-only row (flagged
+  // `isOwnProject`). A dateless task with no placed predecessor still can't be
+  // positioned and is left out. Nothing here is persisted.
   // Which project each relation endpoint belongs to. A dependency on the chart
   // is edited with the rights of its SOURCE task's own project, which for a
   // cross-project edge is not this one.
@@ -964,13 +969,17 @@ function RouteComponent() {
     // Dated schedules that can ANCHOR a derivation: this project's own dated
     // tasks plus every dated relation endpoint (own or cross-project).
     const datedScheduleById = new Map(ownScheduleByTaskId);
-    // Cross-project endpoints with no dates of their own — candidates to place
-    // by deriving from a dated predecessor below, keyed by id to the summary
-    // needed to render the row.
-    const undatedExternalCandidates = new Map<
+    // Endpoints with no dates of their own — cross-project ones and this
+    // project's own undated tasks — candidates to place by deriving from a
+    // placed predecessor below, keyed by id to the summary needed to render
+    // the row.
+    const undatedCandidates = new Map<
       string,
       NonNullable<NonNullable<typeof taskRelations>[number]["sourceTask"]>
     >();
+    // An own task that already has a row (its own dates, or a summary parent's
+    // rolled-up span) is never a derived candidate.
+    const ownRowIds = new Set(parsedTasks.map((task) => task.id));
 
     for (const relation of taskRelations ?? []) {
       if (relation.relationType === "subtask") continue;
@@ -1000,29 +1009,37 @@ function RouteComponent() {
               isMilestone: candidate.isMilestone,
               isExternal: true as const,
               isDerived: false,
+              estimateMinutes: candidate.estimateMinutes,
+              estimateUnit: candidate.estimateUnit,
             });
           }
           continue;
         }
-        // No dates of its own. Only a cross-project endpoint gets a derived
-        // external row here; an own undated task keeps today's behavior.
-        if (candidate.projectId !== projectId) {
-          undatedExternalCandidates.set(candidate.id, candidate);
+        // No dates of its own: a candidate for a derived row, unless it is an
+        // own task that already has a row.
+        if (candidate.projectId !== projectId || !ownRowIds.has(candidate.id)) {
+          undatedCandidates.set(candidate.id, candidate);
         }
       }
     }
 
-    // Position each undated cross-project successor from its dated
-    // predecessor(s), so its "blocks" dependency line has a bar to land on.
+    const estimateMinutesById = new Map<string, number | null>();
+    for (const [id, candidate] of undatedCandidates) {
+      estimateMinutesById.set(id, candidate.estimateMinutes);
+    }
+
+    // Position each undated successor from its placed predecessor(s), so its
+    // "blocks" dependency line has a bar to land on.
     const derived = deriveUndatedSuccessorSchedules({
       edges: blocksEdges,
       datedScheduleById,
-      undatedCandidateIds: undatedExternalCandidates.keys(),
+      undatedCandidateIds: undatedCandidates.keys(),
       isWorkingDay: workingDayPredicate,
+      estimateMinutesById,
     });
     for (const [id, schedule] of derived) {
       if (external.has(id)) continue;
-      const candidate = undatedExternalCandidates.get(id);
+      const candidate = undatedCandidates.get(id);
       if (!candidate) continue;
       external.set(id, {
         id,
@@ -1035,6 +1052,9 @@ function RouteComponent() {
         isMilestone: candidate.isMilestone,
         isExternal: true as const,
         isDerived: true,
+        isOwnProject: candidate.projectId === projectId,
+        estimateMinutes: candidate.estimateMinutes,
+        estimateUnit: candidate.estimateUnit,
       });
     }
 
@@ -1043,6 +1063,7 @@ function RouteComponent() {
     taskRelations,
     projectId,
     ownScheduleByTaskId,
+    parsedTasks,
     blocksEdges,
     workingDayPredicate,
   ]);
@@ -1149,10 +1170,24 @@ function RouteComponent() {
         connectedExternalIds.add(edge.sourceTaskId);
       }
     }
-    return externalRelatedTasks.filter((task) =>
-      connectedExternalIds.has(task.id),
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return externalRelatedTasks.filter(
+      (task) =>
+        connectedExternalIds.has(task.id) ||
+        // This project's own derived rows are searchable like any own task.
+        (task.isOwnProject &&
+          (task.title.toLowerCase().includes(normalizedQuery) ||
+            `${task.projectSlug}-${task.number ?? ""}`
+              .toLowerCase()
+              .includes(normalizedQuery))),
     );
-  }, [isSearchActive, externalRelatedTasks, scheduledTasks, dependencyEdges]);
+  }, [
+    isSearchActive,
+    searchQuery,
+    externalRelatedTasks,
+    scheduledTasks,
+    dependencyEdges,
+  ]);
 
   // Every row the grid actually draws: this project's own top-level
   // (search-filtered) tasks plus the (also search-aware, see above) external
@@ -2424,33 +2459,20 @@ function RouteComponent() {
                             className="sticky left-0 z-[11] h-full select-none border-r border-border bg-background"
                           >
                             {task.isExternal ? (
-                              <div className="flex min-h-[44px] w-full min-w-0 flex-col items-start justify-center gap-0.5 px-2 py-2 text-left opacity-80 sm:min-h-0 sm:px-3 sm:py-1.5">
-                                <div className="flex w-full items-center gap-1.5">
-                                  <span className="max-w-[7rem] truncate rounded-full bg-secondary/60 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-secondary-foreground sm:max-w-none">
-                                    {task.projectSlug}
-                                    {task.number ? `-${task.number}` : ""}
-                                  </span>
-                                  <span className="truncate text-[10px] text-muted-foreground">
-                                    {t("tasks:gantt.externalProjectBadge", {
-                                      projectName: task.projectName,
-                                    })}
-                                  </span>
-                                </div>
-                                <p className="w-full line-clamp-1 text-xs font-medium leading-tight text-muted-foreground">
-                                  {task.title}
-                                </p>
-                                <p className="w-full truncate text-[11px] leading-tight text-muted-foreground">
-                                  {task.isDerived
-                                    ? // A derived row has no real dates of its
-                                      // own; show that its position comes from
-                                      // the dependency rather than a concrete
-                                      // (fabricated) date range.
-                                      t(
-                                        "tasks:gantt.externalTaskDerivedRailNote",
-                                      )
-                                    : `${formatDateMedium(task.scheduleStart)} - ${formatDateMedium(task.scheduleEnd)}`}
-                                </p>
-                              </div>
+                              <GanttExternalRailEntry
+                                task={task}
+                                onOpenTask={
+                                  task.isOwnProject
+                                    ? () =>
+                                        navigate({
+                                          to: ".",
+                                          search: { taskId: task.id },
+                                          replace: true,
+                                        })
+                                    : undefined
+                                }
+                                onPointerDown={handleRailPointerDown}
+                              />
                             ) : (
                               <div className="flex w-full min-w-0 items-stretch">
                                 {childOwnTasksByParentId.has(task.id) ? (

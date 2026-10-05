@@ -14,6 +14,7 @@ import { assertProjectAssignableUser } from "../../utils/assert-assignable-user"
 import { type AssigneeTarget, setTaskAssignees } from "../assignments";
 import { boardDescription, descriptionDeferred } from "../description-pages";
 import { buildScheduleChanges } from "../diff-schedule-fields";
+import type { EstimateUnit } from "../estimate";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { assertTaskPosition } from "./next-task-position";
 
@@ -85,6 +86,8 @@ async function updateTask(
   isMilestone: boolean | undefined,
   constraintType: string | undefined,
   constraintDate: Date | null | undefined,
+  estimateMinutes: number | null | undefined,
+  estimateUnit: EstimateUnit | undefined,
   userId?: string,
   currentUserId?: string,
   approvalStatus?: string,
@@ -105,6 +108,7 @@ async function updateTask(
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
       progress: taskTable.progress,
+      estimateMinutes: taskTable.estimateMinutes,
       isMilestone: taskTable.isMilestone,
       constraintType: taskTable.constraintType,
       constraintDate: taskTable.constraintDate,
@@ -183,6 +187,8 @@ async function updateTask(
         priority,
         position,
         progress,
+        estimateMinutes,
+        estimateUnit,
         isMilestone,
         constraintType,
         constraintDate,

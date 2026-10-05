@@ -2613,6 +2613,7 @@
 				"startDate": "Ngày bắt đầu",
 				"dueDate": "Ngày đến hạn",
 				"progress": "Tiến độ",
+				"estimateMinutes": "Ước tính",
 				"isMilestone": "Cột mốc",
 				"constraintType": "Loại ràng buộc",
 				"constraintDate": "Ngày ràng buộc",
@@ -2796,6 +2797,7 @@
 			"removeRelation": "Gỡ liên kết",
 			"related": "Liên quan",
 			"blocks": "Chặn",
+			"blockedBy": "Bị chặn bởi",
 			"selectTask": "Chọn một công việc để liên kết",
 			"types": {
 				"blocks": "chặn",
@@ -2854,7 +2856,12 @@
 			"milestone": "Cột mốc",
 			"progress": "Tiến độ",
 			"constraint": "Ràng buộc",
-			"approval": "Phê duyệt"
+			"approval": "Phê duyệt",
+			"estimate": "Ước tính"
+		},
+		"estimate": {
+			"valueHours": "{{value}} giờ",
+			"valueDays": "{{value}} ngày"
 		},
 		"move": {
 			"title": "Di chuyển công việc",
@@ -2949,6 +2956,19 @@
 				"updateError": "Không thể cập nhật tiến độ công việc",
 				"updateSuccess": "Đã cập nhật tiến độ công việc",
 				"exactLabel": "Phần trăm hoàn thành chính xác"
+			},
+			"estimate": {
+				"label": "Ước tính",
+				"description": "Khối lượng công việc dự kiến. Một ngày làm việc là 8 giờ. Dùng để xác định độ dài của công việc không có ngày trên biểu đồ Gantt.",
+				"amountLabel": "Số lượng ước tính",
+				"unitLabel": "Đơn vị ước tính",
+				"units": {
+					"hours": "Giờ",
+					"days": "Ngày"
+				},
+				"clear": "Xóa ước tính",
+				"updateSuccess": "Đã cập nhật ước tính công việc",
+				"updateError": "Không thể cập nhật ước tính công việc"
 			},
 			"constraint": {
 				"currentDate": "Hiện tại: {{date}}",
@@ -3100,7 +3120,11 @@
 			"barColorSourceNone": "Không",
 			"barColorSourceFirstLabel": "Nhãn đầu tiên",
 			"externalTaskDerivedTitle": "{{title}} — công việc liên quan trong {{projectName}}; vị trí này được suy ra từ phụ thuộc của nó vì công việc không có ngày riêng (chỉ đọc ở đây)",
-			"externalTaskDerivedRailNote": "Vị trí theo phụ thuộc"
+			"externalTaskDerivedRailNote": "Vị trí theo phụ thuộc",
+			"externalTaskDerivedEstimateTitle": "{{title}} — công việc liên quan trong {{projectName}}; vị trí và độ dài được suy ra từ phụ thuộc và ước tính {{estimate}} vì công việc không có ngày riêng (chỉ đọc ở đây)",
+			"derivedTaskTitle": "{{title}} — vị trí này được suy ra từ phụ thuộc của nó vì công việc không có ngày riêng (chỉ đọc ở đây)",
+			"derivedTaskEstimateTitle": "{{title}} — vị trí và độ dài được suy ra từ phụ thuộc và ước tính {{estimate}} vì công việc không có ngày riêng (chỉ đọc ở đây)",
+			"derivedEstimateRailNote": "Suy ra từ phụ thuộc · {{estimate}}"
 		},
 		"delete": {
 			"title": "Xóa công việc?",

@@ -1,5 +1,5 @@
 // Shared by every write path that can silently change a task's plan
-// (startDate/dueDate/progress/isMilestone/constraint, and baseline) so the
+// (startDate/dueDate/progress/estimate/isMilestone/constraint, and baseline) so the
 // resulting "task.updated" event carries enough for the activity feed to
 // say what actually changed, not just that something did. Only fields that
 // differ are included; an unaffected caller (e.g. a status-only edit) omits
@@ -14,6 +14,7 @@ const SCHEDULE_FIELDS = [
   "startDate",
   "dueDate",
   "progress",
+  "estimateMinutes",
   "isMilestone",
   "constraintType",
   "constraintDate",

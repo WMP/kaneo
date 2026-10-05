@@ -2627,6 +2627,7 @@
 				"startDate": "Data di inizio",
 				"dueDate": "Data di scadenza",
 				"progress": "Avanzamento",
+				"estimateMinutes": "Stima",
 				"isMilestone": "Milestone",
 				"constraintType": "Tipo di vincolo",
 				"constraintDate": "Data del vincolo",
@@ -2810,6 +2811,7 @@
 			"removeRelation": "Rimuovi relazione",
 			"related": "Correlata",
 			"blocks": "Blocca",
+			"blockedBy": "Bloccata da",
 			"selectTask": "Seleziona un'attività da collegare",
 			"types": {
 				"blocks": "blocca",
@@ -2868,7 +2870,12 @@
 			"milestone": "Milestone",
 			"progress": "Avanzamento",
 			"constraint": "Vincolo",
-			"approval": "Approvazione"
+			"approval": "Approvazione",
+			"estimate": "Stima"
+		},
+		"estimate": {
+			"valueHours": "{{value}} h",
+			"valueDays": "{{value}} g"
 		},
 		"move": {
 			"title": "Sposta attività",
@@ -2963,6 +2970,19 @@
 				"updateError": "Impossibile aggiornare l'avanzamento dell'attività",
 				"updateSuccess": "Avanzamento dell'attività aggiornato",
 				"exactLabel": "Percentuale esatta di completamento"
+			},
+			"estimate": {
+				"label": "Stima",
+				"description": "Impegno pianificato. Un giorno lavorativo equivale a 8 ore. Determina la durata delle attività senza date nel diagramma di Gantt.",
+				"amountLabel": "Valore della stima",
+				"unitLabel": "Unità della stima",
+				"units": {
+					"hours": "Ore",
+					"days": "Giorni"
+				},
+				"clear": "Rimuovi stima",
+				"updateSuccess": "Stima dell'attività aggiornata",
+				"updateError": "Impossibile aggiornare la stima dell'attività"
 			},
 			"constraint": {
 				"currentDate": "Attuale: {{date}}",
@@ -3118,7 +3138,11 @@
 			"barColorSourceNone": "Nessuno",
 			"barColorSourceFirstLabel": "Prima etichetta",
 			"externalTaskDerivedTitle": "{{title}} — attività correlata in {{projectName}}; questa posizione deriva dalla sua dipendenza, poiché l'attività non ha date proprie (sola lettura qui)",
-			"externalTaskDerivedRailNote": "Posizione da dipendenza"
+			"externalTaskDerivedRailNote": "Posizione da dipendenza",
+			"externalTaskDerivedEstimateTitle": "{{title}} — attività correlata in {{projectName}}; posizione e durata derivano dalla sua dipendenza e dalla sua stima di {{estimate}}, poiché l'attività non ha date proprie (sola lettura qui)",
+			"derivedTaskTitle": "{{title}} — questa posizione deriva dalla sua dipendenza, poiché l'attività non ha date proprie (sola lettura qui)",
+			"derivedTaskEstimateTitle": "{{title}} — posizione e durata derivano dalla sua dipendenza e dalla sua stima di {{estimate}}, poiché l'attività non ha date proprie (sola lettura qui)",
+			"derivedEstimateRailNote": "Da dipendenza · {{estimate}}"
 		},
 		"delete": {
 			"title": "Eliminare l'Attività?",

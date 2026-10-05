@@ -2613,6 +2613,7 @@
 				"startDate": "開始日",
 				"dueDate": "期限",
 				"progress": "進捗",
+				"estimateMinutes": "見積もり",
 				"isMilestone": "マイルストーン",
 				"constraintType": "制約タイプ",
 				"constraintDate": "制約日",
@@ -2796,6 +2797,7 @@
 			"removeRelation": "関連付けを解除",
 			"related": "関連",
 			"blocks": "ブロック中",
+			"blockedBy": "ブロックされている",
 			"selectTask": "リンクするタスクを選択",
 			"types": {
 				"blocks": "ブロック中",
@@ -2854,7 +2856,12 @@
 			"milestone": "マイルストーン",
 			"progress": "進捗",
 			"constraint": "制約",
-			"approval": "承認"
+			"approval": "承認",
+			"estimate": "見積もり"
+		},
+		"estimate": {
+			"valueHours": "{{value}}時間",
+			"valueDays": "{{value}}日"
 		},
 		"move": {
 			"title": "タスクを移動",
@@ -2949,6 +2956,19 @@
 				"updateError": "タスクの進捗の更新に失敗しました",
 				"updateSuccess": "タスクの進捗を更新しました",
 				"exactLabel": "正確な完了率"
+			},
+			"estimate": {
+				"label": "見積もり",
+				"description": "予定工数です。1 営業日は 8 時間として扱われ、日付のないタスクのガントチャート上の長さに使われます。",
+				"amountLabel": "見積もりの値",
+				"unitLabel": "見積もりの単位",
+				"units": {
+					"hours": "時間",
+					"days": "日"
+				},
+				"clear": "見積もりをクリア",
+				"updateSuccess": "タスクの見積もりを更新しました",
+				"updateError": "タスクの見積もりの更新に失敗しました"
 			},
 			"constraint": {
 				"currentDate": "現在: {{date}}",
@@ -3113,7 +3133,11 @@
 			"barColorSourceNone": "なし",
 			"barColorSourceFirstLabel": "最初のラベル",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}} の関連タスクです。このタスク自体には日付がないため、位置は依存関係から算出されています（ここでは読み取り専用）",
-			"externalTaskDerivedRailNote": "依存関係から算出した位置"
+			"externalTaskDerivedRailNote": "依存関係から算出した位置",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} の関連タスクです。このタスク自体には日付がないため、位置と長さは依存関係と見積もり（{{estimate}}）から算出されています（ここでは読み取り専用）",
+			"derivedTaskTitle": "{{title}} — このタスク自体には日付がないため、位置は依存関係から算出されています（ここでは読み取り専用）",
+			"derivedTaskEstimateTitle": "{{title}} — このタスク自体には日付がないため、位置と長さは依存関係と見積もり（{{estimate}}）から算出されています（ここでは読み取り専用）",
+			"derivedEstimateRailNote": "依存関係から算出 · {{estimate}}"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",

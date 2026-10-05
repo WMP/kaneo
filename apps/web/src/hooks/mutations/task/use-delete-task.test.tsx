@@ -97,6 +97,8 @@ describe("useDeleteTask", () => {
       priority: "no-priority",
       constraintType: "none" as const,
       constraintDate: null as string | null,
+      estimateMinutes: null as number | null,
+      estimateUnit: "hours",
       approvalStatus: "none",
       approvalNote: null,
     };

@@ -1,5 +1,10 @@
 import { z } from "../openapi";
 import { MAX_TASK_POSITION } from "./controllers/next-task-position";
+import {
+  ESTIMATE_UNITS,
+  MAX_ESTIMATE_MINUTES,
+  WORK_DAY_MINUTES,
+} from "./estimate";
 import { VALID_PRIORITIES } from "./validate-task-fields";
 
 const pagingNumber = (min: number, max: number) =>
@@ -25,6 +30,20 @@ const priority = z.enum(VALID_PRIORITIES);
 
 const progress = z.number().int().min(0).max(100).openapi({
   description: "Percent complete, 0-100.",
+});
+
+const estimateMinutes = z
+  .number()
+  .int()
+  .min(0)
+  .max(MAX_ESTIMATE_MINUTES)
+  .openapi({
+    description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}). A work day is ${WORK_DAY_MINUTES} minutes (8 hours).`,
+  });
+
+const estimateUnit = z.enum(ESTIMATE_UNITS).openapi({
+  description:
+    "How the estimate is entered and shown: `hours` or `days` (a day is 8 hours). The stored quantity is always `estimateMinutes`.",
 });
 
 // The only four constraint types the Gantt chart understands — see the
@@ -118,6 +137,15 @@ export const createTaskBody = z.object({
   isMilestone: z.boolean().optional().openapi({
     description: "Defaults to false.",
   }),
+  estimateMinutes: estimateMinutes
+    .nullable()
+    .optional()
+    .openapi({
+      description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}); omit or null for no estimate.`,
+    }),
+  estimateUnit: estimateUnit.optional().openapi({
+    description: 'Defaults to "hours".',
+  }),
   customFields: z
     .array(z.object({ fieldId: z.string(), value: z.string() }))
     .optional(),
@@ -153,6 +181,17 @@ export const updateTaskBody = z
     // progress/milestones must not silently reset them on every edit.
     progress: progress.optional(),
     isMilestone: z.boolean().optional(),
+    // Same "left untouched when omitted" rule as progress. A null
+    // estimateMinutes clears the estimate.
+    estimateMinutes: estimateMinutes
+      .nullable()
+      .optional()
+      .openapi({
+        description: `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}). Omit to leave the estimate untouched; null clears it.`,
+      }),
+    estimateUnit: estimateUnit.optional().openapi({
+      description: "Omit to leave the estimate unit untouched.",
+    }),
     // Same "optional and left untouched when omitted" rule as
     // progress/isMilestone above. Providing constraintType is what opts a
     // request into touching either field at all: passing constraintDate
