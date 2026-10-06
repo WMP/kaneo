@@ -2822,6 +2822,8 @@
 			"blocks": "Блокує",
 			"blockedBy": "Заблоковано",
 			"selectTask": "Обрати завдання для зв'язування",
+			"chooseTypeFirst": "Спочатку виберіть тип зв'язку",
+			"typeGroupLabel": "Тип зв'язку",
 			"types": {
 				"blocks": "блокує",
 				"related": "пов'язано з",

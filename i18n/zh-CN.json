@@ -2801,6 +2801,8 @@
 			"blocks": "阻塞",
 			"blockedBy": "被阻塞",
 			"selectTask": "选择要关联的任务",
+			"chooseTypeFirst": "请先选择关联类型",
+			"typeGroupLabel": "关联类型",
 			"types": {
 				"blocks": "阻塞",
 				"blocked_by": "被阻塞",

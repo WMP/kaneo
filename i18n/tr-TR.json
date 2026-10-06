@@ -2808,6 +2808,8 @@
 			"blocks": "Engeller",
 			"blockedBy": "Engellenen",
 			"selectTask": "Bağlanacak bir talep seç",
+			"chooseTypeFirst": "Önce bir ilişki türü seçin",
+			"typeGroupLabel": "İlişki türü",
 			"types": {
 				"blocks": "engeller",
 				"blocked_by": "engellenen",

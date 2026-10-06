@@ -2801,6 +2801,8 @@
 			"blocks": "ブロック中",
 			"blockedBy": "ブロックされている",
 			"selectTask": "リンクするタスクを選択",
+			"chooseTypeFirst": "先に関係の種類を選択してください",
+			"typeGroupLabel": "関係の種類",
 			"types": {
 				"blocks": "ブロック中",
 				"blocked_by": "ブロックされている",

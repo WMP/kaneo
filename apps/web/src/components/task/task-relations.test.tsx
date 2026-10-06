@@ -332,6 +332,9 @@ describe("TaskRelations cross-project correctness", () => {
     renderRelations();
 
     fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.related" }),
+    );
     const input = screen.getByPlaceholderText(
       "tasks:relations.searchPlaceholder",
     );
@@ -400,6 +403,9 @@ describe("TaskRelations link errors", () => {
   function openPickerAndLinkTask() {
     renderRelations();
     fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.related" }),
+    );
     fireEvent.click(screen.getByText("Task B"));
   }
 
@@ -468,8 +474,11 @@ describe("TaskRelations link creation direction", () => {
     });
   });
 
-  it("creates a related link from this task to the picked one by default", async () => {
+  it("creates a related link from this task to the picked one for Related", async () => {
     openPicker();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.related" }),
+    );
     fireEvent.click(screen.getByText("Task B"));
 
     await waitFor(() =>
@@ -564,6 +573,19 @@ describe("TaskRelations link creation direction", () => {
     expect(lag()).not.toBeInTheDocument();
   });
 
+  it("keeps the dependency controls hidden until a kind is chosen, and for Related", () => {
+    openPicker();
+    const lag = () =>
+      screen.queryByRole("spinbutton", {
+        name: "tasks:relations.dependency.lagLabel",
+      });
+    expect(lag()).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:relations.related" }),
+    );
+    expect(lag()).not.toBeInTheDocument();
+  });
+
   it("shows the circular-dependency message when Blocked by would close a cycle", async () => {
     mocks.createRelation.mockRejectedValueOnce(
       new HttpError(409, "This dependency would create a circular dependency"),
@@ -596,5 +618,111 @@ describe("TaskRelations link creation direction", () => {
         "tasks:relations.linkError",
       ),
     );
+  });
+});
+
+describe("TaskRelations picker flow", () => {
+  const taskB = {
+    id: "task-b",
+    title: "Task B",
+    status: "done",
+    priority: null,
+    number: 2,
+    projectId: CURRENT_PROJECT_ID,
+    userId: null,
+    assigneeName: null,
+  };
+
+  const openPicker = () => {
+    renderRelations();
+    fireEvent.click(screen.getByRole("button", { name: "" }));
+  };
+  const searchInput = () =>
+    screen.getByPlaceholderText("tasks:relations.searchPlaceholder");
+  const kindButton = (name: "related" | "blocks" | "blockedBy") =>
+    screen.getByRole("button", { name: `tasks:relations.${name}` });
+
+  beforeEach(() => {
+    mocks.taskRelations.mockReturnValue({ data: [] });
+    mocks.createRelation.mockResolvedValue(undefined);
+    mocks.projectTasks.mockReturnValue({
+      data: {
+        columns: [{ ...CURRENT_PROJECT_COLUMNS[0], tasks: [taskB] }],
+      },
+    });
+  });
+
+  it("starts with no kind selected and the search and list disabled", () => {
+    openPicker();
+
+    for (const name of ["related", "blocks", "blockedBy"] as const) {
+      expect(kindButton(name)).toHaveAttribute("aria-pressed", "false");
+    }
+    expect(searchInput()).toBeDisabled();
+    expect(
+      screen.getByText("tasks:relations.chooseTypeFirst"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Task B").closest('[aria-disabled="true"]'),
+    ).not.toBeNull();
+  });
+
+  it("does not link a task while no kind is chosen", () => {
+    openPicker();
+    fireEvent.click(screen.getByText("Task B"));
+
+    expect(mocks.createRelation).not.toHaveBeenCalled();
+  });
+
+  it("enables the search and list after a kind is chosen", () => {
+    openPicker();
+    fireEvent.click(kindButton("blocks"));
+
+    expect(kindButton("blocks")).toHaveAttribute("aria-pressed", "true");
+    expect(searchInput()).toBeEnabled();
+    expect(
+      screen.queryByText("tasks:relations.chooseTypeFirst"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Task B").closest('[aria-disabled="true"]'),
+    ).toBeNull();
+  });
+
+  it("moves focus to the search input after a kind is chosen", async () => {
+    openPicker();
+    fireEvent.click(kindButton("related"));
+
+    await waitFor(() => expect(searchInput()).toHaveFocus());
+  });
+
+  it("shows the dependency controls before the task list", () => {
+    openPicker();
+    fireEvent.click(kindButton("blocks"));
+
+    const lag = screen.getByRole("spinbutton", {
+      name: "tasks:relations.dependency.lagLabel",
+    });
+    const item = screen.getByText("Task B");
+    expect(
+      lag.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("starts with no kind selected again when the picker is reopened", async () => {
+    openPicker();
+    fireEvent.click(kindButton("blocks"));
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+    });
+    await waitFor(() =>
+      expect(
+        screen.queryByPlaceholderText("tasks:relations.searchPlaceholder"),
+      ).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "" }));
+
+    expect(kindButton("blocks")).toHaveAttribute("aria-pressed", "false");
+    expect(searchInput()).toBeDisabled();
   });
 });

@@ -8,7 +8,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,16 @@ const DEPENDENCY_TYPES: GanttDependencyType[] = ["fs", "ss", "ff", "sf"];
 // the source (the blocker) and the current task is the target.
 type PickerRelationType = "related" | "blocks" | "blocked_by";
 
+const RELATION_TYPE_OPTIONS: Array<{
+  type: PickerRelationType;
+  icon: typeof Link2;
+  labelKey: string;
+}> = [
+  { type: "related", icon: Link2, labelKey: "tasks:relations.related" },
+  { type: "blocks", icon: X, labelKey: "tasks:relations.blocks" },
+  { type: "blocked_by", icon: Lock, labelKey: "tasks:relations.blockedBy" },
+];
+
 type TaskRelationsProps = {
   taskId: string;
   projectId: string;
@@ -101,10 +111,13 @@ export default function TaskRelations({
   const [isOpen, setIsOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // No kind is preselected: the user picks one first, and only then does the
+  // task search become usable. Reset every time the picker closes.
   const [selectedRelationType, setSelectedRelationType] =
-    useState<PickerRelationType>("related");
+    useState<PickerRelationType | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   // Only meaningful once selectedRelationType is "blocks" or "blocked_by" —
-  // see the footer controls below.
+  // see the dependency controls above the search.
   const [newDependencyType, setNewDependencyType] =
     useState<GanttDependencyType>("fs");
   const [newLagDaysInput, setNewLagDaysInput] = useState("0");
@@ -136,6 +149,7 @@ export default function TaskRelations({
   useEffect(() => {
     if (!commandOpen) {
       setSearchQuery("");
+      setSelectedRelationType(null);
       setNewDependencyType("fs");
       setNewLagDaysInput("0");
     }
@@ -271,7 +285,15 @@ export default function TaskRelations({
     ];
   }, [filteredTasks, crossProjectGroups, t]);
 
+  const handleSelectRelationType = (type: PickerRelationType) => {
+    setSelectedRelationType(type);
+    // The search input is disabled until a kind is chosen; wait for the
+    // re-render that enables it before moving focus there.
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
   const handleLinkTask = async (pickedTaskId: string) => {
+    if (selectedRelationType === null) return;
     const parsedLagDays = Number.parseInt(newLagDaysInput, 10);
     const isDependency =
       selectedRelationType === "blocks" ||
@@ -366,6 +388,7 @@ export default function TaskRelations({
   });
 
   const totalCount = nonSubtaskRelations.length;
+  const hasRelationType = selectedRelationType !== null;
 
   return (
     <>
@@ -632,99 +655,34 @@ export default function TaskRelations({
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
         <CommandDialogPopup>
-          <Command items={commandGroups}>
-            <CommandInput
-              placeholder={t("tasks:relations.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <CommandPanel>
-              <CommandEmpty>
-                <div className="text-center py-6">
-                  <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    {t("tasks:relations.noTasksFound")}
+          <Command items={commandGroups} disabled={!hasRelationType}>
+            <div className="flex flex-col gap-2 border-b px-3 py-2.5">
+              <fieldset className="m-0 flex min-w-0 flex-col gap-1.5 border-0 p-0">
+                <legend className="sr-only">
+                  {t("tasks:relations.typeGroupLabel")}
+                </legend>
+                <div className="flex items-center gap-1.5">
+                  {RELATION_TYPE_OPTIONS.map(
+                    ({ type, icon: Icon, labelKey }) => (
+                      <button
+                        key={type}
+                        type="button"
+                        aria-pressed={selectedRelationType === type}
+                        className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRelationType === type ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => handleSelectRelationType(type)}
+                      >
+                        <Icon className="size-3" />
+                        {t(labelKey)}
+                      </button>
+                    ),
+                  )}
+                </div>
+                {!hasRelationType && (
+                  <p className="text-xs text-muted-foreground/80">
+                    {t("tasks:relations.chooseTypeFirst")}
                   </p>
-                </div>
-              </CommandEmpty>
-              <CommandList>
-                {(group: TaskGroup, groupIndex: number) => (
-                  <Fragment key={group.value}>
-                    <CommandGroup items={group.items}>
-                      <CommandGroupLabel>{group.label}</CommandGroupLabel>
-                      <CommandCollection>
-                        {(item: TaskItem) => {
-                          // Cross-project items carry their own project slug;
-                          // same-project items fall back to the current project.
-                          const slug = item.projectSlug ?? project?.slug;
-                          const isOtherProject = isOtherProjectItem(
-                            item,
-                            projectId,
-                          );
-                          return (
-                            <CommandItem
-                              key={item.id}
-                              value={`${slug}-${item.number} ${item.title} ${item.description ?? ""}`}
-                              onClick={() => handleLinkTask(item.id)}
-                              className="flex items-center gap-3 py-2"
-                            >
-                              {getColumnIcon(
-                                item.status,
-                                false,
-                                isOtherProject
-                                  ? undefined
-                                  : columnIconBySlug.get(item.status),
-                              )}
-                              <span className="text-xs text-muted-foreground shrink-0 font-mono">
-                                {slug}-{item.number}
-                              </span>
-                              <span className="text-sm truncate flex-1">
-                                {item.title}
-                              </span>
-                            </CommandItem>
-                          );
-                        }}
-                      </CommandCollection>
-                    </CommandGroup>
-                    {groupIndex < commandGroups.length - 1 && (
-                      <CommandSeparator />
-                    )}
-                  </Fragment>
                 )}
-              </CommandList>
-            </CommandPanel>
-            <CommandFooter className="flex-col items-stretch gap-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors ${selectedRelationType === "related" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setSelectedRelationType("related")}
-                  >
-                    <Link2 className="size-3" />
-                    {t("tasks:relations.related")}
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors ${selectedRelationType === "blocks" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setSelectedRelationType("blocks")}
-                  >
-                    <X className="size-3" />
-                    {t("tasks:relations.blocks")}
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors ${selectedRelationType === "blocked_by" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setSelectedRelationType("blocked_by")}
-                  >
-                    <Lock className="size-3" />
-                    {t("tasks:relations.blockedBy")}
-                  </button>
-                </div>
-                <span className="text-muted-foreground/60">
-                  {t("tasks:relations.selectTask")}
-                </span>
-              </div>
+              </fieldset>
 
               {/* Dependency type/lag only apply to a "blocks" relation (either
                   direction) — the Gantt's scheduling dependency; a plain
@@ -769,6 +727,84 @@ export default function TaskRelations({
                   </span>
                 </div>
               )}
+            </div>
+            <CommandInput
+              ref={searchInputRef}
+              autoFocus={false}
+              disabled={!hasRelationType}
+              placeholder={t("tasks:relations.searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <CommandPanel>
+              <div
+                aria-disabled={!hasRelationType}
+                className={
+                  hasRelationType
+                    ? undefined
+                    : "pointer-events-none select-none opacity-50"
+                }
+              >
+                <CommandEmpty>
+                  <div className="text-center py-6">
+                    <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {t("tasks:relations.noTasksFound")}
+                    </p>
+                  </div>
+                </CommandEmpty>
+                <CommandList>
+                  {(group: TaskGroup, groupIndex: number) => (
+                    <Fragment key={group.value}>
+                      <CommandGroup items={group.items}>
+                        <CommandGroupLabel>{group.label}</CommandGroupLabel>
+                        <CommandCollection>
+                          {(item: TaskItem) => {
+                            // Cross-project items carry their own project slug;
+                            // same-project items fall back to the current project.
+                            const slug = item.projectSlug ?? project?.slug;
+                            const isOtherProject = isOtherProjectItem(
+                              item,
+                              projectId,
+                            );
+                            return (
+                              <CommandItem
+                                key={item.id}
+                                value={`${slug}-${item.number} ${item.title} ${item.description ?? ""}`}
+                                disabled={!hasRelationType}
+                                onClick={() => handleLinkTask(item.id)}
+                                className="flex items-center gap-3 py-2"
+                              >
+                                {getColumnIcon(
+                                  item.status,
+                                  false,
+                                  isOtherProject
+                                    ? undefined
+                                    : columnIconBySlug.get(item.status),
+                                )}
+                                <span className="text-xs text-muted-foreground shrink-0 font-mono">
+                                  {slug}-{item.number}
+                                </span>
+                                <span className="text-sm truncate flex-1">
+                                  {item.title}
+                                </span>
+                              </CommandItem>
+                            );
+                          }}
+                        </CommandCollection>
+                      </CommandGroup>
+                      {groupIndex < commandGroups.length - 1 && (
+                        <CommandSeparator />
+                      )}
+                    </Fragment>
+                  )}
+                </CommandList>
+              </div>
+            </CommandPanel>
+            <CommandFooter>
+              <span className="text-muted-foreground/60">
+                {t("tasks:relations.selectTask")}
+              </span>
             </CommandFooter>
           </Command>
         </CommandDialogPopup>

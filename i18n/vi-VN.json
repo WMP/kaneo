@@ -2801,6 +2801,8 @@
 			"blocks": "Chặn",
 			"blockedBy": "Bị chặn bởi",
 			"selectTask": "Chọn một công việc để liên kết",
+			"chooseTypeFirst": "Hãy chọn loại quan hệ trước",
+			"typeGroupLabel": "Loại quan hệ",
 			"types": {
 				"blocks": "chặn",
 				"blocked_by": "bị chặn bởi",

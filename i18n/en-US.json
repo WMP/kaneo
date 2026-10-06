@@ -2812,6 +2812,8 @@
 			"blocks": "Blocks",
 			"blockedBy": "Blocked by",
 			"selectTask": "Select a task to link",
+			"chooseTypeFirst": "Choose a relation type first",
+			"typeGroupLabel": "Relation type",
 			"types": {
 				"blocks": "blocks",
 				"blocked_by": "blocked by",
