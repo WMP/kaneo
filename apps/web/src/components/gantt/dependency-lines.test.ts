@@ -7,6 +7,11 @@ import {
   type TaskBarBox,
 } from "./dependency-lines";
 
+// Where an L route leaves the source bar: the row centre plus/minus the
+// assumed bar half height, min(22, rowHeight / 2) (dir 1 = down, -1 = up).
+const barEdgeY = (centreY: number, rowHeight: number, dir: 1 | -1) =>
+  centreY + dir * Math.min(22, rowHeight / 2);
+
 describe("buildElbowPoints", () => {
   it("draws a single straight hop when source and target share a row", () => {
     const source: TaskBarBox = { left: 0, right: 100, top: 0, height: 40 };
@@ -183,19 +188,21 @@ describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
 
     const points = buildElbowPoints(source, target);
 
+    // Starts on the source bar's bottom edge (row centre plus the assumed
+    // bar half height) at the drop x: no horizontal stub at the source.
     expect(points).toEqual([
-      { x: 100, y: 20 },
-      { x: 100, y: 20 },
+      { x: 100, y: barEdgeY(20, 40, 1) },
       { x: 100, y: 60 },
       { x: 120, y: 60 },
     ]);
+    expect(points[1].x).toBe(points[0].x);
     // Never wraps: x never goes left of the source's own box nor right of
     // the target's start, and the final approach moves right.
     for (const point of points) {
       expect(point.x).toBeGreaterThanOrEqual(source.left);
       expect(point.x).toBeLessThanOrEqual(target.left);
     }
-    expect(points[3].x).toBeGreaterThan(points[2].x);
+    expect(points[2].x).toBeGreaterThan(points[1].x);
   });
 
   it("keeps a straight arrow run before the target when the gap is tighter than the arrowhead", () => {
@@ -204,9 +211,9 @@ describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
 
     const points = buildElbowPoints(source, target);
 
-    expect(points[2]).toEqual({ x: 93, y: 60 }); // 105 - ARROW_RUN (12)
-    expect(points[3]).toEqual({ x: 105, y: 60 });
-    expect(points[2].x).toBeLessThan(source.right);
+    expect(points[1]).toEqual({ x: 93, y: 60 }); // 105 - ARROW_RUN (12)
+    expect(points[2]).toEqual({ x: 105, y: 60 });
+    expect(points[1].x).toBeLessThan(source.right);
   });
 
   it("handles a target starting exactly at the source's end", () => {
@@ -214,10 +221,10 @@ describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
 
     const points = buildElbowPoints(source, target);
 
-    expect(points[0]).toEqual({ x: 100, y: 20 });
-    expect(points[3]).toEqual({ x: 100, y: 60 });
+    expect(points[2]).toEqual({ x: 100, y: 60 });
     // Drop inside the source (88), before the arrow's 12px run.
-    expect(points[2]).toEqual({ x: 88, y: 60 });
+    expect(points[0]).toEqual({ x: 88, y: barEdgeY(20, 40, 1) });
+    expect(points[1]).toEqual({ x: 88, y: 60 });
   });
 
   it("never drops left of the source's own box, even for a very short bar", () => {
@@ -226,7 +233,7 @@ describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
 
     const points = buildElbowPoints(tiny, target);
 
-    expect(points[2].x).toBe(96);
+    expect(points[1].x).toBe(96);
   });
 
   it("goes straight up, then right, for a target in the row above", () => {
@@ -235,8 +242,9 @@ describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
 
     const points = buildElbowPoints(below, target);
 
-    expect(points.map((p) => p.y)).toEqual([100, 100, 60, 60]);
-    expect(points.map((p) => p.x)).toEqual([100, 100, 100, 120]);
+    // Starts on the source's TOP edge (row centre minus the assumed bar half height) and goes up.
+    expect(points.map((p) => p.y)).toEqual([barEdgeY(100, 40, -1), 60, 60]);
+    expect(points.map((p) => p.x)).toEqual([100, 100, 120]);
   });
 
   it("keeps the normal step once the gap fits both exit gaps", () => {
@@ -447,8 +455,9 @@ describe("buildDependencyEdges", () => {
     );
 
     expect(geometry[0].path).toBe(
-      "M 100 20 L 100 52 Q 100 60, 108 60 L 120 60",
+      `M 100 ${barEdgeY(20, 40, 1)} L 100 52 Q 100 60, 108 60 L 120 60`,
     );
+    expect(geometry[0].sourcePoint).toEqual({ x: 100, y: barEdgeY(20, 40, 1) });
     expect(geometry[0].targetPoint).toEqual({ x: 120, y: 60 });
     for (const edge of geometry) {
       // Every x in the path stays within [source.left, target.left].
@@ -460,13 +469,16 @@ describe("buildDependencyEdges", () => {
         expect(x).toBeLessThanOrEqual(120);
       }
     }
-    // Labels stay in the source row, to the right of the source bar, not on
-    // top of the target bars below.
+    // Each label sits in its own target's row, left of the drop run, clear of
+    // the target bar (which starts at 120) and not stacked with the other.
+    expect(geometry[0].typeLabelPoint?.y).toBeGreaterThan(40);
+    expect(geometry[0].typeLabelPoint?.y).toBeLessThan(80);
+    expect(geometry[1].typeLabelPoint?.y).toBeGreaterThan(80);
+    expect(geometry[1].typeLabelPoint?.y).toBeLessThan(120);
     for (const edge of geometry) {
-      expect(edge.typeLabelPoint?.y).toBeLessThan(40);
-      expect(edge.typeLabelPoint?.x).toBeGreaterThan(100);
+      expect((edge.typeLabelPoint?.x ?? 0) + 30).toBeLessThan(120);
     }
-    expect(geometry[1].lagLabelPoint).toEqual({ x: 100, y: 20 });
+    expect(geometry[1].lagLabelPoint).toEqual(geometry[1].typeLabelPoint);
   });
 
   it("still produces a routable path when the target sits before the source", () => {
@@ -740,85 +752,184 @@ describe("buildDependencyEdges", () => {
     expect(edge.typeLabelPoint?.x).toBeLessThan(100);
   });
 
-  it("fans out several 'blocks' edges leaving the same source task, offsetting each further one's type label vertically", () => {
+  it("puts each label in its own target's row, nearer that target than the shared source, one distinct point per edge", () => {
     const boxes = new Map<string, TaskBarBox>([
       ["gate", { left: 0, right: 100, top: 0, height: 40 }],
       ["wave-1", { left: 200, right: 300, top: 80, height: 40 }],
       ["wave-2", { left: 200, right: 300, top: 160, height: 40 }],
-      ["wave-3", { left: 200, right: 300, top: 240, height: 40 }],
+      ["wave-3", { left: 100, right: 300, top: 240, height: 40 }],
     ]);
-    const edges: DependencyEdgeInput[] = [
-      {
-        id: "e1",
+    const edges: DependencyEdgeInput[] = ["wave-1", "wave-2", "wave-3"].map(
+      (target, i) => ({
+        id: `e${i}`,
         sourceTaskId: "gate",
-        targetTaskId: "wave-1",
+        targetTaskId: target,
         relationType: "blocks",
-      },
-      {
-        id: "e2",
-        sourceTaskId: "gate",
-        targetTaskId: "wave-2",
-        relationType: "blocks",
-      },
-      {
-        id: "e3",
-        sourceTaskId: "gate",
-        targetTaskId: "wave-3",
-        relationType: "blocks",
-      },
-    ];
+      }),
+    );
 
-    const [first, second, third] = buildDependencyEdges(edges, boxes);
-    expect(first.typeLabelPoint).not.toBeNull();
-    expect(second.typeLabelPoint).not.toBeNull();
-    expect(third.typeLabelPoint).not.toBeNull();
-    const firstY = first.typeLabelPoint?.y ?? 0;
-    const secondY = second.typeLabelPoint?.y ?? 0;
-    const thirdY = third.typeLabelPoint?.y ?? 0;
-    // Each further edge from the same source is offset further down than the
-    // last, by the same fixed step, rather than all three stacking on the
-    // same y (illegible) or drifting by an unpredictable amount.
-    expect(secondY).toBeGreaterThan(firstY);
-    expect(thirdY).toBeGreaterThan(secondY);
-    expect(thirdY - secondY).toBe(secondY - firstY);
+    const geometry = buildDependencyEdges(edges, boxes);
+    const targetCentres = [100, 180, 260];
+    const sourceCentre = 20;
+    geometry.forEach((edge, i) => {
+      const label = edge.typeLabelPoint;
+      expect(label).not.toBeNull();
+      // Box spans y-14..y+2: centred on the target row, so the label's y is
+      // far closer to the target row than to the source row.
+      expect(Math.abs((label?.y ?? 0) - 6 - targetCentres[i])).toBeLessThan(1);
+      expect(Math.abs((label?.y ?? 0) - targetCentres[i])).toBeLessThan(
+        Math.abs((label?.y ?? 0) - sourceCentre),
+      );
+      // Never reaches the target bar: box right edge stays left of its start.
+      expect((label?.x ?? 0) + 30).toBeLessThanOrEqual(
+        boxes.get(edges[i].targetTaskId)?.left ?? 0,
+      );
+    });
+    const ys = geometry.map((g) => g.typeLabelPoint?.y);
+    expect(new Set(ys).size).toBe(3);
   });
 
-  it("does not let an edge from an unrelated source share in another gate's fan-out offset", () => {
+  it("keeps a type label inside the chart's left edge", () => {
     const boxes = new Map<string, TaskBarBox>([
-      ["gate-a", { left: 0, right: 100, top: 0, height: 40 }],
-      ["gate-b", { left: 0, right: 100, top: 400, height: 40 }],
-      ["wave-a1", { left: 200, right: 300, top: 80, height: 40 }],
-      ["wave-a2", { left: 200, right: 300, top: 160, height: 40 }],
-      ["wave-b1", { left: 200, right: 300, top: 480, height: 40 }],
+      ["a", { left: 0, right: 20, top: 0, height: 40 }],
+      ["b", { left: 30, right: 80, top: 40, height: 40 }],
     ]);
-    const edges: DependencyEdgeInput[] = [
-      {
-        id: "e1",
-        sourceTaskId: "gate-a",
-        targetTaskId: "wave-a1",
-        relationType: "blocks",
-      },
-      {
-        id: "e2",
-        sourceTaskId: "gate-a",
-        targetTaskId: "wave-a2",
-        relationType: "blocks",
-      },
-      {
-        id: "e3",
-        sourceTaskId: "gate-b",
-        targetTaskId: "wave-b1",
-        relationType: "blocks",
-      },
-    ];
+    const [edge] = buildDependencyEdges(
+      [
+        {
+          id: "e",
+          sourceTaskId: "a",
+          targetTaskId: "b",
+          relationType: "blocks",
+        },
+      ],
+      boxes,
+    );
+    expect(edge.typeLabelPoint?.x).toBeGreaterThanOrEqual(30);
+  });
 
-    const [, , fromGateB] = buildDependencyEdges(edges, boxes);
-    // gate-b's edge is on its OWN first fan-out index (0) despite being the
-    // third edge overall — computed here in isolation, the same way it would
-    // be if gate-a's edges didn't exist at all — proving the index is
-    // per-source, not a running count across the whole chart.
-    const [isolatedGateB] = buildDependencyEdges([edges[2]], boxes);
-    expect(fromGateB.typeLabelPoint).toEqual(isolatedGateB.typeLabelPoint);
+  it("puts a label for a connector arriving from the right (sf) to the right of the last vertical run", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["a", { left: 300, right: 400, top: 0, height: 40 }],
+      ["b", { left: 20, right: 100, top: 80, height: 40 }],
+    ]);
+    const [edge] = buildDependencyEdges(
+      [
+        {
+          id: "e",
+          sourceTaskId: "a",
+          targetTaskId: "b",
+          relationType: "blocks",
+          dependencyType: "sf",
+        },
+      ],
+      boxes,
+    );
+    // The sf route enters the target's end edge (100) from the right.
+    expect((edge.typeLabelPoint?.x ?? 0) - 30).toBeGreaterThanOrEqual(100);
+  });
+
+  it("keeps the same-row label beside the source bar", () => {
+    const boxes = new Map<string, TaskBarBox>([
+      ["a", { left: 0, right: 20, top: 0, height: 40 }],
+      ["b", { left: 24, right: 44, top: 0, height: 40 }],
+    ]);
+    const [edge] = buildDependencyEdges(
+      [
+        {
+          id: "e",
+          sourceTaskId: "a",
+          targetTaskId: "b",
+          relationType: "blocks",
+        },
+      ],
+      boxes,
+    );
+    expect(edge.typeLabelPoint?.x).toBeGreaterThan(20);
+  });
+
+  describe("L fan-out from a shared source", () => {
+    const source: TaskBarBox = { left: 0, right: 100, top: 80, height: 40 };
+    const edgesTo = (ids: string[]): DependencyEdgeInput[] =>
+      ids.map((id, i) => ({
+        id: `e${i}`,
+        sourceTaskId: "src",
+        targetTaskId: id,
+        relationType: "blocks",
+      }));
+    const verticalX = (path: string) =>
+      Number(path.match(/^M ([\d.-]+) /)?.[1]);
+
+    it("gives two L edges distinct parallel drops: nearest target rightmost, farther one further left, no crossing", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", { left: 0, right: 100, top: 0, height: 40 }],
+        ["t1", { left: 120, right: 220, top: 40, height: 40 }],
+        ["t2", { left: 120, right: 220, top: 80, height: 40 }],
+      ]);
+      const [near, far] = buildDependencyEdges(edgesTo(["t1", "t2"]), boxes);
+      const nearX = verticalX(near.path);
+      const farX = verticalX(far.path);
+      expect(nearX).toBe(100);
+      expect(farX).toBe(93);
+      expect(farX).toBeLessThan(nearX);
+      expect(far.sourcePoint.x).toBe(farX);
+      // No crossing: the far edge's vertical (x = farX) lies left of the near
+      // edge's horizontal run into its target (which starts at nearX).
+      expect(farX).toBeLessThan(near.sourcePoint.x);
+      // Both labels hang left of the group's leftmost drop, so the far
+      // edge's vertical never runs through the near edge's label.
+      for (const edge of [near, far]) {
+        expect((edge.typeLabelPoint?.x ?? 0) + 30).toBeLessThanOrEqual(farX);
+      }
+    });
+
+    it("orders by row distance, not edge order", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", { left: 0, right: 100, top: 0, height: 40 }],
+        ["t1", { left: 120, right: 220, top: 40, height: 40 }],
+        ["t2", { left: 120, right: 220, top: 80, height: 40 }],
+      ]);
+      const [far, near] = buildDependencyEdges(edgesTo(["t2", "t1"]), boxes);
+      expect(verticalX(near.path)).toBe(100);
+      expect(verticalX(far.path)).toBe(93);
+    });
+
+    it("mirrors the fan-out for edges going up", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", source],
+        ["t1", { left: 120, right: 220, top: 40, height: 40 }],
+        ["t2", { left: 120, right: 220, top: 0, height: 40 }],
+      ]);
+      const [near, far] = buildDependencyEdges(edgesTo(["t1", "t2"]), boxes);
+      // Starts on the source's top edge (centre minus the assumed bar half height).
+      expect(near.sourcePoint).toEqual({ x: 100, y: barEdgeY(100, 40, -1) });
+      expect(far.sourcePoint).toEqual({ x: 93, y: barEdgeY(100, 40, -1) });
+    });
+
+    it("does not fan edges that leave in opposite directions together", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", source],
+        ["up", { left: 120, right: 220, top: 40, height: 40 }],
+        ["down", { left: 120, right: 220, top: 120, height: 40 }],
+      ]);
+      const [up, down] = buildDependencyEdges(edgesTo(["up", "down"]), boxes);
+      expect(up.sourcePoint.x).toBe(100);
+      expect(down.sourcePoint.x).toBe(100);
+    });
+
+    it("clamps at the source's left edge instead of leaving the bar", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", { left: 90, right: 100, top: 0, height: 40 }],
+        ["t1", { left: 110, right: 210, top: 40, height: 40 }],
+        ["t2", { left: 110, right: 210, top: 80, height: 40 }],
+        ["t3", { left: 110, right: 210, top: 120, height: 40 }],
+      ]);
+      const geometry = buildDependencyEdges(edgesTo(["t1", "t2", "t3"]), boxes);
+      for (const edge of geometry) {
+        expect(edge.sourcePoint.x).toBeGreaterThanOrEqual(90);
+        expect(edge.sourcePoint.x).toBeLessThanOrEqual(100);
+      }
+    });
   });
 
   it("never routes to the left of the leftmost bar by more than the small exit gap, so the connector cannot bleed toward the task rail", () => {
