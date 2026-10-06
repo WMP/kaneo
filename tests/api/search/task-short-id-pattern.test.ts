@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { TASK_SHORT_ID_PATTERN } from "../../../apps/api/src/search/task-short-id";
+import {
+  parseProjectKeyQuery,
+  TASK_SHORT_ID_PATTERN,
+} from "../../../apps/api/src/search/task-short-id";
 
 function parse(query: string) {
   const match = query.match(TASK_SHORT_ID_PATTERN);
@@ -23,5 +26,24 @@ describe("TASK_SHORT_ID_PATTERN", () => {
     expect(parse("DEP-")).toBeNull();
     expect(parse("DEP")).toBeNull();
     expect(parse("-23")).toBeNull();
+  });
+});
+
+describe("parseProjectKeyQuery", () => {
+  it("accepts a key with or without one trailing dash", () => {
+    expect(parseProjectKeyQuery("DC")).toBe("DC");
+    expect(parseProjectKeyQuery("  dc- ")).toBe("dc");
+    expect(parseProjectKeyQuery("ПА-")).toBe("ПА");
+  });
+
+  it("normalizes to NFKC", () => {
+    expect(parseProjectKeyQuery("Ｄ\uFF23")).toBe("DC");
+  });
+
+  it("rejects text that is not a key", () => {
+    expect(parseProjectKeyQuery("")).toBeNull();
+    expect(parseProjectKeyQuery("-")).toBeNull();
+    expect(parseProjectKeyQuery("23")).toBeNull();
+    expect(parseProjectKeyQuery("two words")).toBeNull();
   });
 });
