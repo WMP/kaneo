@@ -1050,6 +1050,8 @@ function RouteComponent() {
               isDerived: false,
               estimateMinutes: candidate.estimateMinutes,
               estimateUnit: candidate.estimateUnit,
+              status: candidate.status,
+              projectId: candidate.projectId,
             });
           }
           continue;
@@ -1094,6 +1096,8 @@ function RouteComponent() {
         isOwnProject: candidate.projectId === projectId,
         estimateMinutes: candidate.estimateMinutes,
         estimateUnit: candidate.estimateUnit,
+        status: candidate.status,
+        projectId: candidate.projectId,
       });
     }
 
@@ -1709,6 +1713,29 @@ function RouteComponent() {
       event.currentTarget.releasePointerCapture?.(event.pointerId);
     },
     [],
+  );
+
+  // Opens a read-only (external or derived) row. An own task opens in this
+  // page's task sheet; a task of another project in the workspace opens on its
+  // own project's task route, exactly as the relations panel does
+  // (task-relations.tsx handleNavigateToTask), so access is checked by that
+  // route and not assumed here.
+  const openExternalTask = useCallback(
+    (task: { id: string; isOwnProject?: boolean; projectId?: string }) => {
+      if (task.isOwnProject || !task.projectId) {
+        navigate({ to: ".", search: { taskId: task.id }, replace: true });
+        return;
+      }
+      navigate({
+        to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
+        params: {
+          workspaceId,
+          projectId: task.projectId,
+          taskId: task.id,
+        },
+      });
+    },
+    [navigate, workspaceId],
   );
 
   // Drag-to-pan starting on the sticky task rail's own row-opening button
@@ -2500,16 +2527,7 @@ function RouteComponent() {
                             {task.isExternal ? (
                               <GanttExternalRailEntry
                                 task={task}
-                                onOpenTask={
-                                  task.isOwnProject
-                                    ? () =>
-                                        navigate({
-                                          to: ".",
-                                          search: { taskId: task.id },
-                                          replace: true,
-                                        })
-                                    : undefined
-                                }
+                                onOpenTask={() => openExternalTask(task)}
                                 onPointerDown={handleRailPointerDown}
                               />
                             ) : (
@@ -2721,6 +2739,7 @@ function RouteComponent() {
                               onHoverChange={(hovering) =>
                                 handleBarHoverChange(task.id, hovering)
                               }
+                              onOpenTask={() => openExternalTask(task)}
                             />
                           ) : task.isSummary ? (
                             <GanttSummaryTaskBar

@@ -3144,7 +3144,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — attività correlata in {{projectName}}; posizione e durata derivano dalla sua dipendenza e dalla sua stima di {{estimate}}, poiché l'attività non ha date proprie (sola lettura qui)",
 			"derivedTaskTitle": "{{title}} — questa posizione deriva dalla sua dipendenza, poiché l'attività non ha date proprie (sola lettura qui)",
 			"derivedTaskEstimateTitle": "{{title}} — posizione e durata derivano dalla sua dipendenza e dalla sua stima di {{estimate}}, poiché l'attività non ha date proprie (sola lettura qui)",
-			"derivedEstimateRailNote": "Da dipendenza · {{estimate}}"
+			"derivedEstimateRailNote": "Da dipendenza · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: apri attività"
 		},
 		"delete": {
 			"title": "Eliminare l'Attività?",

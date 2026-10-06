@@ -3139,7 +3139,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}}의 관련 작업입니다. 자체 날짜가 없어 위치와 길이가 종속성과 예상 시간({{estimate}})에서 정해집니다(여기서는 읽기 전용)",
 			"derivedTaskTitle": "{{title}} — 자체 날짜가 없어 종속성에서 위치가 정해집니다(여기서는 읽기 전용)",
 			"derivedTaskEstimateTitle": "{{title}} — 자체 날짜가 없어 위치와 길이가 종속성과 예상 시간({{estimate}})에서 정해집니다(여기서는 읽기 전용)",
-			"derivedEstimateRailNote": "종속성에서 결정 · {{estimate}}"
+			"derivedEstimateRailNote": "종속성에서 결정 · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: 작업 열기"
 		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",

@@ -40,9 +40,9 @@ describe("computeDependencyCascade", () => {
     expect(shifts.size).toBe(0);
   });
 
-  it("pushes an FS dependent forward just enough to clear source.end + lag", () => {
+  it("pushes an FS dependent forward just enough to clear source.end + 1 + lag", () => {
     // A moved to (0-10), overlapping B's original (5-8). FS + 2 days lag:
-    // B.start must be >= 10 + 2 = 12, so B shifts by 12 - 5 = 7 days.
+    // B.start must be >= 10 + 1 + 2 = 13, so B shifts by 13 - 5 = 8 days.
     const edges: CascadeEdge[] = [
       {
         sourceTaskId: "a",
@@ -62,7 +62,32 @@ describe("computeDependencyCascade", () => {
       tasksById,
     });
 
-    expect(shifts.get("b")).toEqual(schedule(12, 15));
+    expect(shifts.get("b")).toEqual(schedule(13, 16));
+  });
+
+  it("pushes an FS dependent by one day when the predecessor now ends on the dependent's start day", () => {
+    // A moved to (0-5) so its end equals B's start (5): finish-to-start with
+    // lag 0 still forces B to start the NEXT day (6), preserving its span.
+    const edges: CascadeEdge[] = [
+      {
+        sourceTaskId: "a",
+        targetTaskId: "b",
+        dependencyType: "fs",
+        lagDays: 0,
+      },
+    ];
+    const tasksById = new Map([
+      ["a", schedule(0, 5)],
+      ["b", schedule(5, 8)],
+    ]);
+
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges,
+      tasksById,
+    });
+
+    expect(shifts.get("b")).toEqual(schedule(6, 9));
   });
 
   it("enforces SS: target.start >= source.start + lag", () => {
@@ -164,10 +189,10 @@ describe("computeDependencyCascade", () => {
       tasksById,
     });
 
-    // B pushed to start at 10 (delta 5) -> (10-13). C must start >= 13, its
-    // original start is 9, so it also shifts by delta 4 -> (13-16).
-    expect(shifts.get("b")).toEqual(schedule(10, 13));
-    expect(shifts.get("c")).toEqual(schedule(13, 16));
+    // B pushed to start at 11 (delta 6) -> (11-14). C must start >= 15, its
+    // original start is 9, so it also shifts by delta 6 -> (15-18).
+    expect(shifts.get("b")).toEqual(schedule(11, 14));
+    expect(shifts.get("c")).toEqual(schedule(15, 18));
   });
 
   it("preserves each shifted task's original duration", () => {
@@ -280,8 +305,8 @@ describe("computeDependencyCascade", () => {
     });
 
     expect(shifts.has("external")).toBe(false);
-    expect(shifts.get("b")).toEqual(schedule(10, 13));
-    expect(shifts.get("c")).toEqual(schedule(13, 16));
+    expect(shifts.get("b")).toEqual(schedule(11, 14));
+    expect(shifts.get("c")).toEqual(schedule(15, 18));
   });
 
   it("combines multiple incoming edges by taking the strictest (max) forced delta", () => {
@@ -313,9 +338,9 @@ describe("computeDependencyCascade", () => {
       tasksById,
     });
 
-    // A forces C.start >= 20 (delta 15); B forces C.start >= 3 (already
+    // A forces C.start >= 21 (delta 16); B forces C.start >= 4 (already
     // satisfied). The stricter one wins.
-    expect(shifts.get("c")).toEqual(schedule(20, 23));
+    expect(shifts.get("c")).toEqual(schedule(21, 24));
   });
 
   it("nudges a shifted task's start forward off a weekend, preserving its span", () => {
@@ -347,9 +372,9 @@ describe("computeDependencyCascade", () => {
       isWorkingDay,
     });
 
-    // Forced start = A.end (day 2, Saturday), delta = 2 - 0 = 2. Nudged
-    // forward 2 more days (Sat, Sun) to day 4 (Monday); end carries the same
-    // +4 total, from day 3 to day 7.
+    // Forced start = A.end + 1 (day 3, Sunday), delta = 3 - 0 = 3. Nudged
+    // forward 1 more day to day 4 (Monday); end carries the same +4 total,
+    // from day 3 to day 7.
     expect(shifts.get("b")).toEqual(schedule(4, 7));
   });
 
@@ -382,13 +407,13 @@ describe("computeDependencyCascade", () => {
       isWorkingDay,
     });
 
-    // Forced start = day(5) (the holiday); day(6) is Wednesday, a working
-    // day, so B nudges forward exactly one day.
+    // Forced start = day(6), the day after the holiday A ends on: Wednesday,
+    // a working day, so no nudge is needed.
     expect(shifts.get("b")).toEqual(schedule(6, 8));
   });
 
   it("propagates a nudged schedule further downstream through the chain", () => {
-    // A pushes B onto Saturday (day 2); B nudges to Monday (day 4). C is
+    // A pushes B onto Sunday (day 3); B nudges to Monday (day 4). C is
     // blocked by B FS with 0 lag, originally comfortably after B's
     // PRE-nudge schedule but not its POST-nudge one, so C must also shift.
     const edges: CascadeEdge[] = [
@@ -425,11 +450,11 @@ describe("computeDependencyCascade", () => {
       isWorkingDay,
     });
 
-    // B: forced start day 2 (Saturday) -> nudged to day 4 (Monday), end day 7.
+    // B: forced start day 3 (Sunday) -> nudged to day 4 (Monday), end day 7.
     expect(shifts.get("b")).toEqual(schedule(4, 7));
-    // C: forced start >= B.end (7); original start 3, delta 4 -> (7, 9).
-    // day(7) is Wednesday, a working day, so no further nudge.
-    expect(shifts.get("c")).toEqual(schedule(7, 9));
+    // C: forced start >= B.end + 1 (8); original start 3, delta 5 -> (8, 10).
+    // day(8) is Friday, a working day, so no further nudge.
+    expect(shifts.get("c")).toEqual(schedule(8, 10));
   });
 
   it("never nudges when no isWorkingDay predicate is given (unchanged behavior)", () => {
@@ -442,7 +467,7 @@ describe("computeDependencyCascade", () => {
       },
     ];
     const tasksById = new Map([
-      ["a", schedule(0, 2)], // forces B.start to land on Saturday (day 2)
+      ["a", schedule(0, 2)], // forces B.start to land on Sunday (day 3)
       ["b", schedule(0, 3)],
     ]);
 
@@ -452,8 +477,8 @@ describe("computeDependencyCascade", () => {
       tasksById,
     });
 
-    // No predicate supplied: B lands exactly on day 2, weekend or not.
-    expect(shifts.get("b")).toEqual(schedule(2, 5));
+    // No predicate supplied: B lands exactly on day 3, weekend or not.
+    expect(shifts.get("b")).toEqual(schedule(3, 6));
   });
 
   it("never shifts a task pinned by a must_start_on constraint", () => {
@@ -537,7 +562,7 @@ describe("computeDependencyCascade", () => {
       tasksById,
     });
 
-    expect(shifts.get("b")).toEqual(schedule(10, 13));
+    expect(shifts.get("b")).toEqual(schedule(11, 14));
   });
 
   it("returns nothing when the moved task itself is unscoped", () => {
@@ -579,8 +604,8 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
 
   it("re-derives a start-only task's end from its shifted own date", () => {
     // B: start Thu 8, 3 days => Thu, Fri, Mon (end Mon 12, 4 calendar days).
-    // A now finishes Mon 12 => B.start must move to Mon 12 (delta 4). Keeping
-    // the calendar span would end B on Fri 16; the estimate says Mon-Wed.
+    // A now finishes Mon 12 => B.start must move to Tue 13 (delta 5). Keeping
+    // the calendar span would end B on Sat 17; the estimate says Tue-Thu.
     const tasksById = new Map([
       ["a", { start: local(5), end: local(12) }],
       ["b", { start: local(8), end: local(12) }],
@@ -592,7 +617,7 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
       tasksById,
       isWorkingDay: MON_FRI,
     });
-    expect(key(preserved.get("b")?.end as Date)).toBe("2026-10-16");
+    expect(key(preserved.get("b")?.end as Date)).toBe("2026-10-17");
 
     const shifts = computeDependencyCascade({
       movedTaskId: "a",
@@ -604,15 +629,15 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
       ]),
     });
 
-    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-12");
-    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-14");
+    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-13");
+    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-15");
   });
 
   it("keeps a due-only task's re-derived start at or after the constraint", () => {
     // B: due Wed 7, 3 days => Mon 5 - Wed 7. A finishes Fri 9 => B.start must
-    // be >= Fri 9. The calendar-preserving shift ends B on Sun 11, where three
-    // working days back would start Thu 8 (too early): the due date moves on
-    // to Tue 13 (Fri 9, Mon 12, Tue 13).
+    // be >= Sat 10 (the day after), nudged to Mon 12. Three working days back
+    // from the calendar-preserving end must not start before that: the due
+    // date moves on to Wed 14 (Mon 12, Tue 13, Wed 14).
     const tasksById = new Map([
       ["a", { start: local(5), end: local(9) }],
       ["b", { start: local(5), end: local(7) }],
@@ -628,8 +653,8 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
       ]),
     });
 
-    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-9");
-    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-13");
+    expect(key(shifts.get("b")?.start as Date)).toBe("2026-10-12");
+    expect(key(shifts.get("b")?.end as Date)).toBe("2026-10-14");
   });
 
   it("anchors the next dependent on the re-derived span of an estimated task", () => {
@@ -659,9 +684,9 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
       ]),
     });
 
-    // B ends Wed 14, so C (fs, lag 0) starts Wed 14: delta 2, span preserved.
-    expect(key(shifts.get("c")?.start as Date)).toBe("2026-10-14");
-    expect(key(shifts.get("c")?.end as Date)).toBe("2026-10-15");
+    // B ends Thu 15, so C (fs, lag 0) starts Fri 16: delta 4, span preserved.
+    expect(key(shifts.get("c")?.start as Date)).toBe("2026-10-16");
+    expect(key(shifts.get("c")?.end as Date)).toBe("2026-10-17");
   });
 
   it("is unchanged for tasks that are not in estimatedTasks", () => {

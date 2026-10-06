@@ -3119,6 +3119,7 @@
 			"derivedTaskTitle": "{{title}} — this position is derived from its dependency, as the task has no dates of its own (read-only here)",
 			"derivedTaskEstimateTitle": "{{title}} — its position and length are derived from its dependency and its {{estimate}} estimate, as the task has no dates of its own (read-only here)",
 			"derivedEstimateRailNote": "Derived from dependency · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: open task",
 			"milestoneAriaLabel": "{{title}}: milestone, open task",
 			"progressLabel": "{{progress}}% complete",
 			"unitControlAriaLabel": "Timeline granularity",

@@ -3169,7 +3169,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — связанная задача в проекте {{projectName}}; её положение и длина определены зависимостью и оценкой ({{estimate}}), так как у задачи нет собственных дат (здесь только для чтения)",
 			"derivedTaskTitle": "{{title}} — её положение определено зависимостью, так как у задачи нет собственных дат (здесь только для чтения)",
 			"derivedTaskEstimateTitle": "{{title}} — её положение и длина определены зависимостью и оценкой ({{estimate}}), так как у задачи нет собственных дат (здесь только для чтения)",
-			"derivedEstimateRailNote": "По зависимости · {{estimate}}"
+			"derivedEstimateRailNote": "По зависимости · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: открыть задачу"
 		},
 		"delete": {
 			"title": "Удалить задачу?",

@@ -3124,7 +3124,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — gerelateerde taak in {{projectName}}; de positie en lengte zijn afgeleid van de afhankelijkheid en de schatting van {{estimate}}, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
 			"derivedTaskTitle": "{{title}} — deze positie is afgeleid van de afhankelijkheid, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
 			"derivedTaskEstimateTitle": "{{title}} — de positie en lengte zijn afgeleid van de afhankelijkheid en de schatting van {{estimate}}, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
-			"derivedEstimateRailNote": "Afgeleid van afhankelijkheid · {{estimate}}"
+			"derivedEstimateRailNote": "Afgeleid van afhankelijkheid · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: taak openen"
 		},
 		"delete": {
 			"title": "Taak verwijderen?",

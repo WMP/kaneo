@@ -3126,7 +3126,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — tugas terkait di {{projectName}}; posisi dan panjangnya diturunkan dari dependensi dan estimasinya ({{estimate}}) karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
 			"derivedTaskTitle": "{{title}} — posisi ini diturunkan dari dependensinya karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
 			"derivedTaskEstimateTitle": "{{title}} — posisi dan panjangnya diturunkan dari dependensi dan estimasinya ({{estimate}}) karena tugas tidak memiliki tanggal sendiri (hanya baca di sini)",
-			"derivedEstimateRailNote": "Dari dependensi · {{estimate}}"
+			"derivedEstimateRailNote": "Dari dependensi · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: buka tugas"
 		},
 		"delete": {
 			"title": "Hapus Tugas?",

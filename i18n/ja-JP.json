@@ -3139,7 +3139,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} の関連タスクです。このタスク自体には日付がないため、位置と長さは依存関係と見積もり（{{estimate}}）から算出されています（ここでは読み取り専用）",
 			"derivedTaskTitle": "{{title}} — このタスク自体には日付がないため、位置は依存関係から算出されています（ここでは読み取り専用）",
 			"derivedTaskEstimateTitle": "{{title}} — このタスク自体には日付がないため、位置と長さは依存関係と見積もり（{{estimate}}）から算出されています（ここでは読み取り専用）",
-			"derivedEstimateRailNote": "依存関係から算出 · {{estimate}}"
+			"derivedEstimateRailNote": "依存関係から算出 · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: タスクを開く"
 		},
 		"delete": {
 			"title": "タスクを削除しますか？",

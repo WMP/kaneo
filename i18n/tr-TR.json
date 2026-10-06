@@ -3135,7 +3135,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} projesindeki ilgili görev; kendi tarihleri olmadığı için konumu ve uzunluğu bağımlılığından ve {{estimate}} tahmininden türetilmiştir (burada salt okunur)",
 			"derivedTaskTitle": "{{title}} — kendi tarihleri olmadığı için bu konum bağımlılığından türetilmiştir (burada salt okunur)",
 			"derivedTaskEstimateTitle": "{{title}} — kendi tarihleri olmadığı için konumu ve uzunluğu bağımlılığından ve {{estimate}} tahmininden türetilmiştir (burada salt okunur)",
-			"derivedEstimateRailNote": "Bağımlılıktan · {{estimate}}"
+			"derivedEstimateRailNote": "Bağımlılıktan · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: görevi aç"
 		},
 		"delete": {
 			"title": "Talep Silinsin mi?",

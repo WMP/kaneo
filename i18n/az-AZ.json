@@ -3148,7 +3148,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} daxilində əlaqəli tapşırıq; tapşırığın öz tarixləri olmadığından onun mövqeyi və uzunluğu asılılığından və {{estimate}} təxmini əsasında müəyyən edilib (burada yalnız oxumaq üçün)",
 			"derivedTaskTitle": "{{title}} — tapşırığın öz tarixləri olmadığından bu mövqe onun asılılığından götürülüb (burada yalnız oxumaq üçün)",
 			"derivedTaskEstimateTitle": "{{title}} — tapşırığın öz tarixləri olmadığından onun mövqeyi və uzunluğu asılılığından və {{estimate}} təxmini əsasında müəyyən edilib (burada yalnız oxumaq üçün)",
-			"derivedEstimateRailNote": "Asılılıqdan götürülüb · {{estimate}}"
+			"derivedEstimateRailNote": "Asılılıqdan götürülüb · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: tapşırığı aç"
 		},
 		"delete": {
 			"title": "Tapşırıq silinsin?",

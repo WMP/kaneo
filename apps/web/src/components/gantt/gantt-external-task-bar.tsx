@@ -23,6 +23,12 @@ export type ExternalGanttTask = {
   // is drawn from its dependency (and estimate) like a derived cross-project
   // row. It stays read-only on the chart, but its rail entry opens the task.
   isOwnProject?: boolean;
+  // The id of the project the task belongs to (this project's own id for an
+  // own row); used to open a cross-project task in its own project.
+  projectId?: string;
+  // The task's status slug from its relation summary, shown in the rail the
+  // same way an own row shows it. Optional so older callers still compile.
+  status?: string;
   // The task's effort estimate in minutes (null/undefined = none) and the unit
   // it was entered in: a derived row's length comes from it, and the tooltip
   // shows it.
@@ -47,7 +53,14 @@ type GanttExternalTaskBarProps = {
   /** Notified on hover/focus, same as GanttTaskBar, so hovering an external
    * bar highlights its dependency lines too. */
   onHoverChange?: (hovering: boolean) => void;
+  /** Opens the task. The bar stays read-only (no drag or resize); this only
+   * makes it keyboard- and click-activatable like a normal bar. Omitted: the
+   * bar is not interactive. */
+  onOpenTask?: () => void;
 };
+
+const OPEN_BUTTON_CLASS =
+  "absolute inset-0 z-10 cursor-pointer touch-manipulation rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
 
 function getTooltipKey(task: ExternalGanttTask, hasEstimate: boolean) {
   if (!task.isDerived) return "tasks:gantt.externalTaskTitle";
@@ -61,16 +74,17 @@ function getTooltipKey(task: ExternalGanttTask, hasEstimate: boolean) {
     : "tasks:gantt.externalTaskDerivedTitle";
 }
 
-// A related task that lives in a different project: shown so its dependency
-// line has somewhere to land, but not draggable/resizable and not openable
-// as a task in *this* project's board — the task rail beside it renders a
-// matching read-only summary instead of the usual open-task button.
+// A read-only row: a related task of another project, or an own task drawn
+// from its dependency. It is shown so its dependency line has somewhere to
+// land and is never draggable/resizable; when `onOpenTask` is given, an
+// overlaid button opens the task like a normal bar does.
 export function GanttExternalTaskBar({
   task,
   timeline,
   emphasis = "normal",
   isCritical = false,
   onHoverChange,
+  onOpenTask,
 }: GanttExternalTaskBarProps) {
   const { t } = useTranslation();
   const trackCount = timeline.days.length;
@@ -95,6 +109,9 @@ export function GanttExternalTaskBar({
 
   const hasEstimate =
     task.estimateMinutes !== null && task.estimateMinutes !== undefined;
+  const ariaLabel = t("tasks:gantt.externalTaskAriaLabel", {
+    title: task.title,
+  });
   const title = t(getTooltipKey(task, hasEstimate), {
     title: task.title,
     projectName: task.projectName,
@@ -115,15 +132,28 @@ export function GanttExternalTaskBar({
         className="pointer-events-none absolute inset-0 z-[1] grid items-center"
         style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
       >
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; there is nothing to activate here since the task isn't editable from this board. */}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
         <div
           data-gantt-external-bar=""
           style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
           onMouseEnter={() => onHoverChange?.(true)}
           onMouseLeave={() => onHoverChange?.(false)}
-          className="pointer-events-auto relative flex min-h-[44px] cursor-default items-center justify-center sm:min-h-0"
+          onFocus={() => onHoverChange?.(true)}
+          onBlur={() => onHoverChange?.(false)}
+          className={cn(
+            "pointer-events-auto relative flex min-h-[44px] items-center justify-center sm:min-h-0",
+            onOpenTask ? "cursor-pointer" : "cursor-default",
+          )}
           title={title}
         >
+          {onOpenTask ? (
+            <button
+              type="button"
+              aria-label={ariaLabel}
+              onClick={onOpenTask}
+              className={OPEN_BUTTON_CLASS}
+            />
+          ) : null}
           <Diamond
             className={cn(
               "size-4 shrink-0 fill-muted-foreground/20 text-muted-foreground/70",
@@ -147,7 +177,7 @@ export function GanttExternalTaskBar({
       className="pointer-events-none absolute inset-0 z-[1] grid items-center"
       style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; there is nothing to activate here since the task isn't editable from this board. */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
       <div
         data-gantt-external-bar=""
         style={{
@@ -159,8 +189,11 @@ export function GanttExternalTaskBar({
         }}
         onMouseEnter={() => onHoverChange?.(true)}
         onMouseLeave={() => onHoverChange?.(false)}
+        onFocus={() => onHoverChange?.(true)}
+        onBlur={() => onHoverChange?.(false)}
         className={cn(
-          "pointer-events-auto relative mx-1 flex min-h-[44px] min-w-0 cursor-default items-center gap-1.5 overflow-hidden rounded-md border border-muted-foreground/40 bg-muted/40 px-2 text-left text-sm font-medium leading-none text-muted-foreground shadow-sm transition-opacity sm:h-11 sm:min-h-0",
+          "pointer-events-auto relative mx-1 flex min-h-[44px] min-w-0 items-center gap-1.5 overflow-hidden rounded-md border border-muted-foreground/40 bg-muted/40 px-2 text-left text-sm font-medium leading-none text-muted-foreground shadow-sm transition-opacity sm:h-11 sm:min-h-0",
+          onOpenTask ? "cursor-pointer" : "cursor-default",
           // A dated cross-project bar is dashed; a derived (dateless) one is
           // dotted and a touch fainter, so the two never read alike.
           task.isDerived ? "border-dotted" : "border-dashed",
@@ -174,6 +207,14 @@ export function GanttExternalTaskBar({
         )}
         title={title}
       >
+        {onOpenTask ? (
+          <button
+            type="button"
+            aria-label={ariaLabel}
+            onClick={onOpenTask}
+            className={OPEN_BUTTON_CLASS}
+          />
+        ) : null}
         <span className="shrink-0 truncate rounded-full bg-secondary/60 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-secondary-foreground">
           {task.projectSlug}
           {task.number ? `-${task.number}` : ""}

@@ -3153,7 +3153,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — пов’язане завдання в {{projectName}}; його позицію та довжину визначено за залежністю й оцінкою ({{estimate}}), оскільки в завдання немає власних дат (тут лише для читання)",
 			"derivedTaskTitle": "{{title}} — позицію визначено за його залежністю, оскільки в завдання немає власних дат (тут лише для читання)",
 			"derivedTaskEstimateTitle": "{{title}} — його позицію та довжину визначено за залежністю й оцінкою ({{estimate}}), оскільки в завдання немає власних дат (тут лише для читання)",
-			"derivedEstimateRailNote": "За залежністю · {{estimate}}"
+			"derivedEstimateRailNote": "За залежністю · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: відкрити завдання"
 		},
 		"delete": {
 			"title": "Видалити завдання?",

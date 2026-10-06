@@ -3126,7 +3126,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — công việc liên quan trong {{projectName}}; vị trí và độ dài được suy ra từ phụ thuộc và ước tính {{estimate}} vì công việc không có ngày riêng (chỉ đọc ở đây)",
 			"derivedTaskTitle": "{{title}} — vị trí này được suy ra từ phụ thuộc của nó vì công việc không có ngày riêng (chỉ đọc ở đây)",
 			"derivedTaskEstimateTitle": "{{title}} — vị trí và độ dài được suy ra từ phụ thuộc và ước tính {{estimate}} vì công việc không có ngày riêng (chỉ đọc ở đây)",
-			"derivedEstimateRailNote": "Suy ra từ phụ thuộc · {{estimate}}"
+			"derivedEstimateRailNote": "Suy ra từ phụ thuộc · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: mở nhiệm vụ"
 		},
 		"delete": {
 			"title": "Xóa công việc?",

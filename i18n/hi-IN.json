@@ -3135,7 +3135,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} का संबंधित कार्य; इसकी कोई अपनी तारीख़ नहीं है, इसलिए इसका स्थान और अवधि इसकी निर्भरता और {{estimate}} के अनुमान से तय की गई है (यहाँ केवल पढ़ने के लिए)",
 			"derivedTaskTitle": "{{title}} — इसकी कोई अपनी तारीख़ नहीं है, इसलिए यह स्थान इसकी निर्भरता से लिया गया है (यहाँ केवल पढ़ने के लिए)",
 			"derivedTaskEstimateTitle": "{{title}} — इसकी कोई अपनी तारीख़ नहीं है, इसलिए इसका स्थान और अवधि इसकी निर्भरता और {{estimate}} के अनुमान से तय की गई है (यहाँ केवल पढ़ने के लिए)",
-			"derivedEstimateRailNote": "निर्भरता से लिया गया · {{estimate}}"
+			"derivedEstimateRailNote": "निर्भरता से लिया गया · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: कार्य खोलें"
 		},
 		"delete": {
 			"title": "कार्य हटाएँ?",

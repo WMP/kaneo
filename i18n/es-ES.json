@@ -3133,7 +3133,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — tarea relacionada en {{projectName}}; su posición y duración se derivan de su dependencia y de su estimación de {{estimate}}, ya que la tarea no tiene fechas propias (solo lectura aquí)",
 			"derivedTaskTitle": "{{title}} — esta posición se deriva de su dependencia, ya que la tarea no tiene fechas propias (solo lectura aquí)",
 			"derivedTaskEstimateTitle": "{{title}} — su posición y duración se derivan de su dependencia y de su estimación de {{estimate}}, ya que la tarea no tiene fechas propias (solo lectura aquí)",
-			"derivedEstimateRailNote": "Según la dependencia · {{estimate}}"
+			"derivedEstimateRailNote": "Según la dependencia · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: abrir tarea"
 		},
 		"delete": {
 			"title": "¿Eliminar tarea?",

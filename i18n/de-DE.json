@@ -3135,7 +3135,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — verwandte Aufgabe in {{projectName}}; Position und Länge leiten sich aus der Abhängigkeit und der Schätzung von {{estimate}} ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
 			"derivedTaskTitle": "{{title}} — diese Position leitet sich aus der Abhängigkeit ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
 			"derivedTaskEstimateTitle": "{{title}} — Position und Länge leiten sich aus der Abhängigkeit und der Schätzung von {{estimate}} ab, da die Aufgabe keine eigenen Termine hat (hier schreibgeschützt)",
-			"derivedEstimateRailNote": "Aus Abhängigkeit abgeleitet · {{estimate}}"
+			"derivedEstimateRailNote": "Aus Abhängigkeit abgeleitet · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: Aufgabe öffnen"
 		},
 		"delete": {
 			"title": "Aufgabe löschen?",
