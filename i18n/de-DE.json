@@ -1332,6 +1332,8 @@
 			"discard": "Verwerfen",
 			"createRole": "Rolle erstellen",
 			"deleteRole": "Rolle löschen",
+			"deleteRoleAria": "Rolle {{role}} löschen",
+			"permissionColumn": "Berechtigung",
 			"defaultRoleHelp": "Standardrolle: Der Name ist reserviert und die Zeile kann nicht gelöscht werden.",
 			"unsavedChanges": "Du hast ungespeicherte Änderungen",
 			"allChangesSaved": "Alle Änderungen gespeichert",

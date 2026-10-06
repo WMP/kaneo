@@ -1130,6 +1130,8 @@
 			"discard": "Descartar",
 			"createRole": "Crear rol",
 			"deleteRole": "Eliminar rol",
+			"deleteRoleAria": "Eliminar el rol {{role}}",
+			"permissionColumn": "Permiso",
 			"defaultRoleHelp": "Rol por defecto: el nombre está reservado y la fila no se puede eliminar.",
 			"unsavedChanges": "Tienes cambios sin guardar",
 			"allChangesSaved": "Todos los cambios guardados",

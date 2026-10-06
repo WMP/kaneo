@@ -723,6 +723,8 @@
 			"discard": "放弃",
 			"createRole": "创建角色",
 			"deleteRole": "删除角色",
+			"deleteRoleAria": "删除角色 {{role}}",
+			"permissionColumn": "权限",
 			"defaultRoleHelp": "默认角色：名称已保留且该行不可删除。",
 			"unsavedChanges": "有未保存的更改",
 			"allChangesSaved": "所有更改已保存",

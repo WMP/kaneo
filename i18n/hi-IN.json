@@ -724,6 +724,8 @@
 			"discard": "खारिज करें",
 			"createRole": "भूमिका बनाएँ",
 			"deleteRole": "भूमिका हटाएँ",
+			"deleteRoleAria": "भूमिका {{role}} हटाएं",
+			"permissionColumn": "अनुमति",
 			"defaultRoleHelp": "डिफ़ॉल्ट भूमिका: नाम आरक्षित है और पंक्ति हटाई नहीं जा सकती।",
 			"unsavedChanges": "आपके पास सहेजे नहीं गए परिवर्तन हैं",
 			"allChangesSaved": "सभी परिवर्तन सहेजे गए",

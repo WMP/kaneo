@@ -723,6 +723,8 @@
 			"discard": "破棄",
 			"createRole": "ロールを作成",
 			"deleteRole": "ロールを削除",
+			"deleteRoleAria": "ロール {{role}} を削除",
+			"permissionColumn": "権限",
 			"defaultRoleHelp": "デフォルトロール: 名前は予約されており、削除することはできません。",
 			"unsavedChanges": "未保存の変更があります",
 			"allChangesSaved": "すべての変更を保存しました",

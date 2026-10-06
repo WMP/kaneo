@@ -1251,6 +1251,8 @@
 			"discard": "Buang",
 			"createRole": "Buat peran",
 			"deleteRole": "Hapus peran",
+			"deleteRoleAria": "Hapus peran {{role}}",
+			"permissionColumn": "Izin",
 			"defaultRoleHelp": "Peran bawaan - nama dicadangkan dan baris tidak dapat dihapus.",
 			"unsavedChanges": "Ada perubahan yang belum disimpan",
 			"allChangesSaved": "Semua perubahan tersimpan",

@@ -724,6 +724,8 @@
 			"discard": "İmtina et",
 			"createRole": "Rol yarat",
 			"deleteRole": "Rolu sil",
+			"deleteRoleAria": "{{role}} rolunu sil",
+			"permissionColumn": "İcazə",
 			"defaultRoleHelp": "Standart rol: ad qorunur və sətir silinə bilməz.",
 			"unsavedChanges": "Yadda saxlanmamış dəyişiklikləriniz var",
 			"allChangesSaved": "Bütün dəyişikliklər yadda saxlanıldı",

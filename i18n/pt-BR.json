@@ -724,6 +724,8 @@
 			"discard": "Descartar",
 			"createRole": "Criar função",
 			"deleteRole": "Excluir função",
+			"deleteRoleAria": "Excluir função {{role}}",
+			"permissionColumn": "Permissão",
 			"defaultRoleHelp": "Função padrão: o nome é reservado e a linha não pode ser excluída.",
 			"unsavedChanges": "Você tem alterações não salvas",
 			"allChangesSaved": "Todas as alterações foram salvas",

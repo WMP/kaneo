@@ -1252,6 +1252,8 @@
 			"discard": "Vazgeç",
 			"createRole": "Rol oluştur",
 			"deleteRole": "Rolü sil",
+			"deleteRoleAria": "{{role}} rolünü sil",
+			"permissionColumn": "İzin",
 			"defaultRoleHelp": "Varsayılan rol: adı ayrılmıştır ve bu satır silinemez.",
 			"unsavedChanges": "Kaydedilmemiş değişiklikleriniz var",
 			"allChangesSaved": "Tüm değişiklikler kaydedildi",

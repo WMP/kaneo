@@ -724,6 +724,8 @@
 			"discard": "Annulla",
 			"createRole": "Crea ruolo",
 			"deleteRole": "Elimina ruolo",
+			"deleteRoleAria": "Elimina il ruolo {{role}}",
+			"permissionColumn": "Permesso",
 			"defaultRoleHelp": "Ruolo predefinito: il nome è riservato e la riga non può essere eliminata.",
 			"unsavedChanges": "Hai modifiche non salvate",
 			"allChangesSaved": "Tutte le modifiche salvate",

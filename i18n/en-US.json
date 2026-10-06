@@ -850,6 +850,8 @@
 			"discard": "Discard",
 			"createRole": "Create role",
 			"deleteRole": "Delete role",
+			"deleteRoleAria": "Delete role {{role}}",
+			"permissionColumn": "Permission",
 			"defaultRoleHelp": "Default role: name is reserved and the row can't be deleted.",
 			"unsavedChanges": "You have unsaved changes",
 			"allChangesSaved": "All changes saved",
