@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, ne, or, type SQL, sql } from "drizzle-orm";
 import db from "../../database";
 import {
   activityTable,
@@ -15,7 +15,7 @@ import {
   userProjectScopeSql,
 } from "../../utils/project-scope-filters";
 import { escapeLikePattern } from "../like-pattern";
-import { TASK_SHORT_ID_PATTERN } from "../task-short-id";
+import { parseProjectKeyQuery, TASK_SHORT_ID_PATTERN } from "../task-short-id";
 
 type SearchParams = {
   query: string;
@@ -204,21 +204,17 @@ async function globalSearch(params: SearchParams): Promise<{
   const shortIdMatch = query.normalize("NFKC").match(TASK_SHORT_ID_PATTERN);
 
   const shortIdNumber = Number(shortIdMatch?.[2]);
+  const projectKey = parseProjectKeyQuery(query);
 
   if (searchesProjects && (type === "all" || type === "tasks")) {
     const seenTaskIds = new Set<string>();
 
-    // If query matches short-id pattern, look up by project slug + task number first
-    if (
-      shortIdMatch?.[1] &&
-      Number.isSafeInteger(shortIdNumber) &&
-      shortIdNumber > 0 &&
-      shortIdNumber <= 2_147_483_647
-    ) {
-      const slug = shortIdMatch[1];
-      const taskNumber = shortIdNumber;
-
-      const shortIdTasks = await db
+    const selectTasks = (
+      match: SQL | undefined,
+      order: SQL[],
+      rowLimit: number,
+    ) =>
+      db
         .select({
           id: taskTable.id,
           title: taskTable.title,
@@ -249,17 +245,18 @@ async function globalSearch(params: SearchParams): Promise<{
             effectiveExcludeProjectId
               ? ne(taskTable.projectId, effectiveExcludeProjectId)
               : undefined,
-            // A project key may hold `_`, which `ilike` reads as "any one
-            // character", so `DE_-23` would also match a task in `DEP` and the
-            // `limit(1)` below would pick whichever came back first. Escaping
-            // keeps the case-insensitive comparison and drops the wildcards.
-            ilike(projectTable.slug, escapeLikePattern(slug)),
-            eq(taskTable.number, taskNumber),
+            match,
           ),
         )
-        .limit(1);
+        .orderBy(...order)
+        .limit(rowLimit);
 
-      for (const task of shortIdTasks) {
+    const pushTasks = (
+      rows: Awaited<ReturnType<typeof selectTasks>>,
+      relevanceScore: number,
+    ) => {
+      for (const task of rows) {
+        if (seenTaskIds.has(task.id)) continue;
         seenTaskIds.add(task.id);
         results.push({
           id: task.id,
@@ -274,12 +271,60 @@ async function globalSearch(params: SearchParams): Promise<{
           userId: task.userId || undefined,
           userName: task.userName || undefined,
           createdAt: task.createdAt,
-          relevanceScore: 10, // Highest relevance for exact short-id match
+          relevanceScore,
           taskNumber: task.taskNumber || undefined,
           priority: task.priority || undefined,
           status: task.status,
         });
       }
+    };
+
+    // If query matches short-id pattern, look up by project slug + task number first
+    if (
+      shortIdMatch?.[1] &&
+      Number.isSafeInteger(shortIdNumber) &&
+      shortIdNumber > 0 &&
+      shortIdNumber <= 2_147_483_647
+    ) {
+      const slug = shortIdMatch[1];
+      const taskNumber = shortIdNumber;
+
+      const shortIdTasks = await selectTasks(
+        and(
+          // A project key may hold `_`, which `ilike` reads as "any one
+          // character", so `DE_-23` would also match a task in `DEP` and the
+          // `limit(1)` below would pick whichever came back first. Escaping
+          // keeps the case-insensitive comparison and drops the wildcards.
+          ilike(projectTable.slug, escapeLikePattern(slug)),
+          eq(taskTable.number, taskNumber),
+        ),
+        [],
+        1,
+      );
+      pushTasks(shortIdTasks, 10); // Highest relevance for exact short-id match
+    }
+
+    // "DC-1" also lists DC-10, DC-12, DC-100 ... A number has at most 10 digits.
+    if (shortIdMatch?.[1] && shortIdMatch[2] && shortIdMatch[2].length <= 10) {
+      const prefixTasks = await selectTasks(
+        and(
+          ilike(projectTable.slug, escapeLikePattern(shortIdMatch[1])),
+          sql`CAST(${taskTable.number} AS text) LIKE ${`${shortIdMatch[2]}%`}`,
+        ),
+        [asc(taskTable.number)],
+        limit,
+      );
+      pushTasks(prefixTasks, 4);
+    }
+
+    // "DC" or "DC-" lists the newest tasks of project DC.
+    if (projectKey) {
+      const keyTasks = await selectTasks(
+        ilike(projectTable.slug, escapeLikePattern(projectKey)),
+        [desc(taskTable.number)],
+        limit,
+      );
+      pushTasks(keyTasks, 5);
     }
 
     // Also run text search for tasks
@@ -557,6 +602,18 @@ async function globalSearch(params: SearchParams): Promise<{
   results.sort((a, b) => {
     if (a.relevanceScore !== b.relevanceScore) {
       return b.relevanceScore - a.relevanceScore;
+    }
+    // Task-number prefix matches read as a list: DC-10, DC-12, DC-100. Project
+    // key matches list the newest number first.
+    if (
+      a.type === "task" &&
+      b.type === "task" &&
+      a.projectId === b.projectId &&
+      a.taskNumber !== undefined &&
+      b.taskNumber !== undefined
+    ) {
+      if (a.relevanceScore === 4) return a.taskNumber - b.taskNumber;
+      if (a.relevanceScore === 5) return b.taskNumber - a.taskNumber;
     }
     return b.createdAt.getTime() - a.createdAt.getTime();
   });

@@ -17864,7 +17864,7 @@
           "Search"
         ],
         "summary": "Global search",
-        "description": "Search across tasks, projects, workspaces, comments, and activities in one workspace. Results are ranked by relevance and returned as a single flat list, each entry tagged with its `type`. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
+        "description": "Search across tasks, projects, workspaces, comments, and activities in one workspace. Tasks match by title or description, by task key (`DC-12`), by task-number prefix (`DC-1` also lists `DC-10`) and by project key (`DC` or `DC-` lists that project's newest tasks). Results are ranked by relevance and returned as a single flat list, each entry tagged with its `type`. A caller without full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) receives only data of projects they are a member of.",
         "parameters": [
           {
             "schema": {
