@@ -1252,6 +1252,8 @@
 			"discard": "Abandonner",
 			"createRole": "Créer le rôle",
 			"deleteRole": "Supprimer le rôle",
+			"deleteRoleAria": "Supprimer le rôle {{role}}",
+			"permissionColumn": "Autorisation",
 			"defaultRoleHelp": "Rôle par défaut : le nom est réservé et la ligne ne peut pas être supprimée.",
 			"unsavedChanges": "Vous avez des modifications non enregistrées",
 			"allChangesSaved": "Toutes les modifications sont enregistrées",

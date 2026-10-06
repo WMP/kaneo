@@ -1252,6 +1252,8 @@
 			"discard": "Отфрли",
 			"createRole": "Креирај улога",
 			"deleteRole": "Избриши улога",
+			"deleteRoleAria": "Избриши ја улогата {{role}}",
+			"permissionColumn": "Дозвола",
 			"defaultRoleHelp": "Стандардна улога: името е резервирано и редот не може да се избрише.",
 			"unsavedChanges": "Имаш незачувани промени",
 			"allChangesSaved": "Сите промени се зачувани",

@@ -2148,6 +2148,8 @@
 				"title": "Usunąć rolę?"
 			},
 			"deleteRole": "Usuń rolę",
+			"deleteRoleAria": "Usuń rolę {{role}}",
+			"permissionColumn": "Uprawnienie",
 			"discard": "Odrzuć",
 			"emptyDescription": "Role domyślne pojawią się tutaj po utworzeniu ich dla tego obszaru roboczego.",
 			"emptyTitle": "Brak ról",

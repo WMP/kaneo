@@ -1262,6 +1262,8 @@
 			"discard": "Отменить",
 			"createRole": "Создать роль",
 			"deleteRole": "Удалить роль",
+			"deleteRoleAria": "Удалить роль {{role}}",
+			"permissionColumn": "Разрешение",
 			"defaultRoleHelp": "Роль по умолчанию: название зарезервировано, и строку нельзя удалить.",
 			"unsavedChanges": "Есть несохранённые изменения",
 			"allChangesSaved": "Все изменения сохранены",

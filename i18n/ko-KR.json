@@ -1251,6 +1251,8 @@
 			"discard": "취소",
 			"createRole": "역할 만들기",
 			"deleteRole": "역할 삭제",
+			"deleteRoleAria": "{{role}} 역할 삭제",
+			"permissionColumn": "권한",
 			"defaultRoleHelp": "기본 역할: 이름이 예약되어 있으며 행을 삭제할 수 없습니다.",
 			"unsavedChanges": "저장되지 않은 변경사항이 있습니다",
 			"allChangesSaved": "모든 변경사항이 저장되었습니다",

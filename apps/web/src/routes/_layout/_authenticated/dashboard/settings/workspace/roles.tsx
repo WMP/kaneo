@@ -1,15 +1,16 @@
 import { DEFAULT_ROLE_NAMES, statement } from "@kaneo/permissions";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Shield, Trash2, X } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionPanel,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -20,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
   EmptyDescription,
@@ -28,9 +30,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import useCreateWorkspaceRole from "@/hooks/mutations/workspace/use-create-workspace-role";
 import useDeleteWorkspaceRole from "@/hooks/mutations/workspace/use-delete-workspace-role";
 import useUpdateWorkspaceRole from "@/hooks/mutations/workspace/use-update-workspace-role";
@@ -206,12 +205,6 @@ const PERMISSION_LABELS: Record<
 const DEFAULT_ROLE_NAME_SET = new Set<string>(DEFAULT_ROLE_NAMES);
 const RESERVED_ROLE_NAMES = [...DEFAULT_ROLE_NAMES, "owner"];
 
-const DEFAULT_ROLE_DESCRIPTIONS: Record<string, string> = {
-  viewer: "Read-only access to projects, tasks, and workspace.",
-  member: "Can create and update projects and tasks.",
-  admin: "Full project and task management plus workspace settings.",
-};
-
 function isDefaultRole(name: string) {
   return DEFAULT_ROLE_NAME_SET.has(name);
 }
@@ -251,24 +244,6 @@ function RouteComponent() {
   } = useWorkspaceRoles(workspaceId);
   const [draftActive, setDraftActive] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<WorkspaceRole | null>(null);
-  const [openCustom, setOpenCustom] = useState<string[]>([]);
-
-  // Defaults (viewer/member/admin) first so they anchor the list, then
-  // user-created roles in their natural order.
-  const sortedRoles = useMemo(() => {
-    const defaults: WorkspaceRole[] = [];
-    const custom: WorkspaceRole[] = [];
-    for (const role of customRoles) {
-      if (isDefaultRole(role.role)) defaults.push(role);
-      else custom.push(role);
-    }
-    defaults.sort(
-      (a, b) =>
-        DEFAULT_ROLE_NAMES.indexOf(a.role as never) -
-        DEFAULT_ROLE_NAMES.indexOf(b.role as never),
-    );
-    return [...defaults, ...custom];
-  }, [customRoles]);
 
   if (!isAdmin) {
     return (
@@ -291,7 +266,7 @@ function RouteComponent() {
   return (
     <>
       <PageTitle title={t("settings:workspaceRoles.pageTitle")} />
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold">
             {t("settings:workspaceRoles.title")}
@@ -317,30 +292,29 @@ function RouteComponent() {
             <Button
               size="sm"
               className="gap-1.5"
-              onClick={() => {
-                setDraftActive(true);
-                setOpenCustom((prev) =>
-                  prev.includes("__draft__") ? prev : [...prev, "__draft__"],
-                );
-              }}
+              onClick={() => setDraftActive(true)}
               disabled={draftActive}
             >
               <Plus className="w-3.5 h-3.5" />
               {t("settings:workspaceRoles.newRole")}
             </Button>
           </div>
-          <div className="border border-border rounded-md bg-sidebar">
-            {isLoading && !draftActive ? (
+          {isLoading && !draftActive ? (
+            <div className="border border-border rounded-md bg-sidebar">
               <p className="text-xs text-muted-foreground px-4 py-6">
                 {t("settings:workspaceRoles.loading")}
               </p>
-            ) : customRolesError ? (
+            </div>
+          ) : customRolesError ? (
+            <div className="border border-border rounded-md bg-sidebar">
               <p className="text-xs text-destructive px-4 py-6">
                 {customRolesErrorValue instanceof Error
                   ? customRolesErrorValue.message
                   : t("settings:workspaceRoles.loadError")}
               </p>
-            ) : sortedRoles.length === 0 && !draftActive ? (
+            </div>
+          ) : customRoles.length === 0 && !draftActive ? (
+            <div className="border border-border rounded-md bg-sidebar">
               <Empty>
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -354,121 +328,16 @@ function RouteComponent() {
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
-            ) : (
-              <Accordion
-                multiple
-                value={openCustom}
-                onValueChange={(value) =>
-                  setOpenCustom(Array.isArray(value) ? value : [value])
-                }
-              >
-                {draftActive && (
-                  <AccordionItem
-                    value="__draft__"
-                    className="border-b border-border last:border-b-0"
-                  >
-                    <AccordionTrigger className="px-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Shield className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <p className="text-sm font-medium italic">
-                          {t("settings:workspaceRoles.newRole")}
-                        </p>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionPanel className="px-0 pt-0 pb-0">
-                      <DraftEditor
-                        workspaceId={workspaceId}
-                        existingNames={[
-                          ...RESERVED_ROLE_NAMES,
-                          ...customRoles.map((r) => r.role),
-                        ]}
-                        onCreated={(roleName) => {
-                          setDraftActive(false);
-                          setOpenCustom((prev) => [
-                            ...prev.filter((v) => v !== "__draft__"),
-                            roleName,
-                          ]);
-                        }}
-                        onDiscard={() => {
-                          setDraftActive(false);
-                          setOpenCustom((prev) =>
-                            prev.filter((v) => v !== "__draft__"),
-                          );
-                        }}
-                      />
-                    </AccordionPanel>
-                  </AccordionItem>
-                )}
-                {sortedRoles.map((role) => {
-                  const isDefault = isDefaultRole(role.role);
-                  const roleLabel = isDefault
-                    ? t(`team:roles.${role.role}`, {
-                        defaultValue: role.role,
-                      })
-                    : role.role;
-                  const description = isDefault
-                    ? t(
-                        `settings:workspaceRoles.defaultRoleDescriptions.${role.role}`,
-                        {
-                          defaultValue:
-                            DEFAULT_ROLE_DESCRIPTIONS[role.role] ?? "",
-                        },
-                      )
-                    : undefined;
-                  return (
-                    <AccordionItem
-                      key={role.id}
-                      value={role.role}
-                      className="border-b border-border last:border-b-0"
-                    >
-                      <AccordionTrigger className="px-4">
-                        <div className="flex items-center justify-between gap-4 flex-1 min-w-0">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Shield className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p
-                                  className={`text-sm font-medium truncate ${
-                                    isDefault ? "" : "capitalize"
-                                  }`}
-                                >
-                                  {roleLabel}
-                                </p>
-                                {isDefault && (
-                                  <span className="text-[10px] uppercase tracking-wide font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                                    {t("settings:workspaceRoles.defaultBadge")}
-                                  </span>
-                                )}
-                              </div>
-                              {description && (
-                                <p className="text-xs font-normal text-muted-foreground truncate">
-                                  {description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs font-normal text-muted-foreground shrink-0">
-                            {t("settings:workspaceRoles.permissionCount", {
-                              count: permissionCount(role.permission),
-                            })}
-                          </p>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionPanel className="px-0 pt-0 pb-0">
-                        <CustomRoleEditor
-                          key={role.id}
-                          workspaceId={workspaceId}
-                          role={role}
-                          isDefault={isDefault}
-                          onDelete={() => setRoleToDelete(role)}
-                        />
-                      </AccordionPanel>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            )}
-          </div>
+            </div>
+          ) : (
+            <RolePermissionMatrix
+              roles={customRoles}
+              workspaceId={workspaceId}
+              onDeleteRole={setRoleToDelete}
+              creating={draftActive}
+              onCloseCreate={() => setDraftActive(false)}
+            />
+          )}
         </div>
       </div>
 
@@ -479,12 +348,7 @@ function RouteComponent() {
         <DeleteRoleConfirm
           role={roleToDelete}
           workspaceId={workspaceId}
-          onDeleted={() => {
-            setOpenCustom((prev) =>
-              prev.filter((v) => v !== roleToDelete?.role),
-            );
-            setRoleToDelete(null);
-          }}
+          onDeleted={() => setRoleToDelete(null)}
           onCancel={() => setRoleToDelete(null)}
         />
       </AlertDialog>
@@ -492,166 +356,212 @@ function RouteComponent() {
   );
 }
 
-export function PermissionList({
-  permissions,
-  selected,
-  onToggle,
-  readOnly,
-  disabled,
-}: {
-  permissions: Partial<Record<string, string[]>>;
-  selected?: Record<string, Set<string>>;
-  onToggle?: (resource: string, action: string) => void;
-  readOnly?: boolean;
-  disabled?: boolean;
-}) {
-  const { t } = useTranslation();
-  const id = useId();
-  const groups = useMemo(() => {
-    const known = statement as Record<string, readonly string[]>;
-    const resources = new Set([
-      ...Object.keys(known),
-      ...Object.keys(permissions),
-      ...Object.keys(selected ?? {}),
-    ]);
-    return [...resources].map((resource) => ({
-      resource,
-      actions: [
-        ...new Set([
-          ...(Object.hasOwn(known, resource) ? (known[resource] ?? []) : []),
-          ...(Object.hasOwn(permissions, resource)
-            ? (permissions[resource] ?? [])
-            : []),
-          ...(selected && Object.hasOwn(selected, resource)
-            ? (selected[resource] ?? [])
-            : []),
-        ]),
-      ],
-    }));
-  }, [permissions, selected]);
+type PermissionDraft = Record<string, Set<string>>;
 
-  const isChecked = (resource: string, action: string) => {
-    if (selected)
-      return (
-        Object.hasOwn(selected, resource) &&
-        (selected[resource]?.has(action) ?? false)
-      );
-    return permissions[resource]?.includes(action) ?? false;
-  };
+// Classes that turn a checked permission cell green. The indicator paints the
+// filled square (`data-checked:bg-primary` in the shared Checkbox), so it is
+// overridden through a descendant selector with higher specificity.
+export const GRANTED_CHECKBOX_CLASS =
+  "data-checked:border-green-600 **:data-[slot=checkbox-indicator]:data-checked:bg-green-600";
 
-  return (
-    <div className="border-t border-border">
-      {groups.map(({ resource, actions }, groupIndex) => (
-        <div key={resource}>
-          {groupIndex > 0 && <Separator />}
-          <div className="space-y-4 p-4">
-            <p className="text-sm font-medium capitalize">
-              {t(`settings:workspaceRoles.resources.${resource}`, {
-                defaultValue: Object.hasOwn(RESOURCE_LABELS, resource)
-                  ? RESOURCE_LABELS[resource]
-                  : resource.charAt(0).toUpperCase() + resource.slice(1),
-              })}
-            </p>
-            <div className="space-y-4">
-              {actions.map((action, idx) => {
-                const meta = PERMISSION_LABELS[`${resource}:${action}`] ?? {
-                  label: `${action} ${resource}`,
-                  description: "",
-                };
-                const labelKey = `${resource}.${action}.label`;
-                const descriptionKey = `${resource}.${action}.description`;
-                return (
-                  <div key={`${resource}:${action}`}>
-                    {idx > 0 && <Separator className="mb-4" />}
-                    <div className="flex items-center justify-between gap-6">
-                      <div className="space-y-0.5 flex-1 min-w-0">
-                        <Label
-                          className="text-sm font-medium"
-                          htmlFor={`${id}-${resource}-${action}`}
-                        >
-                          {t(
-                            `settings:workspaceRoles.permissions.${labelKey}`,
-                            {
-                              defaultValue: meta.label,
-                            },
-                          )}
-                        </Label>
-                        {meta.description && (
-                          <p className="text-xs text-muted-foreground">
-                            {t(
-                              `settings:workspaceRoles.permissions.${descriptionKey}`,
-                              {
-                                defaultValue: meta.description,
-                              },
-                            )}
-                          </p>
-                        )}
-                      </div>
-                      <Switch
-                        id={`${id}-${resource}-${action}`}
-                        checked={isChecked(resource, action)}
-                        onCheckedChange={
-                          readOnly || !onToggle
-                            ? undefined
-                            : () => onToggle(resource, action)
-                        }
-                        disabled={readOnly || disabled}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+function toDraft(permission: Partial<Record<string, string[]>>) {
+  const out: PermissionDraft = Object.create(null);
+  for (const [resource, actions] of Object.entries(permission)) {
+    out[resource] = new Set(actions);
+  }
+  return out;
 }
 
-function DraftEditor({
+function fromDraft(draft: PermissionDraft) {
+  const out: Record<string, string[]> = Object.create(null);
+  for (const [resource, set] of Object.entries(draft)) {
+    if (set.size > 0) out[resource] = Array.from(set);
+  }
+  return out;
+}
+
+function toggleInDraft(
+  draft: PermissionDraft,
+  resource: string,
+  action: string,
+): PermissionDraft {
+  const next: PermissionDraft = Object.assign(Object.create(null), draft);
+  const set = new Set(next[resource] ?? []);
+  if (set.has(action)) set.delete(action);
+  else set.add(action);
+  next[resource] = set;
+  return next;
+}
+
+function isInDraft(draft: PermissionDraft, resource: string, action: string) {
+  return Object.hasOwn(draft, resource) && draft[resource].has(action);
+}
+
+export function RolePermissionMatrix({
+  roles,
   workspaceId,
-  existingNames,
-  onCreated,
-  onDiscard,
+  onDeleteRole,
+  creating = false,
+  onCloseCreate,
 }: {
+  roles: WorkspaceRole[];
   workspaceId: string;
-  existingNames: string[];
-  onCreated: (roleName: string) => void;
-  onDiscard: () => void;
+  onDeleteRole: (role: WorkspaceRole) => void;
+  creating?: boolean;
+  onCloseCreate?: () => void;
 }) {
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [permissions, setPermissions] = useState<Record<string, Set<string>>>(
-    {},
-  );
-  const { mutateAsync: createRole, isPending } = useCreateWorkspaceRole();
+  const baseId = useId();
+  const { mutateAsync: updateRole, isPending: isUpdating } =
+    useUpdateWorkspaceRole();
+  const { mutateAsync: createRole, isPending: isCreating } =
+    useCreateWorkspaceRole();
+  const isPending = isUpdating || isCreating;
 
-  const togglePermission = (resource: string, action: string) => {
-    setPermissions((prev) => {
-      const next = { ...prev };
-      const set = new Set(next[resource] ?? []);
-      if (set.has(action)) set.delete(action);
-      else set.add(action);
-      next[resource] = set;
-      return next;
+  // Defaults (viewer/member/admin) first so they anchor the matrix, then
+  // user-created roles in their natural order.
+  const sortedRoles = useMemo(() => {
+    const defaults: WorkspaceRole[] = [];
+    const custom: WorkspaceRole[] = [];
+    for (const role of roles) {
+      if (isDefaultRole(role.role)) defaults.push(role);
+      else custom.push(role);
+    }
+    defaults.sort(
+      (a, b) =>
+        DEFAULT_ROLE_NAMES.indexOf(a.role as never) -
+        DEFAULT_ROLE_NAMES.indexOf(b.role as never),
+    );
+    return [...defaults, ...custom];
+  }, [roles]);
+
+  // Only roles the user touched hold a draft; every other role reads straight
+  // from server data, so it follows refetches without any syncing.
+  const [edits, setEdits] = useState<Record<string, PermissionDraft>>({});
+  const [newName, setNewName] = useState("");
+  const [newDraft, setNewDraft] = useState<PermissionDraft>(() =>
+    Object.create(null),
+  );
+
+  // Drop drafts that no longer differ from the server (saved, reverted or
+  // role deleted) so later server changes show through.
+  useEffect(() => {
+    setEdits((prev) => {
+      let changed = false;
+      const next: Record<string, PermissionDraft> = {};
+      for (const [name, draft] of Object.entries(prev)) {
+        const role = roles.find((r) => r.role === name);
+        if (role && !permissionsEqual(fromDraft(draft), role.permission)) {
+          next[name] = draft;
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
     });
+  }, [roles]);
+
+  useEffect(() => {
+    if (!creating) {
+      setNewName("");
+      setNewDraft(Object.create(null));
+    }
+  }, [creating]);
+
+  const draftFor = useCallback(
+    (role: WorkspaceRole): PermissionDraft =>
+      Object.hasOwn(edits, role.role)
+        ? edits[role.role]
+        : toDraft(role.permission),
+    [edits],
+  );
+
+  const dirtyRoles = sortedRoles.filter(
+    (role) =>
+      Object.hasOwn(edits, role.role) &&
+      !permissionsEqual(fromDraft(edits[role.role]), role.permission),
+  );
+  const dirtyNames = new Set(dirtyRoles.map((role) => role.role));
+
+  // Every permission that can be saved must also be visible and removable, so
+  // the rows cover the known statement plus anything persisted or drafted.
+  const groups = useMemo(() => {
+    const known = statement as Record<string, readonly string[]>;
+    const sources: Partial<Record<string, readonly string[]>>[] = [
+      ...roles.map((role) => role.permission),
+      ...Object.values(edits).map(fromDraft),
+      fromDraft(newDraft),
+    ];
+    const resources = new Set(Object.keys(known));
+    for (const source of sources) {
+      for (const resource of Object.keys(source)) resources.add(resource);
+    }
+    return [...resources].map((resource) => {
+      const actions = new Set(
+        Object.hasOwn(known, resource) ? known[resource] : [],
+      );
+      for (const source of sources) {
+        if (!Object.hasOwn(source, resource)) continue;
+        for (const action of source[resource] ?? []) actions.add(action);
+      }
+      return { resource, actions: [...actions] };
+    });
+  }, [roles, edits, newDraft]);
+
+  const toggleRole = (role: WorkspaceRole, resource: string, action: string) =>
+    setEdits((prev) => {
+      const current = Object.hasOwn(prev, role.role)
+        ? prev[role.role]
+        : toDraft(role.permission);
+      const next = toggleInDraft(current, resource, action);
+      const result = Object.assign(Object.create(null), prev) as Record<
+        string,
+        PermissionDraft
+      >;
+      if (permissionsEqual(fromDraft(next), role.permission)) {
+        delete result[role.role];
+      } else {
+        result[role.role] = next;
+      }
+      return result;
+    });
+
+  const handleDiscard = () => setEdits({});
+
+  const handleSave = async () => {
+    for (const role of dirtyRoles) {
+      try {
+        await updateRole({
+          workspaceId,
+          roleName: role.role,
+          permission: fromDraft(edits[role.role]),
+        });
+        toast.success(t("settings:workspaceRoles.toast.updated"));
+      } catch (error) {
+        // The failed role stays dirty so the change can be retried.
+        toast.error(
+          getWorkspaceMemberErrorMessage(
+            error,
+            t,
+            "settings:workspaceRoles.toast.updateError",
+          ),
+        );
+      }
+    }
   };
 
   const handleCreate = async () => {
-    const trimmed = name.trim().toLowerCase();
+    const trimmed = newName.trim().toLowerCase();
     if (!trimmed) {
       toast.error(t("settings:workspaceRoles.validation.nameRequired"));
       return;
     }
-    if (existingNames.map((n) => n.toLowerCase()).includes(trimmed)) {
+    const taken = [...RESERVED_ROLE_NAMES, ...roles.map((r) => r.role)];
+    if (taken.map((n) => n.toLowerCase()).includes(trimmed)) {
       toast.error(t("settings:workspaceRoles.validation.nameExists"));
       return;
     }
-    const permission: Record<string, string[]> = {};
-    for (const [r, set] of Object.entries(permissions)) {
-      if (set.size > 0) permission[r] = Array.from(set);
-    }
+    const permission = fromDraft(newDraft);
     if (Object.keys(permission).length === 0) {
       toast.error(t("settings:workspaceRoles.validation.permissionRequired"));
       return;
@@ -659,7 +569,7 @@ function DraftEditor({
     try {
       await createRole({ workspaceId, role: trimmed, permission });
       toast.success(t("settings:workspaceRoles.toast.created"));
-      onCreated(trimmed);
+      onCloseCreate?.();
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -669,164 +579,269 @@ function DraftEditor({
     }
   };
 
+  const columnCount = sortedRoles.length + (creating ? 1 : 0);
+  const dirty = dirtyRoles.length > 0;
+  const stickyCell = "sticky left-0 z-10 bg-sidebar";
+
   return (
-    <div>
-      <div className="border-t border-border">
-        <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="space-y-0.5">
-            <Label className="text-sm font-medium">
-              {t("settings:workspaceRoles.nameLabel")}
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              {t("settings:workspaceRoles.nameHint")}
-            </p>
-          </div>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("settings:workspaceRoles.namePlaceholder")}
-            className="w-full sm:w-64"
-            autoFocus
-            disabled={isPending}
-          />
+    <div className="space-y-3">
+      <div className="border border-border rounded-md bg-sidebar">
+        <div className="max-h-[70vh] overflow-auto">
+          <table className="w-full border-separate border-spacing-0 text-sm">
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  className={`${stickyCell} top-0 z-30 min-w-52 border-b border-border px-4 py-3 text-left align-bottom text-xs font-medium text-muted-foreground`}
+                >
+                  {t("settings:workspaceRoles.permissionColumn")}
+                </th>
+                {sortedRoles.map((role) => {
+                  const isDefault = isDefaultRole(role.role);
+                  const roleLabel = roleDisplayLabel(role.role, t);
+                  const isDirty = dirtyNames.has(role.role);
+                  return (
+                    <th
+                      key={role.id}
+                      scope="col"
+                      className={`sticky top-0 z-20 min-w-32 border-b border-border px-3 py-3 text-center align-bottom font-normal ${
+                        isDirty ? "bg-muted" : "bg-sidebar"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-sm font-medium ${
+                              isDefault ? "" : "capitalize"
+                            }`}
+                          >
+                            {roleLabel}
+                          </span>
+                          {isDirty && (
+                            <span
+                              role="img"
+                              aria-label={t(
+                                "settings:workspaceRoles.unsavedChanges",
+                              )}
+                              title={t(
+                                "settings:workspaceRoles.unsavedChanges",
+                              )}
+                              className="size-1.5 rounded-full bg-amber-500"
+                            />
+                          )}
+                          {!isDefault && (
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label={t(
+                                "settings:workspaceRoles.deleteRoleAria",
+                                { role: role.role },
+                              )}
+                              onClick={() => onDeleteRole(role)}
+                              disabled={isPending}
+                            >
+                              <Trash2 />
+                            </Button>
+                          )}
+                        </div>
+                        {isDefault && (
+                          <span className="text-[10px] uppercase tracking-wide font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                            {t("settings:workspaceRoles.defaultBadge")}
+                          </span>
+                        )}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {t("settings:workspaceRoles.permissionCount", {
+                            count: permissionCount(fromDraft(draftFor(role))),
+                          })}
+                        </span>
+                      </div>
+                    </th>
+                  );
+                })}
+                {creating && (
+                  <th
+                    scope="col"
+                    className="sticky top-0 z-20 min-w-56 border-b border-border bg-muted px-3 py-3 text-center align-bottom font-normal"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") void handleCreate();
+                        }}
+                        placeholder={t(
+                          "settings:workspaceRoles.namePlaceholder",
+                        )}
+                        aria-label={t("settings:workspaceRoles.nameLabel")}
+                        autoFocus
+                        disabled={isPending}
+                      />
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button
+                          size="sm"
+                          onClick={handleCreate}
+                          disabled={isPending}
+                        >
+                          {t("settings:workspaceRoles.createRole")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={t("settings:workspaceRoles.discard")}
+                          onClick={() => onCloseCreate?.()}
+                          disabled={isPending}
+                        >
+                          <X />
+                        </Button>
+                      </div>
+                    </div>
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {groups.map(({ resource, actions }) => {
+                const groupId = `${baseId}-group-${resource}`;
+                return (
+                  <Fragment key={resource}>
+                    <tr>
+                      <th
+                        id={groupId}
+                        scope="colgroup"
+                        colSpan={columnCount + 1}
+                        className="border-b border-border bg-muted/50 px-4 py-2 text-left"
+                      >
+                        <span className="sticky left-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {t(`settings:workspaceRoles.resources.${resource}`, {
+                            defaultValue: Object.hasOwn(
+                              RESOURCE_LABELS,
+                              resource,
+                            )
+                              ? RESOURCE_LABELS[resource]
+                              : resource.charAt(0).toUpperCase() +
+                                resource.slice(1),
+                          })}
+                        </span>
+                      </th>
+                    </tr>
+                    {actions.map((action) => {
+                      const meta = Object.hasOwn(
+                        PERMISSION_LABELS,
+                        `${resource}:${action}`,
+                      )
+                        ? PERMISSION_LABELS[`${resource}:${action}`]
+                        : { label: `${action} ${resource}`, description: "" };
+                      const permissionLabel = t(
+                        `settings:workspaceRoles.permissions.${resource}.${action}.label`,
+                        { defaultValue: meta.label },
+                      );
+                      const description = meta.description
+                        ? t(
+                            `settings:workspaceRoles.permissions.${resource}.${action}.description`,
+                            { defaultValue: meta.description },
+                          )
+                        : "";
+                      return (
+                        <tr key={`${resource}:${action}`}>
+                          <th
+                            scope="row"
+                            className={`${stickyCell} border-b border-border px-4 py-2.5 text-left font-normal`}
+                          >
+                            <div className="text-sm font-medium">
+                              {permissionLabel}
+                            </div>
+                            {description && (
+                              <div className="text-xs text-muted-foreground">
+                                {description}
+                              </div>
+                            )}
+                          </th>
+                          {sortedRoles.map((role) => (
+                            <td
+                              key={role.id}
+                              className={`border-b border-border px-3 py-2.5 text-center ${
+                                dirtyNames.has(role.role) ? "bg-muted/60" : ""
+                              }`}
+                            >
+                              <Checkbox
+                                className={GRANTED_CHECKBOX_CLASS}
+                                checked={isInDraft(
+                                  draftFor(role),
+                                  resource,
+                                  action,
+                                )}
+                                onCheckedChange={() =>
+                                  toggleRole(role, resource, action)
+                                }
+                                disabled={isPending}
+                                aria-label={`${permissionLabel} — ${roleDisplayLabel(role.role, t)}`}
+                                aria-describedby={groupId}
+                              />
+                            </td>
+                          ))}
+                          {creating && (
+                            <td className="border-b border-border bg-muted/60 px-3 py-2.5 text-center">
+                              <Checkbox
+                                className={GRANTED_CHECKBOX_CLASS}
+                                checked={isInDraft(newDraft, resource, action)}
+                                onCheckedChange={() =>
+                                  setNewDraft((prev) =>
+                                    toggleInDraft(prev, resource, action),
+                                  )
+                                }
+                                disabled={isPending}
+                                aria-label={`${permissionLabel} — ${
+                                  newName.trim() ||
+                                  t("settings:workspaceRoles.newRole")
+                                }`}
+                                aria-describedby={groupId}
+                              />
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div className="max-h-[60vh] overflow-y-auto">
-        <PermissionList
-          permissions={{}}
-          selected={permissions}
-          onToggle={togglePermission}
-          disabled={isPending}
-        />
-      </div>
-      <Separator />
-      <div className="flex justify-end gap-2 px-4 py-3 bg-sidebar">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onDiscard}
-          disabled={isPending}
-        >
-          <X className="w-4 h-4" />
-          {t("settings:workspaceRoles.discard")}
-        </Button>
-        <Button size="sm" onClick={handleCreate} disabled={isPending}>
-          {t("settings:workspaceRoles.createRole")}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-export function CustomRoleEditor({
-  workspaceId,
-  role,
-  isDefault,
-  onDelete,
-}: {
-  workspaceId: string;
-  role: WorkspaceRole;
-  isDefault?: boolean;
-  onDelete: () => void;
-}) {
-  const { t } = useTranslation();
-  const [permissions, setPermissions] = useState<Record<string, Set<string>>>(
-    () => {
-      const out: Record<string, Set<string>> = Object.create(null);
-      for (const [r, actions] of Object.entries(role.permission)) {
-        out[r] = new Set(actions);
-      }
-      return out;
-    },
-  );
-  const { mutateAsync: updateRole, isPending } = useUpdateWorkspaceRole();
-
-  const currentPermissions = useMemo(() => {
-    const out: Record<string, string[]> = Object.create(null);
-    for (const [r, set] of Object.entries(permissions)) {
-      if (set.size > 0) out[r] = Array.from(set);
-    }
-    return out;
-  }, [permissions]);
-
-  const dirty = !permissionsEqual(currentPermissions, role.permission);
-
-  const togglePermission = (resource: string, action: string) => {
-    setPermissions((prev) => {
-      const next = { ...prev };
-      const set = new Set(next[resource] ?? []);
-      if (set.has(action)) set.delete(action);
-      else set.add(action);
-      next[resource] = set;
-      return next;
-    });
-  };
-
-  const handleSave = async () => {
-    try {
-      await updateRole({
-        workspaceId,
-        roleName: role.role,
-        permission: currentPermissions,
-      });
-      toast.success(t("settings:workspaceRoles.toast.updated"));
-    } catch (error) {
-      toast.error(
-        getWorkspaceMemberErrorMessage(
-          error,
-          t,
-          "settings:workspaceRoles.toast.updateError",
-        ),
-      );
-    }
-  };
-
-  // AccordionPanel sets `overflow-hidden`, which kills `position: sticky`
-  // relative to the page. Instead, we cap the permission list height and
-  // give it its own scroll, so the action bar below stays anchored at the
-  // bottom of the accordion content while the user scrolls through
-  // permissions.
-  return (
-    <div>
-      <div className="max-h-[60vh] overflow-y-auto">
-        <PermissionList
-          permissions={role.permission}
-          selected={permissions}
-          onToggle={togglePermission}
-          disabled={isPending}
-        />
-      </div>
-      <Separator />
-      <div className="flex items-center justify-between gap-2 px-4 py-3 bg-sidebar">
-        {isDefault ? (
-          <span className="text-xs text-muted-foreground">
-            {t("settings:workspaceRoles.defaultRoleHelp")}
-          </span>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            className="text-destructive hover:text-destructive"
-            disabled={isPending}
-          >
-            <Trash2 className="w-4 h-4" />
-            {t("settings:workspaceRoles.deleteRole")}
-          </Button>
-        )}
-        <div className="flex items-center gap-3">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex items-center justify-end gap-3 border-t border-border px-4 py-3">
+          <p className="mr-auto text-xs text-muted-foreground">
             {dirty
               ? t("settings:workspaceRoles.unsavedChanges")
               : t("settings:workspaceRoles.allChangesSaved")}
           </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDiscard}
+            disabled={isPending || !dirty}
+          >
+            {t("settings:workspaceRoles.discard")}
+          </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending || !dirty}>
             {t("settings:workspaceRoles.saveChanges")}
           </Button>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        {t("settings:workspaceRoles.defaultRoleHelp")}
+      </p>
     </div>
   );
+}
+
+function roleDisplayLabel(
+  name: string,
+  t: (key: string, options?: { defaultValue?: string }) => string,
+) {
+  return isDefaultRole(name)
+    ? t(`team:roles.${name}`, { defaultValue: name })
+    : name;
 }
 
 function DeleteRoleConfirm({

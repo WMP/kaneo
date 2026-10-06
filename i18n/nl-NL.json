@@ -1130,6 +1130,8 @@
 			"discard": "Verwerpen",
 			"createRole": "Rol aanmaken",
 			"deleteRole": "Rol verwijderen",
+			"deleteRoleAria": "Rol {{role}} verwijderen",
+			"permissionColumn": "Machtiging",
 			"defaultRoleHelp": "Standaardrol: de naam is gereserveerd en de rij kan niet worden verwijderd.",
 			"unsavedChanges": "Je hebt niet-opgeslagen wijzigingen",
 			"allChangesSaved": "Alle wijzigingen opgeslagen",

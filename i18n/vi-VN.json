@@ -723,6 +723,8 @@
 			"discard": "Hủy bỏ",
 			"createRole": "Tạo vai trò",
 			"deleteRole": "Xóa vai trò",
+			"deleteRoleAria": "Xóa vai trò {{role}}",
+			"permissionColumn": "Quyền",
 			"defaultRoleHelp": "Vai trò mặc định: tên đã được giữ trước và không thể xóa hàng này.",
 			"unsavedChanges": "Bạn có thay đổi chưa lưu",
 			"allChangesSaved": "Đã lưu tất cả thay đổi",

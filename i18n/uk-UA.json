@@ -1254,6 +1254,8 @@
 			"discard": "Відхилити",
 			"createRole": "Створити роль",
 			"deleteRole": "Видалити роль",
+			"deleteRoleAria": "Видалити роль {{role}}",
+			"permissionColumn": "Дозвіл",
 			"defaultRoleHelp": "Стандартна роль: назва зарезервована, і цей рядок не можна видалити.",
 			"unsavedChanges": "У вас є незбережені зміни",
 			"allChangesSaved": "Усі зміни збережено",
