@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // the externalRelatedTasks memo in the Gantt route), rather than vanishing
 // together with its dependency line the way a dateless far end used to.
 const m = vi.hoisted(() => ({
+  navigate: vi.fn(),
   component: (() => null) as ComponentType,
   preferencesState: {
     weekStartsOn: 1 as const,
@@ -24,7 +25,7 @@ vi.mock("@tanstack/react-router", () => ({
       useSearch: () => ({}),
     };
   },
-  useNavigate: () => vi.fn(),
+  useNavigate: () => m.navigate,
 }));
 vi.mock("@/components/common/project-layout", () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -212,6 +213,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  m.navigate.mockClear();
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -250,5 +252,28 @@ describe("Gantt derives a dateless cross-project FS successor's position", () =>
         'tasks:gantt.externalTaskDerivedTitle:{"title":"Sign the OVH contract","projectName":"Other Project"}',
       ),
     ).toBeInTheDocument();
+  });
+
+  it("shows the task status and opens the task in its own project from the bar", () => {
+    show();
+
+    // The rail shows the status pill from the relation summary.
+    expect(screen.getAllByText("to-do").length).toBeGreaterThan(1);
+
+    // The derived bar is a keyboard-reachable button that opens the task on
+    // its own project's route, like the relations panel.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: 'tasks:gantt.externalTaskAriaLabel:{"title":"Sign the OVH contract"}',
+      }),
+    );
+    expect(m.navigate).toHaveBeenCalledWith({
+      to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
+      params: {
+        workspaceId: "workspace",
+        projectId: "other-project",
+        taskId: "task-external-undated",
+      },
+    });
   });
 });

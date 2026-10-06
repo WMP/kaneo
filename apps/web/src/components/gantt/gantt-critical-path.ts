@@ -101,6 +101,8 @@ export type CriticalPathResult = {
   droppedEdgeCount: number;
 };
 
+import { FS_HANDOFF_DAYS } from "./gantt-dependency-rules";
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 // Every quantity fed into this module (durations, lag) is a whole number of
 // days, so a genuinely tight link always computes to exactly 0 slack — this
@@ -109,16 +111,10 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const EPSILON_DAYS = 1e-6;
 
 // A finish-to-start hand-off is TIGHT when the successor starts on the day
-// immediately after the predecessor finishes — not the same day. In whole-day
-// terms that immediate-next-day is finish + 1. Feeding day indices from the
-// working calendar (see toDayIndex) makes "the day after" mean the next
-// WORKING day, so a Friday→Monday hand-off across a weekend reads as tight
-// (0 slack) instead of carrying the weekend as phantom slack. Only FS/its
-// mirror use this; SS/FF/SF tie start-to-start or finish-to-finish, which
-// share the same instant and so carry no +1. A same-day FS overlap then
-// computes as slightly negative slack, which is still treated as critical
-// (it is the tightest, over-constrained, part of the schedule).
-const FS_HANDOFF_DAYS = 1;
+// after the predecessor finishes (FS_HANDOFF_DAYS, shared with the cascade and
+// the derived schedule). Day indices from the working calendar make "the day
+// after" the next WORKING day. SS/FF/SF carry no offset. A same-day FS overlap
+// computes as slightly negative slack and is treated as critical.
 
 export type CriticalPathOptions = {
   /** Maps a date to a whole-day ordinal. Defaults to raw calendar days. Pass

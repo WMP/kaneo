@@ -45,9 +45,10 @@
 //  - ANCHORS match edgeForcedDeltaDays in gantt-dependency-cascade.ts, i.e.
 //    the same day arithmetic the cascade uses when it pushes a dated
 //    successor. Finish-to-start therefore means the successor STARTS ON the
-//    predecessor's end day plus the lag (end + lag, not end + 1 + lag): with
-//    lag 0 they share that calendar day, exactly like a cascaded bar.
-//      fs: successor start = predecessor.end   + lag
+//    DAY AFTER the predecessor's end day plus the lag (end + 1 + lag, see
+//    FS_HANDOFF_DAYS), nudged to the next working day: no overlap, like a
+//    cascaded bar.
+//      fs: successor start = predecessor.end   + 1 + lag
 //      ss: successor start = predecessor.start + lag
 //      ff: successor end   = predecessor.end   + lag  (start counted backwards)
 //      sf: successor end   = predecessor.start + lag  (start counted backwards)
@@ -66,6 +67,7 @@ import type {
   CascadeDependencyType,
   CascadeEdge,
 } from "./gantt-dependency-cascade";
+import { FS_HANDOFF_DAYS } from "./gantt-dependency-rules";
 import { addWorkingDays, MAX_WALK_DAYS } from "./gantt-estimated-span";
 
 export type DerivedScheduleSource = {
@@ -105,7 +107,7 @@ function addDaysExact(date: Date, days: number): Date {
 // either the successor's START may not be earlier than `date` ("start"), or its
 // END may not be earlier than `date` ("end"). Matches edgeForcedDeltaDays in
 // gantt-dependency-cascade.ts:
-//   fs: start >= predecessor.end   + lag
+//   fs: start >= predecessor.end   + 1 + lag (FS_HANDOFF_DAYS)
 //   ss: start >= predecessor.start + lag
 //   ff: end   >= predecessor.end   + lag
 //   sf: end   >= predecessor.start + lag
@@ -118,7 +120,10 @@ function edgeConstraint(
 ): EdgeConstraint | null {
   switch (dependencyType) {
     case "fs":
-      return { kind: "start", date: addDaysExact(source.end, lagDays) };
+      return {
+        kind: "start",
+        date: addDaysExact(source.end, FS_HANDOFF_DAYS + lagDays),
+      };
     case "ss":
       return { kind: "start", date: addDaysExact(source.start, lagDays) };
     case "ff":

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // and the externalRelatedTasks memo in the Gantt route), while a dateless task
 // with no placed predecessor stays off the chart.
 const m = vi.hoisted(() => ({
+  navigate: vi.fn(),
   component: (() => null) as ComponentType,
   preferencesState: {
     weekStartsOn: 1 as const,
@@ -24,7 +25,7 @@ vi.mock("@tanstack/react-router", () => ({
       useSearch: () => ({}),
     };
   },
-  useNavigate: () => vi.fn(),
+  useNavigate: () => m.navigate,
 }));
 vi.mock("@/components/common/project-layout", () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -257,6 +258,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  m.navigate.mockClear();
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -292,26 +294,27 @@ describe("Gantt derives a dateless own task from its blocks predecessor", () => 
     expect(bar?.getAttribute("title")).toContain("tasks:estimate.valueDays");
   });
 
-  it("starts the bar on the predecessor's end day and spans two working days", () => {
+  it("starts the bar on the working day after the predecessor and spans two working days", () => {
     const { container } = show();
     const bar = container.querySelector(
       '[data-gantt-external-bar][title^="tasks:gantt.derivedTaskEstimateTitle"]',
     ) as HTMLElement;
 
-    // Predecessor ends Friday 2026-08-14; two working days are Friday and
-    // Monday, i.e. four calendar day columns.
+    // Predecessor ends Friday 2026-08-14; FS starts the next working day, Monday
+    // 17th, so two working days (Mon and Tue) are two calendar day columns.
     const [from, to] = bar.style.gridColumn
       .split("/")
       .map((part) => Number.parseInt(part, 10));
-    expect((to as number) - (from as number)).toBe(4);
+    expect((to as number) - (from as number)).toBe(2);
   });
 
   it("offers the rail entry as a button that is not labelled as another project", () => {
     show();
 
+    // The rail entry and the bar's own open button.
     expect(
-      screen.getByRole("button", { name: /Write the migration guide/ }),
-    ).toBeInTheDocument();
+      screen.getAllByRole("button", { name: /Write the migration guide/ }),
+    ).toHaveLength(2);
     expect(screen.queryByText(/tasks:gantt.externalProjectBadge/)).toBeNull();
     expect(
       screen.getByText(/tasks:gantt.derivedEstimateRailNote/),
@@ -322,5 +325,22 @@ describe("Gantt derives a dateless own task from its blocks predecessor", () => 
     show();
 
     expect(screen.queryByText("Unconnected idea")).toBeNull();
+  });
+
+  it("opens the task from the derived bar and shows the status in the rail", () => {
+    show();
+
+    // The derived row's rail shows the status pill like a dated own row.
+    expect(screen.getAllByText("to-do").length).toBeGreaterThan(1);
+
+    const button = screen.getByRole("button", {
+      name: 'tasks:gantt.externalTaskAriaLabel:{"title":"Write the migration guide"}',
+    });
+    fireEvent.click(button);
+    expect(m.navigate).toHaveBeenCalledWith({
+      to: ".",
+      search: { taskId: "own-undated" },
+      replace: true,
+    });
   });
 });

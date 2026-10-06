@@ -3144,7 +3144,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — tâche liée dans {{projectName}} ; sa position et sa durée sont dérivées de sa dépendance et de son estimation de {{estimate}}, car la tâche n'a pas de dates propres (lecture seule ici)",
 			"derivedTaskTitle": "{{title}} — cette position est dérivée de sa dépendance, car la tâche n'a pas de dates propres (lecture seule ici)",
 			"derivedTaskEstimateTitle": "{{title}} — sa position et sa durée sont dérivées de sa dépendance et de son estimation de {{estimate}}, car la tâche n'a pas de dates propres (lecture seule ici)",
-			"derivedEstimateRailNote": "Issue de la dépendance · {{estimate}}"
+			"derivedEstimateRailNote": "Issue de la dépendance · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}} : ouvrir la tâche"
 		},
 		"delete": {
 			"title": "Supprimer la tâche ?",

@@ -13,6 +13,10 @@
 //    zero, never negative.
 //  - DURATION-PRESERVING: a shifted task's start and due date move by the
 //    exact same number of days, so its span length never changes.
+//  - FINISH-TO-START means the successor starts on the DAY AFTER the
+//    predecessor's end day plus the lag (FS_HANDOFF_DAYS, shared with the
+//    derived schedule and the critical path); the working-calendar nudge below
+//    then moves it to the next working day. SS/FF/SF stay same-day.
 //  - Only a "blocks" edge constrains scheduling (see dependencyType below);
 //    callers must filter out "related"/"subtask" edges before calling this.
 //  - SCOPE: only tasks present in `tasksById` can be shifted or used as a
@@ -54,6 +58,7 @@
 //    result stays consistent with what the bar draws after a reload. The
 //    caller persists only the task's own date (see `estimatedTasks`).
 
+import { FS_HANDOFF_DAYS } from "./gantt-dependency-rules";
 import {
   type EstimatedSingleDate,
   estimatedSpanFromAnchor,
@@ -142,7 +147,10 @@ function edgeForcedDeltaDays(
 ): number {
   switch (edge.dependencyType) {
     case "fs":
-      return diffDays(addDaysExact(source.end, edge.lagDays), target.start);
+      return diffDays(
+        addDaysExact(source.end, FS_HANDOFF_DAYS + edge.lagDays),
+        target.start,
+      );
     case "ss":
       return diffDays(addDaysExact(source.start, edge.lagDays), target.start);
     case "ff":

@@ -3262,6 +3262,7 @@
 			"derivedTaskTitle": "{{title}} — pozycję wyznaczono z zależności, ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
 			"derivedTaskEstimateTitle": "{{title}} — jego pozycję i długość wyznaczono z zależności oraz szacunku ({{estimate}}), ponieważ zadanie nie ma własnych dat (tylko do odczytu)",
 			"derivedEstimateRailNote": "Z zależności · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}: otwórz zadanie",
 			"legendBaseline": "Plan bazowy",
 			"legendMilestone": "Kamień milowy",
 			"milestoneAriaLabel": "{{title}}: kamień milowy, otwórz zadanie",

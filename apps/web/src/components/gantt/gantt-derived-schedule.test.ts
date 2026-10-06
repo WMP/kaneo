@@ -26,15 +26,15 @@ function edge(
 }
 
 describe("deriveUndatedSuccessorSchedules", () => {
-  it("places an undated FS successor at predecessor.end (zero-duration point)", () => {
+  it("places an undated FS successor on the day after predecessor.end (zero-duration point)", () => {
     const derived = deriveUndatedSuccessorSchedules({
       edges: [edge("a", "b", "fs", 0)],
       datedScheduleById: new Map([["a", schedule(0, 4)]]),
       undatedCandidateIds: ["b"],
     });
 
-    // FS, no lag: B sits on A's end day, as a single-day marker.
-    expect(derived.get("b")).toEqual({ start: day(4), end: day(4) });
+    // FS, no lag: B sits on the day AFTER A's end day, as a single-day marker.
+    expect(derived.get("b")).toEqual({ start: day(5), end: day(5) });
   });
 
   it("applies positive lag and negative lead to the FS anchor", () => {
@@ -43,17 +43,17 @@ describe("deriveUndatedSuccessorSchedules", () => {
       datedScheduleById: new Map([["a", schedule(0, 4)]]),
       undatedCandidateIds: ["b"],
     });
-    expect(withLag.get("b")).toEqual({ start: day(7), end: day(7) });
+    expect(withLag.get("b")).toEqual({ start: day(8), end: day(8) });
 
     const withLead = deriveUndatedSuccessorSchedules({
       edges: [edge("a", "b", "fs", -2)],
       datedScheduleById: new Map([["a", schedule(0, 4)]]),
       undatedCandidateIds: ["b"],
     });
-    expect(withLead.get("b")).toEqual({ start: day(2), end: day(2) });
+    expect(withLead.get("b")).toEqual({ start: day(3), end: day(3) });
   });
 
-  it("anchors SS/SF on predecessor.start and FS/FF on predecessor.end", () => {
+  it("anchors SS/SF on predecessor.start, FF on predecessor.end and FS the day after it", () => {
     const dated = new Map([["a", schedule(2, 9)]]);
 
     const fs = deriveUndatedSuccessorSchedules({
@@ -61,7 +61,7 @@ describe("deriveUndatedSuccessorSchedules", () => {
       datedScheduleById: dated,
       undatedCandidateIds: ["b"],
     });
-    expect(fs.get("b")).toEqual({ start: day(9), end: day(9) });
+    expect(fs.get("b")).toEqual({ start: day(10), end: day(10) });
 
     const ff = deriveUndatedSuccessorSchedules({
       edges: [edge("a", "b", "ff", 0)],
@@ -95,7 +95,7 @@ describe("deriveUndatedSuccessorSchedules", () => {
       ]),
       undatedCandidateIds: ["b"],
     });
-    expect(derived.get("b")).toEqual({ start: day(10), end: day(10) });
+    expect(derived.get("b")).toEqual({ start: day(11), end: day(11) });
   });
 
   it("ignores a candidate that already has a real schedule", () => {
@@ -122,7 +122,7 @@ describe("deriveUndatedSuccessorSchedules", () => {
       datedScheduleById: new Map([["a", schedule(0, 4)]]),
       undatedCandidateIds: ["b", "c"],
     });
-    expect(derived.get("b")).toEqual({ start: day(4), end: day(4) });
+    expect(derived.get("b")).toEqual({ start: day(5), end: day(5) });
     expect(derived.has("c")).toBe(false);
   });
 
@@ -150,7 +150,7 @@ describe("deriveUndatedSuccessorSchedules", () => {
 
   it("nudges a derived anchor off a non-working day when a calendar is given", () => {
     // A ends on day 4; treat days 5 and 6 as non-working (a weekend), so an FS
-    // successor with +1 lag (landing on day 5) is nudged forward to day 7.
+    // successor with +1 lag (landing on day 6) is nudged forward to day 7.
     const nonWorking = new Set([day(5).getTime(), day(6).getTime()]);
     const isWorkingDay = (d: Date) => !nonWorking.has(d.getTime());
 
@@ -169,8 +169,9 @@ describe("deriveUndatedSuccessorSchedules", () => {
       datedScheduleById: new Map([["a", schedule(0, 4)]]),
       undatedCandidateIds: ["b"],
     });
-    // Lands on day 5 and stays there — no calendar means no nudge.
-    expect(derived.get("b")).toEqual({ start: day(5), end: day(5) });
+    // Lands on day 6 (end 4 + 1 + lag 1) and stays there — no calendar means
+    // no nudge.
+    expect(derived.get("b")).toEqual({ start: day(6), end: day(6) });
   });
 
   it("ignores a self-referencing edge", () => {
@@ -215,8 +216,8 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
       estimateMinutesById: estimates({ b: 17 * HOURS }),
     });
 
-    // FS starts ON the predecessor's end day (end + lag, as the cascade does).
-    expect(derived.get("b")).toEqual({ start: day(4), end: day(6) });
+    // FS starts the day AFTER the predecessor's end day (end + 1 + lag).
+    expect(derived.get("b")).toEqual({ start: day(5), end: day(7) });
   });
 
   it("rounds a part day up and never goes below one day", () => {
@@ -230,19 +231,19 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
         ...common,
         estimateMinutesById: estimates({ b: WORK_DAY + 1 }),
       }).get("b"),
-    ).toEqual({ start: day(4), end: day(5) });
+    ).toEqual({ start: day(5), end: day(6) });
     expect(
       deriveUndatedSuccessorSchedules({
         ...common,
         estimateMinutesById: estimates({ b: 30 }),
       }).get("b"),
-    ).toEqual({ start: day(4), end: day(4) });
+    ).toEqual({ start: day(5), end: day(5) });
     expect(
       deriveUndatedSuccessorSchedules({
         ...common,
         estimateMinutesById: estimates({ b: 0 }),
       }).get("b"),
-    ).toEqual({ start: day(4), end: day(4) });
+    ).toEqual({ start: day(5), end: day(5) });
   });
 
   it("keeps the single-day marker when the estimate is missing or unusable", () => {
@@ -253,13 +254,14 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
         undatedCandidateIds: ["b"],
         estimateMinutesById: new Map([["b", value]]),
       });
-      expect(derived.get("b")).toEqual({ start: day(4), end: day(4) });
+      expect(derived.get("b")).toEqual({ start: day(5), end: day(5) });
     }
   });
 
   it("skips non-working days when extending the end", () => {
     const derived = deriveUndatedSuccessorSchedules({
-      // Predecessor ends Thursday; three working days are Thu, Fri, Mon.
+      // Predecessor ends Thursday; the successor starts Friday and its three
+      // working days are Fri, Mon, Tue.
       edges: [edge("a", "b", "fs", 0)],
       datedScheduleById: new Map([["a", schedule(0, 0)]]),
       undatedCandidateIds: ["b"],
@@ -267,12 +269,13 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
       estimateMinutesById: estimates({ b: 3 * WORK_DAY }),
     });
 
-    expect(derived.get("b")).toEqual({ start: day(0), end: day(4) });
+    expect(derived.get("b")).toEqual({ start: day(1), end: day(5) });
   });
 
   it("nudges a start that lands on a weekend forward before counting the span", () => {
     const derived = deriveUndatedSuccessorSchedules({
-      // Predecessor ends Saturday: start nudges to Monday, two days end Tuesday.
+      // Predecessor ends Saturday: the next day (Sunday) nudges to Monday, two
+      // days end Tuesday.
       edges: [edge("a", "b", "fs", 0)],
       datedScheduleById: new Map([["a", schedule(0, 2)]]),
       undatedCandidateIds: ["b"],
@@ -355,8 +358,8 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
       estimateMinutesById: estimates({ b: 2 * WORK_DAY, c: 3 * WORK_DAY }),
     });
 
-    expect(derived.get("b")).toEqual({ start: day(4), end: day(5) });
-    expect(derived.get("c")).toEqual({ start: day(5), end: day(7) });
+    expect(derived.get("b")).toEqual({ start: day(5), end: day(6) });
+    expect(derived.get("c")).toEqual({ start: day(7), end: day(9) });
   });
 
   it("places a chained task without an estimate as a marker on a sized predecessor", () => {
@@ -367,7 +370,7 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
       estimateMinutesById: estimates({ b: 2 * WORK_DAY }),
     });
 
-    expect(derived.get("c")).toEqual({ start: day(5), end: day(5) });
+    expect(derived.get("c")).toEqual({ start: day(7), end: day(7) });
   });
 
   it("chains a diamond in dependency order, taking the later branch", () => {
@@ -382,9 +385,9 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
       }),
     });
 
-    expect(derived.get("b")).toEqual({ start: day(0), end: day(1) });
-    expect(derived.get("c")).toEqual({ start: day(0), end: day(4) });
-    expect(derived.get("d")).toEqual({ start: day(4), end: day(4) });
+    expect(derived.get("b")).toEqual({ start: day(1), end: day(2) });
+    expect(derived.get("c")).toEqual({ start: day(1), end: day(5) });
+    expect(derived.get("d")).toEqual({ start: day(6), end: day(6) });
   });
 
   it("leaves tasks on a cycle unplaced without looping", () => {
@@ -402,7 +405,7 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
     expect(derived.has("b")).toBe(false);
     expect(derived.has("c")).toBe(false);
     // A task outside the cycle is still placed.
-    expect(derived.get("d")).toEqual({ start: day(4), end: day(4) });
+    expect(derived.get("d")).toEqual({ start: day(5), end: day(5) });
   });
 
   it("never overrides a task that has its own dates", () => {
@@ -417,6 +420,29 @@ describe("deriveUndatedSuccessorSchedules with an effort estimate", () => {
     });
 
     expect(derived.size).toBe(0);
+  });
+});
+
+describe("deriveUndatedSuccessorSchedules finish-to-start hand-off", () => {
+  it("starts an undated 3-day successor the working day after a predecessor that ends Thu 5 Nov 2026", () => {
+    // Reproduces the cross-project report: the predecessor ends Thu 5 Nov, FS
+    // lag 0, the successor has no dates and a 3-day (1440 min) estimate.
+    const utcDay = (m: number, d: number) => new Date(Date.UTC(2026, m, d));
+    const derived = deriveUndatedSuccessorSchedules({
+      edges: [edge("dc1", "sof2", "fs", 0)],
+      datedScheduleById: new Map([
+        ["dc1", { start: utcDay(9, 8), end: utcDay(10, 5) }],
+      ]),
+      undatedCandidateIds: ["sof2"],
+      isWorkingDay: MON_FRI,
+      estimateMinutesById: estimates({ sof2: 1440 }),
+    });
+
+    // Fri 6 Nov, Mon 9 Nov, Tue 10 Nov: no overlap with the predecessor's day.
+    expect(derived.get("sof2")).toEqual({
+      start: utcDay(10, 6),
+      end: utcDay(10, 10),
+    });
   });
 });
 
@@ -444,6 +470,7 @@ describe("deriveUndatedSuccessorSchedules anchored on an estimated single-date t
       isWorkingDay: monFri,
     });
 
-    expect(derived.get("c")?.start.getDate()).toBe(12);
+    // FS: the day after B's computed end (Mon 12 Oct) is Tue 13 Oct.
+    expect(derived.get("c")?.start.getDate()).toBe(13);
   });
 });

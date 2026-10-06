@@ -1,12 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { formatEstimate } from "@/lib/estimate";
 import { formatDateMedium } from "@/lib/format";
+import { getStatusLabel } from "@/lib/i18n/domain";
 import type { ExternalGanttTask } from "./gantt-external-task-bar";
 
 type GanttExternalRailEntryProps = {
   task: ExternalGanttTask;
-  /** Opens the task. Only given for this project's own derived rows; a
-   * cross-project row is read-only here and renders no button. */
+  /** Opens the task (an own row in this project's sheet, a cross-project row
+   * in its own project, like the relations panel). Omitted: no button. */
   onOpenTask?: () => void;
   onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
 };
@@ -41,6 +42,14 @@ export function GanttExternalRailEntry({
   const content = (
     <>
       <div className="flex w-full items-center gap-1.5">
+        {/* The same status pill an own dated row shows. A task of another
+            project carries only its status slug (its board is not loaded
+            here), formatted exactly like the relations panel's slug fallback. */}
+        {task.status ? (
+          <span className="max-w-[7rem] truncate rounded-full bg-secondary px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-secondary-foreground sm:max-w-none">
+            {getStatusLabel(task.status)}
+          </span>
+        ) : null}
         <span className="max-w-[7rem] truncate rounded-full bg-secondary/60 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-secondary-foreground sm:max-w-none">
           {task.projectSlug}
           {task.number ? `-${task.number}` : ""}

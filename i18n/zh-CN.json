@@ -3139,7 +3139,8 @@
 			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} 中的关联任务；该任务没有自己的日期，其位置和长度由依赖关系及 {{estimate}} 的预估推算得出（此处只读）",
 			"derivedTaskTitle": "{{title}} — 该任务没有自己的日期，此位置由其依赖关系推算得出（此处只读）",
 			"derivedTaskEstimateTitle": "{{title}} — 该任务没有自己的日期，其位置和长度由依赖关系及 {{estimate}} 的预估推算得出（此处只读）",
-			"derivedEstimateRailNote": "由依赖关系推算 · {{estimate}}"
+			"derivedEstimateRailNote": "由依赖关系推算 · {{estimate}}",
+			"externalTaskAriaLabel": "{{title}}:打开任务"
 		},
 		"delete": {
 			"title": "删除任务？",
