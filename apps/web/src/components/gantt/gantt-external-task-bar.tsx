@@ -1,6 +1,7 @@
 import { Diamond } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
+import { formatEstimate } from "@/lib/estimate";
 import type { GanttBarEmphasis } from "./timeline";
 import { getBarGridColumns, MIN_BAR_HOVER_HIT_PX } from "./timeline";
 
@@ -18,6 +19,15 @@ export type ExternalGanttTask = {
   // dotted, dimmer treatment and a distinct tooltip so it never reads as a
   // real, dated bar.
   isDerived?: boolean;
+  // True for a task of the project on screen that has no dates of its own and
+  // is drawn from its dependency (and estimate) like a derived cross-project
+  // row. It stays read-only on the chart, but its rail entry opens the task.
+  isOwnProject?: boolean;
+  // The task's effort estimate in minutes (null/undefined = none) and the unit
+  // it was entered in: a derived row's length comes from it, and the tooltip
+  // shows it.
+  estimateMinutes?: number | null;
+  estimateUnit?: string;
 };
 
 type GanttExternalTaskBarProps = {
@@ -38,6 +48,18 @@ type GanttExternalTaskBarProps = {
    * bar highlights its dependency lines too. */
   onHoverChange?: (hovering: boolean) => void;
 };
+
+function getTooltipKey(task: ExternalGanttTask, hasEstimate: boolean) {
+  if (!task.isDerived) return "tasks:gantt.externalTaskTitle";
+  if (task.isOwnProject) {
+    return hasEstimate
+      ? "tasks:gantt.derivedTaskEstimateTitle"
+      : "tasks:gantt.derivedTaskTitle";
+  }
+  return hasEstimate
+    ? "tasks:gantt.externalTaskDerivedEstimateTitle"
+    : "tasks:gantt.externalTaskDerivedTitle";
+}
 
 // A related task that lives in a different project: shown so its dependency
 // line has somewhere to land, but not draggable/resizable and not openable
@@ -71,15 +93,21 @@ export function GanttExternalTaskBar({
 
   if (!barInView) return null;
 
-  const title = t(
-    task.isDerived
-      ? "tasks:gantt.externalTaskDerivedTitle"
-      : "tasks:gantt.externalTaskTitle",
-    {
-      title: task.title,
-      projectName: task.projectName,
-    },
-  );
+  const hasEstimate =
+    task.estimateMinutes !== null && task.estimateMinutes !== undefined;
+  const title = t(getTooltipKey(task, hasEstimate), {
+    title: task.title,
+    projectName: task.projectName,
+    ...(hasEstimate
+      ? {
+          estimate: formatEstimate(
+            task.estimateMinutes as number,
+            task.estimateUnit,
+            t,
+          ),
+        }
+      : {}),
+  });
 
   if (task.isMilestone) {
     return (

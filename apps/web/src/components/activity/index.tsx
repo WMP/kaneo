@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetWorkspaceMembers from "@/hooks/queries/workspace/use-get-workspace-members";
+import { formatEstimate } from "@/lib/estimate";
 import { formatDateMedium, formatRelativeTime } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import {
@@ -122,6 +123,7 @@ const SCHEDULE_FIELD_ORDER = [
   "startDate",
   "dueDate",
   "progress",
+  "estimateMinutes",
   "isMilestone",
   "constraintType",
   "constraintDate",
@@ -184,6 +186,10 @@ function formatScheduleChangeValue(
 
   if (field === "progress" && typeof value === "number") {
     return `${value}%`;
+  }
+
+  if (field === "estimateMinutes" && typeof value === "number") {
+    return formatEstimate(value, "hours", t);
   }
 
   if (field === "isMilestone") {

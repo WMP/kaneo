@@ -2620,6 +2620,7 @@
 				"startDate": "Startdatum",
 				"dueDate": "Vervaldatum",
 				"progress": "Voortgang",
+				"estimateMinutes": "Schatting",
 				"isMilestone": "Mijlpaal",
 				"constraintType": "Type beperking",
 				"constraintDate": "Beperkingsdatum",
@@ -2803,6 +2804,7 @@
 			"removeRelation": "Relatie verwijderen",
 			"related": "Gerelateerd",
 			"blocks": "Blokkeert",
+			"blockedBy": "Geblokkeerd door",
 			"selectTask": "Selecteer een taak om te koppelen",
 			"types": {
 				"blocks": "blokkeert",
@@ -2861,7 +2863,12 @@
 			"milestone": "Mijlpaal",
 			"progress": "Voortgang",
 			"constraint": "Beperking",
-			"approval": "Goedkeuring"
+			"approval": "Goedkeuring",
+			"estimate": "Schatting"
+		},
+		"estimate": {
+			"valueHours": "{{value}} u",
+			"valueDays": "{{value}} d"
 		},
 		"popover": {
 			"assignee": {
@@ -2945,6 +2952,21 @@
 				"updateError": "Bijwerken van de voortgang van de taak is mislukt",
 				"updateSuccess": "Voortgang van de taak bijgewerkt",
 				"exactLabel": "Exact percentage voltooid"
+			},
+			"estimate": {
+				"label": "Schatting",
+				"description": "Geplande inspanning. Een werkdag heeft 8 uur. Bepaalt de balklengte in het Gantt-diagram voor taken zonder datums of met alleen een startdatum of einddatum.",
+				"amountLabel": "Geschatte hoeveelheid",
+				"unitLabel": "Eenheid van de schatting",
+				"units": {
+					"hours": "Uren",
+					"days": "Dagen"
+				},
+				"clear": "Schatting wissen",
+				"updateSuccess": "Schatting van de taak bijgewerkt",
+				"updateError": "Bijwerken van de schatting van de taak is mislukt",
+				"exclusiveHint": "Met een schatting stel je een startdatum of een einddatum in, niet beide. Verwijder de schatting om beide datums in te stellen.",
+				"blockedByDates": "Wis de startdatum of einddatum om een schatting in te stellen."
 			},
 			"constraint": {
 				"currentDate": "Huidig: {{date}}",
@@ -3098,7 +3120,11 @@
 			"barColorSourceNone": "Geen",
 			"barColorSourceFirstLabel": "Eerste label",
 			"externalTaskDerivedTitle": "{{title}} — gerelateerde taak in {{projectName}}; deze positie is afgeleid van de afhankelijkheid, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
-			"externalTaskDerivedRailNote": "Positie op basis van afhankelijkheid"
+			"externalTaskDerivedRailNote": "Positie op basis van afhankelijkheid",
+			"externalTaskDerivedEstimateTitle": "{{title}} — gerelateerde taak in {{projectName}}; de positie en lengte zijn afgeleid van de afhankelijkheid en de schatting van {{estimate}}, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
+			"derivedTaskTitle": "{{title}} — deze positie is afgeleid van de afhankelijkheid, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
+			"derivedTaskEstimateTitle": "{{title}} — de positie en lengte zijn afgeleid van de afhankelijkheid en de schatting van {{estimate}}, omdat de taak zelf geen datums heeft (hier alleen-lezen)",
+			"derivedEstimateRailNote": "Afgeleid van afhankelijkheid · {{estimate}}"
 		},
 		"delete": {
 			"title": "Taak verwijderen?",

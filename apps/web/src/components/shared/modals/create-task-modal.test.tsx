@@ -818,3 +818,147 @@ describe("CreateTaskModal inviting a person resource", () => {
     expect(screen.queryByRole("button", { name: inviteLabel })).toBeNull();
   });
 });
+
+describe("CreateTaskModal effort estimate", () => {
+  function renderInProject() {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+  }
+
+  function setTitle(value: string) {
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "common:modals.createTask.taskTitlePlaceholder",
+      ),
+      { target: { value } },
+    );
+  }
+
+  async function setEstimate(amount: string, unit?: "days") {
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:popover.estimate.label" }),
+    );
+    const input = await screen.findByRole("textbox", {
+      name: "tasks:popover.estimate.amountLabel",
+    });
+    if (unit) {
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: `tasks:popover.estimate.units.${unit}`,
+        }),
+      );
+    }
+    fireEvent.change(input, { target: { value: amount } });
+    fireEvent.blur(input);
+  }
+
+  async function pickFirstDay(chipText: string) {
+    fireEvent.click(screen.getByText(chipText));
+    const grid = await screen.findByRole("grid");
+    const day = Array.from(grid.querySelectorAll("button")).find(
+      (button) => !button.hasAttribute("disabled"),
+    );
+    if (!day) throw new Error("no selectable day");
+    fireEvent.click(day);
+  }
+
+  it("sends the entered estimate in the create request", async () => {
+    renderInProject();
+    setTitle("Estimated task");
+
+    await setEstimate("2", "days");
+    fireEvent.submit(document.querySelector("form") as HTMLFormElement);
+
+    await vi.waitFor(() => {
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Estimated task",
+          estimateMinutes: 960,
+          estimateUnit: "days",
+        }),
+      );
+    });
+  });
+
+  it("sends no estimate fields when none was entered", async () => {
+    renderInProject();
+    setTitle("Plain task");
+
+    fireEvent.submit(document.querySelector("form") as HTMLFormElement);
+
+    await vi.waitFor(() => expect(createTask).toHaveBeenCalledTimes(1));
+    const request = createTask.mock.calls[0]?.[0] ?? {};
+    expect(request).not.toHaveProperty("estimateMinutes");
+    expect(request).not.toHaveProperty("estimateUnit");
+  });
+
+  it("counts an entered estimate as unsaved input", async () => {
+    renderInProject();
+
+    await setEstimate("3");
+    const backdrop = document.querySelector('[data-slot="dialog-backdrop"]');
+    fireEvent.pointerDown(backdrop as Element);
+    fireEvent.pointerUp(backdrop as Element);
+    fireEvent.click(backdrop as Element);
+
+    expect(
+      await screen.findByText("common:modals.createTask.discardTitle"),
+    ).toBeTruthy();
+  });
+
+  it("disables the due date picker once an estimate and a start date are set", async () => {
+    renderInProject();
+
+    await setEstimate("1");
+    await pickFirstDay("common:modals.createTask.startDate");
+
+    const dueChip = screen.getByRole("button", {
+      name: "common:modals.createTask.dueDate",
+    });
+    expect(dueChip).toBeDisabled();
+    expect(
+      screen.getByText("tasks:popover.estimate.exclusiveHint"),
+    ).toBeInTheDocument();
+  });
+
+  it("disables the start date picker when an estimate and a due date are set", async () => {
+    renderInProject();
+
+    await setEstimate("1");
+    await pickFirstDay("common:modals.createTask.dueDate");
+
+    expect(
+      screen.getByRole("button", {
+        name: "common:modals.createTask.startDate",
+      }),
+    ).toBeDisabled();
+  });
+
+  it("disables the estimate field with a hint when both dates are set", async () => {
+    renderInProject();
+
+    await pickFirstDay("common:modals.createTask.startDate");
+    await pickFirstDay("common:modals.createTask.dueDate");
+
+    expect(
+      screen.getByRole("button", { name: "tasks:popover.estimate.label" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText("tasks:popover.estimate.blockedByDates"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps both dates pickable while there is no estimate", async () => {
+    renderInProject();
+
+    await pickFirstDay("common:modals.createTask.startDate");
+
+    expect(
+      screen.getByRole("button", { name: "common:modals.createTask.dueDate" }),
+    ).not.toBeDisabled();
+  });
+});

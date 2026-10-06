@@ -61,4 +61,35 @@ describe("useCreateTaskRelation cache invalidation", () => {
     ).toBe(true);
     client.clear();
   });
+
+  it("refreshes the caches of both tasks when the current task is the target (Blocked by)", async () => {
+    create.mockResolvedValue({
+      id: "rel-2",
+      sourceTaskId: "task-2",
+      targetTaskId: "task-1",
+      relationType: "blocks",
+    });
+    const { client, result } = setup();
+
+    act(() =>
+      result.current.mutate({
+        sourceTaskId: "task-2",
+        targetTaskId: "task-1",
+        relationType: "blocks",
+      }),
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(
+      client.getQueryState(["task-relations", "task-1"])?.isInvalidated,
+    ).toBe(true);
+    expect(
+      client.getQueryState(["task-relations", "task-2"])?.isInvalidated,
+    ).toBe(true);
+    expect(
+      client.getQueryState(["task-relations", "project", "project-a"])
+        ?.isInvalidated,
+    ).toBe(true);
+    client.clear();
+  });
 });

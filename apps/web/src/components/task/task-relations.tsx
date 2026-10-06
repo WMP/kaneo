@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronRight,
   Link2,
+  Lock,
   Plus,
   Search,
   X,
@@ -73,6 +74,11 @@ import {
 
 const DEPENDENCY_TYPES: GanttDependencyType[] = ["fs", "ss", "ff", "sf"];
 
+// What the picker creates when a task is chosen. "blocked_by" is the same
+// "blocks" relation as "blocks" with the two ends swapped: the picked task is
+// the source (the blocker) and the current task is the target.
+type PickerRelationType = "related" | "blocks" | "blocked_by";
+
 type TaskRelationsProps = {
   taskId: string;
   projectId: string;
@@ -95,11 +101,10 @@ export default function TaskRelations({
   const [isOpen, setIsOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRelationType, setSelectedRelationType] = useState<
-    "blocks" | "related"
-  >("related");
-  // Only meaningful once selectedRelationType is "blocks" — see the footer
-  // controls below.
+  const [selectedRelationType, setSelectedRelationType] =
+    useState<PickerRelationType>("related");
+  // Only meaningful once selectedRelationType is "blocks" or "blocked_by" —
+  // see the footer controls below.
   const [newDependencyType, setNewDependencyType] =
     useState<GanttDependencyType>("fs");
   const [newLagDaysInput, setNewLagDaysInput] = useState("0");
@@ -266,14 +271,21 @@ export default function TaskRelations({
     ];
   }, [filteredTasks, crossProjectGroups, t]);
 
-  const handleLinkTask = async (targetTaskId: string) => {
+  const handleLinkTask = async (pickedTaskId: string) => {
     const parsedLagDays = Number.parseInt(newLagDaysInput, 10);
+    const isDependency =
+      selectedRelationType === "blocks" ||
+      selectedRelationType === "blocked_by";
     try {
       await createRelation.mutateAsync({
-        sourceTaskId: taskId,
-        targetTaskId,
-        relationType: selectedRelationType,
-        ...(selectedRelationType === "blocks"
+        // "Blocked by" stores the picked task as the blocker (source) of this
+        // one; the other types start from this task.
+        sourceTaskId:
+          selectedRelationType === "blocked_by" ? pickedTaskId : taskId,
+        targetTaskId:
+          selectedRelationType === "blocked_by" ? taskId : pickedTaskId,
+        relationType: isDependency ? "blocks" : "related",
+        ...(isDependency
           ? {
               dependencyType: newDependencyType,
               lagDays: Number.isNaN(parsedLagDays) ? 0 : parsedLagDays,
@@ -700,16 +712,25 @@ export default function TaskRelations({
                     <X className="size-3" />
                     {t("tasks:relations.blocks")}
                   </button>
+                  <button
+                    type="button"
+                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors ${selectedRelationType === "blocked_by" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setSelectedRelationType("blocked_by")}
+                  >
+                    <Lock className="size-3" />
+                    {t("tasks:relations.blockedBy")}
+                  </button>
                 </div>
                 <span className="text-muted-foreground/60">
                   {t("tasks:relations.selectTask")}
                 </span>
               </div>
 
-              {/* Dependency type/lag only apply to a "blocks" relation — the
-                  Gantt's scheduling dependency; a plain "related" link has no
-                  ordering to configure. */}
-              {selectedRelationType === "blocks" && (
+              {/* Dependency type/lag only apply to a "blocks" relation (either
+                  direction) — the Gantt's scheduling dependency; a plain
+                  "related" link has no ordering to configure. */}
+              {(selectedRelationType === "blocks" ||
+                selectedRelationType === "blocked_by") && (
                 <div className="flex items-center gap-2">
                   <Select
                     value={newDependencyType}

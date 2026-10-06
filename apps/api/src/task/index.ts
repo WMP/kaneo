@@ -826,6 +826,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       userId,
       progress,
       isMilestone,
+      estimateMinutes,
+      estimateUnit,
       customFields,
     } = c.req.valid("json");
 
@@ -852,6 +854,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       status,
       progress,
       isMilestone,
+      estimateMinutes,
+      estimateUnit,
       customFields,
     });
 
@@ -906,6 +910,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       isMilestone,
       constraintType,
       constraintDate,
+      estimateMinutes,
+      estimateUnit,
       approvalStatus,
       approvalNote,
     } = c.req.valid("json");
@@ -950,6 +956,8 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
       isMilestone,
       constraintType,
       normalizedConstraintDate,
+      estimateMinutes,
+      estimateUnit,
       userId,
       currentUserId,
       approvalStatus,

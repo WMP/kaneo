@@ -2620,6 +2620,7 @@
 				"startDate": "Başlama tarixi",
 				"dueDate": "Son tarix",
 				"progress": "İrəliləyiş",
+				"estimateMinutes": "Təxmin",
 				"isMilestone": "Mərhələ",
 				"constraintType": "Məhdudiyyət növü",
 				"constraintDate": "Məhdudiyyət tarixi",
@@ -2803,6 +2804,7 @@
 			"removeRelation": "Əlaqəni çıxar",
 			"related": "Əlaqəli",
 			"blocks": "Mane olur",
+			"blockedBy": "Mane olan",
 			"selectTask": "Əlaqələndirmək üçün tapşırıq seçin",
 			"types": {
 				"blocks": "Mane olur",
@@ -2861,7 +2863,12 @@
 			"milestone": "Mərhələ",
 			"progress": "İrəliləyiş",
 			"constraint": "Məhdudiyyət",
-			"approval": "Təsdiq"
+			"approval": "Təsdiq",
+			"estimate": "Təxmin"
+		},
+		"estimate": {
+			"valueHours": "{{value}} saat",
+			"valueDays": "{{value}} gün"
 		},
 		"move": {
 			"title": "Tapşırığı köçür",
@@ -2956,6 +2963,21 @@
 				"updateError": "Tapşırığın irəliləyişi yenilənə bilmədi",
 				"updateSuccess": "Tapşırığın irəliləyişi yeniləndi",
 				"exactLabel": "Dəqiq tamamlanma faizi"
+			},
+			"estimate": {
+				"label": "Təxmin",
+				"description": "Planlaşdırılan əmək həcmi. Bir iş günü 8 saatdır. Tarixi olmayan və ya yalnız başlanğıc ya da bitmə tarixi olan tapşırığın Gantt diaqramındakı uzunluğunu müəyyən edir.",
+				"amountLabel": "Təxmin dəyəri",
+				"unitLabel": "Təxmin vahidi",
+				"units": {
+					"hours": "Saat",
+					"days": "Gün"
+				},
+				"clear": "Təxmini sil",
+				"updateSuccess": "Tapşırığın təxmini yeniləndi",
+				"updateError": "Tapşırığın təxmini yenilənə bilmədi",
+				"exclusiveHint": "Təxmin olduqda başlanğıc və ya bitmə tarixindən yalnız birini təyin edin, hər ikisini yox. Hər iki tarixi təyin etmək üçün təxmini silin.",
+				"blockedByDates": "Təxmin təyin etmək üçün başlanğıc və ya bitmə tarixini silin."
 			},
 			"constraint": {
 				"currentDate": "Cari: {{date}}",
@@ -3122,7 +3144,11 @@
 			"barColorSourceNone": "Yoxdur",
 			"barColorSourceFirstLabel": "İlk etiket",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}} daxilində əlaqəli tapşırıq; tapşırığın öz tarixləri olmadığından bu mövqe onun asılılığından götürülüb (burada yalnız oxumaq üçün)",
-			"externalTaskDerivedRailNote": "Mövqe asılılıqdan götürülüb"
+			"externalTaskDerivedRailNote": "Mövqe asılılıqdan götürülüb",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} daxilində əlaqəli tapşırıq; tapşırığın öz tarixləri olmadığından onun mövqeyi və uzunluğu asılılığından və {{estimate}} təxmini əsasında müəyyən edilib (burada yalnız oxumaq üçün)",
+			"derivedTaskTitle": "{{title}} — tapşırığın öz tarixləri olmadığından bu mövqe onun asılılığından götürülüb (burada yalnız oxumaq üçün)",
+			"derivedTaskEstimateTitle": "{{title}} — tapşırığın öz tarixləri olmadığından onun mövqeyi və uzunluğu asılılığından və {{estimate}} təxmini əsasında müəyyən edilib (burada yalnız oxumaq üçün)",
+			"derivedEstimateRailNote": "Asılılıqdan götürülüb · {{estimate}}"
 		},
 		"delete": {
 			"title": "Tapşırıq silinsin?",

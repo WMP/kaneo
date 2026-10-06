@@ -17,6 +17,8 @@ async function createTask(
   dueDate: Date | undefined,
   priority: CreateTaskRequest["priority"],
   customFields?: { fieldId: string; value: string }[],
+  estimateMinutes?: number | null,
+  estimateUnit?: CreateTaskRequest["estimateUnit"],
 ) {
   if (!projectId) {
     throw new Error("No project selected for task creation");
@@ -32,6 +34,10 @@ async function createTask(
       dueDate: dueDate?.toISOString() || undefined,
       priority,
       customFields,
+      // Omitted when there is no estimate (the API default is none, in hours).
+      ...(estimateMinutes != null
+        ? { estimateMinutes, estimateUnit: estimateUnit ?? "hours" }
+        : {}),
     },
     param: { projectId },
   });

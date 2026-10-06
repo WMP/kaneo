@@ -28,6 +28,7 @@ import {
 } from "../../utils/validate-dates";
 import { readTaskAssignees, setTaskAssignees } from "../assignments";
 import { buildScheduleChanges } from "../diff-schedule-fields";
+import { assertEstimateExcludesDateRange } from "../estimate";
 import { getSubtaskParentProjects } from "../get-subtask-parent-projects";
 import {
   assertValidPriority,
@@ -78,6 +79,7 @@ async function bulkUpdateTasks({
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
       progress: taskTable.progress,
+      estimateMinutes: taskTable.estimateMinutes,
       workspaceId: projectTable.workspaceId,
     })
     .from(taskTable)
@@ -497,6 +499,15 @@ async function bulkUpdateTasks({
         }
       }
 
+      // A task with an estimate may hold only one of its two dates.
+      for (const task of tasks) {
+        assertEstimateExcludesDateRange({
+          estimateMinutes: task.estimateMinutes,
+          startDate: task.startDate,
+          dueDate: parsedDate,
+        });
+      }
+
       const result = await db
         .update(taskTable)
         .set({ dueDate: parsedDate })
@@ -558,6 +569,15 @@ async function bulkUpdateTasks({
             ? validateAndParseDate(update.dueDate, "dueDate")
             : null;
         validateDateRange(startDate, dueDate);
+        // An entry replaces BOTH dates of the task (an omitted one is
+        // cleared), so the entry itself is the merged date state; the
+        // estimate comes from the stored row. A task with an estimate takes a
+        // start-only or due-only entry.
+        assertEstimateExcludesDateRange({
+          estimateMinutes: task.estimateMinutes,
+          startDate,
+          dueDate,
+        });
         parsedByTaskId.set(task.id, { startDate, dueDate });
       }
 

@@ -40,6 +40,8 @@ async function exportTasks(
       assigneeName: userTable.name,
       assigneeId: userTable.id,
       progress: taskTable.progress,
+      estimateMinutes: taskTable.estimateMinutes,
+      estimateUnit: taskTable.estimateUnit,
       isMilestone: taskTable.isMilestone,
       baselineStartDate: taskTable.baselineStartDate,
       baselineDueDate: taskTable.baselineDueDate,
@@ -164,6 +166,8 @@ async function exportTasks(
         kind: assignee.kind,
       })),
       progress: task.progress,
+      estimateMinutes: task.estimateMinutes,
+      estimateUnit: task.estimateUnit,
       isMilestone: task.isMilestone,
       baselineStartDate: task.baselineStartDate
         ? new Date(task.baselineStartDate).toISOString()

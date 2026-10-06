@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { useUpdateTaskDueDate } from "@/hooks/mutations/task/use-update-task-due-date";
 import { useProjectPermission } from "@/hooks/use-project-permission";
+import { isDateBlockedByEstimate } from "@/lib/estimate";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 
@@ -27,6 +28,13 @@ export default function TaskDueDatePopover({
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
   const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
+  // With an estimate a task holds a start or a due date, not both: the empty
+  // picker is disabled while the other date is set.
+  const blockedByEstimate = isDateBlockedByEstimate(
+    task.estimateMinutes,
+    task.dueDate,
+    task.startDate,
+  );
 
   const handleDateChange = async (date: Date | undefined) => {
     try {
@@ -51,12 +59,21 @@ export default function TaskDueDatePopover({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="p-0" align="start">
+        {blockedByEstimate && (
+          <p className="m-0 max-w-64 px-3 pt-3 text-xs text-muted-foreground">
+            {t("tasks:popover.estimate.exclusiveHint")}
+          </p>
+        )}
         <Calendar
           mode="single"
           selected={task.dueDate ? new Date(task.dueDate) : undefined}
           onSelect={handleDateChange}
           disabled={
-            task.startDate ? { before: new Date(task.startDate) } : undefined
+            blockedByEstimate
+              ? true
+              : task.startDate
+                ? { before: new Date(task.startDate) }
+                : undefined
           }
           className="w-full bg-popover"
         />

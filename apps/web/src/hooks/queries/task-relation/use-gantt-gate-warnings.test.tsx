@@ -30,6 +30,8 @@ function relatedTask(
     startDate: null,
     dueDate: null,
     isMilestone: false,
+    estimateMinutes: null,
+    estimateUnit: "hours",
     approvalStatus: "pending",
     ...overrides,
   };

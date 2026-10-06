@@ -37,6 +37,13 @@ export const taskSchema = z
     progress: z.number().int().min(0).max(100).openapi({
       description: "Percent complete, 0-100.",
     }),
+    estimateMinutes: z.number().int().min(0).nullable().openapi({
+      description:
+        "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate.",
+    }),
+    estimateUnit: z.string().openapi({
+      description: "How the estimate is entered and shown: `hours` or `days`.",
+    }),
     isMilestone: z.boolean().openapi({
       description:
         "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar.",
@@ -140,6 +147,13 @@ export const boardTaskSchema = z
     dueDate: nullableResponseTimestamp,
     progress: z.number().int().min(0).max(100).openapi({
       description: "Percent complete, 0-100.",
+    }),
+    estimateMinutes: z.number().int().min(0).nullable().openapi({
+      description:
+        "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate.",
+    }),
+    estimateUnit: z.string().openapi({
+      description: "How the estimate is entered and shown: `hours` or `days`.",
     }),
     isMilestone: z.boolean().openapi({
       description:
@@ -293,6 +307,14 @@ export const taskExportSchema = z
             }),
           progress: z.number().int().min(0).max(100).openapi({
             description: "Percent complete, 0-100.",
+          }),
+          estimateMinutes: z.number().int().min(0).nullable().openapi({
+            description:
+              "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate.",
+          }),
+          estimateUnit: z.string().openapi({
+            description:
+              "How the estimate is entered and shown: `hours` or `days`.",
           }),
           isMilestone: z.boolean().openapi({
             description:

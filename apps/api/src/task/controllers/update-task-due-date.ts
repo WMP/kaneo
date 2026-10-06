@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { taskReminderSentTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { assertEstimateExcludesDateRange } from "../estimate";
 
 async function updateTaskDueDate({
   id,
@@ -22,6 +23,12 @@ async function updateTaskDueDate({
       message: "Task not found",
     });
   }
+
+  assertEstimateExcludesDateRange({
+    estimateMinutes: existingTask.estimateMinutes,
+    startDate: existingTask.startDate,
+    dueDate,
+  });
 
   // Clear sent reminders so new due date triggers fresh notifications
   await db

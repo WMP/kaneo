@@ -159,6 +159,8 @@ async function getTasksPage(
     startDate: taskTable.startDate,
     dueDate: taskTable.dueDate,
     progress: taskTable.progress,
+    estimateMinutes: taskTable.estimateMinutes,
+    estimateUnit: taskTable.estimateUnit,
     isMilestone: taskTable.isMilestone,
     baselineStartDate: taskTable.baselineStartDate,
     baselineDueDate: taskTable.baselineDueDate,

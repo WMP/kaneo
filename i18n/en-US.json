@@ -2626,6 +2626,7 @@
 				"startDate": "Start date",
 				"dueDate": "Due date",
 				"progress": "Progress",
+				"estimateMinutes": "Estimate",
 				"isMilestone": "Milestone",
 				"constraintType": "Constraint type",
 				"constraintDate": "Constraint date",
@@ -2807,6 +2808,7 @@
 			"removeRelation": "Remove relation",
 			"related": "Related",
 			"blocks": "Blocks",
+			"blockedBy": "Blocked by",
 			"selectTask": "Select a task to link",
 			"types": {
 				"blocks": "blocks",
@@ -2862,7 +2864,12 @@
 			"milestone": "Milestone",
 			"baseline": "Baseline",
 			"constraint": "Constraint",
-			"approval": "Approval"
+			"approval": "Approval",
+			"estimate": "Estimate"
+		},
+		"estimate": {
+			"valueHours": "{{value}}h",
+			"valueDays": "{{value}}d"
 		},
 		"move": {
 			"title": "Move task",
@@ -2918,6 +2925,21 @@
 				"exactLabel": "Exact percent complete",
 				"updateSuccess": "Task progress updated",
 				"updateError": "Failed to update task progress"
+			},
+			"estimate": {
+				"label": "Estimate",
+				"description": "Planned effort. A work day is 8 hours. Sets the Gantt bar length of a task with no dates or with only a start or a due date.",
+				"amountLabel": "Estimate amount",
+				"unitLabel": "Estimate unit",
+				"units": {
+					"hours": "Hours",
+					"days": "Days"
+				},
+				"clear": "Clear estimate",
+				"updateSuccess": "Task estimate updated",
+				"updateError": "Failed to update task estimate",
+				"exclusiveHint": "With an estimate, set either a start or a due date, not both. Remove the estimate to set both dates.",
+				"blockedByDates": "Clear the start or due date to set an estimate."
 			},
 			"milestone": {
 				"label": "Milestone",
@@ -3093,6 +3115,10 @@
 			"externalTaskTitle": "{{title}} — related task in {{projectName}} (read-only here)",
 			"externalTaskDerivedTitle": "{{title}} — related task in {{projectName}}; this position is derived from its dependency, as the task has no dates of its own (read-only here)",
 			"externalTaskDerivedRailNote": "Position from dependency",
+			"externalTaskDerivedEstimateTitle": "{{title}} — related task in {{projectName}}; its position and length are derived from its dependency and its {{estimate}} estimate, as the task has no dates of its own (read-only here)",
+			"derivedTaskTitle": "{{title}} — this position is derived from its dependency, as the task has no dates of its own (read-only here)",
+			"derivedTaskEstimateTitle": "{{title}} — its position and length are derived from its dependency and its {{estimate}} estimate, as the task has no dates of its own (read-only here)",
+			"derivedEstimateRailNote": "Derived from dependency · {{estimate}}",
 			"milestoneAriaLabel": "{{title}}: milestone, open task",
 			"progressLabel": "{{progress}}% complete",
 			"unitControlAriaLabel": "Timeline granularity",

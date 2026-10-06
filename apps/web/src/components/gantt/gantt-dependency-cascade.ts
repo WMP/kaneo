@@ -44,6 +44,21 @@
 //    gantt-constraint-violations.ts), not something this cascade enforces by
 //    moving the task. Omitted (the default): no pinned tasks, exactly
 //    today's behavior.
+//  - ESTIMATED SINGLE-DATE TASKS (opt-in via `estimatedTasks`): a task with an
+//    effort estimate and exactly one own date has a DERIVED span (see
+//    gantt-estimated-span.ts); `tasksById` carries that span. When the cascade
+//    shifts one, it applies the same forced delta and calendar nudge and then
+//    RE-DERIVES the span from the shifted OWN date (start-only: end counted
+//    forward over working days; due-only: the due date is pushed later until
+//    the re-derived start is no earlier than the constraint allows), so the
+//    result stays consistent with what the bar draws after a reload. The
+//    caller persists only the task's own date (see `estimatedTasks`).
+
+import {
+  type EstimatedSingleDate,
+  estimatedSpanFromAnchor,
+  MAX_WALK_DAYS,
+} from "./gantt-estimated-span";
 
 /** The four standard scheduling dependency types a "blocks" edge can carry. */
 export type CascadeDependencyType = "fs" | "ss" | "ff" | "sf";
@@ -89,6 +104,14 @@ export type ComputeDependencyCascadeInput = {
    * phantom shift onto their own dependents. Omitted (the default): no
    * pinned tasks, exactly today's behavior. */
   pinnedTaskIds?: ReadonlySet<string>;
+  /** Tasks that have an estimate and exactly ONE own date, by id (see
+   * getEstimatedSingleDate). Their `tasksById` entry is the span derived from
+   * that date; a shifted one is re-derived from its shifted own date instead
+   * of preserving the calendar span. The result still carries the full derived
+   * `{start, end}`: the CALLER must send only the task's own date field to the
+   * API (the API refuses a full range for an estimated task). Omitted: no
+   * estimated tasks, exactly today's behavior. */
+  estimatedTasks?: ReadonlyMap<string, EstimatedSingleDate>;
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -131,6 +154,49 @@ function edgeForcedDeltaDays(
   }
 }
 
+// Re-derives the span of an estimated single-date task after the cascade
+// shifted it to `shifted` (calendar-preserving shift plus working-day nudge).
+// Start-only: the own date is the shifted start. Due-only: the own date is the
+// shifted end, pushed later one day at a time while the span re-derived from it
+// would start before the shifted start (counting working days back over a
+// weekend needs more calendar days than the preserved span had), so the
+// constraint that forced the shift still holds.
+function rederiveEstimatedSpan(
+  estimated: EstimatedSingleDate,
+  shifted: CascadeSchedule,
+  isWorkingDay: ((d: Date) => boolean) | undefined,
+): CascadeSchedule {
+  if (estimated.anchor === "start") {
+    return estimatedSpanFromAnchor(
+      "start",
+      shifted.start,
+      estimated.estimateMinutes,
+      isWorkingDay,
+    );
+  }
+  let due = shifted.end;
+  let span = estimatedSpanFromAnchor(
+    "due",
+    due,
+    estimated.estimateMinutes,
+    isWorkingDay,
+  );
+  for (
+    let walked = 0;
+    walked < MAX_WALK_DAYS && span.start.getTime() < shifted.start.getTime();
+    walked++
+  ) {
+    due = addDaysExact(due, 1);
+    span = estimatedSpanFromAnchor(
+      "due",
+      due,
+      estimated.estimateMinutes,
+      isWorkingDay,
+    );
+  }
+  return span;
+}
+
 /**
  * Given a task's just-committed move/resize, computes every OTHER task that
  * must shift later to keep every "blocks" constraint reachable from it
@@ -148,6 +214,7 @@ export function computeDependencyCascade({
   tasksById,
   isWorkingDay,
   pinnedTaskIds,
+  estimatedTasks,
 }: ComputeDependencyCascadeInput): Map<string, CascadeSchedule> {
   const shifts = new Map<string, CascadeSchedule>();
   if (!tasksById.has(movedTaskId)) return shifts;
@@ -261,7 +328,7 @@ export function computeDependencyCascade({
     if (isWorkingDay) {
       let nudgeDays = 0;
       while (
-        nudgeDays < 366 &&
+        nudgeDays < MAX_WALK_DAYS &&
         !isWorkingDay(addDaysExact(shiftedStart, nudgeDays))
       ) {
         nudgeDays++;
@@ -272,7 +339,11 @@ export function computeDependencyCascade({
       }
     }
 
-    const shifted: CascadeSchedule = { start: shiftedStart, end: shiftedEnd };
+    let shifted: CascadeSchedule = { start: shiftedStart, end: shiftedEnd };
+    const estimated = estimatedTasks?.get(taskId);
+    if (estimated) {
+      shifted = rederiveEstimatedSpan(estimated, shifted, isWorkingDay);
+    }
     finalSchedule.set(taskId, shifted);
     shifts.set(taskId, shifted);
   }

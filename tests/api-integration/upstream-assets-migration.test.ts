@@ -363,7 +363,9 @@ describe("migration ganttpro_adopt_upstream_assets", () => {
 
     const applied = await runMigrations(scratchDb, { migrationsFolder });
 
-    expect(applied).toEqual([TARGET_TAG]);
+    // Entries merged after this migration (the folder's newest ones) apply
+    // after it on the same run; this migration is the first of them.
+    expect(applied[0]).toBe(TARGET_TAG);
     expect((await backgrounds(scratch))[0]).toEqual({
       id: "p1",
       key: keyOf("p1", "v1"),

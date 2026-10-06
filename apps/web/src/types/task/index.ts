@@ -46,6 +46,11 @@ type Task = {
   startDate: string | null;
   dueDate: string | null;
   progress: number;
+  // Effort estimate in whole minutes (null = none) and the unit it was
+  // entered in ("hours" | "days"; a work day is 8 hours, see lib/estimate.ts).
+  // Optional so fixtures built before the field existed keep compiling.
+  estimateMinutes?: number | null;
+  estimateUnit?: string;
   isMilestone: boolean;
   baselineStartDate: string | null;
   baselineDueDate: string | null;

@@ -151,6 +151,18 @@
             "maximum": 100,
             "description": "Percent complete, 0-100."
           },
+          "estimateMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate."
+          },
+          "estimateUnit": {
+            "type": "string",
+            "description": "How the estimate is entered and shown: `hours` or `days`."
+          },
           "isMilestone": {
             "type": "boolean",
             "description": "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar."
@@ -276,6 +288,8 @@
           "startDate",
           "dueDate",
           "progress",
+          "estimateMinutes",
+          "estimateUnit",
           "isMilestone",
           "baselineStartDate",
           "baselineDueDate",
@@ -1680,6 +1694,18 @@
             "maximum": 100,
             "description": "Percent complete, 0-100."
           },
+          "estimateMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate."
+          },
+          "estimateUnit": {
+            "type": "string",
+            "description": "How the estimate is entered and shown: `hours` or `days`."
+          },
           "isMilestone": {
             "type": "boolean",
             "description": "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar."
@@ -1758,6 +1784,8 @@
           "startDate",
           "dueDate",
           "progress",
+          "estimateMinutes",
+          "estimateUnit",
           "isMilestone",
           "baselineStartDate",
           "baselineDueDate",
@@ -1927,6 +1955,18 @@
             "maximum": 100,
             "description": "Percent complete, 0-100."
           },
+          "estimateMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate."
+          },
+          "estimateUnit": {
+            "type": "string",
+            "description": "How the estimate is entered and shown: `hours` or `days`."
+          },
           "isMilestone": {
             "type": "boolean",
             "description": "Renders as a diamond marker on the Gantt chart at its date instead of a spanning bar."
@@ -1996,6 +2036,8 @@
           "assigneeName",
           "assignees",
           "progress",
+          "estimateMinutes",
+          "estimateUnit",
           "isMilestone",
           "baselineStartDate",
           "baselineDueDate",
@@ -5928,6 +5970,18 @@
             "type": "boolean",
             "description": "Renders as a diamond marker on the Gantt chart, same as an own task."
           },
+          "estimateMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate."
+          },
+          "estimateUnit": {
+            "type": "string",
+            "description": "How the estimate is entered and shown: `hours` or `days`."
+          },
           "approvalStatus": {
             "type": "string",
             "description": "Client-approval gate: one of none, pending, approved, rejected. Used to warn when a `blocks` relation's source task is not yet approved."
@@ -5948,6 +6002,8 @@
           "startDate",
           "dueDate",
           "isMilestone",
+          "estimateMinutes",
+          "estimateUnit",
           "approvalStatus"
         ]
       },
@@ -13535,7 +13591,7 @@
                       ]
                     },
                     "minItems": 1,
-                    "description": "Per-task start/due dates for the `updateSchedule` operation — e.g. a Gantt drag that cascades forward through `blocks` dependencies. Required by that operation; ignored by every other one. Every taskId here must also be in `taskIds`."
+                    "description": "Per-task start/due dates for the `updateSchedule` operation — e.g. a Gantt drag that cascades forward through `blocks` dependencies. Required by that operation; ignored by every other one. Every taskId here must also be in `taskIds`. An entry replaces both dates of the task (an omitted or null date is cleared); for a task that has an effort estimate it must carry at most one date (400 otherwise)."
                   }
                 },
                 "required": [
@@ -13657,6 +13713,23 @@
                   "isMilestone": {
                     "type": "boolean",
                     "description": "Defaults to false."
+                  },
+                  "estimateMinutes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Effort estimate in whole minutes (0-1000000); omit or null for no estimate. A task with an estimate cannot have both startDate and dueDate (400)."
+                  },
+                  "estimateUnit": {
+                    "type": "string",
+                    "enum": [
+                      "hours",
+                      "days"
+                    ],
+                    "description": "Defaults to \"hours\"."
                   },
                   "customFields": {
                     "type": "array",
@@ -13955,6 +14028,23 @@
                   },
                   "isMilestone": {
                     "type": "boolean"
+                  },
+                  "estimateMinutes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Effort estimate in whole minutes (0-1000000). Omit to leave the estimate untouched; null clears it. A task with an estimate cannot have both startDate and dueDate (400); the stored estimate is checked against the dates of this request."
+                  },
+                  "estimateUnit": {
+                    "type": "string",
+                    "enum": [
+                      "hours",
+                      "days"
+                    ],
+                    "description": "Omit to leave the estimate unit untouched."
                   },
                   "constraintType": {
                     "type": "string",

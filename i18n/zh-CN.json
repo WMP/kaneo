@@ -2613,6 +2613,7 @@
 				"startDate": "开始日期",
 				"dueDate": "截止日期",
 				"progress": "进度",
+				"estimateMinutes": "预估工时",
 				"isMilestone": "里程碑",
 				"constraintType": "约束类型",
 				"constraintDate": "约束日期",
@@ -2796,6 +2797,7 @@
 			"removeRelation": "移除关联",
 			"related": "关联",
 			"blocks": "阻塞",
+			"blockedBy": "被阻塞",
 			"selectTask": "选择要关联的任务",
 			"types": {
 				"blocks": "阻塞",
@@ -2854,7 +2856,12 @@
 			"milestone": "里程碑",
 			"progress": "进度",
 			"constraint": "约束",
-			"approval": "审批"
+			"approval": "审批",
+			"estimate": "预估工时"
+		},
+		"estimate": {
+			"valueHours": "{{value}} 小时",
+			"valueDays": "{{value}} 天"
 		},
 		"move": {
 			"title": "移动任务",
@@ -2949,6 +2956,21 @@
 				"updateError": "任务进度更新失败",
 				"updateSuccess": "任务进度已更新",
 				"exactLabel": "精确完成百分比"
+			},
+			"estimate": {
+				"label": "预估工时",
+				"description": "计划工作量。一个工作日为 8 小时。决定没有日期、或只有开始日期或截止日期的任务在甘特图中的条形长度。",
+				"amountLabel": "预估数值",
+				"unitLabel": "预估单位",
+				"units": {
+					"hours": "小时",
+					"days": "天"
+				},
+				"clear": "清除预估",
+				"updateSuccess": "任务预估已更新",
+				"updateError": "任务预估更新失败",
+				"exclusiveHint": "设置了估算后，只能设置开始日期或截止日期之一，不能同时设置。移除估算后才能设置两个日期。",
+				"blockedByDates": "清除开始日期或截止日期后才能设置估算。"
 			},
 			"constraint": {
 				"currentDate": "当前:{{date}}",
@@ -3113,7 +3135,11 @@
 			"barColorSourceNone": "无",
 			"barColorSourceFirstLabel": "第一个标签",
 			"externalTaskDerivedTitle": "{{title}} — {{projectName}} 中的关联任务；该任务没有自己的日期，此位置由其依赖关系推算得出（此处只读）",
-			"externalTaskDerivedRailNote": "位置来自依赖关系"
+			"externalTaskDerivedRailNote": "位置来自依赖关系",
+			"externalTaskDerivedEstimateTitle": "{{title}} — {{projectName}} 中的关联任务；该任务没有自己的日期，其位置和长度由依赖关系及 {{estimate}} 的预估推算得出（此处只读）",
+			"derivedTaskTitle": "{{title}} — 该任务没有自己的日期，此位置由其依赖关系推算得出（此处只读）",
+			"derivedTaskEstimateTitle": "{{title}} — 该任务没有自己的日期，其位置和长度由依赖关系及 {{estimate}} 的预估推算得出（此处只读）",
+			"derivedEstimateRailNote": "由依赖关系推算 · {{estimate}}"
 		},
 		"delete": {
 			"title": "删除任务？",

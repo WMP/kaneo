@@ -69,6 +69,10 @@ import {
   getDescriptionPage,
   getPublicProjectDescriptionPage,
 } from "./task/description-pages";
+import {
+  ESTIMATE_DATE_RANGE_CONFLICT_MESSAGE,
+  isEstimateDateRangeViolation,
+} from "./task/estimate";
 import { boardSchema, descriptionPageSchema } from "./task/response";
 import { descriptionPageQuery, listTasksQuery } from "./task/schema";
 import taskRelation from "./task-relation";
@@ -186,6 +190,12 @@ export function createApp() {
         Sentry.captureException(err);
       }
       return err.getResponse();
+    }
+
+    if (isEstimateDateRangeViolation(err)) {
+      return new HTTPException(400, {
+        message: ESTIMATE_DATE_RANGE_CONFLICT_MESSAGE,
+      }).getResponse();
     }
 
     Sentry.captureException(err);

@@ -51,6 +51,7 @@ import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { getInitials } from "@/lib/get-initials";
+import { HttpError } from "@/lib/http-error";
 import { getPriorityLabel } from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
@@ -277,8 +278,14 @@ function BacklogBulkToolbar() {
         toast.success(t("tasks:bulk.updateSuccess", { count: selectedCount }));
         clearSelection();
         setIsDatePickerOpen(false);
-      } catch (_error) {
-        toast.error(t("tasks:bulk.updateDueDateError"));
+      } catch (error) {
+        // A 400 carries a specific reason, e.g. a task with an estimate that
+        // would end up with both dates.
+        toast.error(
+          error instanceof HttpError && error.status === 400
+            ? error.message
+            : t("tasks:bulk.updateDueDateError"),
+        );
       }
     },
     [bulkDueDate, selectedTaskIds, selectedCount, clearSelection, t],

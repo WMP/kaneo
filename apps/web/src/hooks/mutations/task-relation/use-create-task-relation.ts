@@ -10,6 +10,9 @@ function useCreateTaskRelation() {
     mutationFn: createTaskRelation,
     onSuccess: (_, variables) => {
       void invalidateRelationTaskProject(queryClient, variables.sourceTaskId);
+      // "Blocked by" makes the current task the target, so a board that holds
+      // only the target (another project than the source's) is refreshed too.
+      void invalidateRelationTaskProject(queryClient, variables.targetTaskId);
       queryClient.invalidateQueries({
         queryKey: ["task-relations", variables.sourceTaskId],
       });

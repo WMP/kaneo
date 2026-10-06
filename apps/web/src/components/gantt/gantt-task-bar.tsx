@@ -23,6 +23,11 @@ import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 import { computeConstraintViolations } from "./gantt-constraint-violations";
 import {
+  estimatedSpanFromAnchor,
+  getEstimatedSingleDate,
+  ownDatePayload,
+} from "./gantt-estimated-span";
+import {
   computeInsetBarBox,
   computeProgressFillPercent,
   deriveTaskSchedule,
@@ -86,6 +91,11 @@ type GanttTaskBarProps = {
    * dependents (see gantt-dependency-cascade.ts); it never affects this
    * bar's own rendering. */
   onDatesCommitted?: (taskId: string, start: Date, end: Date) => void;
+  /** Workspace working-calendar predicate (see gantt-working-calendar.ts). Used
+   * only to re-derive the displayed length of a task that has an effort
+   * estimate and exactly one own date while it is dragged; omitted: calendar
+   * days. */
+  isWorkingDay?: (d: Date) => boolean;
   // Upstream "blocks" relations whose source task's approval gate is still
   // pending or rejected. Hard-blocking at the database level is out of scope
   // for v1 (see AGENTS.md follow-through); this only surfaces a warning.
@@ -108,9 +118,31 @@ export function GanttTaskBar({
   onHoverChange,
   onLinkDragStart,
   onDatesCommitted,
+  isWorkingDay,
   gateWarnings = [],
 }: GanttTaskBarProps) {
   const { t } = useTranslation();
+  // A task with an estimate and exactly one own date (start OR due) is drawn
+  // with a span derived from the estimate. That span is display-only: a drag
+  // persists only the date the task actually has, and the resize handles are
+  // hidden because resizing would create the missing date, which the API
+  // refuses for an estimated task. Changing the length means changing the
+  // estimate in the task details.
+  const estimated = getEstimatedSingleDate(task);
+  const estimatedMinutes = estimated?.estimateMinutes ?? 0;
+  const estimatedAnchor = estimated?.anchor ?? null;
+  // The span a candidate position implies. For an estimated task the OTHER
+  // end is re-derived from the anchored date (working days), otherwise the
+  // candidate is returned unchanged.
+  const spanFor = (candidateStart: Date, candidateEnd: Date) =>
+    estimatedAnchor === null
+      ? { start: candidateStart, end: candidateEnd }
+      : estimatedSpanFromAnchor(
+          estimatedAnchor,
+          estimatedAnchor === "start" ? candidateStart : candidateEnd,
+          estimatedMinutes,
+          isWorkingDay,
+        );
   const { mutateAsync: updateTask } = useUpdateTask();
   const [dragDisplay, setDragDisplay] = useState<{
     start: Date;
@@ -151,8 +183,15 @@ export function GanttTaskBar({
       try {
         await updateTask({
           ...task,
-          startDate: toIsoDay(nextStart),
-          dueDate: toIsoDay(nextEnd),
+          // An estimated single-date task keeps the missing date empty: only
+          // its own date is sent.
+          ...(estimatedAnchor === null
+            ? { startDate: toIsoDay(nextStart), dueDate: toIsoDay(nextEnd) }
+            : ownDatePayload(
+                estimatedAnchor,
+                { start: nextStart, end: nextEnd },
+                toIsoDay,
+              )),
         });
         return true;
       } catch (error) {
@@ -164,7 +203,7 @@ export function GanttTaskBar({
         return false;
       }
     },
-    [task, updateTask, t],
+    [task, updateTask, t, estimatedAnchor],
   );
 
   const pxPerDay = Math.max(pixelsPerDay, 1e-6);
@@ -297,8 +336,11 @@ export function GanttTaskBar({
       let nextStartIdx = startIdx + deltaDays;
       const maxStart = trackCount - 1 - durationDays;
       nextStartIdx = Math.max(0, Math.min(nextStartIdx, maxStart));
-      const nextStart = timeline.days[nextStartIdx] ?? initialStart;
-      const nextEnd = addDays(nextStart, durationDays);
+      const rawStart = timeline.days[nextStartIdx] ?? initialStart;
+      const { start: nextStart, end: nextEnd } = spanFor(
+        rawStart,
+        addDays(rawStart, durationDays),
+      );
       setDragDisplay({ start: nextStart, end: nextEnd });
     };
 
@@ -315,8 +357,11 @@ export function GanttTaskBar({
       let nextStartIdx = startIdx + deltaDays;
       const maxStart = trackCount - 1 - durationDays;
       nextStartIdx = Math.max(0, Math.min(nextStartIdx, maxStart));
-      const nextStart = timeline.days[nextStartIdx] ?? initialStart;
-      const nextEnd = addDays(nextStart, durationDays);
+      const rawStart = timeline.days[nextStartIdx] ?? initialStart;
+      const { start: nextStart, end: nextEnd } = spanFor(
+        rawStart,
+        addDays(rawStart, durationDays),
+      );
 
       if (moved < moveThresholdPx) {
         setDragDisplay(null);
@@ -839,17 +884,19 @@ export function GanttTaskBar({
             onBlur={handleBlur}
             className="pointer-events-auto absolute inset-y-0 left-0 z-10 flex items-stretch"
           >
-            <button
-              type="button"
-              aria-label={t("tasks:gantt.resizeStart")}
-              disabled={!startIsVisible}
-              onPointerDown={handleResizeLeftPointerDown}
-              className={cn(
-                "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-l-md hover:bg-primary/18",
-                "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-              )}
-            />
+            {estimatedAnchor === null && (
+              <button
+                type="button"
+                aria-label={t("tasks:gantt.resizeStart")}
+                disabled={!startIsVisible}
+                onPointerDown={handleResizeLeftPointerDown}
+                className={cn(
+                  "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-l-md hover:bg-primary/18",
+                  "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                )}
+              />
+            )}
             <button
               type="button"
               aria-label={t("tasks:gantt.taskAriaLabel", { title: task.title })}
@@ -862,17 +909,19 @@ export function GanttTaskBar({
                 }
               }}
             />
-            <button
-              type="button"
-              aria-label={t("tasks:gantt.resizeDue")}
-              disabled={!endIsVisible}
-              onPointerDown={handleResizeRightPointerDown}
-              className={cn(
-                "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-r-md hover:bg-primary/18",
-                "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-              )}
-            />
+            {estimatedAnchor === null && (
+              <button
+                type="button"
+                aria-label={t("tasks:gantt.resizeDue")}
+                disabled={!endIsVisible}
+                onPointerDown={handleResizeRightPointerDown}
+                className={cn(
+                  "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-r-md hover:bg-primary/18",
+                  "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                )}
+              />
+            )}
           </div>
           {gateWarnings.length > 0 && (
             <Tooltip>
