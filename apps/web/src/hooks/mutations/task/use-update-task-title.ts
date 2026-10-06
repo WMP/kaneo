@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTaskTitle from "@/fetchers/task/update-task-title";
+import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
 import type Task from "@/types/task";
 
 export function useUpdateTaskTitle() {
@@ -23,6 +24,8 @@ export function useUpdateTaskTitle() {
       queryClient.invalidateQueries({
         queryKey: ["activities", variables.id],
       });
+      // The title is part of the relation endpoint summary a Gantt draws.
+      invalidateGanttRelations(queryClient);
     },
   });
 }

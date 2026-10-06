@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import bulkOperation from "@/fetchers/task/bulk-operation";
 import deleteTask from "@/fetchers/task/delete-task";
+import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
 
 export function useBulkOperations() {
   const queryClientRef = useQueryClient();
@@ -8,6 +9,8 @@ export function useBulkOperations() {
   const invalidateCommon = () => {
     queryClientRef.invalidateQueries({ queryKey: ["tasks"] });
     queryClientRef.invalidateQueries({ queryKey: ["projects"] });
+    // Status, dates and deletions change relation endpoints a Gantt draws.
+    invalidateGanttRelations(queryClientRef);
   };
 
   const bulkDelete = useMutation({

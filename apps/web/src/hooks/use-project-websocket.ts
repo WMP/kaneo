@@ -3,6 +3,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { getApiUrl } from "@/fetchers/get-api-url";
 import { authClient } from "@/lib/auth-client";
+import {
+  ganttProjectRelationsKey,
+  ganttTaskRelationsKey,
+  ganttTasksKey,
+} from "@/lib/gantt-query-keys";
 import { isUnauthorizedError } from "@/lib/http-error";
 import {
   isProjectAccessDenied,
@@ -85,9 +90,9 @@ export function useProjectWebSocket(
         // mount — and this is what lets the realtime path, rather than a short
         // poll, keep the board fresh after a dropped connection.
         if (hasConnected) {
-          queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+          queryClient.invalidateQueries({ queryKey: ganttTasksKey(projectId) });
           queryClient.invalidateQueries({
-            queryKey: ["task-relations", "project", projectId],
+            queryKey: ganttProjectRelationsKey(projectId),
           });
         }
         hasConnected = true;
@@ -127,7 +132,7 @@ export function useProjectWebSocket(
             message.type === "PROJECT_UPDATED"
           ) {
             queryClient.invalidateQueries({
-              queryKey: ["tasks", message.projectId],
+              queryKey: ganttTasksKey(message.projectId),
             });
 
             if (message.type === "PROJECT_UPDATED") {
@@ -149,7 +154,7 @@ export function useProjectWebSocket(
                   queryKey: ["task", message.sourceTaskId],
                 });
                 queryClient.invalidateQueries({
-                  queryKey: ["task-relations", message.sourceTaskId],
+                  queryKey: ganttTaskRelationsKey(message.sourceTaskId),
                 });
               }
               if (message.targetTaskId) {
@@ -157,7 +162,7 @@ export function useProjectWebSocket(
                   queryKey: ["task", message.targetTaskId],
                 });
                 queryClient.invalidateQueries({
-                  queryKey: ["task-relations", message.targetTaskId],
+                  queryKey: ganttTaskRelationsKey(message.targetTaskId),
                 });
               }
               if (!message.sourceTaskId && !message.targetTaskId) {
@@ -171,9 +176,26 @@ export function useProjectWebSocket(
               // from a task in this project without either endpoint's task
               // being the one currently open on the Gantt view.
               queryClient.invalidateQueries({
-                queryKey: ["task-relations", "project", message.projectId],
+                queryKey: ganttProjectRelationsKey(message.projectId),
               });
             } else {
+              if (
+                message.type === "TASK_UPDATED" ||
+                message.type === "TASK_CREATED" ||
+                message.type === "TASK_DELETED" ||
+                message.type === "TASK_MOVED"
+              ) {
+                // The Gantt's relation summaries carry each endpoint's dates,
+                // estimate, status and title, and the same cache holds this
+                // project's own tasks as endpoints, so a change to one of them
+                // (made elsewhere) must refresh it as well as the task list.
+                // For a task of ANOTHER project that is an endpoint here, the
+                // API sends this project a TASK_RELATION_UPDATED without ids
+                // (handled above); nothing about that task is sent or read here.
+                queryClient.invalidateQueries({
+                  queryKey: ganttProjectRelationsKey(message.projectId),
+                });
+              }
               queryClient.invalidateQueries({
                 queryKey: ["task", message.taskId],
               });

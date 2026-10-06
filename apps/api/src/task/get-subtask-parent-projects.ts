@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, ne, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import db from "../database";
 import { taskRelationTable, taskTable } from "../database/schema";
@@ -42,6 +42,41 @@ export async function getProjectSubtaskParentProjects(
         eq(child.projectId, projectId),
         status === undefined ? undefined : eq(child.status, status),
         eq(taskRelationTable.relationType, "subtask"),
+      ),
+    );
+}
+
+/**
+ * Projects (other than `projectId`) that hold the other endpoint of a task's
+ * dependency or related relation. Their Gantt charts draw this task from the
+ * relation summary, so they need a refresh when its schedule, status or title
+ * changes. Returns project ids only, never task data.
+ */
+export async function getRelatedEndpointProjects(
+  taskId: string,
+  projectId: string,
+) {
+  const other = alias(taskTable, "other_endpoint");
+  return db
+    .selectDistinct({ projectId: other.projectId })
+    .from(taskRelationTable)
+    .innerJoin(
+      other,
+      or(
+        and(
+          eq(taskRelationTable.sourceTaskId, taskId),
+          eq(other.id, taskRelationTable.targetTaskId),
+        ),
+        and(
+          eq(taskRelationTable.targetTaskId, taskId),
+          eq(other.id, taskRelationTable.sourceTaskId),
+        ),
+      ),
+    )
+    .where(
+      and(
+        ne(taskRelationTable.relationType, "subtask"),
+        ne(other.projectId, projectId),
       ),
     );
 }

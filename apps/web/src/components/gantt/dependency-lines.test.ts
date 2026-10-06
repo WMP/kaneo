@@ -171,6 +171,109 @@ describe("buildElbowPoints", () => {
   });
 });
 
+describe("buildElbowPoints — finish-to-start drop-then-enter route", () => {
+  // The reported case: the predecessor ends on Thu and the successor starts
+  // on Fri of the next row. The one-day gap (here 20px) is smaller than the
+  // two exit gaps a clean step needs (28px), which used to wrap the line
+  // around both bars and enter the target from the left.
+  const source: TaskBarBox = { left: 0, right: 100, top: 0, height: 40 };
+
+  it("drops straight down at the source's end, then runs right into the target", () => {
+    const target: TaskBarBox = { left: 120, right: 220, top: 40, height: 40 };
+
+    const points = buildElbowPoints(source, target);
+
+    expect(points).toEqual([
+      { x: 100, y: 20 },
+      { x: 100, y: 20 },
+      { x: 100, y: 60 },
+      { x: 120, y: 60 },
+    ]);
+    // Never wraps: x never goes left of the source's own box nor right of
+    // the target's start, and the final approach moves right.
+    for (const point of points) {
+      expect(point.x).toBeGreaterThanOrEqual(source.left);
+      expect(point.x).toBeLessThanOrEqual(target.left);
+    }
+    expect(points[3].x).toBeGreaterThan(points[2].x);
+  });
+
+  it("keeps a straight arrow run before the target when the gap is tighter than the arrowhead", () => {
+    // Gap of 5px: the drop moves just inside the source's end.
+    const target: TaskBarBox = { left: 105, right: 205, top: 40, height: 40 };
+
+    const points = buildElbowPoints(source, target);
+
+    expect(points[2]).toEqual({ x: 93, y: 60 }); // 105 - ARROW_RUN (12)
+    expect(points[3]).toEqual({ x: 105, y: 60 });
+    expect(points[2].x).toBeLessThan(source.right);
+  });
+
+  it("handles a target starting exactly at the source's end", () => {
+    const target: TaskBarBox = { left: 100, right: 200, top: 40, height: 40 };
+
+    const points = buildElbowPoints(source, target);
+
+    expect(points[0]).toEqual({ x: 100, y: 20 });
+    expect(points[3]).toEqual({ x: 100, y: 60 });
+    // Drop inside the source (88), before the arrow's 12px run.
+    expect(points[2]).toEqual({ x: 88, y: 60 });
+  });
+
+  it("never drops left of the source's own box, even for a very short bar", () => {
+    const tiny: TaskBarBox = { left: 96, right: 100, top: 0, height: 40 };
+    const target: TaskBarBox = { left: 100, right: 160, top: 40, height: 40 };
+
+    const points = buildElbowPoints(tiny, target);
+
+    expect(points[2].x).toBe(96);
+  });
+
+  it("goes straight up, then right, for a target in the row above", () => {
+    const below: TaskBarBox = { left: 0, right: 100, top: 80, height: 40 };
+    const target: TaskBarBox = { left: 120, right: 220, top: 40, height: 40 };
+
+    const points = buildElbowPoints(below, target);
+
+    expect(points.map((p) => p.y)).toEqual([100, 100, 60, 60]);
+    expect(points.map((p) => p.x)).toEqual([100, 100, 100, 120]);
+  });
+
+  it("keeps the normal step once the gap fits both exit gaps", () => {
+    const target: TaskBarBox = { left: 128, right: 228, top: 40, height: 40 };
+
+    const points = buildElbowPoints(source, target);
+
+    // exit 114, entry 114: forwardProgress 0 -> the step with a vertical run
+    // between the two bars, not the drop route.
+    expect(points[1].x).toBe(114);
+    expect(points[2].x).toBe(114);
+  });
+
+  it("keeps the detour for a genuinely backward edge", () => {
+    const target: TaskBarBox = { left: 40, right: 140, top: 40, height: 40 };
+
+    const points = buildElbowPoints(source, target);
+
+    expect(points).toHaveLength(6);
+  });
+
+  it("does not change the routes of the other dependency types", () => {
+    const target: TaskBarBox = { left: 120, right: 220, top: 40, height: 40 };
+
+    for (const type of ["ss", "ff", "sf"] as const) {
+      const points = buildElbowPoints(source, target, [], type);
+      expect(points.length, type).toBeGreaterThanOrEqual(4);
+    }
+    // ss still exits the START edge to the left; ff still steps between the
+    // two exit gaps (114..234) instead of dropping at the source's end.
+    expect(buildElbowPoints(source, target, [], "ss")[1].x).toBe(-14);
+    const ffStepX = buildElbowPoints(source, target, [], "ff")[1].x;
+    expect(ffStepX).toBeGreaterThanOrEqual(114);
+    expect(ffStepX).toBeLessThanOrEqual(234);
+  });
+});
+
 describe("buildElbowPoints — dependency type anchoring", () => {
   // Same two boxes throughout, so only the anchor (and therefore the
   // resulting points) differ between the four types.
@@ -315,6 +418,55 @@ describe("buildDependencyEdges", () => {
     ];
 
     expect(buildDependencyEdges(edges, boxes)).toEqual([]);
+  });
+
+  it("draws the reported one-day gap as an L: down at the predecessor's end, then right, with no leftward segment", () => {
+    // DC-1 ends Thu; SOF-2 starts Fri on the next row, SOF-7 a row below.
+    const boxes = new Map<string, TaskBarBox>([
+      ["dc-1", { left: 0, right: 100, top: 0, height: 40 }],
+      ["sof-2", { left: 120, right: 220, top: 40, height: 40 }],
+      ["sof-7", { left: 120, right: 220, top: 80, height: 40 }],
+    ]);
+    const geometry = buildDependencyEdges(
+      [
+        {
+          id: "e1",
+          sourceTaskId: "dc-1",
+          targetTaskId: "sof-2",
+          relationType: "blocks",
+        },
+        {
+          id: "e2",
+          sourceTaskId: "dc-1",
+          targetTaskId: "sof-7",
+          relationType: "blocks",
+          lagDays: 2,
+        },
+      ],
+      boxes,
+    );
+
+    expect(geometry[0].path).toBe(
+      "M 100 20 L 100 52 Q 100 60, 108 60 L 120 60",
+    );
+    expect(geometry[0].targetPoint).toEqual({ x: 120, y: 60 });
+    for (const edge of geometry) {
+      // Every x in the path stays within [source.left, target.left].
+      const xs = [...edge.path.matchAll(/[ML] ([\d.-]+) /g)].map((m) =>
+        Number(m[1]),
+      );
+      for (const x of xs) {
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(120);
+      }
+    }
+    // Labels stay in the source row, to the right of the source bar, not on
+    // top of the target bars below.
+    for (const edge of geometry) {
+      expect(edge.typeLabelPoint?.y).toBeLessThan(40);
+      expect(edge.typeLabelPoint?.x).toBeGreaterThan(100);
+    }
+    expect(geometry[1].lagLabelPoint).toEqual({ x: 100, y: 20 });
   });
 
   it("still produces a routable path when the target sits before the source", () => {

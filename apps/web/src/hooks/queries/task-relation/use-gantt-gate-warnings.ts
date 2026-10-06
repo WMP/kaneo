@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 import getTaskRelations from "@/fetchers/task-relation/get-task-relations";
 import { isBlockingApprovalStatus } from "@/lib/approval";
+import { ganttTaskRelationsKey } from "@/lib/gantt-query-keys";
 
 export type ApprovalGate = {
   taskId: string;
@@ -16,10 +17,11 @@ export type ApprovalGate = {
 export function useGanttGateWarnings(taskIds: string[]) {
   const results = useQueries({
     queries: taskIds.map((taskId) => ({
-      queryKey: ["task-relations", taskId],
+      queryKey: ganttTaskRelationsKey(taskId),
       queryFn: () => getTaskRelations(taskId),
       enabled: !!taskId,
       staleTime: 30_000,
+      refetchOnMount: true,
     })),
   });
 

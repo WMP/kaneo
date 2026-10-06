@@ -60,6 +60,11 @@ type AnchorSide = "start" | "end";
 const EXIT_GAP = 14;
 // Corner rounding radius for the elbow's turns.
 const CORNER_RADIUS = 8;
+// Horizontal run kept straight in front of the target's start edge in the
+// "drop, then enter" route (see buildElbowPoints): enough for the arrowhead
+// (about 6.5 stroke widths long) plus a little, so the arrow always sits on a
+// straight horizontal segment, never on the rounded corner.
+const ARROW_RUN = 12;
 // Vertical room a "below" detour lane needs under the LAST row: the lane sits
 // EXIT_GAP past that row's bottom, plus a little for the stroke, arrowhead and
 // rounded corners. Charts reserve this much empty space after their last row
@@ -207,8 +212,14 @@ function pickClearMidX(
 //    gutter, and arrive at the target's start edge. The vertical run sits at
 //    the gap's midpoint unless an intermediate task's bar occupies it, in
 //    which case it steps aside to the nearest clear gap (pickClearMidX).
-//  - target behind the source (a backward-scheduled edge) or too close to
-//    fit a clean step: leave the source to the right, drop into a
+//  - finish-to-start target to the right of the source's end but closer than
+//    the step needs (typically the next day, e.g. a predecessor ending Thu
+//    and a successor starting Fri): an "L" — drop straight down (or up, for a
+//    target above) at x = min(source end, target start - ARROW_RUN), clamped
+//    to stay within the source bar's own x-range, then run right into the
+//    target's start edge. Nothing loops back over a bar. The drop stays at or
+//    just inside the source's end, so it never crosses the target bar.
+//  - target behind the source (a backward-scheduled edge): leave the source to the right, drop into a
 //    horizontal lane that clears both bars entirely (above whichever box is
 //    higher, or below whichever is lower — whichever is the shorter detour,
 //    except that a lane above the first row is never used: see laneY below),
@@ -275,6 +286,27 @@ export function buildElbowPoints(
     ];
   }
 
+  // A finish-to-start target at or after the source's end but nearer than the
+  // step's two exit gaps: the target is ahead, so go straight down/up and
+  // then right into it instead of wrapping around both bars. Only the
+  // end -> start anchoring qualifies; the other types keep their routes.
+  if (
+    sourceSide === "end" &&
+    targetSide === "start" &&
+    targetAnchorX >= sourceAnchorX
+  ) {
+    const dropX = Math.max(
+      source.left,
+      Math.min(sourceAnchorX, targetAnchorX - ARROW_RUN),
+    );
+    return [
+      sourcePoint,
+      { x: dropX, y: sourceY },
+      { x: dropX, y: targetY },
+      targetPoint,
+    ];
+  }
+
   // Not enough clear room for a direct step: go around instead of through.
   // `below`/`above` are lanes that clear BOTH boxes entirely — below the
   // lower of the two bottoms, or above the higher of the two tops —
@@ -310,7 +342,18 @@ export function buildElbowPoints(
 // `radius` (clamped so it never overruns a segment shorter than the radius
 // itself). A straight 2-point line needs no rounding and is returned as a
 // plain `M ... L ...`.
-export function roundedPolylinePath(points: Point[], radius: number): string {
+export function roundedPolylinePath(
+  rawPoints: Point[],
+  radius: number,
+): string {
+  // A zero-length segment (a route whose first turn sits exactly on the
+  // anchor) has no direction to round; drop the repeated point.
+  const points = rawPoints.filter(
+    (point, index) =>
+      index === 0 ||
+      point.x !== rawPoints[index - 1].x ||
+      point.y !== rawPoints[index - 1].y,
+  );
   if (points.length < 2) return "";
   if (points.length === 2) {
     return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;

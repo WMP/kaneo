@@ -6,6 +6,7 @@ import { projectTable } from "../database/schema";
 import { subscribeToEvent } from "../events";
 import { isRedisConfigured } from "../redis";
 import {
+  getRelatedEndpointProjects,
   getRelationSourceProject,
   getSubtaskParentProjects,
 } from "../task/get-subtask-parent-projects";
@@ -746,6 +747,15 @@ subscribeToEvent<{
   );
 });
 
+// Changes that alter how a task is drawn from a relation summary (dates,
+// estimate, status, title) on another project's Gantt chart.
+const relationEndpointRefreshEvents = new Set([
+  "task.updated",
+  "task.status_changed",
+  "task.due_date_changed",
+  "task.title_changed",
+]);
+
 const relationEvents = new Set([
   "task-relation.created",
   "task-relation.updated",
@@ -826,6 +836,14 @@ for (const eventName of taskUpdateEvents) {
       },
       initiatorId,
     );
+    if (relationEndpointRefreshEvents.has(eventName)) {
+      // Id-free refresh: projects that show this task only as a relation
+      // endpoint refetch their own relation summaries; no task data is sent.
+      refreshParentBoards(
+        await getRelatedEndpointProjects(taskId, projectId),
+        projectId,
+      );
+    }
     if (eventName === "task.status_changed" && !data.skipSubtaskParentRefresh) {
       refreshParentBoards(await getSubtaskParentProjects([taskId]), projectId);
     } else if (eventName === "task-relation.deleted" && data.sourceTaskId) {

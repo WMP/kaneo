@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import deleteTask from "@/fetchers/task/delete-task";
+import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
 import useProjectStore from "@/store/project";
 import type { ProjectWithTasks } from "@/types/project";
 import { removeTaskFromProject } from "./remove-task-from-project";
@@ -22,6 +23,8 @@ export function useDeleteTask() {
       void queryClient.invalidateQueries({
         queryKey: ["tasks", deletedTask.projectId],
       });
+      // Its relations are gone, which a Gantt (also another project's) shows.
+      void invalidateGanttRelations(queryClient);
 
       const { project, setProject } = useProjectStore.getState();
       if (project?.id === deletedTask.projectId) {

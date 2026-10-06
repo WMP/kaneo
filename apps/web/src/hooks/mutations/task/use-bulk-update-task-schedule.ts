@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import bulkOperation, {
   type BulkScheduleUpdate,
 } from "@/fetchers/task/bulk-operation";
+import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
 
 /**
  * Persists a Gantt dependency cascade (see gantt-dependency-cascade.ts) in
@@ -45,9 +46,7 @@ export function useBulkUpdateTaskSchedule() {
       // as an external (cross-project) row on ANOTHER project's Gantt chart.
       // useUpdateTask invalidates this same key for the same reason; the bulk
       // path must too, or the other project keeps showing pre-cascade dates.
-      queryClient.invalidateQueries({
-        queryKey: ["task-relations", "project"],
-      });
+      invalidateGanttRelations(queryClient);
     },
   });
 }

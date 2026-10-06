@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,13 @@ function fieldText(minutes: number | null, unit: EstimateUnit): string {
 // stored as whole minutes, with an hours/days switch and a clear button. An
 // empty field clears the estimate. Used by the task details popover (saves on
 // commit) and the create-task form (holds the value until submit).
+//
+// A value is committed on Enter, on blur, and when the editor unmounts with a
+// changed valid value (closing the popover by clicking away unmounts the
+// field without a blur event). Each path compares against the last committed
+// value, so Enter followed by a blur or a close never saves twice and an
+// unchanged value never saves. Invalid text reverts, and Escape discards the
+// edit: the popover closes without committing it.
 export default function EstimateEditor({
   minutes,
   unit: initialUnit,
@@ -54,6 +61,12 @@ export default function EstimateEditor({
   // Mirror of the ref for rendering (whether there is something to clear).
   const [hasEstimate, setHasEstimate] = useState(minutes !== null);
 
+  // The close-time flush must see the latest field text and callbacks, not the
+  // ones from the render that registered the effect.
+  const latestRef = useRef({ input, unit, disabled });
+  latestRef.current = { input, unit, disabled };
+  const cancelledRef = useRef(false);
+
   const save = async (next: number | null, nextUnit: EstimateUnit) => {
     const previous = lastCommittedRef.current;
     lastCommittedRef.current = next;
@@ -66,6 +79,32 @@ export default function EstimateEditor({
       setInput(fieldText(previous, nextUnit));
     }
   };
+
+  const saveRef = useRef(save);
+  saveRef.current = save;
+
+  useEffect(() => {
+    // Capture phase, so the cancel is recorded before whatever closes the
+    // popover on Escape can unmount this editor.
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cancelledRef.current = true;
+    };
+    document.addEventListener("keydown", onEscape, true);
+    return () => {
+      document.removeEventListener("keydown", onEscape, true);
+      const {
+        input: text,
+        unit: currentUnit,
+        disabled: isDisabled,
+      } = latestRef.current;
+      if (cancelledRef.current || isDisabled) return;
+      const parsed = parseEstimateInput(text, currentUnit);
+      if (parsed.kind === "invalid") return;
+      const next = parsed.kind === "empty" ? null : parsed.minutes;
+      if (next === lastCommittedRef.current) return;
+      void saveRef.current(next, currentUnit);
+    };
+  }, []);
 
   const handleCommit = () => {
     if (disabled) return;
@@ -121,12 +160,18 @@ export default function EstimateEditor({
           disabled={disabled}
           aria-label={t("tasks:popover.estimate.amountLabel")}
           aria-describedby={shownHint ? hintId : undefined}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            cancelledRef.current = false;
+            setInput(e.target.value);
+          }}
           onBlur={handleCommit}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               handleCommit();
+            } else if (e.key === "Escape") {
+              // Discard the edit; the popover closes on this key.
+              setInput(fieldText(lastCommittedRef.current, unit));
             }
           }}
         />
