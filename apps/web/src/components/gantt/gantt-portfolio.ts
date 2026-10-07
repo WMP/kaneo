@@ -53,7 +53,10 @@ export type ScheduledPortfolioTask = {
   /** True when the task has NO dates of its own and its position was derived
    * from its incoming `blocks` dependencies (display only, nothing is stored;
    * see gantt-derived-schedule.ts). Such a task is drawn read-only with the
-   * project Gantt's dotted treatment and is left out of the project rollup. */
+   * project Gantt's dotted treatment. Unlike on the project Gantt, it DOES
+   * roll up into the project summary bar (span and progress) so a project
+   * scheduled only through estimates and dependencies still shows its span;
+   * it never feeds the derivation itself (only dated tasks anchor). */
   isDerived: boolean;
   estimateMinutes: number | null;
   estimateUnit: string | undefined;
@@ -74,14 +77,18 @@ export type PortfolioProjectRow = {
    * server already excludes archived tasks entirely). Lets the route say
    * "3 tasks, none scheduled yet" instead of reading as an empty project. */
   unscheduledCount: number;
-  /** The project's overall rolled-up span across its own DATED tasks (derived
-   * rows are display-only and never roll up, as on the per-project Gantt) —
-   * the same duration-weighted rollup the per-project Gantt uses for a
-   * parent task's summary bar (gantt-hierarchy.ts), applied here by treating
-   * the project itself as the "parent" and its tasks as the "children". Null
-   * when the project has no scheduled tasks at all. */
+  /** The project's overall rolled-up span across its dated tasks AND its
+   * derived (dateless, display-only) tasks, so a project scheduled only
+   * through estimates and dependencies still has a span. This differs from
+   * the per-project Gantt, where derived rows never roll up into a parent
+   * task's summary bar. It is the same duration-weighted rollup the
+   * per-project Gantt uses for a parent task's summary bar
+   * (gantt-hierarchy.ts), applied here by treating the project itself as the
+   * "parent" and its tasks as the "children". Null when the project has no
+   * scheduled tasks at all. */
   summarySpan: ScheduleSpan | null;
-  /** Duration-weighted average progress across the same scheduled tasks;
+  /** Duration-weighted average progress across the same tasks (dated and
+   * derived);
    * null under the same condition as summarySpan. */
   summaryProgress: number | null;
 };
@@ -112,7 +119,11 @@ export function buildPortfolioRows(
   // compute each *project*'s rollup here too, instead of a second
   // hand-rolled average.
   const childrenByParentId = new Map<string, string[]>();
+  // Dated tasks only: the input of the derivation below, which must not see
+  // derived spans.
   const ownSpanByTaskId = new Map<string, ScheduleSpan>();
+  // Dated AND derived tasks: the input of the project rollup.
+  const rollupSpanByTaskId = new Map<string, ScheduleSpan>();
   const progressByTaskId = new Map<string, number>();
 
   // Dateless tasks: candidates for a derived position, resolved in ONE pass
@@ -157,6 +168,7 @@ export function buildPortfolioRows(
       });
       childIds.push(task.id);
       ownSpanByTaskId.set(task.id, schedule);
+      rollupSpanByTaskId.set(task.id, schedule);
       progressByTaskId.set(task.id, task.progress);
     }
 
@@ -215,6 +227,12 @@ export function buildPortfolioRows(
       estimateMinutes: task.estimateMinutes ?? null,
       estimateUnit: task.estimateUnit,
     };
+    rollupSpanByTaskId.set(id, span);
+    progressByTaskId.set(id, task.progress);
+    const projectId = projects[projectIndex].id;
+    const rollupChildren = childrenByParentId.get(projectId);
+    if (rollupChildren) rollupChildren.push(id);
+    else childrenByParentId.set(projectId, [id]);
     const list = derivedByProject.get(projectIndex);
     if (list) list.push(entry);
     else derivedByProject.set(projectIndex, [entry]);
@@ -229,10 +247,10 @@ export function buildPortfolioRows(
     childrenByParentId,
     parentIdByChildId: new Map(),
   };
-  const spans = computeParentSummarySpans(hierarchy, ownSpanByTaskId);
+  const spans = computeParentSummarySpans(hierarchy, rollupSpanByTaskId);
   const progresses = computeParentSummaryProgress(
     hierarchy,
-    ownSpanByTaskId,
+    rollupSpanByTaskId,
     progressByTaskId,
   );
 
