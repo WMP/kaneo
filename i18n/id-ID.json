@@ -131,6 +131,9 @@
 				"assign": "Tugaskan",
 				"assignUnassigned": "Belum ditugaskan",
 				"assignUnassignedTitle": "Belum ditugaskan",
+				"dependencies": "Dependensi",
+				"removeDependency": "Hapus dependensi",
+				"dependencyLinkError": "Tugas dibuat, tetapi {{task}} tidak dapat ditautkan: {{reason}}",
 				"labels": "Label",
 				"searchLabels": "Cari label...",
 				"noLabelsFound": "Label tidak ditemukan",
@@ -2877,6 +2880,10 @@
 			"action": "Pindahkan tugas",
 			"success": "Tugas berhasil dipindahkan",
 			"error": "Gagal memindahkan tugas"
+		},
+		"picker": {
+			"search": "Cari...",
+			"noResults": "Tidak ada hasil"
 		},
 		"popover": {
 			"assignee": {

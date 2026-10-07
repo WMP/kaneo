@@ -3,6 +3,11 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
+  PickerList,
+  PickerNoResults,
+  PickerSearchInput,
+} from "@/components/ui/picker-search-input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -10,6 +15,7 @@ import {
 import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
+import { usePickerSearch } from "@/hooks/use-picker-search";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
@@ -29,12 +35,21 @@ const priorityOptions = [
   { value: "urgent" },
 ];
 
+const getPrioritySearchText = (priority: { value: string }) =>
+  getPriorityLabel(priority.value);
+
 export default function TaskPriorityPopover({
   task,
   children,
 }: TaskPriorityPopoverProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    isSearching,
+    filtered: filteredPriorityOptions,
+  } = usePickerSearch(priorityOptions, getPrioritySearchText);
   const { mutateAsync: updateTaskPriority } = useUpdateTaskPriority();
   const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
@@ -60,10 +75,10 @@ export default function TaskPriorityPopover({
 
   const shortcutOptions = useMemo(
     () =>
-      priorityOptions.map((priority) => ({
+      filteredPriorityOptions.map((priority) => ({
         onSelect: () => handlePriorityChange(priority.value),
       })),
-    [handlePriorityChange],
+    [handlePriorityChange, filteredPriorityOptions],
   );
 
   useNumberedShortcuts(open, shortcutOptions);
@@ -73,11 +88,29 @@ export default function TaskPriorityPopover({
   if (!canEdit) return <>{children}</>;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        setSearchQuery("");
+      }}
+    >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-48 p-0" align="start">
-        <div>
-          {priorityOptions.map((priority, index) => (
+        <PickerSearchInput
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          placeholder={t("tasks:picker.search")}
+          onEnter={() => {
+            const first = filteredPriorityOptions[0];
+            if (first) void handlePriorityChange(first.value);
+          }}
+        />
+        <PickerList>
+          {isSearching && filteredPriorityOptions.length === 0 && (
+            <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
+          )}
+          {filteredPriorityOptions.map((priority, index) => (
             <Button
               key={priority.value}
               variant="ghost"
@@ -96,7 +129,7 @@ export default function TaskPriorityPopover({
               )}
             </Button>
           ))}
-        </div>
+        </PickerList>
       </PopoverContent>
     </Popover>
   );

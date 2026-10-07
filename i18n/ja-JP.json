@@ -131,6 +131,9 @@
 				"assign": "担当者を割り当て",
 				"assignUnassigned": "未割り当て",
 				"assignUnassignedTitle": "未割り当て",
+				"dependencies": "依存関係",
+				"removeDependency": "依存関係を削除",
+				"dependencyLinkError": "タスクは作成されましたが、{{task}} をリンクできませんでした: {{reason}}",
 				"labels": "ラベル",
 				"searchLabels": "ラベルを検索...",
 				"noLabelsFound": "ラベルが見つかりません",
@@ -2877,6 +2880,10 @@
 			"action": "タスクを移動",
 			"success": "タスクを移動しました",
 			"error": "タスクの移動に失敗しました"
+		},
+		"picker": {
+			"search": "検索...",
+			"noResults": "結果がありません"
 		},
 		"popover": {
 			"assignee": {

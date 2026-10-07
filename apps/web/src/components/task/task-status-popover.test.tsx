@@ -118,3 +118,37 @@ describe("TaskStatusPopover", () => {
     expect(await screen.findByText("common:error.title")).toBeVisible();
   });
 });
+
+describe("TaskStatusPopover search", () => {
+  it("filters statuses by the typed text and shows an empty state", async () => {
+    useGetColumns.mockReturnValue({
+      data: [
+        { id: "c1", slug: "to-do", name: "To do", icon: null, isFinal: false },
+        {
+          id: "c2",
+          slug: "review",
+          name: "Zażółć review",
+          icon: null,
+          isFinal: false,
+        },
+        { id: "c3", slug: "done", name: "Done", icon: null, isFinal: true },
+      ],
+      isLoading: false,
+      isError: false,
+    });
+    render(
+      <TaskStatusPopover task={task}>
+        <Button>Status</Button>
+      </TaskStatusPopover>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Status" }));
+
+    const search = await screen.findByPlaceholderText("tasks:picker.search");
+    fireEvent.change(search, { target: { value: "zazolc" } });
+    expect(screen.getByRole("button", { name: /Zażółć review/ })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Done/ })).toBeNull();
+
+    fireEvent.change(search, { target: { value: "zzz" } });
+    expect(screen.getByText("tasks:picker.noResults")).toBeVisible();
+  });
+});

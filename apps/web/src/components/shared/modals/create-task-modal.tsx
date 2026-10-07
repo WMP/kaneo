@@ -5,6 +5,7 @@ import {
   Check,
   FolderKanban,
   Hourglass,
+  Link2,
   Plus,
   Search,
   Tag,
@@ -21,6 +22,12 @@ import {
 import { AssigneeResourceSection } from "@/components/task/assignee-resource-section";
 import EstimateEditor from "@/components/task/estimate-editor";
 import TaskDescriptionEditor from "@/components/task/task-description-editor";
+import type { GanttDependencyType } from "@/components/task/task-relation-dependency-popover";
+import TaskRelationPickerDialog, {
+  isDependencyRelationType,
+  type PickerRelationType,
+  type RelationPick,
+} from "@/components/task/task-relation-picker";
 import {
   Accordion,
   AccordionContent,
@@ -66,6 +73,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
+  PickerList,
+  PickerNoResults,
+  PickerSearchInput,
+} from "@/components/ui/picker-search-input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -89,12 +101,14 @@ import useCreateTask from "@/hooks/mutations/task/use-create-task";
 import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-assignees";
+import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import { usePickerSearch } from "@/hooks/use-picker-search";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
@@ -108,6 +122,7 @@ import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
+import { matchesSearch } from "@/lib/search-match";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
 import type Resource from "@/types/resource";
@@ -143,6 +158,24 @@ type Label = {
 };
 
 type PopoverStep = "select" | "color";
+
+// A dependency picked while the task does not exist yet. It is created, with
+// the new task's id, right after the task is saved.
+type PendingRelation = {
+  taskId: string;
+  title: string;
+  /** "SLUG-12" of the picked task, when known. */
+  key: string | null;
+  relationType: PickerRelationType;
+  dependencyType: GanttDependencyType;
+  lagDays: number;
+};
+
+const getMemberSearchText = (member: {
+  user?: { name?: string | null } | null;
+}) => member.user?.name ?? "";
+const getProjectSearchText = (project: { name: string; slug?: string }) =>
+  `${project.name} ${project.slug ?? ""}`;
 
 type CustomFieldType =
   | "text"
@@ -296,6 +329,10 @@ function CreateTaskModalContent({
   const [draftTask, setDraftTask] = useState<Task | null>(null);
   const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false);
 
+  const [pendingRelations, setPendingRelations] = useState<PendingRelation[]>(
+    [],
+  );
+  const [relationPickerOpen, setRelationPickerOpen] = useState(false);
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
@@ -321,9 +358,24 @@ function CreateTaskModalContent({
   // Task and label rights and the people to assign are those of the project
   // the task is created in, not of the workspace role.
   const { data: workspaceUsers } = useProjectMembers(resolvedProjectId);
+
+  const {
+    query: assigneeQuery,
+    setQuery: setAssigneeQuery,
+    isSearching: isSearchingAssignees,
+    filtered: filteredMembers,
+  } = usePickerSearch(workspaceUsers?.members, getMemberSearchText);
+  const {
+    query: projectQuery,
+    setQuery: setProjectQuery,
+    isSearching: isSearchingProjects,
+    filtered: filteredProjects,
+  } = usePickerSearch(workspaceProjects, getProjectSearchText);
+  const [priorityQuery, setPriorityQuery] = useState("");
   const {
     canCreateTasks,
     canCreateLabels,
+    canUpdateTasks,
     canInviteToProject,
     isCheckingPermissions: isCheckingProjectPermissions,
     isError: projectPermissionsFailed,
@@ -331,6 +383,9 @@ function CreateTaskModalContent({
   // Submitting needs a project and the right to create tasks in it.
   const canCreateTaskCapability = canCreateTasks();
   const canCreateLabelCapability = canCreateLabels();
+  // Relations are managed with the same right as in the task's own relations
+  // panel (update tasks in the project).
+  const canManageRelations = canUpdateTasks();
   // Inviting a person resource needs the workspace permission that creates
   // resources plus invitation:create in the project; the API checks both again.
   const canInviteResourceCapability =
@@ -366,6 +421,7 @@ function CreateTaskModalContent({
   const { mutateAsync: updateTask } = useUpdateTask();
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
+  const { mutateAsync: createTaskRelation } = useCreateTaskRelation();
 
   const { data: rawCustomFields } = useGetCustomFieldsByProject(
     resolvedProjectId,
@@ -399,7 +455,7 @@ function CreateTaskModalContent({
 
   const filteredLabels = (() => {
     const searchFiltered = workspaceLabels.filter((label) =>
-      label.name.toLowerCase().includes(searchValue.toLowerCase()),
+      matchesSearch(label.name, searchValue),
     );
 
     const labelMap = new Map<string, (typeof workspaceLabels)[0]>();
@@ -459,9 +515,16 @@ function CreateTaskModalContent({
       estimateMinutes !== null ||
       selectedProjectId ||
       labels.length > 0 ||
+      pendingRelations.length > 0 ||
       draftTask ||
       hasCustomFieldChanges,
   );
+
+  // Pending dependencies were picked against one project's tasks.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clears when the project changes.
+  useEffect(() => {
+    setPendingRelations([]);
+  }, [resolvedProjectId]);
 
   const discardDraft = useCallback(() => {
     const abandoned = draftTaskRef.current;
@@ -742,6 +805,43 @@ function CreateTaskModalContent({
         }
       }
 
+      // The task exists now, so its dependencies can be linked. A failed link
+      // (a cycle, a task that was deleted meanwhile, ...) never undoes the
+      // task or stops the other links.
+      for (const relation of pendingRelations) {
+        const isDependency = isDependencyRelationType(relation.relationType);
+        try {
+          await createTaskRelation({
+            // "Blocked by" stores the picked task as the blocker (source).
+            sourceTaskId:
+              relation.relationType === "blocked_by"
+                ? relation.taskId
+                : savedTask.id,
+            targetTaskId:
+              relation.relationType === "blocked_by"
+                ? savedTask.id
+                : relation.taskId,
+            relationType: isDependency ? "blocks" : "related",
+            ...(isDependency
+              ? {
+                  dependencyType: relation.dependencyType,
+                  lagDays: relation.lagDays,
+                }
+              : {}),
+          });
+        } catch (error) {
+          toast.error(
+            t("common:modals.createTask.dependencyLinkError", {
+              task: relation.key ?? relation.title,
+              reason:
+                error instanceof Error && error.message
+                  ? error.message
+                  : t("tasks:relations.linkError"),
+            }),
+          );
+        }
+      }
+
       if (currentDraft) {
         for (const [fieldId, value] of Object.entries(customFieldValues)) {
           if (value) {
@@ -775,6 +875,7 @@ function CreateTaskModalContent({
         setEstimateMinutes(null);
         setEstimateUnit("hours");
         setLabels([]);
+        setPendingRelations([]);
         setLabelsStep("select");
         setSearchValue("");
         setSelectedColor("gray");
@@ -816,6 +917,9 @@ function CreateTaskModalContent({
   );
 
   const selectedPriority = priorityOptions.find((p) => p.value === priority);
+  const visiblePriorityOptions = priorityOptions.filter((option) =>
+    matchesSearch(option.label, priorityQuery),
+  );
 
   const statusLabel = useMemo(() => {
     if (status) {
@@ -888,6 +992,29 @@ function CreateTaskModalContent({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  const handlePickRelation = (pick: RelationPick) => {
+    setPendingRelations((current) => [
+      ...current,
+      {
+        taskId: pick.task.id,
+        title: pick.task.title,
+        key:
+          pick.projectSlug && pick.task.number !== null
+            ? `${pick.projectSlug}-${pick.task.number}`
+            : null,
+        relationType: pick.relationType,
+        dependencyType: pick.dependencyType,
+        lagDays: pick.lagDays,
+      },
+    ]);
+    return true;
+  };
+
+  const pendingRelationTaskIds = useMemo(
+    () => new Set(pendingRelations.map((relation) => relation.taskId)),
+    [pendingRelations],
+  );
 
   const resetLabelsPopover = () => {
     setLabelsStep("select");
@@ -1336,9 +1463,64 @@ function CreateTaskModalContent({
               </div>
             )}
 
+            {pendingRelations.length > 0 && (
+              <ul
+                className="m-0 flex list-none flex-col gap-1 p-0"
+                aria-label={t("common:modals.createTask.dependencies")}
+              >
+                {pendingRelations.map((relation) => (
+                  <li
+                    key={`${relation.relationType}:${relation.taskId}`}
+                    className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-xs"
+                  >
+                    <span className="shrink-0 text-muted-foreground">
+                      {t(`tasks:relations.types.${relation.relationType}`)}
+                    </span>
+                    {relation.key && (
+                      <span className="shrink-0 font-mono text-muted-foreground/80">
+                        {relation.key}
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm">
+                      {relation.title}
+                    </span>
+                    {isDependencyRelationType(relation.relationType) && (
+                      <span className="shrink-0 rounded border border-border/60 px-1 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground/80">
+                        {t(
+                          `tasks:relations.dependency.typesShort.${relation.dependencyType}`,
+                        )}
+                        {relation.lagDays !== 0 &&
+                          t("tasks:relations.dependency.lagSuffix", {
+                            days:
+                              relation.lagDays > 0
+                                ? `+${relation.lagDays}`
+                                : relation.lagDays,
+                          })}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive-foreground"
+                      aria-label={t(
+                        "common:modals.createTask.removeDependency",
+                      )}
+                      title={t("common:modals.createTask.removeDependency")}
+                      onClick={() =>
+                        setPendingRelations((current) =>
+                          current.filter((item) => item !== relation),
+                        )
+                      }
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <div className="flex flex-wrap items-center gap-2 py-2">
               {!explicitProjectId && (
-                <Popover>
+                <Popover onOpenChange={() => setProjectQuery("")}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
@@ -1356,9 +1538,30 @@ function CreateTaskModalContent({
                       </span>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-48 p-1" align="start">
-                    <div className="space-y-1">
-                      {workspaceProjects?.map((workspaceProject) => (
+                  <PopoverContent className="w-56 p-0" align="start">
+                    <PickerSearchInput
+                      value={projectQuery}
+                      onValueChange={setProjectQuery}
+                      placeholder={t("tasks:picker.search")}
+                      onEnter={() => {
+                        const first = filteredProjects[0];
+                        if (
+                          first &&
+                          !draftCreationPromiseRef.current &&
+                          !draftTaskRef.current &&
+                          !submittingRef.current
+                        ) {
+                          setSelectedProjectId(first.id);
+                        }
+                      }}
+                    />
+                    <PickerList className="max-h-64 space-y-1 overflow-y-auto p-1">
+                      {isSearchingProjects && filteredProjects.length === 0 && (
+                        <PickerNoResults>
+                          {t("tasks:picker.noResults")}
+                        </PickerNoResults>
+                      )}
+                      {filteredProjects.map((workspaceProject) => (
                         <button
                           key={workspaceProject.id}
                           type="button"
@@ -1384,7 +1587,7 @@ function CreateTaskModalContent({
                           )}
                         </button>
                       ))}
-                    </div>
+                    </PickerList>
                   </PopoverContent>
                 </Popover>
               )}
@@ -1445,7 +1648,7 @@ function CreateTaskModalContent({
                 </PopoverContent>
               </Popover>
 
-              <Popover>
+              <Popover onOpenChange={() => setPriorityQuery("")}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
@@ -1464,9 +1667,24 @@ function CreateTaskModalContent({
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-48 p-1" align="start">
-                  <div className="space-y-1">
-                    {priorityOptions.map((option) => (
+                <PopoverContent className="w-48 p-0" align="start">
+                  <PickerSearchInput
+                    value={priorityQuery}
+                    onValueChange={setPriorityQuery}
+                    placeholder={t("tasks:picker.search")}
+                    onEnter={() => {
+                      const first = visiblePriorityOptions[0];
+                      if (first) setPriority(first.value as Priority);
+                    }}
+                  />
+                  <PickerList className="space-y-1 p-1">
+                    {priorityQuery.trim() &&
+                      visiblePriorityOptions.length === 0 && (
+                        <PickerNoResults>
+                          {t("tasks:picker.noResults")}
+                        </PickerNoResults>
+                      )}
+                    {visiblePriorityOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
@@ -1480,11 +1698,17 @@ function CreateTaskModalContent({
                         )}
                       </button>
                     ))}
-                  </div>
+                  </PickerList>
                 </PopoverContent>
               </Popover>
 
-              <Popover open={assigneeOpen} onOpenChange={setAssigneeOpen}>
+              <Popover
+                open={assigneeOpen}
+                onOpenChange={(nextOpen) => {
+                  setAssigneeOpen(nextOpen);
+                  setAssigneeQuery("");
+                }}
+              >
                 <PopoverTrigger asChild>
                   <button
                     type="button"
@@ -1517,35 +1741,51 @@ function CreateTaskModalContent({
                     )}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 p-1" align="start">
-                  <div className="max-h-80 space-y-1 overflow-y-auto">
-                    <button
-                      type="button"
-                      className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/50 text-left transition-colors h-8"
-                      onClick={() => {
-                        setAssigneeIds([]);
-                        setResourceAssigneeIds([]);
-                      }}
-                    >
-                      <div
-                        className="w-6 h-6 shrink-0 rounded-full bg-muted border border-border flex items-center justify-center"
-                        title={t(
-                          "common:modals.createTask.assignUnassignedTitle",
-                        )}
+                <PopoverContent className="w-72 p-0" align="start">
+                  <PickerSearchInput
+                    value={assigneeQuery}
+                    onValueChange={setAssigneeQuery}
+                    placeholder={t("tasks:picker.search")}
+                    onEnter={() => {
+                      const first = filteredMembers[0];
+                      if (!first) return;
+                      setAssigneeIds((current) =>
+                        current.includes(first.userId)
+                          ? current
+                          : [...current, first.userId],
+                      );
+                    }}
+                  />
+                  <PickerList className="max-h-80 space-y-1 overflow-y-auto p-1">
+                    {!isSearchingAssignees && (
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/50 text-left transition-colors h-8"
+                        onClick={() => {
+                          setAssigneeIds([]);
+                          setResourceAssigneeIds([]);
+                        }}
                       >
-                        <span className="text-[10px] font-medium text-muted-foreground">
-                          ?
+                        <div
+                          className="w-6 h-6 shrink-0 rounded-full bg-muted border border-border flex items-center justify-center"
+                          title={t(
+                            "common:modals.createTask.assignUnassignedTitle",
+                          )}
+                        >
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            ?
+                          </span>
+                        </div>
+                        <span className="min-w-0 truncate text-sm">
+                          {t("common:modals.createTask.assignUnassigned")}
                         </span>
-                      </div>
-                      <span className="min-w-0 truncate text-sm">
-                        {t("common:modals.createTask.assignUnassigned")}
-                      </span>
-                      {assigneeIds.length === 0 &&
-                        resourceAssigneeIds.length === 0 && (
-                          <Check className="ml-auto h-4 w-4 shrink-0" />
-                        )}
-                    </button>
-                    {workspaceUsers?.members?.map((member) => {
+                        {assigneeIds.length === 0 &&
+                          resourceAssigneeIds.length === 0 && (
+                            <Check className="ml-auto h-4 w-4 shrink-0" />
+                          )}
+                      </button>
+                    )}
+                    {filteredMembers.map((member) => {
                       const isSelected = assigneeIds.includes(member.userId);
                       return (
                         <button
@@ -1606,9 +1846,11 @@ function CreateTaskModalContent({
                               }
                             : undefined
                         }
+                        searchQuery={assigneeQuery}
+                        noUserMatches={filteredMembers.length === 0}
                       />
                     )}
-                  </div>
+                  </PickerList>
                 </PopoverContent>
               </Popover>
 
@@ -1707,6 +1949,27 @@ function CreateTaskModalContent({
                   )}
                 </PopoverContent>
               </Popover>
+
+              {resolvedProjectId && canManageRelations && (
+                <button
+                  type="button"
+                  onClick={() => setRelationPickerOpen(true)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50",
+                    pendingRelations.length > 0
+                      ? "bg-accent/30 text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>{t("common:modals.createTask.dependencies")}</span>
+                  {pendingRelations.length > 0 && (
+                    <span className="text-muted-foreground">
+                      {pendingRelations.length}
+                    </span>
+                  )}
+                </button>
+              )}
 
               <Popover open={labelsOpen} onOpenChange={setLabelsOpen}>
                 <PopoverTrigger asChild>
@@ -1906,6 +2169,19 @@ function CreateTaskModalContent({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Outside the form: the picker is portaled, and its clicks and keys
+          must never reach the task form. */}
+      {resolvedProjectId && workspace?.id && (
+        <TaskRelationPickerDialog
+          open={relationPickerOpen}
+          onOpenChange={setRelationPickerOpen}
+          projectId={resolvedProjectId}
+          workspaceId={workspace.id}
+          excludedTaskIds={pendingRelationTaskIds}
+          onPick={handlePickRelation}
+        />
+      )}
 
       <AlertDialog
         open={discardConfirmationOpen}

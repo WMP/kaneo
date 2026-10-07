@@ -131,6 +131,9 @@
 				"assign": "Додели",
 				"assignUnassigned": "Недоделен",
 				"assignUnassignedTitle": "Недоделен",
+				"dependencies": "Зависности",
+				"removeDependency": "Отстрани зависност",
+				"dependencyLinkError": "Задачата е создадена, но {{task}} не може да се поврзе: {{reason}}",
 				"labels": "Етикети",
 				"searchLabels": "Пребарај етикети...",
 				"noLabelsFound": "Не се пронајдени етикети",
@@ -2884,6 +2887,10 @@
 			"action": "Премести задача",
 			"success": "Задачата е успешно преместена",
 			"error": "Неуспешно преместување на задача"
+		},
+		"picker": {
+			"search": "Пребарај...",
+			"noResults": "Нема резултати"
 		},
 		"popover": {
 			"assignee": {

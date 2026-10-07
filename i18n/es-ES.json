@@ -131,6 +131,9 @@
 				"assign": "Asignar",
 				"assignUnassigned": "Sin asignar",
 				"assignUnassignedTitle": "Sin asignar",
+				"dependencies": "Dependencias",
+				"removeDependency": "Quitar dependencia",
+				"dependencyLinkError": "Tarea creada, pero no se pudo vincular {{task}}: {{reason}}",
 				"labels": "Etiquetas",
 				"searchLabels": "Buscar etiquetas...",
 				"noLabelsFound": "No se han encontrado etiquetas",
@@ -2880,6 +2883,10 @@
 		"estimate": {
 			"valueHours": "{{value}} h",
 			"valueDays": "{{value}} d"
+		},
+		"picker": {
+			"search": "Buscar...",
+			"noResults": "Sin resultados"
 		},
 		"popover": {
 			"assignee": {

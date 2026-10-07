@@ -3,6 +3,11 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
+  PickerList,
+  PickerNoResults,
+  PickerSearchInput,
+} from "@/components/ui/picker-search-input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -11,11 +16,15 @@ import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
 import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
+import { usePickerSearch } from "@/hooks/use-picker-search";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { getStatusDisplayLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
+
+const getStatusSearchText = (status: { value: string; label: string }) =>
+  `${getStatusDisplayLabel(status.value, status.label)} ${status.label}`;
 
 type TaskStatusPopoverProps = {
   task: Task;
@@ -39,6 +48,12 @@ export default function TaskStatusPopover({
       })),
     [columns],
   );
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    isSearching,
+    filtered: filteredStatusOptions,
+  } = usePickerSearch(statusOptions, getStatusSearchText);
   const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
   const { canUpdateTasks } = useProjectPermission(task.projectId);
   const canEdit = canUpdateTasks();
@@ -64,10 +79,10 @@ export default function TaskStatusPopover({
 
   const shortcutOptions = useMemo(
     () =>
-      statusOptions.map((status) => ({
+      filteredStatusOptions.map((status) => ({
         onSelect: () => handleStatusChange(status.value),
       })),
-    [handleStatusChange, statusOptions],
+    [handleStatusChange, filteredStatusOptions],
   );
 
   useNumberedShortcuts(open, shortcutOptions);
@@ -75,10 +90,27 @@ export default function TaskStatusPopover({
   if (!canEdit) return <>{children}</>;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        setSearchQuery("");
+      }}
+    >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-48 p-0" align="start">
-        <div>
+        {!isLoading && !isError && (
+          <PickerSearchInput
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+            placeholder={t("tasks:picker.search")}
+            onEnter={() => {
+              const first = filteredStatusOptions[0];
+              if (first) void handleStatusChange(first.value);
+            }}
+          />
+        )}
+        <PickerList>
           {isLoading ? (
             <div className="p-3 text-center text-sm text-muted-foreground">
               {t("common:empty.loading")}
@@ -87,8 +119,10 @@ export default function TaskStatusPopover({
             <div className="p-3 text-center text-sm text-destructive">
               {t("common:error.title")}
             </div>
+          ) : isSearching && filteredStatusOptions.length === 0 ? (
+            <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
           ) : (
-            statusOptions.map((status, index) => (
+            filteredStatusOptions.map((status, index) => (
               <Button
                 key={status.value}
                 variant="ghost"
@@ -108,7 +142,7 @@ export default function TaskStatusPopover({
               </Button>
             ))
           )}
-        </div>
+        </PickerList>
       </PopoverContent>
     </Popover>
   );
