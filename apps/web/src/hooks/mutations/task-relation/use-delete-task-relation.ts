@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import deleteTaskRelation from "@/fetchers/task-relation/delete-task-relation";
 
+import {
+  ganttTaskRelationsKey,
+  invalidateGanttRelations,
+} from "@/lib/gantt-query-keys";
 import { invalidateRelationTaskProject } from "./invalidate-relation-task-project";
 
 function useDeleteTaskRelation(taskId: string) {
@@ -11,7 +15,7 @@ function useDeleteTaskRelation(taskId: string) {
     onSuccess: (relation) => {
       void invalidateRelationTaskProject(queryClient, relation.sourceTaskId);
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", taskId],
+        queryKey: ganttTaskRelationsKey(taskId),
       });
       // The API returns the deleted relation's actual endpoints, which may
       // differ from `taskId` (the panel this mutation was opened from) — the
@@ -19,17 +23,15 @@ function useDeleteTaskRelation(taskId: string) {
       // relation list keeps showing the removed link until something else
       // refetches it.
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", relation.sourceTaskId],
+        queryKey: ganttTaskRelationsKey(relation.sourceTaskId),
       });
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", relation.targetTaskId],
+        queryKey: ganttTaskRelationsKey(relation.targetTaskId),
       });
       // Same reasoning as the create mutation: which project(s) the two
       // tasks belong to isn't known here, so every project's Gantt cache is
       // invalidated rather than none of them.
-      queryClient.invalidateQueries({
-        queryKey: ["task-relations", "project"],
-      });
+      invalidateGanttRelations(queryClient);
     },
   });
 }

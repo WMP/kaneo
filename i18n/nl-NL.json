@@ -2808,6 +2808,8 @@
 			"blocks": "Blokkeert",
 			"blockedBy": "Geblokkeerd door",
 			"selectTask": "Selecteer een taak om te koppelen",
+			"chooseTypeFirst": "Kies eerst een relatietype",
+			"typeGroupLabel": "Relatietype",
 			"types": {
 				"blocks": "blokkeert",
 				"related": "is gerelateerd aan",

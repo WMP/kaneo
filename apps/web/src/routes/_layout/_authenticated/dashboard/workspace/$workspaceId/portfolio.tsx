@@ -35,6 +35,11 @@ import {
 import { GanttPortfolioTaskBar } from "@/components/gantt/gantt-portfolio-task-bar";
 import { GanttSummaryTaskBar } from "@/components/gantt/gantt-summary-task-bar";
 import {
+  buildHolidayDateKeySet,
+  DEFAULT_WORKING_DAYS,
+  isWorkingDay,
+} from "@/components/gantt/gantt-working-calendar";
+import {
   buildGanttGridMetrics,
   buildGanttHeaderColumns,
   buildGanttRange,
@@ -61,6 +66,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import icons from "@/constants/project-icons";
+import useGetCalendar from "@/hooks/queries/calendar/use-get-calendar";
 import useGetPortfolio from "@/hooks/queries/project/use-get-portfolio";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
@@ -128,7 +134,31 @@ function RouteComponent() {
     projectId: string;
   } | null>(null);
 
-  const rows = useMemo(() => buildPortfolioRows(projects), [projects]);
+  // Workspace working calendar, the same predicate the per-project Gantt
+  // feeds its derivations (Mon-Fri until the query resolves), so an estimated
+  // task and a derived successor land on the same days in both views.
+  const { data: calendar } = useGetCalendar(workspaceId);
+  const workingDays = calendar?.workingDays ?? DEFAULT_WORKING_DAYS;
+  const holidayDateSet = useMemo(
+    () => buildHolidayDateKeySet(calendar?.holidays ?? []),
+    [calendar?.holidays],
+  );
+  const workingDayPredicate = useCallback(
+    (date: Date) => isWorkingDay(date, workingDays, holidayDateSet),
+    [workingDays, holidayDateSet],
+  );
+
+  // One pass over the whole payload: dated spans (estimate-sized when a task
+  // has one own date), then display-only positions for dateless `blocks`
+  // successors (gantt-portfolio.ts reuses the project Gantt's derivation).
+  const rows = useMemo(
+    () =>
+      buildPortfolioRows(projects, {
+        derivationDependencies: data?.undatedSuccessorDependencies,
+        isWorkingDay: workingDayPredicate,
+      }),
+    [projects, data?.undatedSuccessorDependencies, workingDayPredicate],
+  );
   const flatSchedule = useMemo(() => flattenPortfolioSchedule(rows), [rows]);
 
   // Cross-project dependency lines (see dependency-lines.ts/

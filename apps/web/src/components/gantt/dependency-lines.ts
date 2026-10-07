@@ -60,6 +60,11 @@ type AnchorSide = "start" | "end";
 const EXIT_GAP = 14;
 // Corner rounding radius for the elbow's turns.
 const CORNER_RADIUS = 8;
+// Horizontal run kept straight in front of the target's start edge in the
+// "drop, then enter" route (see buildElbowPoints): enough for the arrowhead
+// (about 6.5 stroke widths long) plus a little, so the arrow always sits on a
+// straight horizontal segment, never on the rounded corner.
+const ARROW_RUN = 12;
 // Vertical room a "below" detour lane needs under the LAST row: the lane sits
 // EXIT_GAP past that row's bottom, plus a little for the stroke, arrowhead and
 // rounded corners. Charts reserve this much empty space after their last row
@@ -67,21 +72,30 @@ const CORNER_RADIUS = 8;
 // under the bottom row stays inside the scrollable area instead of being
 // clipped by the scroll container's own bottom edge.
 export const DEPENDENCY_LANE_CLEARANCE_PX = EXIT_GAP + 10;
-// Vertical spacing between two "blocks" edges' type labels when they fan out
-// from the same source task (see the fan-out index in buildDependencyEdges),
-// in the same pixel space the rest of this module's geometry is in — sized
-// to clear the ~9-10px label font used by GanttDependencyOverlay.
-const TYPE_LABEL_FAN_OFFSET_PX = 12;
-// Minimum clearance (px) kept between a type label's x position and the
-// source bar's own box (see typeLabelPoint in buildDependencyEdges). The
-// label itself (GanttDependencyOverlay) is centered on this point and about
-// 60px wide, so this has to clear roughly its own half-width (~30px) plus a
-// small buffer — a smaller margin would still let the box's FAR side reach
-// back over the bar even though the point itself is clear. Kept close to that
-// half-width so the label reads as "beside this bar" rather than being flung
-// so far along the connector that it lands over the target bar (or, on a
-// short Month/Quarter dependency, past it entirely).
+// Type labels (GanttDependencyOverlay) are centered on their point and are
+// about 60px wide. Each label sits in its TARGET's row, on the outer side of
+// the last vertical run into that row (the corner where the connector turns
+// toward the target), so it is clearly attached to its own target even when
+// several edges leave one source. LABEL_HALF_WIDTH_PX/LABEL_GAP_PX place the
+// label's near edge LABEL_GAP_PX away from that vertical run.
+const LABEL_HALF_WIDTH_PX = 30;
+const LABEL_GAP_PX = 4;
+// The overlay draws the label box from (point.y - 14) to (point.y + 2); shift
+// the point down by this much so the box is vertically centered on the row.
+const LABEL_CENTER_Y_OFFSET_PX = 6;
+// Minimum clearance (px) kept between a same-row edge's type label and the
+// source bar's own box. Same-row edges have no vertical run to hang the label
+// on, so they keep the label beside the source (about half its width plus a
+// buffer, so the label's far side never reaches back over the bar).
 const LABEL_CLEAR_MARGIN_PX = 40;
+// Horizontal spacing between the vertical drops of several L-shaped edges
+// that share one source (see the fan-out in buildDependencyEdges).
+const DROP_FAN_STEP_PX = 7;
+// The measured box is the whole row, not the bar. An L route starts on the
+// source bar's top/bottom edge. Task bars are `h-11` (44px; see
+// gantt-task-bar.tsx and gantt-external-task-bar.tsx), so half is 22px, capped
+// at the row's own half height so it never leaves the row.
+const ASSUMED_BAR_HALF_HEIGHT_PX = 22;
 
 function verticalCenter(box: TaskBarBox) {
   return box.top + box.height / 2;
@@ -207,8 +221,16 @@ function pickClearMidX(
 //    gutter, and arrive at the target's start edge. The vertical run sits at
 //    the gap's midpoint unless an intermediate task's bar occupies it, in
 //    which case it steps aside to the nearest clear gap (pickClearMidX).
-//  - target behind the source (a backward-scheduled edge) or too close to
-//    fit a clean step: leave the source to the right, drop into a
+//  - finish-to-start target to the right of the source's end but closer than
+//    the step needs (typically the next day, e.g. a predecessor ending Thu
+//    and a successor starting Fri): an "L" — leave the source bar's bottom
+//    (or top, for a target above) edge at x = min(source end, target start -
+//    ARROW_RUN) - dropShift, clamped to stay within the source bar's own
+//    x-range, go straight down/up, then run right into the target's start
+//    edge. Nothing loops back over a bar and there is no horizontal stub at
+//    the source. The drop stays at or just inside the source's end, so it
+//    never crosses the target bar.
+//  - target behind the source (a backward-scheduled edge): leave the source to the right, drop into a
 //    horizontal lane that clears both bars entirely (above whichever box is
 //    higher, or below whichever is lower — whichever is the shorter detour,
 //    except that a lane above the first row is never used: see laneY below),
@@ -219,7 +241,24 @@ export function buildElbowPoints(
   target: TaskBarBox,
   obstacles: readonly TaskBarBox[] = [],
   dependencyType: GanttDependencyType = "fs",
+  dropShift = 0,
 ): Point[] {
+  return routeElbow(source, target, obstacles, dependencyType, dropShift)
+    .points;
+}
+
+type RouteKind = "straight" | "step" | "drop" | "detour";
+
+// `dropShift` moves an L ("drop") route's vertical run that many pixels left
+// of its default x (still clamped to the source bar's own x-range); it is how
+// buildDependencyEdges fans out several L edges sharing a source.
+function routeElbow(
+  source: TaskBarBox,
+  target: TaskBarBox,
+  obstacles: readonly TaskBarBox[],
+  dependencyType: GanttDependencyType,
+  dropShift: number,
+): { points: Point[]; kind: RouteKind } {
   const { source: sourceSide, target: targetSide } =
     anchorSides(dependencyType);
   const sourceAnchorX = anchorX(source, sourceSide);
@@ -230,7 +269,7 @@ export function buildElbowPoints(
   const targetPoint = { x: targetAnchorX, y: targetY };
 
   if (Math.abs(sourceY - targetY) < 0.5) {
-    return [sourcePoint, targetPoint];
+    return { points: [sourcePoint, targetPoint], kind: "straight" };
   }
 
   const sourceDir = sideDir(sourceSide);
@@ -267,12 +306,43 @@ export function buildElbowPoints(
     const [rangeMin, rangeMax] =
       exitX <= entryX ? [exitX, entryX] : [entryX, exitX];
     const midX = pickClearMidX(rangeMin, rangeMax, intermediateObstacles);
-    return [
-      sourcePoint,
-      { x: midX, y: sourceY },
-      { x: midX, y: targetY },
-      targetPoint,
-    ];
+    return {
+      points: [
+        sourcePoint,
+        { x: midX, y: sourceY },
+        { x: midX, y: targetY },
+        targetPoint,
+      ],
+      kind: "step",
+    };
+  }
+
+  // A finish-to-start target at or after the source's end but nearer than the
+  // step's two exit gaps: the target is ahead, so go straight down/up and
+  // then right into it instead of wrapping around both bars. Only the
+  // end -> start anchoring qualifies; the other types keep their routes.
+  if (
+    sourceSide === "end" &&
+    targetSide === "start" &&
+    targetAnchorX >= sourceAnchorX
+  ) {
+    const dropX = Math.max(
+      source.left,
+      Math.min(sourceAnchorX, targetAnchorX - ARROW_RUN) - dropShift,
+    );
+    // Start on the source bar's own bottom (or top) edge at the drop x and go
+    // straight vertically: no horizontal stub back toward the bar's end, which
+    // would curl at the rounded corner.
+    const goesDown = targetY > sourceY;
+    const halfBar = Math.min(ASSUMED_BAR_HALF_HEIGHT_PX, source.height / 2);
+    return {
+      points: [
+        { x: dropX, y: goesDown ? sourceY + halfBar : sourceY - halfBar },
+        { x: dropX, y: targetY },
+        targetPoint,
+      ],
+      kind: "drop",
+    };
   }
 
   // Not enough clear room for a direct step: go around instead of through.
@@ -296,21 +366,35 @@ export function buildElbowPoints(
   const aboveIsVisible = above >= 0;
   const laneY = !aboveIsVisible || belowTravel <= aboveTravel ? below : above;
 
-  return [
-    sourcePoint,
-    { x: exitX, y: sourceY },
-    { x: exitX, y: laneY },
-    { x: entryX, y: laneY },
-    { x: entryX, y: targetY },
-    targetPoint,
-  ];
+  return {
+    points: [
+      sourcePoint,
+      { x: exitX, y: sourceY },
+      { x: exitX, y: laneY },
+      { x: entryX, y: laneY },
+      { x: entryX, y: targetY },
+      targetPoint,
+    ],
+    kind: "detour",
+  };
 }
 
 // Turns a polyline into an SVG path with each interior corner rounded to
 // `radius` (clamped so it never overruns a segment shorter than the radius
 // itself). A straight 2-point line needs no rounding and is returned as a
 // plain `M ... L ...`.
-export function roundedPolylinePath(points: Point[], radius: number): string {
+export function roundedPolylinePath(
+  rawPoints: Point[],
+  radius: number,
+): string {
+  // A zero-length segment (a route whose first turn sits exactly on the
+  // anchor) has no direction to round; drop the repeated point.
+  const points = rawPoints.filter(
+    (point, index) =>
+      index === 0 ||
+      point.x !== rawPoints[index - 1].x ||
+      point.y !== rawPoints[index - 1].y,
+  );
   if (points.length < 2) return "";
   if (points.length === 2) {
     return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
@@ -345,85 +429,140 @@ export function roundedPolylinePath(points: Point[], radius: number): string {
 // also always used for a "related" edge) and routes it as a rounded elbow
 // through the gaps around bars (see buildElbowPoints) rather than a
 // straight diagonal across them.
+//
+// Two rules keep several edges leaving one source readable:
+//  - Fan-out: L ("drop") routes that leave the same source in the same
+//    direction would all drop at the same x and overlap. Each gets its own
+//    drop x, DROP_FAN_STEP_PX apart, ordered so the nearest target row keeps
+//    the default (rightmost) x and each farther row sits further LEFT. A
+//    farther edge's vertical run then passes left of every nearer edge's
+//    horizontal run into its target, so no two lines cross. The shift is
+//    clamped at the source bar's left edge, where overlap is then allowed.
+//    Step and detour routes are not fanned out (their x depends on obstacle
+//    avoidance, and shifting them could push a run onto a bar).
+//  - Labels: the type label (and lag label point) sits in the TARGET's row
+//    beside the last vertical run into it, on the side away from the target
+//    bar, vertically centered on the row — never on the arrowhead or the
+//    target bar. For a fanned-out group it hangs left of the group's leftmost
+//    drop so no sibling's vertical run crosses it. A same-row edge has no
+//    vertical run and keeps its label beside the source bar.
 export function buildDependencyEdges(
   edges: DependencyEdgeInput[],
   taskBoxes: ReadonlyMap<string, TaskBarBox>,
 ): DependencyEdgeGeometry[] {
-  const geometry: DependencyEdgeGeometry[] = [];
-  // Built once and passed to every edge's buildElbowPoints call as-is: every
-  // other visible bar is a potential intermediate obstacle for a given edge,
-  // and buildElbowPoints itself narrows this down (and excludes that edge's
-  // own source/target) to the ones whose row actually sits between its two
-  // endpoints. Re-filtering this whole array per edge (to drop that edge's
-  // source/target first) would allocate an O(edges x boxes) amount of
-  // throwaway arrays on a chart with many dependency lines, re-run on every
-  // zoom notch — sharing the one array instead keeps this O(boxes) overall.
+  // Built once and passed to every edge's route as-is (see routeElbow, which
+  // narrows it to the bars between an edge's own endpoints): re-filtering per
+  // edge would allocate O(edges x boxes) throwaway arrays on every zoom notch.
   const allBoxes = [...taskBoxes.values()];
 
-  // How many "blocks" edges leaving a given source task have already been
-  // placed, in edge-array order — the fan-out index each further edge from
-  // that same source offsets its own type label by (see
-  // TYPE_LABEL_FAN_OFFSET_PX above and typeLabelPoint below).
-  const blocksFanIndexBySource = new Map<string, number>();
-
+  type Resolved = {
+    edge: DependencyEdgeInput;
+    source: TaskBarBox;
+    target: TaskBarBox;
+    dependencyType: GanttDependencyType;
+    lagDays: number;
+    route: { points: Point[]; kind: RouteKind };
+  };
+  const resolved: Resolved[] = [];
   for (const edge of edges) {
     const source = taskBoxes.get(edge.sourceTaskId);
     const target = taskBoxes.get(edge.targetTaskId);
     if (!source || !target) continue;
-
     // Dependency type/lag are only meaningful on a "blocks" edge — a
     // "related" edge keeps its original finish-to-start look regardless of
     // whatever the row it came from happens to store.
     const dependencyType: GanttDependencyType =
       edge.relationType === "blocks" ? (edge.dependencyType ?? "fs") : "fs";
     const lagDays = edge.relationType === "blocks" ? (edge.lagDays ?? 0) : 0;
+    resolved.push({
+      edge,
+      source,
+      target,
+      dependencyType,
+      lagDays,
+      route: routeElbow(source, target, allBoxes, dependencyType, 0),
+    });
+  }
 
-    // Pass the shared, unfiltered box list: buildElbowPoints already excludes
-    // this edge's own source/target while walking it for intermediate
-    // obstacles, so filtering here first would just allocate a throwaway
-    // array per edge for no behavioral difference (see allBoxes above).
-    const points = buildElbowPoints(source, target, allBoxes, dependencyType);
+  // Fan-out of L routes sharing a source and a direction (see above).
+  const dropGroups = new Map<string, Resolved[]>();
+  for (const item of resolved) {
+    if (item.route.kind !== "drop") continue;
+    const goesDown = item.route.points[1].y > item.route.points[0].y;
+    const key = `${item.edge.sourceTaskId}|${goesDown ? "down" : "up"}`;
+    const group = dropGroups.get(key);
+    if (group) group.push(item);
+    else dropGroups.set(key, [item]);
+  }
+  const groupMinDropX = new Map<Resolved, number>();
+  for (const group of dropGroups.values()) {
+    const ranked = group
+      .map((item, index) => ({ item, index }))
+      .sort(
+        (a, b) =>
+          Math.abs(a.item.route.points[1].y - a.item.route.points[0].y) -
+            Math.abs(b.item.route.points[1].y - b.item.route.points[0].y) ||
+          a.index - b.index,
+      );
+    let minX = Number.POSITIVE_INFINITY;
+    ranked.forEach(({ item }, rank) => {
+      if (rank > 0) {
+        item.route = routeElbow(
+          item.source,
+          item.target,
+          allBoxes,
+          item.dependencyType,
+          rank * DROP_FAN_STEP_PX,
+        );
+      }
+      minX = Math.min(minX, item.route.points[0].x);
+    });
+    for (const item of group) groupMinDropX.set(item, minX);
+  }
+
+  const geometry: DependencyEdgeGeometry[] = [];
+  for (const item of resolved) {
+    const { edge, source, dependencyType, lagDays, route } = item;
+    const { points } = route;
     const path = roundedPolylinePath(points, CORNER_RADIUS);
     const sourcePoint = points[0];
     const targetPoint = points[points.length - 1];
-    // The first turn the elbow makes past the source (or, for a same-row
-    // straight hop, the target point itself) — close enough to "near the
-    // source end" to read as belonging to this edge without measuring the
-    // whole path.
-    const nearSourceCorner = points[Math.min(1, points.length - 1)];
-    const lagLabelPoint = lagDays !== 0 ? nearSourceCorner : null;
 
-    // See the fan-out index comment above: only "blocks" edges get a type
-    // label (a "related" edge's dependencyType is never meaningful — see the
-    // comment on `dependencyType` just above), and only they count toward
-    // the per-source fan-out index, so a "related" edge sharing a source
-    // with several "blocks" edges neither gets a label nor shifts theirs.
+    // Only "blocks" edges get a type label (a "related" edge's
+    // dependencyType is never meaningful).
     let typeLabelPoint: Point | null = null;
     if (edge.relationType === "blocks") {
-      const fanIndex = blocksFanIndexBySource.get(edge.sourceTaskId) ?? 0;
-      blocksFanIndexBySource.set(edge.sourceTaskId, fanIndex + 1);
-      // Clear of the SOURCE bar's own box, in whichever direction the
-      // connector actually exits it (sourceDir — the same anchor-side logic
-      // buildElbowPoints itself used to route this edge). Both
-      // nearSourceCorner's x and the source bar's own box are in the same
-      // pixel space, but at Month/Quarter — where many day-tracks compress
-      // into a couple of pixels — a short lag between closely-scheduled
-      // tasks can put that raw corner point back on TOP of the (clamped-
-      // wide, see MIN_BAR_HOVER_HIT_PX) source bar itself; a label sitting
-      // there would both look like it belongs to the wrong bar and steal
-      // that bar's own hover. Pushed out to the near edge of the box plus a
-      // small margin, it always reads as "beside this bar", never "on it".
       const { source: sourceSide } = anchorSides(dependencyType);
-      const dir = sideDir(sourceSide);
-      const clearedX =
-        dir === 1
-          ? Math.max(nearSourceCorner.x, source.right + LABEL_CLEAR_MARGIN_PX)
-          : Math.min(nearSourceCorner.x, source.left - LABEL_CLEAR_MARGIN_PX);
-      typeLabelPoint = {
-        x: clearedX,
-        y: nearSourceCorner.y + fanIndex * TYPE_LABEL_FAN_OFFSET_PX,
-      };
+      if (points.length === 2) {
+        // Same row: no vertical run; clear of the source bar's own box so the
+        // label never lands on (or steals the hover of) a narrow bar.
+        const dir = sideDir(sourceSide);
+        typeLabelPoint = {
+          x:
+            dir === 1
+              ? Math.max(targetPoint.x, source.right + LABEL_CLEAR_MARGIN_PX)
+              : Math.min(targetPoint.x, source.left - LABEL_CLEAR_MARGIN_PX),
+          y: sourcePoint.y,
+        };
+      } else {
+        // The last vertical run into the target's row is the second-to-last
+        // point's x (the final segment is horizontal).
+        const runX = groupMinDropX.get(item) ?? points[points.length - 2].x;
+        // Away from the target along the final horizontal run: left of the
+        // run when the connector arrives moving right, right of it otherwise.
+        const outward = targetPoint.x >= runX ? -1 : 1;
+        const offset = LABEL_GAP_PX + LABEL_HALF_WIDTH_PX;
+        let x = runX + outward * offset;
+        // Keep the label inside the chart's left edge.
+        if (outward < 0) x = Math.max(x, LABEL_HALF_WIDTH_PX);
+        typeLabelPoint = {
+          x,
+          y: targetPoint.y + LABEL_CENTER_Y_OFFSET_PX,
+        };
+      }
     }
+    // The lag is part of the same label, so it shares its anchor.
+    const lagLabelPoint = lagDays !== 0 ? typeLabelPoint : null;
 
     geometry.push({
       ...edge,

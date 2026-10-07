@@ -120,6 +120,52 @@ describe("TaskEstimatePopover", () => {
     expect(updateTask).toHaveBeenCalledTimes(1);
   });
 
+  it("saves a changed value when the popover closes without a blur", async () => {
+    updateTask.mockResolvedValue(undefined);
+    const input = await openPopover(makeTask());
+
+    fireEvent.change(input, { target: { value: "4" } });
+    // Toggling the trigger closes the popover and unmounts the field.
+    fireEvent.click(screen.getByRole("button", { name: "Estimate" }));
+
+    await vi.waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
+    expect(updateTask).toHaveBeenCalledWith(
+      expect.objectContaining({ estimateMinutes: 240, estimateUnit: "hours" }),
+    );
+  });
+
+  it("does not save when the popover closes with an unchanged value", async () => {
+    const input = await openPopover(makeTask({ estimateMinutes: 90 }));
+    expect(input).toHaveValue("1.5");
+
+    fireEvent.click(screen.getByRole("button", { name: "Estimate" }));
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("textbox", {
+          name: "tasks:popover.estimate.amountLabel",
+        }),
+      ).not.toBeInTheDocument(),
+    );
+
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
+  it("Escape discards the edit without saving", async () => {
+    const input = await openPopover(makeTask());
+
+    fireEvent.change(input, { target: { value: "4" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("textbox", {
+          name: "tasks:popover.estimate.amountLabel",
+        }),
+      ).not.toBeInTheDocument(),
+    );
+
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
   it("shows the stored minutes in the stored unit", async () => {
     const input = await openPopover(
       makeTask({ estimateMinutes: 960, estimateUnit: "days" }),

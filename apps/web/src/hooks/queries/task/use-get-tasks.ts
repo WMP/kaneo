@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import getTasks from "@/fetchers/task/get-tasks";
+import { ganttTasksKey } from "@/lib/gantt-query-keys";
 import { isUnauthorizedError } from "@/lib/http-error";
 
 // Task changes reach this query via `useProjectWebSocket`, which invalidates
@@ -16,7 +17,7 @@ export const SAFETY_NET_REFETCH_INTERVAL_MS = 5 * 60 * 1000;
 
 export function useGetTasks(projectId: string) {
   return useQuery({
-    queryKey: ["tasks", projectId],
+    queryKey: ganttTasksKey(projectId),
     queryFn: ({ signal }) => getTasks(projectId, signal),
     refetchOnMount: true,
     refetchInterval: (query) =>

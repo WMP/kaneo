@@ -2815,6 +2815,8 @@
 			"blocks": "Bloqueia",
 			"blockedBy": "Bloqueado por",
 			"selectTask": "Selecione uma tarefa para vincular",
+			"chooseTypeFirst": "Escolha primeiro um tipo de relação",
+			"typeGroupLabel": "Tipo de relação",
 			"types": {
 				"blocks": "bloqueia",
 				"blocked_by": "bloqueado por",

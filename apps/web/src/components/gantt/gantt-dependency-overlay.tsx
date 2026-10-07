@@ -157,9 +157,11 @@ export function GanttDependencyOverlay({
                 once there's a lag — see the summary composition already used
                 on a task's own relation list, task-relations.tsx): every
                 "blocks" edge gets one (typeLabelPoint is null for "related",
-                whose type is never meaningful), it fans out vertically by
-                edge index when several share a source (see
-                TYPE_LABEL_FAN_OFFSET_PX in dependency-lines.ts), and it's a
+                whose type is never meaningful), it sits in its TARGET's row
+                beside the connector's last vertical run (see
+                buildDependencyEdges in dependency-lines.ts), so several
+                edges sharing a source each read as attached to their own
+                target, and it's a
                 real control — reusing TaskRelationDependencyPopover, the
                 same editor a task's own relation list already opens — not
                 just a picture of the type, so the chart itself is a second

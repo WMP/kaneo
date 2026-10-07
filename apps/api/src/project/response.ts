@@ -67,6 +67,13 @@ export const portfolioTaskSchema = z
     progress: z.number().int().min(0).max(100).openapi({
       description: "Percent complete, 0-100.",
     }),
+    estimateMinutes: z.number().int().min(0).nullable().openapi({
+      description:
+        "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate. Sizes the display-only bar of a task with no dates of its own and of a task with exactly one date.",
+    }),
+    estimateUnit: z.string().openapi({
+      description: "How the estimate is entered and shown: `hours` or `days`.",
+    }),
     isMilestone: z.boolean().openapi({
       description:
         "Renders as a diamond marker on the timeline at its date instead of a spanning bar.",
@@ -125,6 +132,15 @@ export const portfolioSchema = z
         "same-project and non-blocking (`related`/`subtask`) relations are left " +
         "out; fetch a project's own Gantt for those. Lets the portfolio " +
         "timeline draw a line between the two projects' rows.",
+    }),
+    undatedSuccessorDependencies: z.array(portfolioDependencySchema).openapi({
+      description:
+        "`blocks` relations, same-project or cross-project, whose target task " +
+        "has neither a start nor a due date, between two tasks of the projects " +
+        "returned above. They let the client derive a display-only position " +
+        "for such a task from its predecessors (nothing is stored). An edge " +
+        "into a dated task is not included; a cross-project edge into an " +
+        "undated task appears here and in `dependencies`.",
     }),
   })
   .openapi("Portfolio");

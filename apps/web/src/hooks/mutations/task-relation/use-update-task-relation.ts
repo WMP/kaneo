@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTaskRelation from "@/fetchers/task-relation/update-task-relation";
+import {
+  ganttTaskRelationsKey,
+  invalidateGanttRelations,
+} from "@/lib/gantt-query-keys";
 
 function useUpdateTaskRelation(taskId: string) {
   const queryClient = useQueryClient();
@@ -8,20 +12,18 @@ function useUpdateTaskRelation(taskId: string) {
     mutationFn: updateTaskRelation,
     onSuccess: (relation) => {
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", taskId],
+        queryKey: ganttTaskRelationsKey(taskId),
       });
       // Same reasoning as the create/delete mutations: the other endpoint's
       // own per-task cache, and every project's Gantt cache (which project(s)
       // the two tasks belong to isn't known here), need invalidating too.
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", relation.sourceTaskId],
+        queryKey: ganttTaskRelationsKey(relation.sourceTaskId),
       });
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", relation.targetTaskId],
+        queryKey: ganttTaskRelationsKey(relation.targetTaskId),
       });
-      queryClient.invalidateQueries({
-        queryKey: ["task-relations", "project"],
-      });
+      invalidateGanttRelations(queryClient);
     },
   });
 }

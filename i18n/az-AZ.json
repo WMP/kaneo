@@ -2808,6 +2808,8 @@
 			"blocks": "Mane olur",
 			"blockedBy": "Mane olan",
 			"selectTask": "Əlaqələndirmək üçün tapşırıq seçin",
+			"chooseTypeFirst": "Əvvəlcə əlaqə növünü seçin",
+			"typeGroupLabel": "Əlaqə növü",
 			"types": {
 				"blocks": "Mane olur",
 				"blocked_by": "Mane olan",

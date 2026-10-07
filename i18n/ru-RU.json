@@ -2830,6 +2830,8 @@
 			"blocks": "Блокирует",
 			"blockedBy": "Заблокирована",
 			"selectTask": "Выберите задачу для связывания",
+			"chooseTypeFirst": "Сначала выберите тип связи",
+			"typeGroupLabel": "Тип связи",
 			"types": {
 				"blocks": "блокирует",
 				"related": "связана с",

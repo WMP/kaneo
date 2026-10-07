@@ -1,6 +1,7 @@
 import { Diamond } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
+import { formatEstimate } from "@/lib/estimate";
 import {
   computeProgressFillPercent,
   getBarGridColumns,
@@ -14,6 +15,12 @@ export type PortfolioBarTask = {
   isMilestone: boolean;
   scheduleStart: Date;
   scheduleEnd: Date;
+  // True when the task has no dates of its own and its position was derived
+  // from its dependency (see gantt-derived-schedule.ts): drawn dotted and
+  // dimmer with the derived tooltip, like the per-project Gantt's derived rows.
+  isDerived?: boolean;
+  estimateMinutes?: number | null;
+  estimateUnit?: string;
 };
 
 type GanttPortfolioTaskBarProps = {
@@ -60,6 +67,31 @@ export function GanttPortfolioTaskBar({
 
   if (!barInView) return null;
 
+  const isDerived = Boolean(task.isDerived);
+  const hasEstimate =
+    task.estimateMinutes !== null && task.estimateMinutes !== undefined;
+  // A derived row says why it sits where it does; a dated row keeps the plain
+  // title. Same keys as the per-project Gantt's own-project derived rows.
+  const tooltip = isDerived
+    ? t(
+        hasEstimate
+          ? "tasks:gantt.derivedTaskEstimateTitle"
+          : "tasks:gantt.derivedTaskTitle",
+        {
+          title: task.title,
+          ...(hasEstimate
+            ? {
+                estimate: formatEstimate(
+                  task.estimateMinutes as number,
+                  task.estimateUnit,
+                  t,
+                ),
+              }
+            : {}),
+        },
+      )
+    : task.title;
+
   if (task.isMilestone) {
     return (
       <div
@@ -75,9 +107,13 @@ export function GanttPortfolioTaskBar({
             aria-label={t("portfolio:gantt.milestoneAriaLabel", {
               title: task.title,
             })}
-            title={task.title}
+            title={tooltip}
+            data-derived={isDerived ? "" : undefined}
             onClick={onOpenTask}
-            className="flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4"
+            className={cn(
+              "flex size-5 shrink-0 touch-manipulation items-center justify-center rounded-sm text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:size-4",
+              isDerived && "opacity-70",
+            )}
           >
             <Diamond className="size-full fill-primary/30" aria-hidden="true" />
           </button>
@@ -112,10 +148,15 @@ export function GanttPortfolioTaskBar({
         <button
           type="button"
           onClick={onOpenTask}
-          title={task.title}
+          title={tooltip}
+          data-derived={isDerived ? "" : undefined}
           aria-label={t("portfolio:gantt.taskAriaLabel", { title: task.title })}
           className={cn(
             "relative mx-1 flex h-8 min-w-0 max-w-[calc(100%-0.5rem)] touch-manipulation items-center overflow-hidden rounded-md border border-primary/25 bg-background px-2 text-left text-xs font-medium leading-none text-foreground shadow-sm transition-colors hover:border-primary/40 sm:h-9",
+            // Display-only derived row: dotted and a touch fainter, like the
+            // project Gantt's derived bar, so it never reads as a dated one.
+            isDerived &&
+              "border-dotted border-muted-foreground/40 bg-muted/40 text-muted-foreground opacity-80",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           )}
         >

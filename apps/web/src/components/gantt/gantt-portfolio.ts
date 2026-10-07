@@ -6,13 +6,18 @@
 // rest of this folder's pure modules, so it's unit-testable directly.
 
 import type { DependencyEdgeInput } from "./dependency-lines";
+import type {
+  CascadeDependencyType,
+  CascadeEdge,
+} from "./gantt-dependency-cascade";
+import { deriveUndatedSuccessorSchedules } from "./gantt-derived-schedule";
+import { deriveTaskScheduleWithEstimate } from "./gantt-estimated-span";
 import {
   computeParentSummaryProgress,
   computeParentSummarySpans,
   type GanttHierarchy,
   type ScheduleSpan,
 } from "./gantt-hierarchy";
-import { deriveTaskSchedule } from "./timeline";
 
 export type PortfolioTaskInput = {
   id: string;
@@ -20,6 +25,11 @@ export type PortfolioTaskInput = {
   startDate: string | null;
   dueDate: string | null;
   progress: number;
+  /** Effort estimate in minutes (null/omitted = none). Sizes an estimated
+   * single-date task and a derived (dateless) successor, like on the project
+   * Gantt. */
+  estimateMinutes?: number | null;
+  estimateUnit?: string;
   isMilestone: boolean;
   status: string;
 };
@@ -40,6 +50,13 @@ export type ScheduledPortfolioTask = {
   status: string;
   scheduleStart: Date;
   scheduleEnd: Date;
+  /** True when the task has NO dates of its own and its position was derived
+   * from its incoming `blocks` dependencies (display only, nothing is stored;
+   * see gantt-derived-schedule.ts). Such a task is drawn read-only with the
+   * project Gantt's dotted treatment and is left out of the project rollup. */
+  isDerived: boolean;
+  estimateMinutes: number | null;
+  estimateUnit: string | undefined;
 };
 
 export type PortfolioProjectRow = {
@@ -47,15 +64,18 @@ export type PortfolioProjectRow = {
   name: string;
   slug: string;
   icon: string | null;
-  /** This project's tasks that have a derivable schedule, in the order the
-   * API returns them (start date, due date, title). A task with neither startDate nor dueDate has no
-   * position to plot and is left out — same as the per-project Gantt. */
+  /** This project's tasks that have a schedule, in the order the API returns
+   * them (start date, due date, title), followed by the derived (dateless)
+   * successors ordered by their derived start. A task with neither date and no
+   * placed predecessor has no position to plot and is left out — same as the
+   * per-project Gantt. */
   tasks: ScheduledPortfolioTask[];
-  /** Tasks left out of `tasks` because they have no derivable schedule (the
+  /** Tasks left out of `tasks` because they have no schedule at all (the
    * server already excludes archived tasks entirely). Lets the route say
    * "3 tasks, none scheduled yet" instead of reading as an empty project. */
   unscheduledCount: number;
-  /** The project's overall rolled-up span across its own scheduled tasks —
+  /** The project's overall rolled-up span across its own DATED tasks (derived
+   * rows are display-only and never roll up, as on the per-project Gantt) —
    * the same duration-weighted rollup the per-project Gantt uses for a
    * parent task's summary bar (gantt-hierarchy.ts), applied here by treating
    * the project itself as the "parent" and its tasks as the "children". Null
@@ -72,8 +92,19 @@ export type PortfolioProjectRow = {
  * module has one source of truth regardless of caller. */
 const HIDDEN_TASK_STATUS = "archived";
 
+export type BuildPortfolioRowsOptions = {
+  /** The payload's `undatedSuccessorDependencies`: `blocks` edges (same- or
+   * cross-project) into tasks that have no dates. Without them no task is
+   * derived. */
+  derivationDependencies?: readonly PortfolioDependencyInput[];
+  /** Workspace working-calendar predicate (gantt-working-calendar.ts), shared
+   * with the per-project Gantt so a task lands on the same days in both. */
+  isWorkingDay?: (d: Date) => boolean;
+};
+
 export function buildPortfolioRows(
   projects: readonly PortfolioProjectInput[],
+  { derivationDependencies = [], isWorkingDay }: BuildPortfolioRowsOptions = {},
 ): PortfolioProjectRow[] {
   // One fake "hierarchy" for the whole call: each project is a parent, its
   // scheduled tasks are children. This lets computeParentSummarySpans/
@@ -84,6 +115,14 @@ export function buildPortfolioRows(
   const ownSpanByTaskId = new Map<string, ScheduleSpan>();
   const progressByTaskId = new Map<string, number>();
 
+  // Dateless tasks: candidates for a derived position, resolved in ONE pass
+  // over every project below (a predecessor may sit in another project).
+  const undatedByTaskId = new Map<
+    string,
+    { task: PortfolioTaskInput; projectIndex: number }
+  >();
+  const estimateMinutesById = new Map<string, number | null | undefined>();
+
   const partialRows: Omit<
     PortfolioProjectRow,
     "summarySpan" | "summaryProgress"
@@ -92,13 +131,16 @@ export function buildPortfolioRows(
   for (const project of projects) {
     const tasks: ScheduledPortfolioTask[] = [];
     const childIds: string[] = [];
-    let unscheduledCount = 0;
+    const projectIndex = partialRows.length;
 
     for (const task of project.tasks) {
       if (task.status === HIDDEN_TASK_STATUS) continue;
-      const schedule = deriveTaskSchedule(task.startDate, task.dueDate);
+      // The same span the project Gantt draws: a task with an estimate and
+      // exactly one own date is sized by the estimate, not a one-day marker.
+      const schedule = deriveTaskScheduleWithEstimate(task, isWorkingDay);
       if (!schedule) {
-        unscheduledCount += 1;
+        undatedByTaskId.set(task.id, { task, projectIndex });
+        estimateMinutesById.set(task.id, task.estimateMinutes);
         continue;
       }
       tasks.push({
@@ -109,6 +151,9 @@ export function buildPortfolioRows(
         status: task.status,
         scheduleStart: schedule.start,
         scheduleEnd: schedule.end,
+        isDerived: false,
+        estimateMinutes: task.estimateMinutes ?? null,
+        estimateUnit: task.estimateUnit,
       });
       childIds.push(task.id);
       ownSpanByTaskId.set(task.id, schedule);
@@ -125,8 +170,59 @@ export function buildPortfolioRows(
       slug: project.slug,
       icon: project.icon,
       tasks,
-      unscheduledCount,
+      unscheduledCount: 0,
     });
+  }
+
+  // Position each dateless successor from its placed predecessors with the
+  // SAME pure derivation the project Gantt uses (estimate length, working
+  // calendar, next-day FS rule, chaining through sized derived tasks).
+  const derived =
+    undatedByTaskId.size > 0 && derivationDependencies.length > 0
+      ? deriveUndatedSuccessorSchedules({
+          edges: derivationDependencies.map(
+            (dependency): CascadeEdge => ({
+              sourceTaskId: dependency.sourceTaskId,
+              targetTaskId: dependency.targetTaskId,
+              dependencyType:
+                dependency.dependencyType as CascadeDependencyType,
+              lagDays: dependency.lagDays,
+            }),
+          ),
+          datedScheduleById: ownSpanByTaskId,
+          undatedCandidateIds: undatedByTaskId.keys(),
+          isWorkingDay,
+          estimateMinutesById,
+        })
+      : new Map<string, ScheduleSpan>();
+
+  const derivedByProject = new Map<number, ScheduledPortfolioTask[]>();
+  for (const [id, { task, projectIndex }] of undatedByTaskId) {
+    const span = derived.get(id);
+    if (!span) {
+      partialRows[projectIndex].unscheduledCount += 1;
+      continue;
+    }
+    const entry: ScheduledPortfolioTask = {
+      id,
+      title: task.title,
+      progress: task.progress,
+      isMilestone: task.isMilestone,
+      status: task.status,
+      scheduleStart: span.start,
+      scheduleEnd: span.end,
+      isDerived: true,
+      estimateMinutes: task.estimateMinutes ?? null,
+      estimateUnit: task.estimateUnit,
+    };
+    const list = derivedByProject.get(projectIndex);
+    if (list) list.push(entry);
+    else derivedByProject.set(projectIndex, [entry]);
+  }
+  for (const [projectIndex, list] of derivedByProject) {
+    // Stable: ties keep the API's (title, id) order.
+    list.sort((a, b) => a.scheduleStart.getTime() - b.scheduleStart.getTime());
+    partialRows[projectIndex].tasks.push(...list);
   }
 
   const hierarchy: GanttHierarchy = {

@@ -2801,6 +2801,8 @@
 			"blocks": "차단",
 			"blockedBy": "차단됨",
 			"selectTask": "연결할 작업 선택",
+			"chooseTypeFirst": "먼저 관계 유형을 선택하세요",
+			"typeGroupLabel": "관계 유형",
 			"types": {
 				"blocks": "차단함",
 				"related": "관련됨",

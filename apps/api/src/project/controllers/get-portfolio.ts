@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import db from "../../database";
 import {
@@ -15,6 +15,8 @@ export type PortfolioTask = {
   startDate: Date | null;
   dueDate: Date | null;
   progress: number;
+  estimateMinutes: number | null;
+  estimateUnit: string;
   isMilestone: boolean;
   status: string;
 };
@@ -41,12 +43,25 @@ export type PortfolioDependency = {
 export type Portfolio = {
   projects: PortfolioProject[];
   dependencies: PortfolioDependency[];
+  undatedSuccessorDependencies: PortfolioDependency[];
 };
 
 // Archived tasks are hidden everywhere else in the app by default (the board,
 // the per-project Gantt's own task list), so they're left out of the shared
 // timeline too rather than cluttering it with closed-out work.
 const HIDDEN_TASK_STATUS = "archived";
+
+function toDependency(row: PortfolioDependency): PortfolioDependency {
+  return {
+    id: row.id,
+    sourceTaskId: row.sourceTaskId,
+    sourceProjectId: row.sourceProjectId,
+    targetTaskId: row.targetTaskId,
+    targetProjectId: row.targetProjectId,
+    dependencyType: row.dependencyType,
+    lagDays: row.lagDays,
+  };
+}
 
 // One query for every project's tasks (scoped by the already-resolved
 // projectIds), rather than the per-project getTasks controller called once
@@ -77,7 +92,8 @@ async function getPortfolio(
     ],
   });
 
-  if (projects.length === 0) return { projects: [], dependencies: [] };
+  if (projects.length === 0)
+    return { projects: [], dependencies: [], undatedSuccessorDependencies: [] };
 
   const projectIds = projects.map((project) => project.id);
 
@@ -89,6 +105,8 @@ async function getPortfolio(
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,
       progress: taskTable.progress,
+      estimateMinutes: taskTable.estimateMinutes,
+      estimateUnit: taskTable.estimateUnit,
       isMilestone: taskTable.isMilestone,
       status: taskTable.status,
     })
@@ -124,6 +142,8 @@ async function getPortfolio(
       startDate: task.startDate,
       dueDate: task.dueDate,
       progress: task.progress,
+      estimateMinutes: task.estimateMinutes,
+      estimateUnit: task.estimateUnit,
       isMilestone: task.isMilestone,
       status: task.status,
     };
@@ -132,13 +152,22 @@ async function getPortfolio(
     else tasksByProject.set(task.projectId, [entry]);
   }
 
-  // Cross-project "blocks" relations only: a "related"/"subtask" relation
-  // never carries a meaningful dependencyType/lagDays (see task-relation/
-  // response.ts) and a same-project relation is already drawable from that
-  // project's own Gantt, so neither belongs on the shared portfolio axis.
-  // One query joining the relation to both its endpoint tasks (rather than
-  // the per-project getTaskRelationsByProject's task-set-scoped OR, called
-  // once per project) keeps this flat regardless of project count.
+  // "blocks" relations between two visible, non-archived tasks, in two groups
+  // that share one query (a join of the relation to both endpoint tasks, rather
+  // than the per-project getTaskRelationsByProject's task-set-scoped OR called
+  // once per project, keeps this flat regardless of project count):
+  //  - `dependencies`: cross-project edges, drawn as lines between two
+  //    projects' rows. A "related"/"subtask" relation never carries a
+  //    meaningful dependencyType/lagDays (see task-relation/response.ts) and a
+  //    same-project edge between dated tasks is drawable from that project's
+  //    own Gantt, so neither belongs on the shared portfolio axis.
+  //  - `undatedSuccessorDependencies`: edges (same- or cross-project) whose
+  //    TARGET has no start and no due date. The web derives a display-only
+  //    position for such a task from its predecessors (the same pure math the
+  //    project Gantt uses), so it needs every incoming edge, including a
+  //    same-project one and one coming from another undated task (a chain).
+  //    Bounded by the number of blocks edges into undated visible tasks; an
+  //    edge into a dated task is never needed and stays out.
   const targetTaskTable = alias(taskTable, "portfolio_target_task");
   const dependencyRows = await db
     .select({
@@ -149,6 +178,8 @@ async function getPortfolio(
       targetProjectId: targetTaskTable.projectId,
       dependencyType: taskRelationTable.dependencyType,
       lagDays: taskRelationTable.lagDays,
+      targetStartDate: targetTaskTable.startDate,
+      targetDueDate: targetTaskTable.dueDate,
     })
     .from(taskRelationTable)
     .innerJoin(taskTable, eq(taskRelationTable.sourceTaskId, taskTable.id))
@@ -159,13 +190,30 @@ async function getPortfolio(
     .where(
       and(
         eq(taskRelationTable.relationType, "blocks"),
+        // Both ends must sit in projects the caller may see (see above), so a
+        // task of a project they cannot open is never an endpoint here.
         inArray(taskTable.projectId, projectIds),
         inArray(targetTaskTable.projectId, projectIds),
-        ne(taskTable.projectId, targetTaskTable.projectId),
         ne(taskTable.status, HIDDEN_TASK_STATUS),
         ne(targetTaskTable.status, HIDDEN_TASK_STATUS),
+        or(
+          ne(taskTable.projectId, targetTaskTable.projectId),
+          and(
+            isNull(targetTaskTable.startDate),
+            isNull(targetTaskTable.dueDate),
+          ),
+        ),
       ),
     );
+
+  const dependencies: PortfolioDependency[] = [];
+  const undatedSuccessorDependencies: PortfolioDependency[] = [];
+  for (const row of dependencyRows) {
+    if (row.sourceProjectId !== row.targetProjectId) dependencies.push(row);
+    if (row.targetStartDate === null && row.targetDueDate === null) {
+      undatedSuccessorDependencies.push(row);
+    }
+  }
 
   return {
     projects: projects.map((project) => ({
@@ -176,7 +224,9 @@ async function getPortfolio(
       icon: project.icon,
       tasks: tasksByProject.get(project.id) ?? [],
     })),
-    dependencies: dependencyRows,
+    dependencies: dependencies.map(toDependency),
+    undatedSuccessorDependencies:
+      undatedSuccessorDependencies.map(toDependency),
   };
 }
 

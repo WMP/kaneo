@@ -3500,6 +3500,8 @@
 			"removeRelation": "Usuń powiązanie",
 			"searchPlaceholder": "Szukaj zadań do powiązania...",
 			"selectTask": "Wybierz zadanie do powiązania",
+			"chooseTypeFirst": "Najpierw wybierz typ powiązania",
+			"typeGroupLabel": "Typ powiązania",
 			"tasksInProject": "Zadania w projekcie",
 			"title": "Powiązania",
 			"types": {

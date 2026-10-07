@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import createTaskRelation from "@/fetchers/task-relation/create-task-relation";
 
+import {
+  ganttTaskRelationsKey,
+  invalidateGanttRelations,
+} from "@/lib/gantt-query-keys";
 import { invalidateRelationTaskProject } from "./invalidate-relation-task-project";
 
 function useCreateTaskRelation() {
@@ -14,10 +18,10 @@ function useCreateTaskRelation() {
       // only the target (another project than the source's) is refreshed too.
       void invalidateRelationTaskProject(queryClient, variables.targetTaskId);
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", variables.sourceTaskId],
+        queryKey: ganttTaskRelationsKey(variables.sourceTaskId),
       });
       queryClient.invalidateQueries({
-        queryKey: ["task-relations", variables.targetTaskId],
+        queryKey: ganttTaskRelationsKey(variables.targetTaskId),
       });
       // The Gantt chart's dependency lines read a project-scoped cache
       // (["task-relations", "project", projectId]) that neither key above
@@ -25,9 +29,7 @@ function useCreateTaskRelation() {
       // (the create response carries only the relation, not the tasks), so
       // every project's cache is invalidated — a rare, cheap mutation, and
       // only mounted Gantt views actually refetch.
-      queryClient.invalidateQueries({
-        queryKey: ["task-relations", "project"],
-      });
+      invalidateGanttRelations(queryClient);
     },
   });
 }

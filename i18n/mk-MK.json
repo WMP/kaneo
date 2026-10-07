@@ -2808,6 +2808,8 @@
 			"blocks": "Блокира",
 			"blockedBy": "Блокирана од",
 			"selectTask": "Избери задача за поврзување",
+			"chooseTypeFirst": "Прво изберете тип на врска",
+			"typeGroupLabel": "Тип на врска",
 			"types": {
 				"blocks": "блокира",
 				"related": "е поврзана со",

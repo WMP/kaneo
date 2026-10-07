@@ -372,4 +372,59 @@ describe("project WebSocket lifecycle", () => {
       queryKey: ["task-relations", "task-2"],
     });
   });
+  it.each(["TASK_UPDATED", "TASK_CREATED", "TASK_DELETED", "TASK_MOVED"])(
+    "invalidates the Gantt relations cache of the project on %s",
+    (type) => {
+      renderHook(() => useProjectWebSocket("project-a"));
+      act(() => TestSocket.instances[0].open());
+      act(() =>
+        TestSocket.instances[0].onmessage?.({
+          data: JSON.stringify({ type, projectId: "project-a", taskId: "t1" }),
+        }),
+      );
+      expect(client.invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ["task-relations", "project", "project-a"],
+      });
+      expect(client.invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ["tasks", "project-a"],
+      });
+    },
+  );
+
+  it("does not refetch the Gantt relations cache for a comment", () => {
+    renderHook(() => useProjectWebSocket("project-a"));
+    act(() => TestSocket.instances[0].open());
+    act(() =>
+      TestSocket.instances[0].onmessage?.({
+        data: JSON.stringify({
+          type: "COMMENT_UPDATED",
+          projectId: "project-a",
+          taskId: "t1",
+        }),
+      }),
+    );
+    expect(client.invalidateQueries).not.toHaveBeenCalledWith({
+      queryKey: ["task-relations", "project", "project-a"],
+    });
+  });
+
+  it("refreshes every task-relations cache for an id-free relation event (a task of another project changed)", () => {
+    renderHook(() => useProjectWebSocket("project-a"));
+    act(() => TestSocket.instances[0].open());
+    act(() =>
+      TestSocket.instances[0].onmessage?.({
+        data: JSON.stringify({
+          type: "TASK_RELATION_UPDATED",
+          projectId: "project-a",
+          taskId: "",
+        }),
+      }),
+    );
+    expect(client.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["task-relations"],
+    });
+    expect(client.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["task-relations", "project", "project-a"],
+    });
+  });
 });

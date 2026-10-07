@@ -2801,6 +2801,8 @@
 			"blocks": "Memblokir",
 			"blockedBy": "Diblokir oleh",
 			"selectTask": "Pilih tugas untuk ditautkan",
+			"chooseTypeFirst": "Pilih jenis relasi terlebih dahulu",
+			"typeGroupLabel": "Jenis relasi",
 			"types": {
 				"blocks": "memblokir",
 				"blocked_by": "diblokir oleh",

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTask from "@/fetchers/task/update-task";
+import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
 import type Task from "@/types/task";
 
 export function useUpdateTask() {
@@ -29,9 +30,7 @@ export function useUpdateTask() {
       // same reason). Which other project(s) relate to this task isn't
       // known here, so every project's task-relations cache is invalidated
       // — broad, but cheap, and only mounted Gantt views actually refetch.
-      queryClient.invalidateQueries({
-        queryKey: ["task-relations", "project"],
-      });
+      invalidateGanttRelations(queryClient);
     },
   });
 }

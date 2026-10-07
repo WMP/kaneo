@@ -2808,6 +2808,8 @@
 			"blocks": "ब्लॉक करता है",
 			"blockedBy": "ब्लॉक किया गया",
 			"selectTask": "लिंक करने के लिए कार्य चुनें",
+			"chooseTypeFirst": "पहले संबंध का प्रकार चुनें",
+			"typeGroupLabel": "संबंध का प्रकार",
 			"types": {
 				"blocks": "ब्लॉक करता है",
 				"blocked_by": "ब्लॉक किया गया",

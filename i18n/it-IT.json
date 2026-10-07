@@ -2815,6 +2815,8 @@
 			"blocks": "Blocca",
 			"blockedBy": "Bloccata da",
 			"selectTask": "Seleziona un'attività da collegare",
+			"chooseTypeFirst": "Scegli prima un tipo di relazione",
+			"typeGroupLabel": "Tipo di relazione",
 			"types": {
 				"blocks": "blocca",
 				"blocked_by": "bloccata da",

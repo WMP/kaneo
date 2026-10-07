@@ -2808,6 +2808,8 @@
 			"blocks": "Blockiert",
 			"blockedBy": "Blockiert von",
 			"selectTask": "Wähle eine Aufgabe zum Verknüpfen aus",
+			"chooseTypeFirst": "Wähle zuerst eine Beziehungsart",
+			"typeGroupLabel": "Beziehungsart",
 			"types": {
 				"blocks": "blockiert",
 				"related": "steht in Beziehung zu",
