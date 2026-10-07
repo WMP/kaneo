@@ -91,6 +91,37 @@ describe("notifyOnTaskAssigneeChanged", () => {
     expect(notifiedIds).toEqual(["user-1", "user-2"]);
   });
 
+  it("does not notify the actor when they assign the task to themselves", async () => {
+    await notifyOnTaskAssigneeChanged({
+      taskId: "task-1",
+      userId: "user-1",
+      oldAssignee: null,
+      newAssignee: "Ada",
+      newAssigneeId: "user-1",
+      title: "Ship it",
+    });
+
+    expect(mockCreateNotification).not.toHaveBeenCalled();
+    expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it("skips the actor when they are among the added assignees", async () => {
+    await notifyOnTaskAssigneeChanged({
+      taskId: "task-1",
+      userId: "actor-1",
+      oldAssignee: null,
+      newAssignee: "Bea",
+      newAssigneeId: "user-2",
+      addedAssigneeIds: ["actor-1", "user-2"],
+      title: "Ship it",
+    });
+
+    expect(mockCreateNotification).toHaveBeenCalledTimes(1);
+    expect(mockCreateNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "user-2" }),
+    );
+  });
+
   it("does nothing when there is no primary and nothing was added (an unassign-only diff)", async () => {
     await notifyOnTaskAssigneeChanged({
       taskId: "task-1",

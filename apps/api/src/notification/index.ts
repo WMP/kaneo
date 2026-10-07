@@ -255,6 +255,9 @@ export async function notifyOnTaskAssigneeChanged(
     recipientIds.add(data.newAssigneeId);
   }
 
+  // Assigning yourself is not news: the actor never gets a notification about their own change.
+  recipientIds.delete(data.userId);
+
   if (recipientIds.size === 0) {
     return;
   }
