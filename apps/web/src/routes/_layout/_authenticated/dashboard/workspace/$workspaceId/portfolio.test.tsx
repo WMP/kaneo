@@ -385,6 +385,44 @@ describe("Portfolio route", () => {
     );
   });
 
+  it("height-bounds the timeline wrapper and keeps the project rail cell opaque", () => {
+    m.portfolio = {
+      projects: [
+        {
+          id: "project-1",
+          name: "Alpha",
+          slug: "alpha",
+          icon: null,
+          tasks: [
+            {
+              id: "task-1",
+              title: "Migrate schema",
+              startDate: "2026-01-10",
+              dueDate: "2026-01-14",
+              progress: 40,
+              isMilestone: false,
+              status: "to-do",
+            },
+          ],
+        },
+      ],
+      dependencies: [],
+    };
+    show();
+
+    // The wrapper must be height-bounded (h-full) so the viewport scrolls
+    // itself; otherwise vertical drag-pan writes to a non-scrolling element.
+    const viewport = screen.getByTestId("portfolio-scroll-container");
+    const wrapper = viewport.closest(".flex-col");
+    expect(wrapper?.className).toContain("h-full");
+
+    // A translucent rail cell lets the summary bar show through when
+    // scrolled horizontally.
+    const railCell = screen.getByText("Alpha").closest(".sticky");
+    expect(railCell?.className).toContain("bg-background");
+    expect(railCell?.className).not.toContain("bg-muted/40");
+  });
+
   it("collapses a project's rows without removing the group header", () => {
     m.portfolio = {
       projects: [
