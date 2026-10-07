@@ -14,6 +14,15 @@ const m = vi.hoisted(() => ({
   portfolio: {
     projects: [] as Record<string, unknown>[],
     dependencies: [] as Record<string, unknown>[],
+  } as {
+    projects: Record<string, unknown>[];
+    dependencies: Record<string, unknown>[];
+    undatedSuccessorDependencies?: Record<string, unknown>[];
+  },
+  // Mon-Fri, no holidays (the API default).
+  calendar: { workingDays: 62, holidays: [] } as {
+    workingDays: number;
+    holidays: { date: string }[];
   },
   preferencesState: {
     weekStartsOn: 1 as const,
@@ -52,6 +61,9 @@ vi.mock("@/components/task/task-details-sheet", () => ({
 }));
 vi.mock("@/hooks/queries/project/use-get-portfolio", () => ({
   default: () => ({ data: m.portfolio, isLoading: false, isError: false }),
+}));
+vi.mock("@/hooks/queries/calendar/use-get-calendar", () => ({
+  default: () => ({ data: m.calendar }),
 }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 // The "blocks" dependency-line label (TaskRelationDependencyPopover, from
@@ -97,6 +109,7 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   m.portfolio = { projects: [], dependencies: [] };
+  m.calendar = { workingDays: 62, holidays: [] };
   m.navigate.mockClear();
 });
 
@@ -405,5 +418,216 @@ describe("Portfolio route", () => {
     );
     expect(screen.queryByText("Migrate schema")).not.toBeInTheDocument();
     expect(screen.getByText("Alpha")).toBeInTheDocument();
+  });
+
+  describe("derived (dateless) successors", () => {
+    const base = {
+      progress: 0,
+      isMilestone: false,
+      status: "to-do",
+      estimateUnit: "hours",
+    };
+
+    function seed(extra?: { tasks?: Record<string, unknown>[] }) {
+      m.portfolio = {
+        projects: [
+          {
+            id: "project-1",
+            name: "Alpha",
+            slug: "alpha",
+            icon: null,
+            tasks: [
+              {
+                ...base,
+                id: "gate",
+                title: "Gate",
+                startDate: "2026-01-12",
+                dueDate: "2026-01-14",
+                estimateMinutes: null,
+              },
+              ...(extra?.tasks ?? []),
+            ],
+          },
+        ],
+        dependencies: [],
+        undatedSuccessorDependencies: [
+          {
+            id: "r1",
+            sourceTaskId: "gate",
+            sourceProjectId: "project-1",
+            targetTaskId: "softlab",
+            targetProjectId: "project-1",
+            dependencyType: "fs",
+            lagDays: 0,
+          },
+          {
+            id: "r2",
+            sourceTaskId: "softlab",
+            sourceProjectId: "project-1",
+            targetTaskId: "chained",
+            targetProjectId: "project-1",
+            dependencyType: "fs",
+            lagDays: 0,
+          },
+        ],
+      };
+    }
+
+    it("draws an undated task with an estimate and a blocks predecessor as a read-only derived bar", () => {
+      seed({
+        tasks: [
+          {
+            ...base,
+            id: "softlab",
+            title: "Softlab rollout",
+            startDate: null,
+            dueDate: null,
+            estimateMinutes: 960,
+          },
+        ],
+      });
+      show();
+
+      // Without derivation the dateless task would be left out entirely.
+      const bar = screen.getByRole("button", {
+        name: 'portfolio:gantt.taskAriaLabel:{"title":"Softlab rollout"}',
+      });
+      expect(bar.hasAttribute("data-derived")).toBe(true);
+      expect(bar.className).toContain("border-dotted");
+      expect(bar.getAttribute("title")).toContain(
+        "tasks:gantt.derivedTaskEstimateTitle",
+      );
+      // The dated predecessor keeps its plain bar.
+      expect(
+        screen
+          .getByRole("button", {
+            name: 'portfolio:gantt.taskAriaLabel:{"title":"Gate"}',
+          })
+          .hasAttribute("data-derived"),
+      ).toBe(false);
+
+      fireEvent.click(bar);
+      expect(screen.getByTestId("task-details-sheet")).toHaveTextContent(
+        "project-1:softlab",
+      );
+    });
+
+    it("chains through the sized derived task and a marker without an estimate stays a one-day bar", () => {
+      seed({
+        tasks: [
+          {
+            ...base,
+            id: "softlab",
+            title: "Softlab rollout",
+            startDate: null,
+            dueDate: null,
+            estimateMinutes: 960,
+          },
+          {
+            ...base,
+            id: "chained",
+            title: "Softlab handover",
+            startDate: null,
+            dueDate: null,
+            estimateMinutes: null,
+          },
+        ],
+      });
+      show();
+
+      expect(
+        screen.getByRole("button", {
+          name: 'portfolio:gantt.taskAriaLabel:{"title":"Softlab handover"}',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    it("leaves a dateless task with no placed predecessor out, as before", () => {
+      seed({
+        tasks: [
+          {
+            ...base,
+            id: "orphan",
+            title: "Orphan backlog item",
+            startDate: null,
+            dueDate: null,
+            estimateMinutes: 480,
+          },
+        ],
+      });
+      show();
+      expect(screen.queryByText("Orphan backlog item")).not.toBeInTheDocument();
+    });
+
+    it("shows the timeline for a project whose only dated anchor is in another project", () => {
+      m.portfolio = {
+        projects: [
+          {
+            id: "project-1",
+            name: "Alpha",
+            slug: "alpha",
+            icon: null,
+            tasks: [
+              {
+                ...base,
+                id: "gate",
+                title: "Gate",
+                startDate: "2026-01-12",
+                dueDate: "2026-01-14",
+                estimateMinutes: null,
+              },
+            ],
+          },
+          {
+            id: "project-2",
+            name: "Softlab",
+            slug: "softlab",
+            icon: null,
+            tasks: [
+              {
+                ...base,
+                id: "softlab",
+                title: "Softlab rollout",
+                startDate: null,
+                dueDate: null,
+                estimateMinutes: 480,
+              },
+            ],
+          },
+        ],
+        dependencies: [
+          {
+            id: "r1",
+            sourceTaskId: "gate",
+            sourceProjectId: "project-1",
+            targetTaskId: "softlab",
+            targetProjectId: "project-2",
+            dependencyType: "fs",
+            lagDays: 0,
+          },
+        ],
+        undatedSuccessorDependencies: [
+          {
+            id: "r1",
+            sourceTaskId: "gate",
+            sourceProjectId: "project-1",
+            targetTaskId: "softlab",
+            targetProjectId: "project-2",
+            dependencyType: "fs",
+            lagDays: 0,
+          },
+        ],
+      };
+      const { container } = show();
+      expect(
+        screen
+          .getByRole("button", {
+            name: 'portfolio:gantt.taskAriaLabel:{"title":"Softlab rollout"}',
+          })
+          .hasAttribute("data-derived"),
+      ).toBe(true);
+      // The cross-project line now has a bar to land on.
+      expect(container.querySelector("svg path")).not.toBeNull();
+    });
   });
 });

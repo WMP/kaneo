@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { deriveUndatedSuccessorSchedules } from "./gantt-derived-schedule";
+import { deriveTaskScheduleWithEstimate } from "./gantt-estimated-span";
 import {
   buildPortfolioRows,
   countScheduledTasks,
   flattenPortfolioSchedule,
   type PortfolioProjectInput,
 } from "./gantt-portfolio";
+import {
+  DEFAULT_WORKING_DAYS,
+  isWorkingDay,
+  toDateKey,
+} from "./gantt-working-calendar";
 
 function project(
   overrides: Partial<PortfolioProjectInput> & { id: string },
@@ -228,5 +235,333 @@ describe("countScheduledTasks", () => {
     ]);
 
     expect(countScheduledTasks(rows)).toBe(1);
+  });
+});
+
+describe("buildPortfolioRows derived (dateless) successors", () => {
+  const MON_FRI = (date: Date) =>
+    isWorkingDay(date, DEFAULT_WORKING_DAYS, new Set());
+  const key = (date: Date) => toDateKey(date);
+
+  function task(
+    id: string,
+    overrides: Partial<PortfolioProjectInput["tasks"][number]> = {},
+  ): PortfolioProjectInput["tasks"][number] {
+    return {
+      id,
+      title: id,
+      startDate: null,
+      dueDate: null,
+      progress: 0,
+      isMilestone: false,
+      status: "to-do",
+      estimateMinutes: null,
+      estimateUnit: "hours",
+      ...overrides,
+    };
+  }
+
+  const edge = (
+    id: string,
+    sourceTaskId: string,
+    targetTaskId: string,
+    dependencyType = "fs",
+    lagDays = 0,
+  ) => ({ id, sourceTaskId, targetTaskId, dependencyType, lagDays });
+
+  function byId(rows: ReturnType<typeof buildPortfolioRows>) {
+    return new Map(rows.flatMap((row) => row.tasks).map((t) => [t.id, t]));
+  }
+
+  it("places an undated task with an estimate after its dated predecessor, as a read-only derived bar", () => {
+    // Mon 12 - Wed 14 Jan 2026; the successor starts the next day (Thu 15)
+    // and spans 2 working days (960 min).
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-14" }),
+            task("b", { estimateMinutes: 960 }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+
+    const b = byId(rows).get("b");
+    expect(b?.isDerived).toBe(true);
+    expect(key(b?.scheduleStart as Date)).toBe("2026-01-15");
+    expect(key(b?.scheduleEnd as Date)).toBe("2026-01-16");
+    expect(b?.estimateMinutes).toBe(960);
+    expect(rows[0].unscheduledCount).toBe(0);
+  });
+
+  it("uses exactly the project Gantt derivation (same inputs, same dates)", () => {
+    const projects = [
+      project({
+        id: "alpha",
+        tasks: [
+          task("a", { startDate: "2026-01-09", dueDate: "2026-01-09" }),
+          task("b", { estimateMinutes: 1500 }),
+          task("c", { estimateMinutes: 60 }),
+        ],
+      }),
+      project({
+        id: "beta",
+        tasks: [task("d", { startDate: "2026-01-13", dueDate: "2026-01-20" })],
+      }),
+    ];
+    const dependencies = [
+      edge("r1", "a", "b", "fs", 1),
+      edge("r2", "d", "b", "ff", 0),
+      edge("r3", "b", "c"),
+    ];
+    const rows = buildPortfolioRows(projects, {
+      derivationDependencies: dependencies,
+      isWorkingDay: MON_FRI,
+    });
+
+    // The project Gantt's own call, fed the same dated spans and estimates.
+    const dated = new Map<string, { start: Date; end: Date }>();
+    for (const p of projects) {
+      for (const t of p.tasks) {
+        const span = deriveTaskScheduleWithEstimate(t, MON_FRI);
+        if (span) dated.set(t.id, span);
+      }
+    }
+    const expected = deriveUndatedSuccessorSchedules({
+      edges: dependencies.map((d) => ({
+        sourceTaskId: d.sourceTaskId,
+        targetTaskId: d.targetTaskId,
+        dependencyType: d.dependencyType as "fs" | "ff",
+        lagDays: d.lagDays,
+      })),
+      datedScheduleById: dated,
+      undatedCandidateIds: ["b", "c"],
+      isWorkingDay: MON_FRI,
+      estimateMinutesById: new Map([
+        ["b", 1500],
+        ["c", 60],
+      ]),
+    });
+
+    const tasks = byId(rows);
+    expect(expected.size).toBe(2);
+    for (const id of ["b", "c"]) {
+      expect(tasks.get(id)?.scheduleStart).toEqual(expected.get(id)?.start);
+      expect(tasks.get(id)?.scheduleEnd).toEqual(expected.get(id)?.end);
+    }
+  });
+
+  it("draws an undated task without an estimate as a single-day marker", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-14" }),
+            task("b"),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const b = byId(rows).get("b");
+    expect(b?.isDerived).toBe(true);
+    expect(key(b?.scheduleStart as Date)).toBe("2026-01-15");
+    expect(b?.scheduleEnd).toEqual(b?.scheduleStart);
+  });
+
+  it("chains through a sized derived task, nudging onto a working day, but not through an unsized one", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-14" }),
+            task("b", { estimateMinutes: 960 }),
+            task("c"),
+            task("m"),
+            task("n"),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [
+          edge("r1", "a", "b"),
+          edge("r2", "b", "c"),
+          // m is an unsized marker, so n (after m) stays unplaced.
+          edge("r3", "a", "m"),
+          edge("r4", "m", "n"),
+        ],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const tasks = byId(rows);
+    // b: Thu 15 - Fri 16; c: day after = Sat 17, nudged to Mon 19.
+    expect(key(tasks.get("c")?.scheduleStart as Date)).toBe("2026-01-19");
+    expect(tasks.has("m")).toBe(true);
+    expect(tasks.has("n")).toBe(false);
+    expect(rows[0].unscheduledCount).toBe(1);
+  });
+
+  it("anchors on a predecessor in another project", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("gate", { startDate: "2026-01-12", dueDate: "2026-01-12" }),
+          ],
+        }),
+        project({
+          id: "beta",
+          tasks: [task("cutover", { estimateMinutes: 480 })],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "gate", "cutover", "fs", 2)],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    // end Mon 12 + 1 + lag 2 = Thu 15.
+    expect(key(byId(rows).get("cutover")?.scheduleStart as Date)).toBe(
+      "2026-01-15",
+    );
+    expect(rows[1].tasks.map((t) => t.id)).toEqual(["cutover"]);
+  });
+
+  it("leaves an undated task without a placed predecessor unscheduled", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("lonely", { estimateMinutes: 480 }),
+            task("x"),
+            task("y"),
+          ],
+        }),
+      ],
+      { derivationDependencies: [edge("r1", "x", "y")] },
+    );
+    expect(rows[0].tasks).toEqual([]);
+    expect(rows[0].unscheduledCount).toBe(3);
+  });
+
+  it("never derives over a task that has a date, and keeps derived rows out of the project rollup", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-12" }),
+            task("own", { startDate: "2026-01-30", dueDate: "2026-01-30" }),
+            task("b", { estimateMinutes: 12000 }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "own"), edge("r2", "a", "b")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const tasks = byId(rows);
+    expect(tasks.get("own")?.isDerived).toBe(false);
+    expect(key(tasks.get("own")?.scheduleStart as Date)).toBe("2026-01-30");
+    // b spans 25 working days from Tue 13 (well past Jan 30), yet the rollup
+    // is built from the dated tasks only.
+    expect(
+      (tasks.get("b")?.scheduleEnd as Date) >
+        (tasks.get("own")?.scheduleEnd as Date),
+    ).toBe(true);
+    expect(key(rows[0].summarySpan?.start as Date)).toBe("2026-01-12");
+    expect(key(rows[0].summarySpan?.end as Date)).toBe("2026-01-30");
+    expect(rows[0].tasks.map((t) => t.id)).toEqual(["a", "own", "b"]);
+  });
+
+  it("orders derived rows after the dated ones, by derived start", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-12" }),
+            task("zlate", { estimateMinutes: 480 }),
+            task("early", { estimateMinutes: 480 }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [
+          edge("r1", "a", "zlate", "fs", 5),
+          edge("r2", "a", "early"),
+        ],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    expect(rows[0].tasks.map((t) => t.id)).toEqual(["a", "early", "zlate"]);
+  });
+
+  it("sizes an estimated single-date task by its estimate, like the project Gantt", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("start-only", {
+              startDate: "2026-01-12",
+              estimateMinutes: 1440,
+            }),
+            task("due-only", { dueDate: "2026-01-16", estimateMinutes: 960 }),
+            task("milestone", {
+              dueDate: "2026-01-16",
+              estimateMinutes: 960,
+              isMilestone: true,
+            }),
+          ],
+        }),
+      ],
+      { isWorkingDay: MON_FRI },
+    );
+    const tasks = byId(rows);
+    expect(key(tasks.get("start-only")?.scheduleEnd as Date)).toBe(
+      "2026-01-14",
+    );
+    expect(key(tasks.get("due-only")?.scheduleStart as Date)).toBe(
+      "2026-01-15",
+    );
+    expect(tasks.get("start-only")?.isDerived).toBe(false);
+    // A milestone is a point marker and is not sized.
+    expect(tasks.get("milestone")?.scheduleStart).toEqual(
+      tasks.get("milestone")?.scheduleEnd,
+    );
+  });
+
+  it("anchors a derived successor on the span of an estimated single-date predecessor", () => {
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", estimateMinutes: 1440 }),
+            task("b"),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    // a spans Mon 12 - Wed 14, so b starts Thu 15.
+    expect(key(byId(rows).get("b")?.scheduleStart as Date)).toBe("2026-01-15");
   });
 });

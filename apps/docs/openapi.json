@@ -979,11 +979,19 @@
               "$ref": "#/components/schemas/PortfolioDependency"
             },
             "description": "Cross-project scheduling dependencies -- `blocks` relations whose source and target tasks sit in two different projects returned above (e.g. a client approval gating a cutover in another project). Only `blocks` relations carry portfolio-relevant scheduling semantics, so same-project and non-blocking (`related`/`subtask`) relations are left out; fetch a project's own Gantt for those. Lets the portfolio timeline draw a line between the two projects' rows."
+          },
+          "undatedSuccessorDependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioDependency"
+            },
+            "description": "`blocks` relations, same-project or cross-project, whose target task has neither a start nor a due date, between two tasks of the projects returned above. They let the client derive a display-only position for such a task from its predecessors (nothing is stored). An edge into a dated task is not included; a cross-project edge into an undated task appears here and in `dependencies`."
           }
         },
         "required": [
           "projects",
-          "dependencies"
+          "dependencies",
+          "undatedSuccessorDependencies"
         ]
       },
       "PortfolioProject": {
@@ -1053,6 +1061,18 @@
             "maximum": 100,
             "description": "Percent complete, 0-100."
           },
+          "estimateMinutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Effort estimate in whole minutes (a work day is 480 minutes); null when there is no estimate. Sizes the display-only bar of a task with no dates of its own and of a task with exactly one date."
+          },
+          "estimateUnit": {
+            "type": "string",
+            "description": "How the estimate is entered and shown: `hours` or `days`."
+          },
           "isMilestone": {
             "type": "boolean",
             "description": "Renders as a diamond marker on the timeline at its date instead of a spanning bar."
@@ -1068,6 +1088,8 @@
           "startDate",
           "dueDate",
           "progress",
+          "estimateMinutes",
+          "estimateUnit",
           "isMilestone",
           "status"
         ]
