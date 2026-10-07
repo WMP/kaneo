@@ -139,7 +139,9 @@ export function GanttPortfolioTaskBar({
       <div
         style={{
           gridColumn: `${lineStart} / ${lineEnd}`,
-          // See MIN_BAR_HOVER_HIT_PX: keeps a comfortable click target at
+          // The button below fills this whole span (minus its mx-1 inset), so
+          // the bar is as wide as its dates, not its text; the dependency
+          // overlay measures the same span. See MIN_BAR_HOVER_HIT_PX: keeps a comfortable click target at
           // Month/Quarter regardless of how narrow this track compresses to.
           minWidth: `${MIN_BAR_HOVER_HIT_PX}px`,
         }}
@@ -152,7 +154,7 @@ export function GanttPortfolioTaskBar({
           data-derived={isDerived ? "" : undefined}
           aria-label={t("portfolio:gantt.taskAriaLabel", { title: task.title })}
           className={cn(
-            "relative mx-1 flex h-8 min-w-0 max-w-[calc(100%-0.5rem)] touch-manipulation items-center overflow-hidden rounded-md border border-primary/25 bg-background px-2 text-left text-xs font-medium leading-none text-foreground shadow-sm transition-colors hover:border-primary/40 sm:h-9",
+            "relative mx-1 flex h-8 w-[calc(100%-0.5rem)] min-w-0 touch-manipulation items-center overflow-hidden rounded-md border border-primary/25 bg-background px-2 text-left text-xs font-medium leading-none text-foreground shadow-sm transition-colors hover:border-primary/40 sm:h-9",
             // Display-only derived row: dotted and a touch fainter, like the
             // project Gantt's derived bar, so it never reads as a dated one.
             isDerived &&
