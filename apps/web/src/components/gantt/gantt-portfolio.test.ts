@@ -456,7 +456,7 @@ describe("buildPortfolioRows derived (dateless) successors", () => {
     expect(rows[0].unscheduledCount).toBe(3);
   });
 
-  it("never derives over a task that has a date, and keeps derived rows out of the project rollup", () => {
+  it("never derives over a task that has a date, and rolls derived rows up into the project summary", () => {
     const rows = buildPortfolioRows(
       [
         project({
@@ -476,15 +476,116 @@ describe("buildPortfolioRows derived (dateless) successors", () => {
     const tasks = byId(rows);
     expect(tasks.get("own")?.isDerived).toBe(false);
     expect(key(tasks.get("own")?.scheduleStart as Date)).toBe("2026-01-30");
-    // b spans 25 working days from Tue 13 (well past Jan 30), yet the rollup
-    // is built from the dated tasks only.
+    // b spans 25 working days from Tue 13 (well past Jan 30), and the summary
+    // extends to its end.
     expect(
       (tasks.get("b")?.scheduleEnd as Date) >
         (tasks.get("own")?.scheduleEnd as Date),
     ).toBe(true);
     expect(key(rows[0].summarySpan?.start as Date)).toBe("2026-01-12");
-    expect(key(rows[0].summarySpan?.end as Date)).toBe("2026-01-30");
+    expect(key(rows[0].summarySpan?.end as Date)).toBe(
+      key(tasks.get("b")?.scheduleEnd as Date),
+    );
     expect(rows[0].tasks.map((t) => t.id)).toEqual(["a", "own", "b"]);
+  });
+
+  it("gives a project with only derived tasks a summary span covering them", () => {
+    // Beta holds the dated predecessor; alpha has only dateless, estimated
+    // tasks: b (2 working days) then c (1 working day) chained after it.
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("b", { estimateMinutes: 960 }),
+            task("c", { estimateMinutes: 480 }),
+          ],
+        }),
+        project({
+          id: "beta",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-14" }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b"), edge("r2", "b", "c")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const tasks = byId(rows);
+    expect(tasks.get("b")?.isDerived).toBe(true);
+    expect(tasks.get("c")?.isDerived).toBe(true);
+    const alpha = rows.find((r) => r.id === "alpha");
+    expect(alpha?.unscheduledCount).toBe(0);
+    expect(key(alpha?.summarySpan?.start as Date)).toBe(
+      key(tasks.get("b")?.scheduleStart as Date),
+    );
+    expect(key(alpha?.summarySpan?.end as Date)).toBe(
+      key(tasks.get("c")?.scheduleEnd as Date),
+    );
+    expect(alpha?.summaryProgress).not.toBeNull();
+  });
+
+  it("weights the project summary progress by derived tasks too", () => {
+    // a: 1 working day at 0%; b: derived, 3 working days at 100%.
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", {
+              startDate: "2026-01-12",
+              dueDate: "2026-01-12",
+              progress: 0,
+            }),
+            task("b", { estimateMinutes: 1440, progress: 100 }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const tasks = byId(rows);
+    const durationDays = (id: string) => {
+      const t = tasks.get(id);
+      if (!t) throw new Error(`missing task ${id}`);
+      return (
+        Math.round(
+          (t.scheduleEnd.getTime() - t.scheduleStart.getTime()) / 86_400_000,
+        ) + 1
+      );
+    };
+    const da = durationDays("a");
+    const db = durationDays("b");
+    expect(rows[0].summaryProgress).toBeCloseTo((100 * db) / (da + db), 5);
+  });
+
+  it("does not feed derived spans back into the derivation input", () => {
+    // c is blocked only by the undated, unsized b: b anchors nothing, so c
+    // stays unplaced even though b now rolls up into the summary.
+    const rows = buildPortfolioRows(
+      [
+        project({
+          id: "alpha",
+          tasks: [
+            task("a", { startDate: "2026-01-12", dueDate: "2026-01-12" }),
+            task("b"),
+            task("c", { estimateMinutes: 480 }),
+          ],
+        }),
+      ],
+      {
+        derivationDependencies: [edge("r1", "a", "b"), edge("r2", "b", "c")],
+        isWorkingDay: MON_FRI,
+      },
+    );
+    const tasks = byId(rows);
+    expect(tasks.get("b")?.isDerived).toBe(true);
+    expect(tasks.has("c")).toBe(false);
+    expect(rows[0].unscheduledCount).toBe(1);
   });
 
   it("orders derived rows after the dated ones, by derived start", () => {
