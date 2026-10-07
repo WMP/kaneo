@@ -170,4 +170,39 @@ describe("GanttPortfolioTaskBar", () => {
     expect(plain?.hasAttribute("data-derived")).toBe(false);
     expect(plain?.className).not.toContain("border-dotted");
   });
+
+  it("fills its whole grid span (minus the inset) instead of shrinking to its text", () => {
+    const timeline = buildTimeline();
+    const task = {
+      id: "task-6",
+      title: "A",
+      progress: 40,
+      isMilestone: false,
+      scheduleStart: new Date("2026-01-05"),
+      scheduleEnd: new Date("2026-01-14"),
+    };
+    const { rerender } = render(
+      <GanttPortfolioTaskBar
+        task={task}
+        timeline={timeline}
+        onOpenTask={vi.fn()}
+      />,
+    );
+    const dated = screen.getByText("A").closest("button");
+    expect(dated?.className).toContain("w-[calc(100%-0.5rem)]");
+    expect(dated?.className).not.toContain("max-w-");
+    // The wrapper carries the date-span grid column the bar fills.
+    expect(dated?.parentElement?.style.gridColumn).toMatch(/^\d+ \/ \d+$/);
+
+    rerender(
+      <GanttPortfolioTaskBar
+        task={{ ...task, isDerived: true }}
+        timeline={timeline}
+        onOpenTask={vi.fn()}
+      />,
+    );
+    const derived = screen.getByText("A").closest("button");
+    expect(derived?.className).toContain("w-[calc(100%-0.5rem)]");
+    expect(derived?.className).toContain("border-dotted");
+  });
 });
