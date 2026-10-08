@@ -131,6 +131,9 @@
 				"assign": "Assegna",
 				"assignUnassigned": "Non assegnato",
 				"assignUnassignedTitle": "Non assegnato",
+				"dependencies": "Dipendenze",
+				"removeDependency": "Rimuovi dipendenza",
+				"dependencyLinkError": "Attività creata, ma non è stato possibile collegare {{task}}: {{reason}}",
 				"labels": "Etichette",
 				"searchLabels": "Cerca etichette...",
 				"noLabelsFound": "Nessuna etichetta trovata",
@@ -2891,6 +2894,10 @@
 			"action": "Sposta attività",
 			"success": "Attività spostata con successo",
 			"error": "Spostamento attività fallito"
+		},
+		"picker": {
+			"search": "Cerca...",
+			"noResults": "Nessun risultato"
 		},
 		"popover": {
 			"assignee": {

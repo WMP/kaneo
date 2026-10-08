@@ -131,6 +131,9 @@
 				"assign": "Ανάθεση",
 				"assignUnassigned": "Χωρίς ανάθεση",
 				"assignUnassignedTitle": "Χωρίς ανάθεση",
+				"dependencies": "Εξαρτήσεις",
+				"removeDependency": "Αφαίρεση εξάρτησης",
+				"dependencyLinkError": "Η εργασία δημιουργήθηκε, αλλά δεν ήταν δυνατή η σύνδεση του {{task}}: {{reason}}",
 				"labels": "Ετικέτες",
 				"searchLabels": "Αναζήτηση ετικετών...",
 				"noLabelsFound": "Δεν βρέθηκαν ετικέτες",
@@ -2884,6 +2887,10 @@
 			"action": "Μετακίνηση εργασίας",
 			"success": "Η εργασία μετακινήθηκε με επιτυχία",
 			"error": "Αποτυχία μετακίνησης εργασίας"
+		},
+		"picker": {
+			"search": "Αναζήτηση...",
+			"noResults": "Κανένα αποτέλεσμα"
 		},
 		"popover": {
 			"assignee": {

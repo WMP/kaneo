@@ -288,6 +288,57 @@ describe("MCP tool catalog", () => {
     });
   });
 
+  it("forwards estimateMinutes and estimateUnit on create_task", async () => {
+    await call("create_task", {
+      projectId: "p1",
+      title: "T",
+      description: "",
+      priority: "medium",
+      status: "to-do",
+      estimateMinutes: 960,
+      estimateUnit: "days",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/task/p1",
+      method: "POST",
+      body: { estimateMinutes: 960, estimateUnit: "days" },
+    });
+  });
+
+  it("omits the estimate on create_task when not provided", async () => {
+    await call("create_task", {
+      projectId: "p1",
+      title: "T",
+      description: "",
+      priority: "medium",
+      status: "to-do",
+    });
+
+    const body = lastRequest().body;
+    expect(body).not.toHaveProperty("estimateMinutes");
+    expect(body).not.toHaveProperty("estimateUnit");
+  });
+
+  it("rejects an invalid estimate on create_task", async () => {
+    const base = {
+      projectId: "p1",
+      title: "T",
+      description: "",
+      priority: "medium",
+      status: "to-do",
+    };
+    for (const bad of [
+      { estimateUnit: "weeks" },
+      { estimateMinutes: -1 },
+      { estimateMinutes: 1.5 },
+    ]) {
+      const result = await call("create_task", { ...base, ...bad });
+      expect(result.isError).toBe(true);
+    }
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
+
   it("rejects an unknown field on create_task instead of silently dropping it", async () => {
     const result = await call("create_task", {
       projectId: "p1",
@@ -474,6 +525,81 @@ describe("MCP tool catalog", () => {
     expect(body).not.toHaveProperty("isMilestone");
     expect(body).not.toHaveProperty("constraintType");
     expect(body).not.toHaveProperty("constraintDate");
+  });
+
+  it("forwards estimateMinutes and estimateUnit on update_task", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+      }),
+    );
+
+    await call("update_task", {
+      taskId: "t1",
+      estimateMinutes: 480,
+      estimateUnit: "days",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/task/t1",
+      method: "PUT",
+      body: { estimateMinutes: 480, estimateUnit: "days" },
+    });
+  });
+
+  it("sends estimateMinutes null on update_task to clear the estimate", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+      }),
+    );
+
+    await call("update_task", { taskId: "t1", estimateMinutes: null });
+
+    const body = lastRequest().body as Record<string, unknown>;
+    expect(body).toHaveProperty("estimateMinutes", null);
+    expect(body).not.toHaveProperty("estimateUnit");
+  });
+
+  it("omits the estimate on update_task when not provided, leaving it untouched", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json({
+        title: "T",
+        description: "D",
+        status: "open",
+        priority: "medium",
+        projectId: "p1",
+        position: 1,
+      }),
+    );
+
+    await call("update_task", { taskId: "t1", status: "done" });
+
+    const body = lastRequest().body;
+    expect(body).not.toHaveProperty("estimateMinutes");
+    expect(body).not.toHaveProperty("estimateUnit");
+  });
+
+  it("rejects an invalid estimate on update_task", async () => {
+    for (const bad of [
+      { estimateUnit: "weeks" },
+      { estimateMinutes: -1 },
+      { estimateMinutes: 2.5 },
+    ]) {
+      const result = await call("update_task", { taskId: "t1", ...bad });
+      expect(result.isError).toBe(true);
+    }
+    expect(apiFetch).not.toHaveBeenCalled();
   });
 
   it("rejects an unknown field on update_task instead of silently dropping it", async () => {

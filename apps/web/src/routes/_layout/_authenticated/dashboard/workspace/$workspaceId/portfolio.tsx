@@ -423,7 +423,7 @@ function RouteComponent() {
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-6">
               <fieldset className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
                 <legend className="sr-only">
@@ -596,7 +596,7 @@ function RouteComponent() {
                       <div key={row.id} className="border-b border-border/60">
                         <div className="flex items-stretch">
                           <div
-                            className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r border-border bg-muted/40 px-2 py-2"
+                            className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r border-border bg-background bg-[linear-gradient(color-mix(in_srgb,var(--muted)_40%,transparent),color-mix(in_srgb,var(--muted)_40%,transparent))] px-2 py-2"
                             style={{ width: `${railWidthRem}rem` }}
                           >
                             <button

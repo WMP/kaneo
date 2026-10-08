@@ -131,6 +131,9 @@
 				"assign": "Assigner",
 				"assignUnassigned": "Non assigné",
 				"assignUnassignedTitle": "Non assigné",
+				"dependencies": "Dépendances",
+				"removeDependency": "Supprimer la dépendance",
+				"dependencyLinkError": "Tâche créée, mais {{task}} n'a pas pu être lié : {{reason}}",
 				"labels": "Labels",
 				"searchLabels": "Rechercher des labels...",
 				"noLabelsFound": "Aucun label trouvé",
@@ -2891,6 +2894,10 @@
 			"action": "Déplacer la tâche",
 			"success": "Tâche déplacée avec succès",
 			"error": "Échec du déplacement de la tâche"
+		},
+		"picker": {
+			"search": "Rechercher...",
+			"noResults": "Aucun résultat"
 		},
 		"popover": {
 			"assignee": {

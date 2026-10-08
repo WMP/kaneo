@@ -131,6 +131,9 @@
 				"assign": "Zuweisen",
 				"assignUnassigned": "Nicht zugewiesen",
 				"assignUnassignedTitle": "Nicht zugewiesen",
+				"dependencies": "Abhängigkeiten",
+				"removeDependency": "Abhängigkeit entfernen",
+				"dependencyLinkError": "Aufgabe erstellt, aber {{task}} konnte nicht verknüpft werden: {{reason}}",
 				"labels": "Labels",
 				"searchLabels": "Labels suchen...",
 				"noLabelsFound": "Keine Labels gefunden",
@@ -2884,6 +2887,10 @@
 			"action": "Aufgabe verschieben",
 			"success": "Aufgabe erfolgreich verschoben",
 			"error": "Aufgabe konnte nicht verschoben werden"
+		},
+		"picker": {
+			"search": "Suchen...",
+			"noResults": "Keine Ergebnisse"
 		},
 		"popover": {
 			"assignee": {

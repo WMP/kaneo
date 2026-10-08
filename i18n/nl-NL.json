@@ -131,6 +131,9 @@
 				"assign": "Toewijzen",
 				"assignUnassigned": "Niet toegewezen",
 				"assignUnassignedTitle": "Niet toegewezen",
+				"dependencies": "Afhankelijkheden",
+				"removeDependency": "Afhankelijkheid verwijderen",
+				"dependencyLinkError": "Taak aangemaakt, maar {{task}} kon niet worden gekoppeld: {{reason}}",
 				"labels": "Labels",
 				"searchLabels": "Labels zoeken...",
 				"noLabelsFound": "Geen labels gevonden",
@@ -2873,6 +2876,10 @@
 		"estimate": {
 			"valueHours": "{{value}} u",
 			"valueDays": "{{value}} d"
+		},
+		"picker": {
+			"search": "Zoeken...",
+			"noResults": "Geen resultaten"
 		},
 		"popover": {
 			"assignee": {

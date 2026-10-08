@@ -131,6 +131,9 @@
 				"assign": "Назначить",
 				"assignUnassigned": "Не назначено",
 				"assignUnassignedTitle": "Не назначено",
+				"dependencies": "Зависимости",
+				"removeDependency": "Удалить зависимость",
+				"dependencyLinkError": "Задача создана, но не удалось связать {{task}}: {{reason}}",
 				"labels": "Метки",
 				"searchLabels": "Поиск меток...",
 				"noLabelsFound": "Метки не найдены",
@@ -2906,6 +2909,10 @@
 			"action": "Переместить задачу",
 			"success": "Задача успешно перемещена",
 			"error": "Не удалось переместить задачу"
+		},
+		"picker": {
+			"search": "Поиск...",
+			"noResults": "Нет результатов"
 		},
 		"popover": {
 			"assignee": {

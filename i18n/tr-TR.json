@@ -131,6 +131,9 @@
 				"assign": "Ata",
 				"assignUnassigned": "Atanmamış",
 				"assignUnassignedTitle": "Atanmamış",
+				"dependencies": "Bağımlılıklar",
+				"removeDependency": "Bağımlılığı kaldır",
+				"dependencyLinkError": "Görev oluşturuldu, ancak {{task}} bağlanamadı: {{reason}}",
 				"labels": "Etiketler",
 				"searchLabels": "Etiket ara...",
 				"noLabelsFound": "Etiket bulunamadı",
@@ -2884,6 +2887,10 @@
 			"action": "Talebi taşı",
 			"success": "Talep başarıyla taşındı",
 			"error": "Talep taşınamadı"
+		},
+		"picker": {
+			"search": "Ara...",
+			"noResults": "Sonuç yok"
 		},
 		"popover": {
 			"assignee": {

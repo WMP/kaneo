@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PickerNoResults } from "@/components/ui/picker-search-input";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 import useCreateResource from "@/hooks/mutations/resource/use-create-resource";
 import { getResourceErrorMessage } from "@/lib/resource-error";
 import { getResourceKindIcon } from "@/lib/resource-kind-icon";
+import { matchesSearch } from "@/lib/search-match";
 import { toast } from "@/lib/toast";
 import type Resource from "@/types/resource";
 import type { ResourceKind } from "@/types/resource";
@@ -61,6 +63,12 @@ type AssigneeResourceSectionProps = {
    * still be invited; without it there is no invite UI at all. Nothing is sent
    * from here: the dialog asks for the roles and the projects. */
   onInviteResource?: (resource: Resource) => void;
+  /** The picker's search text: only resources whose name (or kind) match it
+   * are listed. Empty or missing lists all of them. */
+  searchQuery?: string;
+  /** Set by the picker when the search matched no person, so this section
+   * can show the single "no results" state when it has no match either. */
+  noUserMatches?: boolean;
 };
 
 /** The resource half of the assignee picker: workspace resources (people,
@@ -77,6 +85,8 @@ export function AssigneeResourceSection({
   onToggleResource,
   canCreateResource,
   onInviteResource,
+  searchQuery = "",
+  noUserMatches = false,
 }: AssigneeResourceSectionProps) {
   const { t } = useTranslation();
   const { mutateAsync: createResource, isPending: creating } =
@@ -100,9 +110,23 @@ export function AssigneeResourceSection({
     );
     return RESOURCE_KINDS.map((resourceKind) => ({
       kind: resourceKind,
-      items: pickable.filter((resource) => resource.kind === resourceKind),
+      items: pickable.filter(
+        (resource) =>
+          resource.kind === resourceKind &&
+          matchesSearch(
+            `${resource.name} ${resource.email ?? ""} ${t(`tasks:popover.assignee.resourceKind.${resource.kind}`)}`,
+            searchQuery,
+          ),
+      ),
     })).filter((group) => group.items.length > 0);
-  }, [resources, projectUserIds, assignedResourceIds, selectedResourceIds]);
+  }, [
+    resources,
+    projectUserIds,
+    assignedResourceIds,
+    selectedResourceIds,
+    searchQuery,
+    t,
+  ]);
 
   const resetForm = () => {
     setName("");
@@ -141,8 +165,13 @@ export function AssigneeResourceSection({
     }
   };
 
+  const isSearching = searchQuery.trim().length > 0;
+
   return (
     <div className="space-y-1">
+      {isSearching && noUserMatches && groupedResources.length === 0 && (
+        <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
+      )}
       {groupedResources.length > 0 && (
         <div className="space-y-0.5 pt-1">
           <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">

@@ -131,6 +131,9 @@
 				"assign": "指派",
 				"assignUnassigned": "未指派",
 				"assignUnassignedTitle": "未指派",
+				"dependencies": "依赖关系",
+				"removeDependency": "移除依赖关系",
+				"dependencyLinkError": "任务已创建，但无法关联 {{task}}：{{reason}}",
 				"labels": "标签",
 				"searchLabels": "搜索标签…",
 				"noLabelsFound": "未找到标签",
@@ -2877,6 +2880,10 @@
 			"action": "移动任务",
 			"success": "任务移动成功",
 			"error": "移动任务失败"
+		},
+		"picker": {
+			"search": "搜索...",
+			"noResults": "无结果"
 		},
 		"popover": {
 			"assignee": {

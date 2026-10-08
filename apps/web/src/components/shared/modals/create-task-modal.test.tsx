@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { toast } from "@/lib/toast";
 import CreateTaskModal from "./create-task-modal";
 
 function createTestQueryClient() {
@@ -148,6 +149,7 @@ const projectPermissions = vi.hoisted(() => ({
     string,
     {
       canCreate?: boolean;
+      canUpdate?: boolean;
       canInvite?: boolean;
       checking?: boolean;
       failed?: boolean;
@@ -161,6 +163,7 @@ vi.mock("@/hooks/use-project-permission", () => ({
     return {
       canCreateTasks: () => allowed && !state.failed && !state.checking,
       canCreateLabels: () => allowed,
+      canUpdateTasks: () => state.canUpdate ?? true,
       canInviteToProject: () => state.canInvite ?? true,
       isCheckingPermissions: state.checking ?? false,
       isError: state.failed ?? false,
@@ -200,6 +203,91 @@ vi.mock("@/components/resource/resource-invite-dialog", async () => {
         </Dialog>
       );
     },
+  };
+});
+
+const createTaskRelation = vi.fn(
+  async (_input: Record<string, unknown>) => ({}),
+);
+vi.mock("@/hooks/mutations/task-relation/use-create-task-relation", () => ({
+  default: () => ({ mutateAsync: createTaskRelation }),
+}));
+
+// The real picker searches tasks through queries; what matters here is what
+// the modal does with a pick. The stand-in picks fixed tasks on click.
+vi.mock("@/components/task/task-relation-picker", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("@/components/task/task-relation-picker")
+    >();
+  const { Dialog, DialogPopup, DialogTitle } = await import(
+    "@/components/ui/dialog"
+  );
+  return {
+    ...actual,
+    default: (props: {
+      open: boolean;
+      projectId: string;
+      excludedTaskIds: ReadonlySet<string>;
+      onPick: (pick: unknown) => boolean | Promise<boolean>;
+      onOpenChange: (open: boolean) => void;
+    }) =>
+      props.open ? (
+        <Dialog open onOpenChange={props.onOpenChange}>
+          <DialogPopup>
+            <DialogTitle>relation-picker</DialogTitle>
+            <span data-testid="picker-project">{props.projectId}</span>
+            <span data-testid="picker-excluded">
+              {[...props.excludedTaskIds].join(",")}
+            </span>
+            {[
+              {
+                id: "t-blocker",
+                title: "Blocker task",
+                relationType: "blocked_by",
+                dependencyType: "ss",
+                lagDays: 2,
+              },
+              {
+                id: "t-blocked",
+                title: "Blocked task",
+                relationType: "blocks",
+                dependencyType: "fs",
+                lagDays: 0,
+              },
+              {
+                id: "t-related",
+                title: "Related task",
+                relationType: "related",
+                dependencyType: "fs",
+                lagDays: 0,
+              },
+            ].map((pick) => (
+              <button
+                key={pick.id}
+                type="button"
+                onClick={async () => {
+                  const close = await props.onPick({
+                    task: {
+                      id: pick.id,
+                      title: pick.title,
+                      number: 7,
+                      status: "to-do",
+                    },
+                    projectSlug: "alp",
+                    relationType: pick.relationType,
+                    dependencyType: pick.dependencyType,
+                    lagDays: pick.lagDays,
+                  });
+                  if (close) props.onOpenChange(false);
+                }}
+              >
+                {`pick ${pick.title}`}
+              </button>
+            ))}
+          </DialogPopup>
+        </Dialog>
+      ) : null,
   };
 });
 
@@ -960,5 +1048,266 @@ describe("CreateTaskModal effort estimate", () => {
     expect(
       screen.getByRole("button", { name: "common:modals.createTask.dueDate" }),
     ).not.toBeDisabled();
+  });
+});
+
+describe("CreateTaskModal dependencies", () => {
+  // The button also shows how many are pending, so match its name loosely.
+  const dependenciesLabel = /common:modals\.createTask\.dependencies/;
+
+  function renderInProject() {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+  }
+
+  const pickDependency = async (title: string) => {
+    fireEvent.click(
+      await screen.findByRole("button", { name: dependenciesLabel }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: `pick ${title}` }),
+    );
+  };
+
+  it("links the picked dependencies to the new task once it is created", async () => {
+    renderInProject();
+
+    await pickDependency("Blocker task");
+    await pickDependency("Blocked task");
+    await pickDependency("Related task");
+    // Nothing is linked while the task does not exist.
+    expect(createTaskRelation).not.toHaveBeenCalled();
+    // A picked task cannot be picked twice.
+    fireEvent.click(
+      await screen.findByRole("button", { name: dependenciesLabel }),
+    );
+    expect((await screen.findByTestId("picker-excluded")).textContent).toBe(
+      "t-blocker,t-blocked,t-related",
+    );
+    expect(screen.getByTestId("picker-project").textContent).toBe("project-1");
+
+    enterTitle("Task with dependencies");
+    submit();
+
+    await vi.waitFor(() => expect(createTaskRelation).toHaveBeenCalledTimes(3));
+    // "Blocked by": the picked task is the blocker (source).
+    expect(createTaskRelation).toHaveBeenNthCalledWith(1, {
+      sourceTaskId: "t-blocker",
+      targetTaskId: "task-1",
+      relationType: "blocks",
+      dependencyType: "ss",
+      lagDays: 2,
+    });
+    expect(createTaskRelation).toHaveBeenNthCalledWith(2, {
+      sourceTaskId: "task-1",
+      targetTaskId: "t-blocked",
+      relationType: "blocks",
+      dependencyType: "fs",
+      lagDays: 0,
+    });
+    // A plain relation carries no dependency settings.
+    expect(createTaskRelation).toHaveBeenNthCalledWith(3, {
+      sourceTaskId: "task-1",
+      targetTaskId: "t-related",
+      relationType: "related",
+    });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("removes a pending dependency before creating", async () => {
+    renderInProject();
+
+    await pickDependency("Blocker task");
+    await pickDependency("Related task");
+    const removeButtons = await screen.findAllByRole("button", {
+      name: "common:modals.createTask.removeDependency",
+    });
+    expect(removeButtons).toHaveLength(2);
+    fireEvent.click(removeButtons[0]);
+    expect(screen.queryByText("Blocker task")).toBeNull();
+
+    enterTitle("Task");
+    submit();
+
+    await vi.waitFor(() => expect(createTaskRelation).toHaveBeenCalledTimes(1));
+    expect(createTaskRelation).toHaveBeenCalledWith(
+      expect.objectContaining({ targetTaskId: "t-related" }),
+    );
+  });
+
+  it("keeps the task and the other links when one link fails, and says which", async () => {
+    renderInProject();
+    createTaskRelation
+      .mockRejectedValueOnce(
+        new Error("This dependency would create a circular dependency"),
+      )
+      .mockResolvedValueOnce({});
+
+    await pickDependency("Blocker task");
+    await pickDependency("Blocked task");
+
+    enterTitle("Task with a bad link");
+    submit();
+
+    await vi.waitFor(() => expect(createTaskRelation).toHaveBeenCalledTimes(2));
+    expect(createTask).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(
+      "common:modals.createTask.dependencyLinkError",
+    );
+    // The task itself was created and reported as such.
+    await vi.waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        "common:modals.createTask.successCreated",
+      ),
+    );
+  });
+
+  it("counts pending dependencies as unsaved input", async () => {
+    renderInProject();
+    await pickDependency("Related task");
+
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "common:actions.cancel" }),
+    );
+    expect(
+      await screen.findByText("common:modals.createTask.discardTitle"),
+    ).toBeTruthy();
+  });
+
+  it("is gone without the right to update tasks in the project", () => {
+    projectPermissions.byProject["project-1"] = { canUpdate: false };
+    renderInProject();
+
+    expect(
+      screen.queryByRole("button", { name: dependenciesLabel }),
+    ).toBeNull();
+  });
+
+  it("is not offered before a project is chosen", () => {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(
+      screen.queryByRole("button", { name: dependenciesLabel }),
+    ).toBeNull();
+  });
+
+  it("clears pending dependencies when 'create more' resets the form", async () => {
+    renderInProject();
+    fireEvent.click(
+      screen.getByLabelText("common:modals.createTask.createMore"),
+    );
+    await pickDependency("Related task");
+
+    enterTitle("First");
+    submit();
+    await vi.waitFor(() => expect(createTaskRelation).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() =>
+      expect(screen.queryByText("Related task")).toBeNull(),
+    );
+
+    enterTitle("Second");
+    submit();
+    await vi.waitFor(() => expect(createTask).toHaveBeenCalledTimes(2));
+    expect(createTaskRelation).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("CreateTaskModal searchable pickers", () => {
+  function renderInProject() {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+  }
+  const searchPlaceholder = "tasks:picker.search";
+
+  it("filters assignees by the typed first characters, ignoring case and diacritics", async () => {
+    workspaceMembers = [
+      { userId: "u1", user: { name: "Alice", image: null } },
+      { userId: "u2", user: { name: "Łoś Kowalski", image: null } },
+    ];
+    renderInProject();
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    const search = await screen.findByPlaceholderText(searchPlaceholder);
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+
+    fireEvent.change(search, { target: { value: "lo" } });
+    expect(screen.queryByText("Alice")).toBeNull();
+    expect(screen.getByText("Łoś Kowalski")).toBeInTheDocument();
+    // Searching hides "Unassigned": it is not a person.
+    expect(
+      screen.queryByText("common:modals.createTask.assignUnassigned"),
+    ).toBeNull();
+
+    fireEvent.change(search, { target: { value: "zzz" } });
+    expect(screen.getByText("tasks:picker.noResults")).toBeInTheDocument();
+  });
+
+  it("filters resources with the same query and picks the first match on Enter", async () => {
+    workspaceMembers = [{ userId: "u1", user: { name: "Alice", image: null } }];
+    workspaceResources = [
+      {
+        id: "r1",
+        workspaceId: "workspace-1",
+        kind: "equipment",
+        name: "Drill",
+        email: null,
+        userId: null,
+        createdAt: "2026-08-05T00:00:00.000Z",
+        updatedAt: "2026-08-05T00:00:00.000Z",
+      },
+    ];
+    renderInProject();
+
+    fireEvent.click(screen.getByText("common:modals.createTask.assign"));
+    const search = await screen.findByPlaceholderText(searchPlaceholder);
+    fireEvent.change(search, { target: { value: "dri" } });
+    expect(screen.queryByText("Alice")).toBeNull();
+    expect(screen.getByText("Drill")).toBeInTheDocument();
+
+    fireEvent.change(search, { target: { value: "ali" } });
+    expect(screen.queryByText("Drill")).toBeNull();
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    enterTitle("Task");
+    submit();
+    await vi.waitFor(() =>
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "u1" }),
+      ),
+    );
+  });
+
+  it("filters the project picker and the priority picker", async () => {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByText("common:modals.createTask.selectProject"));
+    const projectSearch = await screen.findByPlaceholderText(searchPlaceholder);
+    fireEvent.change(projectSearch, { target: { value: "be" } });
+    expect(screen.queryByText("Alpha")).toBeNull();
+    expect(screen.getByText("Beta")).toBeInTheDocument();
+    fireEvent.change(projectSearch, { target: { value: "nope" } });
+    expect(screen.getByText("tasks:picker.noResults")).toBeInTheDocument();
   });
 });

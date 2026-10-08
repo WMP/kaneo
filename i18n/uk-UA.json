@@ -131,6 +131,9 @@
 				"assign": "Призначити",
 				"assignUnassigned": "Не призначено",
 				"assignUnassignedTitle": "Не призначено",
+				"dependencies": "Залежності",
+				"removeDependency": "Видалити залежність",
+				"dependencyLinkError": "Завдання створено, але не вдалося пов’язати {{task}}: {{reason}}",
 				"labels": "Мітки",
 				"searchLabels": "Пошук міток...",
 				"noLabelsFound": "Мітки не знайдено",
@@ -2898,6 +2901,10 @@
 			"action": "Перемістити завдання",
 			"success": "Завдання успішно переміщено",
 			"error": "Не вдалося перемістити завдання"
+		},
+		"picker": {
+			"search": "Пошук...",
+			"noResults": "Немає результатів"
 		},
 		"popover": {
 			"assignee": {

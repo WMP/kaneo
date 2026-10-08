@@ -131,6 +131,9 @@
 				"assign": "할당",
 				"assignUnassigned": "미할당",
 				"assignUnassignedTitle": "미할당",
+				"dependencies": "종속성",
+				"removeDependency": "종속성 제거",
+				"dependencyLinkError": "작업은 생성되었지만 {{task}}을(를) 연결하지 못했습니다: {{reason}}",
 				"labels": "라벨",
 				"searchLabels": "라벨 검색...",
 				"noLabelsFound": "라벨을 찾을 수 없음",
@@ -2877,6 +2880,10 @@
 			"action": "작업 이동",
 			"success": "작업이 이동되었습니다",
 			"error": "작업 이동에 실패했습니다"
+		},
+		"picker": {
+			"search": "검색...",
+			"noResults": "결과 없음"
 		},
 		"popover": {
 			"assignee": {
