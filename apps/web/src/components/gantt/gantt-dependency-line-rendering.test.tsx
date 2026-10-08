@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
   component: (() => null) as ComponentType,
   relations: [] as Record<string, unknown>[],
+  taskBDates: { startDate: "2026-08-23", dueDate: "2026-08-29" },
   preferencesState: {
     weekStartsOn: 1 as const,
     ganttTimelineUnit: "day" as const,
@@ -63,8 +64,12 @@ vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
               title: "Implement API",
               number: 2,
               status: "to-do",
-              startDate: "2026-08-23",
-              dueDate: "2026-08-29",
+              get startDate() {
+                return m.taskBDates.startDate;
+              },
+              get dueDate() {
+                return m.taskBDates.dueDate;
+              },
               description: "",
               labels: [],
               priority: "low",
@@ -205,6 +210,7 @@ afterEach(() => {
     delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
   }
   m.relations = [];
+  m.taskBDates = { startDate: "2026-08-23", dueDate: "2026-08-29" };
 });
 
 function show() {
@@ -213,7 +219,7 @@ function show() {
 }
 
 describe("Gantt dependency-line rendering", () => {
-  it("draws a red connector between two same-project, overlapping, blocking tasks", () => {
+  it("draws a red connector for a blocking edge whose constraint the dates violate (overlapping tasks)", () => {
     m.relations = [
       {
         id: "relation-1",
@@ -237,6 +243,34 @@ describe("Gantt dependency-line rendering", () => {
     const paths = container.querySelectorAll("svg path[stroke]");
     expect(paths).toHaveLength(1);
     expect(paths[0]?.getAttribute("stroke")).toBe("var(--destructive)");
+  });
+
+  it("draws a neutral, non-red connector for a satisfied blocking edge", () => {
+    // Task A ends 2026-08-25, so a finish-to-start successor may start 08-26.
+    m.taskBDates = { startDate: "2026-08-26", dueDate: "2026-08-29" };
+    m.relations = [
+      {
+        id: "relation-1",
+        sourceTaskId: "task-a",
+        targetTaskId: "task-b",
+        relationType: "blocks",
+        createdAt: "2026-08-01T00:00:00.000Z",
+        sourceTask: makeRelatedTask({ id: "task-a" }),
+        targetTask: makeRelatedTask({
+          id: "task-b",
+          title: "Implement API",
+          number: 2,
+          startDate: "2026-08-26",
+          dueDate: "2026-08-29",
+        }),
+      },
+    ];
+
+    const { container } = show();
+
+    const paths = container.querySelectorAll("svg path[stroke]");
+    expect(paths).toHaveLength(1);
+    expect(paths[0]?.getAttribute("stroke")).toBe("var(--foreground)");
   });
 
   it("draws nothing when the relations query hasn't returned any relation", () => {

@@ -114,6 +114,8 @@ const preferencesState = {
   setGanttTimelineUnit: () => {},
   ganttShowCriticalPath: false,
   setGanttShowCriticalPath: () => {},
+  ganttDependencyDisplayMode: "all",
+  setGanttDependencyDisplayMode: () => {},
   ganttCustomFieldByProject: {} as Record<string, string | null>,
   setGanttCustomField,
   ganttBarColorSourceByProject: {} as Record<string, string>,

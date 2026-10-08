@@ -1,5 +1,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import {
+  DEFAULT_GANTT_DEPENDENCY_DISPLAY_MODE,
+  type GanttDependencyDisplayMode,
+  isGanttDependencyDisplayMode,
+} from "@/components/gantt/gantt-dependency-display";
 import { GANTT_UNITS, type GanttUnit } from "@/components/gantt/timeline";
 
 export const WEEK_START_DAYS = [0, 1, 6] as const;
@@ -83,6 +88,13 @@ type UserPreferencesStore = {
 
   ganttShowCriticalPath: boolean;
   setGanttShowCriticalPath: (show: boolean) => void;
+
+  // Which dependency connectors the Gantt draws: all, only those of the
+  // hovered/open task, only the critical path, or none. A per-viewer display
+  // preference like ganttShowCriticalPath; installations that persisted state
+  // before this existed simply keep the "all" default.
+  ganttDependencyDisplayMode: GanttDependencyDisplayMode;
+  setGanttDependencyDisplayMode: (mode: GanttDependencyDisplayMode) => void;
 
   // Keyed by projectId: custom fields belong to one project, so the choice
   // of which one to show on the Gantt task rail can't be a single global
@@ -187,6 +199,10 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       setGanttShowCriticalPath: (ganttShowCriticalPath) =>
         set({ ganttShowCriticalPath }),
 
+      ganttDependencyDisplayMode: DEFAULT_GANTT_DEPENDENCY_DISPLAY_MODE,
+      setGanttDependencyDisplayMode: (ganttDependencyDisplayMode) =>
+        set({ ganttDependencyDisplayMode }),
+
       ganttCustomFieldByProject: {},
       setGanttCustomField: (projectId, fieldId) =>
         set((state) => ({
@@ -211,6 +227,14 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       onRehydrateStorage: () => (state) => {
         if (state && !isWeekStartDay(state.weekStartsOn)) {
           state.setWeekStartsOn(0);
+        }
+        if (
+          state &&
+          !isGanttDependencyDisplayMode(state.ganttDependencyDisplayMode)
+        ) {
+          state.setGanttDependencyDisplayMode(
+            DEFAULT_GANTT_DEPENDENCY_DISPLAY_MODE,
+          );
         }
         if (state && !isGanttUnit(state.ganttTimelineUnit)) {
           state.setGanttTimelineUnit("day");

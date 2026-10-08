@@ -140,7 +140,7 @@ function addDaysExact(date: Date, days: number): Date {
 // the target's CURRENT (not yet shifted-by-this-edge) schedule, so multiple
 // incoming edges can be combined by taking their max (see finalizeNode
 // below).
-function edgeForcedDeltaDays(
+export function edgeForcedDeltaDays(
   edge: CascadeEdge,
   source: CascadeSchedule,
   target: CascadeSchedule,

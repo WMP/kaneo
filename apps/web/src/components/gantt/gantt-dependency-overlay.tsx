@@ -2,6 +2,13 @@ import { useTranslation } from "react-i18next";
 import TaskRelationDependencyPopover from "@/components/task/task-relation-dependency-popover";
 import { cn } from "@/lib/cn";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
+import {
+  DENSE_EDGE_THRESHOLD,
+  filterEdgesForDisplayMode,
+  type GanttDependencyDisplayMode,
+  isEdgeFocused,
+  shouldShowTypeLabel,
+} from "./gantt-dependency-display";
 import type { Point } from "./gantt-link-drag";
 
 type GanttDependencyOverlayProps = {
@@ -11,6 +18,16 @@ type GanttDependencyOverlayProps = {
    * gantt-critical-path.ts). Undefined/empty draws every line exactly as
    * before — this is purely additive. */
   criticalEdgeIds?: ReadonlySet<string>;
+  /** Edge ids of "blocks" edges whose constraint is currently broken by the
+   * tasks' dates (see gantt-dependency-violations.ts). Only these are drawn
+   * red; a satisfied blocking edge is neutral. Undefined/empty: none red. */
+  violatedEdgeIds?: ReadonlySet<string>;
+  /** The task kept in focus while nothing is hovered (the task open in the
+   * details sheet). Its edges are treated like a hovered task's edges. */
+  pinnedTaskId?: string | null;
+  /** Which edges are drawn at all. Defaults to "all". "hidden" draws no
+   * connectors but still draws the link-drag preview. */
+  displayMode?: GanttDependencyDisplayMode;
   /** Pixels from the overlay's left edge to where the timeline (day) columns
    * start — a backward-scheduled edge's curve can bow further left than its
    * target point, and this clips it so it never bleeds into the sticky task
@@ -35,6 +52,9 @@ type GanttDependencyOverlayProps = {
 // picture instead of flashing between two very different views.
 const REST_OPACITY = 0.55;
 const DIMMED_OPACITY = 0.12;
+// Above DENSE_EDGE_THRESHOLD rendered edges, unfocused edges rest at this
+// lower opacity so the focused ones (hovered/pinned task) stand out.
+const DENSE_REST_OPACITY = 0.3;
 const REST_WIDTH = 1.5;
 const EMPHASIZED_WIDTH = 2.5;
 
@@ -42,12 +62,24 @@ export function GanttDependencyOverlay({
   edges,
   hoveredTaskId,
   criticalEdgeIds,
+  violatedEdgeIds,
+  pinnedTaskId = null,
+  displayMode = "all",
   clipLeftPx,
   preview = null,
   resolveProjectId,
 }: GanttDependencyOverlayProps) {
   const { t } = useTranslation();
-  if (edges.length === 0 && !preview) return null;
+  const visibleEdges = filterEdgesForDisplayMode(edges, displayMode, {
+    hoveredTaskId,
+    pinnedTaskId,
+    criticalEdgeIds,
+  });
+  if (visibleEdges.length === 0 && !preview) return null;
+  const restOpacity =
+    visibleEdges.length > DENSE_EDGE_THRESHOLD
+      ? DENSE_REST_OPACITY
+      : REST_OPACITY;
 
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: not an icon/image svg — a plain positioning container mixing decorative <path> connectors with a real interactive foreignObject control per "blocks" edge (the type label, which carries its own accessible name via its button/title), so one <title> for the whole svg would misdescribe it either way
@@ -82,6 +114,17 @@ export function GanttDependencyOverlay({
           markerHeight="6.5"
           orient="auto-start-reverse"
         >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--foreground)" />
+        </marker>
+        <marker
+          id="gantt-dependency-arrow-violated"
+          viewBox="0 0 10 10"
+          refX="8.5"
+          refY="5"
+          markerWidth="6.5"
+          markerHeight="6.5"
+          orient="auto-start-reverse"
+        >
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--destructive)" />
         </marker>
         <marker
@@ -96,13 +139,23 @@ export function GanttDependencyOverlay({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted-foreground)" />
         </marker>
       </defs>
-      {edges.map((edge) => {
+      {visibleEdges.map((edge) => {
         const isBlocking = edge.relationType === "blocks";
-        const isIncident =
-          hoveredTaskId !== null &&
-          (edge.sourceTaskId === hoveredTaskId ||
-            edge.targetTaskId === hoveredTaskId);
+        const isViolated =
+          isBlocking && (violatedEdgeIds?.has(edge.id) ?? false);
+        // Focused: incident to the hovered task or to the pinned one.
+        const isIncident = isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
         const isDimmed = hoveredTaskId !== null && !isIncident;
+        const lineKind = !isBlocking
+          ? "related"
+          : isViolated
+            ? "violated"
+            : "blocks";
+        const lineColor = isViolated
+          ? "var(--destructive)"
+          : isBlocking
+            ? "var(--foreground)"
+            : "var(--muted-foreground)";
         const isCritical = criticalEdgeIds?.has(edge.id) ?? false;
         const strokeWidth = isIncident ? EMPHASIZED_WIDTH : REST_WIDTH;
 
@@ -139,16 +192,18 @@ export function GanttDependencyOverlay({
             <path
               d={edge.path}
               fill="none"
-              stroke={
-                isBlocking ? "var(--destructive)" : "var(--muted-foreground)"
-              }
+              data-edge-kind={lineKind}
+              stroke={lineColor}
+              // Related edges differ from blocking ones by shape (dashed),
+              // not only by color.
+              strokeDasharray={isBlocking ? undefined : "5 4"}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeOpacity={
-                isDimmed ? DIMMED_OPACITY : isIncident ? 1 : REST_OPACITY
+                isDimmed ? DIMMED_OPACITY : isIncident ? 1 : restOpacity
               }
-              markerEnd={`url(#gantt-dependency-arrow-${isBlocking ? "blocks" : "related"})`}
+              markerEnd={`url(#gantt-dependency-arrow-${lineKind})`}
               // See the critical-path halo path's own comment above.
               style={{ pointerEvents: "none" }}
               className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
@@ -156,7 +211,10 @@ export function GanttDependencyOverlay({
             {/* Dependency-TYPE label (FS/SS/FF/SF, plus a "+Nd"/"-Nd" suffix
                 once there's a lag — see the summary composition already used
                 on a task's own relation list, task-relations.tsx): every
-                "blocks" edge gets one (typeLabelPoint is null for "related",
+                "blocks" edge gets one EXCEPT a plain FS edge with no lag at
+                rest (the default says nothing and would only add noise on a
+                large chart) — that one shows while the edge is focused
+                (typeLabelPoint is null for "related",
                 whose type is never meaningful), it sits in its TARGET's row
                 beside the connector's last vertical run (see
                 buildDependencyEdges in dependency-lines.ts), so several
@@ -166,7 +224,7 @@ export function GanttDependencyOverlay({
                 same editor a task's own relation list already opens — not
                 just a picture of the type, so the chart itself is a second
                 place (besides that list) to fix a wrongly-typed dependency. */}
-            {edge.typeLabelPoint && (
+            {edge.typeLabelPoint && shouldShowTypeLabel(edge, isIncident) && (
               <foreignObject
                 x={edge.typeLabelPoint.x - 30}
                 y={edge.typeLabelPoint.y - 14}
@@ -190,7 +248,10 @@ export function GanttDependencyOverlay({
                     title={t(
                       `tasks:relations.dependency.types.${edge.dependencyType ?? "fs"}`,
                     )}
-                    className="block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-semibold text-destructive leading-4 shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className={cn(
+                      "block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-semibold leading-4 shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                      isViolated ? "text-destructive" : "text-foreground",
+                    )}
                   >
                     {t(
                       `tasks:relations.dependency.typesShort.${edge.dependencyType ?? "fs"}`,

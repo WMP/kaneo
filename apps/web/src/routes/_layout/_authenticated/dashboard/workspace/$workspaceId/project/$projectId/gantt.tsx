@@ -43,7 +43,12 @@ import type {
 import { computeCriticalPath } from "@/components/gantt/gantt-critical-path";
 import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
+import {
+  GANTT_DEPENDENCY_DISPLAY_MODES,
+  isGanttDependencyDisplayMode,
+} from "@/components/gantt/gantt-dependency-display";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
+import { computeViolatedDependencyEdgeIds } from "@/components/gantt/gantt-dependency-violations";
 import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
 import {
   deriveTaskScheduleWithEstimate,
@@ -202,6 +207,14 @@ const UNIT_BASE_DAY_COLUMN_WIDTH_REM: Record<
 // final height on first paint, with `measureRow` only correcting the rare
 // row whose content genuinely grows it (e.g. the "show task dates" link on
 // an out-of-window task).
+// Static i18n keys per dependency display mode (no dynamic key building).
+const DEPENDENCY_DISPLAY_MODE_LABEL_KEYS = {
+  all: "tasks:gantt.dependencyDisplayModeAll",
+  focused: "tasks:gantt.dependencyDisplayModeFocused",
+  critical: "tasks:gantt.dependencyDisplayModeCritical",
+  hidden: "tasks:gantt.dependencyDisplayModeHidden",
+} as const;
+
 const ROW_HEIGHT_PX = 44;
 const ROW_HEIGHT_WITH_BASELINE_PX = 56;
 
@@ -290,6 +303,12 @@ function RouteComponent() {
   );
   const setShowCriticalPath = useUserPreferencesStore(
     (state) => state.setGanttShowCriticalPath,
+  );
+  const dependencyDisplayMode = useUserPreferencesStore(
+    (state) => state.ganttDependencyDisplayMode,
+  );
+  const setDependencyDisplayMode = useUserPreferencesStore(
+    (state) => state.setGanttDependencyDisplayMode,
   );
   const ganttCustomFieldByProject = useUserPreferencesStore(
     (state) => state.ganttCustomFieldByProject,
@@ -865,8 +884,14 @@ function RouteComponent() {
   // far end (crossProjectCriticalPathTasks) — a dateless task, own or
   // cross-project, still never participates. Never depends on zoom/pan/unit
   // state, so toggling zoom doesn't recompute it.
-  const criticalPath = useMemo(() => {
-    if (!showCriticalPath) return null;
+  // Also computed in the "critical" dependency display mode even while the
+  // toggle is off (the mode draws only these edges); the toggle alone still
+  // decides whether bars are outlined and the legend/warning show (see
+  // `criticalPath` below).
+  const needsCriticalPath =
+    showCriticalPath || dependencyDisplayMode === "critical";
+  const criticalPathResult = useMemo(() => {
+    if (!needsCriticalPath) return null;
     const tasksInput: CriticalPathTaskInput[] = [
       ...[...ownScheduleByTaskId].map(([id, schedule]) => ({
         id,
@@ -890,13 +915,41 @@ function RouteComponent() {
       : undefined;
     return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
   }, [
-    showCriticalPath,
+    needsCriticalPath,
     ownScheduleByTaskId,
     crossProjectCriticalPathTasks,
     criticalPathEdges,
     workingDays,
     holidayDateSet,
   ]);
+
+  const criticalPath = showCriticalPath ? criticalPathResult : null;
+
+  // "blocks" edges whose constraint the current dates break; only those are
+  // drawn red. Own tasks plus the dated cross-project far ends.
+  const violatedEdgeIds = useMemo(() => {
+    const scheduleByTaskId = new Map<string, { start: Date; end: Date }>();
+    for (const [id, schedule] of ownScheduleByTaskId) {
+      scheduleByTaskId.set(id, { start: schedule.start, end: schedule.end });
+    }
+    for (const task of crossProjectCriticalPathTasks) {
+      scheduleByTaskId.set(task.id, {
+        start: task.scheduleStart,
+        end: task.scheduleEnd,
+      });
+    }
+    return computeViolatedDependencyEdgeIds(
+      dependencyEdges.map((edge) => ({
+        id: edge.id,
+        relationType: edge.relationType,
+        sourceTaskId: edge.sourceTaskId,
+        targetTaskId: edge.targetTaskId,
+        dependencyType: edge.dependencyType ?? "fs",
+        lagDays: edge.lagDays ?? 0,
+      })),
+      scheduleByTaskId,
+    );
+  }, [dependencyEdges, ownScheduleByTaskId, crossProjectCriticalPathTasks]);
 
   const bulkUpdateSchedule = useBulkUpdateTaskSchedule();
 
@@ -1943,7 +1996,12 @@ function RouteComponent() {
                 {t("tasks:gantt.title")}
               </h1>
               {(() => {
-                const hasDependencyLines = dependencyEdgeGeometry.length > 0;
+                const hasDependencyLines =
+                  dependencyEdgeGeometry.length > 0 &&
+                  dependencyDisplayMode !== "hidden";
+                const hasViolatedLines = dependencyEdgeGeometry.some((edge) =>
+                  violatedEdgeIds.has(edge.id),
+                );
                 // Critical bars are outlined amber whenever there are critical
                 // tasks, regardless of whether any of their edges are drawn as
                 // lines in the current window — so the amber legend must not be
@@ -1960,13 +2018,19 @@ function RouteComponent() {
                     {hasDependencyLines && (
                       <>
                         <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-destructive" />
+                          <span className="h-0.5 w-4 rounded-full bg-foreground" />
                           {t("tasks:gantt.legendBlocking")}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
+                          <span className="w-4 border-muted-foreground border-t-2 border-dashed" />
                           {t("tasks:gantt.legendRelated")}
                         </span>
+                        {hasViolatedLines && (
+                          <span className="flex items-center gap-1">
+                            <span className="h-0.5 w-4 rounded-full bg-destructive" />
+                            {t("tasks:gantt.legendViolated")}
+                          </span>
+                        )}
                         {/* Points at the small FS/SS/FF/SF label on a
                             blocking line itself (see GanttDependencyOverlay)
                             rather than spelling out all four types here —
@@ -1976,7 +2040,7 @@ function RouteComponent() {
                           className="flex items-center gap-1"
                           title={t("tasks:gantt.legendDependencyTypeHint")}
                         >
-                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-destructive">
+                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-foreground">
                             {t("tasks:relations.dependency.typesShort.fs")}
                           </span>
                           {t("tasks:gantt.legendDependencyType")}
@@ -2019,6 +2083,32 @@ function RouteComponent() {
               <RouteIcon className="size-3.5" />
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
+
+            <Select
+              value={dependencyDisplayMode}
+              onValueChange={(value) =>
+                setDependencyDisplayMode(
+                  isGanttDependencyDisplayMode(value) ? value : "all",
+                )
+              }
+            >
+              <SelectTrigger
+                size="sm"
+                className="h-9 w-full max-w-[11rem] sm:h-8"
+                aria-label={t("tasks:gantt.dependencyDisplayModeLabel")}
+              >
+                <SelectValue>
+                  {t(DEPENDENCY_DISPLAY_MODE_LABEL_KEYS[dependencyDisplayMode])}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {GANTT_DEPENDENCY_DISPLAY_MODES.map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {t(DEPENDENCY_DISPLAY_MODE_LABEL_KEYS[mode])}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <Button
               size="xs"
@@ -2460,7 +2550,10 @@ function RouteComponent() {
                   <GanttDependencyOverlay
                     edges={dependencyEdgeGeometry}
                     hoveredTaskId={hoveredTaskId}
-                    criticalEdgeIds={criticalPath?.criticalEdgeIds}
+                    criticalEdgeIds={criticalPathResult?.criticalEdgeIds}
+                    violatedEdgeIds={violatedEdgeIds}
+                    pinnedTaskId={taskId ?? null}
+                    displayMode={dependencyDisplayMode}
                     clipLeftPx={barsLeftPx}
                     resolveProjectId={(taskId) =>
                       projectIdByRelatedTaskId.get(taskId) ?? projectId
