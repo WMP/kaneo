@@ -144,6 +144,9 @@
 				"assign": "Przypisz",
 				"assignUnassigned": "Nieprzypisane",
 				"assignUnassignedTitle": "Nieprzypisane",
+				"dependencies": "Zależności",
+				"removeDependency": "Usuń zależność",
+				"dependencyLinkError": "Zadanie utworzono, ale nie udało się powiązać {{task}}: {{reason}}",
 				"labels": "Etykiety",
 				"searchLabels": "Szukaj etykiet...",
 				"noLabelsFound": "Nie znaleziono etykiet",
@@ -3333,6 +3336,10 @@
 			"statusLabel": "Status docelowy",
 			"success": "Zadanie przeniesiono pomyślnie",
 			"title": "Przenieś zadanie"
+		},
+		"picker": {
+			"search": "Szukaj...",
+			"noResults": "Brak wyników"
 		},
 		"popover": {
 			"assignee": {

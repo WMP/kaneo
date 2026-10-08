@@ -1,14 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ChevronDown,
-  ChevronRight,
-  Link2,
-  Lock,
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,39 +10,15 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  Command,
-  CommandCollection,
-  CommandDialog,
-  CommandDialogPopup,
-  CommandEmpty,
-  CommandFooter,
-  CommandGroup,
-  CommandGroupLabel,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandPanel,
-  CommandSeparator,
-} from "@/components/ui/command";
-import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useDeleteTaskRelation from "@/hooks/mutations/task-relation/use-delete-task-relation";
-import useGetProject from "@/hooks/queries/project/use-get-project";
 import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
-import useGlobalSearch from "@/hooks/queries/search/use-global-search";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-relations";
 import { useProjectPermission } from "@/hooks/use-project-permission";
@@ -62,44 +30,18 @@ import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 import SubtaskAssigneePopover from "./subtask-assignee-popover";
 import SubtaskStatusPopover from "./subtask-status-popover";
-import TaskRelationDependencyPopover, {
-  type GanttDependencyType,
-} from "./task-relation-dependency-popover";
-import {
-  buildCrossProjectTaskGroups,
-  isOtherProjectItem,
-  type PickerTaskGroup as TaskGroup,
-  type PickerTaskItem as TaskItem,
-} from "./task-relations-cross-project";
-
-const DEPENDENCY_TYPES: GanttDependencyType[] = ["fs", "ss", "ff", "sf"];
-
-// What the picker creates when a task is chosen. "blocked_by" is the same
-// "blocks" relation as "blocks" with the two ends swapped: the picked task is
-// the source (the blocker) and the current task is the target.
-type PickerRelationType = "related" | "blocks" | "blocked_by";
-
-const RELATION_TYPE_OPTIONS: Array<{
-  type: PickerRelationType;
-  icon: typeof Link2;
-  labelKey: string;
-}> = [
-  { type: "related", icon: Link2, labelKey: "tasks:relations.related" },
-  { type: "blocks", icon: X, labelKey: "tasks:relations.blocks" },
-  { type: "blocked_by", icon: Lock, labelKey: "tasks:relations.blockedBy" },
-];
+import TaskRelationDependencyPopover from "./task-relation-dependency-popover";
+import TaskRelationPickerDialog, {
+  isDependencyRelationType,
+  type RelationPick,
+} from "./task-relation-picker";
+import { isOtherProjectItem } from "./task-relations-cross-project";
 
 type TaskRelationsProps = {
   taskId: string;
   projectId: string;
   workspaceId: string;
 };
-
-// A workspace can hold far more tasks than any one project, so the
-// cross-project half of the picker is server-searched (via the existing
-// global search endpoint, scoped to this workspace) rather than loaded
-// client-side. This threshold keeps that request off single keystrokes.
-const CROSS_PROJECT_SEARCH_MIN_CHARS = 2;
 
 export default function TaskRelations({
   taskId,
@@ -110,50 +52,14 @@ export default function TaskRelations({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  // No kind is preselected: the user picks one first, and only then does the
-  // task search become usable. Reset every time the picker closes.
-  const [selectedRelationType, setSelectedRelationType] =
-    useState<PickerRelationType | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  // Only meaningful once selectedRelationType is "blocks" or "blocked_by" —
-  // see the dependency controls above the search.
-  const [newDependencyType, setNewDependencyType] =
-    useState<GanttDependencyType>("fs");
-  const [newLagDaysInput, setNewLagDaysInput] = useState("0");
 
   const { data: relations = [] } = useGetTaskRelations(taskId);
   const { data: projectData } = useGetTasks(projectId);
-  const { data: project } = useGetProject({ id: projectId, workspaceId });
   const { data: workspaceUsers } = useProjectMembers(projectId);
   const createRelation = useCreateTaskRelation();
   const deleteRelation = useDeleteTaskRelation(taskId);
   const { canUpdateTasks } = useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
-
-  const trimmedSearchQuery = searchQuery.trim();
-  const { data: crossProjectSearch } = useGlobalSearch({
-    q:
-      trimmedSearchQuery.length >= CROSS_PROJECT_SEARCH_MIN_CHARS
-        ? trimmedSearchQuery
-        : "",
-    type: "tasks",
-    workspaceId,
-    // Excluded server-side so a query that matches 20+ tasks in the current
-    // project doesn't crowd out the other-project matches this group exists
-    // to surface (the current project already has its own group above).
-    excludeProjectId: projectId,
-    limit: 20,
-  });
-
-  useEffect(() => {
-    if (!commandOpen) {
-      setSearchQuery("");
-      setSelectedRelationType(null);
-      setNewDependencyType("fs");
-      setNewLagDaysInput("0");
-    }
-  }, [commandOpen]);
 
   // Memoized so its reference only changes when `relations` actually does —
   // otherwise every render would hand groupedRelations and
@@ -212,25 +118,6 @@ export default function TaskRelations({
     return ids;
   }, [nonSubtaskRelations, taskId]);
 
-  const allTasks = useMemo(() => {
-    if (!projectData) return [];
-    const tasks: TaskItem[] = [];
-
-    if ("columns" in projectData && Array.isArray(projectData.columns)) {
-      for (const col of projectData.columns as Array<{
-        tasks: TaskItem[];
-      }>) {
-        if (col.tasks) {
-          for (const t of col.tasks) {
-            tasks.push(t);
-          }
-        }
-      }
-    }
-
-    return tasks;
-  }, [projectData]);
-
   const finalStatusSlugs = useMemo(() => {
     if (!projectData) return new Set<string>();
     if ("columns" in projectData && Array.isArray(projectData.columns)) {
@@ -257,65 +144,23 @@ export default function TaskRelations({
     return icons;
   }, [projectData]);
 
-  const filteredTasks = allTasks.filter(
-    (t) => !existingRelatedTaskIds.has(t.id),
-  );
-
-  const crossProjectGroups = useMemo<TaskGroup[]>(() => {
-    const results = crossProjectSearch?.results ?? [];
-    if (results.length === 0) return [];
-
-    return buildCrossProjectTaskGroups({
-      results,
-      currentProjectId: projectId,
-      excludedTaskIds: existingRelatedTaskIds,
-      labelForProject: (projectName) =>
-        t("tasks:relations.tasksInOtherProject", { project: projectName }),
-    });
-  }, [crossProjectSearch, projectId, existingRelatedTaskIds, t]);
-
-  const commandGroups = useMemo<TaskGroup[]>(() => {
-    return [
-      {
-        value: "tasks",
-        label: t("tasks:relations.tasksInProject"),
-        items: filteredTasks,
-      },
-      ...crossProjectGroups,
-    ];
-  }, [filteredTasks, crossProjectGroups, t]);
-
-  const handleSelectRelationType = (type: PickerRelationType) => {
-    setSelectedRelationType(type);
-    // The search input is disabled until a kind is chosen; wait for the
-    // re-render that enables it before moving focus there.
-    requestAnimationFrame(() => searchInputRef.current?.focus());
-  };
-
-  const handleLinkTask = async (pickedTaskId: string) => {
-    if (selectedRelationType === null) return;
-    const parsedLagDays = Number.parseInt(newLagDaysInput, 10);
-    const isDependency =
-      selectedRelationType === "blocks" ||
-      selectedRelationType === "blocked_by";
+  const handleLinkTask = async ({
+    task: pickedTask,
+    relationType,
+    dependencyType,
+    lagDays,
+  }: RelationPick): Promise<boolean> => {
+    const isDependency = isDependencyRelationType(relationType);
     try {
       await createRelation.mutateAsync({
         // "Blocked by" stores the picked task as the blocker (source) of this
         // one; the other types start from this task.
-        sourceTaskId:
-          selectedRelationType === "blocked_by" ? pickedTaskId : taskId,
-        targetTaskId:
-          selectedRelationType === "blocked_by" ? taskId : pickedTaskId,
+        sourceTaskId: relationType === "blocked_by" ? pickedTask.id : taskId,
+        targetTaskId: relationType === "blocked_by" ? taskId : pickedTask.id,
         relationType: isDependency ? "blocks" : "related",
-        ...(isDependency
-          ? {
-              dependencyType: newDependencyType,
-              lagDays: Number.isNaN(parsedLagDays) ? 0 : parsedLagDays,
-            }
-          : {}),
+        ...(isDependency ? { dependencyType, lagDays } : {}),
       });
-      setCommandOpen(false);
-      setSearchQuery("");
+      return true;
     } catch (error) {
       // The API returns a 409 both for an exact duplicate and for a "blocks"/
       // "subtask" edge that would close a cycle; only the latter carries
@@ -332,6 +177,7 @@ export default function TaskRelations({
             : "tasks:relations.linkError",
         ),
       );
+      return false;
     }
   };
 
@@ -388,7 +234,6 @@ export default function TaskRelations({
   });
 
   const totalCount = nonSubtaskRelations.length;
-  const hasRelationType = selectedRelationType !== null;
 
   return (
     <>
@@ -653,162 +498,14 @@ export default function TaskRelations({
         </CollapsibleContent>
       </Collapsible>
 
-      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-        <CommandDialogPopup>
-          <Command items={commandGroups} disabled={!hasRelationType}>
-            <div className="flex flex-col gap-2 border-b px-3 py-2.5">
-              <fieldset className="m-0 flex min-w-0 flex-col gap-1.5 border-0 p-0">
-                <legend className="sr-only">
-                  {t("tasks:relations.typeGroupLabel")}
-                </legend>
-                <div className="flex items-center gap-1.5">
-                  {RELATION_TYPE_OPTIONS.map(
-                    ({ type, icon: Icon, labelKey }) => (
-                      <button
-                        key={type}
-                        type="button"
-                        aria-pressed={selectedRelationType === type}
-                        className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRelationType === type ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        onClick={() => handleSelectRelationType(type)}
-                      >
-                        <Icon className="size-3" />
-                        {t(labelKey)}
-                      </button>
-                    ),
-                  )}
-                </div>
-                {!hasRelationType && (
-                  <p className="text-xs text-muted-foreground/80">
-                    {t("tasks:relations.chooseTypeFirst")}
-                  </p>
-                )}
-              </fieldset>
-
-              {/* Dependency type/lag only apply to a "blocks" relation (either
-                  direction) — the Gantt's scheduling dependency; a plain
-                  "related" link has no ordering to configure. */}
-              {(selectedRelationType === "blocks" ||
-                selectedRelationType === "blocked_by") && (
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={newDependencyType}
-                    onValueChange={(value) =>
-                      setNewDependencyType(String(value) as GanttDependencyType)
-                    }
-                  >
-                    <SelectTrigger
-                      className="h-7 min-w-0 flex-1 text-xs"
-                      size="sm"
-                    >
-                      <SelectValue>
-                        {t(
-                          `tasks:relations.dependency.types.${newDependencyType}`,
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DEPENDENCY_TYPES.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {t(`tasks:relations.dependency.types.${option}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <input
-                    type="number"
-                    value={newLagDaysInput}
-                    onChange={(e) => setNewLagDaysInput(e.target.value)}
-                    placeholder="0"
-                    aria-label={t("tasks:relations.dependency.lagLabel")}
-                    className="h-7 w-16 shrink-0 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring"
-                  />
-                  <span className="shrink-0 text-[11px] text-muted-foreground/60">
-                    {t("tasks:relations.dependency.lagLabel")}
-                  </span>
-                </div>
-              )}
-            </div>
-            <CommandInput
-              ref={searchInputRef}
-              autoFocus={false}
-              disabled={!hasRelationType}
-              placeholder={t("tasks:relations.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <CommandPanel>
-              <div
-                aria-disabled={!hasRelationType}
-                className={
-                  hasRelationType
-                    ? undefined
-                    : "pointer-events-none select-none opacity-50"
-                }
-              >
-                <CommandEmpty>
-                  <div className="text-center py-6">
-                    <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      {t("tasks:relations.noTasksFound")}
-                    </p>
-                  </div>
-                </CommandEmpty>
-                <CommandList>
-                  {(group: TaskGroup, groupIndex: number) => (
-                    <Fragment key={group.value}>
-                      <CommandGroup items={group.items}>
-                        <CommandGroupLabel>{group.label}</CommandGroupLabel>
-                        <CommandCollection>
-                          {(item: TaskItem) => {
-                            // Cross-project items carry their own project slug;
-                            // same-project items fall back to the current project.
-                            const slug = item.projectSlug ?? project?.slug;
-                            const isOtherProject = isOtherProjectItem(
-                              item,
-                              projectId,
-                            );
-                            return (
-                              <CommandItem
-                                key={item.id}
-                                value={`${slug}-${item.number} ${item.title} ${item.description ?? ""}`}
-                                disabled={!hasRelationType}
-                                onClick={() => handleLinkTask(item.id)}
-                                className="flex items-center gap-3 py-2"
-                              >
-                                {getColumnIcon(
-                                  item.status,
-                                  false,
-                                  isOtherProject
-                                    ? undefined
-                                    : columnIconBySlug.get(item.status),
-                                )}
-                                <span className="text-xs text-muted-foreground shrink-0 font-mono">
-                                  {slug}-{item.number}
-                                </span>
-                                <span className="text-sm truncate flex-1">
-                                  {item.title}
-                                </span>
-                              </CommandItem>
-                            );
-                          }}
-                        </CommandCollection>
-                      </CommandGroup>
-                      {groupIndex < commandGroups.length - 1 && (
-                        <CommandSeparator />
-                      )}
-                    </Fragment>
-                  )}
-                </CommandList>
-              </div>
-            </CommandPanel>
-            <CommandFooter>
-              <span className="text-muted-foreground/60">
-                {t("tasks:relations.selectTask")}
-              </span>
-            </CommandFooter>
-          </Command>
-        </CommandDialogPopup>
-      </CommandDialog>
+      <TaskRelationPickerDialog
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        projectId={projectId}
+        workspaceId={workspaceId}
+        excludedTaskIds={existingRelatedTaskIds}
+        onPick={handleLinkTask}
+      />
     </>
   );
 }

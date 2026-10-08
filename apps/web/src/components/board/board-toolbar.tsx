@@ -1,5 +1,5 @@
 import { Filter, PanelsTopLeft, Rows3, X } from "lucide-react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import SortControl from "@/components/common/sort-control";
 import type { CustomFieldDefinition } from "@/components/project/custom-field-editor";
@@ -16,6 +16,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
+import {
+  PickerNoResults,
+  PickerSearchInput,
+} from "@/components/ui/picker-search-input";
+import { usePickerSearch } from "@/hooks/use-picker-search";
 import {
   type BoardFilters,
   DUE_DATE_FILTER_VALUES,
@@ -66,6 +71,53 @@ type BoardToolbarProps = {
   customFieldDefinitions?: CustomFieldDefinition[];
   usedCustomFieldValues?: Record<string, string[]>;
 };
+
+// A menu would otherwise read typed characters as typeahead and arrow keys as
+// navigation, so the search field keeps its keys; Escape, Tab and the up/down
+// arrows still reach the menu.
+function keepKeysInSearchField(event: KeyboardEvent) {
+  if (["Escape", "Tab", "ArrowDown", "ArrowUp"].includes(event.key)) return;
+  event.stopPropagation();
+}
+
+const getMemberSearchText = (member: {
+  user?: { name?: string | null } | null;
+}) => member.user?.name ?? "";
+
+const getLabelSearchText = (label: { name: string }) => label.name;
+
+/** A filter submenu list with a search field on top. Filtering covers every
+ * item; `children` renders the matches. */
+function SearchableFilterList<T>({
+  items,
+  getText,
+  children,
+}: {
+  items: readonly T[];
+  getText: (item: T) => string;
+  children: (matches: readonly T[], isSearching: boolean) => ReactNode;
+}) {
+  const { t } = useTranslation();
+  const { query, setQuery, isSearching, filtered } = usePickerSearch(
+    items,
+    getText,
+  );
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: only stops key events from reaching the menu's typeahead.
+    <div onKeyDown={keepKeysInSearchField}>
+      <PickerSearchInput
+        value={query}
+        onValueChange={setQuery}
+        placeholder={t("tasks:picker.search")}
+      />
+      {isSearching && filtered.length === 0 ? (
+        <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
+      ) : (
+        children(filtered, isSearching)
+      )}
+    </div>
+  );
+}
 
 function CheckSlot({ checked }: { checked: boolean }) {
   return (
@@ -415,50 +467,63 @@ export default function BoardToolbar({
                     {t("tasks:boardFilters.subjects.assignee")}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
-                    <div className="grid grid-cols-1 gap-1 p-1">
-                      <button
-                        className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-left text-xs ${
-                          selectedAssigneeIds.length === 0
-                            ? "bg-accent text-accent-foreground"
-                            : "text-foreground/90 hover:bg-accent/60 hover:text-foreground"
-                        }`}
-                        onClick={() => updateFilter("assignee", null)}
-                        type="button"
-                      >
-                        <CheckSlot checked={selectedAssigneeIds.length === 0} />
-                        {t("tasks:boardFilters.allAssignees")}
-                      </button>
-                      {users?.members?.map((member) => (
-                        <button
-                          key={member.userId}
-                          className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-left text-xs ${
-                            selectedAssigneeIds.includes(member.userId)
-                              ? "bg-accent text-accent-foreground"
-                              : "text-foreground/90 hover:bg-accent/60 hover:text-foreground"
-                          }`}
-                          onClick={() => toggleAssigneeFilter(member.userId)}
-                          type="button"
-                        >
-                          <CheckSlot
-                            checked={selectedAssigneeIds.includes(
-                              member.userId,
-                            )}
-                          />
-                          <span className="inline-flex items-center gap-2">
-                            <Avatar className="h-5 w-5">
-                              <AvatarImage
-                                src={member.user?.image ?? ""}
-                                alt={member.user?.name || ""}
+                    <SearchableFilterList
+                      items={users?.members ?? []}
+                      getText={getMemberSearchText}
+                    >
+                      {(matches, isSearching) => (
+                        <div className="grid grid-cols-1 gap-1 p-1">
+                          {!isSearching && (
+                            <button
+                              className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-left text-xs ${
+                                selectedAssigneeIds.length === 0
+                                  ? "bg-accent text-accent-foreground"
+                                  : "text-foreground/90 hover:bg-accent/60 hover:text-foreground"
+                              }`}
+                              onClick={() => updateFilter("assignee", null)}
+                              type="button"
+                            >
+                              <CheckSlot
+                                checked={selectedAssigneeIds.length === 0}
                               />
-                              <AvatarFallback className="border border-border/30 text-[10px] font-medium">
-                                {getInitials(member.user?.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{member.user?.name}</span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                              {t("tasks:boardFilters.allAssignees")}
+                            </button>
+                          )}
+                          {matches.map((member) => (
+                            <button
+                              key={member.userId}
+                              className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-left text-xs ${
+                                selectedAssigneeIds.includes(member.userId)
+                                  ? "bg-accent text-accent-foreground"
+                                  : "text-foreground/90 hover:bg-accent/60 hover:text-foreground"
+                              }`}
+                              onClick={() =>
+                                toggleAssigneeFilter(member.userId)
+                              }
+                              type="button"
+                            >
+                              <CheckSlot
+                                checked={selectedAssigneeIds.includes(
+                                  member.userId,
+                                )}
+                              />
+                              <span className="inline-flex items-center gap-2">
+                                <Avatar className="h-5 w-5">
+                                  <AvatarImage
+                                    src={member.user?.image ?? ""}
+                                    alt={member.user?.name || ""}
+                                  />
+                                  <AvatarFallback className="border border-border/30 text-[10px] font-medium">
+                                    {getInitials(member.user?.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{member.user?.name}</span>
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </SearchableFilterList>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
@@ -520,43 +585,63 @@ export default function BoardToolbar({
                     {t("tasks:properties.labels")}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-64">
-                    <DropdownMenuItem
-                      onClick={clearLabelFilters}
-                      className="h-8 rounded-md text-sm"
+                    <SearchableFilterList
+                      items={uniqueLabels}
+                      getText={getLabelSearchText}
                     >
-                      <CheckSlot
-                        checked={!filters.labels || filters.labels.length === 0}
-                      />
-                      {t("tasks:boardFilters.allLabels")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {uniqueLabels.length > 0 ? (
-                      uniqueLabels.map((label) => (
-                        <DropdownMenuItem
-                          key={label.id}
-                          onClick={() => toggleLabelGroup(label)}
-                          className="h-8 rounded-md text-sm"
-                        >
-                          <CheckSlot checked={isLabelGroupSelected(label)} />
-                          <span
-                            className="h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{
-                              backgroundColor: resolveLabelColor(label.color),
-                            }}
-                          />
-                          <span className="max-w-20 truncate">
-                            {label.name}
-                          </span>
-                        </DropdownMenuItem>
-                      ))
-                    ) : (
-                      <DropdownMenuItem
-                        disabled
-                        className="h-8 rounded-md text-sm text-muted-foreground"
-                      >
-                        {t("tasks:labels.empty")}
-                      </DropdownMenuItem>
-                    )}
+                      {(matches, isSearching) => (
+                        <>
+                          {!isSearching && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={clearLabelFilters}
+                                className="h-8 rounded-md text-sm"
+                              >
+                                <CheckSlot
+                                  checked={
+                                    !filters.labels ||
+                                    filters.labels.length === 0
+                                  }
+                                />
+                                {t("tasks:boardFilters.allLabels")}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {matches.length > 0 ? (
+                            matches.map((label) => (
+                              <DropdownMenuItem
+                                key={label.id}
+                                onClick={() => toggleLabelGroup(label)}
+                                className="h-8 rounded-md text-sm"
+                              >
+                                <CheckSlot
+                                  checked={isLabelGroupSelected(label)}
+                                />
+                                <span
+                                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                  style={{
+                                    backgroundColor: resolveLabelColor(
+                                      label.color,
+                                    ),
+                                  }}
+                                />
+                                <span className="max-w-20 truncate">
+                                  {label.name}
+                                </span>
+                              </DropdownMenuItem>
+                            ))
+                          ) : (
+                            <DropdownMenuItem
+                              disabled
+                              className="h-8 rounded-md text-sm text-muted-foreground"
+                            >
+                              {t("tasks:labels.empty")}
+                            </DropdownMenuItem>
+                          )}
+                        </>
+                      )}
+                    </SearchableFilterList>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 

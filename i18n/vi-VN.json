@@ -131,6 +131,9 @@
 				"assign": "Giao việc",
 				"assignUnassigned": "Chưa giao",
 				"assignUnassignedTitle": "Chưa giao",
+				"dependencies": "Phụ thuộc",
+				"removeDependency": "Xóa phụ thuộc",
+				"dependencyLinkError": "Đã tạo tác vụ, nhưng không thể liên kết {{task}}: {{reason}}",
 				"labels": "Nhãn",
 				"searchLabels": "Tìm nhãn...",
 				"noLabelsFound": "Không tìm thấy nhãn",
@@ -2877,6 +2880,10 @@
 			"action": "Di chuyển công việc",
 			"success": "Di chuyển công việc thành công",
 			"error": "Không thể di chuyển công việc"
+		},
+		"picker": {
+			"search": "Tìm kiếm...",
+			"noResults": "Không có kết quả"
 		},
 		"popover": {
 			"assignee": {

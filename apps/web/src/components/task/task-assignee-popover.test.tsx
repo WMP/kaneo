@@ -572,3 +572,115 @@ describe("TaskAssigneePopover", () => {
     });
   });
 });
+
+describe("TaskAssigneePopover search", () => {
+  const withMembers = (
+    extra: Array<{ userId: string; user: { name: string; image: null } }>,
+  ) => {
+    const original = workspaceUsers.members.slice();
+    workspaceUsers.members.push(...extra);
+    return () => {
+      workspaceUsers.members.splice(
+        0,
+        workspaceUsers.members.length,
+        ...original,
+      );
+    };
+  };
+
+  const openPopover = async () => {
+    render(
+      <TaskAssigneePopover task={baseTask} workspaceId="workspace-1">
+        <Button>Assignee</Button>
+      </TaskAssigneePopover>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+    return screen.findByPlaceholderText("tasks:picker.search");
+  };
+
+  it("filters people by the typed first characters, ignoring case and diacritics", async () => {
+    const restore = withMembers([
+      { userId: "u3", user: { name: "Łoś Kowalski", image: null } },
+    ]);
+    try {
+      const search = await openPopover();
+      expect(screen.getByRole("button", { name: /Alice/ })).toBeVisible();
+
+      fireEvent.change(search, { target: { value: "lo" } });
+      expect(
+        screen.getByRole("button", { name: /Łoś Kowalski/ }),
+      ).toBeVisible();
+      expect(screen.queryByRole("button", { name: /Alice/ })).toBeNull();
+      expect(screen.queryByRole("button", { name: /Bob/ })).toBeNull();
+      // "Unassign all" is not a match for a person and is hidden while searching.
+      expect(
+        screen.queryByRole("button", {
+          name: /tasks:popover.assignee.unassignAll/,
+        }),
+      ).toBeNull();
+
+      fireEvent.change(search, { target: { value: "ALI" } });
+      expect(screen.getByRole("button", { name: /Alice/ })).toBeVisible();
+      expect(screen.queryByRole("button", { name: /Łoś/ })).toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
+  it("searches every person, not only the ones rendered so far", async () => {
+    const many = Array.from({ length: 120 }, (_, index) => ({
+      userId: `bulk-${index}`,
+      user: { name: `Person ${String(index).padStart(3, "0")}`, image: null },
+    }));
+    const restore = withMembers(many);
+    try {
+      const search = await openPopover();
+      // Only the first page is rendered without a query.
+      expect(screen.queryByRole("button", { name: /Person 119/ })).toBeNull();
+
+      fireEvent.change(search, { target: { value: "person 119" } });
+      expect(screen.getByRole("button", { name: /Person 119/ })).toBeVisible();
+    } finally {
+      restore();
+    }
+  });
+
+  it("filters resources with the same query and shows an empty state", async () => {
+    const search = await openPopover();
+
+    fireEvent.change(search, { target: { value: "dri" } });
+    expect(screen.getByRole("button", { name: /Drill/ })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Alice/ })).toBeNull();
+
+    fireEvent.change(search, { target: { value: "zzz" } });
+    expect(screen.getByText("tasks:picker.noResults")).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Drill/ })).toBeNull();
+  });
+
+  it("toggles the first match on Enter", async () => {
+    updateTaskAssignees.mockResolvedValue(undefined);
+    const search = await openPopover();
+
+    fireEvent.change(search, { target: { value: "bo" } });
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    expect(updateTaskAssignees).toHaveBeenCalledWith(
+      expect.objectContaining({ userIds: ["u1", "u2"] }),
+    );
+  });
+
+  it("starts with an empty query every time it opens", async () => {
+    const search = await openPopover();
+    fireEvent.change(search, { target: { value: "bo" } });
+
+    fireEvent.keyDown(search, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText("tasks:picker.search")).toBeNull(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Assignee" }));
+
+    const reopened = await screen.findByPlaceholderText("tasks:picker.search");
+    expect((reopened as HTMLInputElement).value).toBe("");
+    expect(screen.getByRole("button", { name: /Alice/ })).toBeVisible();
+  });
+});

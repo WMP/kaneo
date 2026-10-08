@@ -131,6 +131,9 @@
 				"assign": "सौंपें",
 				"assignUnassigned": "असाइन नहीं",
 				"assignUnassignedTitle": "असाइन नहीं",
+				"dependencies": "निर्भरताएँ",
+				"removeDependency": "निर्भरता हटाएँ",
+				"dependencyLinkError": "कार्य बनाया गया, लेकिन {{task}} को जोड़ा नहीं जा सका: {{reason}}",
 				"labels": "लेबल",
 				"searchLabels": "लेबल खोजें...",
 				"noLabelsFound": "कोई लेबल नहीं मिला",
@@ -2884,6 +2887,10 @@
 			"action": "कार्य ले जाएँ",
 			"success": "कार्य सफलतापूर्वक ले जाया गया",
 			"error": "कार्य ले जाने में विफल"
+		},
+		"picker": {
+			"search": "खोजें...",
+			"noResults": "कोई परिणाम नहीं"
 		},
 		"popover": {
 			"assignee": {

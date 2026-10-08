@@ -3,6 +3,7 @@ import { Check, Plus, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
+import { PickerNoResults } from "@/components/ui/picker-search-input";
 import {
   Popover,
   PopoverContent,
@@ -17,6 +18,7 @@ import { useProjectPermission } from "@/hooks/use-project-permission";
 import { cn } from "@/lib/cn";
 import { getTaskLabelOptions } from "@/lib/get-task-label-options";
 import { resolveLabelColor } from "@/lib/label-color";
+import { matchesSearch } from "@/lib/search-match";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
 
@@ -93,7 +95,7 @@ export default function TaskLabelsPopover({
   const filteredLabels = useMemo(() => {
     const selectableLabels = getTaskLabelOptions(workspaceLabels, task.id);
     return selectableLabels.filter((label) =>
-      label.name.toLowerCase().includes(searchValue.toLowerCase()),
+      matchesSearch(label.name, searchValue),
     );
   }, [workspaceLabels, searchValue, task.id]);
 
@@ -219,6 +221,11 @@ export default function TaskLabelsPopover({
             {t("tasks:popover.labels.empty")}
           </span>
         )}
+        {filteredLabels.length === 0 &&
+          searchValue.length > 0 &&
+          !(canCreate && isCreatingNewLabel) && (
+            <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
+          )}
         {filteredLabels.map((label) => (
           <button
             key={label.id}

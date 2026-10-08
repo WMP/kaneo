@@ -131,6 +131,9 @@
 				"assign": "Təyin et",
 				"assignUnassigned": "Təyin olunmayıb",
 				"assignUnassignedTitle": "Təyin olunmayıb",
+				"dependencies": "Asılılıqlar",
+				"removeDependency": "Asılılığı sil",
+				"dependencyLinkError": "Tapşırıq yaradıldı, lakin {{task}} bağlana bilmədi: {{reason}}",
 				"labels": "Etiketlər",
 				"searchLabels": "Etiketləri axtar...",
 				"noLabelsFound": "Etiket tapılmadı",
@@ -2884,6 +2887,10 @@
 			"action": "Tapşırığı köçür",
 			"success": "Tapşırıq uğurla köçürüldü",
 			"error": "Tapşırığı köçürmək alınmadı"
+		},
+		"picker": {
+			"search": "Axtar...",
+			"noResults": "Nəticə yoxdur"
 		},
 		"popover": {
 			"assignee": {
