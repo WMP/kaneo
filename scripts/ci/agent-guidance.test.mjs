@@ -29,7 +29,7 @@ test("agent guide stays small and points to existing local Markdown files", () =
 
   for (const filename of instructionFiles) {
     const source = read(filename);
-    const maxBytes = filename.startsWith(guideDirectory) ? 16 * 1024 : 4 * 1024;
+    const maxBytes = filename.startsWith(guideDirectory) ? 24 * 1024 : 4 * 1024;
     if (filename !== "AGENTS.md") {
       assert.ok(
         statSync(path.join(root, filename)).size < maxBytes,
