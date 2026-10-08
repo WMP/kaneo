@@ -28,6 +28,13 @@ export function isGanttDependencyDisplayMode(
 /** Above this many rendered edges, unfocused edges rest at a lower opacity. */
 export const DENSE_EDGE_THRESHOLD = 30;
 
+/**
+ * A target with MORE incoming edges than this (in the rendered set) does not
+ * draw its unfocused incoming branches one by one: a small badge at its start
+ * edge stands for them instead (see computeFanInCollapse).
+ */
+export const FAN_IN_COLLAPSE_THRESHOLD = 5;
+
 type DisplayEdge = {
   id: string;
   sourceTaskId: string;
@@ -92,4 +99,71 @@ export function shouldShowTypeLabel(
   const isPlainFinishToStart =
     (edge.dependencyType ?? "fs") === "fs" && (edge.lagDays ?? 0) === 0;
   return focused || !isPlainFinishToStart;
+}
+
+export type FanInBadge = {
+  /** Stable key: the target and the bar edge its branches arrive at. */
+  key: string;
+  targetTaskId: string;
+  side: "start" | "end";
+  /** How many incoming edges the badge stands for (the collapsed ones). */
+  count: number;
+  /** Where the collapsed branches would have arrived: the target's anchor. */
+  point: { x: number; y: number };
+};
+
+type FanInEdge = DisplayEdge & {
+  targetSide?: "start" | "end";
+  targetPoint: { x: number; y: number };
+};
+
+/**
+ * Which incoming edges are folded into a fan-in badge. A target (per bar edge)
+ * with more than FAN_IN_COLLAPSE_THRESHOLD incoming edges among `edges` (the
+ * rendered set) collapses every incoming edge that is not focused (touching
+ * the hovered or pinned task, so hovering the target or one of its sources
+ * shows that edge in full), not on the critical path and not violated. Those
+ * three kinds are never collapsed. Linear in the number of edges.
+ */
+export function computeFanInCollapse<T extends FanInEdge>(
+  edges: readonly T[],
+  context: {
+    hoveredTaskId: string | null;
+    pinnedTaskId: string | null;
+    criticalEdgeIds?: ReadonlySet<string>;
+    violatedEdgeIds?: ReadonlySet<string>;
+  },
+): { collapsedEdgeIds: Set<string>; badges: FanInBadge[] } {
+  const byTarget = new Map<string, T[]>();
+  for (const edge of edges) {
+    const key = `${edge.targetTaskId}|${edge.targetSide ?? "start"}`;
+    const group = byTarget.get(key);
+    if (group) group.push(edge);
+    else byTarget.set(key, [edge]);
+  }
+
+  const collapsedEdgeIds = new Set<string>();
+  const badges: FanInBadge[] = [];
+  for (const [key, group] of byTarget) {
+    if (group.length <= FAN_IN_COLLAPSE_THRESHOLD) continue;
+    const collapsed = group.filter(
+      (edge) =>
+        !isEdgeFocused(edge, context.hoveredTaskId, context.pinnedTaskId) &&
+        !(context.criticalEdgeIds?.has(edge.id) ?? false) &&
+        !(
+          edge.relationType === "blocks" &&
+          (context.violatedEdgeIds?.has(edge.id) ?? false)
+        ),
+    );
+    if (collapsed.length === 0) continue;
+    for (const edge of collapsed) collapsedEdgeIds.add(edge.id);
+    badges.push({
+      key,
+      targetTaskId: collapsed[0].targetTaskId,
+      side: collapsed[0].targetSide ?? "start",
+      count: collapsed.length,
+      point: collapsed[0].targetPoint,
+    });
+  }
+  return { collapsedEdgeIds, badges };
 }

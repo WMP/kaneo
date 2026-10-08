@@ -3113,6 +3113,8 @@
 			"dependencyDisplayModeFocused": "Alleen geselecteerde taak",
 			"dependencyDisplayModeCritical": "Alleen kritiek pad",
 			"dependencyDisplayModeHidden": "Verborgen",
+			"dependencyFanIn_one": "{{count}} voorganger",
+			"dependencyFanIn_other": "{{count}} voorgangers",
 			"criticalPathDroppedEdges_one": "{{count}} afhankelijkheid zonder datum overgeslagen",
 			"criticalPathDroppedEdges_other": "{{count}} afhankelijkheden zonder datum overgeslagen",
 			"criticalPathDroppedEdgesHint": "Deze afhankelijkheden verwijzen naar een taak zonder datums, dus ze kunnen niet worden gecontroleerd voor het kritieke pad — een taak die daardoor kritiek zou worden, wordt mogelijk niet gemarkeerd.",

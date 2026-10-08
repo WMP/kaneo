@@ -3124,6 +3124,8 @@
 			"dependencyDisplayModeFocused": "Yalnızca seçili görev",
 			"dependencyDisplayModeCritical": "Yalnızca kritik yol",
 			"dependencyDisplayModeHidden": "Gizli",
+			"dependencyFanIn_one": "{{count}} öncül görev",
+			"dependencyFanIn_other": "{{count}} öncül görev",
 			"criticalPathDroppedEdges_one": "{{count}} tarihsiz bağımlılık atlandı",
 			"criticalPathDroppedEdges_other": "{{count}} tarihsiz bağımlılık atlandı",
 			"criticalPathDroppedEdgesHint": "Bu bağımlılıklar tarihi olmayan bir göreve ulaşıyor, bu nedenle kritik yol için kontrol edilemezler — aksi takdirde kritik hale getirecekleri bir görev vurgulanmayabilir.",

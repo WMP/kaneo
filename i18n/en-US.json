@@ -3116,6 +3116,8 @@
 			"dependencyDisplayModeFocused": "Selected task only",
 			"dependencyDisplayModeCritical": "Critical path only",
 			"dependencyDisplayModeHidden": "Hidden",
+			"dependencyFanIn_one": "{{count}} predecessor",
+			"dependencyFanIn_other": "{{count}} predecessors",
 			"criticalPathToggle": "Critical path",
 			"criticalPathToggleAriaLabel": "Highlight the critical path",
 			"criticalPathDroppedEdges_one": "{{count}} undated dep skipped",

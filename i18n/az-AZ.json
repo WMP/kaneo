@@ -3137,6 +3137,8 @@
 			"dependencyDisplayModeFocused": "Yalnız seçilmiş tapşırıq",
 			"dependencyDisplayModeCritical": "Yalnız kritik yol",
 			"dependencyDisplayModeHidden": "Gizli",
+			"dependencyFanIn_one": "{{count}} əvvəlki tapşırıq",
+			"dependencyFanIn_other": "{{count}} əvvəlki tapşırıq",
 			"criticalPathDroppedEdges_one": "{{count}} tarixsiz asılılıq ötürüldü",
 			"criticalPathDroppedEdges_other": "{{count}} tarixsiz asılılıq ötürüldü",
 			"criticalPathDroppedEdgesHint": "Bu asılılıqlar tarixi olmayan tapşırığa çatır, ona görə kritik yol üçün yoxlanıla bilmir — əks halda kritik edəcəkləri tapşırıq vurğulanmaya bilər.",

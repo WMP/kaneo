@@ -3,6 +3,7 @@ import TaskRelationDependencyPopover from "@/components/task/task-relation-depen
 import { cn } from "@/lib/cn";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
 import {
+  computeFanInCollapse,
   DENSE_EDGE_THRESHOLD,
   filterEdgesForDisplayMode,
   type GanttDependencyDisplayMode,
@@ -58,6 +59,10 @@ const DENSE_REST_OPACITY = 0.22;
 // Stroke-opacity of a violated edge in the top layer (it is not part of the
 // rest group, so it must stay readable on its own).
 const VIOLATED_OPACITY = 0.9;
+// Size of the fan-in badge ("← 7") drawn beside a target whose incoming
+// branches are collapsed.
+const FAN_IN_BADGE_WIDTH_PX = 34;
+const FAN_IN_BADGE_HEIGHT_PX = 16;
 const REST_WIDTH = 1.5;
 const EMPHASIZED_WIDTH = 2.5;
 
@@ -73,12 +78,21 @@ export function GanttDependencyOverlay({
   resolveProjectId,
 }: GanttDependencyOverlayProps) {
   const { t } = useTranslation();
-  const visibleEdges = filterEdgesForDisplayMode(edges, displayMode, {
+  const filteredEdges = filterEdgesForDisplayMode(edges, displayMode, {
     hoveredTaskId,
     pinnedTaskId,
     criticalEdgeIds,
   });
-  if (visibleEdges.length === 0 && !preview) return null;
+  if (filteredEdges.length === 0 && !preview) return null;
+  // A target with many incoming edges shows one badge instead of its
+  // unfocused, non-violated, non-critical branches.
+  const { collapsedEdgeIds, badges: fanInBadges } = computeFanInCollapse(
+    filteredEdges,
+    { hoveredTaskId, pinnedTaskId, criticalEdgeIds, violatedEdgeIds },
+  );
+  const visibleEdges = filteredEdges.filter(
+    (edge) => !collapsedEdgeIds.has(edge.id),
+  );
   const focusActive = hoveredTaskId !== null || pinnedTaskId !== null;
   const restGroupOpacity = focusActive
     ? DIMMED_OPACITY
@@ -308,6 +322,42 @@ export function GanttDependencyOverlay({
                   })}
               </button>
             </TaskRelationDependencyPopover>
+          </foreignObject>
+        );
+      })}
+      {/* Fan-in badges: one per target whose many incoming branches are
+          folded away. A real (hoverable) element so the tooltip and its
+          accessible name are available; it is not interactive otherwise. */}
+      {fanInBadges.map((badge) => {
+        const label = t("tasks:gantt.dependencyFanIn", { count: badge.count });
+        return (
+          <foreignObject
+            key={`fan-in-${badge.key}`}
+            data-testid="gantt-dependency-fan-in"
+            x={
+              badge.side === "start"
+                ? badge.point.x - FAN_IN_BADGE_WIDTH_PX - 4
+                : badge.point.x + 4
+            }
+            y={badge.point.y - FAN_IN_BADGE_HEIGHT_PX / 2}
+            width={FAN_IN_BADGE_WIDTH_PX}
+            height={FAN_IN_BADGE_HEIGHT_PX}
+            style={{ overflow: "visible" }}
+            className={cn(
+              "pointer-events-auto transition-opacity duration-150 ease-out",
+              focusActive && "opacity-40",
+            )}
+          >
+            <span
+              role="img"
+              aria-label={label}
+              title={label}
+              className="block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-center text-[9px] font-semibold leading-4 text-muted-foreground shadow-sm"
+            >
+              {badge.side === "start" ? "← " : ""}
+              {badge.count}
+              {badge.side === "end" ? " →" : ""}
+            </span>
           </foreignObject>
         );
       })}

@@ -1,7 +1,10 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
-import { DENSE_EDGE_THRESHOLD } from "./gantt-dependency-display";
+import {
+  DENSE_EDGE_THRESHOLD,
+  FAN_IN_COLLAPSE_THRESHOLD,
+} from "./gantt-dependency-display";
 import { GanttDependencyOverlay } from "./gantt-dependency-overlay";
 
 vi.mock("@/components/task/task-relation-dependency-popover", () => ({
@@ -417,6 +420,115 @@ describe("GanttDependencyOverlay", () => {
       expect(
         withPreview.container.querySelectorAll("svg path[stroke]"),
       ).toHaveLength(1);
+    });
+  });
+
+  describe("fan-in collapse", () => {
+    const incoming = (count: number) =>
+      Array.from({ length: count }, (_, i) =>
+        edge({
+          id: `e${i}`,
+          sourceTaskId: `s${i}`,
+          targetTaskId: "t",
+          targetSide: "start",
+          targetPoint: { x: 200, y: 50 },
+        }),
+      );
+    const badges = (container: HTMLElement) =>
+      container.querySelectorAll("[data-testid=gantt-dependency-fan-in]");
+    const drawn = (container: HTMLElement) =>
+      container.querySelectorAll("path[data-edge-kind]");
+    const renderOverlay = (
+      edges: DependencyEdgeGeometry[],
+      props: Partial<React.ComponentProps<typeof GanttDependencyOverlay>> = {},
+    ) =>
+      render(
+        <GanttDependencyOverlay
+          edges={edges}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          {...props}
+        />,
+      );
+
+    it("keeps every branch when a target has no more than the threshold", () => {
+      const { container } = renderOverlay(incoming(FAN_IN_COLLAPSE_THRESHOLD));
+      expect(badges(container)).toHaveLength(0);
+      expect(drawn(container)).toHaveLength(FAN_IN_COLLAPSE_THRESHOLD);
+    });
+
+    it("replaces the branches of a crowded target with one badge showing the count", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 1;
+      const { container } = renderOverlay(incoming(count));
+
+      expect(drawn(container)).toHaveLength(0);
+      const found = badges(container);
+      expect(found).toHaveLength(1);
+      expect(found[0].textContent).toContain(String(count));
+      // The badge carries an accessible name and a tooltip.
+      const label = found[0].querySelector("[role=img]");
+      expect(label?.getAttribute("aria-label")).toBeTruthy();
+      expect(label?.getAttribute("title")).toBe(
+        label?.getAttribute("aria-label"),
+      );
+      // It sits just left of the target's start edge.
+      expect(Number(found[0].getAttribute("x"))).toBeLessThan(200);
+    });
+
+    it("shows every branch again while the target is hovered or pinned", () => {
+      const edges = incoming(FAN_IN_COLLAPSE_THRESHOLD + 1);
+      const hovered = renderOverlay(edges, { hoveredTaskId: "t" });
+      expect(badges(hovered.container)).toHaveLength(0);
+      expect(drawn(hovered.container)).toHaveLength(edges.length);
+      hovered.unmount();
+
+      const pinned = renderOverlay(edges, { pinnedTaskId: "t" });
+      expect(badges(pinned.container)).toHaveLength(0);
+      expect(drawn(pinned.container)).toHaveLength(edges.length);
+    });
+
+    it("shows a hovered source's own branch and keeps the rest folded", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 1;
+      const { container } = renderOverlay(incoming(count), {
+        hoveredTaskId: "s0",
+      });
+      expect(drawn(container)).toHaveLength(1);
+      const found = badges(container);
+      expect(found).toHaveLength(1);
+      expect(found[0].textContent).toContain(String(count - 1));
+    });
+
+    it("never collapses a violated or a critical edge", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 2;
+      const { container } = renderOverlay(incoming(count), {
+        violatedEdgeIds: new Set(["e0"]),
+        criticalEdgeIds: new Set(["e1"]),
+      });
+      expect(drawn(container)).toHaveLength(2);
+      expect(badges(container)[0].textContent).toContain(String(count - 2));
+      const violated = container.querySelector("path[data-edge-kind=violated]");
+      expect(violated).toBeTruthy();
+    });
+
+    it("hides the badge's edges' type labels with them", () => {
+      const edges = incoming(FAN_IN_COLLAPSE_THRESHOLD + 1).map((e) => ({
+        ...e,
+        dependencyType: "ss" as const,
+        typeLabelPoint: { x: 100, y: 50 },
+      }));
+      const { container } = renderOverlay(edges);
+      expect(labels(container)).toHaveLength(0);
+    });
+
+    it("does not fold different targets together", () => {
+      const edges = [
+        ...incoming(FAN_IN_COLLAPSE_THRESHOLD + 1),
+        edge({ id: "other", sourceTaskId: "s0", targetTaskId: "u" }),
+      ];
+      const { container } = renderOverlay(edges);
+      expect(badges(container)).toHaveLength(1);
+      expect(drawn(container)).toHaveLength(1);
     });
   });
 });

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  computeFanInCollapse,
+  FAN_IN_COLLAPSE_THRESHOLD,
   filterEdgesForDisplayMode,
   isEdgeFocused,
   isGanttDependencyDisplayMode,
@@ -115,5 +117,70 @@ describe("isGanttDependencyDisplayMode", () => {
     }
     expect(isGanttDependencyDisplayMode("none")).toBe(false);
     expect(isGanttDependencyDisplayMode(undefined)).toBe(false);
+  });
+});
+
+describe("computeFanInCollapse", () => {
+  const point = { x: 200, y: 50 };
+  const into = (count: number, target = "t") =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `${target}-${i}`,
+      sourceTaskId: `s${i}`,
+      targetTaskId: target,
+      relationType: "blocks" as const,
+      targetPoint: point,
+    }));
+  const none = { hoveredTaskId: null, pinnedTaskId: null };
+
+  it("collapses only targets with more incoming edges than the threshold", () => {
+    expect(
+      computeFanInCollapse(into(FAN_IN_COLLAPSE_THRESHOLD), none).badges,
+    ).toEqual([]);
+    const result = computeFanInCollapse(
+      into(FAN_IN_COLLAPSE_THRESHOLD + 1),
+      none,
+    );
+    expect(result.collapsedEdgeIds.size).toBe(FAN_IN_COLLAPSE_THRESHOLD + 1);
+    expect(result.badges).toEqual([
+      {
+        key: "t|start",
+        targetTaskId: "t",
+        side: "start",
+        count: FAN_IN_COLLAPSE_THRESHOLD + 1,
+        point,
+      },
+    ]);
+  });
+
+  it("keeps focused, critical and violated edges out of the collapse", () => {
+    const list = into(FAN_IN_COLLAPSE_THRESHOLD + 3);
+    const result = computeFanInCollapse(list, {
+      hoveredTaskId: "s0",
+      pinnedTaskId: null,
+      criticalEdgeIds: new Set(["t-1"]),
+      violatedEdgeIds: new Set(["t-2"]),
+    });
+    expect(result.collapsedEdgeIds.has("t-0")).toBe(false);
+    expect(result.collapsedEdgeIds.has("t-1")).toBe(false);
+    expect(result.collapsedEdgeIds.has("t-2")).toBe(false);
+    expect(result.badges[0].count).toBe(FAN_IN_COLLAPSE_THRESHOLD);
+  });
+
+  it("collapses nothing while the target itself is focused", () => {
+    const result = computeFanInCollapse(into(FAN_IN_COLLAPSE_THRESHOLD + 1), {
+      hoveredTaskId: null,
+      pinnedTaskId: "t",
+    });
+    expect(result.collapsedEdgeIds.size).toBe(0);
+    expect(result.badges).toEqual([]);
+  });
+
+  it("groups per target and per bar edge", () => {
+    const list = [
+      ...into(FAN_IN_COLLAPSE_THRESHOLD + 1, "a"),
+      ...into(FAN_IN_COLLAPSE_THRESHOLD, "b"),
+    ];
+    const result = computeFanInCollapse(list, none);
+    expect(result.badges.map((badge) => badge.targetTaskId)).toEqual(["a"]);
   });
 });

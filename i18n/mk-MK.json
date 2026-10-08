@@ -3124,6 +3124,8 @@
 			"dependencyDisplayModeFocused": "Само избраната задача",
 			"dependencyDisplayModeCritical": "Само критичната патека",
 			"dependencyDisplayModeHidden": "Скриени",
+			"dependencyFanIn_one": "{{count}} претходник",
+			"dependencyFanIn_other": "{{count}} претходници",
 			"criticalPathDroppedEdges_one": "{{count}} зависност без датум е прескокната",
 			"criticalPathDroppedEdges_other": "{{count}} зависности без датум се прескокнати",
 			"criticalPathDroppedEdgesHint": "Овие зависности стигнуваат до задача без датуми, па не можат да се проверат за критичниот пат — задача што инаку би ја направиле критична можеби нема да биде означена.",

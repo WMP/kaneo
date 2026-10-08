@@ -3124,6 +3124,8 @@
 			"dependencyDisplayModeFocused": "Nur ausgewählte Aufgabe",
 			"dependencyDisplayModeCritical": "Nur kritischer Pfad",
 			"dependencyDisplayModeHidden": "Ausgeblendet",
+			"dependencyFanIn_one": "{{count}} Vorgänger",
+			"dependencyFanIn_other": "{{count}} Vorgänger",
 			"criticalPathDroppedEdges_one": "{{count}} undatierte Abhängigkeit übersprungen",
 			"criticalPathDroppedEdges_other": "{{count}} undatierte Abhängigkeiten übersprungen",
 			"criticalPathDroppedEdgesHint": "Diese Abhängigkeiten führen zu einer Aufgabe ohne Termine, daher können sie nicht auf den kritischen Pfad geprüft werden – eine Aufgabe, die dadurch kritisch würde, wird möglicherweise nicht hervorgehoben.",

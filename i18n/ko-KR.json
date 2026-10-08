@@ -3129,6 +3129,7 @@
 			"dependencyDisplayModeFocused": "선택한 작업만",
 			"dependencyDisplayModeCritical": "크리티컬 패스만",
 			"dependencyDisplayModeHidden": "숨김",
+			"dependencyFanIn_other": "선행 작업 {{count}}개",
 			"criticalPathDroppedEdges_other": "날짜가 없는 종속 관계 {{count}}건을 건너뛰었습니다",
 			"criticalPathDroppedEdgesHint": "이 종속 관계는 날짜가 설정되지 않은 작업으로 연결되어 있어 크리티컬 패스 판정에서 제외됩니다. 원래 크리티컬로 표시되었어야 할 작업이 강조되지 않을 수 있습니다.",
 			"overdueLabel": "기한 초과",
