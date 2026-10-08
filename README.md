@@ -188,7 +188,7 @@ New MCP tools:
 | `update_task_relation` | Change a dependency's type and lag |
 | `get_workspace_calendar`, `update_workspace_working_days`, `add_workspace_holiday`, `delete_workspace_holiday` | Manage the working calendar |
 
-`get_task` and `list_tasks` also return custom fields, and `create_task` and `update_task` accept progress, milestone, date constraint and approval fields. Changes made through MCP are labeled in the activity feeds.
+`get_task` and `list_tasks` also return custom fields, and `create_task` and `update_task` accept progress, milestone, effort estimate, date constraint and approval fields. Changes made through MCP are labeled in the activity feeds.
 
 ## Quick start
 
