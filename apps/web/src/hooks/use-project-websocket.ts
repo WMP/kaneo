@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { getApiUrl } from "@/fetchers/get-api-url";
 import { authClient } from "@/lib/auth-client";
+import { createInvalidationBatcher } from "@/lib/coalesced-invalidation";
 import {
   ganttProjectRelationsKey,
   ganttTaskRelationsKey,
@@ -23,6 +24,12 @@ export function getWsUrl(projectId: string) {
 
 const MAX_RETRIES = 5;
 const BASE_DELAY = 1000; // 1 second
+
+// A reconnection refreshes the caches only after the socket stayed open this
+// long. A server that is restarting can accept the upgrade and close it again
+// at once; every such open used to start a catch-up refetch of the whole task
+// list. The refresh is not lost: the open that lasts runs it.
+export const CATCH_UP_STABLE_MS = 1000;
 
 // Cloudflare closes idle WebSocket connections after 100 seconds of no traffic.
 // We send a lightweight ping every 30 seconds to keep the connection alive.
@@ -62,6 +69,20 @@ export function useProjectWebSocket(
     let retryTimeout: ReturnType<typeof setTimeout> | null = null;
     let pingInterval: ReturnType<typeof setInterval> | null = null;
     let hasConnected = false;
+    let catchUpTimeout: ReturnType<typeof setTimeout> | null = null;
+    // Every cache refresh driven by a socket message or a reconnection goes
+    // through this batcher: one refetch per key per window, and never an abort
+    // of a fetch that is already running (see coalesced-invalidation.ts).
+    const batcher = createInvalidationBatcher(queryClient);
+    const invalidate = (queryKey: readonly unknown[]) =>
+      batcher.invalidate(queryKey);
+
+    function clearCatchUp() {
+      if (catchUpTimeout !== null) {
+        clearTimeout(catchUpTimeout);
+        catchUpTimeout = null;
+      }
+    }
     // What the last "access revoked" close decided. While a check is running,
     // or after it ended in a refusal (or a signed-out caller), nothing may open
     // another socket: not the backoff, not a focus or online signal.
@@ -90,10 +111,12 @@ export function useProjectWebSocket(
         // mount — and this is what lets the realtime path, rather than a short
         // poll, keep the board fresh after a dropped connection.
         if (hasConnected) {
-          queryClient.invalidateQueries({ queryKey: ganttTasksKey(projectId) });
-          queryClient.invalidateQueries({
-            queryKey: ganttProjectRelationsKey(projectId),
-          });
+          clearCatchUp();
+          catchUpTimeout = setTimeout(() => {
+            catchUpTimeout = null;
+            invalidate(ganttTasksKey(projectId));
+            invalidate(ganttProjectRelationsKey(projectId));
+          }, CATCH_UP_STABLE_MS);
         }
         hasConnected = true;
         // Start keepalive pings to prevent Cloudflare idle timeout (100s)
@@ -117,7 +140,7 @@ export function useProjectWebSocket(
               ["task"],
               ["task-relations"],
             ]) {
-              queryClient.invalidateQueries({ queryKey });
+              invalidate(queryKey);
             }
             return;
           }
@@ -131,53 +154,35 @@ export function useProjectWebSocket(
             message.type === "COMMENT_UPDATED" ||
             message.type === "PROJECT_UPDATED"
           ) {
-            queryClient.invalidateQueries({
-              queryKey: ganttTasksKey(message.projectId),
-            });
+            invalidate(ganttTasksKey(message.projectId));
 
             if (message.type === "PROJECT_UPDATED") {
-              queryClient.invalidateQueries({ queryKey: ["projects"] });
+              invalidate(["projects"]);
               // Workspace column enforcement (and any project column change)
               // publishes it: the project's columns and the enforced flag.
-              queryClient.invalidateQueries({
-                queryKey: ["columns", message.projectId],
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["workspace-columns"],
-              });
+              invalidate(["columns", message.projectId]);
+              invalidate(["workspace-columns"]);
               return;
             }
 
             if (message.type === "TASK_RELATION_UPDATED") {
               if (message.sourceTaskId) {
-                queryClient.invalidateQueries({
-                  queryKey: ["task", message.sourceTaskId],
-                });
-                queryClient.invalidateQueries({
-                  queryKey: ganttTaskRelationsKey(message.sourceTaskId),
-                });
+                invalidate(["task", message.sourceTaskId]);
+                invalidate(ganttTaskRelationsKey(message.sourceTaskId));
               }
               if (message.targetTaskId) {
-                queryClient.invalidateQueries({
-                  queryKey: ["task", message.targetTaskId],
-                });
-                queryClient.invalidateQueries({
-                  queryKey: ganttTaskRelationsKey(message.targetTaskId),
-                });
+                invalidate(["task", message.targetTaskId]);
+                invalidate(ganttTaskRelationsKey(message.targetTaskId));
               }
               if (!message.sourceTaskId && !message.targetTaskId) {
-                queryClient.invalidateQueries({
-                  queryKey: ["task-relations"],
-                });
+                invalidate(["task-relations"]);
               }
               // The Gantt chart's dependency lines read a project-scoped cache
               // (["task-relations", "project", projectId]) that the per-task
               // keys above don't reach — a relation can be created or deleted
               // from a task in this project without either endpoint's task
               // being the one currently open on the Gantt view.
-              queryClient.invalidateQueries({
-                queryKey: ganttProjectRelationsKey(message.projectId),
-              });
+              invalidate(ganttProjectRelationsKey(message.projectId));
             } else {
               if (
                 message.type === "TASK_UPDATED" ||
@@ -192,44 +197,28 @@ export function useProjectWebSocket(
                 // For a task of ANOTHER project that is an endpoint here, the
                 // API sends this project a TASK_RELATION_UPDATED without ids
                 // (handled above); nothing about that task is sent or read here.
-                queryClient.invalidateQueries({
-                  queryKey: ganttProjectRelationsKey(message.projectId),
-                });
+                invalidate(ganttProjectRelationsKey(message.projectId));
               }
-              queryClient.invalidateQueries({
-                queryKey: ["task", message.taskId],
-              });
+              invalidate(["task", message.taskId]);
             }
 
             if (message.type === "TASK_LABEL_UPDATED") {
-              queryClient.invalidateQueries({
-                queryKey: ["labels", message.taskId],
-              });
+              invalidate(["labels", message.taskId]);
             }
 
             if (message.type === "TASK_UPDATED" && message.taskId) {
-              queryClient.invalidateQueries({
-                queryKey: ["external-links", message.taskId],
-              });
+              invalidate(["external-links", message.taskId]);
               // jira.* events (a status seen in Jira, a link, a resolved
               // proposal) arrive as TASK_UPDATED. Only a mounted query is
               // refetched, so this costs nothing for a task without Jira. The
               // activity feed gets the entry the change wrote.
-              queryClient.invalidateQueries({
-                queryKey: ["jira-task", message.taskId],
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["activities", message.taskId],
-              });
+              invalidate(["jira-task", message.taskId]);
+              invalidate(["activities", message.taskId]);
             }
 
             if (message.type === "COMMENT_UPDATED") {
-              queryClient.invalidateQueries({
-                queryKey: ["activities", message.taskId],
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["comments", message.taskId],
-              });
+              invalidate(["activities", message.taskId]);
+              invalidate(["comments", message.taskId]);
             }
           }
         } catch {
@@ -240,6 +229,7 @@ export function useProjectWebSocket(
       ws.onclose = (event) => {
         if (disposed || activeSocket !== ws) return;
         clearPing();
+        clearCatchUp();
         activeSocket = null;
 
         if (
@@ -324,6 +314,8 @@ export function useProjectWebSocket(
     return () => {
       disposed = true;
       clearPing();
+      clearCatchUp();
+      batcher.dispose();
       if (retryTimeout !== null) {
         clearTimeout(retryTimeout);
       }

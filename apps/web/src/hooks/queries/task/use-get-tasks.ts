@@ -18,7 +18,13 @@ export const SAFETY_NET_REFETCH_INTERVAL_MS = 5 * 60 * 1000;
 export function useGetTasks(projectId: string) {
   return useQuery({
     queryKey: ganttTasksKey(projectId),
-    queryFn: ({ signal }) => getTasks(projectId, signal),
+    // The abort signal is deliberately not forwarded. TanStack Query aborts a
+    // fetch whose signal was read when its last observer unmounts, so a view
+    // that remounts while the first load of a large project is running would
+    // abort it and start it again, over and over, and the cache would stay
+    // empty. Left alone, the load finishes and fills the cache for whichever
+    // view mounts next; a remount reuses the request that is already running.
+    queryFn: () => getTasks(projectId),
     refetchOnMount: true,
     refetchInterval: (query) =>
       isUnauthorizedError(query.state.error)
