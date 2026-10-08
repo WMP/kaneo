@@ -3312,6 +3312,7 @@
 			"neighborhoodNoDates": "Brak dat",
 			"neighborhoodOpenTask": "Otwórz zadanie {{key}}",
 			"neighborhoodPredecessors": "Poprzedniki",
+			"neighborhoodScrollLabel": "Wykres zależności, przewijany",
 			"neighborhoodSuccessors": "Następniki",
 			"criticalPathDroppedEdges_few": "{{count}} pominięte zależności bez dat",
 			"criticalPathDroppedEdges_many": "{{count}} pominiętych zależności bez dat",

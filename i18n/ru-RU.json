@@ -3170,6 +3170,7 @@
 			"neighborhoodNoDates": "Нет дат",
 			"neighborhoodOpenTask": "Открыть задачу {{key}}",
 			"neighborhoodPredecessors": "Предшественники",
+			"neighborhoodScrollLabel": "График зависимостей, прокручиваемый",
 			"neighborhoodSuccessors": "Последователи",
 			"criticalPathDroppedEdges_few": "Пропущено {{count}} зависимости без дат",
 			"criticalPathDroppedEdges_many": "Пропущено {{count}} зависимостей без дат",

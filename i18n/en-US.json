@@ -3126,6 +3126,7 @@
 			"neighborhoodNoDates": "No dates",
 			"neighborhoodOpenTask": "Open task {{key}}",
 			"neighborhoodPredecessors": "Predecessors",
+			"neighborhoodScrollLabel": "Dependency chart, scrollable",
 			"neighborhoodSuccessors": "Successors",
 			"criticalPathToggle": "Critical path",
 			"criticalPathToggleAriaLabel": "Highlight the critical path",

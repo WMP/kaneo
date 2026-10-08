@@ -3123,6 +3123,7 @@
 			"neighborhoodNoDates": "Geen datums",
 			"neighborhoodOpenTask": "Taak {{key}} openen",
 			"neighborhoodPredecessors": "Voorgangers",
+			"neighborhoodScrollLabel": "Afhankelijkhedendiagram, scrolbaar",
 			"neighborhoodSuccessors": "Opvolgers",
 			"criticalPathDroppedEdges_one": "{{count}} afhankelijkheid zonder datum overgeslagen",
 			"criticalPathDroppedEdges_other": "{{count}} afhankelijkheden zonder datum overgeslagen",

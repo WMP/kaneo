@@ -3124,6 +3124,7 @@
 			"neighborhoodNoDates": "Không có ngày",
 			"neighborhoodOpenTask": "Mở công việc {{key}}",
 			"neighborhoodPredecessors": "Tiền nhiệm",
+			"neighborhoodScrollLabel": "Biểu đồ phụ thuộc, có thể cuộn",
 			"neighborhoodSuccessors": "Kế nhiệm",
 			"criticalPathDroppedEdges_other": "{{count}} phụ thuộc không có ngày bị bỏ qua",
 			"criticalPathDroppedEdgesHint": "Các phụ thuộc này dẫn đến một công việc không có ngày, vì vậy không thể kiểm tra cho đường găng — một công việc lẽ ra sẽ trở nên găng có thể không được làm nổi bật.",

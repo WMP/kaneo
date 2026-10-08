@@ -3124,6 +3124,7 @@
 			"neighborhoodNoDates": "Tanpa tanggal",
 			"neighborhoodOpenTask": "Buka tugas {{key}}",
 			"neighborhoodPredecessors": "Pendahulu",
+			"neighborhoodScrollLabel": "Bagan dependensi, dapat digulir",
 			"neighborhoodSuccessors": "Penerus",
 			"criticalPathDroppedEdges_other": "{{count}} dependensi tanpa tanggal dilewati",
 			"criticalPathDroppedEdgesHint": "Dependensi ini mengarah ke tugas tanpa tanggal, sehingga tidak dapat diperiksa untuk jalur kritis — tugas yang seharusnya menjadi kritis mungkin tidak akan disorot.",

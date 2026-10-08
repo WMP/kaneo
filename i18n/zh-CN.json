@@ -3137,6 +3137,7 @@
 			"neighborhoodNoDates": "无日期",
 			"neighborhoodOpenTask": "打开任务 {{key}}",
 			"neighborhoodPredecessors": "前置任务",
+			"neighborhoodScrollLabel": "依赖关系图，可滚动",
 			"neighborhoodSuccessors": "后续任务",
 			"criticalPathDroppedEdges_other": "已跳过{{count}}个无日期的依赖关系",
 			"criticalPathDroppedEdgesHint": "这些依赖关系连接到没有日期的任务,因此无法纳入关键路径的判定——原本应被判定为关键任务的任务可能不会被高亮显示。",

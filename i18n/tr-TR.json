@@ -3134,6 +3134,7 @@
 			"neighborhoodNoDates": "Tarih yok",
 			"neighborhoodOpenTask": "{{key}} görevini aç",
 			"neighborhoodPredecessors": "Öncüller",
+			"neighborhoodScrollLabel": "Bağımlılık grafiği, kaydırılabilir",
 			"neighborhoodSuccessors": "Ardıllar",
 			"criticalPathDroppedEdges_one": "{{count}} tarihsiz bağımlılık atlandı",
 			"criticalPathDroppedEdges_other": "{{count}} tarihsiz bağımlılık atlandı",

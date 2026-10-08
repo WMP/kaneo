@@ -3144,6 +3144,7 @@
 			"neighborhoodNoDates": "Nessuna data",
 			"neighborhoodOpenTask": "Apri l'attività {{key}}",
 			"neighborhoodPredecessors": "Predecessori",
+			"neighborhoodScrollLabel": "Grafico delle dipendenze, scorrevole",
 			"neighborhoodSuccessors": "Successori",
 			"criticalPathDroppedEdges_many": "{{count}} dipendenze senza data ignorate",
 			"criticalPathDroppedEdges_one": "{{count}} dipendenza senza data ignorata",

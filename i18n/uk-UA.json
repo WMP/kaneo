@@ -3154,6 +3154,7 @@
 			"neighborhoodNoDates": "Немає дат",
 			"neighborhoodOpenTask": "Відкрити завдання {{key}}",
 			"neighborhoodPredecessors": "Попередники",
+			"neighborhoodScrollLabel": "Графік залежностей, прокручуваний",
 			"neighborhoodSuccessors": "Наступники",
 			"criticalPathDroppedEdges_few": "Пропущено {{count}} залежності без дат",
 			"criticalPathDroppedEdges_many": "Пропущено {{count}} залежностей без дат",

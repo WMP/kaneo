@@ -1,5 +1,13 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  vi,
+} from "vitest";
 import type { DependencyEdgeInput } from "./dependency-lines";
 import {
   GanttTaskNeighborhood,
@@ -231,6 +239,207 @@ describe("GanttTaskNeighborhood", () => {
     renderCard();
     expect(screen.getByTestId("gantt-neighborhood-card")).toHaveStyle({
       width: "552px",
+    });
+  });
+
+  describe("scrolling", () => {
+    const scrollContainer = () =>
+      screen.getByTestId("gantt-neighborhood-scroll");
+
+    it("has one focusable, labelled container that scrolls on both axes", () => {
+      renderCard();
+      const container = scrollContainer();
+      expect(container).toHaveAttribute("tabindex", "0");
+      expect(container).toHaveAttribute(
+        "aria-label",
+        "tasks:gantt.neighborhoodScrollLabel",
+      );
+      expect(container.className).toContain("overflow-auto");
+      expect(container.className).toContain("overscroll-contain");
+      expect(container.className).toContain("cursor-grab");
+      // The title bar is outside the scroll container and stays fixed.
+      expect(container.contains(screen.getByRole("heading"))).toBe(false);
+    });
+
+    it("keeps the date header and the task-name column sticky and opaque", () => {
+      const { container } = renderCard();
+      const header = container.querySelector(".sticky.top-0");
+      expect(header?.className).toContain("bg-popover");
+      const rails = container.querySelectorAll(
+        "[data-testid=gantt-neighborhood-row] > .sticky, [data-testid=gantt-neighborhood-focus-row] > .sticky",
+      );
+      expect(rails).toHaveLength(4);
+      for (const rail of rails) {
+        expect(rail.className).toContain("left-0");
+        expect(rail.className).toContain("bg-popover");
+      }
+    });
+
+    it("makes the chart wider than the viewport for a long range", () => {
+      renderCard({
+        scheduleByTaskId: new Map([
+          ["pred", { start: day("2026-01-01"), end: day("2026-01-05") }],
+          ["focus", { start: day("2026-06-01"), end: day("2026-06-08") }],
+          ["succ", { start: day("2026-12-01"), end: day("2026-12-12") }],
+        ]),
+      });
+      const inner = scrollContainer().firstElementChild as HTMLElement;
+      expect(Number.parseFloat(inner.style.width)).toBeGreaterThan(900);
+    });
+
+    describe("with scroll positions", () => {
+      let scrollLeft = 0;
+      let scrollTop = 0;
+      let leftSetter: Mock<(value: number) => void>;
+      beforeEach(() => {
+        scrollLeft = 0;
+        scrollTop = 0;
+        leftSetter = vi.fn((value: number) => {
+          scrollLeft = value;
+        });
+        // jsdom has no layout; make scroll offsets writable and record them.
+        Object.defineProperty(HTMLElement.prototype, "scrollLeft", {
+          configurable: true,
+          get: () => scrollLeft,
+          set: leftSetter,
+        });
+        Object.defineProperty(HTMLElement.prototype, "scrollTop", {
+          configurable: true,
+          get: () => scrollTop,
+          set: (value: number) => {
+            scrollTop = value;
+          },
+        });
+      });
+      afterEach(() => {
+        delete (HTMLElement.prototype as { scrollLeft?: number }).scrollLeft;
+        delete (HTMLElement.prototype as { scrollTop?: number }).scrollTop;
+      });
+
+      it("scrolls the chart to the focus bar when it opens", () => {
+        const longRange = new Map([
+          ["pred", { start: day("2026-01-01"), end: day("2026-01-05") }],
+          ["focus", { start: day("2026-06-01"), end: day("2026-06-08") }],
+          ["succ", { start: day("2026-12-01"), end: day("2026-12-12") }],
+        ]);
+        renderCard({ scheduleByTaskId: longRange });
+        // 2026-05-31 is the day before the bar's first day: 14px/day from
+        // 2025-12-31 (the padded start) minus the margin.
+        expect(leftSetter).toHaveBeenCalled();
+        expect(scrollLeft).toBeGreaterThan(1000);
+        const bar = screen
+          .getAllByTestId("gantt-neighborhood-bar")
+          .find((element) => element.dataset.focus === "true");
+        expect(Number.parseFloat(bar?.style.left ?? "0") - scrollLeft).toBe(24);
+      });
+
+      it("scrolls again when the focus task changes, not on re-renders", () => {
+        const { rerender, onSelectTask } = renderCard();
+        const calls = leftSetter.mock.calls.length;
+        rerender(
+          <GanttTaskNeighborhood
+            focusTaskId="focus"
+            edges={edges}
+            scheduleByTaskId={schedules}
+            taskInfoById={info}
+            onSelectTask={onSelectTask}
+          />,
+        );
+        expect(leftSetter.mock.calls.length).toBe(calls);
+        rerender(
+          <GanttTaskNeighborhood
+            focusTaskId="succ"
+            edges={edges}
+            scheduleByTaskId={schedules}
+            taskInfoById={info}
+            onSelectTask={onSelectTask}
+          />,
+        );
+        expect(leftSetter.mock.calls.length).toBeGreaterThan(calls);
+      });
+
+      it("pans by dragging an empty area of the chart", () => {
+        renderCard();
+        const container = scrollContainer();
+        scrollLeft = 200;
+        scrollTop = 50;
+        const target = screen.getByTestId("gantt-neighborhood-focus-row");
+        fireEvent.pointerDown(target, {
+          pointerId: 1,
+          button: 0,
+          clientX: 300,
+          clientY: 100,
+        });
+        fireEvent.pointerMove(target, {
+          pointerId: 1,
+          clientX: 250,
+          clientY: 90,
+        });
+        expect(scrollLeft).toBe(250);
+        expect(scrollTop).toBe(60);
+        expect(container).toHaveAttribute("data-panning", "true");
+        expect(container.className).toContain("cursor-grabbing");
+        fireEvent.pointerUp(target, { pointerId: 1 });
+        expect(container).not.toHaveAttribute("data-panning");
+        // A move after release no longer pans.
+        fireEvent.pointerMove(target, {
+          pointerId: 1,
+          clientX: 100,
+          clientY: 90,
+        });
+        expect(scrollLeft).toBe(250);
+      });
+
+      it("does not pan when the press starts on a row button or stays under the threshold", () => {
+        renderCard();
+        scrollLeft = 200;
+        const button = screen.getAllByTestId("gantt-neighborhood-row")[0];
+        fireEvent.pointerDown(button, {
+          pointerId: 1,
+          button: 0,
+          clientX: 300,
+          clientY: 100,
+        });
+        fireEvent.pointerMove(button, {
+          pointerId: 1,
+          clientX: 100,
+          clientY: 100,
+        });
+        expect(scrollLeft).toBe(200);
+
+        const target = screen.getByTestId("gantt-neighborhood-focus-row");
+        fireEvent.pointerDown(target, {
+          pointerId: 2,
+          button: 0,
+          clientX: 300,
+          clientY: 100,
+        });
+        fireEvent.pointerMove(target, {
+          pointerId: 2,
+          clientX: 298,
+          clientY: 101,
+        });
+        expect(scrollLeft).toBe(200);
+      });
+
+      it("still switches the task on a plain click after a tiny movement", () => {
+        const { onSelectTask } = renderCard();
+        const button = screen.getAllByTestId("gantt-neighborhood-row")[0];
+        fireEvent.pointerDown(button, {
+          pointerId: 1,
+          button: 0,
+          clientX: 10,
+          clientY: 10,
+        });
+        fireEvent.pointerMove(button, {
+          pointerId: 1,
+          clientX: 11,
+          clientY: 10,
+        });
+        fireEvent.pointerUp(button, { pointerId: 1 });
+        fireEvent.click(button);
+        expect(onSelectTask).toHaveBeenCalledWith("pred");
+      });
     });
   });
 

@@ -3133,6 +3133,7 @@
 			"neighborhoodNoDates": "Sin fechas",
 			"neighborhoodOpenTask": "Abrir la tarea {{key}}",
 			"neighborhoodPredecessors": "Predecesoras",
+			"neighborhoodScrollLabel": "Gráfico de dependencias, desplazable",
 			"neighborhoodSuccessors": "Sucesoras",
 			"criticalPathDroppedEdges_many": "{{count}} dependencias sin fecha omitidas",
 			"criticalPathDroppedEdges_one": "{{count}} dependencia sin fecha omitida",

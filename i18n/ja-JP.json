@@ -3137,6 +3137,7 @@
 			"neighborhoodNoDates": "日付なし",
 			"neighborhoodOpenTask": "タスク {{key}} を開く",
 			"neighborhoodPredecessors": "先行タスク",
+			"neighborhoodScrollLabel": "依存関係チャート（スクロール可能）",
 			"neighborhoodSuccessors": "後続タスク",
 			"criticalPathDroppedEdges_other": "日付未設定の依存関係を{{count}}件スキップしました",
 			"criticalPathDroppedEdgesHint": "これらの依存関係は日付が設定されていないタスクに接続しているため、クリティカルパスの判定対象外です。本来クリティカルになるはずのタスクが強調表示されない場合があります。",

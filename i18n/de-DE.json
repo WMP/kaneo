@@ -3134,6 +3134,7 @@
 			"neighborhoodNoDates": "Keine Termine",
 			"neighborhoodOpenTask": "Aufgabe {{key}} öffnen",
 			"neighborhoodPredecessors": "Vorgänger",
+			"neighborhoodScrollLabel": "Abhängigkeitsdiagramm, scrollbar",
 			"neighborhoodSuccessors": "Nachfolger",
 			"criticalPathDroppedEdges_one": "{{count}} undatierte Abhängigkeit übersprungen",
 			"criticalPathDroppedEdges_other": "{{count}} undatierte Abhängigkeiten übersprungen",

@@ -3147,6 +3147,7 @@
 			"neighborhoodNoDates": "Tarix yoxdur",
 			"neighborhoodOpenTask": "{{key}} tapşırığını aç",
 			"neighborhoodPredecessors": "Əvvəlkilər",
+			"neighborhoodScrollLabel": "Asılılıq diaqramı, sürüşdürülə bilən",
 			"neighborhoodSuccessors": "Sonrakılar",
 			"criticalPathDroppedEdges_one": "{{count}} tarixsiz asılılıq ötürüldü",
 			"criticalPathDroppedEdges_other": "{{count}} tarixsiz asılılıq ötürüldü",

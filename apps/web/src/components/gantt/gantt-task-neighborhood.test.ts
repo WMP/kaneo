@@ -3,6 +3,7 @@ import type { DependencyEdgeInput } from "./dependency-lines";
 import {
   buildNeighborhoodScale,
   buildTaskNeighborhood,
+  MIN_PIXELS_PER_DAY,
   type NeighborhoodSchedule,
 } from "./gantt-task-neighborhood";
 
@@ -220,6 +221,9 @@ describe("buildNeighborhoodScale", () => {
     const long = buildNeighborhoodScale(
       { start: day("2026-01-01"), end: day("2026-12-31") },
       600,
+      64,
+      // Disable the minimum to exercise the tick steps of a fully fitted year.
+      0,
     );
     const gapDays =
       (long.ticks[1].day.getTime() - long.ticks[0].day.getTime()) /
@@ -227,6 +231,32 @@ describe("buildNeighborhoodScale", () => {
     expect(gapDays).toBeGreaterThanOrEqual(28);
     for (let i = 1; i < long.ticks.length; i++) {
       expect(long.ticks[i].x - long.ticks[i - 1].x).toBeGreaterThanOrEqual(64);
+    }
+  });
+
+  it("keeps the fit-to-width scale when the range already fits", () => {
+    const scale = buildNeighborhoodScale(
+      { start: day("2026-03-10"), end: day("2026-03-14") },
+      800,
+    );
+    expect(800 / scale.totalDays).toBeGreaterThan(MIN_PIXELS_PER_DAY);
+    expect(scale.pixelsPerDay).toBeCloseTo(800 / scale.totalDays);
+    expect(scale.widthPx).toBeCloseTo(800);
+  });
+
+  it("never goes below the minimum px per day and overflows a long range", () => {
+    const scale = buildNeighborhoodScale(
+      { start: day("2026-01-01"), end: day("2026-12-31") },
+      600,
+    );
+    expect(scale.pixelsPerDay).toBe(MIN_PIXELS_PER_DAY);
+    expect(scale.widthPx).toBe(scale.totalDays * MIN_PIXELS_PER_DAY);
+    expect(scale.widthPx).toBeGreaterThan(600);
+    expect(scale.offsetOf(day("2026-12-31"))).toBeGreaterThan(600);
+    for (let i = 1; i < scale.ticks.length; i++) {
+      expect(scale.ticks[i].x - scale.ticks[i - 1].x).toBeGreaterThanOrEqual(
+        64,
+      );
     }
   });
 

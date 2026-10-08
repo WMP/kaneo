@@ -1,6 +1,7 @@
 import { addDays } from "date-fns";
 import {
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -54,6 +55,11 @@ const GROUP_LABEL_HEIGHT_PX = 22;
 const BAR_HEIGHT_PX = 14;
 const MIN_BAR_WIDTH_PX = 8;
 const MARKER_ID_PREFIX = "gantt-neighborhood-arrow";
+// Space kept between the rail and the focus bar when the chart scrolls to it.
+const FOCUS_SCROLL_MARGIN_PX = 24;
+// A pointer must travel this far before a press on the chart becomes a pan, so
+// a plain click still lands.
+const DRAG_THRESHOLD_PX = 4;
 
 type Group = { role: NeighborhoodRole; rows: NeighborhoodRow[]; top: number };
 
@@ -92,6 +98,16 @@ export function GanttTaskNeighborhood({
 }: GanttTaskNeighborhoodProps) {
   const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    left: number;
+    top: number;
+    active: boolean;
+  } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
   const availableWidth = useElementWidth(rootRef);
 
   const neighborhood = useMemo(
@@ -105,15 +121,18 @@ export function GanttTaskNeighborhood({
     (availableWidth ?? 0) - CARD_MARGIN_PX * 2,
     CARD_MAX_WIDTH_PX,
   );
-  const timelineWidth = Math.max(cardWidth - RAIL_WIDTH_PX, 120);
+  const viewportTimelineWidth = Math.max(cardWidth - RAIL_WIDTH_PX, 120);
 
   const scale = useMemo(
     () =>
       neighborhood.range
-        ? buildNeighborhoodScale(neighborhood.range, timelineWidth)
+        ? buildNeighborhoodScale(neighborhood.range, viewportTimelineWidth)
         : null,
-    [neighborhood.range, timelineWidth],
+    [neighborhood.range, viewportTimelineWidth],
   );
+  // The chart is as wide as the scale needs; it is wider than the viewport
+  // when the range is long, and the scroll container then scrolls.
+  const timelineWidth = scale?.widthPx ?? viewportTimelineWidth;
 
   // Rows grouped as predecessors / focus / successors with the top offset of
   // each group (measured from the first row area, below the axis).
@@ -151,6 +170,91 @@ export function GanttTaskNeighborhood({
     }
     return buildDependencyEdges([...neighborhood.edges], boxes);
   }, [scale, neighborhood.rows, neighborhood.edges, rowTops]);
+
+  // Bring the focus bar and row into view when the card opens and whenever the
+  // focus task changes, not on every resize or data refresh.
+  const focusSchedule = neighborhood.rows.find(
+    (row) => row.role === "focus",
+  )?.schedule;
+  const focusStartOffset = focusSchedule
+    ? (scale?.offsetOf(focusSchedule.start) ?? null)
+    : null;
+  const focusTop = rowTops.get(focusTaskId) ?? null;
+  const hasBody = visible && neighborhood.neighborCount > 0;
+  const scrolledForRef = useRef<string | null>(null);
+  const latestFocusRef = useRef({ focusStartOffset, focusTop });
+  latestFocusRef.current = { focusStartOffset, focusTop };
+  useLayoutEffect(() => {
+    if (!hasBody) {
+      scrolledForRef.current = null;
+      return;
+    }
+    const element = scrollRef.current;
+    if (!element || scrolledForRef.current === focusTaskId) return;
+    scrolledForRef.current = focusTaskId;
+    const { focusStartOffset: startOffset, focusTop: top } =
+      latestFocusRef.current;
+    if (startOffset !== null) {
+      element.scrollLeft = Math.max(startOffset - FOCUS_SCROLL_MARGIN_PX, 0);
+    }
+    if (top !== null) {
+      // Centre the focus row in the area below the sticky date header.
+      const visibleRows = Math.max(element.clientHeight - AXIS_HEIGHT_PX, 0);
+      element.scrollTop = Math.max(
+        top + ROW_HEIGHT_PX / 2 - visibleRows / 2,
+        0,
+      );
+    }
+  }, [hasBody, focusTaskId]);
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // Touch already pans natively; only a primary mouse/pen press starts a drag
+    // and never one that starts on a row button.
+    if (event.pointerType === "touch" || event.button !== 0) return;
+    if ((event.target as Element).closest("button")) return;
+    const element = event.currentTarget;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      left: element.scrollLeft,
+      top: element.scrollTop,
+      active: false,
+    };
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    if (!drag.active) {
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+      drag.active = true;
+      setIsPanning(true);
+      try {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      } catch {
+        // The pointer may already be gone; panning still works without it.
+      }
+    }
+    event.currentTarget.scrollLeft = drag.left - dx;
+    event.currentTarget.scrollTop = drag.top - dy;
+  };
+
+  const endPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    if (drag.active) {
+      setIsPanning(false);
+      try {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      } catch {
+        // Already released.
+      }
+    }
+  };
 
   const focusInfo = taskInfoById.get(focusTaskId);
   const focusKey = focusInfo?.key ?? "";
@@ -201,12 +305,28 @@ export function GanttTaskNeighborhood({
     const content = (
       <>
         <span
-          className="flex min-w-0 shrink-0 items-center gap-2 px-3"
+          // Sticky and opaque: bars and edges scroll underneath the rail.
+          className="sticky left-0 z-20 flex min-w-0 shrink-0 items-center gap-2 bg-popover px-3"
           style={{ width: RAIL_WIDTH_PX }}
         >
           <span
+            aria-hidden="true"
             className={cn(
-              "shrink-0 text-xs",
+              "pointer-events-none absolute inset-0",
+              isFocus
+                ? "bg-primary/10"
+                : "group-hover/row:bg-accent/60 group-focus-visible/row:bg-accent/60",
+            )}
+          />
+          {isFocus && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-1 bg-primary"
+            />
+          )}
+          <span
+            className={cn(
+              "relative shrink-0 text-xs",
               isFocus
                 ? "font-semibold text-primary"
                 : "font-medium text-muted-foreground",
@@ -215,7 +335,10 @@ export function GanttTaskNeighborhood({
             {key}
           </span>
           <span
-            className={cn("min-w-0 truncate text-xs", isFocus && "font-medium")}
+            className={cn(
+              "relative min-w-0 truncate text-xs",
+              isFocus && "font-medium",
+            )}
           >
             {taskTitle}
           </span>
@@ -239,10 +362,6 @@ export function GanttTaskNeighborhood({
           className="relative flex items-center bg-primary/10"
           style={{ height: ROW_HEIGHT_PX }}
         >
-          <span
-            aria-hidden="true"
-            className="absolute inset-y-0 start-0 w-1 bg-primary"
-          />
           {content}
         </li>
       );
@@ -256,7 +375,7 @@ export function GanttTaskNeighborhood({
           title={taskTitle ? `${key} ${taskTitle}` : key}
           data-testid="gantt-neighborhood-row"
           onClick={() => onSelectTask(row.taskId)}
-          className="relative flex w-full cursor-pointer items-center text-start outline-none transition-colors hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="group/row relative flex w-full cursor-pointer items-center text-start outline-none transition-colors hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           style={{ height: ROW_HEIGHT_PX }}
         >
           {content}
@@ -300,7 +419,29 @@ export function GanttTaskNeighborhood({
               {t("tasks:gantt.neighborhoodEmpty")}
             </p>
           ) : (
-            <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+            // One scroll container for both axes keeps the bars, the SVG overlay,
+            // the sticky date header and the sticky rail aligned. Base UI's
+            // scroll lock only sets overflow:hidden on <html>/<body>, so wheel
+            // and trackpad scrolling inside the popup is unaffected;
+            // overscroll-contain stops it chaining to the page.
+            // biome-ignore lint/a11y/useSemanticElements: a labelled div is the scrollable-region pattern; a fieldset would be a form group
+            <div
+              ref={scrollRef}
+              role="group"
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be focusable so the arrow keys scroll it
+              tabIndex={0}
+              aria-label={t("tasks:gantt.neighborhoodScrollLabel")}
+              data-testid="gantt-neighborhood-scroll"
+              data-panning={isPanning ? "true" : undefined}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endPan}
+              onPointerCancel={endPan}
+              className={cn(
+                "min-h-0 flex-1 overflow-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                isPanning ? "cursor-grabbing select-none" : "cursor-grab",
+              )}
+            >
               <div
                 className="relative"
                 style={{ width: RAIL_WIDTH_PX + timelineWidth }}
@@ -308,9 +449,13 @@ export function GanttTaskNeighborhood({
                 {scale && (
                   <div
                     aria-hidden="true"
-                    className="sticky top-0 z-10 border-b bg-popover"
+                    className="sticky top-0 z-30 flex border-b bg-popover"
                     style={{ height: AXIS_HEIGHT_PX }}
                   >
+                    <span
+                      className="sticky left-0 z-10 block shrink-0 bg-popover"
+                      style={{ width: RAIL_WIDTH_PX, height: AXIS_HEIGHT_PX }}
+                    />
                     {scale.ticks.map((tick) => (
                       <span
                         key={tick.day.getTime()}
@@ -347,10 +492,12 @@ export function GanttTaskNeighborhood({
                       {group.role !== "focus" && (
                         <div
                           aria-hidden="true"
-                          className="flex items-center px-3 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide"
+                          className="flex items-center font-semibold text-[10px] text-muted-foreground uppercase tracking-wide"
                           style={{ height: GROUP_LABEL_HEIGHT_PX }}
                         >
-                          {groupLabel(group.role)}
+                          <span className="sticky left-0 z-20 bg-popover px-3">
+                            {groupLabel(group.role)}
+                          </span>
                         </div>
                       )}
                       <ul

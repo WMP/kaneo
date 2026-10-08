@@ -3134,6 +3134,7 @@
 			"neighborhoodNoDates": "Χωρίς ημερομηνίες",
 			"neighborhoodOpenTask": "Άνοιγμα εργασίας {{key}}",
 			"neighborhoodPredecessors": "Προηγούμενες",
+			"neighborhoodScrollLabel": "Διάγραμμα εξαρτήσεων, με δυνατότητα κύλισης",
 			"neighborhoodSuccessors": "Επόμενες",
 			"criticalPathDroppedEdges_one": "{{count}} εξάρτηση χωρίς ημερομηνία παραλείφθηκε",
 			"criticalPathDroppedEdges_other": "{{count}} εξαρτήσεις χωρίς ημερομηνία παραλείφθηκαν",

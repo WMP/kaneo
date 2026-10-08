@@ -3134,6 +3134,7 @@
 			"neighborhoodNoDates": "Нема датуми",
 			"neighborhoodOpenTask": "Отвори ја задачата {{key}}",
 			"neighborhoodPredecessors": "Претходници",
+			"neighborhoodScrollLabel": "Дијаграм на зависности, со лизгање",
 			"neighborhoodSuccessors": "Следбеници",
 			"criticalPathDroppedEdges_one": "{{count}} зависност без датум е прескокната",
 			"criticalPathDroppedEdges_other": "{{count}} зависности без датум се прескокнати",

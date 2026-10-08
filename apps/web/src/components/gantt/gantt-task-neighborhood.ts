@@ -140,6 +140,9 @@ export type NeighborhoodScale = {
   /** Number of whole days shown. */
   totalDays: number;
   pixelsPerDay: number;
+  /** Full width of the time axis, `totalDays * pixelsPerDay`. It can exceed
+   * the width the range was fitted into (the card then scrolls). */
+  widthPx: number;
   /** Pixel offset of a calendar day's left edge. */
   offsetOf: (day: Date) => number;
   /** Tick days, each at least `minTickSpacingPx` apart. */
@@ -150,20 +153,29 @@ export type NeighborhoodScale = {
 // wins, so a short span is labelled per day and a long one per week or month.
 const TICK_STEPS_DAYS = [1, 2, 7, 14, 28, 91, 182, 365];
 
-/** Fits `range` (plus one day of padding on each side) into `widthPx` and
- * picks tick days by span. Day arithmetic is calendar-day based (never
+/** Narrowest a day may get. A longer range keeps this scale and overflows the
+ * width it was fitted into, so the card scrolls horizontally instead of
+ * squeezing bars into slivers. */
+export const MIN_PIXELS_PER_DAY = 14;
+
+/** Fits `range` (plus one day of padding on each side) into `widthPx`, never
+ * narrower than `minPixelsPerDay` per day, and picks tick days by span. Day arithmetic is calendar-day based (never
  * milliseconds / 86 400 000), so a DST change does not shift a bar. */
 export function buildNeighborhoodScale(
   range: { start: Date; end: Date },
   widthPx: number,
   minTickSpacingPx = 64,
+  minPixelsPerDay = MIN_PIXELS_PER_DAY,
 ): NeighborhoodScale {
   const start = addDays(range.start, -1);
   const totalDays = Math.max(
     differenceInCalendarDays(range.end, range.start) + 3,
     3,
   );
-  const pixelsPerDay = Math.max(widthPx, 1) / totalDays;
+  const pixelsPerDay = Math.max(
+    Math.max(widthPx, 1) / totalDays,
+    minPixelsPerDay,
+  );
   const offsetOf = (day: Date) =>
     differenceInCalendarDays(day, start) * pixelsPerDay;
   const step =
@@ -175,5 +187,12 @@ export function buildNeighborhoodScale(
     const day = addDays(start, offset);
     ticks.push({ day, x: offsetOf(day) });
   }
-  return { start, totalDays, pixelsPerDay, offsetOf, ticks };
+  return {
+    start,
+    totalDays,
+    pixelsPerDay,
+    widthPx: totalDays * pixelsPerDay,
+    offsetOf,
+    ticks,
+  };
 }
