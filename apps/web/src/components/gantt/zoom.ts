@@ -72,7 +72,13 @@ export function isZoomWheelGesture(
 // `deltaY > 0` (scrolling down/away) zooms out; `deltaY < 0` zooms in — the
 // same direction convention as maps and code editors.
 export function nextGanttZoom(currentZoom: number, deltaY: number): number {
-  return clampGanttZoom(currentZoom * Math.exp(-deltaY * ZOOM_SENSITIVITY));
+  return clampGanttZoom(currentZoom * wheelZoomFactor(deltaY));
+}
+
+// The multiplicative step of a (pixel-normalised) wheel delta, shared by every
+// chart that zooms continuously on the wheel.
+export function wheelZoomFactor(deltaY: number): number {
+  return Math.exp(-deltaY * ZOOM_SENSITIVITY);
 }
 
 /**

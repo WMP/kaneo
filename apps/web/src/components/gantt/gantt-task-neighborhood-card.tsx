@@ -21,15 +21,19 @@ import { GanttDependencyOverlay } from "./gantt-dependency-overlay";
 import {
   buildNeighborhoodScale,
   buildTaskNeighborhood,
-  fitPixelsPerDay,
+  clampCustomPixelsPerDay,
   NEIGHBORHOOD_ZOOMS,
   type NeighborhoodRole,
   type NeighborhoodRow,
   type NeighborhoodSchedule,
   type NeighborhoodZoom,
-  stepNeighborhoodZoom,
 } from "./gantt-task-neighborhood";
-import { normalizeWheelDeltaY } from "./zoom";
+import {
+  isZoomWheelGesture,
+  normalizeWheelDeltaY,
+  scrollLeftForZoom,
+  wheelZoomFactor,
+} from "./zoom";
 
 export type NeighborhoodTaskInfo = {
   /** The task key as shown elsewhere (for example AFB-36). */
@@ -77,9 +81,6 @@ const FOCUS_SCROLL_MARGIN_PX = 24;
 // A pointer must travel this far before a press on the chart becomes a pan, so
 // a plain click still lands.
 const DRAG_THRESHOLD_PX = 4;
-// Ctrl/Cmd+wheel (and a trackpad pinch, which browsers report the same way)
-// changes the scale one step per this much accumulated wheel travel.
-const ZOOM_WHEEL_STEP_PX = 60;
 
 type Group = { role: NeighborhoodRole; rows: NeighborhoodRow[]; top: number };
 
@@ -130,7 +131,13 @@ export function GanttTaskNeighborhood({
   const [isPanning, setIsPanning] = useState(false);
   // A pan that started on a row button must not also open that row's task.
   const suppressClickRef = useRef(false);
-  const wheelZoomRef = useRef(0);
+  // A continuous scale picked with the wheel (px per day); null while one of
+  // the switch's choices is active. Not persisted: the switch's unit is.
+  const [customPpd, setCustomPpd] = useState<number | null>(null);
+  // Counts unit clicks so the focus bar is brought into view again even when
+  // the clicked unit equals the one the wheel zoom started from.
+  const [snapCount, setSnapCount] = useState(0);
+  const pendingScrollLeftRef = useRef<number | null>(null);
   const availableWidth = useElementWidth(rootRef);
   const zoom = useUserPreferencesStore((state) => state.ganttNeighborhoodZoom);
   const setZoom = useUserPreferencesStore(
@@ -157,15 +164,11 @@ export function GanttTaskNeighborhood({
         ? buildNeighborhoodScale(neighborhood.range, viewportTimelineWidth, {
             zoom,
             weekStartsOn,
+            customPixelsPerDay: customPpd,
           })
         : null,
-    [neighborhood.range, viewportTimelineWidth, zoom, weekStartsOn],
+    [neighborhood.range, viewportTimelineWidth, zoom, weekStartsOn, customPpd],
   );
-  // What "fit" would use, whichever scale is active: Ctrl/Cmd+wheel orders the
-  // scales by pixels per day and needs to place "fit" among the units.
-  const fitPpd = neighborhood.range
-    ? fitPixelsPerDay(neighborhood.range, viewportTimelineWidth)
-    : 0;
   // The chart is as wide as the scale needs; it is wider than the viewport
   // when the range is long, and the scroll container then scrolls.
   const timelineWidth = scale?.widthPx ?? viewportTimelineWidth;
@@ -220,7 +223,7 @@ export function GanttTaskNeighborhood({
   // The focus bar is brought into view for each task/scale pair: a new focus
   // task, or a new scale (every offset changes, so the bar would otherwise end
   // up anywhere).
-  const scrollKey = `${focusTaskId}|${scale?.zoom ?? ""}`;
+  const scrollKey = `${focusTaskId}|${scale?.zoom ?? ""}|${snapCount}`;
   const scrolledForRef = useRef<string | null>(null);
   const latestFocusRef = useRef({ focusStartOffset, focusTop });
   latestFocusRef.current = { focusStartOffset, focusTop };
@@ -247,50 +250,63 @@ export function GanttTaskNeighborhood({
     }
   }, [hasBody, scrollKey]);
 
-  // Wheel input. A plain vertical wheel over a chart that only overflows
-  // sideways would otherwise do nothing (the browser scrolls the axis that has
-  // no overflow by zero), so it pans the time axis. Ctrl/Cmd+wheel, which is
-  // also how browsers report a trackpad pinch, switches the scale. A native
-  // non-passive listener, because React registers wheel handlers as passive
-  // and ignores preventDefault there.
-  const latestZoomRef = useRef({ zoom, fitPpd, setZoom });
-  latestZoomRef.current = { zoom, fitPpd, setZoom };
+  // Wheel input, the same as the main Gantt: a plain vertical wheel over the
+  // chart zooms continuously around the pointer (a trackpad pinch arrives as
+  // Ctrl+wheel and does the same); Shift+wheel and a sideways swipe are left to
+  // the browser's horizontal scroll, and so is a wheel over the sticky task
+  // column, which scrolls the rows. A native non-passive listener, because
+  // React registers wheel handlers as passive and ignores preventDefault there.
+  const latestScaleRef = useRef({ ppd: scale?.pixelsPerDay ?? 0 });
+  latestScaleRef.current = { ppd: scale?.pixelsPerDay ?? 0 };
   useEffect(() => {
     const element = scrollRef.current;
     if (!hasBody || !element) return;
     const onWheel = (event: WheelEvent) => {
+      if (event.shiftKey) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-neighborhood-rail]")
+      ) {
+        return;
+      }
+      if (!isZoomWheelGesture(event.deltaX, event.deltaY, event.ctrlKey)) {
+        return;
+      }
+      event.preventDefault();
       const deltaY = normalizeWheelDeltaY(
         event.deltaY,
         event.deltaMode,
         element.clientHeight,
       );
-      if (event.ctrlKey || event.metaKey) {
-        event.preventDefault();
-        wheelZoomRef.current += deltaY;
-        if (Math.abs(wheelZoomRef.current) < ZOOM_WHEEL_STEP_PX) return;
-        // Scrolling up (negative deltaY) zooms in, as in the main Gantt.
-        const direction = wheelZoomRef.current < 0 ? 1 : -1;
-        wheelZoomRef.current = 0;
-        const latest = latestZoomRef.current;
-        const next = stepNeighborhoodZoom(
-          latest.zoom,
-          direction,
-          latest.fitPpd,
-        );
-        if (next !== latest.zoom) latest.setZoom(next);
-        return;
-      }
-      // Shift+wheel and a sideways swipe already scroll horizontally; a chart
-      // that also overflows vertically keeps the native vertical wheel.
-      if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(deltaY)) return;
-      if (element.scrollHeight > element.clientHeight) return;
-      if (element.scrollWidth <= element.clientWidth) return;
-      event.preventDefault();
-      element.scrollLeft += deltaY;
+      const oldPpd = latestScaleRef.current.ppd;
+      if (oldPpd <= 0) return;
+      const nextPpd = clampCustomPixelsPerDay(oldPpd * wheelZoomFactor(deltaY));
+      if (nextPpd === oldPpd) return;
+      pendingScrollLeftRef.current = scrollLeftForZoom({
+        scrollLeft: element.scrollLeft,
+        pointerX: event.clientX - element.getBoundingClientRect().left,
+        railWidthPx: RAIL_WIDTH_PX,
+        oldZoom: oldPpd,
+        newZoom: nextPpd,
+      });
+      // Several wheel events can land before React renders; the next one must
+      // start from this result, not from the committed scale.
+      latestScaleRef.current = { ppd: nextPpd };
+      setCustomPpd(nextPpd);
     };
     element.addEventListener("wheel", onWheel, { passive: false });
     return () => element.removeEventListener("wheel", onWheel);
   }, [hasBody]);
+
+  // Applies the anchored scrollLeft once the zoomed chart has been laid out,
+  // not at wheel time, when it would be clamped against the old width.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: customPpd is listed so this runs right after the zoomed chart commits; the body only reads the pending-scroll ref.
+  useLayoutEffect(() => {
+    const pending = pendingScrollLeftRef.current;
+    if (pending === null) return;
+    pendingScrollLeftRef.current = null;
+    if (scrollRef.current) scrollRef.current.scrollLeft = Math.max(pending, 0);
+  }, [customPpd]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     // Touch already pans natively; only a primary mouse/pen press starts a
@@ -406,6 +422,7 @@ export function GanttTaskNeighborhood({
       <>
         <span
           // Sticky and opaque: bars and edges scroll underneath the rail.
+          data-neighborhood-rail=""
           className="sticky left-0 z-20 flex min-w-0 shrink-0 items-center gap-2 bg-popover px-3"
           style={{ width: RAIL_WIDTH_PX }}
         >
@@ -524,12 +541,16 @@ export function GanttTaskNeighborhood({
                   <button
                     key={option}
                     type="button"
-                    aria-pressed={zoom === option}
+                    aria-pressed={!scale?.isCustom && zoom === option}
                     data-zoom={option}
-                    onClick={() => setZoom(option)}
+                    onClick={() => {
+                      setCustomPpd(null);
+                      setSnapCount((count) => count + 1);
+                      setZoom(option);
+                    }}
                     className={cn(
                       "touch-manipulation rounded-sm px-2 py-0.5 font-medium text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                      zoom === option
+                      !scale?.isCustom && zoom === option
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
@@ -583,6 +604,7 @@ export function GanttTaskNeighborhood({
                     style={{ height: AXIS_HEIGHT_PX }}
                   >
                     <span
+                      data-neighborhood-rail=""
                       className="sticky left-0 z-10 block shrink-0 bg-popover"
                       style={{ width: RAIL_WIDTH_PX, height: AXIS_HEIGHT_PX }}
                     />
@@ -625,7 +647,10 @@ export function GanttTaskNeighborhood({
                           className="flex items-center font-semibold text-[10px] text-muted-foreground uppercase tracking-wide"
                           style={{ height: GROUP_LABEL_HEIGHT_PX }}
                         >
-                          <span className="sticky left-0 z-20 bg-popover px-3">
+                          <span
+                            data-neighborhood-rail=""
+                            className="sticky left-0 z-20 bg-popover px-3"
+                          >
                             {groupLabel(group.role)}
                           </span>
                         </div>

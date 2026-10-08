@@ -18,7 +18,7 @@
 import { addDays, differenceInCalendarDays } from "date-fns";
 import { formatDateShort } from "@/lib/format";
 import type { DependencyEdgeInput } from "./dependency-lines";
-import { NEIGHBORHOOD_ZOOMS, type NeighborhoodZoom } from "./neighborhood-zoom";
+import type { NeighborhoodZoom } from "./neighborhood-zoom";
 import { buildGanttHeaderColumns, type GanttUnit } from "./timeline";
 
 export type NeighborhoodSchedule = { start: Date; end: Date };
@@ -154,28 +154,24 @@ export const UNIT_PIXELS_PER_DAY: Record<GanttUnit, number> = {
   quarter: 1.216,
 };
 
-/**
- * The scale one Ctrl/Cmd+wheel step away: `direction` 1 zooms in (wider days),
- * -1 zooms out. The scales are ordered by pixels per day; "fit" sits where its
- * own px/day (`fitPixelsPerDay`) falls among the fixed units. The ends clamp.
- */
-export function stepNeighborhoodZoom(
-  current: NeighborhoodZoom,
-  direction: 1 | -1,
-  fitPixelsPerDay: number,
-): NeighborhoodZoom {
-  const pixelsPerDay = (zoom: NeighborhoodZoom) =>
-    zoom === "fit" ? fitPixelsPerDay : UNIT_PIXELS_PER_DAY[zoom];
-  const ordered = [...NEIGHBORHOOD_ZOOMS].sort(
-    (left, right) => pixelsPerDay(left) - pixelsPerDay(right),
+/** Bounds of a continuous (wheel) zoom, in pixels per day: from a little under
+ * the quarter unit to a few times the day unit. */
+export const MIN_CUSTOM_PIXELS_PER_DAY = 0.6;
+export const MAX_CUSTOM_PIXELS_PER_DAY = 160;
+
+export function clampCustomPixelsPerDay(pixelsPerDay: number): number {
+  return Math.min(
+    MAX_CUSTOM_PIXELS_PER_DAY,
+    Math.max(MIN_CUSTOM_PIXELS_PER_DAY, pixelsPerDay),
   );
-  const index = ordered.indexOf(current);
-  return ordered[Math.min(Math.max(index + direction, 0), ordered.length - 1)];
 }
 
 export type NeighborhoodScale = {
-  /** The choice that produced this scale. */
+  /** The choice that produced this scale (the unit the wheel zoom started
+   * from while `isCustom`). */
   zoom: NeighborhoodZoom;
+  /** A continuous (wheel) scale rather than one of the switch's choices. */
+  isCustom: boolean;
   /** First day shown (one day of padding before the earliest date). */
   start: Date;
   /** Number of whole days shown. */
@@ -221,6 +217,9 @@ type BuildNeighborhoodScaleOptions = {
   weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   minTickSpacingPx?: number;
   minPixelsPerDay?: number;
+  /** A continuous scale (wheel zoom): overrides the unit's own px per day, and
+   * the ticks are picked from it like "fit" does. */
+  customPixelsPerDay?: number | null;
 };
 
 /**
@@ -239,11 +238,17 @@ export function buildNeighborhoodScale(
     weekStartsOn = 0,
     minTickSpacingPx = 64,
     minPixelsPerDay = MIN_PIXELS_PER_DAY,
+    customPixelsPerDay = null,
   }: BuildNeighborhoodScaleOptions = {},
 ): NeighborhoodScale {
   const start = addDays(range.start, -1);
   const rangeDays = dayCountOf(range);
-  const fixedPixelsPerDay = zoom === "fit" ? null : UNIT_PIXELS_PER_DAY[zoom];
+  const isCustom = customPixelsPerDay !== null;
+  const fixedPixelsPerDay = isCustom
+    ? clampCustomPixelsPerDay(customPixelsPerDay)
+    : zoom === "fit"
+      ? null
+      : UNIT_PIXELS_PER_DAY[zoom];
   const pixelsPerDay =
     fixedPixelsPerDay ?? fitPixelsPerDay(range, widthPx, minPixelsPerDay);
   // A fixed unit can be narrower than the card; keep the grid to its edge.
@@ -258,9 +263,9 @@ export function buildNeighborhoodScale(
     differenceInCalendarDays(day, start) * pixelsPerDay;
 
   const ticks: NeighborhoodScale["ticks"] = [];
-  if (zoom === "fit" || zoom === "day") {
+  if (isCustom || zoom === "fit" || zoom === "day") {
     const step =
-      zoom === "day"
+      zoom === "day" && !isCustom
         ? 1
         : (TICK_STEPS_DAYS.find(
             (candidate) => candidate * pixelsPerDay >= minTickSpacingPx,
@@ -282,6 +287,7 @@ export function buildNeighborhoodScale(
   }
   return {
     zoom,
+    isCustom,
     start,
     totalDays,
     pixelsPerDay,

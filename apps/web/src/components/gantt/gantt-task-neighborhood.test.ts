@@ -4,9 +4,10 @@ import {
   buildNeighborhoodScale,
   buildTaskNeighborhood,
   isNeighborhoodZoom,
+  MAX_CUSTOM_PIXELS_PER_DAY,
+  MIN_CUSTOM_PIXELS_PER_DAY,
   MIN_PIXELS_PER_DAY,
   type NeighborhoodSchedule,
-  stepNeighborhoodZoom,
   UNIT_PIXELS_PER_DAY,
 } from "./gantt-task-neighborhood";
 
@@ -347,15 +348,45 @@ describe("buildNeighborhoodScale with a fixed unit", () => {
   });
 });
 
-describe("stepNeighborhoodZoom", () => {
-  it("steps between the scales ordered by px per day and clamps at the ends", () => {
-    // A fit scale of 20 px/day sits between week (13.12) and day (44).
-    expect(stepNeighborhoodZoom("quarter", 1, 20)).toBe("month");
-    expect(stepNeighborhoodZoom("week", 1, 20)).toBe("fit");
-    expect(stepNeighborhoodZoom("fit", 1, 20)).toBe("day");
-    expect(stepNeighborhoodZoom("day", 1, 20)).toBe("day");
-    expect(stepNeighborhoodZoom("day", -1, 20)).toBe("fit");
-    expect(stepNeighborhoodZoom("quarter", -1, 20)).toBe("quarter");
+describe("custom (wheel) scale", () => {
+  const range = { start: day("2026-05-01"), end: day("2026-05-20") };
+
+  it("uses the given px per day over the unit's and flags itself custom", () => {
+    const scale = buildNeighborhoodScale(range, 600, {
+      zoom: "week",
+      customPixelsPerDay: 30,
+    });
+    expect(scale.isCustom).toBe(true);
+    expect(scale.pixelsPerDay).toBe(30);
+    expect(buildNeighborhoodScale(range, 600).isCustom).toBe(false);
+  });
+
+  it("clamps the px per day", () => {
+    expect(
+      buildNeighborhoodScale(range, 600, { customPixelsPerDay: 100000 })
+        .pixelsPerDay,
+    ).toBe(MAX_CUSTOM_PIXELS_PER_DAY);
+    expect(
+      buildNeighborhoodScale(range, 600, { customPixelsPerDay: 0 })
+        .pixelsPerDay,
+    ).toBe(MIN_CUSTOM_PIXELS_PER_DAY);
+  });
+
+  it("picks a tick step wide enough at any px per day", () => {
+    for (const ppd of [0.6, 3, 10, 44, 160]) {
+      const scale = buildNeighborhoodScale(range, 600, {
+        customPixelsPerDay: ppd,
+      });
+      expect(scale.ticks.length).toBeGreaterThan(0);
+      if (scale.ticks.length > 1) {
+        const spacing = scale.ticks[1].x - scale.ticks[0].x;
+        // At least the minimum spacing, unless even the coarsest step is
+        // narrower (a yearly step).
+        expect(spacing >= 64 || spacing === 365 * scale.pixelsPerDay).toBe(
+          true,
+        );
+      }
+    }
   });
 });
 

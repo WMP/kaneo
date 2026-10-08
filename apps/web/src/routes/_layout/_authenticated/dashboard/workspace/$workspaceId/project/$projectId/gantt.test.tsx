@@ -63,8 +63,9 @@ vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
   useGetTasks: (projectId: string) => useGetTasks(projectId),
 }));
 
+const projectRelations = { data: [] as unknown[] };
 vi.mock("@/hooks/queries/task-relation/use-get-project-task-relations", () => ({
-  default: () => ({ data: [] }),
+  default: () => projectRelations,
 }));
 vi.mock("@/hooks/queries/calendar/use-get-calendar", () => ({
   default: () => ({ data: undefined }),
@@ -245,6 +246,7 @@ afterEach(() => {
   preferencesState.ganttBarColorSourceByProject = {};
   preferencesState.setGanttBarColorSource.mockClear();
   routeParams.projectId = "project-1";
+  projectRelations.data = [];
   preferencesState.ganttTimelineUnit = "day";
   preferencesState.ganttTimelineUnitTouched = false;
 });
@@ -770,5 +772,93 @@ describe("Gantt loading and error states", () => {
 
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getAllByText("Ongoing work").length).toBeGreaterThan(0);
+  });
+});
+
+describe("Gantt wheel zoom", () => {
+  function wheelOverChart() {
+    const scroll = screen.getByTestId("gantt-scroll-container");
+    const chart = scroll.firstElementChild as HTMLElement;
+    const event = new WheelEvent("wheel", {
+      deltaY: -100,
+      bubbles: true,
+      cancelable: true,
+    });
+    chart.dispatchEvent(event);
+    return event;
+  }
+
+  const ownTask = () =>
+    makeTask({
+      title: "Ongoing work",
+      startDate: "2026-08-28",
+      dueDate: "2026-09-02",
+    });
+
+  it("zooms on a plain wheel over a chart that was already loaded", () => {
+    mockProjectWithTask(ownTask());
+    render(<GanttRoute />);
+
+    expect(wheelOverChart().defaultPrevented).toBe(true);
+  });
+
+  it("zooms after the tasks arrive when a relation already described a chart", () => {
+    // The project relations can resolve before the tasks. A cross-project
+    // endpoint with dates then makes the chart "mountable" while the loading
+    // state is still on screen; the listener must follow the chart node, not
+    // that earlier signal.
+    projectRelations.data = [
+      {
+        id: "relation-1",
+        relationType: "blocks",
+        sourceTask: {
+          id: "other-1",
+          title: "Elsewhere",
+          number: 7,
+          projectId: "project-2",
+          projectName: "Other",
+          projectSlug: "OT",
+          startDate: "2026-08-29",
+          dueDate: "2026-09-01",
+          status: "in-progress",
+          isMilestone: false,
+          estimateMinutes: null,
+        },
+        targetTask: null,
+      },
+    ];
+    useGetTasks.mockReturnValue({ data: undefined, isPending: true });
+    const view = render(<GanttRoute />);
+    expect(screen.getByRole("status")).toBeInTheDocument();
+
+    mockProjectWithTask(ownTask());
+    view.rerender(<GanttRoute />);
+
+    expect(wheelOverChart().defaultPrevented).toBe(true);
+  });
+
+  it("leaves shift+wheel and the task rail to native scrolling", () => {
+    mockProjectWithTask(ownTask());
+    render(<GanttRoute />);
+    const chart = screen.getByTestId("gantt-scroll-container")
+      .firstElementChild as HTMLElement;
+
+    const shift = new WheelEvent("wheel", {
+      deltaY: -100,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    chart.dispatchEvent(shift);
+    expect(shift.defaultPrevented).toBe(false);
+
+    const rail = chart.querySelector("[data-gantt-rail]") as HTMLElement;
+    const onRail = new WheelEvent("wheel", {
+      deltaY: -100,
+      bubbles: true,
+      cancelable: true,
+    });
+    rail.dispatchEvent(onRail);
+    expect(onRail.defaultPrevented).toBe(false);
   });
 });

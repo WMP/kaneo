@@ -444,7 +444,13 @@ function RouteComponent() {
   // scrollTop directly) and the chart's own root (drag-to-pan and wheel-zoom
   // are both scoped to pointer/wheel events inside it, not the toolbar above).
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const chartRootRef = useRef<HTMLDivElement>(null);
+  // State, not a ref: the wheel listener must follow the node itself. The
+  // chart is not mounted while tasks load, and a flag derived from data (the
+  // project relations can arrive first and already describe a chart) says
+  // nothing about when this node exists or is replaced.
+  const [chartRootNode, setChartRootNode] = useState<HTMLDivElement | null>(
+    null,
+  );
   const [isPanning, setIsPanning] = useState(false);
   const panStateRef = useRef<{
     pointerId: number;
@@ -1760,16 +1766,6 @@ function RouteComponent() {
     scrollTaskIntoView(pending.taskId, pending.anchorSide);
   }, [timeline, scrollTaskIntoView]);
 
-  // Whether the chart itself (as opposed to a "no tasks"/"no matches" empty
-  // state) is actually mounted — used to (re)attach the wheel-zoom listener
-  // once it appears, e.g. after tasks finish loading. Mirrors the same
-  // "anything to render" condition the empty-state branches below use: a
-  // project with no own scheduled tasks but at least one cross-project
-  // related row still mounts the real chart, not the empty state.
-  const chartIsMounted =
-    Boolean(timeline) &&
-    (scheduledTasks.length > 0 || visibleExternalRelatedTasks.length > 0);
-
   // A pointerdown here should start a drag-to-pan only when it lands on
   // genuinely empty timeline background, the day-header, or the sticky task
   // rail's own non-interactive area (its header label, an external
@@ -1998,9 +1994,8 @@ function RouteComponent() {
   // itself is a scroll gesture too, not a zoom one (see isZoomWheelGesture)
   // — preventDefault-ing it here would otherwise block native horizontal
   // scrolling even though no zoom happens.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: chartIsMounted forces the listener to (re)attach once the chart mounts; the closure itself only reads refs, not this value.
   useEffect(() => {
-    const root = chartRootRef.current;
+    const root = chartRootNode;
     const scrollEl = scrollContainerRef.current;
     if (!root || !scrollEl) return;
 
@@ -2044,7 +2039,7 @@ function RouteComponent() {
 
     root.addEventListener("wheel", handleWheel, { passive: false });
     return () => root.removeEventListener("wheel", handleWheel);
-  }, [chartIsMounted]);
+  }, [chartRootNode]);
 
   // Applies the scrollLeft computed above, once (after this render commits
   // the new, zoomed day-column width to the DOM) rather than at wheel time —
@@ -2532,7 +2527,7 @@ function RouteComponent() {
             style={{ scrollPaddingLeft: `${scrollPaddingLeftRem}rem` }}
           >
             <div
-              ref={chartRootRef}
+              ref={setChartRootNode}
               className={cn(
                 "relative min-w-max touch-pan-x touch-pan-y",
                 isPanning ? "cursor-grabbing" : "cursor-grab",
