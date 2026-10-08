@@ -1,5 +1,10 @@
 import { z } from "zod";
 import {
+  ESTIMATE_UNITS,
+  MAX_ESTIMATE_MINUTES,
+  WORK_DAY_MINUTES,
+} from "../task/estimate";
+import {
   approvalStatus as approvalStatusEnum,
   VALID_TASK_CONSTRAINT_TYPES,
 } from "../task/schema";
@@ -211,6 +216,11 @@ function formatOptionalIso(value: unknown): string | undefined {
   return undefined;
 }
 
+const estimateMinutesDescription = `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}); ${WORK_DAY_MINUTES} minutes = 1 work day of 8 hours. A task with an estimate cannot have both startDate and dueDate: the API answers 400 and the tool returns that message as an error.`;
+
+const estimateUnitDescription =
+  "Display hint only (hours or days): how the estimate is shown. The stored quantity is always estimateMinutes.";
+
 function buildFullTaskUpdateBody(
   existing: Record<string, unknown>,
   patch: Record<string, unknown>,
@@ -290,6 +300,11 @@ function buildFullTaskUpdateBody(
   if (patch.progress !== undefined) body.progress = patch.progress as number;
   if (patch.isMilestone !== undefined)
     body.isMilestone = patch.isMilestone as boolean;
+  // null must reach the API as null: it clears the estimate.
+  if (patch.estimateMinutes !== undefined)
+    body.estimateMinutes = patch.estimateMinutes as number | null;
+  if (patch.estimateUnit !== undefined)
+    body.estimateUnit = patch.estimateUnit as string;
   // constraintType is what opts the request into touching either
   // constraint field at all; passing constraintDate alone leaves both
   // untouched (mirrors updateTaskBody's refine in apps/api/src/task/schema.ts).
@@ -574,7 +589,8 @@ export function registerMcpTools(
   registerTool(
     "create_task",
     {
-      description: "Create a task in a project.",
+      description:
+        "Create a task in a project. Optionally set an effort estimate with estimateMinutes (whole minutes, 480 = 1 work day) and estimateUnit (hours or days, display hint only). A task with an estimate cannot have both startDate and dueDate: the API answers 400 and the tool returns that message as an error.",
       inputSchema: z
         .object({
           projectId: nonEmptyString,
@@ -589,21 +605,40 @@ export function registerMcpTools(
             .optional()
             .describe("Percent complete, 0-100. Defaults to 0."),
           isMilestone: z.boolean().optional().describe("Defaults to false."),
+          estimateMinutes: z
+            .number()
+            .int()
+            .min(0)
+            .max(MAX_ESTIMATE_MINUTES)
+            .nullable()
+            .optional()
+            .describe(
+              `${estimateMinutesDescription} Omit or null for no estimate.`,
+            ),
+          estimateUnit: z
+            .enum(ESTIMATE_UNITS)
+            .optional()
+            .describe(estimateUnitDescription),
         })
         .strict(),
     },
     async (args) => {
-      const body: Record<string, string | number | boolean | undefined> = {
-        title: args.title,
-        description: args.description,
-        priority: args.priority,
-        status: args.status,
-      };
+      const body: Record<string, string | number | boolean | null | undefined> =
+        {
+          title: args.title,
+          description: args.description,
+          priority: args.priority,
+          status: args.status,
+        };
       if (args.startDate !== undefined) body.startDate = args.startDate;
       if (args.dueDate !== undefined) body.dueDate = args.dueDate;
       if (args.userId !== undefined) body.userId = args.userId;
       if (args.progress !== undefined) body.progress = args.progress;
       if (args.isMilestone !== undefined) body.isMilestone = args.isMilestone;
+      if (args.estimateMinutes !== undefined)
+        body.estimateMinutes = args.estimateMinutes;
+      if (args.estimateUnit !== undefined)
+        body.estimateUnit = args.estimateUnit;
       return run(() =>
         client.json(`/api/task/${encodeURIComponent(args.projectId)}`, {
           method: "POST",
@@ -639,7 +674,7 @@ export function registerMcpTools(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update). A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error. Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
+        "Update a task (fetches current task, merges fields, then full update). A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error. Fields omitted here are left untouched, including progress, isMilestone, estimateMinutes/estimateUnit, constraintType/constraintDate, and approvalStatus/approvalNote. Set the effort estimate with estimateMinutes (whole minutes, 480 = 1 work day) and estimateUnit (hours or days, display hint only); pass estimateMinutes null to clear the estimate. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
       inputSchema: z
         .object({
           taskId: nonEmptyString,
@@ -654,6 +689,20 @@ export function registerMcpTools(
           userId: nullableOptionalNonEmptyString,
           progress: progressSchema.optional(),
           isMilestone: z.boolean().optional(),
+          estimateMinutes: z
+            .number()
+            .int()
+            .min(0)
+            .max(MAX_ESTIMATE_MINUTES)
+            .nullable()
+            .optional()
+            .describe(
+              `${estimateMinutesDescription} Null clears the estimate; omit to leave it untouched.`,
+            ),
+          estimateUnit: z
+            .enum(ESTIMATE_UNITS)
+            .optional()
+            .describe(`${estimateUnitDescription} Omit to leave it untouched.`),
           constraintType: constraintTypeSchema
             .optional()
             .describe(
