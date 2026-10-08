@@ -1,6 +1,10 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
+import {
+  DENSE_EDGE_THRESHOLD,
+  FAN_IN_COLLAPSE_THRESHOLD,
+} from "./gantt-dependency-display";
 import { GanttDependencyOverlay } from "./gantt-dependency-overlay";
 
 vi.mock("@/components/task/task-relation-dependency-popover", () => ({
@@ -18,6 +22,10 @@ vi.mock("@/components/task/task-relation-dependency-popover", () => ({
     </div>
   ),
 }));
+
+function labels(container: HTMLElement) {
+  return container.querySelectorAll("[data-testid=popover]");
+}
 
 function edge(overrides: Partial<DependencyEdgeGeometry> = {}) {
   return {
@@ -76,11 +84,13 @@ describe("GanttDependencyOverlay", () => {
           edge({
             id: "own",
             sourceTaskId: "own-task",
+            dependencyType: "ss",
             typeLabelPoint: { x: 1, y: 1 },
           }),
           edge({
             id: "cross",
             sourceTaskId: "external-task",
+            dependencyType: "ss",
             typeLabelPoint: { x: 2, y: 2 },
           }),
         ]}
@@ -100,5 +110,575 @@ describe("GanttDependencyOverlay", () => {
     );
     expect(byTask.get("own-task")).toBe("project-here");
     expect(byTask.get("external-task")).toBe("project-other");
+  });
+
+  describe("type label", () => {
+    const point = { typeLabelPoint: { x: 1, y: 1 } };
+
+    it("hides the label of a plain FS edge with no lag at rest", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[
+            edge(point),
+            edge({ ...point, id: "e2", dependencyType: "fs", lagDays: 0 }),
+          ]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(labels(container)).toHaveLength(0);
+    });
+
+    it("shows the label of a plain FS edge while its task is hovered or pinned", () => {
+      const hovered = render(
+        <GanttDependencyOverlay
+          edges={[edge(point)]}
+          hoveredTaskId="b"
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(labels(hovered.container)).toHaveLength(1);
+
+      const pinned = render(
+        <GanttDependencyOverlay
+          edges={[edge(point)]}
+          hoveredTaskId={null}
+          pinnedTaskId="a"
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(labels(pinned.container)).toHaveLength(1);
+    });
+
+    it("keeps the labels of SS/FF/SF edges and of an FS edge with a lag", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[
+            edge({ ...point, id: "ss", dependencyType: "ss" }),
+            edge({ ...point, id: "ff", dependencyType: "ff" }),
+            edge({ ...point, id: "sf", dependencyType: "sf" }),
+            edge({ ...point, id: "lag", dependencyType: "fs", lagDays: 2 }),
+          ]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(labels(container)).toHaveLength(4);
+    });
+
+    it("colors the label red only for a violated edge", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[
+            edge({ ...point, id: "ok", dependencyType: "ss" }),
+            edge({ ...point, id: "bad", dependencyType: "ff" }),
+          ]}
+          violatedEdgeIds={new Set(["bad"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const buttons = container.querySelectorAll("button");
+      expect(buttons[0]?.className).not.toContain("text-destructive");
+      expect(buttons[0]?.className).toContain("text-muted-foreground");
+      expect(buttons[1]?.className).toContain("text-destructive");
+    });
+  });
+
+  describe("line style", () => {
+    function paths(container: HTMLElement) {
+      return container.querySelectorAll<SVGPathElement>("svg path[stroke]");
+    }
+
+    it("draws a satisfied blocking edge neutral and solid, not red", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[edge()]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const line = paths(container)[0];
+      expect(line?.getAttribute("stroke")).toBe("var(--muted-foreground)");
+      expect(line?.getAttribute("stroke-dasharray")).toBeNull();
+      expect(line?.getAttribute("marker-end")).toContain("arrow-blocks");
+    });
+
+    it("draws a violated blocking edge red with a matching arrow", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[edge()]}
+          violatedEdgeIds={new Set(["e1"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const line = paths(container)[0];
+      expect(line?.getAttribute("stroke")).toBe("var(--destructive)");
+      expect(line?.getAttribute("marker-end")).toContain("arrow-violated");
+    });
+
+    it("draws a related edge dashed and muted, never red", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[edge({ relationType: "related" })]}
+          violatedEdgeIds={new Set(["e1"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const line = paths(container)[0];
+      expect(line?.getAttribute("stroke")).toBe("var(--muted-foreground)");
+      expect(line?.getAttribute("stroke-dasharray")).toBeTruthy();
+    });
+  });
+
+  describe("density and layering", () => {
+    const many = (count: number) =>
+      Array.from({ length: count }, (_, i) =>
+        edge({ id: `e${i}`, sourceTaskId: `s${i}`, targetTaskId: `t${i}` }),
+      );
+    const restLayer = (container: HTMLElement) =>
+      container.querySelector("[data-testid=gantt-dependency-rest-layer]");
+    const topLayer = (container: HTMLElement) =>
+      container.querySelector("[data-testid=gantt-dependency-top-layer]");
+
+    it("puts unfocused edges in one group carrying the opacity, with paths at stroke-opacity 1", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={many(3)}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const group = restLayer(container);
+      expect(group?.getAttribute("opacity")).toBe("0.45");
+      const lines = group?.querySelectorAll("path[stroke]") ?? [];
+      expect(lines).toHaveLength(3);
+      for (const line of lines) {
+        expect(line.getAttribute("stroke-opacity")).toBe("1");
+      }
+      expect(topLayer(container)?.querySelectorAll("path")).toHaveLength(0);
+    });
+
+    it("keeps the normal resting opacity at the threshold and lowers it above", () => {
+      const at = render(
+        <GanttDependencyOverlay
+          edges={many(DENSE_EDGE_THRESHOLD)}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(restLayer(at.container)?.getAttribute("opacity")).toBe("0.45");
+      const over = render(
+        <GanttDependencyOverlay
+          edges={many(DENSE_EDGE_THRESHOLD + 1)}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(restLayer(over.container)?.getAttribute("opacity")).toBe("0.22");
+    });
+
+    it("renders a focused edge outside the rest group in foreground and dims the rest group", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={many(DENSE_EDGE_THRESHOLD + 1)}
+          hoveredTaskId={null}
+          pinnedTaskId="s0"
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const group = restLayer(container);
+      expect(group?.getAttribute("opacity")).toBe("0.12");
+      expect(group?.querySelectorAll("path[stroke]")).toHaveLength(
+        DENSE_EDGE_THRESHOLD,
+      );
+      const focused = topLayer(container)?.querySelector("path[stroke]");
+      expect(group?.contains(focused ?? null)).toBe(false);
+      expect(focused?.getAttribute("stroke")).toBe("var(--foreground)");
+      expect(focused?.getAttribute("stroke-opacity")).toBe("1");
+      expect(focused?.getAttribute("stroke-width")).toBe("2.5");
+    });
+
+    it("draws a violated edge in the top layer at its own opacity", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={many(2)}
+          violatedEdgeIds={new Set(["e0"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(restLayer(container)?.querySelectorAll("path")).toHaveLength(1);
+      const line = topLayer(container)?.querySelector("path[stroke]");
+      expect(line?.getAttribute("stroke")).toBe("var(--destructive)");
+      expect(line?.getAttribute("stroke-opacity")).toBe("0.9");
+    });
+  });
+
+  describe("display mode", () => {
+    const edges = [
+      edge({ id: "e1", sourceTaskId: "a", targetTaskId: "b" }),
+      edge({ id: "e2", sourceTaskId: "c", targetTaskId: "d" }),
+    ];
+    const lineCount = (container: HTMLElement) =>
+      container.querySelectorAll("svg path[stroke]").length;
+
+    it("focused draws only the hovered or pinned task's edges", () => {
+      const none = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="focused"
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(none.container.querySelector("svg")).toBeNull();
+
+      const hovered = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="focused"
+          hoveredTaskId="a"
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(lineCount(hovered.container)).toBe(1);
+
+      const pinned = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="focused"
+          hoveredTaskId={null}
+          pinnedTaskId="d"
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(lineCount(pinned.container)).toBe(1);
+    });
+
+    it("critical draws only critical-path edges", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="critical"
+          criticalEdgeIds={new Set(["e2"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      // The critical edge plus its amber halo.
+      expect(container.querySelectorAll("svg path[stroke]")).toHaveLength(2);
+      expect(
+        container.querySelector("svg path[stroke='var(--warning)']"),
+      ).toBeTruthy();
+    });
+
+    it("hidden draws no connectors but still draws the link-drag preview", () => {
+      const noPreview = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="hidden"
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(noPreview.container.querySelector("svg")).toBeNull();
+
+      const withPreview = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          displayMode="hidden"
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          preview={{ source: { x: 0, y: 0 }, pointer: { x: 5, y: 5 } }}
+        />,
+      );
+      expect(
+        withPreview.container.querySelector("[data-testid=gantt-link-preview]"),
+      ).toBeTruthy();
+      expect(
+        withPreview.container.querySelectorAll("svg path[stroke]"),
+      ).toHaveLength(1);
+    });
+  });
+
+  describe("fan-in collapse", () => {
+    const incoming = (count: number) =>
+      Array.from({ length: count }, (_, i) =>
+        edge({
+          id: `e${i}`,
+          sourceTaskId: `s${i}`,
+          targetTaskId: "t",
+          targetSide: "start",
+          targetPoint: { x: 200, y: 50 },
+        }),
+      );
+    const badges = (container: HTMLElement) =>
+      container.querySelectorAll("[data-testid=gantt-dependency-fan-in]");
+    const drawn = (container: HTMLElement) =>
+      container.querySelectorAll("path[data-edge-kind]");
+    const renderOverlay = (
+      edges: DependencyEdgeGeometry[],
+      props: Partial<React.ComponentProps<typeof GanttDependencyOverlay>> = {},
+    ) =>
+      render(
+        <GanttDependencyOverlay
+          edges={edges}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          {...props}
+        />,
+      );
+
+    it("keeps every branch when a target has no more than the threshold", () => {
+      const { container } = renderOverlay(incoming(FAN_IN_COLLAPSE_THRESHOLD));
+      expect(badges(container)).toHaveLength(0);
+      expect(drawn(container)).toHaveLength(FAN_IN_COLLAPSE_THRESHOLD);
+    });
+
+    it("replaces the branches of a crowded target with one badge showing the count", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 1;
+      const { container } = renderOverlay(incoming(count));
+
+      expect(drawn(container)).toHaveLength(0);
+      const found = badges(container);
+      expect(found).toHaveLength(1);
+      expect(found[0].textContent).toContain(String(count));
+      // The badge carries an accessible name and a tooltip.
+      const label = found[0].querySelector("[role=img]");
+      expect(label?.getAttribute("aria-label")).toBeTruthy();
+      expect(label?.getAttribute("title")).toBe(
+        label?.getAttribute("aria-label"),
+      );
+      // It sits just left of the target's start edge.
+      expect(Number(found[0].getAttribute("x"))).toBeLessThan(200);
+    });
+
+    it("shows every branch again while the target is hovered or pinned", () => {
+      const edges = incoming(FAN_IN_COLLAPSE_THRESHOLD + 1);
+      const hovered = renderOverlay(edges, { hoveredTaskId: "t" });
+      expect(badges(hovered.container)).toHaveLength(0);
+      expect(drawn(hovered.container)).toHaveLength(edges.length);
+      hovered.unmount();
+
+      const pinned = renderOverlay(edges, { pinnedTaskId: "t" });
+      expect(badges(pinned.container)).toHaveLength(0);
+      expect(drawn(pinned.container)).toHaveLength(edges.length);
+    });
+
+    it("shows a hovered source's own branch and keeps the rest folded", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 1;
+      const { container } = renderOverlay(incoming(count), {
+        hoveredTaskId: "s0",
+      });
+      expect(drawn(container)).toHaveLength(1);
+      const found = badges(container);
+      expect(found).toHaveLength(1);
+      expect(found[0].textContent).toContain(String(count - 1));
+    });
+
+    it("never collapses a violated or a critical edge", () => {
+      const count = FAN_IN_COLLAPSE_THRESHOLD + 2;
+      const { container } = renderOverlay(incoming(count), {
+        violatedEdgeIds: new Set(["e0"]),
+        criticalEdgeIds: new Set(["e1"]),
+      });
+      expect(drawn(container)).toHaveLength(2);
+      expect(badges(container)[0].textContent).toContain(String(count - 2));
+      const violated = container.querySelector("path[data-edge-kind=violated]");
+      expect(violated).toBeTruthy();
+    });
+
+    it("hides the badge's edges' type labels with them", () => {
+      const edges = incoming(FAN_IN_COLLAPSE_THRESHOLD + 1).map((e) => ({
+        ...e,
+        dependencyType: "ss" as const,
+        typeLabelPoint: { x: 100, y: 50 },
+      }));
+      const { container } = renderOverlay(edges);
+      expect(labels(container)).toHaveLength(0);
+    });
+
+    it("does not fold different targets together", () => {
+      const edges = [
+        ...incoming(FAN_IN_COLLAPSE_THRESHOLD + 1),
+        edge({ id: "other", sourceTaskId: "s0", targetTaskId: "u" }),
+      ];
+      const { container } = renderOverlay(edges);
+      expect(badges(container)).toHaveLength(1);
+      expect(drawn(container)).toHaveLength(1);
+    });
+  });
+
+  describe("off-window stubs and jump chips", () => {
+    const stubEdge = (
+      overrides: Partial<NonNullable<DependencyEdgeGeometry["stub"]>> = {},
+      extra: Partial<DependencyEdgeGeometry> = {},
+    ) =>
+      edge({
+        path: "M 396 60 L 420 60",
+        sourcePoint: { x: 396, y: 60 },
+        targetPoint: { x: 420, y: 60 },
+        stub: {
+          endpoint: "source",
+          taskId: "far",
+          taskSide: "before",
+          anchorSide: "end",
+          chipPoint: { x: 396, y: 60 },
+          chipDir: -1,
+          ...overrides,
+        },
+        ...extra,
+      });
+    const info = () => ({ key: "AFB-13", dateText: "Mar 3" });
+    const chipButtons = (container: HTMLElement) =>
+      container.querySelectorAll<HTMLButtonElement>(
+        "[data-testid=gantt-dependency-chip] button",
+      );
+
+    it("renders a labelled, focusable chip beside the stub and jumps on click", () => {
+      const onJump = vi.fn();
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={100}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={onJump}
+        />,
+      );
+
+      const [button] = chipButtons(container);
+      expect(button.textContent).toBe("← AFB-13 · Mar 3");
+      expect(button.getAttribute("aria-label")).toBeTruthy();
+      expect(button.getAttribute("title")).toBe(
+        button.getAttribute("aria-label"),
+      );
+      expect(button.getAttribute("type")).toBe("button");
+      // Left of the stub's outer end (x = 396), not over the stub itself.
+      const holder = button.closest("foreignObject");
+      expect(
+        Number(holder?.getAttribute("x")) +
+          Number(holder?.getAttribute("width")),
+      ).toBeLessThanOrEqual(396);
+
+      fireEvent.click(button);
+      expect(onJump).toHaveBeenCalledWith("far", "end");
+    });
+
+    it("puts the arrow after the text for a task beyond the right edge", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[
+            stubEdge({
+              endpoint: "target",
+              taskSide: "after",
+              anchorSide: "start",
+              chipPoint: { x: 420, y: 60 },
+              chipDir: 1,
+            }),
+          ]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      expect(chipButtons(container)[0].textContent).toBe("AFB-13 · Mar 3 →");
+    });
+
+    it("keeps a chip right of the task rail", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={380}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      const holder = chipButtons(container)[0].closest("foreignObject");
+      expect(Number(holder?.getAttribute("x"))).toBeGreaterThanOrEqual(380);
+    });
+
+    it("draws no chip without a jump handler or without task info", () => {
+      const withoutHandler = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+        />,
+      );
+      expect(chipButtons(withoutHandler.container)).toHaveLength(0);
+      // The stub itself is still drawn.
+      expect(
+        withoutHandler.container.querySelectorAll("path[data-edge-kind]"),
+      ).toHaveLength(1);
+      withoutHandler.unmount();
+
+      const withoutInfo = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={() => null}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      expect(chipButtons(withoutInfo.container)).toHaveLength(0);
+    });
+
+    it("does not fold stubs that leave a source toward an off-window target into a fan-in badge", () => {
+      const edges = Array.from(
+        { length: FAN_IN_COLLAPSE_THRESHOLD + 1 },
+        (_, i) =>
+          stubEdge(
+            { endpoint: "target", taskSide: "after", chipDir: 1 },
+            { id: `e${i}`, sourceTaskId: `s${i}`, targetTaskId: "far" },
+          ),
+      );
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(
+        container.querySelectorAll("[data-testid=gantt-dependency-fan-in]"),
+      ).toHaveLength(0);
+      expect(container.querySelectorAll("path[data-edge-kind]")).toHaveLength(
+        edges.length,
+      );
+    });
   });
 });

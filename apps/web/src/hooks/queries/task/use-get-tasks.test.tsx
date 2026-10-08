@@ -168,3 +168,42 @@ describe("useGetTasks cache refresh", () => {
     expect(getTasks).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("useGetTasks first load", () => {
+  let client: QueryClient;
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  }
+  beforeEach(() => {
+    client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  });
+  afterEach(() => {
+    client.clear();
+  });
+
+  it("does not abort and restart the first load when a view remounts while it runs", async () => {
+    let resolve: (value: unknown) => void = () => {};
+    getTasks.mockImplementation(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+
+    for (let i = 0; i < 3; i++) {
+      renderHook(() => useGetTasks("project"), { wrapper: Wrapper }).unmount();
+    }
+    const view = renderHook(() => useGetTasks("project"), { wrapper: Wrapper });
+
+    // One request, started without an abort signal that an unmount could fire.
+    expect(getTasks).toHaveBeenCalledTimes(1);
+    expect(getTasks).toHaveBeenCalledWith("project");
+    resolve({ columns: [] });
+    await waitFor(() =>
+      expect(view.result.current.data).toEqual({ columns: [] }),
+    );
+    expect(getTasks).toHaveBeenCalledTimes(1);
+  });
+});

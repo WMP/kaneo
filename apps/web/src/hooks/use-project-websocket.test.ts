@@ -11,6 +11,18 @@ const invalidateQueries = vi.fn();
 vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries }),
 }));
+// These tests check which keys a message refreshes. The batcher that spaces
+// the refreshes out has its own tests (src/lib/coalesced-invalidation.test.tsx)
+// and a real-QueryClient test of this hook (use-project-websocket-abort.test.tsx).
+vi.mock("@/lib/coalesced-invalidation", () => ({
+  createInvalidationBatcher: (queryClient: {
+    invalidateQueries: (filters: { queryKey: unknown }) => void;
+  }) => ({
+    invalidate: (queryKey: unknown) =>
+      queryClient.invalidateQueries({ queryKey }),
+    dispose: () => {},
+  }),
+}));
 vi.mock("@/lib/auth-client", () => ({
   authClient: { useSession: () => ({ data: { user: { id: "user-1" } } }) },
 }));

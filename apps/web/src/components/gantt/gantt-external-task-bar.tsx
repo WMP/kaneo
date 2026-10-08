@@ -48,7 +48,8 @@ type GanttExternalTaskBarProps = {
    * critical path (see gantt-critical-path.ts and GanttTaskBar's own
    * isCritical prop) — a dated cross-project "blocks" dependency
    * participates in the same CPM network as an own task, so it can come out
-   * critical too. */
+   * critical too. A derived row (position projected from its predecessors
+   * plus estimate) takes part as well and gets a dashed amber outline. */
   isCritical?: boolean;
   /** Notified on hover/focus, same as GanttTaskBar, so hovering an external
    * bar highlights its dependency lines too. */
@@ -165,6 +166,9 @@ export function GanttExternalTaskBar({
               // for why this is `outline`, not a color swap).
               isCritical &&
                 "outline outline-2 outline-offset-2 outline-warning",
+              // A projected (derived) row on the critical path: same amber,
+              // dashed to match its derived styling.
+              isCritical && task.isDerived && "outline-dashed",
             )}
           />
         </div>
@@ -204,6 +208,7 @@ export function GanttExternalTaskBar({
           // Critical-path accent (see GanttTaskBar's own isCritical prop for
           // why this is `outline`, not a color swap).
           isCritical && "outline outline-2 outline-offset-2 outline-warning",
+          isCritical && task.isDerived && "outline-dashed",
         )}
         title={title}
       >

@@ -28,22 +28,33 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import ProjectLayout from "@/components/common/project-layout";
+import {
+  TasksLoadError,
+  TasksLoading,
+} from "@/components/common/tasks-load-state";
 import type {
   DependencyEdgeInput,
+  OffWindowSide,
   TaskBarBox,
 } from "@/components/gantt/dependency-lines";
 import {
   buildDependencyEdges,
   DEPENDENCY_LANE_CLEARANCE_PX,
 } from "@/components/gantt/dependency-lines";
-import type {
-  CriticalPathEdgeInput,
-  CriticalPathTaskInput,
-} from "@/components/gantt/gantt-critical-path";
+import type { CriticalPathEdgeInput } from "@/components/gantt/gantt-critical-path";
 import { computeCriticalPath } from "@/components/gantt/gantt-critical-path";
+import {
+  buildCriticalPathInput,
+  isCriticalPathProjected as isCriticalPathProjectedFor,
+} from "@/components/gantt/gantt-critical-path-input";
 import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
+import {
+  GANTT_DEPENDENCY_DISPLAY_MODES,
+  isGanttDependencyDisplayMode,
+} from "@/components/gantt/gantt-dependency-display";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
+import { computeViolatedDependencyEdgeIds } from "@/components/gantt/gantt-dependency-violations";
 import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
 import {
   deriveTaskScheduleWithEstimate,
@@ -67,6 +78,10 @@ import {
 } from "@/components/gantt/gantt-link-drag";
 import { GanttSummaryTaskBar } from "@/components/gantt/gantt-summary-task-bar";
 import { GanttTaskBar, toIsoDay } from "@/components/gantt/gantt-task-bar";
+import {
+  GanttTaskNeighborhood,
+  type NeighborhoodTaskInfo,
+} from "@/components/gantt/gantt-task-neighborhood-card";
 import {
   buildHolidayDateKeySet,
   DEFAULT_WORKING_DAYS,
@@ -127,7 +142,7 @@ import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-pr
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
-import { formatDate, formatDateMedium } from "@/lib/format";
+import { formatDate, formatDateMedium, formatDateShort } from "@/lib/format";
 import { HttpError } from "@/lib/http-error";
 import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
@@ -202,6 +217,14 @@ const UNIT_BASE_DAY_COLUMN_WIDTH_REM: Record<
 // final height on first paint, with `measureRow` only correcting the rare
 // row whose content genuinely grows it (e.g. the "show task dates" link on
 // an out-of-window task).
+// Static i18n keys per dependency display mode (no dynamic key building).
+const DEPENDENCY_DISPLAY_MODE_LABEL_KEYS = {
+  all: "tasks:gantt.dependencyDisplayModeAll",
+  focused: "tasks:gantt.dependencyDisplayModeFocused",
+  critical: "tasks:gantt.dependencyDisplayModeCritical",
+  hidden: "tasks:gantt.dependencyDisplayModeHidden",
+} as const;
+
 const ROW_HEIGHT_PX = 44;
 const ROW_HEIGHT_WITH_BASELINE_PX = 56;
 
@@ -220,7 +243,13 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data: project } = useGetTasks(projectId);
+  const {
+    data: project,
+    isPending: isTasksPending,
+    isError: isTasksError,
+    isFetching: isTasksFetching,
+    refetch: refetchTasks,
+  } = useGetTasks(projectId);
   // Workspace working calendar (weekends + holidays): shades non-working day
   // columns below and, via `workingDayPredicate`, keeps the auto-reschedule
   // cascade from landing a pushed task's start on one. Defaults to the
@@ -290,6 +319,12 @@ function RouteComponent() {
   );
   const setShowCriticalPath = useUserPreferencesStore(
     (state) => state.setGanttShowCriticalPath,
+  );
+  const dependencyDisplayMode = useUserPreferencesStore(
+    (state) => state.ganttDependencyDisplayMode,
+  );
+  const setDependencyDisplayMode = useUserPreferencesStore(
+    (state) => state.setGanttDependencyDisplayMode,
   );
   const ganttCustomFieldByProject = useUserPreferencesStore(
     (state) => state.ganttCustomFieldByProject,
@@ -772,132 +807,6 @@ function RouteComponent() {
     return pinned;
   }, [allTasks]);
 
-  // The cross-project far end of every "blocks" relation (a client approval
-  // before a cutover, a security gate before a wave) that has a resolved
-  // schedule — fed into computeCriticalPath below alongside this project's
-  // own tasks so a cross-project dependency can anchor/constrain the
-  // network exactly like an own one (see gantt-critical-path.ts's SCOPE
-  // comment). Narrower than externalRelatedTasks below (which also pulls in
-  // "related" tasks, purely informational and never part of the CPM
-  // network): folding a "related"-only task into the critical-path input
-  // would wrongly mark it trivially critical (no in-scope edge touches it
-  // at all, see computeCriticalPath's "lone task" case), so only a "blocks"
-  // far end qualifies. A dateless far end still can't be reasoned about
-  // here and is left out, same as any own task with no dates — the edge
-  // into it is then dropped by computeCriticalPath itself
-  // (droppedEdgeCount).
-  const crossProjectCriticalPathTasks = useMemo<CriticalPathTaskInput[]>(() => {
-    const external = new Map<string, CriticalPathTaskInput>();
-    for (const relation of taskRelations ?? []) {
-      if (relation.relationType !== "blocks") continue;
-      // A blocks relation from this query always has at least one own
-      // endpoint, so each cross-project far end is paired with its
-      // counterpart on the other end of the SAME edge. The far end only
-      // belongs in the CPM input when that counterpart is ALSO dated: only
-      // then is the connecting edge in scope (computeCriticalPath keeps an
-      // edge only when BOTH endpoints are in `tasks`). Including a far end
-      // whose counterpart is dateless would drop that edge yet still feed the
-      // far end in with no in-scope edge touching it, leaving it a lone task
-      // that comes out trivially critical (see computeCriticalPath's "lone
-      // task" case) — a spurious amber outline on a cross-project row that has
-      // no real critical link here, exactly the mis-marking the "related"-only
-      // exclusion above already guards against.
-      for (const [candidate, counterpart] of [
-        [relation.sourceTask, relation.targetTask],
-        [relation.targetTask, relation.sourceTask],
-      ]) {
-        if (!candidate || candidate.projectId === projectId) continue;
-        if (external.has(candidate.id)) continue;
-        if (!counterpart) continue;
-        // The counterpart is this relation's own endpoint. It must actually be
-        // a participating CPM task — present in ownScheduleByTaskId — for the
-        // connecting edge to be in scope. Checking only that it is dated would
-        // still admit a far end whose counterpart is dated but absent from the
-        // loaded own tasks (e.g. archived/soft-deleted), whose edge
-        // computeCriticalPath then drops, leaving the far end lone and
-        // spuriously trivially critical.
-        if (!ownScheduleByTaskId.has(counterpart.id)) continue;
-        const schedule = deriveTaskScheduleWithEstimate(
-          candidate,
-          workingDayPredicate,
-        );
-        if (!schedule) continue;
-        external.set(candidate.id, {
-          id: candidate.id,
-          scheduleStart: schedule.start,
-          scheduleEnd: schedule.end,
-        });
-      }
-    }
-    return [...external.values()];
-  }, [taskRelations, projectId, ownScheduleByTaskId, workingDayPredicate]);
-
-  // Same "blocks" edges as blocksEdges above, but keeping each relation's own
-  // id (computeCriticalPath needs one to identify which edges came out
-  // critical) — kept as a separate memo rather than folding the id into
-  // blocksEdges itself, since CascadeEdge's shape is also handed to
-  // computeDependencyCascade below and widening it isn't otherwise needed.
-  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(() => {
-    return (taskRelations ?? []).flatMap((relation) =>
-      relation.relationType === "blocks"
-        ? [
-            {
-              id: relation.id,
-              sourceTaskId: relation.sourceTaskId,
-              targetTaskId: relation.targetTaskId,
-              dependencyType: relation.dependencyType as
-                | "fs"
-                | "ss"
-                | "ff"
-                | "sf",
-              lagDays: relation.lagDays,
-            },
-          ]
-        : [],
-    );
-  }, [taskRelations]);
-
-  // Only computed while the toggle is on — this project can have a lot of
-  // "blocks" edges, and there's no reason to run the CPM passes on every
-  // relations refetch when nobody's looking at the result. Feeds in BOTH
-  // this project's own scheduled tasks (ownScheduleByTaskId, same scope the
-  // dependency cascade above uses) AND every dated cross-project "blocks"
-  // far end (crossProjectCriticalPathTasks) — a dateless task, own or
-  // cross-project, still never participates. Never depends on zoom/pan/unit
-  // state, so toggling zoom doesn't recompute it.
-  const criticalPath = useMemo(() => {
-    if (!showCriticalPath) return null;
-    const tasksInput: CriticalPathTaskInput[] = [
-      ...[...ownScheduleByTaskId].map(([id, schedule]) => ({
-        id,
-        scheduleStart: schedule.start,
-        scheduleEnd: schedule.end,
-      })),
-      ...crossProjectCriticalPathTasks,
-    ];
-    // Measure slack in WORKING days from the workspace calendar so a hand-off
-    // that only spans a weekend/holiday reads as tight, not slack (see
-    // makeWorkingDayIndexer). Anchor at the earliest date in play so every
-    // lookup is a forward walk.
-    let anchor: Date | null = null;
-    for (const task of tasksInput) {
-      if (anchor === null || task.scheduleStart < anchor) {
-        anchor = task.scheduleStart;
-      }
-    }
-    const toDayIndex = anchor
-      ? makeWorkingDayIndexer(anchor, workingDays, holidayDateSet)
-      : undefined;
-    return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
-  }, [
-    showCriticalPath,
-    ownScheduleByTaskId,
-    crossProjectCriticalPathTasks,
-    criticalPathEdges,
-    workingDays,
-    holidayDateSet,
-  ]);
-
   const bulkUpdateSchedule = useBulkUpdateTaskSchedule();
 
   // Runs once a drag-move or resize has already persisted the DRAGGED task's
@@ -1110,6 +1019,124 @@ function RouteComponent() {
     blocksEdges,
     workingDayPredicate,
   ]);
+
+  // The "blocks" edges with each relation's own id (computeCriticalPath needs
+  // one to identify which edges came out critical) — a separate memo from
+  // blocksEdges, since CascadeEdge's shape is also handed to
+  // computeDependencyCascade and widening it isn't otherwise needed.
+  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(() => {
+    return (taskRelations ?? []).flatMap((relation) =>
+      relation.relationType === "blocks"
+        ? [
+            {
+              id: relation.id,
+              sourceTaskId: relation.sourceTaskId,
+              targetTaskId: relation.targetTaskId,
+              dependencyType: relation.dependencyType as
+                | "fs"
+                | "ss"
+                | "ff"
+                | "sf",
+              lagDays: relation.lagDays,
+            },
+          ]
+        : [],
+    );
+  }, [taskRelations]);
+
+  // The critical-path (CPM) input: this project's own scheduled tasks
+  // (ownScheduleByTaskId, same scope the dependency cascade uses), every dated
+  // cross-project "blocks" far end, and the DERIVED rows (dateless tasks placed
+  // from their predecessors plus estimate, see externalRelatedTasks) — the same
+  // spans the chart draws. Derived rows are a PROJECTION: they take part in the
+  // critical path and nowhere else (nothing is persisted, and the cascade and
+  // violated edges never see them). A far end or derived row only participates
+  // when a "blocks" edge connects it to another participating row (see
+  // buildCriticalPathInput), so none comes out trivially critical on its own.
+  // A task that still cannot be placed (no dates, no placed predecessor, a
+  // cycle, archived) is left out and its edges are counted as dropped.
+  const criticalPathInput = useMemo(
+    () =>
+      buildCriticalPathInput({
+        ownSchedules: ownScheduleByTaskId,
+        externalRows: externalRelatedTasks,
+        edges: criticalPathEdges,
+      }),
+    [ownScheduleByTaskId, externalRelatedTasks, criticalPathEdges],
+  );
+
+  // Only computed while the toggle is on — this project can have a lot of
+  // "blocks" edges, and there's no reason to run the CPM passes on every
+  // relations refetch when nobody's looking at the result. Never depends on
+  // zoom/pan/unit state, so toggling zoom doesn't recompute it.
+  // Also computed in the "critical" dependency display mode even while the
+  // toggle is off (the mode draws only these edges); the toggle alone still
+  // decides whether bars are outlined and the legend/warning show (see
+  // `criticalPath` below).
+  const needsCriticalPath =
+    showCriticalPath || dependencyDisplayMode === "critical";
+  const criticalPathResult = useMemo(() => {
+    if (!needsCriticalPath) return null;
+    const tasksInput = criticalPathInput.tasks;
+    // Measure slack in WORKING days from the workspace calendar so a hand-off
+    // that only spans a weekend/holiday reads as tight, not slack (see
+    // makeWorkingDayIndexer). Anchor at the earliest date in play so every
+    // lookup is a forward walk.
+    let anchor: Date | null = null;
+    for (const task of tasksInput) {
+      if (anchor === null || task.scheduleStart < anchor) {
+        anchor = task.scheduleStart;
+      }
+    }
+    const toDayIndex = anchor
+      ? makeWorkingDayIndexer(anchor, workingDays, holidayDateSet)
+      : undefined;
+    return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
+  }, [
+    needsCriticalPath,
+    criticalPathInput,
+    criticalPathEdges,
+    workingDays,
+    holidayDateSet,
+  ]);
+
+  const criticalPath = showCriticalPath ? criticalPathResult : null;
+
+  // Whether the highlighted path runs through a projected (derived) row, so the
+  // UI can say it is partly projected from estimates.
+  const isCriticalPathProjected = useMemo(
+    () =>
+      isCriticalPathProjectedFor(
+        criticalPath,
+        criticalPathInput.derivedTaskIds,
+      ),
+    [criticalPath, criticalPathInput],
+  );
+
+  // "blocks" edges whose constraint the current dates break; only those are
+  // drawn red. Own tasks plus the dated cross-project far ends — derived rows
+  // have no dates of their own and never count as violated.
+  const violatedEdgeIds = useMemo(() => {
+    const scheduleByTaskId = new Map<string, { start: Date; end: Date }>();
+    for (const task of criticalPathInput.tasks) {
+      if (criticalPathInput.derivedTaskIds.has(task.id)) continue;
+      scheduleByTaskId.set(task.id, {
+        start: task.scheduleStart,
+        end: task.scheduleEnd,
+      });
+    }
+    return computeViolatedDependencyEdgeIds(
+      dependencyEdges.map((edge) => ({
+        id: edge.id,
+        relationType: edge.relationType,
+        sourceTaskId: edge.sourceTaskId,
+        targetTaskId: edge.targetTaskId,
+        dependencyType: edge.dependencyType ?? "fs",
+        lagDays: edge.lagDays ?? 0,
+      })),
+      scheduleByTaskId,
+    );
+  }, [dependencyEdges, criticalPathInput]);
 
   // The date window (which 91 days are in view, and the paging bounds
   // around them) depends only on the task list, the week-start preference,
@@ -1379,9 +1406,13 @@ function RouteComponent() {
   // task with no box yet, a task scrolled out of the date window, a search
   // miss — simply has no box here, and buildDependencyEdges skips edges
   // missing either end.
-  const taskBoxes = useMemo(() => {
+  const { taskBoxes, offWindowTasks } = useMemo(() => {
     const boxes = new Map<string, TaskBarBox>();
-    if (!timeline) return boxes;
+    // Rows that exist but whose bar lies entirely outside the visible time
+    // window, by side: their edges are drawn as a short stub plus a jump chip
+    // (see buildDependencyEdges' offWindowTasks) rather than dropped.
+    const offWindow = new Map<string, OffWindowSide>();
+    if (!timeline) return { taskBoxes: boxes, offWindowTasks: offWindow };
     const trackCount = timeline.days.length;
 
     for (const task of renderedTasks) {
@@ -1408,7 +1439,15 @@ function RouteComponent() {
             timeline.rangeStart,
             trackCount,
           );
-      if (!barInView) continue;
+      if (!barInView) {
+        offWindow.set(
+          task.id,
+          differenceInCalendarDays(task.scheduleEnd, timeline.rangeStart) < 0
+            ? "before"
+            : "after",
+        );
+        continue;
+      }
       const box = computeInsetBarBox(
         barsLeftPx + (lineStart - 1) * pixelsPerDay,
         barsLeftPx + (lineEnd - 1) * pixelsPerDay,
@@ -1429,9 +1468,17 @@ function RouteComponent() {
         right: box.right + hoverGrow,
         top: row.start,
         height: row.size,
+        // The box edge is the window edge when the real date lies outside it,
+        // so an anchor on that side is not where the task really starts/ends.
+        startClipped:
+          differenceInCalendarDays(task.scheduleStart, timeline.rangeStart) < 0,
+        endClipped:
+          !task.isMilestone &&
+          differenceInCalendarDays(task.scheduleEnd, timeline.rangeStart) >=
+            trackCount,
       });
     }
-    return boxes;
+    return { taskBoxes: boxes, offWindowTasks: offWindow };
   }, [
     renderedTasks,
     rowOffsetByTaskId,
@@ -1442,8 +1489,8 @@ function RouteComponent() {
   ]);
 
   const dependencyEdgeGeometry = useMemo(
-    () => buildDependencyEdges(dependencyEdges, taskBoxes),
-    [dependencyEdges, taskBoxes],
+    () => buildDependencyEdges(dependencyEdges, taskBoxes, { offWindowTasks }),
+    [dependencyEdges, taskBoxes, offWindowTasks],
   );
 
   // The task ids that should read as "connected" to the hovered bar: itself,
@@ -1632,6 +1679,87 @@ function RouteComponent() {
     });
   }, []);
 
+  // Jump chips (see GanttDependencyOverlay): an edge whose far task is outside
+  // the visible time window draws a short stub and a chip naming that task by
+  // the key the rail shows plus the date the edge anchors to.
+  const resolveOffWindowTask = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const task = renderedTaskById.get(taskId);
+      if (!task) return null;
+      const slug = task.isExternal ? task.projectSlug : (project?.slug ?? "");
+      const key = task.number ? `${slug}-${task.number}` : task.title;
+      return {
+        key,
+        dateText: formatDateShort(
+          anchorSide === "end" ? task.scheduleEnd : task.scheduleStart,
+        ),
+      };
+    },
+    [renderedTaskById, project?.slug],
+  );
+
+  // Brings a task into view: pages the date window to its date with the same
+  // `showDate(addDays(date, -7))` the rail's "show task dates" button uses
+  // (only when the date is outside the window), then centers the date in the
+  // timeline and the row in the viewport. The scroll waits for the paged
+  // timeline to render, since scrollLeft depends on the new window.
+  const pendingJumpRef = useRef<{
+    taskId: string;
+    anchorSide: "start" | "end";
+  } | null>(null);
+  const scrollTaskIntoView = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const scrollEl = scrollContainerRef.current;
+      const task = renderedTaskById.get(taskId);
+      if (!scrollEl || !task || !timeline) return;
+      const date = anchorSide === "end" ? task.scheduleEnd : task.scheduleStart;
+      const dayIndex = differenceInCalendarDays(date, timeline.rangeStart);
+      const visibleTimelineWidth = Math.max(
+        scrollEl.clientWidth - barsLeftPx,
+        0,
+      );
+      scrollEl.scrollLeft = Math.max(
+        0,
+        dayIndex * pixelsPerDay - visibleTimelineWidth / 2,
+      );
+      const row = rowOffsetByTaskId.get(taskId);
+      if (row) {
+        const viewport = scrollEl.clientHeight;
+        if (
+          row.start < scrollEl.scrollTop ||
+          row.start + row.size > scrollEl.scrollTop + viewport
+        ) {
+          scrollEl.scrollTop = Math.max(
+            0,
+            row.start - Math.max(viewport - row.size, 0) / 2,
+          );
+        }
+      }
+    },
+    [renderedTaskById, timeline, barsLeftPx, pixelsPerDay, rowOffsetByTaskId],
+  );
+  const handleJumpToTask = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const task = renderedTaskById.get(taskId);
+      if (!task || !timeline) return;
+      const date = anchorSide === "end" ? task.scheduleEnd : task.scheduleStart;
+      if (date < timeline.rangeStart || date > timeline.rangeEnd) {
+        pendingJumpRef.current = { taskId, anchorSide };
+        // The same paging as showDate(addDays(date, -7)).
+        setWindowStart({ projectId, date: addDays(date, -7) });
+        return;
+      }
+      scrollTaskIntoView(taskId, anchorSide);
+    },
+    [renderedTaskById, timeline, scrollTaskIntoView, projectId],
+  );
+  useLayoutEffect(() => {
+    const pending = pendingJumpRef.current;
+    if (!pending || !timeline) return;
+    pendingJumpRef.current = null;
+    scrollTaskIntoView(pending.taskId, pending.anchorSide);
+  }, [timeline, scrollTaskIntoView]);
+
   // Whether the chart itself (as opposed to a "no tasks"/"no matches" empty
   // state) is actually mounted — used to (re)attach the wheel-zoom listener
   // once it appears, e.g. after tasks finish loading. Mirrors the same
@@ -1736,6 +1864,72 @@ function RouteComponent() {
       });
     },
     [navigate, workspaceId],
+  );
+
+  // The dependency neighborhood card over the details sheet's backdrop reads
+  // the schedules the chart already computed (own dates, estimate-sized and
+  // rolled-up spans, derived spans, cross-project far ends), not a new
+  // derivation, and ignores the search filter and collapsed parents: it shows
+  // the open task's real relations.
+  const neighborhoodScheduleById = useMemo(() => {
+    const map = new Map<string, { start: Date; end: Date }>();
+    for (const task of parsedTasks) {
+      map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
+    }
+    for (const task of externalRelatedTasks) {
+      if (!map.has(task.id)) {
+        map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
+      }
+    }
+    return map;
+  }, [parsedTasks, externalRelatedTasks]);
+
+  const neighborhoodTaskInfoById = useMemo(() => {
+    const map = new Map<string, NeighborhoodTaskInfo>();
+    const keyOf = (slug: string | undefined, number: number | null) =>
+      number ? `${slug ?? ""}-${number}` : "";
+    for (const relation of taskRelations ?? []) {
+      for (const endpoint of [relation.sourceTask, relation.targetTask]) {
+        if (!endpoint) continue;
+        map.set(endpoint.id, {
+          key:
+            keyOf(
+              endpoint.projectId === projectId
+                ? project?.slug
+                : endpoint.projectSlug,
+              endpoint.number,
+            ) || endpoint.title,
+          title: endpoint.title,
+        });
+      }
+    }
+    for (const task of allTasks) {
+      map.set(task.id, {
+        key: keyOf(project?.slug, task.number ?? null) || task.title,
+        title: task.title,
+      });
+    }
+    for (const task of externalRelatedTasks) {
+      const info = map.get(task.id);
+      if (info && task.isDerived)
+        map.set(task.id, { ...info, isDerived: true });
+    }
+    return map;
+  }, [taskRelations, allTasks, externalRelatedTasks, project?.slug, projectId]);
+
+  // A neighbor of this project opens in this page's sheet (the walk along the
+  // chain); a task of another project opens on its own route, as a read-only
+  // row does (openExternalTask).
+  const handleSelectNeighborhoodTask = useCallback(
+    (selectedTaskId: string) => {
+      const selectedProjectId = projectIdByRelatedTaskId.get(selectedTaskId);
+      openExternalTask({
+        id: selectedTaskId,
+        projectId: selectedProjectId,
+        isOwnProject: !selectedProjectId || selectedProjectId === projectId,
+      });
+    },
+    [openExternalTask, projectIdByRelatedTaskId, projectId],
   );
 
   // Drag-to-pan starting on the sticky task rail's own row-opening button
@@ -1943,7 +2137,12 @@ function RouteComponent() {
                 {t("tasks:gantt.title")}
               </h1>
               {(() => {
-                const hasDependencyLines = dependencyEdgeGeometry.length > 0;
+                const hasDependencyLines =
+                  dependencyEdgeGeometry.length > 0 &&
+                  dependencyDisplayMode !== "hidden";
+                const hasViolatedLines = dependencyEdgeGeometry.some((edge) =>
+                  violatedEdgeIds.has(edge.id),
+                );
                 // Critical bars are outlined amber whenever there are critical
                 // tasks, regardless of whether any of their edges are drawn as
                 // lines in the current window — so the amber legend must not be
@@ -1960,13 +2159,19 @@ function RouteComponent() {
                     {hasDependencyLines && (
                       <>
                         <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-destructive" />
+                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
                           {t("tasks:gantt.legendBlocking")}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
+                          <span className="w-4 border-muted-foreground border-t-2 border-dashed" />
                           {t("tasks:gantt.legendRelated")}
                         </span>
+                        {hasViolatedLines && (
+                          <span className="flex items-center gap-1">
+                            <span className="h-0.5 w-4 rounded-full bg-destructive" />
+                            {t("tasks:gantt.legendViolated")}
+                          </span>
+                        )}
                         {/* Points at the small FS/SS/FF/SF label on a
                             blocking line itself (see GanttDependencyOverlay)
                             rather than spelling out all four types here —
@@ -1976,7 +2181,7 @@ function RouteComponent() {
                           className="flex items-center gap-1"
                           title={t("tasks:gantt.legendDependencyTypeHint")}
                         >
-                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-destructive">
+                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-foreground">
                             {t("tasks:relations.dependency.typesShort.fs")}
                           </span>
                           {t("tasks:gantt.legendDependencyType")}
@@ -1987,6 +2192,14 @@ function RouteComponent() {
                       <span className="flex items-center gap-1">
                         <span className="h-0.5 w-4 rounded-full bg-warning" />
                         {t("tasks:gantt.legendCriticalPath")}
+                      </span>
+                    )}
+                    {hasCriticalHighlight && isCriticalPathProjected && (
+                      <span
+                        className="italic"
+                        data-gantt-critical-projected-note=""
+                      >
+                        {t("tasks:gantt.criticalPathProjectedNote")}
                       </span>
                     )}
                   </div>
@@ -2014,11 +2227,42 @@ function RouteComponent() {
               )}
               aria-pressed={showCriticalPath}
               aria-label={t("tasks:gantt.criticalPathToggleAriaLabel")}
+              title={
+                showCriticalPath && isCriticalPathProjected
+                  ? t("tasks:gantt.criticalPathProjectedNote")
+                  : undefined
+              }
               onClick={() => setShowCriticalPath(!showCriticalPath)}
             >
               <RouteIcon className="size-3.5" />
               {t("tasks:gantt.criticalPathToggle")}
             </Button>
+
+            <Select
+              value={dependencyDisplayMode}
+              onValueChange={(value) =>
+                setDependencyDisplayMode(
+                  isGanttDependencyDisplayMode(value) ? value : "all",
+                )
+              }
+            >
+              <SelectTrigger
+                size="sm"
+                className="h-9 w-full max-w-[11rem] sm:h-8"
+                aria-label={t("tasks:gantt.dependencyDisplayModeLabel")}
+              >
+                <SelectValue>
+                  {t(DEPENDENCY_DISPLAY_MODE_LABEL_KEYS[dependencyDisplayMode])}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {GANTT_DEPENDENCY_DISPLAY_MODES.map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {t(DEPENDENCY_DISPLAY_MODE_LABEL_KEYS[mode])}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <Button
               size="xs"
@@ -2038,14 +2282,14 @@ function RouteComponent() {
               />
             )}
 
-            {/* A dependency reaching a task with no resolved schedule still
-                never participates in the critical-path network
-                (computeCriticalPath has no row or duration to reason about
-                for it — see its own inScopeEdges comment): own-project and
-                cross-project alike, as long as it has dates, is fed in (see
-                crossProjectCriticalPathTasks above), but a genuinely
-                dateless far end still isn't, so a task it would otherwise
-                have made critical can silently read as "not critical" here.
+            {/* A dependency reaching a task that cannot be placed on the
+                timeline (no dates of its own and no placed predecessor to
+                derive a position from, e.g. on or downstream of a cycle, or
+                archived) still never participates in the critical-path
+                network, so a task it would otherwise make critical can
+                silently read as "not critical". Dateless tasks that CAN be
+                placed from their predecessors plus estimate are fed in as a
+                projection (see criticalPathInput above) and are not counted.
                 Shown only while the toggle is actually on (droppedEdgeCount
                 isn't computed at all otherwise) and only when there's
                 something to warn about. */}
@@ -2247,8 +2491,17 @@ function RouteComponent() {
           </div>
         </div>
 
-        {!timeline ||
-        (parsedTasks.length === 0 && externalRelatedTasks.length === 0) ? (
+        {isTasksPending ? (
+          // No answer yet is not an empty project: the "no scheduled tasks"
+          // state below is only for a load that succeeded.
+          <TasksLoading />
+        ) : isTasksError && !project ? (
+          <TasksLoadError
+            isRetrying={isTasksFetching}
+            onRetry={() => void refetchTasks()}
+          />
+        ) : !timeline ||
+          (parsedTasks.length === 0 && externalRelatedTasks.length === 0) ? (
           <div className="flex flex-1 items-center justify-center px-6">
             <div className="max-w-sm text-center">
               <h2 className="text-sm font-semibold text-foreground">
@@ -2460,8 +2713,16 @@ function RouteComponent() {
                   <GanttDependencyOverlay
                     edges={dependencyEdgeGeometry}
                     hoveredTaskId={hoveredTaskId}
-                    criticalEdgeIds={criticalPath?.criticalEdgeIds}
+                    criticalEdgeIds={criticalPathResult?.criticalEdgeIds}
+                    violatedEdgeIds={violatedEdgeIds}
+                    pinnedTaskId={taskId ?? null}
+                    displayMode={dependencyDisplayMode}
                     clipLeftPx={barsLeftPx}
+                    clipRightPx={
+                      barsLeftPx + timeline.days.length * pixelsPerDay
+                    }
+                    resolveOffWindowTask={resolveOffWindowTask}
+                    onJumpToTask={handleJumpToTask}
                     resolveProjectId={(taskId) =>
                       projectIdByRelatedTaskId.get(taskId) ?? projectId
                     }
@@ -2809,6 +3070,18 @@ function RouteComponent() {
               search: {},
               replace: true,
             })
+          }
+          backdropAside={
+            taskId ? (
+              <GanttTaskNeighborhood
+                focusTaskId={taskId}
+                edges={dependencyEdges}
+                scheduleByTaskId={neighborhoodScheduleById}
+                taskInfoById={neighborhoodTaskInfoById}
+                violatedEdgeIds={violatedEdgeIds}
+                onSelectTask={handleSelectNeighborhoodTask}
+              />
+            ) : null
           }
         />
       </div>
