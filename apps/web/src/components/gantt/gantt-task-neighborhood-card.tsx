@@ -2,6 +2,7 @@ import { addDays } from "date-fns";
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -10,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { formatDateShort } from "@/lib/format";
+import { useUserPreferencesStore } from "@/store/user-preferences";
 import {
   buildDependencyEdges,
   type DependencyEdgeInput,
@@ -19,10 +21,15 @@ import { GanttDependencyOverlay } from "./gantt-dependency-overlay";
 import {
   buildNeighborhoodScale,
   buildTaskNeighborhood,
+  fitPixelsPerDay,
+  NEIGHBORHOOD_ZOOMS,
   type NeighborhoodRole,
   type NeighborhoodRow,
   type NeighborhoodSchedule,
+  type NeighborhoodZoom,
+  stepNeighborhoodZoom,
 } from "./gantt-task-neighborhood";
+import { normalizeWheelDeltaY } from "./zoom";
 
 export type NeighborhoodTaskInfo = {
   /** The task key as shown elsewhere (for example AFB-36). */
@@ -46,6 +53,16 @@ type GanttTaskNeighborhoodProps = {
 
 export const NEIGHBORHOOD_MIN_AVAILABLE_WIDTH_PX = 480;
 
+// Static i18n keys (never built from the zoom value at the call site). The
+// unit labels are the main Gantt toolbar's own keys.
+const ZOOM_LABEL_KEYS: Record<NeighborhoodZoom, string> = {
+  fit: "tasks:gantt.neighborhoodZoomFit",
+  day: "tasks:gantt.unitDay",
+  week: "tasks:gantt.unitWeek",
+  month: "tasks:gantt.unitMonth",
+  quarter: "tasks:gantt.unitQuarter",
+};
+
 const CARD_MARGIN_PX = 24;
 const CARD_MAX_WIDTH_PX = 880;
 const RAIL_WIDTH_PX = 200;
@@ -60,6 +77,9 @@ const FOCUS_SCROLL_MARGIN_PX = 24;
 // A pointer must travel this far before a press on the chart becomes a pan, so
 // a plain click still lands.
 const DRAG_THRESHOLD_PX = 4;
+// Ctrl/Cmd+wheel (and a trackpad pinch, which browsers report the same way)
+// changes the scale one step per this much accumulated wheel travel.
+const ZOOM_WHEEL_STEP_PX = 60;
 
 type Group = { role: NeighborhoodRole; rows: NeighborhoodRow[]; top: number };
 
@@ -108,7 +128,15 @@ export function GanttTaskNeighborhood({
     active: boolean;
   } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
+  // A pan that started on a row button must not also open that row's task.
+  const suppressClickRef = useRef(false);
+  const wheelZoomRef = useRef(0);
   const availableWidth = useElementWidth(rootRef);
+  const zoom = useUserPreferencesStore((state) => state.ganttNeighborhoodZoom);
+  const setZoom = useUserPreferencesStore(
+    (state) => state.setGanttNeighborhoodZoom,
+  );
+  const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
 
   const neighborhood = useMemo(
     () => buildTaskNeighborhood({ focusTaskId, edges, scheduleByTaskId }),
@@ -126,10 +154,18 @@ export function GanttTaskNeighborhood({
   const scale = useMemo(
     () =>
       neighborhood.range
-        ? buildNeighborhoodScale(neighborhood.range, viewportTimelineWidth)
+        ? buildNeighborhoodScale(neighborhood.range, viewportTimelineWidth, {
+            zoom,
+            weekStartsOn,
+          })
         : null,
-    [neighborhood.range, viewportTimelineWidth],
+    [neighborhood.range, viewportTimelineWidth, zoom, weekStartsOn],
   );
+  // What "fit" would use, whichever scale is active: Ctrl/Cmd+wheel orders the
+  // scales by pixels per day and needs to place "fit" among the units.
+  const fitPpd = neighborhood.range
+    ? fitPixelsPerDay(neighborhood.range, viewportTimelineWidth)
+    : 0;
   // The chart is as wide as the scale needs; it is wider than the viewport
   // when the range is long, and the scroll container then scrolls.
   const timelineWidth = scale?.widthPx ?? viewportTimelineWidth;
@@ -181,6 +217,10 @@ export function GanttTaskNeighborhood({
     : null;
   const focusTop = rowTops.get(focusTaskId) ?? null;
   const hasBody = visible && neighborhood.neighborCount > 0;
+  // The focus bar is brought into view for each task/scale pair: a new focus
+  // task, or a new scale (every offset changes, so the bar would otherwise end
+  // up anywhere).
+  const scrollKey = `${focusTaskId}|${scale?.zoom ?? ""}`;
   const scrolledForRef = useRef<string | null>(null);
   const latestFocusRef = useRef({ focusStartOffset, focusTop });
   latestFocusRef.current = { focusStartOffset, focusTop };
@@ -190,8 +230,8 @@ export function GanttTaskNeighborhood({
       return;
     }
     const element = scrollRef.current;
-    if (!element || scrolledForRef.current === focusTaskId) return;
-    scrolledForRef.current = focusTaskId;
+    if (!element || scrolledForRef.current === scrollKey) return;
+    scrolledForRef.current = scrollKey;
     const { focusStartOffset: startOffset, focusTop: top } =
       latestFocusRef.current;
     if (startOffset !== null) {
@@ -205,13 +245,60 @@ export function GanttTaskNeighborhood({
         0,
       );
     }
-  }, [hasBody, focusTaskId]);
+  }, [hasBody, scrollKey]);
+
+  // Wheel input. A plain vertical wheel over a chart that only overflows
+  // sideways would otherwise do nothing (the browser scrolls the axis that has
+  // no overflow by zero), so it pans the time axis. Ctrl/Cmd+wheel, which is
+  // also how browsers report a trackpad pinch, switches the scale. A native
+  // non-passive listener, because React registers wheel handlers as passive
+  // and ignores preventDefault there.
+  const latestZoomRef = useRef({ zoom, fitPpd, setZoom });
+  latestZoomRef.current = { zoom, fitPpd, setZoom };
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!hasBody || !element) return;
+    const onWheel = (event: WheelEvent) => {
+      const deltaY = normalizeWheelDeltaY(
+        event.deltaY,
+        event.deltaMode,
+        element.clientHeight,
+      );
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        wheelZoomRef.current += deltaY;
+        if (Math.abs(wheelZoomRef.current) < ZOOM_WHEEL_STEP_PX) return;
+        // Scrolling up (negative deltaY) zooms in, as in the main Gantt.
+        const direction = wheelZoomRef.current < 0 ? 1 : -1;
+        wheelZoomRef.current = 0;
+        const latest = latestZoomRef.current;
+        const next = stepNeighborhoodZoom(
+          latest.zoom,
+          direction,
+          latest.fitPpd,
+        );
+        if (next !== latest.zoom) latest.setZoom(next);
+        return;
+      }
+      // Shift+wheel and a sideways swipe already scroll horizontally; a chart
+      // that also overflows vertically keeps the native vertical wheel.
+      if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(deltaY)) return;
+      if (element.scrollHeight > element.clientHeight) return;
+      if (element.scrollWidth <= element.clientWidth) return;
+      event.preventDefault();
+      element.scrollLeft += deltaY;
+    };
+    element.addEventListener("wheel", onWheel, { passive: false });
+    return () => element.removeEventListener("wheel", onWheel);
+  }, [hasBody]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    // Touch already pans natively; only a primary mouse/pen press starts a drag
-    // and never one that starts on a row button.
+    // Touch already pans natively; only a primary mouse/pen press starts a
+    // drag. A press on a row button starts one too: the rows cover almost the
+    // whole chart, so excluding them left nothing to grab. The movement
+    // threshold keeps a plain click a click.
     if (event.pointerType === "touch" || event.button !== 0) return;
-    if ((event.target as Element).closest("button")) return;
+    suppressClickRef.current = false;
     const element = event.currentTarget;
     dragRef.current = {
       pointerId: event.pointerId,
@@ -231,6 +318,7 @@ export function GanttTaskNeighborhood({
     if (!drag.active) {
       if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
       drag.active = true;
+      suppressClickRef.current = true;
       setIsPanning(true);
       try {
         event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -248,12 +336,24 @@ export function GanttTaskNeighborhood({
     dragRef.current = null;
     if (drag.active) {
       setIsPanning(false);
+      // The click that ends this drag is dispatched right after pointerup;
+      // the suppression only has to outlive that.
+      setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
       try {
         event.currentTarget.releasePointerCapture?.(event.pointerId);
       } catch {
         // Already released.
       }
     }
+  };
+
+  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!suppressClickRef.current) return;
+    suppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   const focusInfo = taskInfoById.get(focusTaskId);
@@ -401,14 +501,43 @@ export function GanttTaskNeighborhood({
           className="pointer-events-auto flex max-h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-lg motion-safe:animate-[gantt-neighborhood-in_160ms_ease-out_both]"
           style={{ width: cardWidth }}
         >
-          <header className="flex shrink-0 items-center justify-between gap-3 border-b px-3 py-2.5">
-            <h2 className="min-w-0 truncate font-medium text-sm">{title}</h2>
-            {neighborhood.neighborCount > 0 && (
-              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-                {t("tasks:gantt.neighborhoodCount", {
-                  count: neighborhood.neighborCount,
-                })}
-              </span>
+          <header className="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-3 py-2.5">
+            <div className="flex min-w-0 items-center gap-3">
+              <h2 className="min-w-0 truncate font-medium text-sm">{title}</h2>
+              {neighborhood.neighborCount > 0 && (
+                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-muted-foreground text-xs">
+                  {t("tasks:gantt.neighborhoodCount", {
+                    count: neighborhood.neighborCount,
+                  })}
+                </span>
+              )}
+            </div>
+            {neighborhood.neighborCount > 0 && neighborhood.range && (
+              <fieldset
+                data-testid="gantt-neighborhood-zoom"
+                className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-background p-0.5"
+              >
+                <legend className="sr-only">
+                  {t("tasks:gantt.neighborhoodZoomLabel")}
+                </legend>
+                {NEIGHBORHOOD_ZOOMS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={zoom === option}
+                    data-zoom={option}
+                    onClick={() => setZoom(option)}
+                    className={cn(
+                      "touch-manipulation rounded-sm px-2 py-0.5 font-medium text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                      zoom === option
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    {t(ZOOM_LABEL_KEYS[option])}
+                  </button>
+                ))}
+              </fieldset>
             )}
           </header>
           {neighborhood.neighborCount === 0 ? (
@@ -437,9 +566,10 @@ export function GanttTaskNeighborhood({
               onPointerMove={handlePointerMove}
               onPointerUp={endPan}
               onPointerCancel={endPan}
+              onClickCapture={handleClickCapture}
               className={cn(
-                "min-h-0 flex-1 overflow-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                isPanning ? "cursor-grabbing select-none" : "cursor-grab",
+                "min-h-0 flex-1 select-none overflow-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                isPanning ? "cursor-grabbing" : "cursor-grab",
               )}
             >
               <div
@@ -465,7 +595,7 @@ export function GanttTaskNeighborhood({
                           height: AXIS_HEIGHT_PX,
                         }}
                       >
-                        {formatDateShort(tick.day)}
+                        {tick.label}
                       </span>
                     ))}
                   </div>

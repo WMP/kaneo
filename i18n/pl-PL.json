@@ -3314,6 +3314,8 @@
 			"neighborhoodPredecessors": "Poprzedniki",
 			"neighborhoodScrollLabel": "Wykres zależności, przewijany",
 			"neighborhoodSuccessors": "Następniki",
+			"neighborhoodZoomFit": "Dopasuj",
+			"neighborhoodZoomLabel": "Skala wykresu zależności",
 			"criticalPathDroppedEdges_few": "{{count}} pominięte zależności bez możliwych dat",
 			"criticalPathDroppedEdges_many": "{{count}} pominiętych zależności bez możliwych dat",
 			"criticalPathDroppedEdges_one": "{{count}} pominięta zależność bez możliwych dat",

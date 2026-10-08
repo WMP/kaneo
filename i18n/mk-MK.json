@@ -3136,6 +3136,8 @@
 			"neighborhoodPredecessors": "Претходници",
 			"neighborhoodScrollLabel": "Дијаграм на зависности, со лизгање",
 			"neighborhoodSuccessors": "Следбеници",
+			"neighborhoodZoomFit": "Прилагоди",
+			"neighborhoodZoomLabel": "Размер на дијаграмот на зависности",
 			"criticalPathDroppedEdges_one": "{{count}} зависност што не може да се постави е прескокната",
 			"criticalPathDroppedEdges_other": "{{count}} зависности што не можат да се постават се прескокнати",
 			"criticalPathDroppedEdgesHint": "Овие зависности водат до задача што не може да се постави на временската линија (нема датуми и нема претходна задача со датуми), па не можат да се проверат за критичниот пат — задача што инаку би станала критична може да не биде означена.",

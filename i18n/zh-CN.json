@@ -3139,6 +3139,8 @@
 			"neighborhoodPredecessors": "前置任务",
 			"neighborhoodScrollLabel": "依赖关系图，可滚动",
 			"neighborhoodSuccessors": "后续任务",
+			"neighborhoodZoomFit": "适应",
+			"neighborhoodZoomLabel": "依赖关系图缩放",
 			"criticalPathDroppedEdges_other": "已跳过{{count}}个无法安排的依赖关系",
 			"criticalPathDroppedEdgesHint": "这些依赖关系连接到无法放置在时间线上的任务(没有日期,也没有带日期的前置任务),因此无法纳入关键路径的判定——原本应被判定为关键任务的任务可能不会被高亮显示。",
 			"criticalPathProjectedNote": "路径部分根据估算预测",

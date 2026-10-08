@@ -3128,6 +3128,8 @@
 			"neighborhoodPredecessors": "Predecessors",
 			"neighborhoodScrollLabel": "Dependency chart, scrollable",
 			"neighborhoodSuccessors": "Successors",
+			"neighborhoodZoomFit": "Fit",
+			"neighborhoodZoomLabel": "Dependency chart scale",
 			"criticalPathToggle": "Critical path",
 			"criticalPathToggleAriaLabel": "Highlight the critical path",
 			"criticalPathDroppedEdges_one": "{{count}} unplaceable dep skipped",

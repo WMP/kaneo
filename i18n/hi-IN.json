@@ -3136,6 +3136,8 @@
 			"neighborhoodPredecessors": "पूर्ववर्ती",
 			"neighborhoodScrollLabel": "निर्भरता चार्ट, स्क्रोल करने योग्य",
 			"neighborhoodSuccessors": "उत्तरवर्ती",
+			"neighborhoodZoomFit": "फ़िट",
+			"neighborhoodZoomLabel": "निर्भरता चार्ट का पैमाना",
 			"criticalPathDroppedEdges_one": "{{count}} ऐसी निर्भरता छोड़ी गई जिसे रखा नहीं जा सकता",
 			"criticalPathDroppedEdges_other": "{{count}} ऐसी निर्भरताएं छोड़ी गईं जिन्हें रखा नहीं जा सकता",
 			"criticalPathDroppedEdgesHint": "ये निर्भरताएं ऐसे कार्य तक पहुंचती हैं जिसे टाइमलाइन पर नहीं रखा जा सकता (कोई तिथि नहीं और तिथि वाला कोई पूर्ववर्ती नहीं), इसलिए इन्हें क्रिटिकल पथ के लिए जांचा नहीं जा सकता — जो कार्य अन्यथा क्रिटिकल बनता, वह हाइलाइट नहीं भी हो सकता है।",

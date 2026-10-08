@@ -3172,6 +3172,8 @@
 			"neighborhoodPredecessors": "Предшественники",
 			"neighborhoodScrollLabel": "График зависимостей, прокручиваемый",
 			"neighborhoodSuccessors": "Последователи",
+			"neighborhoodZoomFit": "Вписать",
+			"neighborhoodZoomLabel": "Масштаб диаграммы зависимостей",
 			"criticalPathDroppedEdges_few": "Пропущено {{count}} зависимости, которые нельзя разместить",
 			"criticalPathDroppedEdges_many": "Пропущено {{count}} зависимостей, которые нельзя разместить",
 			"criticalPathDroppedEdges_one": "Пропущена {{count}} зависимость, которую нельзя разместить",

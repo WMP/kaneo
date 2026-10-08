@@ -3136,6 +3136,8 @@
 			"neighborhoodPredecessors": "Vorgänger",
 			"neighborhoodScrollLabel": "Abhängigkeitsdiagramm, scrollbar",
 			"neighborhoodSuccessors": "Nachfolger",
+			"neighborhoodZoomFit": "Anpassen",
+			"neighborhoodZoomLabel": "Maßstab des Abhängigkeitsdiagramms",
 			"criticalPathDroppedEdges_one": "{{count}} nicht platzierbare Abhängigkeit übersprungen",
 			"criticalPathDroppedEdges_other": "{{count}} nicht platzierbare Abhängigkeiten übersprungen",
 			"criticalPathDroppedEdgesHint": "Diese Abhängigkeiten führen zu einer Aufgabe, die sich nicht auf der Zeitachse platzieren lässt (keine Termine und kein Vorgänger mit Terminen), daher können sie nicht auf den kritischen Pfad geprüft werden – eine Aufgabe, die dadurch kritisch würde, wird möglicherweise nicht hervorgehoben.",

@@ -3135,6 +3135,8 @@
 			"neighborhoodPredecessors": "Predecesoras",
 			"neighborhoodScrollLabel": "Gráfico de dependencias, desplazable",
 			"neighborhoodSuccessors": "Sucesoras",
+			"neighborhoodZoomFit": "Ajustar",
+			"neighborhoodZoomLabel": "Escala del gráfico de dependencias",
 			"criticalPathDroppedEdges_many": "{{count}} dependencias que no se pueden ubicar omitidas",
 			"criticalPathDroppedEdges_one": "{{count}} dependencia que no se puede ubicar omitida",
 			"criticalPathDroppedEdges_other": "{{count}} dependencias que no se pueden ubicar omitidas",

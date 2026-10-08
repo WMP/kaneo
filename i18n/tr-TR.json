@@ -3136,6 +3136,8 @@
 			"neighborhoodPredecessors": "Öncüller",
 			"neighborhoodScrollLabel": "Bağımlılık grafiği, kaydırılabilir",
 			"neighborhoodSuccessors": "Ardıllar",
+			"neighborhoodZoomFit": "Sığdır",
+			"neighborhoodZoomLabel": "Bağımlılık grafiği ölçeği",
 			"criticalPathDroppedEdges_one": "{{count}} yerleştirilemeyen bağımlılık atlandı",
 			"criticalPathDroppedEdges_other": "{{count}} yerleştirilemeyen bağımlılık atlandı",
 			"criticalPathDroppedEdgesHint": "Bu bağımlılıklar zaman çizelgesine yerleştirilemeyen bir göreve ulaşıyor (tarihi yok ve tarihli öncülü yok), bu nedenle kritik yol için kontrol edilemezler — aksi takdirde kritik hale getirecekleri bir görev vurgulanmayabilir.",

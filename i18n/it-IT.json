@@ -3146,6 +3146,8 @@
 			"neighborhoodPredecessors": "Predecessori",
 			"neighborhoodScrollLabel": "Grafico delle dipendenze, scorrevole",
 			"neighborhoodSuccessors": "Successori",
+			"neighborhoodZoomFit": "Adatta",
+			"neighborhoodZoomLabel": "Scala del grafico delle dipendenze",
 			"criticalPathDroppedEdges_many": "{{count}} dipendenze non collocabili ignorate",
 			"criticalPathDroppedEdges_one": "{{count}} dipendenza non collocabile ignorata",
 			"criticalPathDroppedEdges_other": "{{count}} dipendenze non collocabili ignorate",

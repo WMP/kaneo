@@ -3,8 +3,11 @@ import type { DependencyEdgeInput } from "./dependency-lines";
 import {
   buildNeighborhoodScale,
   buildTaskNeighborhood,
+  isNeighborhoodZoom,
   MIN_PIXELS_PER_DAY,
   type NeighborhoodSchedule,
+  stepNeighborhoodZoom,
+  UNIT_PIXELS_PER_DAY,
 } from "./gantt-task-neighborhood";
 
 const day = (value: string) => new Date(`${value}T00:00:00`);
@@ -221,9 +224,8 @@ describe("buildNeighborhoodScale", () => {
     const long = buildNeighborhoodScale(
       { start: day("2026-01-01"), end: day("2026-12-31") },
       600,
-      64,
       // Disable the minimum to exercise the tick steps of a fully fitted year.
-      0,
+      { minTickSpacingPx: 64, minPixelsPerDay: 0 },
     );
     const gapDays =
       (long.ticks[1].day.getTime() - long.ticks[0].day.getTime()) /
@@ -267,5 +269,103 @@ describe("buildNeighborhoodScale", () => {
     );
     expect(scale.totalDays).toBe(3);
     expect(scale.ticks.length).toBeGreaterThan(0);
+  });
+});
+
+describe("buildNeighborhoodScale with a fixed unit", () => {
+  const range = { start: day("2026-03-10"), end: day("2026-09-20") };
+  const labels = (zoom: "day" | "week" | "month" | "quarter") =>
+    buildNeighborhoodScale(range, 600, { zoom }).ticks.map(
+      (tick) => tick.label,
+    );
+
+  it("uses each unit's fixed px per day instead of fitting the width", () => {
+    for (const zoom of ["day", "week", "month", "quarter"] as const) {
+      const scale = buildNeighborhoodScale(range, 600, { zoom });
+      expect(scale.zoom).toBe(zoom);
+      expect(scale.pixelsPerDay).toBe(UNIT_PIXELS_PER_DAY[zoom]);
+      expect(scale.widthPx).toBeCloseTo(scale.totalDays * scale.pixelsPerDay);
+    }
+    expect(UNIT_PIXELS_PER_DAY.day).toBeGreaterThan(UNIT_PIXELS_PER_DAY.week);
+    expect(UNIT_PIXELS_PER_DAY.week).toBeGreaterThan(UNIT_PIXELS_PER_DAY.month);
+    expect(UNIT_PIXELS_PER_DAY.month).toBeGreaterThan(
+      UNIT_PIXELS_PER_DAY.quarter,
+    );
+  });
+
+  it("changes the pixels per day and the ticks when the unit changes", () => {
+    const fit = buildNeighborhoodScale(range, 600);
+    const day44 = buildNeighborhoodScale(range, 600, { zoom: "day" });
+    const month = buildNeighborhoodScale(range, 600, { zoom: "month" });
+    expect(day44.pixelsPerDay).not.toBe(fit.pixelsPerDay);
+    expect(month.pixelsPerDay).not.toBe(day44.pixelsPerDay);
+    // One tick per day, per month and per quarter respectively.
+    expect(day44.ticks).toHaveLength(day44.totalDays);
+    expect(month.ticks.length).toBeLessThan(15);
+    const quarter = buildNeighborhoodScale(range, 600, { zoom: "quarter" });
+    // A quarter tick is a whole quarter apart; the first one is the partial
+    // quarter the padded range starts in.
+    expect(quarter.ticks[0].label).toBe("Q1 2026");
+    expect(quarter.ticks[2].x - quarter.ticks[1].x).toBeGreaterThan(
+      month.ticks[2].x - month.ticks[1].x,
+    );
+  });
+
+  it("labels the ticks like the main Gantt header", () => {
+    expect(labels("month")).toContain("Apr 2026");
+    expect(labels("quarter")).toEqual(
+      expect.arrayContaining(["Q1 2026", "Q2 2026", "Q3 2026"]),
+    );
+    // A week column is labelled by its first day (Sunday by default).
+    expect(labels("week")[1]).toBe("Mar 15");
+    expect(
+      buildNeighborhoodScale(range, 600, { zoom: "week", weekStartsOn: 1 })
+        .ticks[1].label,
+    ).toBe("Mar 16");
+  });
+
+  it("puts ticks at the unit boundaries at the unit's offsets", () => {
+    const scale = buildNeighborhoodScale(range, 600, { zoom: "month" });
+    const april = scale.ticks.find((tick) => tick.label === "Apr 2026");
+    expect(april?.day).toEqual(day("2026-04-01"));
+    expect(april?.x).toBeCloseTo(scale.offsetOf(day("2026-04-01")));
+  });
+
+  it("keeps drawing grid to the card's edge when the unit is narrower than it", () => {
+    const short = { start: day("2026-03-10"), end: day("2026-03-14") };
+    const scale = buildNeighborhoodScale(short, 800, { zoom: "quarter" });
+    expect(scale.widthPx).toBeGreaterThanOrEqual(800);
+  });
+
+  it("does not change bar offsets between scales except by their px per day", () => {
+    const a = buildNeighborhoodScale(range, 600, { zoom: "day" });
+    const b = buildNeighborhoodScale(range, 600, { zoom: "week" });
+    const d = day("2026-05-01");
+    expect(a.offsetOf(d) / a.pixelsPerDay).toBeCloseTo(
+      b.offsetOf(d) / b.pixelsPerDay,
+    );
+  });
+});
+
+describe("stepNeighborhoodZoom", () => {
+  it("steps between the scales ordered by px per day and clamps at the ends", () => {
+    // A fit scale of 20 px/day sits between week (13.12) and day (44).
+    expect(stepNeighborhoodZoom("quarter", 1, 20)).toBe("month");
+    expect(stepNeighborhoodZoom("week", 1, 20)).toBe("fit");
+    expect(stepNeighborhoodZoom("fit", 1, 20)).toBe("day");
+    expect(stepNeighborhoodZoom("day", 1, 20)).toBe("day");
+    expect(stepNeighborhoodZoom("day", -1, 20)).toBe("fit");
+    expect(stepNeighborhoodZoom("quarter", -1, 20)).toBe("quarter");
+  });
+});
+
+describe("isNeighborhoodZoom", () => {
+  it("accepts fit and the four units only", () => {
+    for (const value of ["fit", "day", "week", "month", "quarter"]) {
+      expect(isNeighborhoodZoom(value)).toBe(true);
+    }
+    for (const value of ["year", "", null, undefined, 3]) {
+      expect(isNeighborhoodZoom(value)).toBe(false);
+    }
   });
 });

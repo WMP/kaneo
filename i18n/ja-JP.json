@@ -3139,6 +3139,8 @@
 			"neighborhoodPredecessors": "先行タスク",
 			"neighborhoodScrollLabel": "依存関係チャート（スクロール可能）",
 			"neighborhoodSuccessors": "後続タスク",
+			"neighborhoodZoomFit": "全体表示",
+			"neighborhoodZoomLabel": "依存関係チャートの目盛り",
 			"criticalPathDroppedEdges_other": "配置できない依存関係を{{count}}件スキップしました",
 			"criticalPathDroppedEdgesHint": "これらの依存関係は、タイムライン上に配置できないタスク(日付がなく、日付のある先行タスクもない)に接続しているため、クリティカルパスの判定対象外です。本来クリティカルになるはずのタスクが強調表示されない場合があります。",
 			"criticalPathProjectedNote": "見積もりから一部予測したパス",
