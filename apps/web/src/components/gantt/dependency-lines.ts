@@ -30,6 +30,47 @@ export type TaskBarBox = {
   top: number;
   /** The row's rendered height in pixels. */
   height: number;
+  /** The task's real start lies before the visible window, so `left` is the
+   * window edge, not the start. Only read when off-window stubs are enabled
+   * (see BuildDependencyEdgesOptions). */
+  startClipped?: boolean;
+  /** The task's real end lies after the visible window, so `right` is the
+   * window edge, not the end. Only read when off-window stubs are enabled. */
+  endClipped?: boolean;
+};
+
+/** Where a task that has no measurable bar lies relative to the visible time
+ * window: entirely before it (left) or entirely after it (right). */
+export type OffWindowSide = "before" | "after";
+
+export type BuildDependencyEdgesOptions = {
+  /** Tasks that have a row but no bar inside the visible time window, by the
+   * side of the window they lie on. Passing this map (even an empty one)
+   * turns on off-window handling: an edge with ONE such endpoint, or one whose
+   * anchored date is clipped by the window edge (TaskBarBox.startClipped /
+   * endClipped), is drawn as a short stub on the endpoint that is on screen
+   * (see DependencyEdgeStub) instead of a long line to the window edge. An
+   * edge with both endpoints off-window is not drawn. Without this option an
+   * edge with a missing box is skipped and clipped anchors are used as-is. */
+  offWindowTasks?: ReadonlyMap<string, OffWindowSide>;
+};
+
+/** An edge whose far endpoint is not on screen: only the stub at the endpoint
+ * that is on screen is drawn, and the overlay renders a jump chip for the
+ * off-window task at `chipPoint`. */
+export type DependencyEdgeStub = {
+  /** Which end of the edge is off-window (the chip's task). */
+  endpoint: "source" | "target";
+  /** The off-window task. */
+  taskId: string;
+  /** Where that task lies relative to the visible window. */
+  taskSide: OffWindowSide;
+  /** Which of that task's dates the edge anchors to (the chip shows it). */
+  anchorSide: "start" | "end";
+  /** The stub's outer end, where the chip attaches. */
+  chipPoint: { x: number; y: number };
+  /** The direction the chip extends from `chipPoint`: -1 left, 1 right. */
+  chipDir: 1 | -1;
 };
 
 export type DependencyEdgeGeometry = DependencyEdgeInput & {
@@ -49,6 +90,8 @@ export type DependencyEdgeGeometry = DependencyEdgeInput & {
   typeLabelPoint: { x: number; y: number } | null;
   /** Which edge of the TARGET bar the connector arrives at. */
   targetSide?: "start" | "end";
+  /** Set when an endpoint is off-window: the path is just a short stub. */
+  stub?: DependencyEdgeStub | null;
 };
 
 type Point = { x: number; y: number };
@@ -105,6 +148,9 @@ const MIN_COMPACT_RUN_PX = 6;
 // How far past its preferred exit gap a trunk may be pushed to serve a target
 // that is entered from the far side (ff/sf, or a backward ss).
 const SAME_SIDE_TRUNK_PUSH_MAX_PX = 2 * EXIT_GAP;
+// Length of the straight stub drawn at the on-screen end of an edge whose
+// other endpoint is outside the visible time window.
+export const DEPENDENCY_STUB_LENGTH_PX = 24;
 // The measured box is the whole row, not the bar. An L route starts on the
 // source bar's top/bottom edge. Task bars are `h-11` (44px; see
 // gantt-task-bar.tsx and gantt-external-task-bar.tsx), so half is 22px, capped
@@ -743,6 +789,8 @@ function assignChannels(groups: SourceGroup[]) {
 //    target bar, vertically centered on the row — never on the arrowhead or
 //    the target bar. A same-row edge has no vertical run and keeps its label
 //    beside the source bar.
+//  - Off-window endpoints (only with `options.offWindowTasks`): see
+//    BuildDependencyEdgesOptions and DependencyEdgeStub.
 //
 // Complexity: O(E log E) for the grouping, sorts and channel allocation (see
 // assignChannels), plus an output-sensitive obstacle lookup per trunk (a
@@ -750,9 +798,27 @@ function assignChannels(groups: SourceGroup[]) {
 export function buildDependencyEdges(
   edges: DependencyEdgeInput[],
   taskBoxes: ReadonlyMap<string, TaskBarBox>,
+  options: BuildDependencyEdgesOptions = {},
 ): DependencyEdgeGeometry[] {
+  const offWindow = options.offWindowTasks;
   const allBoxes = [...taskBoxes.values()];
   const rowIndex = buildRowIndex(allBoxes);
+
+  type Endpoint = { box: TaskBarBox } | { off: OffWindowSide } | null;
+  const endpointFor = (taskId: string, side: AnchorSide): Endpoint => {
+    const box = taskBoxes.get(taskId);
+    if (box) {
+      if (offWindow) {
+        // The anchored date is outside the window even though part of the bar
+        // is visible: the box edge is the window edge, not the anchor.
+        if (side === "start" && box.startClipped) return { off: "before" };
+        if (side === "end" && box.endClipped) return { off: "after" };
+      }
+      return { box };
+    }
+    const off = offWindow?.get(taskId);
+    return off ? { off } : null;
+  };
 
   const out: (DependencyEdgeGeometry | null)[] = edges.map(() => null);
   const resolved: Resolved[] = [];
@@ -767,9 +833,67 @@ export function buildDependencyEdges(
     const lagDays = edge.relationType === "blocks" ? (edge.lagDays ?? 0) : 0;
     const { source: sourceSide, target: targetSide } =
       anchorSides(dependencyType);
-    const source = taskBoxes.get(edge.sourceTaskId);
-    const target = taskBoxes.get(edge.targetTaskId);
-    if (!source || !target) return;
+    const sourceEnd = endpointFor(edge.sourceTaskId, sourceSide);
+    const targetEnd = endpointFor(edge.targetTaskId, targetSide);
+    if (!sourceEnd || !targetEnd) return;
+    if ("off" in sourceEnd && "off" in targetEnd) return;
+
+    if ("off" in sourceEnd && "box" in targetEnd) {
+      // Source off-window: a short stub entering the target, chip at its far end.
+      const box = targetEnd.box;
+      const dir = sideDir(targetSide);
+      const y = verticalCenter(box);
+      const end = { x: anchorX(box, targetSide), y };
+      const start = { x: end.x + dir * DEPENDENCY_STUB_LENGTH_PX, y };
+      out[index] = {
+        ...edge,
+        path: roundedPolylinePath([start, end], CORNER_RADIUS),
+        sourcePoint: start,
+        targetPoint: end,
+        lagLabelPoint: null,
+        typeLabelPoint: null,
+        targetSide,
+        stub: {
+          endpoint: "source",
+          taskId: edge.sourceTaskId,
+          taskSide: sourceEnd.off,
+          anchorSide: sourceSide,
+          chipPoint: start,
+          chipDir: dir,
+        },
+      };
+      return;
+    }
+    if ("off" in targetEnd && "box" in sourceEnd) {
+      // Target off-window: a short stub leaving the source, chip at its end.
+      const box = sourceEnd.box;
+      const dir = sideDir(sourceSide);
+      const y = verticalCenter(box);
+      const start = { x: anchorX(box, sourceSide), y };
+      const end = { x: start.x + dir * DEPENDENCY_STUB_LENGTH_PX, y };
+      out[index] = {
+        ...edge,
+        path: roundedPolylinePath([start, end], CORNER_RADIUS),
+        sourcePoint: start,
+        targetPoint: end,
+        lagLabelPoint: null,
+        typeLabelPoint: null,
+        targetSide,
+        stub: {
+          endpoint: "target",
+          taskId: edge.targetTaskId,
+          taskSide: targetEnd.off,
+          anchorSide: targetSide,
+          chipPoint: end,
+          chipDir: dir,
+        },
+      };
+      return;
+    }
+    if (!("box" in sourceEnd) || !("box" in targetEnd)) return;
+
+    const source = sourceEnd.box;
+    const target = targetEnd.box;
     const item: Resolved = {
       edge,
       index,
@@ -945,6 +1069,7 @@ export function buildDependencyEdges(
       lagLabelPoint,
       typeLabelPoint,
       targetSide: item.targetSide,
+      stub: null,
     };
   }
 

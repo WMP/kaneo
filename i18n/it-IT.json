@@ -3132,6 +3132,7 @@
 			"dependencyDisplayModeFocused": "Solo l'attività selezionata",
 			"dependencyDisplayModeCritical": "Solo il percorso critico",
 			"dependencyDisplayModeHidden": "Nascoste",
+			"dependencyChipAriaLabel": "Vai all'attività {{key}}",
 			"dependencyFanIn_one": "{{count}} predecessore",
 			"dependencyFanIn_many": "{{count}} di predecessori",
 			"dependencyFanIn_other": "{{count}} predecessori",

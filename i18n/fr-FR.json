@@ -3132,6 +3132,7 @@
 			"dependencyDisplayModeFocused": "Uniquement la tâche sélectionnée",
 			"dependencyDisplayModeCritical": "Uniquement le chemin critique",
 			"dependencyDisplayModeHidden": "Masquées",
+			"dependencyChipAriaLabel": "Aller à la tâche {{key}}",
 			"dependencyFanIn_one": "{{count}} prédécesseur",
 			"dependencyFanIn_many": "{{count}} de prédécesseurs",
 			"dependencyFanIn_other": "{{count}} prédécesseurs",

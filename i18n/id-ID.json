@@ -3116,6 +3116,7 @@
 			"dependencyDisplayModeFocused": "Hanya tugas yang dipilih",
 			"dependencyDisplayModeCritical": "Hanya jalur kritis",
 			"dependencyDisplayModeHidden": "Disembunyikan",
+			"dependencyChipAriaLabel": "Buka tugas {{key}}",
 			"dependencyFanIn_other": "{{count}} tugas pendahulu",
 			"criticalPathDroppedEdges_other": "{{count}} dependensi tanpa tanggal dilewati",
 			"criticalPathDroppedEdgesHint": "Dependensi ini mengarah ke tugas tanpa tanggal, sehingga tidak dapat diperiksa untuk jalur kritis — tugas yang seharusnya menjadi kritis mungkin tidak akan disorot.",

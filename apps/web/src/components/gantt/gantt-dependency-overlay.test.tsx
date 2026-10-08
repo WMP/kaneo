@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { DependencyEdgeGeometry } from "./dependency-lines";
 import {
@@ -529,6 +529,156 @@ describe("GanttDependencyOverlay", () => {
       const { container } = renderOverlay(edges);
       expect(badges(container)).toHaveLength(1);
       expect(drawn(container)).toHaveLength(1);
+    });
+  });
+
+  describe("off-window stubs and jump chips", () => {
+    const stubEdge = (
+      overrides: Partial<NonNullable<DependencyEdgeGeometry["stub"]>> = {},
+      extra: Partial<DependencyEdgeGeometry> = {},
+    ) =>
+      edge({
+        path: "M 396 60 L 420 60",
+        sourcePoint: { x: 396, y: 60 },
+        targetPoint: { x: 420, y: 60 },
+        stub: {
+          endpoint: "source",
+          taskId: "far",
+          taskSide: "before",
+          anchorSide: "end",
+          chipPoint: { x: 396, y: 60 },
+          chipDir: -1,
+          ...overrides,
+        },
+        ...extra,
+      });
+    const info = () => ({ key: "AFB-13", dateText: "Mar 3" });
+    const chipButtons = (container: HTMLElement) =>
+      container.querySelectorAll<HTMLButtonElement>(
+        "[data-testid=gantt-dependency-chip] button",
+      );
+
+    it("renders a labelled, focusable chip beside the stub and jumps on click", () => {
+      const onJump = vi.fn();
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={100}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={onJump}
+        />,
+      );
+
+      const [button] = chipButtons(container);
+      expect(button.textContent).toBe("← AFB-13 · Mar 3");
+      expect(button.getAttribute("aria-label")).toBeTruthy();
+      expect(button.getAttribute("title")).toBe(
+        button.getAttribute("aria-label"),
+      );
+      expect(button.getAttribute("type")).toBe("button");
+      // Left of the stub's outer end (x = 396), not over the stub itself.
+      const holder = button.closest("foreignObject");
+      expect(
+        Number(holder?.getAttribute("x")) +
+          Number(holder?.getAttribute("width")),
+      ).toBeLessThanOrEqual(396);
+
+      fireEvent.click(button);
+      expect(onJump).toHaveBeenCalledWith("far", "end");
+    });
+
+    it("puts the arrow after the text for a task beyond the right edge", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[
+            stubEdge({
+              endpoint: "target",
+              taskSide: "after",
+              anchorSide: "start",
+              chipPoint: { x: 420, y: 60 },
+              chipDir: 1,
+            }),
+          ]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      expect(chipButtons(container)[0].textContent).toBe("AFB-13 · Mar 3 →");
+    });
+
+    it("keeps a chip right of the task rail", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={380}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      const holder = chipButtons(container)[0].closest("foreignObject");
+      expect(Number(holder?.getAttribute("x"))).toBeGreaterThanOrEqual(380);
+    });
+
+    it("draws no chip without a jump handler or without task info", () => {
+      const withoutHandler = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={info}
+        />,
+      );
+      expect(chipButtons(withoutHandler.container)).toHaveLength(0);
+      // The stub itself is still drawn.
+      expect(
+        withoutHandler.container.querySelectorAll("path[data-edge-kind]"),
+      ).toHaveLength(1);
+      withoutHandler.unmount();
+
+      const withoutInfo = render(
+        <GanttDependencyOverlay
+          edges={[stubEdge()]}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+          resolveOffWindowTask={() => null}
+          onJumpToTask={vi.fn()}
+        />,
+      );
+      expect(chipButtons(withoutInfo.container)).toHaveLength(0);
+    });
+
+    it("does not fold stubs that leave a source toward an off-window target into a fan-in badge", () => {
+      const edges = Array.from(
+        { length: FAN_IN_COLLAPSE_THRESHOLD + 1 },
+        (_, i) =>
+          stubEdge(
+            { endpoint: "target", taskSide: "after", chipDir: 1 },
+            { id: `e${i}`, sourceTaskId: `s${i}`, targetTaskId: "far" },
+          ),
+      );
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={edges}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(
+        container.querySelectorAll("[data-testid=gantt-dependency-fan-in]"),
+      ).toHaveLength(0);
+      expect(container.querySelectorAll("path[data-edge-kind]")).toHaveLength(
+        edges.length,
+      );
     });
   });
 });

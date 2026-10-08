@@ -1031,6 +1031,121 @@ describe("buildDependencyEdges", () => {
     expect(Math.max(...ys)).toBeLessThanOrEqual(60);
   });
 
+  describe("off-window endpoints", () => {
+    const blocks = (source: string, target: string): DependencyEdgeInput => ({
+      id: `${source}-${target}`,
+      sourceTaskId: source,
+      targetTaskId: target,
+      relationType: "blocks",
+    });
+    const extentX = (path: string) => {
+      const xs = [...path.matchAll(/(?:[MLQ]|,) ([\d.-]+) ([\d.-]+)/g)].map(
+        (m) => Number(m[1]),
+      );
+      return Math.max(...xs) - Math.min(...xs);
+    };
+
+    it("draws a short stub into the target when the source is before the window", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["tgt", { left: 120, right: 220, top: 40, height: 40 }],
+      ]);
+      const [edge] = buildDependencyEdges([blocks("src", "tgt")], boxes, {
+        offWindowTasks: new Map([["src", "before" as const]]),
+      });
+
+      expect(edge.path).toBe("M 96 60 L 120 60");
+      expect(edge.targetPoint).toEqual({ x: 120, y: 60 });
+      expect(edge.typeLabelPoint).toBeNull();
+      expect(edge.stub).toEqual({
+        endpoint: "source",
+        taskId: "src",
+        taskSide: "before",
+        anchorSide: "end",
+        chipPoint: { x: 96, y: 60 },
+        chipDir: -1,
+      });
+      expect(extentX(edge.path)).toBe(24);
+    });
+
+    it("draws a short stub out of the source when the target is after the window", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", { left: 0, right: 100, top: 0, height: 40 }],
+      ]);
+      const [edge] = buildDependencyEdges([blocks("src", "tgt")], boxes, {
+        offWindowTasks: new Map([["tgt", "after" as const]]),
+      });
+
+      expect(edge.path).toBe("M 100 20 L 124 20");
+      expect(edge.stub).toEqual({
+        endpoint: "target",
+        taskId: "tgt",
+        taskSide: "after",
+        anchorSide: "start",
+        chipPoint: { x: 124, y: 20 },
+        chipDir: 1,
+      });
+    });
+
+    it("never draws a long line to the window edge for a clipped anchor", () => {
+      // The target starts before the window: its box starts at the window
+      // edge (x = 0) but its real start is off-screen.
+      const boxes = new Map<string, TaskBarBox>([
+        ["src", { left: 300, right: 400, top: 0, height: 40 }],
+        [
+          "tgt",
+          { left: 0, right: 160, top: 40, height: 40, startClipped: true },
+        ],
+      ]);
+      const edges = [blocks("src", "tgt")];
+
+      const [stub] = buildDependencyEdges(edges, boxes, {
+        offWindowTasks: new Map(),
+      });
+      expect(stub.stub?.endpoint).toBe("target");
+      expect(stub.stub?.taskSide).toBe("before");
+      expect(extentX(stub.path)).toBe(24);
+
+      // Without the option the clipped box is used as-is (the Portfolio).
+      const [legacy] = buildDependencyEdges(edges, boxes);
+      expect(legacy.stub).toBeNull();
+      expect(extentX(legacy.path)).toBeGreaterThan(300);
+    });
+
+    it("skips an edge with both endpoints off-window or an endpoint nobody knows", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["tgt", { left: 120, right: 220, top: 40, height: 40 }],
+      ]);
+      expect(
+        buildDependencyEdges([blocks("a", "b")], boxes, {
+          offWindowTasks: new Map([
+            ["a", "before" as const],
+            ["b", "after" as const],
+          ]),
+        }),
+      ).toEqual([]);
+      expect(
+        buildDependencyEdges([blocks("ghost", "tgt")], boxes, {
+          offWindowTasks: new Map(),
+        }),
+      ).toEqual([]);
+    });
+
+    it("keeps normal edges untouched next to stub edges", () => {
+      const boxes = new Map<string, TaskBarBox>([
+        ["a", { left: 0, right: 100, top: 0, height: 40 }],
+        ["b", { left: 200, right: 300, top: 40, height: 40 }],
+      ]);
+      const geometry = buildDependencyEdges(
+        [blocks("a", "b"), blocks("far", "b")],
+        boxes,
+        { offWindowTasks: new Map([["far", "before" as const]]) },
+      );
+      expect(geometry.map((g) => g.id)).toEqual(["a-b", "far-b"]);
+      expect(geometry[0].stub).toBeNull();
+      expect(geometry[1].stub?.taskId).toBe("far");
+    });
+  });
+
   describe("channels between different sources", () => {
     const edge = (id: string, source: string, target: string) => ({
       id,

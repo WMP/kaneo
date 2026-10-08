@@ -3124,6 +3124,7 @@
 			"dependencyDisplayModeFocused": "Μόνο η επιλεγμένη εργασία",
 			"dependencyDisplayModeCritical": "Μόνο η κρίσιμη διαδρομή",
 			"dependencyDisplayModeHidden": "Κρυφές",
+			"dependencyChipAriaLabel": "Μετάβαση στην εργασία {{key}}",
 			"dependencyFanIn_one": "{{count}} προηγούμενη εργασία",
 			"dependencyFanIn_other": "{{count}} προηγούμενες εργασίες",
 			"criticalPathDroppedEdges_one": "{{count}} εξάρτηση χωρίς ημερομηνία παραλείφθηκε",

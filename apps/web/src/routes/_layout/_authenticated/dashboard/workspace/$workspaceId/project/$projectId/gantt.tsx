@@ -30,6 +30,7 @@ import { useTranslation } from "react-i18next";
 import ProjectLayout from "@/components/common/project-layout";
 import type {
   DependencyEdgeInput,
+  OffWindowSide,
   TaskBarBox,
 } from "@/components/gantt/dependency-lines";
 import {
@@ -132,7 +133,7 @@ import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-pr
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getDueDateStatus, isTaskCompleted } from "@/lib/due-date-status";
-import { formatDate, formatDateMedium } from "@/lib/format";
+import { formatDate, formatDateMedium, formatDateShort } from "@/lib/format";
 import { HttpError } from "@/lib/http-error";
 import { getApprovalStatusLabel, getStatusLabel } from "@/lib/i18n/domain";
 import { resolveLabelColor } from "@/lib/label-color";
@@ -1432,9 +1433,13 @@ function RouteComponent() {
   // task with no box yet, a task scrolled out of the date window, a search
   // miss — simply has no box here, and buildDependencyEdges skips edges
   // missing either end.
-  const taskBoxes = useMemo(() => {
+  const { taskBoxes, offWindowTasks } = useMemo(() => {
     const boxes = new Map<string, TaskBarBox>();
-    if (!timeline) return boxes;
+    // Rows that exist but whose bar lies entirely outside the visible time
+    // window, by side: their edges are drawn as a short stub plus a jump chip
+    // (see buildDependencyEdges' offWindowTasks) rather than dropped.
+    const offWindow = new Map<string, OffWindowSide>();
+    if (!timeline) return { taskBoxes: boxes, offWindowTasks: offWindow };
     const trackCount = timeline.days.length;
 
     for (const task of renderedTasks) {
@@ -1461,7 +1466,15 @@ function RouteComponent() {
             timeline.rangeStart,
             trackCount,
           );
-      if (!barInView) continue;
+      if (!barInView) {
+        offWindow.set(
+          task.id,
+          differenceInCalendarDays(task.scheduleEnd, timeline.rangeStart) < 0
+            ? "before"
+            : "after",
+        );
+        continue;
+      }
       const box = computeInsetBarBox(
         barsLeftPx + (lineStart - 1) * pixelsPerDay,
         barsLeftPx + (lineEnd - 1) * pixelsPerDay,
@@ -1482,9 +1495,17 @@ function RouteComponent() {
         right: box.right + hoverGrow,
         top: row.start,
         height: row.size,
+        // The box edge is the window edge when the real date lies outside it,
+        // so an anchor on that side is not where the task really starts/ends.
+        startClipped:
+          differenceInCalendarDays(task.scheduleStart, timeline.rangeStart) < 0,
+        endClipped:
+          !task.isMilestone &&
+          differenceInCalendarDays(task.scheduleEnd, timeline.rangeStart) >=
+            trackCount,
       });
     }
-    return boxes;
+    return { taskBoxes: boxes, offWindowTasks: offWindow };
   }, [
     renderedTasks,
     rowOffsetByTaskId,
@@ -1495,8 +1516,8 @@ function RouteComponent() {
   ]);
 
   const dependencyEdgeGeometry = useMemo(
-    () => buildDependencyEdges(dependencyEdges, taskBoxes),
-    [dependencyEdges, taskBoxes],
+    () => buildDependencyEdges(dependencyEdges, taskBoxes, { offWindowTasks }),
+    [dependencyEdges, taskBoxes, offWindowTasks],
   );
 
   // The task ids that should read as "connected" to the hovered bar: itself,
@@ -1684,6 +1705,87 @@ function RouteComponent() {
       block: "nearest",
     });
   }, []);
+
+  // Jump chips (see GanttDependencyOverlay): an edge whose far task is outside
+  // the visible time window draws a short stub and a chip naming that task by
+  // the key the rail shows plus the date the edge anchors to.
+  const resolveOffWindowTask = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const task = renderedTaskById.get(taskId);
+      if (!task) return null;
+      const slug = task.isExternal ? task.projectSlug : (project?.slug ?? "");
+      const key = task.number ? `${slug}-${task.number}` : task.title;
+      return {
+        key,
+        dateText: formatDateShort(
+          anchorSide === "end" ? task.scheduleEnd : task.scheduleStart,
+        ),
+      };
+    },
+    [renderedTaskById, project?.slug],
+  );
+
+  // Brings a task into view: pages the date window to its date with the same
+  // `showDate(addDays(date, -7))` the rail's "show task dates" button uses
+  // (only when the date is outside the window), then centers the date in the
+  // timeline and the row in the viewport. The scroll waits for the paged
+  // timeline to render, since scrollLeft depends on the new window.
+  const pendingJumpRef = useRef<{
+    taskId: string;
+    anchorSide: "start" | "end";
+  } | null>(null);
+  const scrollTaskIntoView = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const scrollEl = scrollContainerRef.current;
+      const task = renderedTaskById.get(taskId);
+      if (!scrollEl || !task || !timeline) return;
+      const date = anchorSide === "end" ? task.scheduleEnd : task.scheduleStart;
+      const dayIndex = differenceInCalendarDays(date, timeline.rangeStart);
+      const visibleTimelineWidth = Math.max(
+        scrollEl.clientWidth - barsLeftPx,
+        0,
+      );
+      scrollEl.scrollLeft = Math.max(
+        0,
+        dayIndex * pixelsPerDay - visibleTimelineWidth / 2,
+      );
+      const row = rowOffsetByTaskId.get(taskId);
+      if (row) {
+        const viewport = scrollEl.clientHeight;
+        if (
+          row.start < scrollEl.scrollTop ||
+          row.start + row.size > scrollEl.scrollTop + viewport
+        ) {
+          scrollEl.scrollTop = Math.max(
+            0,
+            row.start - Math.max(viewport - row.size, 0) / 2,
+          );
+        }
+      }
+    },
+    [renderedTaskById, timeline, barsLeftPx, pixelsPerDay, rowOffsetByTaskId],
+  );
+  const handleJumpToTask = useCallback(
+    (taskId: string, anchorSide: "start" | "end") => {
+      const task = renderedTaskById.get(taskId);
+      if (!task || !timeline) return;
+      const date = anchorSide === "end" ? task.scheduleEnd : task.scheduleStart;
+      if (date < timeline.rangeStart || date > timeline.rangeEnd) {
+        pendingJumpRef.current = { taskId, anchorSide };
+        // The same paging as showDate(addDays(date, -7)).
+        setWindowStart({ projectId, date: addDays(date, -7) });
+        return;
+      }
+      scrollTaskIntoView(taskId, anchorSide);
+    },
+    [renderedTaskById, timeline, scrollTaskIntoView, projectId],
+  );
+  useLayoutEffect(() => {
+    const pending = pendingJumpRef.current;
+    if (!pending || !timeline) return;
+    pendingJumpRef.current = null;
+    scrollTaskIntoView(pending.taskId, pending.anchorSide);
+  }, [timeline, scrollTaskIntoView]);
 
   // Whether the chart itself (as opposed to a "no tasks"/"no matches" empty
   // state) is actually mounted — used to (re)attach the wheel-zoom listener
@@ -2555,6 +2657,11 @@ function RouteComponent() {
                     pinnedTaskId={taskId ?? null}
                     displayMode={dependencyDisplayMode}
                     clipLeftPx={barsLeftPx}
+                    clipRightPx={
+                      barsLeftPx + timeline.days.length * pixelsPerDay
+                    }
+                    resolveOffWindowTask={resolveOffWindowTask}
+                    onJumpToTask={handleJumpToTask}
                     resolveProjectId={(taskId) =>
                       projectIdByRelatedTaskId.get(taskId) ?? projectId
                     }

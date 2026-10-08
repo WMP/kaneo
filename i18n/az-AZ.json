@@ -3137,6 +3137,7 @@
 			"dependencyDisplayModeFocused": "Yalnız seçilmiş tapşırıq",
 			"dependencyDisplayModeCritical": "Yalnız kritik yol",
 			"dependencyDisplayModeHidden": "Gizli",
+			"dependencyChipAriaLabel": "{{key}} tapşırığına keç",
 			"dependencyFanIn_one": "{{count}} əvvəlki tapşırıq",
 			"dependencyFanIn_other": "{{count}} əvvəlki tapşırıq",
 			"criticalPathDroppedEdges_one": "{{count}} tarixsiz asılılıq ötürüldü",

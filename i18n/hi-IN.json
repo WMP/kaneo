@@ -3124,6 +3124,7 @@
 			"dependencyDisplayModeFocused": "केवल चयनित कार्य",
 			"dependencyDisplayModeCritical": "केवल क्रिटिकल पाथ",
 			"dependencyDisplayModeHidden": "छिपी हुईं",
+			"dependencyChipAriaLabel": "कार्य {{key}} पर जाएँ",
 			"dependencyFanIn_one": "{{count}} पूर्ववर्ती कार्य",
 			"dependencyFanIn_other": "{{count}} पूर्ववर्ती कार्य",
 			"criticalPathDroppedEdges_one": "{{count}} बिना तिथि वाली निर्भरता छोड़ी गई",

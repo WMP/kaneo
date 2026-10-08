@@ -3140,6 +3140,7 @@
 			"dependencyDisplayModeFocused": "Лише вибране завдання",
 			"dependencyDisplayModeCritical": "Лише критичний шлях",
 			"dependencyDisplayModeHidden": "Приховано",
+			"dependencyChipAriaLabel": "Перейти до завдання {{key}}",
 			"dependencyFanIn_one": "{{count}} попередник",
 			"dependencyFanIn_few": "{{count}} попередники",
 			"dependencyFanIn_many": "{{count}} попередників",

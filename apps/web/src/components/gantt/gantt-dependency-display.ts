@@ -115,6 +115,9 @@ export type FanInBadge = {
 type FanInEdge = DisplayEdge & {
   targetSide?: "start" | "end";
   targetPoint: { x: number; y: number };
+  /** An edge whose TARGET is off-window is only a stub out of its source:
+   * there is no target anchor to fold it into. */
+  stub?: { endpoint: "source" | "target" } | null;
 };
 
 /**
@@ -136,6 +139,7 @@ export function computeFanInCollapse<T extends FanInEdge>(
 ): { collapsedEdgeIds: Set<string>; badges: FanInBadge[] } {
   const byTarget = new Map<string, T[]>();
   for (const edge of edges) {
+    if (edge.stub?.endpoint === "target") continue;
     const key = `${edge.targetTaskId}|${edge.targetSide ?? "start"}`;
     const group = byTarget.get(key);
     if (group) group.push(edge);

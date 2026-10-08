@@ -3298,6 +3298,7 @@
 			"dependencyDisplayModeFocused": "Tylko wybrane zadanie",
 			"dependencyDisplayModeCritical": "Tylko ścieżka krytyczna",
 			"dependencyDisplayModeHidden": "Ukryte",
+			"dependencyChipAriaLabel": "Przejdź do zadania {{key}}",
 			"dependencyFanIn_one": "{{count}} poprzednik",
 			"dependencyFanIn_few": "{{count}} poprzedniki",
 			"dependencyFanIn_many": "{{count}} poprzedników",

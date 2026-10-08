@@ -3156,6 +3156,7 @@
 			"dependencyDisplayModeFocused": "Только выбранная задача",
 			"dependencyDisplayModeCritical": "Только критический путь",
 			"dependencyDisplayModeHidden": "Скрыты",
+			"dependencyChipAriaLabel": "Перейти к задаче {{key}}",
 			"dependencyFanIn_one": "{{count}} предшественник",
 			"dependencyFanIn_few": "{{count}} предшественника",
 			"dependencyFanIn_many": "{{count}} предшественников",

@@ -3124,6 +3124,7 @@
 			"dependencyDisplayModeFocused": "Само избраната задача",
 			"dependencyDisplayModeCritical": "Само критичната патека",
 			"dependencyDisplayModeHidden": "Скриени",
+			"dependencyChipAriaLabel": "Оди до задачата {{key}}",
 			"dependencyFanIn_one": "{{count}} претходник",
 			"dependencyFanIn_other": "{{count}} претходници",
 			"criticalPathDroppedEdges_one": "{{count}} зависност без датум е прескокната",

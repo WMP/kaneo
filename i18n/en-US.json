@@ -3116,6 +3116,7 @@
 			"dependencyDisplayModeFocused": "Selected task only",
 			"dependencyDisplayModeCritical": "Critical path only",
 			"dependencyDisplayModeHidden": "Hidden",
+			"dependencyChipAriaLabel": "Go to task {{key}}",
 			"dependencyFanIn_one": "{{count}} predecessor",
 			"dependencyFanIn_other": "{{count}} predecessors",
 			"criticalPathToggle": "Critical path",

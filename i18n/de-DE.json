@@ -3124,6 +3124,7 @@
 			"dependencyDisplayModeFocused": "Nur ausgewählte Aufgabe",
 			"dependencyDisplayModeCritical": "Nur kritischer Pfad",
 			"dependencyDisplayModeHidden": "Ausgeblendet",
+			"dependencyChipAriaLabel": "Zur Aufgabe {{key}} springen",
 			"dependencyFanIn_one": "{{count}} Vorgänger",
 			"dependencyFanIn_other": "{{count}} Vorgänger",
 			"criticalPathDroppedEdges_one": "{{count}} undatierte Abhängigkeit übersprungen",

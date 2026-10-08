@@ -3132,6 +3132,7 @@
 			"dependencyDisplayModeFocused": "Somente a tarefa selecionada",
 			"dependencyDisplayModeCritical": "Somente o caminho crítico",
 			"dependencyDisplayModeHidden": "Ocultas",
+			"dependencyChipAriaLabel": "Ir para a tarefa {{key}}",
 			"dependencyFanIn_one": "{{count}} tarefa predecessora",
 			"dependencyFanIn_many": "{{count}} de tarefas predecessoras",
 			"dependencyFanIn_other": "{{count}} tarefas predecessoras",

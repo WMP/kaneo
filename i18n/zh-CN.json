@@ -3129,6 +3129,7 @@
 			"dependencyDisplayModeFocused": "仅所选任务",
 			"dependencyDisplayModeCritical": "仅关键路径",
 			"dependencyDisplayModeHidden": "隐藏",
+			"dependencyChipAriaLabel": "转到任务 {{key}}",
 			"dependencyFanIn_other": "{{count}}个前置任务",
 			"criticalPathDroppedEdges_other": "已跳过{{count}}个无日期的依赖关系",
 			"criticalPathDroppedEdgesHint": "这些依赖关系连接到没有日期的任务,因此无法纳入关键路径的判定——原本应被判定为关键任务的任务可能不会被高亮显示。",

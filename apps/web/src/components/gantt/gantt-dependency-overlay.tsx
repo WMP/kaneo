@@ -40,6 +40,20 @@ type GanttDependencyOverlayProps = {
    * live and gone once it ends (dropped, cancelled, or completed — the real
    * edge then appears via the usual relations refetch). */
   preview?: { source: Point; pointer: Point } | null;
+  /** The label of a task whose edge is drawn only as a stub because the task
+   * is outside the visible time window: its key as shown in the Gantt rail
+   * and the already formatted date of the end (`anchorSide` "end") or start
+   * the edge anchors to. Null/undefined: the stub is drawn without a chip. */
+  resolveOffWindowTask?: (
+    taskId: string,
+    anchorSide: "start" | "end",
+  ) => { key: string; dateText: string } | null;
+  /** Brings an off-window task into view (chip click). Without it the chip is
+   * not rendered. */
+  onJumpToTask?: (taskId: string, anchorSide: "start" | "end") => void;
+  /** Pixels from the overlay's left edge to where the timeline ends: a chip
+   * is kept left of it. Optional; unbounded when omitted. */
+  clipRightPx?: number;
   /** The project a task belongs to. Editing an edge's dependency type needs
    * task:update in the SOURCE task's project, which differs per edge on the
    * cross-project portfolio. */
@@ -63,6 +77,12 @@ const VIOLATED_OPACITY = 0.9;
 // branches are collapsed.
 const FAN_IN_BADGE_WIDTH_PX = 34;
 const FAN_IN_BADGE_HEIGHT_PX = 16;
+// Jump chip ("← AFB-13 · Mar 3"): width is estimated from its text, capped.
+const CHIP_HEIGHT_PX = 16;
+const CHIP_CHAR_WIDTH_PX = 5.4;
+const CHIP_PADDING_PX = 10;
+const CHIP_MAX_WIDTH_PX = 190;
+const CHIP_GAP_PX = 2;
 const REST_WIDTH = 1.5;
 const EMPHASIZED_WIDTH = 2.5;
 
@@ -74,8 +94,11 @@ export function GanttDependencyOverlay({
   pinnedTaskId = null,
   displayMode = "all",
   clipLeftPx,
+  clipRightPx,
   preview = null,
   resolveProjectId,
+  resolveOffWindowTask,
+  onJumpToTask,
 }: GanttDependencyOverlayProps) {
   const { t } = useTranslation();
   const filteredEdges = filterEdgesForDisplayMode(edges, displayMode, {
@@ -361,6 +384,62 @@ export function GanttDependencyOverlay({
           </foreignObject>
         );
       })}
+      {/* Jump chips for edges whose far end is outside the visible time
+          window: a real, focusable button that brings that task into view. */}
+      {onJumpToTask &&
+        visibleEdges.map((edge) => {
+          const stub = edge.stub;
+          if (!stub) return null;
+          const info = resolveOffWindowTask?.(stub.taskId, stub.anchorSide);
+          if (!info) return null;
+          const dateText = info.dateText;
+          const text =
+            stub.taskSide === "before"
+              ? `← ${info.key} · ${dateText}`
+              : `${info.key} · ${dateText} →`;
+          const width = Math.min(
+            CHIP_MAX_WIDTH_PX,
+            CHIP_PADDING_PX + text.length * CHIP_CHAR_WIDTH_PX,
+          );
+          let x =
+            stub.chipDir === -1
+              ? stub.chipPoint.x - width - CHIP_GAP_PX
+              : stub.chipPoint.x + CHIP_GAP_PX;
+          if (clipRightPx !== undefined) {
+            x = Math.min(x, clipRightPx - width - CHIP_GAP_PX);
+          }
+          x = Math.max(x, Math.max(clipLeftPx, 0) + CHIP_GAP_PX);
+          const isDimmed =
+            focusActive && !isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
+          const name = t("tasks:gantt.dependencyChipAriaLabel", {
+            key: info.key,
+          });
+          return (
+            <foreignObject
+              key={`chip-${edge.id}`}
+              data-testid="gantt-dependency-chip"
+              x={x}
+              y={stub.chipPoint.y - CHIP_HEIGHT_PX / 2}
+              width={width}
+              height={CHIP_HEIGHT_PX}
+              style={{ overflow: "visible" }}
+              className={cn(
+                "pointer-events-auto transition-opacity duration-150 ease-out",
+                isDimmed && "opacity-40",
+              )}
+            >
+              <button
+                type="button"
+                aria-label={name}
+                title={name}
+                onClick={() => onJumpToTask(stub.taskId, stub.anchorSide)}
+                className="block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-medium leading-4 text-muted-foreground shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {text}
+              </button>
+            </foreignObject>
+          );
+        })}
       {preview && (
         <path
           data-testid="gantt-link-preview"

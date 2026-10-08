@@ -3124,6 +3124,7 @@
 			"dependencyDisplayModeFocused": "Yalnızca seçili görev",
 			"dependencyDisplayModeCritical": "Yalnızca kritik yol",
 			"dependencyDisplayModeHidden": "Gizli",
+			"dependencyChipAriaLabel": "{{key}} görevine git",
 			"dependencyFanIn_one": "{{count}} öncül görev",
 			"dependencyFanIn_other": "{{count}} öncül görev",
 			"criticalPathDroppedEdges_one": "{{count}} tarihsiz bağımlılık atlandı",
