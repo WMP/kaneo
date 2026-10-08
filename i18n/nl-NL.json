@@ -3150,6 +3150,11 @@
 			"derivedEstimateRailNote": "Afgeleid van afhankelijkheid · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: taak openen"
 		},
+		"loadState": {
+			"loading": "Taken laden…",
+			"error": "Taken laden mislukt",
+			"retry": "Opnieuw proberen"
+		},
 		"delete": {
 			"title": "Taak verwijderen?",
 			"description": "Dit zal de taak en alle data permanent verwijderen. Dit kan niet ongedaan worden gemaakt.",

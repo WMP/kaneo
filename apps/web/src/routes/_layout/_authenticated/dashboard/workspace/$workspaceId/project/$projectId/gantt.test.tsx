@@ -702,3 +702,73 @@ describe("Gantt bar color source", () => {
     expect(screen.getByLabelText("Bar color")).toBeInTheDocument();
   });
 });
+
+describe("Gantt loading and error states", () => {
+  it("shows a loading indicator, not the empty state, while the tasks have not arrived", () => {
+    useGetTasks.mockReturnValue({ data: undefined, isPending: true });
+
+    render(<GanttRoute />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading tasks…");
+    expect(screen.queryByText("No scheduled tasks")).toBeNull();
+    expect(screen.queryByText(/Add a start date/)).toBeNull();
+  });
+
+  it("shows the empty state only after a successful load with nothing scheduled", () => {
+    useGetTasks.mockReturnValue({
+      isPending: false,
+      isError: false,
+      data: {
+        id: "project-1",
+        name: "Roadmap",
+        slug: "RM",
+        columns: [{ id: "col-1", name: "To do", tasks: [] }],
+        plannedTasks: [],
+        archivedTasks: [],
+      },
+    });
+
+    render(<GanttRoute />);
+
+    expect(screen.getByText("No scheduled tasks")).toBeInTheDocument();
+    expect(screen.queryByText("Loading tasks…")).toBeNull();
+  });
+
+  it("shows an error with a retry that asks for the tasks again", () => {
+    const refetch = vi.fn();
+    useGetTasks.mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch,
+    });
+
+    render(<GanttRoute />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to load tasks");
+    expect(screen.queryByText("No scheduled tasks")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps showing the tasks when only a background refresh failed", () => {
+    mockProjectWithTask(
+      makeTask({
+        title: "Ongoing work",
+        startDate: "2026-08-28",
+        dueDate: "2026-09-02",
+      }),
+    );
+    useGetTasks.mockReturnValue({
+      ...useGetTasks(),
+      isPending: false,
+      isError: true,
+    });
+
+    render(<GanttRoute />);
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getAllByText("Ongoing work").length).toBeGreaterThan(0);
+  });
+});

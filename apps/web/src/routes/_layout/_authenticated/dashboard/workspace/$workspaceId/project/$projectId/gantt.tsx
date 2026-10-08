@@ -28,6 +28,10 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import ProjectLayout from "@/components/common/project-layout";
+import {
+  TasksLoadError,
+  TasksLoading,
+} from "@/components/common/tasks-load-state";
 import type {
   DependencyEdgeInput,
   OffWindowSide,
@@ -239,7 +243,13 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data: project } = useGetTasks(projectId);
+  const {
+    data: project,
+    isPending: isTasksPending,
+    isError: isTasksError,
+    isFetching: isTasksFetching,
+    refetch: refetchTasks,
+  } = useGetTasks(projectId);
   // Workspace working calendar (weekends + holidays): shades non-working day
   // columns below and, via `workingDayPredicate`, keeps the auto-reschedule
   // cascade from landing a pushed task's start on one. Defaults to the
@@ -2481,8 +2491,17 @@ function RouteComponent() {
           </div>
         </div>
 
-        {!timeline ||
-        (parsedTasks.length === 0 && externalRelatedTasks.length === 0) ? (
+        {isTasksPending ? (
+          // No answer yet is not an empty project: the "no scheduled tasks"
+          // state below is only for a load that succeeded.
+          <TasksLoading />
+        ) : isTasksError && !project ? (
+          <TasksLoadError
+            isRetrying={isTasksFetching}
+            onRetry={() => void refetchTasks()}
+          />
+        ) : !timeline ||
+          (parsedTasks.length === 0 && externalRelatedTasks.length === 0) ? (
           <div className="flex flex-1 items-center justify-center px-6">
             <div className="max-w-sm text-center">
               <h2 className="text-sm font-semibold text-foreground">

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import BacklogListView from "@/components/backlog-list-view";
 import ProjectLayout from "@/components/common/project-layout";
 import SortControl from "@/components/common/sort-control";
+import { TasksLoadError } from "@/components/common/tasks-load-state";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
@@ -64,7 +65,12 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data } = useGetTasks(projectId);
+  const {
+    data,
+    isError: isTasksError,
+    isFetching: isTasksFetching,
+    refetch: refetchTasks,
+  } = useGetTasks(projectId);
   const { project, setProject } = useProjectStore();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const { mutate: updateTask } = useUpdateTask();
@@ -894,6 +900,11 @@ function RouteComponent() {
             <BacklogListView
               project={sortedProject}
               disableDragDrop={sort.field !== "position"}
+            />
+          ) : isTasksError && !data ? (
+            <TasksLoadError
+              isRetrying={isTasksFetching}
+              onRetry={() => void refetchTasks()}
             />
           ) : (
             <div className="flex h-full items-center justify-center">

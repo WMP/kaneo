@@ -3163,6 +3163,11 @@
 			"derivedEstimateRailNote": "由依赖关系推算 · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}:打开任务"
 		},
+		"loadState": {
+			"loading": "正在加载任务…",
+			"error": "加载任务失败",
+			"retry": "重试"
+		},
 		"delete": {
 			"title": "删除任务？",
 			"description": "这将永久删除任务及其所有数据，此操作不可撤销。",

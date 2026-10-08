@@ -3334,6 +3334,11 @@
 			"gateWarningItem": "„{{title}}” ma status: {{status}}",
 			"gateWarningTitle": "Zablokowane przez niezatwierdzoną bramkę"
 		},
+		"loadState": {
+			"loading": "Ładowanie zadań…",
+			"error": "Nie udało się wczytać zadań",
+			"retry": "Spróbuj ponownie"
+		},
 		"kanban": {
 			"addTask": "Dodaj zadanie"
 		},

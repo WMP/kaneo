@@ -3172,6 +3172,11 @@
 			"derivedEstimateRailNote": "Issue de la dépendance · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}} : ouvrir la tâche"
 		},
+		"loadState": {
+			"loading": "Chargement des tâches…",
+			"error": "Échec du chargement des tâches",
+			"retry": "Réessayer"
+		},
 		"delete": {
 			"title": "Supprimer la tâche ?",
 			"description": "Cela supprimera définitivement la tâche et toutes ses données. Vous ne pouvez pas annuler cette action.",

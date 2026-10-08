@@ -3172,6 +3172,11 @@
 			"derivedEstimateRailNote": "Da dipendenza · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: apri attività"
 		},
+		"loadState": {
+			"loading": "Caricamento delle attività…",
+			"error": "Impossibile caricare le attività",
+			"retry": "Riprova"
+		},
 		"delete": {
 			"title": "Eliminare l'Attività?",
 			"description": "Questo rimuoverà permanentemente l'attività e tutti i suoi dati. Non puoi annullare questa azione.",

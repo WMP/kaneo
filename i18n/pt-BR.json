@@ -3172,6 +3172,11 @@
 			"derivedEstimateRailNote": "Derivada da dependência · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: abrir tarefa"
 		},
+		"loadState": {
+			"loading": "Carregando tarefas…",
+			"error": "Falha ao carregar as tarefas",
+			"retry": "Tentar novamente"
+		},
 		"delete": {
 			"title": "Excluir tarefa?",
 			"description": "Isso removerá permanentemente a tarefa e todos os seus dados. Você não pode desfazer esta ação.",

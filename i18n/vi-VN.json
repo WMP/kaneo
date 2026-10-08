@@ -3150,6 +3150,11 @@
 			"derivedEstimateRailNote": "Suy ra từ phụ thuộc · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: mở nhiệm vụ"
 		},
+		"loadState": {
+			"loading": "Đang tải công việc…",
+			"error": "Không thể tải công việc",
+			"retry": "Thử lại"
+		},
 		"delete": {
 			"title": "Xóa công việc?",
 			"description": "Thao tác này sẽ xóa vĩnh viễn công việc và toàn bộ dữ liệu của nó. Bạn không thể hoàn tác hành động này.",

@@ -3175,6 +3175,11 @@
 			"gateWarningTitle": "Blocked by an unapproved gate",
 			"gateWarningItem": "\"{{title}}\" is {{status}}"
 		},
+		"loadState": {
+			"loading": "Loading tasks…",
+			"error": "Failed to load tasks",
+			"retry": "Try again"
+		},
 		"delete": {
 			"title": "Delete Task?",
 			"description": "This will permanently remove the task and all its data. You can't undo this action.",

@@ -3199,6 +3199,11 @@
 			"derivedEstimateRailNote": "По зависимости · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: открыть задачу"
 		},
+		"loadState": {
+			"loading": "Загрузка задач…",
+			"error": "Не удалось загрузить задачи",
+			"retry": "Повторить"
+		},
 		"delete": {
 			"title": "Удалить задачу?",
 			"description": "Задача и все её данные будут безвозвратно удалены. Это действие нельзя отменить.",

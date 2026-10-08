@@ -3161,6 +3161,11 @@
 			"derivedEstimateRailNote": "Según la dependencia · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: abrir tarea"
 		},
+		"loadState": {
+			"loading": "Cargando tareas…",
+			"error": "No se pudieron cargar las tareas",
+			"retry": "Reintentar"
+		},
 		"delete": {
 			"title": "¿Eliminar tarea?",
 			"description": "Esto eliminará permanentemente la tarea y sus datos. Esta acción no puede deshacerse.",

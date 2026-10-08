@@ -3174,6 +3174,11 @@
 			"derivedEstimateRailNote": "Asılılıqdan götürülüb · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: tapşırığı aç"
 		},
+		"loadState": {
+			"loading": "Tapşırıqlar yüklənir…",
+			"error": "Tapşırıqları yükləmək alınmadı",
+			"retry": "Yenidən cəhd edin"
+		},
 		"delete": {
 			"title": "Tapşırıq silinsin?",
 			"description": "Bu, tapşırığı və bütün məlumatlarını həmişəlik siləcək. Bu əməliyyatı geri qaytara bilməzsiniz.",

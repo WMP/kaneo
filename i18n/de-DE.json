@@ -3161,6 +3161,11 @@
 			"derivedEstimateRailNote": "Aus Abhängigkeit abgeleitet · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: Aufgabe öffnen"
 		},
+		"loadState": {
+			"loading": "Aufgaben werden geladen …",
+			"error": "Aufgaben konnten nicht geladen werden",
+			"retry": "Erneut versuchen"
+		},
 		"delete": {
 			"title": "Aufgabe löschen?",
 			"description": "Dadurch wird die Aufgabe und alle zugehörigen Daten dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",

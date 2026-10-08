@@ -3161,6 +3161,11 @@
 			"derivedEstimateRailNote": "Bağımlılıktan · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: görevi aç"
 		},
+		"loadState": {
+			"loading": "Görevler yükleniyor…",
+			"error": "Görevler yüklenemedi",
+			"retry": "Tekrar dene"
+		},
 		"delete": {
 			"title": "Talep Silinsin mi?",
 			"description": "Bu, talebi ve tüm verilerini kalıcı olarak kaldıracak. Bu işlemi geri alamazsınız.",

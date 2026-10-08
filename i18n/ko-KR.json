@@ -3163,6 +3163,11 @@
 			"derivedEstimateRailNote": "종속성에서 결정 · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: 작업 열기"
 		},
+		"loadState": {
+			"loading": "작업을 불러오는 중…",
+			"error": "작업을 불러오지 못했습니다",
+			"retry": "다시 시도"
+		},
 		"delete": {
 			"title": "작업을 삭제하시겠습니까?",
 			"description": "작업과 모든 데이터가 영구적으로 제거됩니다. 이 작업은 취소할 수 없습니다.",

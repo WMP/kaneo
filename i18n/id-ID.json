@@ -3150,6 +3150,11 @@
 			"derivedEstimateRailNote": "Dari dependensi · {{estimate}}",
 			"externalTaskAriaLabel": "{{title}}: buka tugas"
 		},
+		"loadState": {
+			"loading": "Memuat tugas…",
+			"error": "Gagal memuat tugas",
+			"retry": "Coba lagi"
+		},
 		"delete": {
 			"title": "Hapus Tugas?",
 			"description": "Ini akan menghapus tugas dan semua datanya secara permanen. Anda tidak dapat membatalkan tindakan ini.",
