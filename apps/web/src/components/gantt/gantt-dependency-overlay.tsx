@@ -50,11 +50,14 @@ type GanttDependencyOverlayProps = {
 // edges to full strength and fades every other edge down, rather than
 // toggling a binary highlighted/not state, so the chart still reads as one
 // picture instead of flashing between two very different views.
-const REST_OPACITY = 0.55;
+const REST_OPACITY = 0.45;
 const DIMMED_OPACITY = 0.12;
 // Above DENSE_EDGE_THRESHOLD rendered edges, unfocused edges rest at this
 // lower opacity so the focused ones (hovered/pinned task) stand out.
-const DENSE_REST_OPACITY = 0.3;
+const DENSE_REST_OPACITY = 0.22;
+// Stroke-opacity of a violated edge in the top layer (it is not part of the
+// rest group, so it must stay readable on its own).
+const VIOLATED_OPACITY = 0.9;
 const REST_WIDTH = 1.5;
 const EMPHASIZED_WIDTH = 2.5;
 
@@ -76,10 +79,99 @@ export function GanttDependencyOverlay({
     criticalEdgeIds,
   });
   if (visibleEdges.length === 0 && !preview) return null;
-  const restOpacity =
-    visibleEdges.length > DENSE_EDGE_THRESHOLD
+  const focusActive = hoveredTaskId !== null || pinnedTaskId !== null;
+  const restGroupOpacity = focusActive
+    ? DIMMED_OPACITY
+    : visibleEdges.length > DENSE_EDGE_THRESHOLD
       ? DENSE_REST_OPACITY
       : REST_OPACITY;
+
+  const isViolatedEdge = (edge: DependencyEdgeGeometry) =>
+    edge.relationType === "blocks" && (violatedEdgeIds?.has(edge.id) ?? false);
+  const isTop = (edge: DependencyEdgeGeometry) =>
+    isViolatedEdge(edge) || isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
+  const restEdges = visibleEdges.filter((edge) => !isTop(edge));
+  const topEdges = visibleEdges.filter(isTop);
+
+  // One edge's line (plus its critical-path halo, drawn first). Rest edges
+  // draw at stroke-opacity 1 inside the rest group, which carries the
+  // opacity; top-layer edges carry their own.
+  const renderEdgeLines = (edge: DependencyEdgeGeometry, top: boolean) => {
+    const isBlocking = edge.relationType === "blocks";
+    const isViolated = isViolatedEdge(edge);
+    const isIncident = isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
+    const isDimmed = focusActive && !isIncident;
+    const lineKind = !isBlocking
+      ? "related"
+      : isViolated
+        ? "violated"
+        : "blocks";
+    const lineColor = isViolated
+      ? "var(--destructive)"
+      : isIncident
+        ? "var(--foreground)"
+        : "var(--muted-foreground)";
+    const markerKind = isViolated
+      ? "violated"
+      : isIncident
+        ? "focused"
+        : lineKind;
+    const isCritical = criticalEdgeIds?.has(edge.id) ?? false;
+    const strokeWidth = isIncident ? EMPHASIZED_WIDTH : REST_WIDTH;
+    const lineOpacity = !top
+      ? 1
+      : isViolated
+        ? isDimmed
+          ? DIMMED_OPACITY
+          : VIOLATED_OPACITY
+        : 1;
+    const haloOpacity = !top ? 0.85 : isDimmed ? DIMMED_OPACITY : 0.85;
+
+    return (
+      <g key={edge.id}>
+        {/* Critical-path accent: a wider amber halo drawn BEHIND the edge's
+            own line, rather than recoloring it, so it reads regardless of hue
+            perception (it differs in shape, not only in color). */}
+        {isCritical && (
+          <path
+            d={edge.path}
+            fill="none"
+            stroke="var(--warning)"
+            strokeWidth={strokeWidth + 3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeOpacity={haloOpacity}
+            // Explicit, not just inherited from the svg root's own
+            // pointer-events-none: at Month/Quarter a connector's routed path
+            // often runs directly over a bar compressed down to a sliver (see
+            // MIN_BAR_HOVER_HIT_PX in timeline.ts), and this line visually
+            // paints ABOVE that bar (z-[9] overlay vs. z-[1] bars) — without
+            // this, the line would win the pointer hit-test there and the bar
+            // underneath would never see its own hover.
+            style={{ pointerEvents: "none" }}
+            className="transition-[stroke-opacity] duration-150 ease-out"
+          />
+        )}
+        <path
+          d={edge.path}
+          fill="none"
+          data-edge-kind={lineKind}
+          stroke={lineColor}
+          // Related edges differ from blocking ones by shape (dashed), not
+          // only by color.
+          strokeDasharray={isBlocking ? undefined : "5 4"}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeOpacity={lineOpacity}
+          markerEnd={`url(#gantt-dependency-arrow-${markerKind})`}
+          // See the critical-path halo path's own comment above.
+          style={{ pointerEvents: "none" }}
+          className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
+        />
+      </g>
+    );
+  };
 
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: not an icon/image svg — a plain positioning container mixing decorative <path> connectors with a real interactive foreignObject control per "blocks" edge (the type label, which carries its own accessible name via its button/title), so one <title> for the whole svg would misdescribe it either way
@@ -114,6 +206,17 @@ export function GanttDependencyOverlay({
           markerHeight="6.5"
           orient="auto-start-reverse"
         >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted-foreground)" />
+        </marker>
+        <marker
+          id="gantt-dependency-arrow-focused"
+          viewBox="0 0 10 10"
+          refX="8.5"
+          refY="5"
+          markerWidth="6.5"
+          markerHeight="6.5"
+          orient="auto-start-reverse"
+        >
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--foreground)" />
         </marker>
         <marker
@@ -139,139 +242,73 @@ export function GanttDependencyOverlay({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted-foreground)" />
         </marker>
       </defs>
+      {/* Rest layer: every unfocused, non-violated edge lives in ONE group
+          that carries the rest opacity. Group opacity composites the group
+          once, so dozens of overlapping vertical runs no longer add up to a
+          solid bright bundle the way per-path stroke-opacity does. */}
+      <g
+        data-testid="gantt-dependency-rest-layer"
+        opacity={restGroupOpacity}
+        className="transition-opacity duration-150 ease-out"
+      >
+        {restEdges.map((edge) => renderEdgeLines(edge, false))}
+      </g>
+      {/* Top layer: focused and violated edges, painted after the rest group
+          so they sit above it. */}
+      <g data-testid="gantt-dependency-top-layer">
+        {topEdges.map((edge) => renderEdgeLines(edge, true))}
+      </g>
+      {/* Type labels come last among the edges so no line ever covers them. */}
       {visibleEdges.map((edge) => {
-        const isBlocking = edge.relationType === "blocks";
-        const isViolated =
-          isBlocking && (violatedEdgeIds?.has(edge.id) ?? false);
-        // Focused: incident to the hovered task or to the pinned one.
+        if (!edge.typeLabelPoint) return null;
+        const isViolated = isViolatedEdge(edge);
         const isIncident = isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
-        const isDimmed = hoveredTaskId !== null && !isIncident;
-        const lineKind = !isBlocking
-          ? "related"
-          : isViolated
-            ? "violated"
-            : "blocks";
-        const lineColor = isViolated
-          ? "var(--destructive)"
-          : isBlocking
-            ? "var(--foreground)"
-            : "var(--muted-foreground)";
-        const isCritical = criticalEdgeIds?.has(edge.id) ?? false;
-        const strokeWidth = isIncident ? EMPHASIZED_WIDTH : REST_WIDTH;
-
+        if (!shouldShowTypeLabel(edge, isIncident)) return null;
+        const isDimmed = focusActive && !isIncident;
         return (
-          <g key={edge.id}>
-            {/* Critical-path accent: a wider amber halo drawn BEHIND the
-                edge's own (red/gray) line, rather than recoloring it —
-                blocking lines are already red, so a plain color swap would
-                be indistinguishable from "blocking", and this reads
-                correctly regardless of hue perception since it differs in
-                shape (a visible halo), not only in color. */}
-            {isCritical && (
-              <path
-                d={edge.path}
-                fill="none"
-                stroke="var(--warning)"
-                strokeWidth={strokeWidth + 3}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeOpacity={isDimmed ? DIMMED_OPACITY : 0.85}
-                // Explicit, not just inherited from the svg root's own
-                // pointer-events-none: at Month/Quarter a connector's routed
-                // path often runs directly over a bar compressed down to a
-                // sliver (see MIN_BAR_HOVER_HIT_PX in timeline.ts), and this
-                // line visually paints ABOVE that bar (z-[9] overlay vs.
-                // z-[1] bars) — without this, the line would win the pointer
-                // hit-test there and the bar underneath would never see its
-                // own hover, killing dependency-line highlighting exactly
-                // where it matters most.
-                style={{ pointerEvents: "none" }}
-                className="transition-[stroke-opacity] duration-150 ease-out"
-              />
+          <foreignObject
+            key={`label-${edge.id}`}
+            x={edge.typeLabelPoint.x - 30}
+            y={edge.typeLabelPoint.y - 14}
+            width={60}
+            height={16}
+            style={{ overflow: "visible" }}
+            className={cn(
+              "pointer-events-auto transition-opacity duration-150 ease-out",
+              isDimmed && "opacity-[0.12]",
             )}
-            <path
-              d={edge.path}
-              fill="none"
-              data-edge-kind={lineKind}
-              stroke={lineColor}
-              // Related edges differ from blocking ones by shape (dashed),
-              // not only by color.
-              strokeDasharray={isBlocking ? undefined : "5 4"}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeOpacity={
-                isDimmed ? DIMMED_OPACITY : isIncident ? 1 : restOpacity
-              }
-              markerEnd={`url(#gantt-dependency-arrow-${lineKind})`}
-              // See the critical-path halo path's own comment above.
-              style={{ pointerEvents: "none" }}
-              className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
-            />
-            {/* Dependency-TYPE label (FS/SS/FF/SF, plus a "+Nd"/"-Nd" suffix
-                once there's a lag — see the summary composition already used
-                on a task's own relation list, task-relations.tsx): every
-                "blocks" edge gets one EXCEPT a plain FS edge with no lag at
-                rest (the default says nothing and would only add noise on a
-                large chart) — that one shows while the edge is focused
-                (typeLabelPoint is null for "related",
-                whose type is never meaningful), it sits in its TARGET's row
-                beside the connector's last vertical run (see
-                buildDependencyEdges in dependency-lines.ts), so several
-                edges sharing a source each read as attached to their own
-                target, and it's a
-                real control — reusing TaskRelationDependencyPopover, the
-                same editor a task's own relation list already opens — not
-                just a picture of the type, so the chart itself is a second
-                place (besides that list) to fix a wrongly-typed dependency. */}
-            {edge.typeLabelPoint && shouldShowTypeLabel(edge, isIncident) && (
-              <foreignObject
-                x={edge.typeLabelPoint.x - 30}
-                y={edge.typeLabelPoint.y - 14}
-                width={60}
-                height={16}
-                style={{ overflow: "visible" }}
+          >
+            <TaskRelationDependencyPopover
+              relationId={edge.id}
+              taskId={edge.sourceTaskId}
+              projectId={resolveProjectId(edge.sourceTaskId)}
+              dependencyType={edge.dependencyType ?? "fs"}
+              lagDays={edge.lagDays ?? 0}
+            >
+              <button
+                type="button"
+                title={t(
+                  `tasks:relations.dependency.types.${edge.dependencyType ?? "fs"}`,
+                )}
                 className={cn(
-                  "pointer-events-auto transition-opacity duration-150 ease-out",
-                  isDimmed && "opacity-[0.12]",
+                  "block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-semibold leading-4 shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  isViolated ? "text-destructive" : "text-muted-foreground",
                 )}
               >
-                <TaskRelationDependencyPopover
-                  relationId={edge.id}
-                  taskId={edge.sourceTaskId}
-                  projectId={resolveProjectId(edge.sourceTaskId)}
-                  dependencyType={edge.dependencyType ?? "fs"}
-                  lagDays={edge.lagDays ?? 0}
-                >
-                  <button
-                    type="button"
-                    title={t(
-                      `tasks:relations.dependency.types.${edge.dependencyType ?? "fs"}`,
-                    )}
-                    className={cn(
-                      "block w-full select-none truncate rounded border border-border/60 bg-background/90 px-1 text-[9px] font-semibold leading-4 shadow-sm hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                      isViolated ? "text-destructive" : "text-foreground",
-                    )}
-                  >
-                    {t(
-                      `tasks:relations.dependency.typesShort.${edge.dependencyType ?? "fs"}`,
-                      {
-                        defaultValue: (
-                          edge.dependencyType ?? "fs"
-                        ).toUpperCase(),
-                      },
-                    )}
-                    {edge.lagDays !== undefined &&
-                      edge.lagDays !== 0 &&
-                      t("tasks:relations.dependency.lagSuffix", {
-                        days:
-                          edge.lagDays > 0 ? `+${edge.lagDays}` : edge.lagDays,
-                      })}
-                  </button>
-                </TaskRelationDependencyPopover>
-              </foreignObject>
-            )}
-          </g>
+                {t(
+                  `tasks:relations.dependency.typesShort.${edge.dependencyType ?? "fs"}`,
+                  {
+                    defaultValue: (edge.dependencyType ?? "fs").toUpperCase(),
+                  },
+                )}
+                {edge.lagDays !== undefined &&
+                  edge.lagDays !== 0 &&
+                  t("tasks:relations.dependency.lagSuffix", {
+                    days: edge.lagDays > 0 ? `+${edge.lagDays}` : edge.lagDays,
+                  })}
+              </button>
+            </TaskRelationDependencyPopover>
+          </foreignObject>
         );
       })}
       {preview && (

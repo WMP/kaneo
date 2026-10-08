@@ -182,6 +182,7 @@ describe("GanttDependencyOverlay", () => {
       );
       const buttons = container.querySelectorAll("button");
       expect(buttons[0]?.className).not.toContain("text-destructive");
+      expect(buttons[0]?.className).toContain("text-muted-foreground");
       expect(buttons[1]?.className).toContain("text-destructive");
     });
   });
@@ -201,7 +202,7 @@ describe("GanttDependencyOverlay", () => {
         />,
       );
       const line = paths(container)[0];
-      expect(line?.getAttribute("stroke")).toBe("var(--foreground)");
+      expect(line?.getAttribute("stroke")).toBe("var(--muted-foreground)");
       expect(line?.getAttribute("stroke-dasharray")).toBeNull();
       expect(line?.getAttribute("marker-end")).toContain("arrow-blocks");
     });
@@ -237,18 +238,37 @@ describe("GanttDependencyOverlay", () => {
     });
   });
 
-  describe("density", () => {
+  describe("density and layering", () => {
     const many = (count: number) =>
       Array.from({ length: count }, (_, i) =>
         edge({ id: `e${i}`, sourceTaskId: `s${i}`, targetTaskId: `t${i}` }),
       );
-    const opacities = (container: HTMLElement) =>
-      [...container.querySelectorAll("svg path[stroke]")].map((node) =>
-        node.getAttribute("stroke-opacity"),
-      );
+    const restLayer = (container: HTMLElement) =>
+      container.querySelector("[data-testid=gantt-dependency-rest-layer]");
+    const topLayer = (container: HTMLElement) =>
+      container.querySelector("[data-testid=gantt-dependency-top-layer]");
 
-    it("keeps the normal resting opacity at the threshold", () => {
+    it("puts unfocused edges in one group carrying the opacity, with paths at stroke-opacity 1", () => {
       const { container } = render(
+        <GanttDependencyOverlay
+          edges={many(3)}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      const group = restLayer(container);
+      expect(group?.getAttribute("opacity")).toBe("0.45");
+      const lines = group?.querySelectorAll("path[stroke]") ?? [];
+      expect(lines).toHaveLength(3);
+      for (const line of lines) {
+        expect(line.getAttribute("stroke-opacity")).toBe("1");
+      }
+      expect(topLayer(container)?.querySelectorAll("path")).toHaveLength(0);
+    });
+
+    it("keeps the normal resting opacity at the threshold and lowers it above", () => {
+      const at = render(
         <GanttDependencyOverlay
           edges={many(DENSE_EDGE_THRESHOLD)}
           hoveredTaskId={null}
@@ -256,10 +276,19 @@ describe("GanttDependencyOverlay", () => {
           resolveProjectId={() => "p"}
         />,
       );
-      expect(new Set(opacities(container))).toEqual(new Set(["0.55"]));
+      expect(restLayer(at.container)?.getAttribute("opacity")).toBe("0.45");
+      const over = render(
+        <GanttDependencyOverlay
+          edges={many(DENSE_EDGE_THRESHOLD + 1)}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(restLayer(over.container)?.getAttribute("opacity")).toBe("0.22");
     });
 
-    it("lowers the opacity of unfocused edges above the threshold and keeps pinned edges at full strength", () => {
+    it("renders a focused edge outside the rest group in foreground and dims the rest group", () => {
       const { container } = render(
         <GanttDependencyOverlay
           edges={many(DENSE_EDGE_THRESHOLD + 1)}
@@ -269,9 +298,32 @@ describe("GanttDependencyOverlay", () => {
           resolveProjectId={() => "p"}
         />,
       );
-      const values = opacities(container);
-      expect(values[0]).toBe("1");
-      expect(new Set(values.slice(1))).toEqual(new Set(["0.3"]));
+      const group = restLayer(container);
+      expect(group?.getAttribute("opacity")).toBe("0.12");
+      expect(group?.querySelectorAll("path[stroke]")).toHaveLength(
+        DENSE_EDGE_THRESHOLD,
+      );
+      const focused = topLayer(container)?.querySelector("path[stroke]");
+      expect(group?.contains(focused ?? null)).toBe(false);
+      expect(focused?.getAttribute("stroke")).toBe("var(--foreground)");
+      expect(focused?.getAttribute("stroke-opacity")).toBe("1");
+      expect(focused?.getAttribute("stroke-width")).toBe("2.5");
+    });
+
+    it("draws a violated edge in the top layer at its own opacity", () => {
+      const { container } = render(
+        <GanttDependencyOverlay
+          edges={many(2)}
+          violatedEdgeIds={new Set(["e0"])}
+          hoveredTaskId={null}
+          clipLeftPx={0}
+          resolveProjectId={() => "p"}
+        />,
+      );
+      expect(restLayer(container)?.querySelectorAll("path")).toHaveLength(1);
+      const line = topLayer(container)?.querySelector("path[stroke]");
+      expect(line?.getAttribute("stroke")).toBe("var(--destructive)");
+      expect(line?.getAttribute("stroke-opacity")).toBe("0.9");
     });
   });
 

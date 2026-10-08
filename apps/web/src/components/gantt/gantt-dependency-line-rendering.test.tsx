@@ -270,7 +270,7 @@ describe("Gantt dependency-line rendering", () => {
 
     const paths = container.querySelectorAll("svg path[stroke]");
     expect(paths).toHaveLength(1);
-    expect(paths[0]?.getAttribute("stroke")).toBe("var(--foreground)");
+    expect(paths[0]?.getAttribute("stroke")).toBe("var(--muted-foreground)");
   });
 
   it("draws nothing when the relations query hasn't returned any relation", () => {

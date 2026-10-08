@@ -2018,7 +2018,7 @@ function RouteComponent() {
                     {hasDependencyLines && (
                       <>
                         <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-foreground" />
+                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
                           {t("tasks:gantt.legendBlocking")}
                         </span>
                         <span className="flex items-center gap-1">
