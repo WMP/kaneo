@@ -3149,6 +3149,8 @@
 			"neighborhoodPredecessors": "Əvvəlkilər",
 			"neighborhoodScrollLabel": "Asılılıq diaqramı, sürüşdürülə bilən",
 			"neighborhoodSuccessors": "Sonrakılar",
+			"neighborhoodZoomFit": "Sığdır",
+			"neighborhoodZoomLabel": "Asılılıq diaqramının miqyası",
 			"criticalPathDroppedEdges_one": "{{count}} yerləşdirilə bilməyən asılılıq ötürüldü",
 			"criticalPathDroppedEdges_other": "{{count}} yerləşdirilə bilməyən asılılıq ötürüldü",
 			"criticalPathDroppedEdgesHint": "Bu asılılıqlar zaman xəttində yerləşdirilə bilməyən tapşırığa aparır (tarixi yoxdur və tarixli sələfi yoxdur), ona görə kritik yol üçün yoxlanıla bilmir — əks halda kritik edəcəkləri tapşırıq vurğulanmaya bilər.",

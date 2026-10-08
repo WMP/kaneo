@@ -3125,6 +3125,8 @@
 			"neighborhoodPredecessors": "Voorgangers",
 			"neighborhoodScrollLabel": "Afhankelijkhedendiagram, scrolbaar",
 			"neighborhoodSuccessors": "Opvolgers",
+			"neighborhoodZoomFit": "Passend",
+			"neighborhoodZoomLabel": "Schaal van het afhankelijkhedendiagram",
 			"criticalPathDroppedEdges_one": "{{count}} niet-plaatsbare afhankelijkheid overgeslagen",
 			"criticalPathDroppedEdges_other": "{{count}} niet-plaatsbare afhankelijkheden overgeslagen",
 			"criticalPathDroppedEdgesHint": "Deze afhankelijkheden leiden naar een taak die niet op de tijdlijn kan worden geplaatst (geen datums en geen voorganger met datums), dus ze kunnen niet worden gecontroleerd voor het kritieke pad — een taak die daardoor kritiek zou worden, wordt mogelijk niet gemarkeerd.",

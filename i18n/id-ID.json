@@ -3126,6 +3126,8 @@
 			"neighborhoodPredecessors": "Pendahulu",
 			"neighborhoodScrollLabel": "Bagan dependensi, dapat digulir",
 			"neighborhoodSuccessors": "Penerus",
+			"neighborhoodZoomFit": "Sesuaikan",
+			"neighborhoodZoomLabel": "Skala diagram dependensi",
 			"criticalPathDroppedEdges_other": "{{count}} dependensi yang tidak dapat ditempatkan dilewati",
 			"criticalPathDroppedEdgesHint": "Dependensi ini mengarah ke tugas yang tidak dapat ditempatkan pada lini masa (tanpa tanggal dan tanpa pendahulu bertanggal), sehingga tidak dapat diperiksa untuk jalur kritis — tugas yang seharusnya menjadi kritis mungkin tidak akan disorot.",
 			"criticalPathProjectedNote": "Jalur sebagian diproyeksikan dari estimasi",

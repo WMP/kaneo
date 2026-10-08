@@ -8,6 +8,7 @@ import {
   type Mock,
   vi,
 } from "vitest";
+import { useUserPreferencesStore } from "@/store/user-preferences";
 import type { DependencyEdgeInput } from "./dependency-lines";
 import {
   GanttTaskNeighborhood,
@@ -27,6 +28,11 @@ let availableWidth = 900;
 let originalRect: typeof Element.prototype.getBoundingClientRect;
 
 beforeEach(() => {
+  localStorage.clear();
+  useUserPreferencesStore.setState({
+    ganttNeighborhoodZoom: "fit",
+    weekStartsOn: 0,
+  });
   availableWidth = 900;
   originalRect = Element.prototype.getBoundingClientRect;
   Element.prototype.getBoundingClientRect = function getRect() {
@@ -390,9 +396,13 @@ describe("GanttTaskNeighborhood", () => {
         expect(scrollLeft).toBe(250);
       });
 
-      it("does not pan when the press starts on a row button or stays under the threshold", () => {
-        renderCard();
+      it("pans when the press starts on a row button, and does not open that row", () => {
+        const { onSelectTask } = renderCard();
+        const container = scrollContainer();
         scrollLeft = 200;
+        // The rows are buttons that cover almost the whole chart, so a drag
+        // that starts on one must pan (a drag only on empty background left
+        // nothing to grab in a real browser).
         const button = screen.getAllByTestId("gantt-neighborhood-row")[0];
         fireEvent.pointerDown(button, {
           pointerId: 1,
@@ -405,8 +415,27 @@ describe("GanttTaskNeighborhood", () => {
           clientX: 100,
           clientY: 100,
         });
-        expect(scrollLeft).toBe(200);
+        expect(scrollLeft).toBe(400);
+        expect(container).toHaveAttribute("data-panning", "true");
+        fireEvent.pointerUp(button, { pointerId: 1 });
+        // The click a browser dispatches after the drag is swallowed.
+        fireEvent.click(button);
+        expect(onSelectTask).not.toHaveBeenCalled();
+        // The next plain click works again.
+        fireEvent.pointerDown(button, {
+          pointerId: 2,
+          button: 0,
+          clientX: 10,
+          clientY: 10,
+        });
+        fireEvent.pointerUp(button, { pointerId: 2 });
+        fireEvent.click(button);
+        expect(onSelectTask).toHaveBeenCalledWith("pred");
+      });
 
+      it("does not pan while the pointer stays under the threshold", () => {
+        renderCard();
+        scrollLeft = 200;
         const target = screen.getByTestId("gantt-neighborhood-focus-row");
         fireEvent.pointerDown(target, {
           pointerId: 2,
@@ -419,6 +448,28 @@ describe("GanttTaskNeighborhood", () => {
           clientX: 298,
           clientY: 101,
         });
+        expect(scrollLeft).toBe(200);
+      });
+
+      it("ignores a touch press (the browser pans it natively) and a secondary button", () => {
+        renderCard();
+        scrollLeft = 200;
+        const target = screen.getByTestId("gantt-neighborhood-focus-row");
+        fireEvent.pointerDown(target, {
+          pointerId: 3,
+          pointerType: "touch",
+          button: 0,
+          clientX: 300,
+          clientY: 100,
+        });
+        fireEvent.pointerMove(target, { pointerId: 3, clientX: 100 });
+        fireEvent.pointerDown(target, {
+          pointerId: 4,
+          button: 2,
+          clientX: 300,
+          clientY: 100,
+        });
+        fireEvent.pointerMove(target, { pointerId: 4, clientX: 100 });
         expect(scrollLeft).toBe(200);
       });
 
@@ -439,6 +490,251 @@ describe("GanttTaskNeighborhood", () => {
         fireEvent.pointerUp(button, { pointerId: 1 });
         fireEvent.click(button);
         expect(onSelectTask).toHaveBeenCalledWith("pred");
+      });
+    });
+  });
+
+  describe("scale switch", () => {
+    const zoomButton = (zoom: string) =>
+      screen
+        .getByTestId("gantt-neighborhood-zoom")
+        .querySelector(`[data-zoom=${zoom}]`) as HTMLButtonElement;
+    const chartWidth = () =>
+      Number.parseFloat(
+        (
+          screen.getByTestId("gantt-neighborhood-scroll")
+            .firstElementChild as HTMLElement
+        ).style.width,
+      );
+    const tickLabels = () =>
+      [
+        ...screen
+          .getByTestId("gantt-neighborhood-scroll")
+          .querySelectorAll(".sticky.top-0 > span.absolute"),
+      ].map((tick) => tick.textContent);
+
+    it("offers Fit and the main toolbar's four units, Fit pressed by default", () => {
+      renderCard();
+      const labels = [
+        ...screen
+          .getByTestId("gantt-neighborhood-zoom")
+          .querySelectorAll("button"),
+      ].map((button) => button.textContent);
+      expect(labels).toEqual([
+        "tasks:gantt.neighborhoodZoomFit",
+        "tasks:gantt.unitDay",
+        "tasks:gantt.unitWeek",
+        "tasks:gantt.unitMonth",
+        "tasks:gantt.unitQuarter",
+      ]);
+      expect(zoomButton("fit")).toHaveAttribute("aria-pressed", "true");
+      expect(zoomButton("week")).toHaveAttribute("aria-pressed", "false");
+      expect(
+        screen.getByRole("group", {
+          name: "tasks:gantt.neighborhoodZoomLabel",
+        }),
+      ).toBeInTheDocument();
+    });
+
+    it("is not offered when there is nothing to scale", () => {
+      renderCard({ edges: [] });
+      expect(screen.queryByTestId("gantt-neighborhood-zoom")).toBeNull();
+    });
+
+    it("changes the width per day and the ticks when a unit is picked", () => {
+      renderCard();
+      const fitWidth = chartWidth();
+      const fitTicks = tickLabels();
+      fireEvent.click(zoomButton("day"));
+      expect(zoomButton("day")).toHaveAttribute("aria-pressed", "true");
+      expect(zoomButton("fit")).toHaveAttribute("aria-pressed", "false");
+      const dayBars = screen.getAllByTestId("gantt-neighborhood-bar");
+      // The 5-day focus bar is 5 x 44px wide on the Day scale.
+      expect(
+        dayBars.find((bar) => bar.dataset.focus === "true")?.style.width,
+      ).toBe("220px");
+      expect(chartWidth()).not.toBe(fitWidth);
+
+      fireEvent.click(zoomButton("month"));
+      expect(
+        screen
+          .getAllByTestId("gantt-neighborhood-bar")
+          .find((bar) => bar.dataset.focus === "true")?.style.width,
+      ).toBe(`${5 * 2.96}px`);
+      expect(tickLabels()).toContain("Mar 2026");
+      expect(tickLabels()).not.toEqual(fitTicks);
+
+      fireEvent.click(zoomButton("quarter"));
+      expect(tickLabels()).toContain("Q1 2026");
+    });
+
+    it("persists the chosen unit per user and survives a reload", () => {
+      renderCard();
+      fireEvent.click(zoomButton("week"));
+      expect(useUserPreferencesStore.getState().ganttNeighborhoodZoom).toBe(
+        "week",
+      );
+      const stored = JSON.parse(
+        localStorage.getItem("user-preferences") ?? "{}",
+      );
+      expect(stored.state.ganttNeighborhoodZoom).toBe("week");
+      cleanup();
+
+      // A new mount starts on the stored unit.
+      useUserPreferencesStore.persist.rehydrate();
+      renderCard();
+      expect(zoomButton("week")).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("falls back to fit when the stored value is not a known scale", async () => {
+      localStorage.setItem(
+        "user-preferences",
+        JSON.stringify({
+          state: { ganttNeighborhoodZoom: "year" },
+          version: 0,
+        }),
+      );
+      await useUserPreferencesStore.persist.rehydrate();
+      expect(useUserPreferencesStore.getState().ganttNeighborhoodZoom).toBe(
+        "fit",
+      );
+    });
+
+    it("keeps the focus task in view when the unit changes", () => {
+      let scrollLeft = 0;
+      Object.defineProperty(HTMLElement.prototype, "scrollLeft", {
+        configurable: true,
+        get: () => scrollLeft,
+        set: (value: number) => {
+          scrollLeft = value;
+        },
+      });
+      try {
+        renderCard({
+          scheduleByTaskId: new Map([
+            ["pred", { start: day("2026-01-01"), end: day("2026-01-05") }],
+            ["focus", { start: day("2026-06-01"), end: day("2026-06-08") }],
+            ["succ", { start: day("2026-12-01"), end: day("2026-12-12") }],
+          ]),
+        });
+        const focusBarLeft = () =>
+          Number.parseFloat(
+            screen
+              .getAllByTestId("gantt-neighborhood-bar")
+              .find((bar) => bar.dataset.focus === "true")?.style.left ?? "0",
+          );
+        for (const zoom of ["day", "week", "fit"]) {
+          scrollLeft = 0;
+          fireEvent.click(zoomButton(zoom));
+          // The bar sits at the same spot (24px margin) at every scale.
+          expect(focusBarLeft() - scrollLeft).toBe(24);
+        }
+      } finally {
+        delete (HTMLElement.prototype as { scrollLeft?: number }).scrollLeft;
+      }
+    });
+
+    describe("wheel", () => {
+      const sizes = (
+        element: HTMLElement,
+        {
+          scrollHeight,
+          clientHeight,
+          scrollWidth,
+          clientWidth,
+        }: Record<string, number>,
+      ) => {
+        for (const [name, value] of Object.entries({
+          scrollHeight,
+          clientHeight,
+          scrollWidth,
+          clientWidth,
+        })) {
+          Object.defineProperty(element, name, { configurable: true, value });
+        }
+      };
+
+      it("pans a chart that only overflows sideways with a vertical wheel", () => {
+        renderCard();
+        const container = screen.getByTestId("gantt-neighborhood-scroll");
+        sizes(container, {
+          scrollHeight: 300,
+          clientHeight: 300,
+          scrollWidth: 2000,
+          clientWidth: 600,
+        });
+        let scrollLeft = 100;
+        Object.defineProperty(container, "scrollLeft", {
+          configurable: true,
+          get: () => scrollLeft,
+          set: (value: number) => {
+            scrollLeft = value;
+          },
+        });
+        // fireEvent returns false when the listener called preventDefault.
+        expect(fireEvent.wheel(container, { deltaY: 120 })).toBe(false);
+        expect(scrollLeft).toBe(220);
+        expect(fireEvent.wheel(container, { deltaY: -50 })).toBe(false);
+        expect(scrollLeft).toBe(170);
+      });
+
+      it("leaves the native wheel alone when the chart scrolls vertically, on a sideways swipe and on shift+wheel", () => {
+        renderCard();
+        const container = screen.getByTestId("gantt-neighborhood-scroll");
+        sizes(container, {
+          scrollHeight: 900,
+          clientHeight: 300,
+          scrollWidth: 2000,
+          clientWidth: 600,
+        });
+        expect(fireEvent.wheel(container, { deltaY: 120 })).toBe(true);
+        sizes(container, {
+          scrollHeight: 300,
+          clientHeight: 300,
+          scrollWidth: 2000,
+          clientWidth: 600,
+        });
+        expect(fireEvent.wheel(container, { deltaX: 90, deltaY: 10 })).toBe(
+          true,
+        );
+        expect(
+          fireEvent.wheel(container, { deltaY: 120, shiftKey: true }),
+        ).toBe(true);
+        // Nothing overflows: nothing to pan, nothing to prevent.
+        sizes(container, {
+          scrollHeight: 300,
+          clientHeight: 300,
+          scrollWidth: 600,
+          clientWidth: 600,
+        });
+        expect(fireEvent.wheel(container, { deltaY: 120 })).toBe(true);
+      });
+
+      it("steps through the scales with ctrl+wheel and cmd+wheel", () => {
+        renderCard();
+        const container = screen.getByTestId("gantt-neighborhood-scroll");
+        const current = () =>
+          useUserPreferencesStore.getState().ganttNeighborhoodZoom;
+        expect(current()).toBe("fit");
+        // The fit scale is wider per day than Day here, so zooming out from it
+        // lands on Day, then Week, Month and Quarter, and stops there.
+        expect(fireEvent.wheel(container, { deltaY: 100, ctrlKey: true })).toBe(
+          false,
+        );
+        expect(current()).toBe("day");
+        fireEvent.wheel(container, { deltaY: 100, metaKey: true });
+        expect(current()).toBe("week");
+        // Small deltas (a trackpad pinch) add up to one step.
+        fireEvent.wheel(container, { deltaY: 30, ctrlKey: true });
+        expect(current()).toBe("week");
+        fireEvent.wheel(container, { deltaY: 40, ctrlKey: true });
+        expect(current()).toBe("month");
+        fireEvent.wheel(container, { deltaY: 100, ctrlKey: true });
+        fireEvent.wheel(container, { deltaY: 100, ctrlKey: true });
+        expect(current()).toBe("quarter");
+        // Zooming in goes back, one step each.
+        fireEvent.wheel(container, { deltaY: -100, ctrlKey: true });
+        expect(current()).toBe("month");
       });
     });
   });

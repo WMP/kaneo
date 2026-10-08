@@ -16,7 +16,10 @@
 // has no bar and does not widen the range.
 
 import { addDays, differenceInCalendarDays } from "date-fns";
+import { formatDateShort } from "@/lib/format";
 import type { DependencyEdgeInput } from "./dependency-lines";
+import { NEIGHBORHOOD_ZOOMS, type NeighborhoodZoom } from "./neighborhood-zoom";
+import { buildGanttHeaderColumns, type GanttUnit } from "./timeline";
 
 export type NeighborhoodSchedule = { start: Date; end: Date };
 
@@ -134,7 +137,45 @@ export function buildTaskNeighborhood({
   };
 }
 
+export {
+  DEFAULT_NEIGHBORHOOD_ZOOM,
+  isNeighborhoodZoom,
+  NEIGHBORHOOD_ZOOMS,
+  type NeighborhoodZoom,
+} from "./neighborhood-zoom";
+
+/** Pixels per day of each unit. They mirror the main Gantt's desktop base
+ * day-column widths (UNIT_BASE_DAY_COLUMN_WIDTH_REM in the project's gantt
+ * route, at a 16px root font size) so a "Week" here looks like a "Week" there. */
+export const UNIT_PIXELS_PER_DAY: Record<GanttUnit, number> = {
+  day: 44,
+  week: 13.12,
+  month: 2.96,
+  quarter: 1.216,
+};
+
+/**
+ * The scale one Ctrl/Cmd+wheel step away: `direction` 1 zooms in (wider days),
+ * -1 zooms out. The scales are ordered by pixels per day; "fit" sits where its
+ * own px/day (`fitPixelsPerDay`) falls among the fixed units. The ends clamp.
+ */
+export function stepNeighborhoodZoom(
+  current: NeighborhoodZoom,
+  direction: 1 | -1,
+  fitPixelsPerDay: number,
+): NeighborhoodZoom {
+  const pixelsPerDay = (zoom: NeighborhoodZoom) =>
+    zoom === "fit" ? fitPixelsPerDay : UNIT_PIXELS_PER_DAY[zoom];
+  const ordered = [...NEIGHBORHOOD_ZOOMS].sort(
+    (left, right) => pixelsPerDay(left) - pixelsPerDay(right),
+  );
+  const index = ordered.indexOf(current);
+  return ordered[Math.min(Math.max(index + direction, 0), ordered.length - 1)];
+}
+
 export type NeighborhoodScale = {
+  /** The choice that produced this scale. */
+  zoom: NeighborhoodZoom;
   /** First day shown (one day of padding before the earliest date). */
   start: Date;
   /** Number of whole days shown. */
@@ -145,8 +186,9 @@ export type NeighborhoodScale = {
   widthPx: number;
   /** Pixel offset of a calendar day's left edge. */
   offsetOf: (day: Date) => number;
-  /** Tick days, each at least `minTickSpacingPx` apart. */
-  ticks: { day: Date; x: number }[];
+  /** Labelled tick days: at least `minTickSpacingPx` apart in "fit" mode, at
+   * each day/week/month/quarter boundary for a fixed unit. */
+  ticks: { day: Date; x: number; label: string }[];
 };
 
 // Candidate tick steps in days; the smallest one whose spacing is wide enough
@@ -158,36 +200,88 @@ const TICK_STEPS_DAYS = [1, 2, 7, 14, 28, 91, 182, 365];
  * squeezing bars into slivers. */
 export const MIN_PIXELS_PER_DAY = 14;
 
-/** Fits `range` (plus one day of padding on each side) into `widthPx`, never
- * narrower than `minPixelsPerDay` per day, and picks tick days by span. Day arithmetic is calendar-day based (never
- * milliseconds / 86 400 000), so a DST change does not shift a bar. */
+function dayCountOf(range: { start: Date; end: Date }): number {
+  // One day of padding on each side of the range.
+  return Math.max(differenceInCalendarDays(range.end, range.start) + 3, 3);
+}
+
+/** Pixels per day of the "fit" scale: the range fitted into `widthPx`, never
+ * narrower than `minPixelsPerDay`. */
+export function fitPixelsPerDay(
+  range: { start: Date; end: Date },
+  widthPx: number,
+  minPixelsPerDay = MIN_PIXELS_PER_DAY,
+): number {
+  return Math.max(Math.max(widthPx, 1) / dayCountOf(range), minPixelsPerDay);
+}
+
+type BuildNeighborhoodScaleOptions = {
+  zoom?: NeighborhoodZoom;
+  /** First day of a "week" column (labels of the "week" unit). */
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  minTickSpacingPx?: number;
+  minPixelsPerDay?: number;
+};
+
+/**
+ * Fits `range` (plus one day of padding on each side) into `widthPx`, never
+ * narrower than `minPixelsPerDay` per day, and picks tick days by span. For a
+ * fixed unit it uses that unit's px per day instead (the axis still reaches at
+ * least `widthPx`) and ticks at the unit's boundaries with the main Gantt
+ * header's labels. Day arithmetic is calendar-day based (never milliseconds /
+ * 86 400 000), so a DST change does not shift a bar.
+ */
 export function buildNeighborhoodScale(
   range: { start: Date; end: Date },
   widthPx: number,
-  minTickSpacingPx = 64,
-  minPixelsPerDay = MIN_PIXELS_PER_DAY,
+  {
+    zoom = "fit",
+    weekStartsOn = 0,
+    minTickSpacingPx = 64,
+    minPixelsPerDay = MIN_PIXELS_PER_DAY,
+  }: BuildNeighborhoodScaleOptions = {},
 ): NeighborhoodScale {
   const start = addDays(range.start, -1);
-  const totalDays = Math.max(
-    differenceInCalendarDays(range.end, range.start) + 3,
-    3,
-  );
-  const pixelsPerDay = Math.max(
-    Math.max(widthPx, 1) / totalDays,
-    minPixelsPerDay,
-  );
+  const rangeDays = dayCountOf(range);
+  const fixedPixelsPerDay = zoom === "fit" ? null : UNIT_PIXELS_PER_DAY[zoom];
+  const pixelsPerDay =
+    fixedPixelsPerDay ?? fitPixelsPerDay(range, widthPx, minPixelsPerDay);
+  // A fixed unit can be narrower than the card; keep the grid to its edge.
+  const totalDays =
+    fixedPixelsPerDay === null
+      ? rangeDays
+      : Math.max(
+          rangeDays,
+          Math.ceil(Math.max(widthPx, 1) / fixedPixelsPerDay),
+        );
   const offsetOf = (day: Date) =>
     differenceInCalendarDays(day, start) * pixelsPerDay;
-  const step =
-    TICK_STEPS_DAYS.find(
-      (candidate) => candidate * pixelsPerDay >= minTickSpacingPx,
-    ) ?? TICK_STEPS_DAYS[TICK_STEPS_DAYS.length - 1];
-  const ticks: { day: Date; x: number }[] = [];
-  for (let offset = 0; offset < totalDays; offset += step) {
-    const day = addDays(start, offset);
-    ticks.push({ day, x: offsetOf(day) });
+
+  const ticks: NeighborhoodScale["ticks"] = [];
+  if (zoom === "fit" || zoom === "day") {
+    const step =
+      zoom === "day"
+        ? 1
+        : (TICK_STEPS_DAYS.find(
+            (candidate) => candidate * pixelsPerDay >= minTickSpacingPx,
+          ) ?? TICK_STEPS_DAYS[TICK_STEPS_DAYS.length - 1]);
+    for (let offset = 0; offset < totalDays; offset += step) {
+      const day = addDays(start, offset);
+      ticks.push({ day, x: offsetOf(day), label: formatDateShort(day) });
+    }
+  } else {
+    // The same grouping and labels as the main Gantt's header: a week's days
+    // under its start date, a month under "MMM yyyy", a quarter under "Qn yyyy".
+    const days = Array.from({ length: totalDays }, (_, offset) =>
+      addDays(start, offset),
+    );
+    for (const column of buildGanttHeaderColumns(days, zoom, weekStartsOn)) {
+      const day = days[column.startIndex];
+      ticks.push({ day, x: offsetOf(day), label: column.label });
+    }
   }
   return {
+    zoom,
     start,
     totalDays,
     pixelsPerDay,

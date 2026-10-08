@@ -5,6 +5,11 @@ import {
   type GanttDependencyDisplayMode,
   isGanttDependencyDisplayMode,
 } from "@/components/gantt/gantt-dependency-display";
+import {
+  DEFAULT_NEIGHBORHOOD_ZOOM,
+  isNeighborhoodZoom,
+  type NeighborhoodZoom,
+} from "@/components/gantt/neighborhood-zoom";
 import { GANTT_UNITS, type GanttUnit } from "@/components/gantt/timeline";
 
 export const WEEK_START_DAYS = [0, 1, 6] as const;
@@ -85,6 +90,13 @@ type UserPreferencesStore = {
   // multi-year plan looking empty on every viewer's very first visit.
   ganttTimelineUnitTouched: boolean;
   setGanttTimelineUnit: (unit: GanttUnit) => void;
+
+  // Scale of the dependency-neighborhood card over the Gantt's task sheet:
+  // "fit" (fit the range into the card) or a fixed Day/Week/Month/Quarter.
+  // Kept apart from ganttTimelineUnit: the card shows a small neighborhood, not
+  // the whole project, so the main chart's unit is not a good default for it.
+  ganttNeighborhoodZoom: NeighborhoodZoom;
+  setGanttNeighborhoodZoom: (zoom: NeighborhoodZoom) => void;
 
   ganttShowCriticalPath: boolean;
   setGanttShowCriticalPath: (show: boolean) => void;
@@ -195,6 +207,10 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       setGanttTimelineUnit: (ganttTimelineUnit) =>
         set({ ganttTimelineUnit, ganttTimelineUnitTouched: true }),
 
+      ganttNeighborhoodZoom: DEFAULT_NEIGHBORHOOD_ZOOM,
+      setGanttNeighborhoodZoom: (ganttNeighborhoodZoom) =>
+        set({ ganttNeighborhoodZoom }),
+
       ganttShowCriticalPath: false,
       setGanttShowCriticalPath: (ganttShowCriticalPath) =>
         set({ ganttShowCriticalPath }),
@@ -235,6 +251,9 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
           state.setGanttDependencyDisplayMode(
             DEFAULT_GANTT_DEPENDENCY_DISPLAY_MODE,
           );
+        }
+        if (state && !isNeighborhoodZoom(state.ganttNeighborhoodZoom)) {
+          state.setGanttNeighborhoodZoom(DEFAULT_NEIGHBORHOOD_ZOOM);
         }
         if (state && !isGanttUnit(state.ganttTimelineUnit)) {
           state.setGanttTimelineUnit("day");
