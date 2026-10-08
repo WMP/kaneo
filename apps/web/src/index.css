@@ -1448,3 +1448,12 @@ input:-webkit-autofill:active {
   }
 
 }
+
+@keyframes gantt-neighborhood-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

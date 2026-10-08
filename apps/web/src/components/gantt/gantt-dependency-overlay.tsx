@@ -58,6 +58,13 @@ type GanttDependencyOverlayProps = {
    * task:update in the SOURCE task's project, which differs per edge on the
    * cross-project portfolio. */
   resolveProjectId: (taskId: string) => string | undefined;
+  /** Whether the editable dependency-type labels (FS/SS/FF/SF popovers) are
+   * drawn on "blocks" edges. Defaults to true; the read-only neighborhood card
+   * turns it off. */
+  showTypeLabels?: boolean;
+  /** Prefix of the arrowhead marker ids. Two overlays on one page (the chart
+   * and the neighborhood card) must not share ids. */
+  markerIdPrefix?: string;
 };
 
 // Resting/emphasized/dimmed visual states for the connector lines. Hovering
@@ -99,6 +106,8 @@ export function GanttDependencyOverlay({
   resolveProjectId,
   resolveOffWindowTask,
   onJumpToTask,
+  showTypeLabels = true,
+  markerIdPrefix = "gantt-dependency-arrow",
 }: GanttDependencyOverlayProps) {
   const { t } = useTranslation();
   const filteredEdges = filterEdgesForDisplayMode(edges, displayMode, {
@@ -201,7 +210,7 @@ export function GanttDependencyOverlay({
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeOpacity={lineOpacity}
-          markerEnd={`url(#gantt-dependency-arrow-${markerKind})`}
+          markerEnd={`url(#${markerIdPrefix}-${markerKind})`}
           // See the critical-path halo path's own comment above.
           style={{ pointerEvents: "none" }}
           className="transition-[stroke-opacity,stroke-width] duration-150 ease-out"
@@ -235,7 +244,7 @@ export function GanttDependencyOverlay({
     >
       <defs>
         <marker
-          id="gantt-dependency-arrow-blocks"
+          id={`${markerIdPrefix}-blocks`}
           viewBox="0 0 10 10"
           refX="8.5"
           refY="5"
@@ -246,7 +255,7 @@ export function GanttDependencyOverlay({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted-foreground)" />
         </marker>
         <marker
-          id="gantt-dependency-arrow-focused"
+          id={`${markerIdPrefix}-focused`}
           viewBox="0 0 10 10"
           refX="8.5"
           refY="5"
@@ -257,7 +266,7 @@ export function GanttDependencyOverlay({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--foreground)" />
         </marker>
         <marker
-          id="gantt-dependency-arrow-violated"
+          id={`${markerIdPrefix}-violated`}
           viewBox="0 0 10 10"
           refX="8.5"
           refY="5"
@@ -268,7 +277,7 @@ export function GanttDependencyOverlay({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--destructive)" />
         </marker>
         <marker
-          id="gantt-dependency-arrow-related"
+          id={`${markerIdPrefix}-related`}
           viewBox="0 0 10 10"
           refX="8.5"
           refY="5"
@@ -297,7 +306,7 @@ export function GanttDependencyOverlay({
       </g>
       {/* Type labels come last among the edges so no line ever covers them. */}
       {visibleEdges.map((edge) => {
-        if (!edge.typeLabelPoint) return null;
+        if (!showTypeLabels || !edge.typeLabelPoint) return null;
         const isViolated = isViolatedEdge(edge);
         const isIncident = isEdgeFocused(edge, hoveredTaskId, pinnedTaskId);
         if (!shouldShowTypeLabel(edge, isIncident)) return null;

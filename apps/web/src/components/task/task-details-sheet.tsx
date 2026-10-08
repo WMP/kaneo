@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Maximize2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SendToJiraButton } from "@/components/jira/send-to-jira-button";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,13 @@ type TaskDetailsSheetProps = {
   projectId: string;
   workspaceId: string;
   onClose: () => void;
+  /** Extra content drawn over the blurred backdrop to the left of the sheet
+   * (a view-specific aside, for example the Gantt's dependency neighborhood).
+   * It is rendered inside the sheet's popup, so it is part of the modal focus
+   * trap and a click inside it is not an outside press; the aside positions
+   * itself against the popup (see GanttTaskNeighborhood). Omitted by every
+   * other view. */
+  backdropAside?: ReactNode;
 };
 
 export default function TaskDetailsSheet({
@@ -29,6 +36,7 @@ export default function TaskDetailsSheet({
   projectId,
   workspaceId,
   onClose,
+  backdropAside,
 }: TaskDetailsSheetProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -142,6 +150,7 @@ export default function TaskDetailsSheet({
             </div>
           </div>
         </div>
+        {backdropAside}
       </SheetContent>
     </Sheet>
   );

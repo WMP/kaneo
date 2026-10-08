@@ -74,6 +74,10 @@ import {
 import { GanttSummaryTaskBar } from "@/components/gantt/gantt-summary-task-bar";
 import { GanttTaskBar, toIsoDay } from "@/components/gantt/gantt-task-bar";
 import {
+  GanttTaskNeighborhood,
+  type NeighborhoodTaskInfo,
+} from "@/components/gantt/gantt-task-neighborhood-card";
+import {
   buildHolidayDateKeySet,
   DEFAULT_WORKING_DAYS,
   isWorkingDay,
@@ -1893,6 +1897,72 @@ function RouteComponent() {
     [navigate, workspaceId],
   );
 
+  // The dependency neighborhood card over the details sheet's backdrop reads
+  // the schedules the chart already computed (own dates, estimate-sized and
+  // rolled-up spans, derived spans, cross-project far ends), not a new
+  // derivation, and ignores the search filter and collapsed parents: it shows
+  // the open task's real relations.
+  const neighborhoodScheduleById = useMemo(() => {
+    const map = new Map<string, { start: Date; end: Date }>();
+    for (const task of parsedTasks) {
+      map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
+    }
+    for (const task of externalRelatedTasks) {
+      if (!map.has(task.id)) {
+        map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
+      }
+    }
+    return map;
+  }, [parsedTasks, externalRelatedTasks]);
+
+  const neighborhoodTaskInfoById = useMemo(() => {
+    const map = new Map<string, NeighborhoodTaskInfo>();
+    const keyOf = (slug: string | undefined, number: number | null) =>
+      number ? `${slug ?? ""}-${number}` : "";
+    for (const relation of taskRelations ?? []) {
+      for (const endpoint of [relation.sourceTask, relation.targetTask]) {
+        if (!endpoint) continue;
+        map.set(endpoint.id, {
+          key:
+            keyOf(
+              endpoint.projectId === projectId
+                ? project?.slug
+                : endpoint.projectSlug,
+              endpoint.number,
+            ) || endpoint.title,
+          title: endpoint.title,
+        });
+      }
+    }
+    for (const task of allTasks) {
+      map.set(task.id, {
+        key: keyOf(project?.slug, task.number ?? null) || task.title,
+        title: task.title,
+      });
+    }
+    for (const task of externalRelatedTasks) {
+      const info = map.get(task.id);
+      if (info && task.isDerived)
+        map.set(task.id, { ...info, isDerived: true });
+    }
+    return map;
+  }, [taskRelations, allTasks, externalRelatedTasks, project?.slug, projectId]);
+
+  // A neighbor of this project opens in this page's sheet (the walk along the
+  // chain); a task of another project opens on its own route, as a read-only
+  // row does (openExternalTask).
+  const handleSelectNeighborhoodTask = useCallback(
+    (selectedTaskId: string) => {
+      const selectedProjectId = projectIdByRelatedTaskId.get(selectedTaskId);
+      openExternalTask({
+        id: selectedTaskId,
+        projectId: selectedProjectId,
+        isOwnProject: !selectedProjectId || selectedProjectId === projectId,
+      });
+    },
+    [openExternalTask, projectIdByRelatedTaskId, projectId],
+  );
+
   // Drag-to-pan starting on the sticky task rail's own row-opening button
   // (finding 5.6): dragging over the task-name column previously did nothing
   // — isPannableTarget excludes every `button`, and this title button covers
@@ -3009,6 +3079,18 @@ function RouteComponent() {
               search: {},
               replace: true,
             })
+          }
+          backdropAside={
+            taskId ? (
+              <GanttTaskNeighborhood
+                focusTaskId={taskId}
+                edges={dependencyEdges}
+                scheduleByTaskId={neighborhoodScheduleById}
+                taskInfoById={neighborhoodTaskInfoById}
+                violatedEdgeIds={violatedEdgeIds}
+                onSelectTask={handleSelectNeighborhoodTask}
+              />
+            ) : null
           }
         />
       </div>
