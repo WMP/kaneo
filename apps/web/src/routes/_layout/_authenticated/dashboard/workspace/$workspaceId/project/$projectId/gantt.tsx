@@ -37,11 +37,12 @@ import {
   buildDependencyEdges,
   DEPENDENCY_LANE_CLEARANCE_PX,
 } from "@/components/gantt/dependency-lines";
-import type {
-  CriticalPathEdgeInput,
-  CriticalPathTaskInput,
-} from "@/components/gantt/gantt-critical-path";
+import type { CriticalPathEdgeInput } from "@/components/gantt/gantt-critical-path";
 import { computeCriticalPath } from "@/components/gantt/gantt-critical-path";
+import {
+  buildCriticalPathInput,
+  isCriticalPathProjected as isCriticalPathProjectedFor,
+} from "@/components/gantt/gantt-critical-path-input";
 import type { CascadeEdge } from "@/components/gantt/gantt-dependency-cascade";
 import { computeDependencyCascade } from "@/components/gantt/gantt-dependency-cascade";
 import {
@@ -796,166 +797,6 @@ function RouteComponent() {
     return pinned;
   }, [allTasks]);
 
-  // The cross-project far end of every "blocks" relation (a client approval
-  // before a cutover, a security gate before a wave) that has a resolved
-  // schedule — fed into computeCriticalPath below alongside this project's
-  // own tasks so a cross-project dependency can anchor/constrain the
-  // network exactly like an own one (see gantt-critical-path.ts's SCOPE
-  // comment). Narrower than externalRelatedTasks below (which also pulls in
-  // "related" tasks, purely informational and never part of the CPM
-  // network): folding a "related"-only task into the critical-path input
-  // would wrongly mark it trivially critical (no in-scope edge touches it
-  // at all, see computeCriticalPath's "lone task" case), so only a "blocks"
-  // far end qualifies. A dateless far end still can't be reasoned about
-  // here and is left out, same as any own task with no dates — the edge
-  // into it is then dropped by computeCriticalPath itself
-  // (droppedEdgeCount).
-  const crossProjectCriticalPathTasks = useMemo<CriticalPathTaskInput[]>(() => {
-    const external = new Map<string, CriticalPathTaskInput>();
-    for (const relation of taskRelations ?? []) {
-      if (relation.relationType !== "blocks") continue;
-      // A blocks relation from this query always has at least one own
-      // endpoint, so each cross-project far end is paired with its
-      // counterpart on the other end of the SAME edge. The far end only
-      // belongs in the CPM input when that counterpart is ALSO dated: only
-      // then is the connecting edge in scope (computeCriticalPath keeps an
-      // edge only when BOTH endpoints are in `tasks`). Including a far end
-      // whose counterpart is dateless would drop that edge yet still feed the
-      // far end in with no in-scope edge touching it, leaving it a lone task
-      // that comes out trivially critical (see computeCriticalPath's "lone
-      // task" case) — a spurious amber outline on a cross-project row that has
-      // no real critical link here, exactly the mis-marking the "related"-only
-      // exclusion above already guards against.
-      for (const [candidate, counterpart] of [
-        [relation.sourceTask, relation.targetTask],
-        [relation.targetTask, relation.sourceTask],
-      ]) {
-        if (!candidate || candidate.projectId === projectId) continue;
-        if (external.has(candidate.id)) continue;
-        if (!counterpart) continue;
-        // The counterpart is this relation's own endpoint. It must actually be
-        // a participating CPM task — present in ownScheduleByTaskId — for the
-        // connecting edge to be in scope. Checking only that it is dated would
-        // still admit a far end whose counterpart is dated but absent from the
-        // loaded own tasks (e.g. archived/soft-deleted), whose edge
-        // computeCriticalPath then drops, leaving the far end lone and
-        // spuriously trivially critical.
-        if (!ownScheduleByTaskId.has(counterpart.id)) continue;
-        const schedule = deriveTaskScheduleWithEstimate(
-          candidate,
-          workingDayPredicate,
-        );
-        if (!schedule) continue;
-        external.set(candidate.id, {
-          id: candidate.id,
-          scheduleStart: schedule.start,
-          scheduleEnd: schedule.end,
-        });
-      }
-    }
-    return [...external.values()];
-  }, [taskRelations, projectId, ownScheduleByTaskId, workingDayPredicate]);
-
-  // Same "blocks" edges as blocksEdges above, but keeping each relation's own
-  // id (computeCriticalPath needs one to identify which edges came out
-  // critical) — kept as a separate memo rather than folding the id into
-  // blocksEdges itself, since CascadeEdge's shape is also handed to
-  // computeDependencyCascade below and widening it isn't otherwise needed.
-  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(() => {
-    return (taskRelations ?? []).flatMap((relation) =>
-      relation.relationType === "blocks"
-        ? [
-            {
-              id: relation.id,
-              sourceTaskId: relation.sourceTaskId,
-              targetTaskId: relation.targetTaskId,
-              dependencyType: relation.dependencyType as
-                | "fs"
-                | "ss"
-                | "ff"
-                | "sf",
-              lagDays: relation.lagDays,
-            },
-          ]
-        : [],
-    );
-  }, [taskRelations]);
-
-  // Only computed while the toggle is on — this project can have a lot of
-  // "blocks" edges, and there's no reason to run the CPM passes on every
-  // relations refetch when nobody's looking at the result. Feeds in BOTH
-  // this project's own scheduled tasks (ownScheduleByTaskId, same scope the
-  // dependency cascade above uses) AND every dated cross-project "blocks"
-  // far end (crossProjectCriticalPathTasks) — a dateless task, own or
-  // cross-project, still never participates. Never depends on zoom/pan/unit
-  // state, so toggling zoom doesn't recompute it.
-  // Also computed in the "critical" dependency display mode even while the
-  // toggle is off (the mode draws only these edges); the toggle alone still
-  // decides whether bars are outlined and the legend/warning show (see
-  // `criticalPath` below).
-  const needsCriticalPath =
-    showCriticalPath || dependencyDisplayMode === "critical";
-  const criticalPathResult = useMemo(() => {
-    if (!needsCriticalPath) return null;
-    const tasksInput: CriticalPathTaskInput[] = [
-      ...[...ownScheduleByTaskId].map(([id, schedule]) => ({
-        id,
-        scheduleStart: schedule.start,
-        scheduleEnd: schedule.end,
-      })),
-      ...crossProjectCriticalPathTasks,
-    ];
-    // Measure slack in WORKING days from the workspace calendar so a hand-off
-    // that only spans a weekend/holiday reads as tight, not slack (see
-    // makeWorkingDayIndexer). Anchor at the earliest date in play so every
-    // lookup is a forward walk.
-    let anchor: Date | null = null;
-    for (const task of tasksInput) {
-      if (anchor === null || task.scheduleStart < anchor) {
-        anchor = task.scheduleStart;
-      }
-    }
-    const toDayIndex = anchor
-      ? makeWorkingDayIndexer(anchor, workingDays, holidayDateSet)
-      : undefined;
-    return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
-  }, [
-    needsCriticalPath,
-    ownScheduleByTaskId,
-    crossProjectCriticalPathTasks,
-    criticalPathEdges,
-    workingDays,
-    holidayDateSet,
-  ]);
-
-  const criticalPath = showCriticalPath ? criticalPathResult : null;
-
-  // "blocks" edges whose constraint the current dates break; only those are
-  // drawn red. Own tasks plus the dated cross-project far ends.
-  const violatedEdgeIds = useMemo(() => {
-    const scheduleByTaskId = new Map<string, { start: Date; end: Date }>();
-    for (const [id, schedule] of ownScheduleByTaskId) {
-      scheduleByTaskId.set(id, { start: schedule.start, end: schedule.end });
-    }
-    for (const task of crossProjectCriticalPathTasks) {
-      scheduleByTaskId.set(task.id, {
-        start: task.scheduleStart,
-        end: task.scheduleEnd,
-      });
-    }
-    return computeViolatedDependencyEdgeIds(
-      dependencyEdges.map((edge) => ({
-        id: edge.id,
-        relationType: edge.relationType,
-        sourceTaskId: edge.sourceTaskId,
-        targetTaskId: edge.targetTaskId,
-        dependencyType: edge.dependencyType ?? "fs",
-        lagDays: edge.lagDays ?? 0,
-      })),
-      scheduleByTaskId,
-    );
-  }, [dependencyEdges, ownScheduleByTaskId, crossProjectCriticalPathTasks]);
-
   const bulkUpdateSchedule = useBulkUpdateTaskSchedule();
 
   // Runs once a drag-move or resize has already persisted the DRAGGED task's
@@ -1168,6 +1009,124 @@ function RouteComponent() {
     blocksEdges,
     workingDayPredicate,
   ]);
+
+  // The "blocks" edges with each relation's own id (computeCriticalPath needs
+  // one to identify which edges came out critical) — a separate memo from
+  // blocksEdges, since CascadeEdge's shape is also handed to
+  // computeDependencyCascade and widening it isn't otherwise needed.
+  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(() => {
+    return (taskRelations ?? []).flatMap((relation) =>
+      relation.relationType === "blocks"
+        ? [
+            {
+              id: relation.id,
+              sourceTaskId: relation.sourceTaskId,
+              targetTaskId: relation.targetTaskId,
+              dependencyType: relation.dependencyType as
+                | "fs"
+                | "ss"
+                | "ff"
+                | "sf",
+              lagDays: relation.lagDays,
+            },
+          ]
+        : [],
+    );
+  }, [taskRelations]);
+
+  // The critical-path (CPM) input: this project's own scheduled tasks
+  // (ownScheduleByTaskId, same scope the dependency cascade uses), every dated
+  // cross-project "blocks" far end, and the DERIVED rows (dateless tasks placed
+  // from their predecessors plus estimate, see externalRelatedTasks) — the same
+  // spans the chart draws. Derived rows are a PROJECTION: they take part in the
+  // critical path and nowhere else (nothing is persisted, and the cascade and
+  // violated edges never see them). A far end or derived row only participates
+  // when a "blocks" edge connects it to another participating row (see
+  // buildCriticalPathInput), so none comes out trivially critical on its own.
+  // A task that still cannot be placed (no dates, no placed predecessor, a
+  // cycle, archived) is left out and its edges are counted as dropped.
+  const criticalPathInput = useMemo(
+    () =>
+      buildCriticalPathInput({
+        ownSchedules: ownScheduleByTaskId,
+        externalRows: externalRelatedTasks,
+        edges: criticalPathEdges,
+      }),
+    [ownScheduleByTaskId, externalRelatedTasks, criticalPathEdges],
+  );
+
+  // Only computed while the toggle is on — this project can have a lot of
+  // "blocks" edges, and there's no reason to run the CPM passes on every
+  // relations refetch when nobody's looking at the result. Never depends on
+  // zoom/pan/unit state, so toggling zoom doesn't recompute it.
+  // Also computed in the "critical" dependency display mode even while the
+  // toggle is off (the mode draws only these edges); the toggle alone still
+  // decides whether bars are outlined and the legend/warning show (see
+  // `criticalPath` below).
+  const needsCriticalPath =
+    showCriticalPath || dependencyDisplayMode === "critical";
+  const criticalPathResult = useMemo(() => {
+    if (!needsCriticalPath) return null;
+    const tasksInput = criticalPathInput.tasks;
+    // Measure slack in WORKING days from the workspace calendar so a hand-off
+    // that only spans a weekend/holiday reads as tight, not slack (see
+    // makeWorkingDayIndexer). Anchor at the earliest date in play so every
+    // lookup is a forward walk.
+    let anchor: Date | null = null;
+    for (const task of tasksInput) {
+      if (anchor === null || task.scheduleStart < anchor) {
+        anchor = task.scheduleStart;
+      }
+    }
+    const toDayIndex = anchor
+      ? makeWorkingDayIndexer(anchor, workingDays, holidayDateSet)
+      : undefined;
+    return computeCriticalPath(tasksInput, criticalPathEdges, { toDayIndex });
+  }, [
+    needsCriticalPath,
+    criticalPathInput,
+    criticalPathEdges,
+    workingDays,
+    holidayDateSet,
+  ]);
+
+  const criticalPath = showCriticalPath ? criticalPathResult : null;
+
+  // Whether the highlighted path runs through a projected (derived) row, so the
+  // UI can say it is partly projected from estimates.
+  const isCriticalPathProjected = useMemo(
+    () =>
+      isCriticalPathProjectedFor(
+        criticalPath,
+        criticalPathInput.derivedTaskIds,
+      ),
+    [criticalPath, criticalPathInput],
+  );
+
+  // "blocks" edges whose constraint the current dates break; only those are
+  // drawn red. Own tasks plus the dated cross-project far ends — derived rows
+  // have no dates of their own and never count as violated.
+  const violatedEdgeIds = useMemo(() => {
+    const scheduleByTaskId = new Map<string, { start: Date; end: Date }>();
+    for (const task of criticalPathInput.tasks) {
+      if (criticalPathInput.derivedTaskIds.has(task.id)) continue;
+      scheduleByTaskId.set(task.id, {
+        start: task.scheduleStart,
+        end: task.scheduleEnd,
+      });
+    }
+    return computeViolatedDependencyEdgeIds(
+      dependencyEdges.map((edge) => ({
+        id: edge.id,
+        relationType: edge.relationType,
+        sourceTaskId: edge.sourceTaskId,
+        targetTaskId: edge.targetTaskId,
+        dependencyType: edge.dependencyType ?? "fs",
+        lagDays: edge.lagDays ?? 0,
+      })),
+      scheduleByTaskId,
+    );
+  }, [dependencyEdges, criticalPathInput]);
 
   // The date window (which 91 days are in view, and the paging bounds
   // around them) depends only on the task list, the week-start preference,
@@ -2225,6 +2184,14 @@ function RouteComponent() {
                         {t("tasks:gantt.legendCriticalPath")}
                       </span>
                     )}
+                    {hasCriticalHighlight && isCriticalPathProjected && (
+                      <span
+                        className="italic"
+                        data-gantt-critical-projected-note=""
+                      >
+                        {t("tasks:gantt.criticalPathProjectedNote")}
+                      </span>
+                    )}
                   </div>
                 );
               })()}
@@ -2250,6 +2217,11 @@ function RouteComponent() {
               )}
               aria-pressed={showCriticalPath}
               aria-label={t("tasks:gantt.criticalPathToggleAriaLabel")}
+              title={
+                showCriticalPath && isCriticalPathProjected
+                  ? t("tasks:gantt.criticalPathProjectedNote")
+                  : undefined
+              }
               onClick={() => setShowCriticalPath(!showCriticalPath)}
             >
               <RouteIcon className="size-3.5" />
@@ -2300,14 +2272,14 @@ function RouteComponent() {
               />
             )}
 
-            {/* A dependency reaching a task with no resolved schedule still
-                never participates in the critical-path network
-                (computeCriticalPath has no row or duration to reason about
-                for it — see its own inScopeEdges comment): own-project and
-                cross-project alike, as long as it has dates, is fed in (see
-                crossProjectCriticalPathTasks above), but a genuinely
-                dateless far end still isn't, so a task it would otherwise
-                have made critical can silently read as "not critical" here.
+            {/* A dependency reaching a task that cannot be placed on the
+                timeline (no dates of its own and no placed predecessor to
+                derive a position from, e.g. on or downstream of a cycle, or
+                archived) still never participates in the critical-path
+                network, so a task it would otherwise make critical can
+                silently read as "not critical". Dateless tasks that CAN be
+                placed from their predecessors plus estimate are fed in as a
+                projection (see criticalPathInput above) and are not counted.
                 Shown only while the toggle is actually on (droppedEdgeCount
                 isn't computed at all otherwise) and only when there's
                 something to warn about. */}
