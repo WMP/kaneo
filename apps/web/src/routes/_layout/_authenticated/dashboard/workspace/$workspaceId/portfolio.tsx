@@ -722,6 +722,8 @@ function RouteComponent() {
           taskId={selectedTask.taskId}
           projectId={selectedTask.projectId}
           workspaceId={workspaceId}
+          // The portfolio is a workspace view, not a project view.
+          showNeighborhood={false}
           onClose={() => {
             setSelectedTask(null);
             // Task mutation hooks invalidate ["task"]/["tasks", projectId] but

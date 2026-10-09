@@ -3137,6 +3137,8 @@
 			"neighborhoodCount_many": "{{count}} de tareas vinculadas",
 			"neighborhoodCount_other": "{{count}} tareas vinculadas",
 			"neighborhoodEmpty": "Sin dependencias",
+			"neighborhoodError": "No se pudieron cargar las dependencias",
+			"neighborhoodLoading": "Cargando dependencias…",
 			"neighborhoodNoDates": "Sin fechas",
 			"neighborhoodOpenTask": "Abrir la tarea {{key}}",
 			"neighborhoodPredecessors": "Predecesoras",

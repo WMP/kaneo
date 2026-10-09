@@ -3141,6 +3141,8 @@
 			"neighborhoodTitle": "{{key}}의 종속성",
 			"neighborhoodCount_other": "연결된 작업 {{count}}개",
 			"neighborhoodEmpty": "종속성 없음",
+			"neighborhoodError": "종속성을 불러오지 못했습니다",
+			"neighborhoodLoading": "종속성을 불러오는 중…",
 			"neighborhoodNoDates": "날짜 없음",
 			"neighborhoodOpenTask": "작업 {{key}} 열기",
 			"neighborhoodPredecessors": "선행 작업",

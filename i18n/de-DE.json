@@ -3138,6 +3138,8 @@
 			"neighborhoodCount_one": "{{count}} verknüpfte Aufgabe",
 			"neighborhoodCount_other": "{{count}} verknüpfte Aufgaben",
 			"neighborhoodEmpty": "Keine Abhängigkeiten",
+			"neighborhoodError": "Abhängigkeiten konnten nicht geladen werden",
+			"neighborhoodLoading": "Abhängigkeiten werden geladen…",
 			"neighborhoodNoDates": "Keine Termine",
 			"neighborhoodOpenTask": "Aufgabe {{key}} öffnen",
 			"neighborhoodPredecessors": "Vorgänger",

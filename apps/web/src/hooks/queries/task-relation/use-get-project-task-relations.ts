@@ -4,7 +4,11 @@ import { SAFETY_NET_REFETCH_INTERVAL_MS } from "@/hooks/queries/task/use-get-tas
 import { ganttProjectRelationsKey } from "@/lib/gantt-query-keys";
 import { isUnauthorizedError } from "@/lib/http-error";
 
-function useGetProjectTaskRelations(projectId: string) {
+function useGetProjectTaskRelations(
+  projectId: string,
+  // False keeps the query idle (a details sheet reads it only while open).
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: ganttProjectRelationsKey(projectId),
     queryFn: () => getProjectTaskRelations({ projectId }),
@@ -24,7 +28,7 @@ function useGetProjectTaskRelations(projectId: string) {
     // estimate of an endpoint, edited meanwhile on a task page or in another
     // project). Refetch a stale or invalidated cache on every mount.
     refetchOnMount: true,
-    enabled: !!projectId,
+    enabled: !!projectId && (options.enabled ?? true),
   });
 }
 

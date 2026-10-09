@@ -3312,6 +3312,8 @@
 			"neighborhoodCount_many": "{{count}} powiązanych zadań",
 			"neighborhoodCount_other": "{{count}} powiązanego zadania",
 			"neighborhoodEmpty": "Brak zależności",
+			"neighborhoodError": "Nie udało się załadować zależności",
+			"neighborhoodLoading": "Ładowanie zależności…",
 			"neighborhoodNoDates": "Brak dat",
 			"neighborhoodOpenTask": "Otwórz zadanie {{key}}",
 			"neighborhoodPredecessors": "Poprzedniki",

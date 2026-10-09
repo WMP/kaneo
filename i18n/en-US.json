@@ -3130,6 +3130,8 @@
 			"neighborhoodCount_one": "{{count}} linked task",
 			"neighborhoodCount_other": "{{count}} linked tasks",
 			"neighborhoodEmpty": "No dependencies",
+			"neighborhoodError": "Dependencies could not be loaded",
+			"neighborhoodLoading": "Loading dependencies…",
 			"neighborhoodNoDates": "No dates",
 			"neighborhoodOpenTask": "Open task {{key}}",
 			"neighborhoodPredecessors": "Predecessors",

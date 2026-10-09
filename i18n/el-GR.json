@@ -3138,6 +3138,8 @@
 			"neighborhoodCount_one": "{{count}} συνδεδεμένη εργασία",
 			"neighborhoodCount_other": "{{count}} συνδεδεμένες εργασίες",
 			"neighborhoodEmpty": "Καμία εξάρτηση",
+			"neighborhoodError": "Δεν ήταν δυνατή η φόρτωση των εξαρτήσεων",
+			"neighborhoodLoading": "Φόρτωση εξαρτήσεων…",
 			"neighborhoodNoDates": "Χωρίς ημερομηνίες",
 			"neighborhoodOpenTask": "Άνοιγμα εργασίας {{key}}",
 			"neighborhoodPredecessors": "Προηγούμενες",

@@ -3127,6 +3127,8 @@
 			"neighborhoodCount_one": "{{count}} gekoppelde taak",
 			"neighborhoodCount_other": "{{count}} gekoppelde taken",
 			"neighborhoodEmpty": "Geen afhankelijkheden",
+			"neighborhoodError": "Afhankelijkheden konden niet worden geladen",
+			"neighborhoodLoading": "Afhankelijkheden laden…",
 			"neighborhoodNoDates": "Geen datums",
 			"neighborhoodOpenTask": "Taak {{key}} openen",
 			"neighborhoodPredecessors": "Voorgangers",

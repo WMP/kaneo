@@ -3148,6 +3148,8 @@
 			"neighborhoodCount_many": "{{count}} de tâches liées",
 			"neighborhoodCount_other": "{{count}} tâches liées",
 			"neighborhoodEmpty": "Aucune dépendance",
+			"neighborhoodError": "Impossible de charger les dépendances",
+			"neighborhoodLoading": "Chargement des dépendances…",
 			"neighborhoodNoDates": "Aucune date",
 			"neighborhoodOpenTask": "Ouvrir la tâche {{key}}",
 			"neighborhoodPredecessors": "Prédécesseurs",

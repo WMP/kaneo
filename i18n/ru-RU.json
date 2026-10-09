@@ -3174,6 +3174,8 @@
 			"neighborhoodCount_many": "{{count}} связанных задач",
 			"neighborhoodCount_other": "{{count}} связанной задачи",
 			"neighborhoodEmpty": "Нет зависимостей",
+			"neighborhoodError": "Не удалось загрузить зависимости",
+			"neighborhoodLoading": "Загрузка зависимостей…",
 			"neighborhoodNoDates": "Нет дат",
 			"neighborhoodOpenTask": "Открыть задачу {{key}}",
 			"neighborhoodPredecessors": "Предшественники",

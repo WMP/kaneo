@@ -3138,6 +3138,8 @@
 			"neighborhoodCount_one": "{{count}} bağlı görev",
 			"neighborhoodCount_other": "{{count}} bağlı görev",
 			"neighborhoodEmpty": "Bağımlılık yok",
+			"neighborhoodError": "Bağımlılıklar yüklenemedi",
+			"neighborhoodLoading": "Bağımlılıklar yükleniyor…",
 			"neighborhoodNoDates": "Tarih yok",
 			"neighborhoodOpenTask": "{{key}} görevini aç",
 			"neighborhoodPredecessors": "Öncüller",

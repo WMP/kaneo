@@ -3141,6 +3141,8 @@
 			"neighborhoodTitle": "{{key}} 的依赖关系",
 			"neighborhoodCount_other": "{{count}}个关联任务",
 			"neighborhoodEmpty": "无依赖关系",
+			"neighborhoodError": "无法加载依赖关系",
+			"neighborhoodLoading": "正在加载依赖关系…",
 			"neighborhoodNoDates": "无日期",
 			"neighborhoodOpenTask": "打开任务 {{key}}",
 			"neighborhoodPredecessors": "前置任务",

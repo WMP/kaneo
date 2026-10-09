@@ -3148,6 +3148,8 @@
 			"neighborhoodCount_many": "{{count}} di attività collegate",
 			"neighborhoodCount_other": "{{count}} attività collegate",
 			"neighborhoodEmpty": "Nessuna dipendenza",
+			"neighborhoodError": "Impossibile caricare le dipendenze",
+			"neighborhoodLoading": "Caricamento delle dipendenze…",
 			"neighborhoodNoDates": "Nessuna data",
 			"neighborhoodOpenTask": "Apri l'attività {{key}}",
 			"neighborhoodPredecessors": "Predecessori",

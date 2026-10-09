@@ -3138,6 +3138,8 @@
 			"neighborhoodCount_one": "{{count}} जुड़ा हुआ कार्य",
 			"neighborhoodCount_other": "{{count}} जुड़े हुए कार्य",
 			"neighborhoodEmpty": "कोई निर्भरता नहीं",
+			"neighborhoodError": "निर्भरताएँ लोड नहीं हो सकीं",
+			"neighborhoodLoading": "निर्भरताएँ लोड हो रही हैं…",
 			"neighborhoodNoDates": "कोई तिथि नहीं",
 			"neighborhoodOpenTask": "कार्य {{key}} खोलें",
 			"neighborhoodPredecessors": "पूर्ववर्ती",

@@ -9,6 +9,8 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
 import { formatDateShort } from "@/lib/format";
 import { useUserPreferencesStore } from "@/store/user-preferences";
@@ -51,6 +53,11 @@ type GanttTaskNeighborhoodProps = {
   violatedEdgeIds?: ReadonlySet<string>;
   /** Switches the details sheet to a neighbor. */
   onSelectTask: (taskId: string) => void;
+  /** "loading" and "error" draw a compact placeholder instead of the chart (the
+   * other props are then ignored); "ready" is the default. */
+  status?: "ready" | "loading" | "error";
+  /** Retries the data behind an "error" card. */
+  onRetry?: () => void;
   /** The card is not drawn when the free area is narrower than this. */
   minAvailableWidthPx?: number;
 };
@@ -104,9 +111,9 @@ function useElementWidth(ref: React.RefObject<HTMLElement | null>) {
 /**
  * A floating card with a small Gantt of the open task's DIRECT dependency
  * neighborhood: its predecessors, the task itself (highlighted) and its
- * successors. It is meant to be passed as `backdropAside` to TaskDetailsSheet,
- * which renders it inside the sheet's popup so it shares the modal focus trap
- * and a click inside it is not an outside press.
+ * successors. TaskDetailsSheet renders it (through TaskNeighborhoodAside)
+ * inside the sheet's popup, so it shares the modal focus trap and a click
+ * inside it is not an outside press.
  */
 export function GanttTaskNeighborhood({
   focusTaskId,
@@ -115,6 +122,8 @@ export function GanttTaskNeighborhood({
   taskInfoById,
   violatedEdgeIds,
   onSelectTask,
+  status = "ready",
+  onRetry,
   minAvailableWidthPx = NEIGHBORHOOD_MIN_AVAILABLE_WIDTH_PX,
 }: GanttTaskNeighborhoodProps) {
   const { t } = useTranslation();
@@ -511,7 +520,39 @@ export function GanttTaskNeighborhood({
       // outside press that closes the sheet.
       className="pointer-events-none absolute inset-y-0 end-full flex w-[calc(100vw-100%)] items-center justify-center p-6"
     >
-      {visible && (
+      {visible && status !== "ready" && (
+        <section
+          aria-label={
+            status === "loading"
+              ? t("tasks:gantt.neighborhoodLoading")
+              : t("tasks:gantt.neighborhoodError")
+          }
+          data-testid={`gantt-neighborhood-${status}`}
+          className="pointer-events-auto flex max-h-full min-w-0 items-center gap-3 rounded-xl border bg-popover px-4 py-3 text-muted-foreground text-sm shadow-lg motion-safe:animate-[gantt-neighborhood-in_160ms_ease-out_both]"
+          style={{ maxWidth: cardWidth }}
+        >
+          {status === "loading" ? (
+            <div role="status" className="flex items-center gap-2">
+              <Spinner
+                aria-hidden="true"
+                role="presentation"
+                className="size-4"
+              />
+              <span>{t("tasks:gantt.neighborhoodLoading")}</span>
+            </div>
+          ) : (
+            <div role="alert" className="flex items-center gap-3">
+              <span>{t("tasks:gantt.neighborhoodError")}</span>
+              {onRetry && (
+                <Button variant="outline" size="sm" onClick={onRetry}>
+                  {t("tasks:loadState.retry")}
+                </Button>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+      {visible && status === "ready" && (
         <section
           aria-label={title}
           data-testid="gantt-neighborhood-card"

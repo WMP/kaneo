@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Maximize2, X } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TaskNeighborhoodAside } from "@/components/gantt/task-neighborhood-aside";
 import { SendToJiraButton } from "@/components/jira/send-to-jira-button";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -22,13 +23,15 @@ type TaskDetailsSheetProps = {
   projectId: string;
   workspaceId: string;
   onClose: () => void;
-  /** Extra content drawn over the blurred backdrop to the left of the sheet
-   * (a view-specific aside, for example the Gantt's dependency neighborhood).
-   * It is rendered inside the sheet's popup, so it is part of the modal focus
-   * trap and a click inside it is not an outside press; the aside positions
-   * itself against the popup (see GanttTaskNeighborhood). Omitted by every
-   * other view. */
-  backdropAside?: ReactNode;
+  /** Draw the dependency neighborhood card over the blurred backdrop to the
+   * left of the sheet (default). Pass false where the project's relations are
+   * not the right context. */
+  showNeighborhood?: boolean;
+  /** Called when a neighbor in that card is picked, with the neighbor's
+   * project. The default switches the sheet through the view's `taskId` search
+   * param for a task of this project (every project view uses it) and opens the
+   * task route of another project. */
+  onSelectNeighborTask?: (taskId: string, projectId: string) => void;
 };
 
 export default function TaskDetailsSheet({
@@ -36,7 +39,8 @@ export default function TaskDetailsSheet({
   projectId,
   workspaceId,
   onClose,
-  backdropAside,
+  showNeighborhood = true,
+  onSelectNeighborTask,
 }: TaskDetailsSheetProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -71,6 +75,33 @@ export default function TaskDetailsSheet({
       },
     });
   }, [navigate, workspaceId, projectId, currentTaskId]);
+
+  const handleSelectNeighborTask = useCallback(
+    (neighborTaskId: string, neighborProjectId: string) => {
+      if (onSelectNeighborTask) {
+        onSelectNeighborTask(neighborTaskId, neighborProjectId);
+        return;
+      }
+      if (neighborProjectId === projectId) {
+        navigate({
+          to: ".",
+          search: { taskId: neighborTaskId },
+          replace: true,
+        });
+        return;
+      }
+      // A task of another project opens on its own route, which checks access.
+      navigate({
+        to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
+        params: {
+          workspaceId,
+          projectId: neighborProjectId,
+          taskId: neighborTaskId,
+        },
+      });
+    },
+    [navigate, onSelectNeighborTask, projectId, workspaceId],
+  );
 
   return (
     <Sheet open={!!taskId} onOpenChange={(open) => !open && onClose()}>
@@ -150,7 +181,14 @@ export default function TaskDetailsSheet({
             </div>
           </div>
         </div>
-        {backdropAside}
+        {showNeighborhood && (
+          <TaskNeighborhoodAside
+            workspaceId={workspaceId}
+            projectId={projectId}
+            taskId={taskId}
+            onSelectTask={handleSelectNeighborTask}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

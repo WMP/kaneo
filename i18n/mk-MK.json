@@ -3138,6 +3138,8 @@
 			"neighborhoodCount_one": "{{count}} поврзана задача",
 			"neighborhoodCount_other": "{{count}} поврзани задачи",
 			"neighborhoodEmpty": "Нема зависности",
+			"neighborhoodError": "Зависностите не можеше да се вчитаат",
+			"neighborhoodLoading": "Се вчитуваат зависности…",
 			"neighborhoodNoDates": "Нема датуми",
 			"neighborhoodOpenTask": "Отвори ја задачата {{key}}",
 			"neighborhoodPredecessors": "Претходници",

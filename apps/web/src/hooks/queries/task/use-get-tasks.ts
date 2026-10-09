@@ -15,7 +15,10 @@ import { isUnauthorizedError } from "@/lib/http-error";
 // spin on 401s.
 export const SAFETY_NET_REFETCH_INTERVAL_MS = 5 * 60 * 1000;
 
-export function useGetTasks(projectId: string) {
+export function useGetTasks(
+  projectId: string,
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: ganttTasksKey(projectId),
     // The abort signal is deliberately not forwarded. TanStack Query aborts a
@@ -31,6 +34,6 @@ export function useGetTasks(projectId: string) {
         ? false
         : SAFETY_NET_REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: (query) => !isUnauthorizedError(query.state.error),
-    enabled: !!projectId,
+    enabled: !!projectId && (options.enabled ?? true),
   });
 }

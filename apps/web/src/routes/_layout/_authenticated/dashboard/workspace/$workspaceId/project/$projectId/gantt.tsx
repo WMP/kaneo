@@ -54,40 +54,38 @@ import {
   isGanttDependencyDisplayMode,
 } from "@/components/gantt/gantt-dependency-display";
 import { GanttDependencyOverlay } from "@/components/gantt/gantt-dependency-overlay";
-import { computeViolatedDependencyEdgeIds } from "@/components/gantt/gantt-dependency-violations";
-import { deriveUndatedSuccessorSchedules } from "@/components/gantt/gantt-derived-schedule";
 import {
   deriveTaskScheduleWithEstimate,
   type EstimatedSingleDate,
   getEstimatedSingleDate,
 } from "@/components/gantt/gantt-estimated-span";
 import { GanttExternalRailEntry } from "@/components/gantt/gantt-external-rail-entry";
-import type { ExternalGanttTask } from "@/components/gantt/gantt-external-task-bar";
 import { GanttExternalTaskBar } from "@/components/gantt/gantt-external-task-bar";
 import {
-  buildTaskHierarchy,
   computeParentSummaryProgress,
   computeParentSummarySpans,
   flattenGanttRows,
-  type ScheduleSpan,
 } from "@/components/gantt/gantt-hierarchy";
 import {
   findLinkDropTarget,
   type LinkDropCandidate,
   linkSourceAnchorPoint,
 } from "@/components/gantt/gantt-link-drag";
+import {
+  buildBlocksEdges,
+  buildCriticalPathEdges,
+  buildDependencyEdgeInputs,
+  buildExternalRelatedTasks,
+  buildHierarchyFromRelations,
+  buildOwnRowScheduleById,
+  buildOwnScheduleByTaskId,
+  buildProjectIdByRelatedTaskId,
+  buildViolatedEdgeIds,
+  type ExternalScheduledTask,
+} from "@/components/gantt/gantt-relation-model";
 import { GanttSummaryTaskBar } from "@/components/gantt/gantt-summary-task-bar";
 import { GanttTaskBar, toIsoDay } from "@/components/gantt/gantt-task-bar";
-import {
-  GanttTaskNeighborhood,
-  type NeighborhoodTaskInfo,
-} from "@/components/gantt/gantt-task-neighborhood-card";
-import {
-  buildHolidayDateKeySet,
-  DEFAULT_WORKING_DAYS,
-  isWorkingDay,
-  makeWorkingDayIndexer,
-} from "@/components/gantt/gantt-working-calendar";
+import { makeWorkingDayIndexer } from "@/components/gantt/gantt-working-calendar";
 import { computePanScrollPosition } from "@/components/gantt/pan";
 import {
   buildGanttGridMetrics,
@@ -104,6 +102,7 @@ import {
   pickDefaultGanttUnit,
 } from "@/components/gantt/timeline";
 import { useGanttRowVirtualizer } from "@/components/gantt/use-gantt-row-virtualizer";
+import { useWorkspaceWorkingCalendar } from "@/components/gantt/use-workspace-working-calendar";
 import {
   isZoomWheelGesture,
   nextGanttZoom,
@@ -133,7 +132,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useBulkUpdateTaskSchedule } from "@/hooks/mutations/task/use-bulk-update-task-schedule";
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
-import useGetCalendar from "@/hooks/queries/calendar/use-get-calendar";
 import useGetCustomFieldValuesByProject from "@/hooks/queries/custom-field/use-get-custom-field-values-by-project";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
@@ -171,8 +169,6 @@ type OwnScheduledTask = Task & {
   summaryProgress: number | null;
   parentTaskId: string | null;
 };
-
-type ExternalScheduledTask = ExternalGanttTask & { isExternal: true };
 
 // A Gantt row is either one of this project's own tasks or a related task
 // pulled in from another project (see `externalRelatedTasks` below) — the
@@ -255,16 +251,8 @@ function RouteComponent() {
   // cascade from landing a pushed task's start on one. Defaults to the
   // standard Mon-Fri bitmask with no holidays while the query is still
   // loading, rather than shading nothing.
-  const { data: calendar } = useGetCalendar(workspaceId);
-  const workingDays = calendar?.workingDays ?? DEFAULT_WORKING_DAYS;
-  const holidayDateSet = useMemo(
-    () => buildHolidayDateKeySet(calendar?.holidays ?? []),
-    [calendar?.holidays],
-  );
-  const workingDayPredicate = useCallback(
-    (date: Date) => isWorkingDay(date, workingDays, holidayDateSet),
-    [workingDays, holidayDateSet],
-  );
+  const { workingDays, holidayDateSet, workingDayPredicate } =
+    useWorkspaceWorkingCalendar(workspaceId);
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
   // Persisted (localStorage, via the same zustand store as weekStartsOn/
   // viewMode) so the chosen granularity survives a reload — a per-viewer
@@ -577,39 +565,24 @@ function RouteComponent() {
   // of their own) since a parent with no dates of its own can still gain one
   // via rollup below. See gantt-hierarchy.ts for the one-level-of-nesting
   // limit.
-  const taskHierarchy = useMemo(() => {
-    const subtaskRelations = (taskRelations ?? []).flatMap((relation) =>
-      relation.relationType === "subtask"
-        ? [
-            {
-              sourceTaskId: relation.sourceTaskId,
-              targetTaskId: relation.targetTaskId,
-            },
-          ]
-        : [],
-    );
-    return buildTaskHierarchy(
-      allTasks.map((task) => task.id),
-      subtaskRelations,
-    );
-  }, [allTasks, taskRelations]);
+  const taskHierarchy = useMemo(
+    () =>
+      buildHierarchyFromRelations(
+        allTasks.map((task) => task.id),
+        taskRelations ?? [],
+      ),
+    [allTasks, taskRelations],
+  );
 
   // Every own task's OWN derived schedule (its own startDate/dueDate only —
   // never a rolled-up span). This is what summary rollup reads a parent's
   // children from, and what a plain/child row uses directly.
-  const ownScheduleByTaskId = useMemo(() => {
-    const map = new Map<string, ScheduleSpan>();
-    for (const task of allTasks) {
-      // A task with an estimate and exactly one own date is sized by its
-      // estimate (display only, see gantt-estimated-span.ts).
-      const schedule = deriveTaskScheduleWithEstimate(
-        task,
-        workingDayPredicate,
-      );
-      if (schedule) map.set(task.id, schedule);
-    }
-    return map;
-  }, [allTasks, workingDayPredicate]);
+  // A task with an estimate and exactly one own date is sized by its estimate
+  // (display only, see gantt-estimated-span.ts).
+  const ownScheduleByTaskId = useMemo(
+    () => buildOwnScheduleByTaskId(allTasks, workingDayPredicate),
+    [allTasks, workingDayPredicate],
+  );
 
   // Own tasks that have an estimate and exactly one own date, keyed by id: the
   // cascade re-derives their span when it shifts them, and a cascade write
@@ -650,21 +623,30 @@ function RouteComponent() {
     [taskHierarchy, ownScheduleByTaskId, progressByTaskId],
   );
 
+  // The span each own row is drawn with: a summary parent's rolled-up span, or
+  // the task's own schedule (shared with the dependency neighborhood card).
+  const ownRowScheduleById = useMemo(
+    () =>
+      buildOwnRowScheduleById(
+        allTasks.map((task) => task.id),
+        summarySpanByParentId,
+        ownScheduleByTaskId,
+      ),
+    [allTasks, summarySpanByParentId, ownScheduleByTaskId],
+  );
+
   const parsedTasks = useMemo<OwnScheduledTask[]>(() => {
     return allTasks
       .map((task) => {
         const parentTaskId =
           taskHierarchy.parentIdByChildId.get(task.id) ?? null;
-        const summarySpan = summarySpanByParentId.get(task.id);
         // A summary parent's span always comes from its children (see
         // computeParentSummarySpans) — its own startDate/dueDate, if any,
         // are ignored once it has at least one spanned child, so the bar
         // always reads as "the span of the children", never a mix of the
         // two.
-        const isSummary = summarySpan !== undefined;
-        const schedule = isSummary
-          ? summarySpan
-          : (ownScheduleByTaskId.get(task.id) ?? null);
+        const isSummary = summarySpanByParentId.has(task.id);
+        const schedule = ownRowScheduleById.get(task.id);
         if (!schedule) return null;
 
         const summaryProgress = isSummary
@@ -691,7 +673,7 @@ function RouteComponent() {
     taskHierarchy,
     summarySpanByParentId,
     summaryProgressByParentId,
-    ownScheduleByTaskId,
+    ownRowScheduleById,
   ]);
 
   const scheduledTasks = useMemo(() => {
@@ -757,49 +739,19 @@ function RouteComponent() {
   // here would only clutter the chart, so only "blocks" and "related" become
   // dependency edges. (`taskRelations` itself is fetched further up, where
   // the hierarchy is built from it.)
-  const dependencyEdges = useMemo<DependencyEdgeInput[]>(() => {
-    return (taskRelations ?? []).flatMap((relation) => {
-      if (
-        relation.relationType !== "blocks" &&
-        relation.relationType !== "related"
-      ) {
-        return [];
-      }
-      return [
-        {
-          id: relation.id,
-          sourceTaskId: relation.sourceTaskId,
-          targetTaskId: relation.targetTaskId,
-          relationType: relation.relationType,
-          dependencyType: relation.dependencyType as "fs" | "ss" | "ff" | "sf",
-          lagDays: relation.lagDays,
-        },
-      ];
-    });
-  }, [taskRelations]);
+  const dependencyEdges = useMemo<DependencyEdgeInput[]>(
+    () => buildDependencyEdgeInputs(taskRelations ?? []),
+    [taskRelations],
+  );
 
   // Only "blocks" edges are scheduling constraints (see
   // gantt-dependency-cascade.ts) — a "related" edge is purely informational
   // and never pushes a dependent's dates. Kept separate from
   // `dependencyEdges` above, which also draws "related" lines.
-  const blocksEdges = useMemo<CascadeEdge[]>(() => {
-    return (taskRelations ?? []).flatMap((relation) =>
-      relation.relationType === "blocks"
-        ? [
-            {
-              sourceTaskId: relation.sourceTaskId,
-              targetTaskId: relation.targetTaskId,
-              dependencyType: relation.dependencyType as
-                | "fs"
-                | "ss"
-                | "ff"
-                | "sf",
-              lagDays: relation.lagDays,
-            },
-          ]
-        : [],
-    );
-  }, [taskRelations]);
+  const blocksEdges = useMemo<CascadeEdge[]>(
+    () => buildBlocksEdges(taskRelations ?? []),
+    [taskRelations],
+  );
 
   // Every own task pinned by a must_start_on constraint (Phase 3c-ii) — the
   // dependency cascade never shifts these, and a phantom shift never
@@ -907,148 +859,39 @@ function RouteComponent() {
   // Which project each relation endpoint belongs to. A dependency on the chart
   // is edited with the rights of its SOURCE task's own project, which for a
   // cross-project edge is not this one.
-  const projectIdByRelatedTaskId = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const relation of taskRelations ?? []) {
-      for (const task of [relation.sourceTask, relation.targetTask]) {
-        if (task) map.set(task.id, task.projectId);
-      }
-    }
-    return map;
-  }, [taskRelations]);
+  const projectIdByRelatedTaskId = useMemo(
+    () => buildProjectIdByRelatedTaskId(taskRelations ?? []),
+    [taskRelations],
+  );
 
-  const externalRelatedTasks = useMemo<ExternalScheduledTask[]>(() => {
-    const external = new Map<string, ExternalScheduledTask>();
-
-    // Dated schedules that can ANCHOR a derivation: this project's own dated
-    // tasks plus every dated relation endpoint (own or cross-project).
-    const datedScheduleById = new Map(ownScheduleByTaskId);
-    // Endpoints with no dates of their own — cross-project ones and this
-    // project's own undated tasks — candidates to place by deriving from a
-    // placed predecessor below, keyed by id to the summary needed to render
-    // the row.
-    const undatedCandidates = new Map<
-      string,
-      NonNullable<NonNullable<typeof taskRelations>[number]["sourceTask"]>
-    >();
-    // An own task that already has a row (its own dates, or a summary parent's
-    // rolled-up span) is never a derived candidate.
-    const ownRowIds = new Set(parsedTasks.map((task) => task.id));
-
-    for (const relation of taskRelations ?? []) {
-      if (relation.relationType === "subtask") continue;
-      for (const candidate of [relation.sourceTask, relation.targetTask]) {
-        if (!candidate) continue;
-        const schedule = deriveTaskScheduleWithEstimate(
-          candidate,
-          workingDayPredicate,
-        );
-        if (schedule) {
-          // Any dated endpoint (own or cross-project) can anchor a derivation.
-          if (!datedScheduleById.has(candidate.id)) {
-            datedScheduleById.set(candidate.id, schedule);
-          }
-          if (
-            candidate.projectId !== projectId &&
-            !external.has(candidate.id)
-          ) {
-            external.set(candidate.id, {
-              id: candidate.id,
-              title: candidate.title,
-              number: candidate.number,
-              projectName: candidate.projectName,
-              projectSlug: candidate.projectSlug,
-              scheduleStart: schedule.start,
-              scheduleEnd: schedule.end,
-              isMilestone: candidate.isMilestone,
-              isExternal: true as const,
-              isDerived: false,
-              estimateMinutes: candidate.estimateMinutes,
-              estimateUnit: candidate.estimateUnit,
-              status: candidate.status,
-              projectId: candidate.projectId,
-            });
-          }
-          continue;
-        }
-        // No dates of its own: a candidate for a derived row, unless it is an
-        // own task that already has a row.
-        if (candidate.projectId !== projectId || !ownRowIds.has(candidate.id)) {
-          undatedCandidates.set(candidate.id, candidate);
-        }
-      }
-    }
-
-    const estimateMinutesById = new Map<string, number | null>();
-    for (const [id, candidate] of undatedCandidates) {
-      estimateMinutesById.set(id, candidate.estimateMinutes);
-    }
-
-    // Position each undated successor from its placed predecessor(s), so its
-    // "blocks" dependency line has a bar to land on.
-    const derived = deriveUndatedSuccessorSchedules({
-      edges: blocksEdges,
-      datedScheduleById,
-      undatedCandidateIds: undatedCandidates.keys(),
-      isWorkingDay: workingDayPredicate,
-      estimateMinutesById,
-    });
-    for (const [id, schedule] of derived) {
-      if (external.has(id)) continue;
-      const candidate = undatedCandidates.get(id);
-      if (!candidate) continue;
-      external.set(id, {
-        id,
-        title: candidate.title,
-        number: candidate.number,
-        projectName: candidate.projectName,
-        projectSlug: candidate.projectSlug,
-        scheduleStart: schedule.start,
-        scheduleEnd: schedule.end,
-        isMilestone: candidate.isMilestone,
-        isExternal: true as const,
-        isDerived: true,
-        isOwnProject: candidate.projectId === projectId,
-        estimateMinutes: candidate.estimateMinutes,
-        estimateUnit: candidate.estimateUnit,
-        status: candidate.status,
-        projectId: candidate.projectId,
-      });
-    }
-
-    return [...external.values()];
-  }, [
-    taskRelations,
-    projectId,
-    ownScheduleByTaskId,
-    parsedTasks,
-    blocksEdges,
-    workingDayPredicate,
-  ]);
+  const externalRelatedTasks = useMemo<ExternalScheduledTask[]>(
+    () =>
+      buildExternalRelatedTasks({
+        relations: taskRelations ?? [],
+        projectId,
+        ownScheduleByTaskId,
+        ownRowIds: new Set(ownRowScheduleById.keys()),
+        blocksEdges,
+        isWorkingDay: workingDayPredicate,
+      }),
+    [
+      taskRelations,
+      projectId,
+      ownScheduleByTaskId,
+      ownRowScheduleById,
+      blocksEdges,
+      workingDayPredicate,
+    ],
+  );
 
   // The "blocks" edges with each relation's own id (computeCriticalPath needs
   // one to identify which edges came out critical) — a separate memo from
   // blocksEdges, since CascadeEdge's shape is also handed to
   // computeDependencyCascade and widening it isn't otherwise needed.
-  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(() => {
-    return (taskRelations ?? []).flatMap((relation) =>
-      relation.relationType === "blocks"
-        ? [
-            {
-              id: relation.id,
-              sourceTaskId: relation.sourceTaskId,
-              targetTaskId: relation.targetTaskId,
-              dependencyType: relation.dependencyType as
-                | "fs"
-                | "ss"
-                | "ff"
-                | "sf",
-              lagDays: relation.lagDays,
-            },
-          ]
-        : [],
-    );
-  }, [taskRelations]);
+  const criticalPathEdges = useMemo<CriticalPathEdgeInput[]>(
+    () => buildCriticalPathEdges(taskRelations ?? []),
+    [taskRelations],
+  );
 
   // The critical-path (CPM) input: this project's own scheduled tasks
   // (ownScheduleByTaskId, same scope the dependency cascade uses), every dated
@@ -1122,27 +965,10 @@ function RouteComponent() {
   // "blocks" edges whose constraint the current dates break; only those are
   // drawn red. Own tasks plus the dated cross-project far ends — derived rows
   // have no dates of their own and never count as violated.
-  const violatedEdgeIds = useMemo(() => {
-    const scheduleByTaskId = new Map<string, { start: Date; end: Date }>();
-    for (const task of criticalPathInput.tasks) {
-      if (criticalPathInput.derivedTaskIds.has(task.id)) continue;
-      scheduleByTaskId.set(task.id, {
-        start: task.scheduleStart,
-        end: task.scheduleEnd,
-      });
-    }
-    return computeViolatedDependencyEdgeIds(
-      dependencyEdges.map((edge) => ({
-        id: edge.id,
-        relationType: edge.relationType,
-        sourceTaskId: edge.sourceTaskId,
-        targetTaskId: edge.targetTaskId,
-        dependencyType: edge.dependencyType ?? "fs",
-        lagDays: edge.lagDays ?? 0,
-      })),
-      scheduleByTaskId,
-    );
-  }, [dependencyEdges, criticalPathInput]);
+  const violatedEdgeIds = useMemo(
+    () => buildViolatedEdgeIds(dependencyEdges, criticalPathInput),
+    [dependencyEdges, criticalPathInput],
+  );
 
   // The date window (which 91 days are in view, and the paging bounds
   // around them) depends only on the task list, the week-start preference,
@@ -1860,72 +1686,6 @@ function RouteComponent() {
       });
     },
     [navigate, workspaceId],
-  );
-
-  // The dependency neighborhood card over the details sheet's backdrop reads
-  // the schedules the chart already computed (own dates, estimate-sized and
-  // rolled-up spans, derived spans, cross-project far ends), not a new
-  // derivation, and ignores the search filter and collapsed parents: it shows
-  // the open task's real relations.
-  const neighborhoodScheduleById = useMemo(() => {
-    const map = new Map<string, { start: Date; end: Date }>();
-    for (const task of parsedTasks) {
-      map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
-    }
-    for (const task of externalRelatedTasks) {
-      if (!map.has(task.id)) {
-        map.set(task.id, { start: task.scheduleStart, end: task.scheduleEnd });
-      }
-    }
-    return map;
-  }, [parsedTasks, externalRelatedTasks]);
-
-  const neighborhoodTaskInfoById = useMemo(() => {
-    const map = new Map<string, NeighborhoodTaskInfo>();
-    const keyOf = (slug: string | undefined, number: number | null) =>
-      number ? `${slug ?? ""}-${number}` : "";
-    for (const relation of taskRelations ?? []) {
-      for (const endpoint of [relation.sourceTask, relation.targetTask]) {
-        if (!endpoint) continue;
-        map.set(endpoint.id, {
-          key:
-            keyOf(
-              endpoint.projectId === projectId
-                ? project?.slug
-                : endpoint.projectSlug,
-              endpoint.number,
-            ) || endpoint.title,
-          title: endpoint.title,
-        });
-      }
-    }
-    for (const task of allTasks) {
-      map.set(task.id, {
-        key: keyOf(project?.slug, task.number ?? null) || task.title,
-        title: task.title,
-      });
-    }
-    for (const task of externalRelatedTasks) {
-      const info = map.get(task.id);
-      if (info && task.isDerived)
-        map.set(task.id, { ...info, isDerived: true });
-    }
-    return map;
-  }, [taskRelations, allTasks, externalRelatedTasks, project?.slug, projectId]);
-
-  // A neighbor of this project opens in this page's sheet (the walk along the
-  // chain); a task of another project opens on its own route, as a read-only
-  // row does (openExternalTask).
-  const handleSelectNeighborhoodTask = useCallback(
-    (selectedTaskId: string) => {
-      const selectedProjectId = projectIdByRelatedTaskId.get(selectedTaskId);
-      openExternalTask({
-        id: selectedTaskId,
-        projectId: selectedProjectId,
-        isOwnProject: !selectedProjectId || selectedProjectId === projectId,
-      });
-    },
-    [openExternalTask, projectIdByRelatedTaskId, projectId],
   );
 
   // Drag-to-pan starting on the sticky task rail's own row-opening button
@@ -3065,18 +2825,6 @@ function RouteComponent() {
               search: {},
               replace: true,
             })
-          }
-          backdropAside={
-            taskId ? (
-              <GanttTaskNeighborhood
-                focusTaskId={taskId}
-                edges={dependencyEdges}
-                scheduleByTaskId={neighborhoodScheduleById}
-                taskInfoById={neighborhoodTaskInfoById}
-                violatedEdgeIds={violatedEdgeIds}
-                onSelectTask={handleSelectNeighborhoodTask}
-              />
-            ) : null
           }
         />
       </div>

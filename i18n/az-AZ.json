@@ -3151,6 +3151,8 @@
 			"neighborhoodCount_one": "{{count}} əlaqəli tapşırıq",
 			"neighborhoodCount_other": "{{count}} əlaqəli tapşırıq",
 			"neighborhoodEmpty": "Asılılıq yoxdur",
+			"neighborhoodError": "Asılılıqları yükləmək mümkün olmadı",
+			"neighborhoodLoading": "Asılılıqlar yüklənir…",
 			"neighborhoodNoDates": "Tarix yoxdur",
 			"neighborhoodOpenTask": "{{key}} tapşırığını aç",
 			"neighborhoodPredecessors": "Əvvəlkilər",

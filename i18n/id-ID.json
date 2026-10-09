@@ -3128,6 +3128,8 @@
 			"neighborhoodTitle": "Dependensi {{key}}",
 			"neighborhoodCount_other": "{{count}} tugas terkait",
 			"neighborhoodEmpty": "Tidak ada dependensi",
+			"neighborhoodError": "Dependensi tidak dapat dimuat",
+			"neighborhoodLoading": "Memuat dependensi…",
 			"neighborhoodNoDates": "Tanpa tanggal",
 			"neighborhoodOpenTask": "Buka tugas {{key}}",
 			"neighborhoodPredecessors": "Pendahulu",

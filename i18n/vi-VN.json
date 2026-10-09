@@ -3128,6 +3128,8 @@
 			"neighborhoodTitle": "Phụ thuộc của {{key}}",
 			"neighborhoodCount_other": "{{count}} công việc liên kết",
 			"neighborhoodEmpty": "Không có phụ thuộc",
+			"neighborhoodError": "Không thể tải các phụ thuộc",
+			"neighborhoodLoading": "Đang tải các phụ thuộc…",
 			"neighborhoodNoDates": "Không có ngày",
 			"neighborhoodOpenTask": "Mở công việc {{key}}",
 			"neighborhoodPredecessors": "Tiền nhiệm",

@@ -3158,6 +3158,8 @@
 			"neighborhoodCount_many": "{{count}} пов’язаних завдань",
 			"neighborhoodCount_other": "{{count}} пов’язаного завдання",
 			"neighborhoodEmpty": "Немає залежностей",
+			"neighborhoodError": "Не вдалося завантажити залежності",
+			"neighborhoodLoading": "Завантаження залежностей…",
 			"neighborhoodNoDates": "Немає дат",
 			"neighborhoodOpenTask": "Відкрити завдання {{key}}",
 			"neighborhoodPredecessors": "Попередники",

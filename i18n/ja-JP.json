@@ -3141,6 +3141,8 @@
 			"neighborhoodTitle": "{{key}} の依存関係",
 			"neighborhoodCount_other": "関連タスク{{count}}件",
 			"neighborhoodEmpty": "依存関係なし",
+			"neighborhoodError": "依存関係を読み込めませんでした",
+			"neighborhoodLoading": "依存関係を読み込み中…",
 			"neighborhoodNoDates": "日付なし",
 			"neighborhoodOpenTask": "タスク {{key}} を開く",
 			"neighborhoodPredecessors": "先行タスク",
