@@ -1,0 +1,13 @@
+diff --git a/apps/api/src/task-relation/controllers/create-task-relation.ts b/apps/api/src/task-relation/controllers/create-task-relation.ts
+index dbd3ede..3688de2 100644
+--- a/apps/api/src/task-relation/controllers/create-task-relation.ts
++++ b/apps/api/src/task-relation/controllers/create-task-relation.ts
+@@ -211,7 +211,7 @@ async function createTaskRelation({
+   // Notify the target project's subscribers too, so their Gantt/dependency
+   // views (which read the target project's task-relations cache) refresh
+   // without a manual reload.
+-  if (targetTask.projectId !== sourceTask.projectId) {
++  if (targetTask.projectId) {
+     // Same relation, same (source) taskId — published again only so the
+     // target project's own WS subscribers refresh. Marked so the activity
+     // module (which logs by taskId) doesn't record this creation twice.
