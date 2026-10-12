@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Deine Berechtigungen in diesem Projekt haben sich geändert.",
 			"lost": "Du hast keinen Zugriff mehr auf dieses Projekt."
+		},
+		"infrastructureStatus": {
+			"planned": "Geplant",
+			"ordered": "Bestellt",
+			"installed": "Installiert",
+			"suggested": "Vorgeschlagen"
 		}
 	},
 	"auth": {

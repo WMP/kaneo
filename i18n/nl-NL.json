@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Je rechten in dit project zijn gewijzigd.",
 			"lost": "Je hebt geen toegang meer tot dit project."
+		},
+		"infrastructureStatus": {
+			"planned": "Gepland",
+			"ordered": "Besteld",
+			"installed": "Geïnstalleerd",
+			"suggested": "Voorgesteld"
 		}
 	},
 	"auth": {

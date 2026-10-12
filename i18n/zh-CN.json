@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "你在此项目中的权限已变更。",
 			"lost": "你已无权访问此项目。"
+		},
+		"infrastructureStatus": {
+			"planned": "已计划",
+			"ordered": "已订购",
+			"installed": "已安装",
+			"suggested": "建议"
 		}
 	},
 	"auth": {

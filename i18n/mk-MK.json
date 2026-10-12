@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Твоите дозволи во овој проект се променија.",
 			"lost": "Веќе немаш пристап до овој проект."
+		},
+		"infrastructureStatus": {
+			"planned": "Планирано",
+			"ordered": "Нарачано",
+			"installed": "Инсталирано",
+			"suggested": "Предложено"
 		}
 	},
 	"auth": {

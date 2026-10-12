@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Bu projedeki izinleriniz değişti.",
 			"lost": "Artık bu projeye erişiminiz yok."
+		},
+		"infrastructureStatus": {
+			"planned": "Planlandı",
+			"ordered": "Sipariş edildi",
+			"installed": "Kuruldu",
+			"suggested": "Önerildi"
 		}
 	},
 	"auth": {

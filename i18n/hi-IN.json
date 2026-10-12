@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "इस प्रोजेक्ट में आपकी अनुमतियाँ बदल गईं।",
 			"lost": "अब आपके पास इस प्रोजेक्ट का एक्सेस नहीं है।"
+		},
+		"infrastructureStatus": {
+			"planned": "नियोजित",
+			"ordered": "ऑर्डर किया गया",
+			"installed": "स्थापित",
+			"suggested": "सुझाया गया"
 		}
 	},
 	"auth": {

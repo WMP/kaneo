@@ -181,6 +181,12 @@
 				},
 				"selectOptionPlaceholder": "Select an option"
 			}
+		},
+		"infrastructureStatus": {
+			"planned": "Planned",
+			"ordered": "Ordered",
+			"installed": "Installed",
+			"suggested": "Suggested"
 		}
 	},
 	"auth": {

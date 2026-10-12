@@ -181,6 +181,12 @@
 			"notSet": "Nie ustawiono",
 			"true": "Prawda",
 			"undefined": "Nieokreślone"
+		},
+		"infrastructureStatus": {
+			"planned": "Planowany",
+			"ordered": "Zamówiony",
+			"installed": "Zainstalowany",
+			"suggested": "Proponowany"
 		}
 	},
 	"auth": {

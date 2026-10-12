@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Izin Anda di proyek ini berubah.",
 			"lost": "Anda tidak lagi memiliki akses ke proyek ini."
+		},
+		"infrastructureStatus": {
+			"planned": "Direncanakan",
+			"ordered": "Dipesan",
+			"installed": "Terpasang",
+			"suggested": "Disarankan"
 		}
 	},
 	"auth": {

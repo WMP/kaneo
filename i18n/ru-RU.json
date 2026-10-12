@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Ваши права в этом проекте изменились.",
 			"lost": "У вас больше нет доступа к этому проекту."
+		},
+		"infrastructureStatus": {
+			"planned": "Запланирован",
+			"ordered": "Заказан",
+			"installed": "Установлен",
+			"suggested": "Предложен"
 		}
 	},
 	"auth": {

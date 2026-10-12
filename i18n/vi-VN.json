@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "Quyền của bạn trong dự án này đã thay đổi.",
 			"lost": "Bạn không còn quyền truy cập dự án này."
+		},
+		"infrastructureStatus": {
+			"planned": "Đã lên kế hoạch",
+			"ordered": "Đã đặt hàng",
+			"installed": "Đã cài đặt",
+			"suggested": "Được đề xuất"
 		}
 	},
 	"auth": {

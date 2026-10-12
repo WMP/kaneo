@@ -713,6 +713,25 @@
 						}
 					},
 					"required": ["createProject", "createWorkspace", "createTask"]
+				},
+				"infrastructureStatus": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"planned": {
+							"type": "string"
+						},
+						"ordered": {
+							"type": "string"
+						},
+						"installed": {
+							"type": "string"
+						},
+						"suggested": {
+							"type": "string"
+						}
+					},
+					"required": ["planned", "ordered", "installed", "suggested"]
 				}
 			},
 			"required": [
@@ -730,7 +749,8 @@
 				"projectAccess",
 				"error",
 				"formats",
-				"modals"
+				"modals",
+				"infrastructureStatus"
 			]
 		},
 		"auth": {
@@ -12560,6 +12580,90 @@
 						"legendDependencyTypeHint": {
 							"type": "string"
 						},
+						"legendViolated": {
+							"type": "string"
+						},
+						"dependencyDisplayModeLabel": {
+							"type": "string"
+						},
+						"dependencyDisplayModeAll": {
+							"type": "string"
+						},
+						"dependencyDisplayModeFocused": {
+							"type": "string"
+						},
+						"dependencyDisplayModeCritical": {
+							"type": "string"
+						},
+						"dependencyDisplayModeHidden": {
+							"type": "string"
+						},
+						"dependencyChipAriaLabel": {
+							"type": "string"
+						},
+						"dependencyFanIn_one": {
+							"type": "string"
+						},
+						"dependencyFanIn_zero": {
+							"type": "string"
+						},
+						"dependencyFanIn_two": {
+							"type": "string"
+						},
+						"dependencyFanIn_few": {
+							"type": "string"
+						},
+						"dependencyFanIn_many": {
+							"type": "string"
+						},
+						"dependencyFanIn_other": {
+							"type": "string"
+						},
+						"neighborhoodTitle": {
+							"type": "string"
+						},
+						"neighborhoodCount_one": {
+							"type": "string"
+						},
+						"neighborhoodCount_zero": {
+							"type": "string"
+						},
+						"neighborhoodCount_two": {
+							"type": "string"
+						},
+						"neighborhoodCount_few": {
+							"type": "string"
+						},
+						"neighborhoodCount_many": {
+							"type": "string"
+						},
+						"neighborhoodCount_other": {
+							"type": "string"
+						},
+						"neighborhoodEmpty": {
+							"type": "string"
+						},
+						"neighborhoodNoDates": {
+							"type": "string"
+						},
+						"neighborhoodOpenTask": {
+							"type": "string"
+						},
+						"neighborhoodPredecessors": {
+							"type": "string"
+						},
+						"neighborhoodScrollLabel": {
+							"type": "string"
+						},
+						"neighborhoodSuccessors": {
+							"type": "string"
+						},
+						"neighborhoodZoomFit": {
+							"type": "string"
+						},
+						"neighborhoodZoomLabel": {
+							"type": "string"
+						},
 						"criticalPathToggle": {
 							"type": "string"
 						},
@@ -12585,6 +12689,9 @@
 							"type": "string"
 						},
 						"criticalPathDroppedEdgesHint": {
+							"type": "string"
+						},
+						"criticalPathProjectedNote": {
 							"type": "string"
 						},
 						"externalProjectBadge": {
@@ -12766,9 +12873,26 @@
 						"legendCriticalPath",
 						"legendDependencyType",
 						"legendDependencyTypeHint",
+						"legendViolated",
+						"dependencyDisplayModeLabel",
+						"dependencyDisplayModeAll",
+						"dependencyDisplayModeFocused",
+						"dependencyDisplayModeCritical",
+						"dependencyDisplayModeHidden",
+						"dependencyChipAriaLabel",
+						"neighborhoodTitle",
+						"neighborhoodEmpty",
+						"neighborhoodNoDates",
+						"neighborhoodOpenTask",
+						"neighborhoodPredecessors",
+						"neighborhoodScrollLabel",
+						"neighborhoodSuccessors",
+						"neighborhoodZoomFit",
+						"neighborhoodZoomLabel",
 						"criticalPathToggle",
 						"criticalPathToggleAriaLabel",
 						"criticalPathDroppedEdgesHint",
+						"criticalPathProjectedNote",
 						"externalProjectBadge",
 						"externalTaskTitle",
 						"externalTaskDerivedTitle",
@@ -12807,6 +12931,22 @@
 						"gateWarningTitle",
 						"gateWarningItem"
 					]
+				},
+				"loadState": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"loading": {
+							"type": "string"
+						},
+						"error": {
+							"type": "string"
+						},
+						"retry": {
+							"type": "string"
+						}
+					},
+					"required": ["loading", "error", "retry"]
 				},
 				"delete": {
 					"type": "object",
@@ -13885,6 +14025,7 @@
 				"boardFilters",
 				"calendar",
 				"gantt",
+				"loadState",
 				"delete",
 				"duplicate",
 				"archive",

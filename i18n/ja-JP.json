@@ -181,6 +181,12 @@
 		"projectAccess": {
 			"changed": "このプロジェクトでの権限が変更されました。",
 			"lost": "このプロジェクトにアクセスできなくなりました。"
+		},
+		"infrastructureStatus": {
+			"planned": "計画済み",
+			"ordered": "発注済み",
+			"installed": "設置済み",
+			"suggested": "提案"
 		}
 	},
 	"auth": {
