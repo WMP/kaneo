@@ -97,4 +97,31 @@ describe("useWorkspacePermission", () => {
     expect(result.current.canInviteUsers()).toBe(true);
     expect(result.current.canCancelInvitations()).toBe(false);
   });
+
+  it("checks datacenter read and manage independently", async () => {
+    const granted = { datacenter: new Set(["read"]) } as Record<
+      string,
+      Set<string>
+    >;
+    hasPermission.mockImplementation(
+      async ({ permissions }: { permissions: Record<string, string[]> }) => ({
+        data: {
+          success: Object.entries(permissions).every(([resource, actions]) =>
+            actions.every((action) => granted[resource]?.has(action)),
+          ),
+        },
+      }),
+    );
+
+    const { result } = renderHook(() => useWorkspacePermission(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isCheckingPermissions).toBe(false);
+    });
+
+    expect(result.current.canReadDatacenter()).toBe(true);
+    expect(result.current.canManageDatacenter()).toBe(false);
+  });
 });

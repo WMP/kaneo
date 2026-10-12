@@ -428,7 +428,8 @@
 			"invitations": "Zaproszenia",
 			"more": "Więcej",
 			"backToBoard": "Wróć do tablicy",
-			"portfolio": "Portfolio"
+			"portfolio": "Portfolio",
+			"datacenter": "Centrum danych"
 		},
 		"projectList": {
 			"viewProject": "Zobacz projekt",
@@ -738,6 +739,155 @@
 			"submit": "Utwórz obszar roboczy",
 			"success": "Obszar roboczy został utworzony",
 			"error": "Nie udało się utworzyć obszaru roboczego"
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Plan zamówień",
+				"hosts": "Hosty",
+				"storage": "Storage Ceph"
+			},
+			"loadFailed": "Nie udało się wczytać danych centrum danych.",
+			"noAccess": {
+				"title": "Brak dostępu do centrum danych",
+				"description": "Twoja rola nie obejmuje uprawnienia do centrum danych. Poproś administratora przestrzeni roboczej o dostęp."
+			},
+			"actions": {
+				"save": "Zapisz",
+				"changeStatus": "Zmień status"
+			},
+			"errors": {
+				"availableFromRequired": "Zamówiona pozycja wymaga oczekiwanej daty dostawy.",
+				"clusterNameTaken": "Klaster o tej nazwie już istnieje w przestrzeni roboczej.",
+				"clusterInUse": "Klaster jest nadal używany przez maszynę wirtualną. Najpierw przenieś maszynę do innego klastra.",
+				"capacityLocked": "W ten sposób można zmienić tylko pozycję w statusie planowanym.",
+				"clusterInvalid": "Ustawienia klastra są nieprawidłowe. Sprawdź wartości erasure coding.",
+				"regionInUse": "Region jest nadal używany przez host.",
+				"saveFailed": "Nie udało się zapisać zmiany.",
+				"deleteFailed": "Nie udało się usunąć pozycji."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Data dostawy",
+				"hostname": "Nazwa hosta",
+				"needDate": "Data potrzeby",
+				"provider": "Dostawca",
+				"region": "Region centrum danych",
+				"model": "Model",
+				"ramGb": "Pamięć (GB)",
+				"vcpu": "Rdzenie vCPU",
+				"storageGb": "Dysk lokalny (GB)",
+				"capacity": "Pojemność",
+				"capacityGb": "Pojemność (GB)",
+				"project": "Projekt",
+				"cluster": "Klaster Ceph",
+				"name": "Nazwa",
+				"kind": "Typ klastra",
+				"dataChunks": "Fragmenty danych (k)",
+				"codingChunks": "Fragmenty kodujące (m)",
+				"fillThreshold": "Próg zapełnienia (%)",
+				"leadTimeDays": "Czas realizacji (dni)",
+				"label": "Etykieta"
+			},
+			"kind": {
+				"self_managed": "Własny (self-managed)",
+				"managed_service": "Usługa zarządzana"
+			},
+			"provider": {
+				"other": "Inny"
+			},
+			"statusDialog": {
+				"title": "Zmień status",
+				"dateRequired": "Wymagana dla zamówionej pozycji: oczekiwana data dostawy.",
+				"dateOptional": "Opcjonalnie. Zainstalowana pozycja bez daty otrzyma dzisiejszą datę; pozycja planowana jej nie ma."
+			},
+			"orderPlan": {
+				"rows": "Wiersze: {{rows}}",
+				"late": "Spóźnione: {{late}}",
+				"download": "Pobierz XLSX",
+				"downloadFailed": "Nie udało się pobrać planu zamówień.",
+				"empty": "Obecnie nic do zamówienia.",
+				"orderBy": "Zamówić do",
+				"type": "Typ pozycji",
+				"quantity": "Ilość",
+				"lateBadge": "Spóźnione",
+				"types": {
+					"host": "Host",
+					"storageNode": "Węzeł storage",
+					"storageService": "Usługa storage"
+				}
+			},
+			"hosts": {
+				"allProjects": "Wszystkie projekty",
+				"allRegions": "Wszystkie regiony",
+				"allStatuses": "Wszystkie statusy",
+				"empty": "Żaden host nie pasuje do filtrów.",
+				"host": "Host",
+				"ramPeak": "Szczytowe użycie pamięci",
+				"ramUse": "Użycie pamięci hosta {{host}}",
+				"vms": "Maszyny wirtualne",
+				"warnings": "Ostrzeżenia dotyczące hostów"
+			},
+			"warnings": {
+				"title": "Ostrzeżenia o pojemności",
+				"none": "Brak ostrzeżeń o pojemności.",
+				"showAll": "Pokaż wszystkie ({{total}})",
+				"showFewer": "Pokaż mniej",
+				"severity": {
+					"error": "Błędy: {{total}}",
+					"warning": "Ostrzeżenia: {{total}}",
+					"info": "Informacje: {{total}}"
+				},
+				"severityName": {
+					"error": "Błąd",
+					"warning": "Ostrzeżenie",
+					"info": "Informacja"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) startuje {{date}}, ale host {{host}} nie jest wtedy jeszcze dostarczony.",
+				"ORDER_LATE": "Zasób {{target}} należało zamówić do {{date}}.",
+				"OVER_100": "Zasób {{target}} przekracza pojemność od {{date}}.",
+				"OVER_80": "Zasób {{target}} osiąga 80% pojemności w dniu {{date}}.",
+				"VM_UNPLACED": "Maszyna {{vm}} ({{project}}) nie jest przypisana do hosta.",
+				"VM_UNSCHEDULED": "Maszyna {{vm}} ({{project}}) nie ma daty startu.",
+				"CLUSTER_NOT_READY": "{{target}}: pojemność nie jest jeszcze dostarczona, gdy maszyny jej potrzebują, od {{date}}.",
+				"CLUSTER_SHORTFALL": "Klaster {{target}} nie ma wystarczającej pojemności; niedobór zaczyna się {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "Klaster {{target}} nie ma wystarczającej pojemności."
+			},
+			"storage": {
+				"addCluster": "Dodaj klaster",
+				"addEntry": "Dodaj pojemność",
+				"editCluster": "Edytuj",
+				"empty": "Nie ma jeszcze żadnych klastrów Ceph.",
+				"noEntries": "Ten klaster nie ma jeszcze pozycji pojemności.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Zainstalowana (surowa)",
+				"usable": "Użyteczna",
+				"used": "Zajęta przez maszyny",
+				"firstOver80": "Pierwsze przekroczenie 80%",
+				"firstOver100": "Pierwsze przekroczenie 100%",
+				"usage": "Zajętość klastra {{cluster}}",
+				"shortfall": "Niedobór: {{shortfall}}",
+				"suggestionService": "Dokup {{buy}} do {{date}}.",
+				"suggestionServiceNoDate": "Dokup {{buy}}.",
+				"suggestionNodes": "Dodaj {{nodes}} × węzeł {{node}} do {{date}}.",
+				"suggestionNodesNoDate": "Dodaj {{nodes}} × węzeł {{node}}.",
+				"suggestionNodesUnknown": "Dodaj węzły storage o łącznej pojemności {{shortfall}} do {{date}}.",
+				"suggestionNodesUnknownNoDate": "Dodaj węzły storage o łącznej pojemności {{shortfall}}.",
+				"deleteClusterTitle": "Usunąć {{name}}?",
+				"deleteClusterDescription": "Klaster i jego pozycje pojemności zostaną usunięte. Klastra używanego przez maszynę wirtualną nie można usunąć.",
+				"deleteEntryTitle": "Usunąć {{name}}?",
+				"deleteEntryDescription": "Można usunąć tylko pojemność w statusie planowanym."
+			},
+			"clusterDialog": {
+				"createTitle": "Dodaj klaster Ceph",
+				"editTitle": "Edytuj klaster Ceph",
+				"selfManagedHint": "Pojemność użyteczna to pojemność surowa × k / (k + m), ograniczona progiem zapełnienia.",
+				"managedHint": "Usługa zarządzana nie ma erasure coding. Pojemność użyteczna jest ograniczona progiem zapełnienia."
+			},
+			"entryDialog": {
+				"title": "Dodaj pojemność",
+				"capacityHint": "Pojemność surowa węzła lub bloku usługi, w GB.",
+				"labelHint": "Opcjonalnie. Bez etykiety pozycja otrzyma nazwę od klastra."
+			}
 		}
 	},
 	"team": {

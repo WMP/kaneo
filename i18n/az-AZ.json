@@ -2347,7 +2347,8 @@
 			"backToBoard": "Lövhəyə qayıt",
 			"portfolio": "Portfel",
 			"activity": "Fəaliyyət",
-			"workload": "İş yükü"
+			"workload": "İş yükü",
+			"datacenter": "Data mərkəzi"
 		},
 		"projectList": {
 			"viewProject": "Layihəyə bax",
@@ -3609,6 +3610,155 @@
 				"empty": "Bu aralıqda uyğun tapşırıq yoxdur.",
 				"error": "Tapşırıqlar yüklənə bilmədi.",
 				"dueOn": " · Son tarix {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Sifariş planı",
+				"hosts": "Hostlar",
+				"storage": "Ceph saxlama"
+			},
+			"loadFailed": "Data mərkəzi məlumatları yüklənə bilmədi.",
+			"noAccess": {
+				"title": "Data mərkəzinə giriş yoxdur",
+				"description": "Rolunuza data mərkəzi icazəsi daxil deyil. İş sahəsi administratorundan giriş istəyin."
+			},
+			"actions": {
+				"save": "Yadda saxla",
+				"changeStatus": "Statusu dəyiş"
+			},
+			"errors": {
+				"availableFromRequired": "Sifariş edilmiş mövqe üçün gözlənilən çatdırılma tarixi lazımdır.",
+				"clusterNameTaken": "İş sahəsində bu adla klaster artıq var.",
+				"clusterInUse": "Bir virtual maşın hələ də bu klasterdən istifadə edir. Əvvəlcə maşını başqa klasterə köçürün.",
+				"capacityLocked": "Bu yolla yalnız planlaşdırılmış mövqeni dəyişmək olar.",
+				"clusterInvalid": "Klaster parametrləri yanlışdır. Erasure coding dəyərlərini yoxlayın.",
+				"regionInUse": "Bir host hələ də bu regiondan istifadə edir.",
+				"saveFailed": "Dəyişiklik yadda saxlanıla bilmədi.",
+				"deleteFailed": "Mövqe silinə bilmədi."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Çatdırılma tarixi",
+				"hostname": "Host adı",
+				"needDate": "Ehtiyac tarixi",
+				"provider": "Provayder",
+				"region": "Data mərkəzi regionu",
+				"model": "Model",
+				"ramGb": "Yaddaş (GB)",
+				"vcpu": "vCPU nüvələri",
+				"storageGb": "Lokal disk (GB)",
+				"capacity": "Tutum",
+				"capacityGb": "Tutum (GB)",
+				"project": "Layihə",
+				"cluster": "Ceph klasteri",
+				"name": "Ad",
+				"kind": "Klaster növü",
+				"dataChunks": "Data hissələri (k)",
+				"codingChunks": "Kodlama hissələri (m)",
+				"fillThreshold": "Dolma həddi (%)",
+				"leadTimeDays": "Çatdırılma müddəti (gün)",
+				"label": "Etiket"
+			},
+			"kind": {
+				"self_managed": "Özü idarə olunan",
+				"managed_service": "İdarə olunan xidmət"
+			},
+			"provider": {
+				"other": "Digər"
+			},
+			"statusDialog": {
+				"title": "Statusu dəyiş",
+				"dateRequired": "Sifariş edilmiş mövqe üçün məcburidir: gözlənilən çatdırılma tarixi.",
+				"dateOptional": "İstəyə bağlı. Tarixsiz quraşdırılmış mövqe bugünkü tarixi alır; planlaşdırılmış mövqedə tarix olmur."
+			},
+			"orderPlan": {
+				"rows": "Sətir: {{rows}}",
+				"late": "Gecikən: {{late}}",
+				"download": "XLSX yüklə",
+				"downloadFailed": "Sifariş planı yüklənə bilmədi.",
+				"empty": "Hazırda sifariş ediləcək heç nə yoxdur.",
+				"orderBy": "Bu tarixədək sifariş et",
+				"type": "Mövqe növü",
+				"quantity": "Say",
+				"lateBadge": "Gecikib",
+				"types": {
+					"host": "Host",
+					"storageNode": "Saxlama qovşağı",
+					"storageService": "Saxlama xidməti"
+				}
+			},
+			"hosts": {
+				"allProjects": "Bütün layihələr",
+				"allRegions": "Bütün regionlar",
+				"allStatuses": "Bütün statuslar",
+				"empty": "Filtrlərə uyğun host yoxdur.",
+				"host": "Host",
+				"ramPeak": "Yaddaşın pik istifadəsi",
+				"ramUse": "{{host}} hostunun yaddaş istifadəsi",
+				"vms": "Virtual maşınlar",
+				"warnings": "Host xəbərdarlıqları"
+			},
+			"warnings": {
+				"title": "Tutum xəbərdarlıqları",
+				"none": "Tutum xəbərdarlığı yoxdur.",
+				"showAll": "Hamısını göstər ({{total}})",
+				"showFewer": "Daha az göstər",
+				"severity": {
+					"error": "Xətalar: {{total}}",
+					"warning": "Xəbərdarlıqlar: {{total}}",
+					"info": "Məlumatlar: {{total}}"
+				},
+				"severityName": {
+					"error": "Xəta",
+					"warning": "Xəbərdarlıq",
+					"info": "Məlumat"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) {{date}} tarixində başlayır, lakin {{host}} o vaxta qədər çatdırılmayıb.",
+				"ORDER_LATE": "{{target}} ən gec {{date}} tarixinədək sifariş edilməli idi.",
+				"OVER_100": "{{target}} {{date}} tarixindən tutumu aşır.",
+				"OVER_80": "{{target}} {{date}} tarixində tutumunun 80%-nə çatır.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) heç bir hosta yerləşdirilməyib.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) üçün başlanğıc tarixi yoxdur.",
+				"CLUSTER_NOT_READY": "{{target}}: virtual maşınlara lazım olan {{date}} tarixindən tutum hələ çatdırılmayıb.",
+				"CLUSTER_SHORTFALL": "{{target}} üçün tutum kifayət etmir; çatışmazlıq {{date}} tarixində başlayır.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} üçün tutum kifayət etmir."
+			},
+			"storage": {
+				"addCluster": "Klaster əlavə et",
+				"addEntry": "Tutum əlavə et",
+				"editCluster": "Redaktə et",
+				"empty": "Hələ Ceph klasteri yoxdur.",
+				"noEntries": "Bu klasterdə hələ tutum mövqeyi yoxdur.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Quraşdırılıb (xam)",
+				"usable": "İstifadə oluna bilən",
+				"used": "Virtual maşınlarla tutulan",
+				"firstOver80": "80%-in ilk aşılması",
+				"firstOver100": "100%-in ilk aşılması",
+				"usage": "{{cluster}} istifadəsi",
+				"shortfall": "Çatışmazlıq: {{shortfall}}",
+				"suggestionService": "{{date}} tarixinədək {{buy}} əlavə alın.",
+				"suggestionServiceNoDate": "{{buy}} əlavə alın.",
+				"suggestionNodes": "{{date}} tarixinədək {{nodes}} × {{node}} qovşağı əlavə edin.",
+				"suggestionNodesNoDate": "{{nodes}} × {{node}} qovşağı əlavə edin.",
+				"suggestionNodesUnknown": "{{date}} tarixinədək {{shortfall}} dəyərində saxlama qovşaqları əlavə edin.",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} dəyərində saxlama qovşaqları əlavə edin.",
+				"deleteClusterTitle": "{{name}} silinsin?",
+				"deleteClusterDescription": "Klaster və onun tutum mövqeləri silinir. Virtual maşının istifadə etdiyi klasteri silmək olmaz.",
+				"deleteEntryTitle": "{{name}} silinsin?",
+				"deleteEntryDescription": "Yalnız planlaşdırılmış tutumu silmək olar."
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph klasteri əlavə et",
+				"editTitle": "Ceph klasterini redaktə et",
+				"selfManagedHint": "İstifadə oluna bilən tutum xam tutum × k / (k + m) olub dolma həddi ilə məhdudlaşır.",
+				"managedHint": "İdarə olunan xidmətdə erasure coding yoxdur. İstifadə oluna bilən tutum dolma həddi ilə məhdudlaşır."
+			},
+			"entryDialog": {
+				"title": "Tutum əlavə et",
+				"capacityHint": "Qovşağın və ya xidmət blokunun xam tutumu, GB ilə.",
+				"labelHint": "İstəyə bağlı. Etiket olmasa, mövqe klasterin adını alır."
 			}
 		}
 	},

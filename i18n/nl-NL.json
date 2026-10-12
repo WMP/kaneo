@@ -2347,7 +2347,8 @@
 			"backToBoard": "Terug naar bord",
 			"portfolio": "Portfolio",
 			"activity": "Activiteit",
-			"workload": "Werklast"
+			"workload": "Werklast",
+			"datacenter": "Datacenter"
 		},
 		"projectList": {
 			"viewProject": "Project bekijken",
@@ -3609,6 +3610,155 @@
 				"empty": "Geen overeenkomende taken in deze periode.",
 				"error": "Taken laden is mislukt.",
 				"dueOn": " · Vervalt op {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Bestelplan",
+				"hosts": "Hosts",
+				"storage": "Ceph-opslag"
+			},
+			"loadFailed": "De datacentergegevens konden niet worden geladen.",
+			"noAccess": {
+				"title": "Geen toegang tot het datacenter",
+				"description": "Je rol bevat de datacentermachtiging niet. Vraag een werkruimtebeheerder om toegang."
+			},
+			"actions": {
+				"save": "Opslaan",
+				"changeStatus": "Status wijzigen"
+			},
+			"errors": {
+				"availableFromRequired": "Een bestelde post heeft een verwachte leverdatum nodig.",
+				"clusterNameTaken": "Er bestaat al een cluster met deze naam in de werkruimte.",
+				"clusterInUse": "Een VM gebruikt dit cluster nog. Verplaats de VM eerst naar een ander cluster.",
+				"capacityLocked": "Alleen een geplande post kan op deze manier worden gewijzigd.",
+				"clusterInvalid": "De clusterinstellingen zijn ongeldig. Controleer de erasure-codingwaarden.",
+				"regionInUse": "Een host gebruikt deze regio nog.",
+				"saveFailed": "De wijziging kon niet worden opgeslagen.",
+				"deleteFailed": "De post kon niet worden verwijderd."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Leverdatum",
+				"hostname": "Hostnaam",
+				"needDate": "Benodigd op",
+				"provider": "Aanbieder",
+				"region": "Datacenterregio",
+				"model": "Model",
+				"ramGb": "Geheugen (GB)",
+				"vcpu": "vCPU-cores",
+				"storageGb": "Lokale schijf (GB)",
+				"capacity": "Capaciteit",
+				"capacityGb": "Capaciteit (GB)",
+				"project": "Project",
+				"cluster": "Ceph-cluster",
+				"name": "Naam",
+				"kind": "Clustertype",
+				"dataChunks": "Datachunks (k)",
+				"codingChunks": "Codeerchunks (m)",
+				"fillThreshold": "Vuldrempel (%)",
+				"leadTimeDays": "Levertijd (dagen)",
+				"label": "Label"
+			},
+			"kind": {
+				"self_managed": "Zelfbeheerd",
+				"managed_service": "Beheerde dienst"
+			},
+			"provider": {
+				"other": "Overig"
+			},
+			"statusDialog": {
+				"title": "Status wijzigen",
+				"dateRequired": "Verplicht voor een bestelde post: de verwachte leverdatum.",
+				"dateOptional": "Optioneel. Een geïnstalleerde post zonder datum krijgt de datum van vandaag; een geplande post heeft er geen."
+			},
+			"orderPlan": {
+				"rows": "Rijen: {{rows}}",
+				"late": "Te laat: {{late}}",
+				"download": "XLSX downloaden",
+				"downloadFailed": "Het bestelplan kon niet worden gedownload.",
+				"empty": "Er hoeft op dit moment niets besteld te worden.",
+				"orderBy": "Bestellen vóór",
+				"type": "Posttype",
+				"quantity": "Aantal",
+				"lateBadge": "Te laat",
+				"types": {
+					"host": "Host",
+					"storageNode": "Opslagnode",
+					"storageService": "Opslagdienst"
+				}
+			},
+			"hosts": {
+				"allProjects": "Alle projecten",
+				"allRegions": "Alle regio's",
+				"allStatuses": "Alle statussen",
+				"empty": "Geen hosts komen overeen met de filters.",
+				"host": "Host",
+				"ramPeak": "Piekgebruik geheugen",
+				"ramUse": "Geheugengebruik van {{host}}",
+				"vms": "VM's",
+				"warnings": "Hostwaarschuwingen"
+			},
+			"warnings": {
+				"title": "Capaciteitswaarschuwingen",
+				"none": "Geen capaciteitswaarschuwingen.",
+				"showAll": "Alles tonen ({{total}})",
+				"showFewer": "Minder tonen",
+				"severity": {
+					"error": "Fouten: {{total}}",
+					"warning": "Waarschuwingen: {{total}}",
+					"info": "Meldingen: {{total}}"
+				},
+				"severityName": {
+					"error": "Fout",
+					"warning": "Waarschuwing",
+					"info": "Melding"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) start op {{date}}, maar {{host}} is dan nog niet geleverd.",
+				"ORDER_LATE": "{{target}} had uiterlijk {{date}} besteld moeten worden.",
+				"OVER_100": "{{target}} zit vanaf {{date}} boven de capaciteit.",
+				"OVER_80": "{{target}} bereikt op {{date}} 80% van de capaciteit.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) staat niet op een host.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) heeft geen startdatum.",
+				"CLUSTER_NOT_READY": "{{target}}: de capaciteit is nog niet geleverd wanneer VM's die nodig hebben, vanaf {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} heeft te weinig capaciteit; het tekort begint op {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} heeft te weinig capaciteit."
+			},
+			"storage": {
+				"addCluster": "Cluster toevoegen",
+				"addEntry": "Capaciteit toevoegen",
+				"editCluster": "Bewerken",
+				"empty": "Er zijn nog geen Ceph-clusters.",
+				"noEntries": "Dit cluster heeft nog geen capaciteitsposten.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Geïnstalleerd (ruw)",
+				"usable": "Bruikbaar",
+				"used": "Gebruikt door VM's",
+				"firstOver80": "Eerst boven 80%",
+				"firstOver100": "Eerst boven 100%",
+				"usage": "Gebruik van {{cluster}}",
+				"shortfall": "Tekort: {{shortfall}}",
+				"suggestionService": "Koop {{buy}} vóór {{date}}.",
+				"suggestionServiceNoDate": "Koop {{buy}}.",
+				"suggestionNodes": "Voeg {{nodes}} × {{node}}-node toe vóór {{date}}.",
+				"suggestionNodesNoDate": "Voeg {{nodes}} × {{node}}-node toe.",
+				"suggestionNodesUnknown": "Voeg opslagnodes ter waarde van {{shortfall}} toe vóór {{date}}.",
+				"suggestionNodesUnknownNoDate": "Voeg opslagnodes ter waarde van {{shortfall}} toe.",
+				"deleteClusterTitle": "{{name}} verwijderen?",
+				"deleteClusterDescription": "Het cluster en de capaciteitsposten worden verwijderd. Een cluster dat een VM gebruikt, kan niet worden verwijderd.",
+				"deleteEntryTitle": "{{name}} verwijderen?",
+				"deleteEntryDescription": "Alleen geplande capaciteit kan worden verwijderd."
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph-cluster toevoegen",
+				"editTitle": "Ceph-cluster bewerken",
+				"selfManagedHint": "De bruikbare capaciteit is de ruwe capaciteit × k / (k + m), begrensd door de vuldrempel.",
+				"managedHint": "Een beheerde dienst heeft geen erasure coding. De bruikbare capaciteit wordt begrensd door de vuldrempel."
+			},
+			"entryDialog": {
+				"title": "Capaciteit toevoegen",
+				"capacityHint": "Ruwe capaciteit van de node of het dienstblok, in GB.",
+				"labelHint": "Optioneel. Zonder label krijgt de post de naam van het cluster."
 			}
 		}
 	},

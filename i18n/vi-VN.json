@@ -2344,7 +2344,8 @@
 			"backToBoard": "Quay lại bảng",
 			"portfolio": "Danh mục",
 			"activity": "Hoạt động",
-			"workload": "Khối lượng công việc"
+			"workload": "Khối lượng công việc",
+			"datacenter": "Trung tâm dữ liệu"
 		},
 		"projectList": {
 			"viewProject": "Xem dự án",
@@ -3596,6 +3597,155 @@
 				"empty": "Không có công việc phù hợp trong khoảng thời gian này.",
 				"error": "Không thể tải công việc.",
 				"dueOn": " · Đến hạn {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Kế hoạch đặt hàng",
+				"hosts": "Máy chủ",
+				"storage": "Lưu trữ Ceph"
+			},
+			"loadFailed": "Không thể tải dữ liệu trung tâm dữ liệu.",
+			"noAccess": {
+				"title": "Không có quyền truy cập trung tâm dữ liệu",
+				"description": "Vai trò của bạn không bao gồm quyền trung tâm dữ liệu. Hãy nhờ quản trị viên không gian làm việc cấp quyền."
+			},
+			"actions": {
+				"save": "Lưu",
+				"changeStatus": "Đổi trạng thái"
+			},
+			"errors": {
+				"availableFromRequired": "Mục đã đặt hàng cần có ngày giao dự kiến.",
+				"clusterNameTaken": "Không gian làm việc đã có cụm với tên này.",
+				"clusterInUse": "Một máy ảo vẫn đang dùng cụm này. Hãy chuyển máy ảo sang cụm khác trước.",
+				"capacityLocked": "Cách này chỉ đổi được mục đã lên kế hoạch.",
+				"clusterInvalid": "Cài đặt cụm không hợp lệ. Hãy kiểm tra các giá trị erasure coding.",
+				"regionInUse": "Một máy chủ vẫn đang dùng vùng này.",
+				"saveFailed": "Không thể lưu thay đổi.",
+				"deleteFailed": "Không thể xóa mục."
+			},
+			"fields": {
+				"status": "Trạng thái",
+				"availableFrom": "Ngày giao hàng",
+				"hostname": "Tên máy chủ",
+				"needDate": "Ngày cần",
+				"provider": "Nhà cung cấp",
+				"region": "Vùng trung tâm dữ liệu",
+				"model": "Mẫu",
+				"ramGb": "Bộ nhớ (GB)",
+				"vcpu": "Nhân vCPU",
+				"storageGb": "Ổ đĩa cục bộ (GB)",
+				"capacity": "Dung lượng",
+				"capacityGb": "Dung lượng (GB)",
+				"project": "Dự án",
+				"cluster": "Cụm Ceph",
+				"name": "Tên",
+				"kind": "Loại cụm",
+				"dataChunks": "Khối dữ liệu (k)",
+				"codingChunks": "Khối mã hóa (m)",
+				"fillThreshold": "Ngưỡng lấp đầy (%)",
+				"leadTimeDays": "Thời gian giao hàng (ngày)",
+				"label": "Nhãn"
+			},
+			"kind": {
+				"self_managed": "Tự quản lý",
+				"managed_service": "Dịch vụ được quản lý"
+			},
+			"provider": {
+				"other": "Khác"
+			},
+			"statusDialog": {
+				"title": "Đổi trạng thái",
+				"dateRequired": "Bắt buộc với mục đã đặt hàng: ngày giao dự kiến.",
+				"dateOptional": "Tùy chọn. Mục đã cài đặt không có ngày sẽ nhận ngày hôm nay; mục đã lên kế hoạch không có ngày."
+			},
+			"orderPlan": {
+				"rows": "Số dòng: {{rows}}",
+				"late": "Trễ hạn: {{late}}",
+				"download": "Tải XLSX",
+				"downloadFailed": "Không thể tải kế hoạch đặt hàng.",
+				"empty": "Hiện chưa có gì cần đặt.",
+				"orderBy": "Đặt hàng trước",
+				"type": "Loại mục",
+				"quantity": "Số lượng",
+				"lateBadge": "Trễ hạn",
+				"types": {
+					"host": "Máy chủ",
+					"storageNode": "Nút lưu trữ",
+					"storageService": "Dịch vụ lưu trữ"
+				}
+			},
+			"hosts": {
+				"allProjects": "Tất cả dự án",
+				"allRegions": "Tất cả vùng",
+				"allStatuses": "Tất cả trạng thái",
+				"empty": "Không có máy chủ nào khớp với bộ lọc.",
+				"host": "Máy chủ",
+				"ramPeak": "Mức dùng bộ nhớ cao nhất",
+				"ramUse": "Mức dùng bộ nhớ của {{host}}",
+				"vms": "Máy ảo",
+				"warnings": "Cảnh báo máy chủ"
+			},
+			"warnings": {
+				"title": "Cảnh báo dung lượng",
+				"none": "Không có cảnh báo dung lượng.",
+				"showAll": "Hiện tất cả ({{total}})",
+				"showFewer": "Hiện ít hơn",
+				"severity": {
+					"error": "Lỗi: {{total}}",
+					"warning": "Cảnh báo: {{total}}",
+					"info": "Thông báo: {{total}}"
+				},
+				"severityName": {
+					"error": "Lỗi",
+					"warning": "Cảnh báo",
+					"info": "Thông báo"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) bắt đầu vào {{date}}, nhưng {{host}} chưa được giao vào lúc đó.",
+				"ORDER_LATE": "{{target}} lẽ ra phải được đặt trước {{date}}.",
+				"OVER_100": "{{target}} vượt dung lượng từ {{date}}.",
+				"OVER_80": "{{target}} đạt 80% dung lượng vào {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) chưa được đặt trên máy chủ nào.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) chưa có ngày bắt đầu.",
+				"CLUSTER_NOT_READY": "{{target}}: dung lượng chưa được giao khi máy ảo cần, từ {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} không đủ dung lượng; phần thiếu bắt đầu từ {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} không đủ dung lượng."
+			},
+			"storage": {
+				"addCluster": "Thêm cụm",
+				"addEntry": "Thêm dung lượng",
+				"editCluster": "Sửa",
+				"empty": "Chưa có cụm Ceph nào.",
+				"noEntries": "Cụm này chưa có mục dung lượng nào.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Đã cài đặt (thô)",
+				"usable": "Có thể dùng",
+				"used": "Máy ảo đang dùng",
+				"firstOver80": "Lần đầu vượt 80%",
+				"firstOver100": "Lần đầu vượt 100%",
+				"usage": "Mức dùng của {{cluster}}",
+				"shortfall": "Thiếu: {{shortfall}}",
+				"suggestionService": "Mua thêm {{buy}} trước {{date}}.",
+				"suggestionServiceNoDate": "Mua thêm {{buy}}.",
+				"suggestionNodes": "Thêm {{nodes}} × nút {{node}} trước {{date}}.",
+				"suggestionNodesNoDate": "Thêm {{nodes}} × nút {{node}}.",
+				"suggestionNodesUnknown": "Thêm các nút lưu trữ trị giá {{shortfall}} trước {{date}}.",
+				"suggestionNodesUnknownNoDate": "Thêm các nút lưu trữ trị giá {{shortfall}}.",
+				"deleteClusterTitle": "Xóa {{name}}?",
+				"deleteClusterDescription": "Cụm và các mục dung lượng của nó sẽ bị xóa. Không thể xóa cụm đang được máy ảo sử dụng.",
+				"deleteEntryTitle": "Xóa {{name}}?",
+				"deleteEntryDescription": "Chỉ có thể xóa dung lượng đã lên kế hoạch."
+			},
+			"clusterDialog": {
+				"createTitle": "Thêm cụm Ceph",
+				"editTitle": "Sửa cụm Ceph",
+				"selfManagedHint": "Dung lượng có thể dùng là dung lượng thô × k / (k + m), bị giới hạn bởi ngưỡng lấp đầy.",
+				"managedHint": "Dịch vụ được quản lý không có erasure coding. Dung lượng có thể dùng bị giới hạn bởi ngưỡng lấp đầy."
+			},
+			"entryDialog": {
+				"title": "Thêm dung lượng",
+				"capacityHint": "Dung lượng thô của nút hoặc khối dịch vụ, tính bằng GB.",
+				"labelHint": "Tùy chọn. Không có nhãn, mục sẽ được đặt theo tên cụm."
 			}
 		}
 	},

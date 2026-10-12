@@ -233,6 +233,11 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.fields.model",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"de-DE": [
@@ -575,6 +580,12 @@
 		"team:inviteModal.shareLinkDescriptionNoEmail",
 		"team:inviteModal.successNoEmail",
 		"team:roles.admin",
+		"workspace:datacenter.fields.name",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.hosts.vms",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.tabs.hosts",
 		"workspace:projects.status",
 		"workspace:search.suggestionBug",
 		"workspace:search.suggestionFeature",
@@ -840,6 +851,10 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
+		"workspace:datacenter.tabs.hosts",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"es-ES": [
@@ -1097,6 +1112,11 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
+		"workspace:datacenter.tabs.hosts",
+		"workspace:datacenter.warnings.severityName.error",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"fr-FR": [
@@ -1159,6 +1179,7 @@
 		"navigation:mobileProjectNav.backlog",
 		"navigation:mobileProjectNav.gantt",
 		"navigation:notifications",
+		"navigation:sidebar.datacenter",
 		"navigation:sidebar.invitations",
 		"navigation:sidebar.portfolio",
 		"notifications:events.workspace_member_added.content",
@@ -1412,6 +1433,7 @@
 		"tasks:relations.title",
 		"team:roles.admin",
 		"workspace:activityLog.filters.type",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:search.suggestionBug",
 		"workspace:workload.drillThrough.subtitle"
 	],
@@ -1656,6 +1678,7 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"id-ID": [
@@ -1939,6 +1962,13 @@
 		"tasks:relations.dependency.typesShort.ss",
 		"tasks:status.label",
 		"team:roles.admin",
+		"workspace:datacenter.fields.label",
+		"workspace:datacenter.fields.model",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.editCluster",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:projects.status",
 		"workspace:search.suggestionBug",
 		"workspace:workload.drillThrough.subtitle"
@@ -2007,6 +2037,7 @@
 		"navigation:mobileProjectNav.board",
 		"navigation:mobileProjectNav.gantt",
 		"navigation:page.settingsWorkspaceTab",
+		"navigation:sidebar.datacenter",
 		"navigation:sidebar.portfolio",
 		"notifications:events.workspace_member_added.content",
 		"notifications:events.workspace_member_added.title",
@@ -2226,6 +2257,9 @@
 		"tasks:relations.dependency.typesShort.ss",
 		"tasks:relations.tasksInOtherProject",
 		"tasks:view.board",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:search.suggestionBug",
 		"workspace:workload.drillThrough.subtitle"
 	],
@@ -2957,6 +2991,7 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"nl-NL": [
@@ -3014,6 +3049,7 @@
 		"navigation:mobileProjectNav.backlog",
 		"navigation:mobileProjectNav.gantt",
 		"navigation:projectSettings.projectLabel",
+		"navigation:sidebar.datacenter",
 		"navigation:sidebar.portfolio",
 		"notifications:events.workspace_member_added.content",
 		"notifications:events.workspace_member_added.title",
@@ -3262,6 +3298,14 @@
 		"tasks:status.label",
 		"workspace:activityLog.filters.project",
 		"workspace:activityLog.filters.type",
+		"workspace:datacenter.fields.label",
+		"workspace:datacenter.fields.model",
+		"workspace:datacenter.fields.project",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
+		"workspace:datacenter.tabs.hosts",
 		"workspace:projects.status",
 		"workspace:search.suggestionBug",
 		"workspace:workload.drillThrough.subtitle"
@@ -3392,6 +3436,11 @@
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
 		"tasks:status.label",
+		"workspace:datacenter.fields.model",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:projects.status",
 		"workspace:workload.drillThrough.subtitle"
 	],
@@ -3445,6 +3494,7 @@
 		"landing:showcase.list",
 		"navigation:mobileProjectNav.backlog",
 		"navigation:mobileProjectNav.gantt",
+		"navigation:sidebar.datacenter",
 		"notifications:events.workspace_member_added.content",
 		"notifications:events.workspace_member_added.title",
 		"people:add.add",
@@ -3652,6 +3702,12 @@
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
 		"tasks:status.label",
+		"workspace:datacenter.fields.status",
+		"workspace:datacenter.hosts.host",
+		"workspace:datacenter.hosts.vms",
+		"workspace:datacenter.orderPlan.types.host",
+		"workspace:datacenter.storage.erasureCoding",
+		"workspace:datacenter.tabs.hosts",
 		"workspace:projects.status",
 		"workspace:search.suggestionBug",
 		"workspace:workload.drillThrough.subtitle"
@@ -3900,6 +3956,7 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"tr-TR": [
@@ -4147,6 +4204,8 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.fields.model",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"uk-UA": [
@@ -4392,6 +4451,7 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"vi-VN": [
@@ -4654,6 +4714,7 @@
 		"tasks:relations.dependency.typesShort.fs",
 		"tasks:relations.dependency.typesShort.sf",
 		"tasks:relations.dependency.typesShort.ss",
+		"workspace:datacenter.storage.erasureCoding",
 		"workspace:workload.drillThrough.subtitle"
 	],
 	"zh-CN": [

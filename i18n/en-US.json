@@ -2347,7 +2347,8 @@
 			"workload": "Workload",
 			"invitations": "Invitations",
 			"more": "More",
-			"backToBoard": "Back to board"
+			"backToBoard": "Back to board",
+			"datacenter": "Datacenter"
 		},
 		"projectList": {
 			"viewProject": "View Project",
@@ -3610,6 +3611,155 @@
 			"submit": "Create workspace",
 			"success": "Workspace created successfully",
 			"error": "Failed to create workspace"
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Order plan",
+				"hosts": "Hosts",
+				"storage": "Ceph storage"
+			},
+			"loadFailed": "The datacenter data could not be loaded.",
+			"noAccess": {
+				"title": "No access to the datacenter",
+				"description": "Your role does not include the datacenter permission. Ask a workspace administrator for access."
+			},
+			"actions": {
+				"save": "Save",
+				"changeStatus": "Change status"
+			},
+			"errors": {
+				"availableFromRequired": "An ordered item needs an expected delivery date.",
+				"clusterNameTaken": "A cluster with this name already exists in the workspace.",
+				"clusterInUse": "A VM still uses this cluster. Move the VM to another cluster first.",
+				"capacityLocked": "Only a planned entry can be changed this way.",
+				"clusterInvalid": "The cluster settings are not valid. Check the erasure coding values.",
+				"regionInUse": "A host still uses this region.",
+				"saveFailed": "The change could not be saved.",
+				"deleteFailed": "The item could not be deleted."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Delivery date",
+				"hostname": "Host name",
+				"needDate": "Need date",
+				"provider": "Provider",
+				"region": "Datacenter region",
+				"model": "Model",
+				"ramGb": "Memory (GB)",
+				"vcpu": "vCPU cores",
+				"storageGb": "Local disk (GB)",
+				"capacity": "Capacity",
+				"capacityGb": "Capacity (GB)",
+				"project": "Project",
+				"cluster": "Ceph cluster",
+				"name": "Name",
+				"kind": "Cluster type",
+				"dataChunks": "Data chunks (k)",
+				"codingChunks": "Coding chunks (m)",
+				"fillThreshold": "Fill threshold (%)",
+				"leadTimeDays": "Lead time (days)",
+				"label": "Label"
+			},
+			"kind": {
+				"self_managed": "Self-managed",
+				"managed_service": "Managed service"
+			},
+			"provider": {
+				"other": "Other"
+			},
+			"statusDialog": {
+				"title": "Change status",
+				"dateRequired": "Required for an ordered item: the expected delivery date.",
+				"dateOptional": "Optional. An installed item without a date gets today's date; a planned item has none."
+			},
+			"orderPlan": {
+				"rows": "Rows: {{rows}}",
+				"late": "Late: {{late}}",
+				"download": "Download XLSX",
+				"downloadFailed": "The order plan could not be downloaded.",
+				"empty": "Nothing to order right now.",
+				"orderBy": "Order by",
+				"type": "Item type",
+				"quantity": "Quantity",
+				"lateBadge": "Late",
+				"types": {
+					"host": "Host",
+					"storageNode": "Storage node",
+					"storageService": "Storage service"
+				}
+			},
+			"hosts": {
+				"allProjects": "All projects",
+				"allRegions": "All regions",
+				"allStatuses": "All statuses",
+				"empty": "No hosts match the filters.",
+				"host": "Host",
+				"ramPeak": "Peak memory use",
+				"ramUse": "Memory use of {{host}}",
+				"vms": "VMs",
+				"warnings": "Host warnings"
+			},
+			"warnings": {
+				"title": "Capacity warnings",
+				"none": "No capacity warnings.",
+				"showAll": "Show all ({{total}})",
+				"showFewer": "Show fewer",
+				"severity": {
+					"error": "Errors: {{total}}",
+					"warning": "Warnings: {{total}}",
+					"info": "Notices: {{total}}"
+				},
+				"severityName": {
+					"error": "Error",
+					"warning": "Warning",
+					"info": "Notice"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) starts on {{date}}, but {{host}} is not delivered by then.",
+				"ORDER_LATE": "{{target}} should have been ordered by {{date}}.",
+				"OVER_100": "{{target}} is over capacity from {{date}}.",
+				"OVER_80": "{{target}} reaches 80% of its capacity on {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) is not placed on a host.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) has no start date.",
+				"CLUSTER_NOT_READY": "{{target}}: the capacity is not delivered yet when VMs need it, from {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} does not have enough capacity; the shortfall starts on {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} does not have enough capacity."
+			},
+			"storage": {
+				"addCluster": "Add cluster",
+				"addEntry": "Add capacity",
+				"editCluster": "Edit",
+				"empty": "There are no Ceph clusters yet.",
+				"noEntries": "This cluster has no capacity entries yet.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Installed (raw)",
+				"usable": "Usable",
+				"used": "Used by VMs",
+				"firstOver80": "First over 80%",
+				"firstOver100": "First over 100%",
+				"usage": "Use of {{cluster}}",
+				"shortfall": "Shortfall: {{shortfall}}",
+				"suggestionService": "Buy {{buy}} by {{date}}.",
+				"suggestionServiceNoDate": "Buy {{buy}}.",
+				"suggestionNodes": "Add {{nodes}} × {{node}} node by {{date}}.",
+				"suggestionNodesNoDate": "Add {{nodes}} × {{node}} node.",
+				"suggestionNodesUnknown": "Add storage nodes worth {{shortfall}} by {{date}}.",
+				"suggestionNodesUnknownNoDate": "Add storage nodes worth {{shortfall}}.",
+				"deleteClusterTitle": "Delete {{name}}?",
+				"deleteClusterDescription": "The cluster and its capacity entries are removed. A cluster that a VM uses cannot be deleted.",
+				"deleteEntryTitle": "Delete {{name}}?",
+				"deleteEntryDescription": "Only planned capacity can be deleted."
+			},
+			"clusterDialog": {
+				"createTitle": "Add Ceph cluster",
+				"editTitle": "Edit Ceph cluster",
+				"selfManagedHint": "Usable capacity is the raw capacity × k / (k + m), limited by the fill threshold.",
+				"managedHint": "A managed service has no erasure coding. Usable capacity is limited by the fill threshold."
+			},
+			"entryDialog": {
+				"title": "Add capacity",
+				"capacityHint": "Raw capacity of the node or of the service block, in GB.",
+				"labelHint": "Optional. Without a label the entry is named after the cluster."
+			}
 		}
 	},
 	"portfolio": {
