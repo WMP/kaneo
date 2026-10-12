@@ -2347,7 +2347,8 @@
 			"backToBoard": "Panoya dön",
 			"portfolio": "Portföy",
 			"activity": "Etkinlik",
-			"workload": "İş yükü"
+			"workload": "İş yükü",
+			"datacenter": "Veri merkezi"
 		},
 		"projectList": {
 			"viewProject": "Projeyi Görüntüle",
@@ -3609,6 +3610,155 @@
 				"empty": "Bu aralıkta eşleşen görev yok.",
 				"error": "Görevler yüklenemedi.",
 				"dueOn": " · Bitiş {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Sipariş planı",
+				"hosts": "Ana makineler",
+				"storage": "Ceph depolama"
+			},
+			"loadFailed": "Veri merkezi verileri yüklenemedi.",
+			"noAccess": {
+				"title": "Veri merkezine erişim yok",
+				"description": "Rolünüz veri merkezi iznini içermiyor. Bir çalışma alanı yöneticisinden erişim isteyin."
+			},
+			"actions": {
+				"save": "Kaydet",
+				"changeStatus": "Durumu değiştir"
+			},
+			"errors": {
+				"availableFromRequired": "Sipariş edilmiş bir kalem için beklenen teslimat tarihi gerekir.",
+				"clusterNameTaken": "Çalışma alanında bu adla bir küme zaten var.",
+				"clusterInUse": "Bir sanal makine bu kümeyi hâlâ kullanıyor. Önce sanal makineyi başka bir kümeye taşıyın.",
+				"capacityLocked": "Bu şekilde yalnızca planlanmış bir kalem değiştirilebilir.",
+				"clusterInvalid": "Küme ayarları geçersiz. Erasure coding değerlerini kontrol edin.",
+				"regionInUse": "Bir ana makine bu bölgeyi hâlâ kullanıyor.",
+				"saveFailed": "Değişiklik kaydedilemedi.",
+				"deleteFailed": "Kalem silinemedi."
+			},
+			"fields": {
+				"status": "Durum",
+				"availableFrom": "Teslimat tarihi",
+				"hostname": "Ana makine adı",
+				"needDate": "İhtiyaç tarihi",
+				"provider": "Sağlayıcı",
+				"region": "Veri merkezi bölgesi",
+				"model": "Model",
+				"ramGb": "Bellek (GB)",
+				"vcpu": "vCPU çekirdekleri",
+				"storageGb": "Yerel disk (GB)",
+				"capacity": "Kapasite",
+				"capacityGb": "Kapasite (GB)",
+				"project": "Proje",
+				"cluster": "Ceph kümesi",
+				"name": "Ad",
+				"kind": "Küme türü",
+				"dataChunks": "Veri parçaları (k)",
+				"codingChunks": "Kodlama parçaları (m)",
+				"fillThreshold": "Doluluk eşiği (%)",
+				"leadTimeDays": "Teslim süresi (gün)",
+				"label": "Etiket"
+			},
+			"kind": {
+				"self_managed": "Kendi yönetimimizde",
+				"managed_service": "Yönetilen hizmet"
+			},
+			"provider": {
+				"other": "Diğer"
+			},
+			"statusDialog": {
+				"title": "Durumu değiştir",
+				"dateRequired": "Sipariş edilmiş kalem için zorunlu: beklenen teslimat tarihi.",
+				"dateOptional": "İsteğe bağlı. Tarihsiz kurulu bir kalem bugünün tarihini alır; planlanmış kalemin tarihi olmaz."
+			},
+			"orderPlan": {
+				"rows": "Satır: {{rows}}",
+				"late": "Geciken: {{late}}",
+				"download": "XLSX indir",
+				"downloadFailed": "Sipariş planı indirilemedi.",
+				"empty": "Şu anda sipariş edilecek bir şey yok.",
+				"orderBy": "Şu tarihe kadar sipariş ver",
+				"type": "Kalem türü",
+				"quantity": "Miktar",
+				"lateBadge": "Gecikmiş",
+				"types": {
+					"host": "Ana makine",
+					"storageNode": "Depolama düğümü",
+					"storageService": "Depolama hizmeti"
+				}
+			},
+			"hosts": {
+				"allProjects": "Tüm projeler",
+				"allRegions": "Tüm bölgeler",
+				"allStatuses": "Tüm durumlar",
+				"empty": "Filtrelerle eşleşen ana makine yok.",
+				"host": "Ana makine",
+				"ramPeak": "Tepe bellek kullanımı",
+				"ramUse": "{{host}} bellek kullanımı",
+				"vms": "Sanal makineler",
+				"warnings": "Ana makine uyarıları"
+			},
+			"warnings": {
+				"title": "Kapasite uyarıları",
+				"none": "Kapasite uyarısı yok.",
+				"showAll": "Tümünü göster ({{total}})",
+				"showFewer": "Daha az göster",
+				"severity": {
+					"error": "Hatalar: {{total}}",
+					"warning": "Uyarılar: {{total}}",
+					"info": "Bilgiler: {{total}}"
+				},
+				"severityName": {
+					"error": "Hata",
+					"warning": "Uyarı",
+					"info": "Bilgi"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) {{date}} tarihinde başlıyor, ancak {{host}} o tarihte henüz teslim edilmemiş olacak.",
+				"ORDER_LATE": "{{target}} için sipariş en geç {{date}} tarihinde verilmeliydi.",
+				"OVER_100": "{{target}} {{date}} tarihinden itibaren kapasiteyi aşıyor.",
+				"OVER_80": "{{target}} {{date}} tarihinde kapasitesinin %80'ine ulaşıyor.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) hiçbir ana makineye yerleştirilmemiş.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) için başlangıç tarihi yok.",
+				"CLUSTER_NOT_READY": "{{target}}: sanal makinelerin ihtiyaç duyduğu {{date}} tarihinden itibaren kapasite henüz teslim edilmemiş.",
+				"CLUSTER_SHORTFALL": "{{target}} yeterli kapasiteye sahip değil; açık {{date}} tarihinde başlıyor.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} yeterli kapasiteye sahip değil."
+			},
+			"storage": {
+				"addCluster": "Küme ekle",
+				"addEntry": "Kapasite ekle",
+				"editCluster": "Düzenle",
+				"empty": "Henüz Ceph kümesi yok.",
+				"noEntries": "Bu kümenin henüz kapasite kalemi yok.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Kurulu (ham)",
+				"usable": "Kullanılabilir",
+				"used": "Sanal makinelerce kullanılan",
+				"firstOver80": "%80'in ilk aşılışı",
+				"firstOver100": "%100'ün ilk aşılışı",
+				"usage": "{{cluster}} kullanımı",
+				"shortfall": "Açık: {{shortfall}}",
+				"suggestionService": "{{date}} tarihine kadar {{buy}} satın alın.",
+				"suggestionServiceNoDate": "{{buy}} satın alın.",
+				"suggestionNodes": "{{date}} tarihine kadar {{nodes}} × {{node}} düğümü ekleyin.",
+				"suggestionNodesNoDate": "{{nodes}} × {{node}} düğümü ekleyin.",
+				"suggestionNodesUnknown": "{{date}} tarihine kadar {{shortfall}} değerinde depolama düğümü ekleyin.",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} değerinde depolama düğümü ekleyin.",
+				"deleteClusterTitle": "{{name}} silinsin mi?",
+				"deleteClusterDescription": "Küme ve kapasite kalemleri kaldırılır. Bir sanal makinenin kullandığı küme silinemez.",
+				"deleteEntryTitle": "{{name}} silinsin mi?",
+				"deleteEntryDescription": "Yalnızca planlanmış kapasite silinebilir."
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph kümesi ekle",
+				"editTitle": "Ceph kümesini düzenle",
+				"selfManagedHint": "Kullanılabilir kapasite, ham kapasite × k / (k + m) değeridir ve doluluk eşiğiyle sınırlanır.",
+				"managedHint": "Yönetilen hizmette erasure coding yoktur. Kullanılabilir kapasite doluluk eşiğiyle sınırlanır."
+			},
+			"entryDialog": {
+				"title": "Kapasite ekle",
+				"capacityHint": "Düğümün veya hizmet bloğunun ham kapasitesi, GB cinsinden.",
+				"labelHint": "İsteğe bağlı. Etiket yoksa kalem kümenin adını alır."
 			}
 		}
 	},

@@ -2350,7 +2350,8 @@
 			"backToBoard": "Volver al tablero",
 			"portfolio": "Cartera",
 			"activity": "Actividad",
-			"workload": "Carga de trabajo"
+			"workload": "Carga de trabajo",
+			"datacenter": "Centro de datos"
 		},
 		"projectList": {
 			"viewProject": "Ver Proyecto",
@@ -3622,6 +3623,155 @@
 				"empty": "No hay tareas coincidentes en este intervalo.",
 				"error": "No se pudieron cargar las tareas.",
 				"dueOn": " · Vence el {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Plan de pedidos",
+				"hosts": "Hosts",
+				"storage": "Almacenamiento Ceph"
+			},
+			"loadFailed": "No se pudieron cargar los datos del centro de datos.",
+			"noAccess": {
+				"title": "Sin acceso al centro de datos",
+				"description": "Tu rol no incluye el permiso del centro de datos. Pide acceso a un administrador del espacio de trabajo."
+			},
+			"actions": {
+				"save": "Guardar",
+				"changeStatus": "Cambiar estado"
+			},
+			"errors": {
+				"availableFromRequired": "Un elemento pedido necesita una fecha de entrega prevista.",
+				"clusterNameTaken": "Ya existe un clúster con este nombre en el espacio de trabajo.",
+				"clusterInUse": "Una VM sigue usando este clúster. Mueve primero la VM a otro clúster.",
+				"capacityLocked": "Solo se puede cambiar así una entrada planificada.",
+				"clusterInvalid": "La configuración del clúster no es válida. Revisa los valores de erasure coding.",
+				"regionInUse": "Un host sigue usando esta región.",
+				"saveFailed": "No se pudo guardar el cambio.",
+				"deleteFailed": "No se pudo eliminar el elemento."
+			},
+			"fields": {
+				"status": "Estado",
+				"availableFrom": "Fecha de entrega",
+				"hostname": "Nombre del host",
+				"needDate": "Fecha de necesidad",
+				"provider": "Proveedor",
+				"region": "Región del centro de datos",
+				"model": "Modelo",
+				"ramGb": "Memoria (GB)",
+				"vcpu": "Núcleos vCPU",
+				"storageGb": "Disco local (GB)",
+				"capacity": "Capacidad",
+				"capacityGb": "Capacidad (GB)",
+				"project": "Proyecto",
+				"cluster": "Clúster Ceph",
+				"name": "Nombre",
+				"kind": "Tipo de clúster",
+				"dataChunks": "Fragmentos de datos (k)",
+				"codingChunks": "Fragmentos de codificación (m)",
+				"fillThreshold": "Umbral de llenado (%)",
+				"leadTimeDays": "Plazo de entrega (días)",
+				"label": "Etiqueta"
+			},
+			"kind": {
+				"self_managed": "Autogestionado",
+				"managed_service": "Servicio gestionado"
+			},
+			"provider": {
+				"other": "Otro"
+			},
+			"statusDialog": {
+				"title": "Cambiar estado",
+				"dateRequired": "Obligatoria para un elemento pedido: la fecha de entrega prevista.",
+				"dateOptional": "Opcional. Un elemento instalado sin fecha recibe la de hoy; uno planificado no tiene ninguna."
+			},
+			"orderPlan": {
+				"rows": "Filas: {{rows}}",
+				"late": "Con retraso: {{late}}",
+				"download": "Descargar XLSX",
+				"downloadFailed": "No se pudo descargar el plan de pedidos.",
+				"empty": "Ahora mismo no hay nada que pedir.",
+				"orderBy": "Pedir antes del",
+				"type": "Tipo de elemento",
+				"quantity": "Cantidad",
+				"lateBadge": "Con retraso",
+				"types": {
+					"host": "Host",
+					"storageNode": "Nodo de almacenamiento",
+					"storageService": "Servicio de almacenamiento"
+				}
+			},
+			"hosts": {
+				"allProjects": "Todos los proyectos",
+				"allRegions": "Todas las regiones",
+				"allStatuses": "Todos los estados",
+				"empty": "Ningún host coincide con los filtros.",
+				"host": "Host",
+				"ramPeak": "Uso máximo de memoria",
+				"ramUse": "Uso de memoria de {{host}}",
+				"vms": "VM",
+				"warnings": "Avisos de hosts"
+			},
+			"warnings": {
+				"title": "Avisos de capacidad",
+				"none": "No hay avisos de capacidad.",
+				"showAll": "Mostrar todos ({{total}})",
+				"showFewer": "Mostrar menos",
+				"severity": {
+					"error": "Errores: {{total}}",
+					"warning": "Avisos: {{total}}",
+					"info": "Notas: {{total}}"
+				},
+				"severityName": {
+					"error": "Error",
+					"warning": "Aviso",
+					"info": "Nota"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) empieza el {{date}}, pero {{host}} aún no está entregado para entonces.",
+				"ORDER_LATE": "{{target}} debería haberse pedido antes del {{date}}.",
+				"OVER_100": "{{target}} supera su capacidad desde el {{date}}.",
+				"OVER_80": "{{target}} alcanza el 80 % de su capacidad el {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) no está asignada a ningún host.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) no tiene fecha de inicio.",
+				"CLUSTER_NOT_READY": "{{target}}: la capacidad aún no está entregada cuando las VM la necesitan, desde el {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} no tiene capacidad suficiente; el déficit empieza el {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} no tiene capacidad suficiente."
+			},
+			"storage": {
+				"addCluster": "Añadir clúster",
+				"addEntry": "Añadir capacidad",
+				"editCluster": "Editar",
+				"empty": "Todavía no hay clústeres Ceph.",
+				"noEntries": "Este clúster aún no tiene entradas de capacidad.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Instalada (bruta)",
+				"usable": "Utilizable",
+				"used": "Usada por VM",
+				"firstOver80": "Primera vez sobre el 80 %",
+				"firstOver100": "Primera vez sobre el 100 %",
+				"usage": "Uso de {{cluster}}",
+				"shortfall": "Déficit: {{shortfall}}",
+				"suggestionService": "Comprar {{buy}} antes del {{date}}.",
+				"suggestionServiceNoDate": "Comprar {{buy}}.",
+				"suggestionNodes": "Añadir {{nodes}} × nodo {{node}} antes del {{date}}.",
+				"suggestionNodesNoDate": "Añadir {{nodes}} × nodo {{node}}.",
+				"suggestionNodesUnknown": "Añadir nodos de almacenamiento por {{shortfall}} antes del {{date}}.",
+				"suggestionNodesUnknownNoDate": "Añadir nodos de almacenamiento por {{shortfall}}.",
+				"deleteClusterTitle": "¿Eliminar {{name}}?",
+				"deleteClusterDescription": "Se eliminan el clúster y sus entradas de capacidad. Un clúster que usa una VM no se puede eliminar.",
+				"deleteEntryTitle": "¿Eliminar {{name}}?",
+				"deleteEntryDescription": "Solo se puede eliminar la capacidad planificada."
+			},
+			"clusterDialog": {
+				"createTitle": "Añadir clúster Ceph",
+				"editTitle": "Editar clúster Ceph",
+				"selfManagedHint": "La capacidad utilizable es la capacidad bruta × k / (k + m), limitada por el umbral de llenado.",
+				"managedHint": "Un servicio gestionado no tiene erasure coding. La capacidad utilizable está limitada por el umbral de llenado."
+			},
+			"entryDialog": {
+				"title": "Añadir capacidad",
+				"capacityHint": "Capacidad bruta del nodo o del bloque de servicio, en GB.",
+				"labelHint": "Opcional. Sin etiqueta, la entrada recibe el nombre del clúster."
 			}
 		}
 	},

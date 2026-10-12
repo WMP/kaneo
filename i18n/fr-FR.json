@@ -2350,7 +2350,8 @@
 			"backToBoard": "Retour au tableau",
 			"portfolio": "Portfolio",
 			"activity": "Activité",
-			"workload": "Charge de travail"
+			"workload": "Charge de travail",
+			"datacenter": "Datacenter"
 		},
 		"projectList": {
 			"viewProject": "Voir le projet",
@@ -3622,6 +3623,155 @@
 				"empty": "Aucune tâche correspondante dans cette période.",
 				"error": "Échec du chargement des tâches.",
 				"dueOn": " · Échéance {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Plan de commande",
+				"hosts": "Hôtes",
+				"storage": "Stockage Ceph"
+			},
+			"loadFailed": "Impossible de charger les données du datacenter.",
+			"noAccess": {
+				"title": "Pas d'accès au datacenter",
+				"description": "Votre rôle n'inclut pas l'autorisation datacenter. Demandez l'accès à un administrateur de l'espace de travail."
+			},
+			"actions": {
+				"save": "Enregistrer",
+				"changeStatus": "Changer le statut"
+			},
+			"errors": {
+				"availableFromRequired": "Un élément commandé nécessite une date de livraison prévue.",
+				"clusterNameTaken": "Un cluster portant ce nom existe déjà dans l'espace de travail.",
+				"clusterInUse": "Une VM utilise encore ce cluster. Déplacez d'abord la VM vers un autre cluster.",
+				"capacityLocked": "Seule une entrée planifiée peut être modifiée de cette façon.",
+				"clusterInvalid": "Les paramètres du cluster ne sont pas valides. Vérifiez les valeurs d'erasure coding.",
+				"regionInUse": "Un hôte utilise encore cette région.",
+				"saveFailed": "Impossible d'enregistrer la modification.",
+				"deleteFailed": "Impossible de supprimer l'élément."
+			},
+			"fields": {
+				"status": "Statut",
+				"availableFrom": "Date de livraison",
+				"hostname": "Nom d'hôte",
+				"needDate": "Date de besoin",
+				"provider": "Fournisseur",
+				"region": "Région du datacenter",
+				"model": "Modèle",
+				"ramGb": "Mémoire (Go)",
+				"vcpu": "Cœurs vCPU",
+				"storageGb": "Disque local (Go)",
+				"capacity": "Capacité",
+				"capacityGb": "Capacité (Go)",
+				"project": "Projet",
+				"cluster": "Cluster Ceph",
+				"name": "Nom",
+				"kind": "Type de cluster",
+				"dataChunks": "Fragments de données (k)",
+				"codingChunks": "Fragments de codage (m)",
+				"fillThreshold": "Seuil de remplissage (%)",
+				"leadTimeDays": "Délai de livraison (jours)",
+				"label": "Libellé"
+			},
+			"kind": {
+				"self_managed": "Auto-géré",
+				"managed_service": "Service managé"
+			},
+			"provider": {
+				"other": "Autre"
+			},
+			"statusDialog": {
+				"title": "Changer le statut",
+				"dateRequired": "Obligatoire pour un élément commandé : la date de livraison prévue.",
+				"dateOptional": "Facultative. Un élément installé sans date reçoit la date du jour ; un élément planifié n'en a pas."
+			},
+			"orderPlan": {
+				"rows": "Lignes : {{rows}}",
+				"late": "En retard : {{late}}",
+				"download": "Télécharger le XLSX",
+				"downloadFailed": "Impossible de télécharger le plan de commande.",
+				"empty": "Rien à commander pour le moment.",
+				"orderBy": "Commander avant le",
+				"type": "Type d'élément",
+				"quantity": "Quantité",
+				"lateBadge": "En retard",
+				"types": {
+					"host": "Hôte",
+					"storageNode": "Nœud de stockage",
+					"storageService": "Service de stockage"
+				}
+			},
+			"hosts": {
+				"allProjects": "Tous les projets",
+				"allRegions": "Toutes les régions",
+				"allStatuses": "Tous les statuts",
+				"empty": "Aucun hôte ne correspond aux filtres.",
+				"host": "Hôte",
+				"ramPeak": "Pic d'utilisation de la mémoire",
+				"ramUse": "Utilisation de la mémoire de {{host}}",
+				"vms": "VM",
+				"warnings": "Alertes des hôtes"
+			},
+			"warnings": {
+				"title": "Alertes de capacité",
+				"none": "Aucune alerte de capacité.",
+				"showAll": "Tout afficher ({{total}})",
+				"showFewer": "Afficher moins",
+				"severity": {
+					"error": "Erreurs : {{total}}",
+					"warning": "Avertissements : {{total}}",
+					"info": "Informations : {{total}}"
+				},
+				"severityName": {
+					"error": "Erreur",
+					"warning": "Avertissement",
+					"info": "Information"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) démarre le {{date}}, mais {{host}} n'est pas encore livré à cette date.",
+				"ORDER_LATE": "{{target}} aurait dû être commandé avant le {{date}}.",
+				"OVER_100": "{{target}} dépasse sa capacité à partir du {{date}}.",
+				"OVER_80": "{{target}} atteint 80 % de sa capacité le {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) n'est placée sur aucun hôte.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) n'a pas de date de début.",
+				"CLUSTER_NOT_READY": "{{target}} : la capacité n'est pas encore livrée quand les VM en ont besoin, à partir du {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} n'a pas assez de capacité ; le déficit commence le {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} n'a pas assez de capacité."
+			},
+			"storage": {
+				"addCluster": "Ajouter un cluster",
+				"addEntry": "Ajouter de la capacité",
+				"editCluster": "Modifier",
+				"empty": "Aucun cluster Ceph pour le moment.",
+				"noEntries": "Ce cluster n'a pas encore d'entrée de capacité.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Installée (brute)",
+				"usable": "Utilisable",
+				"used": "Utilisée par les VM",
+				"firstOver80": "Premier dépassement de 80 %",
+				"firstOver100": "Premier dépassement de 100 %",
+				"usage": "Utilisation de {{cluster}}",
+				"shortfall": "Déficit : {{shortfall}}",
+				"suggestionService": "Acheter {{buy}} avant le {{date}}.",
+				"suggestionServiceNoDate": "Acheter {{buy}}.",
+				"suggestionNodes": "Ajouter {{nodes}} × nœud {{node}} avant le {{date}}.",
+				"suggestionNodesNoDate": "Ajouter {{nodes}} × nœud {{node}}.",
+				"suggestionNodesUnknown": "Ajouter des nœuds de stockage pour {{shortfall}} avant le {{date}}.",
+				"suggestionNodesUnknownNoDate": "Ajouter des nœuds de stockage pour {{shortfall}}.",
+				"deleteClusterTitle": "Supprimer {{name}} ?",
+				"deleteClusterDescription": "Le cluster et ses entrées de capacité sont supprimés. Un cluster utilisé par une VM ne peut pas être supprimé.",
+				"deleteEntryTitle": "Supprimer {{name}} ?",
+				"deleteEntryDescription": "Seule la capacité planifiée peut être supprimée."
+			},
+			"clusterDialog": {
+				"createTitle": "Ajouter un cluster Ceph",
+				"editTitle": "Modifier le cluster Ceph",
+				"selfManagedHint": "La capacité utilisable est la capacité brute × k / (k + m), limitée par le seuil de remplissage.",
+				"managedHint": "Un service managé n'a pas d'erasure coding. La capacité utilisable est limitée par le seuil de remplissage."
+			},
+			"entryDialog": {
+				"title": "Ajouter de la capacité",
+				"capacityHint": "Capacité brute du nœud ou du bloc de service, en Go.",
+				"labelHint": "Facultatif. Sans libellé, l'entrée porte le nom du cluster."
 			}
 		}
 	},

@@ -2353,7 +2353,8 @@
 			"backToBoard": "Назад до дошки",
 			"portfolio": "Портфель",
 			"activity": "Активність",
-			"workload": "Завантаження"
+			"workload": "Завантаження",
+			"datacenter": "Дата-центр"
 		},
 		"projectList": {
 			"viewProject": "Переглянути проєкт",
@@ -3635,6 +3636,155 @@
 				"empty": "Немає відповідних завдань у цьому періоді.",
 				"error": "Не вдалося завантажити завдання.",
 				"dueOn": " · Термін {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "План замовлень",
+				"hosts": "Хости",
+				"storage": "Сховище Ceph"
+			},
+			"loadFailed": "Не вдалося завантажити дані дата-центру.",
+			"noAccess": {
+				"title": "Немає доступу до дата-центру",
+				"description": "Ваша роль не містить дозволу на дата-центр. Попросіть доступ в адміністратора робочого простору."
+			},
+			"actions": {
+				"save": "Зберегти",
+				"changeStatus": "Змінити статус"
+			},
+			"errors": {
+				"availableFromRequired": "Для замовленої позиції потрібна очікувана дата поставки.",
+				"clusterNameTaken": "Кластер із такою назвою вже є в робочому просторі.",
+				"clusterInUse": "Кластер досі використовується віртуальною машиною. Спершу перенесіть її в інший кластер.",
+				"capacityLocked": "Так можна змінити лише заплановану позицію.",
+				"clusterInvalid": "Недійсні налаштування кластера. Перевірте значення erasure coding.",
+				"regionInUse": "Цей регіон досі використовується хостом.",
+				"saveFailed": "Не вдалося зберегти зміну.",
+				"deleteFailed": "Не вдалося видалити позицію."
+			},
+			"fields": {
+				"status": "Статус",
+				"availableFrom": "Дата поставки",
+				"hostname": "Ім'я хоста",
+				"needDate": "Дата потреби",
+				"provider": "Провайдер",
+				"region": "Регіон дата-центру",
+				"model": "Модель",
+				"ramGb": "Пам'ять (ГБ)",
+				"vcpu": "Ядра vCPU",
+				"storageGb": "Локальний диск (ГБ)",
+				"capacity": "Місткість",
+				"capacityGb": "Місткість (ГБ)",
+				"project": "Проєкт",
+				"cluster": "Кластер Ceph",
+				"name": "Назва",
+				"kind": "Тип кластера",
+				"dataChunks": "Блоки даних (k)",
+				"codingChunks": "Блоки кодування (m)",
+				"fillThreshold": "Поріг заповнення (%)",
+				"leadTimeDays": "Строк поставки (дні)",
+				"label": "Мітка"
+			},
+			"kind": {
+				"self_managed": "Власний (self-managed)",
+				"managed_service": "Керований сервіс"
+			},
+			"provider": {
+				"other": "Інший"
+			},
+			"statusDialog": {
+				"title": "Змінити статус",
+				"dateRequired": "Обов'язкова для замовленої позиції: очікувана дата поставки.",
+				"dateOptional": "Необов'язково. Встановлена позиція без дати отримає сьогоднішню дату; запланована дати не має."
+			},
+			"orderPlan": {
+				"rows": "Рядків: {{rows}}",
+				"late": "Прострочено: {{late}}",
+				"download": "Завантажити XLSX",
+				"downloadFailed": "Не вдалося завантажити план замовлень.",
+				"empty": "Зараз нічого замовляти.",
+				"orderBy": "Замовити до",
+				"type": "Тип позиції",
+				"quantity": "Кількість",
+				"lateBadge": "Прострочено",
+				"types": {
+					"host": "Хост",
+					"storageNode": "Вузол сховища",
+					"storageService": "Сервіс сховища"
+				}
+			},
+			"hosts": {
+				"allProjects": "Усі проєкти",
+				"allRegions": "Усі регіони",
+				"allStatuses": "Усі статуси",
+				"empty": "Жоден хост не відповідає фільтрам.",
+				"host": "Хост",
+				"ramPeak": "Пікове використання пам'яті",
+				"ramUse": "Використання пам'яті хоста {{host}}",
+				"vms": "ВМ",
+				"warnings": "Попередження щодо хостів"
+			},
+			"warnings": {
+				"title": "Попередження про місткість",
+				"none": "Попереджень про місткість немає.",
+				"showAll": "Показати всі ({{total}})",
+				"showFewer": "Показати менше",
+				"severity": {
+					"error": "Помилки: {{total}}",
+					"warning": "Попередження: {{total}}",
+					"info": "Відомості: {{total}}"
+				},
+				"severityName": {
+					"error": "Помилка",
+					"warning": "Попередження",
+					"info": "Відомості"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) стартує {{date}}, але хост {{host}} до цього часу ще не поставлений.",
+				"ORDER_LATE": "{{target}} потрібно було замовити до {{date}}.",
+				"OVER_100": "{{target}} перевищує місткість з {{date}}.",
+				"OVER_80": "{{target}} сягає 80% місткості {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) не розміщена на жодному хості.",
+				"VM_UNSCHEDULED": "У {{vm}} ({{project}}) немає дати початку.",
+				"CLUSTER_NOT_READY": "{{target}}: місткість ще не поставлена, коли вона потрібна ВМ, починаючи з {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}}: бракує місткості; дефіцит починається {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}}: бракує місткості."
+			},
+			"storage": {
+				"addCluster": "Додати кластер",
+				"addEntry": "Додати місткість",
+				"editCluster": "Редагувати",
+				"empty": "Кластерів Ceph поки немає.",
+				"noEntries": "У цьому кластері поки немає позицій місткості.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Встановлено (сира)",
+				"usable": "Доступно",
+				"used": "Зайнято ВМ",
+				"firstOver80": "Перше перевищення 80%",
+				"firstOver100": "Перше перевищення 100%",
+				"usage": "Використання {{cluster}}",
+				"shortfall": "Дефіцит: {{shortfall}}",
+				"suggestionService": "Докупити {{buy}} до {{date}}.",
+				"suggestionServiceNoDate": "Докупити {{buy}}.",
+				"suggestionNodes": "Додати {{nodes}} × вузол {{node}} до {{date}}.",
+				"suggestionNodesNoDate": "Додати {{nodes}} × вузол {{node}}.",
+				"suggestionNodesUnknown": "Додати вузли сховища на {{shortfall}} до {{date}}.",
+				"suggestionNodesUnknownNoDate": "Додати вузли сховища на {{shortfall}}.",
+				"deleteClusterTitle": "Видалити {{name}}?",
+				"deleteClusterDescription": "Кластер і його позиції місткості буде видалено. Кластер, який використовує віртуальна машина, видалити не можна.",
+				"deleteEntryTitle": "Видалити {{name}}?",
+				"deleteEntryDescription": "Видалити можна лише заплановану місткість."
+			},
+			"clusterDialog": {
+				"createTitle": "Додати кластер Ceph",
+				"editTitle": "Редагувати кластер Ceph",
+				"selfManagedHint": "Доступна місткість — це сира місткість × k / (k + m), обмежена порогом заповнення.",
+				"managedHint": "Керований сервіс не має erasure coding. Доступна місткість обмежена порогом заповнення."
+			},
+			"entryDialog": {
+				"title": "Додати місткість",
+				"capacityHint": "Сира місткість вузла або блоку сервісу в ГБ.",
+				"labelHint": "Необов'язково. Без мітки позиція отримає назву кластера."
 			}
 		}
 	},

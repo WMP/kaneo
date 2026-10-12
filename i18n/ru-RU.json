@@ -2361,7 +2361,8 @@
 			"backToBoard": "Назад к доске",
 			"portfolio": "Портфель",
 			"activity": "Активность",
-			"workload": "Загрузка"
+			"workload": "Загрузка",
+			"datacenter": "Дата-центр"
 		},
 		"projectList": {
 			"viewProject": "Открыть проект",
@@ -3691,6 +3692,155 @@
 				"empty": "Нет подходящих задач в этом периоде.",
 				"error": "Не удалось загрузить задачи.",
 				"dueOn": " · Срок {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "План заказов",
+				"hosts": "Хосты",
+				"storage": "Хранилище Ceph"
+			},
+			"loadFailed": "Не удалось загрузить данные дата-центра.",
+			"noAccess": {
+				"title": "Нет доступа к дата-центру",
+				"description": "В вашей роли нет разрешения на дата-центр. Попросите доступ у администратора рабочего пространства."
+			},
+			"actions": {
+				"save": "Сохранить",
+				"changeStatus": "Изменить статус"
+			},
+			"errors": {
+				"availableFromRequired": "Для заказанной позиции нужна ожидаемая дата поставки.",
+				"clusterNameTaken": "Кластер с таким именем уже есть в рабочем пространстве.",
+				"clusterInUse": "Кластер всё ещё используется виртуальной машиной. Сначала перенесите её в другой кластер.",
+				"capacityLocked": "Так можно изменить только запланированную позицию.",
+				"clusterInvalid": "Недопустимые настройки кластера. Проверьте значения erasure coding.",
+				"regionInUse": "Этот регион всё ещё используется хостом.",
+				"saveFailed": "Не удалось сохранить изменение.",
+				"deleteFailed": "Не удалось удалить позицию."
+			},
+			"fields": {
+				"status": "Статус",
+				"availableFrom": "Дата поставки",
+				"hostname": "Имя хоста",
+				"needDate": "Дата потребности",
+				"provider": "Провайдер",
+				"region": "Регион дата-центра",
+				"model": "Модель",
+				"ramGb": "Память (ГБ)",
+				"vcpu": "Ядра vCPU",
+				"storageGb": "Локальный диск (ГБ)",
+				"capacity": "Ёмкость",
+				"capacityGb": "Ёмкость (ГБ)",
+				"project": "Проект",
+				"cluster": "Кластер Ceph",
+				"name": "Название",
+				"kind": "Тип кластера",
+				"dataChunks": "Блоки данных (k)",
+				"codingChunks": "Блоки кодирования (m)",
+				"fillThreshold": "Порог заполнения (%)",
+				"leadTimeDays": "Срок поставки (дни)",
+				"label": "Метка"
+			},
+			"kind": {
+				"self_managed": "Собственный (self-managed)",
+				"managed_service": "Управляемый сервис"
+			},
+			"provider": {
+				"other": "Другой"
+			},
+			"statusDialog": {
+				"title": "Изменить статус",
+				"dateRequired": "Обязательна для заказанной позиции: ожидаемая дата поставки.",
+				"dateOptional": "Необязательно. Установленной позиции без даты будет присвоена сегодняшняя дата; у запланированной даты нет."
+			},
+			"orderPlan": {
+				"rows": "Строк: {{rows}}",
+				"late": "Просрочено: {{late}}",
+				"download": "Скачать XLSX",
+				"downloadFailed": "Не удалось скачать план заказов.",
+				"empty": "Сейчас заказывать нечего.",
+				"orderBy": "Заказать до",
+				"type": "Тип позиции",
+				"quantity": "Количество",
+				"lateBadge": "Просрочено",
+				"types": {
+					"host": "Хост",
+					"storageNode": "Узел хранилища",
+					"storageService": "Сервис хранилища"
+				}
+			},
+			"hosts": {
+				"allProjects": "Все проекты",
+				"allRegions": "Все регионы",
+				"allStatuses": "Все статусы",
+				"empty": "Нет хостов, подходящих под фильтры.",
+				"host": "Хост",
+				"ramPeak": "Пиковое использование памяти",
+				"ramUse": "Использование памяти хоста {{host}}",
+				"vms": "ВМ",
+				"warnings": "Предупреждения по хостам"
+			},
+			"warnings": {
+				"title": "Предупреждения о ёмкости",
+				"none": "Предупреждений о ёмкости нет.",
+				"showAll": "Показать все ({{total}})",
+				"showFewer": "Показать меньше",
+				"severity": {
+					"error": "Ошибки: {{total}}",
+					"warning": "Предупреждения: {{total}}",
+					"info": "Сведения: {{total}}"
+				},
+				"severityName": {
+					"error": "Ошибка",
+					"warning": "Предупреждение",
+					"info": "Сведения"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) стартует {{date}}, но хост {{host}} к этому времени ещё не поставлен.",
+				"ORDER_LATE": "{{target}} нужно было заказать до {{date}}.",
+				"OVER_100": "{{target}} превышает ёмкость с {{date}}.",
+				"OVER_80": "{{target}} достигает 80% ёмкости {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) не размещена ни на одном хосте.",
+				"VM_UNSCHEDULED": "У {{vm}} ({{project}}) нет даты начала.",
+				"CLUSTER_NOT_READY": "{{target}}: ёмкость ещё не поставлена, когда она нужна ВМ, начиная с {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}}: не хватает ёмкости; дефицит начинается {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}}: не хватает ёмкости."
+			},
+			"storage": {
+				"addCluster": "Добавить кластер",
+				"addEntry": "Добавить ёмкость",
+				"editCluster": "Изменить",
+				"empty": "Кластеров Ceph пока нет.",
+				"noEntries": "В этом кластере пока нет позиций ёмкости.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Установлено (сырая)",
+				"usable": "Доступно",
+				"used": "Занято ВМ",
+				"firstOver80": "Первое превышение 80%",
+				"firstOver100": "Первое превышение 100%",
+				"usage": "Использование {{cluster}}",
+				"shortfall": "Дефицит: {{shortfall}}",
+				"suggestionService": "Докупить {{buy}} до {{date}}.",
+				"suggestionServiceNoDate": "Докупить {{buy}}.",
+				"suggestionNodes": "Добавить {{nodes}} × узел {{node}} до {{date}}.",
+				"suggestionNodesNoDate": "Добавить {{nodes}} × узел {{node}}.",
+				"suggestionNodesUnknown": "Добавить узлы хранилища на {{shortfall}} до {{date}}.",
+				"suggestionNodesUnknownNoDate": "Добавить узлы хранилища на {{shortfall}}.",
+				"deleteClusterTitle": "Удалить {{name}}?",
+				"deleteClusterDescription": "Кластер и его позиции ёмкости будут удалены. Кластер, который использует виртуальная машина, удалить нельзя.",
+				"deleteEntryTitle": "Удалить {{name}}?",
+				"deleteEntryDescription": "Удалить можно только запланированную ёмкость."
+			},
+			"clusterDialog": {
+				"createTitle": "Добавить кластер Ceph",
+				"editTitle": "Изменить кластер Ceph",
+				"selfManagedHint": "Доступная ёмкость — это сырая ёмкость × k / (k + m), ограниченная порогом заполнения.",
+				"managedHint": "У управляемого сервиса нет erasure coding. Доступная ёмкость ограничена порогом заполнения."
+			},
+			"entryDialog": {
+				"title": "Добавить ёмкость",
+				"capacityHint": "Сырая ёмкость узла или блока сервиса в ГБ.",
+				"labelHint": "Необязательно. Без метки позиция получит имя кластера."
 			}
 		}
 	},

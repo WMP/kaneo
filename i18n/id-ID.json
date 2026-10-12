@@ -2344,7 +2344,8 @@
 			"backToBoard": "Kembali ke papan",
 			"portfolio": "Portofolio",
 			"activity": "Aktivitas",
-			"workload": "Beban kerja"
+			"workload": "Beban kerja",
+			"datacenter": "Pusat data"
 		},
 		"projectList": {
 			"viewProject": "Lihat Proyek",
@@ -3596,6 +3597,155 @@
 				"empty": "Tidak ada tugas yang cocok dalam rentang ini.",
 				"error": "Gagal memuat tugas.",
 				"dueOn": " · Jatuh tempo {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Rencana pemesanan",
+				"hosts": "Host",
+				"storage": "Penyimpanan Ceph"
+			},
+			"loadFailed": "Data pusat data tidak dapat dimuat.",
+			"noAccess": {
+				"title": "Tidak ada akses ke pusat data",
+				"description": "Peran Anda tidak mencakup izin pusat data. Minta akses kepada administrator ruang kerja."
+			},
+			"actions": {
+				"save": "Simpan",
+				"changeStatus": "Ubah status"
+			},
+			"errors": {
+				"availableFromRequired": "Item yang dipesan memerlukan tanggal pengiriman yang diharapkan.",
+				"clusterNameTaken": "Klaster dengan nama ini sudah ada di ruang kerja.",
+				"clusterInUse": "Sebuah VM masih menggunakan klaster ini. Pindahkan VM ke klaster lain terlebih dahulu.",
+				"capacityLocked": "Dengan cara ini hanya item yang direncanakan yang dapat diubah.",
+				"clusterInvalid": "Pengaturan klaster tidak valid. Periksa nilai erasure coding.",
+				"regionInUse": "Sebuah host masih menggunakan wilayah ini.",
+				"saveFailed": "Perubahan tidak dapat disimpan.",
+				"deleteFailed": "Item tidak dapat dihapus."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Tanggal pengiriman",
+				"hostname": "Nama host",
+				"needDate": "Tanggal kebutuhan",
+				"provider": "Penyedia",
+				"region": "Wilayah pusat data",
+				"model": "Model",
+				"ramGb": "Memori (GB)",
+				"vcpu": "Inti vCPU",
+				"storageGb": "Disk lokal (GB)",
+				"capacity": "Kapasitas",
+				"capacityGb": "Kapasitas (GB)",
+				"project": "Proyek",
+				"cluster": "Klaster Ceph",
+				"name": "Nama",
+				"kind": "Jenis klaster",
+				"dataChunks": "Chunk data (k)",
+				"codingChunks": "Chunk pengodean (m)",
+				"fillThreshold": "Batas pengisian (%)",
+				"leadTimeDays": "Waktu tunggu (hari)",
+				"label": "Label"
+			},
+			"kind": {
+				"self_managed": "Dikelola sendiri",
+				"managed_service": "Layanan terkelola"
+			},
+			"provider": {
+				"other": "Lainnya"
+			},
+			"statusDialog": {
+				"title": "Ubah status",
+				"dateRequired": "Wajib untuk item yang dipesan: tanggal pengiriman yang diharapkan.",
+				"dateOptional": "Opsional. Item terpasang tanpa tanggal mendapat tanggal hari ini; item yang direncanakan tidak memiliki tanggal."
+			},
+			"orderPlan": {
+				"rows": "Baris: {{rows}}",
+				"late": "Terlambat: {{late}}",
+				"download": "Unduh XLSX",
+				"downloadFailed": "Rencana pemesanan tidak dapat diunduh.",
+				"empty": "Saat ini tidak ada yang perlu dipesan.",
+				"orderBy": "Pesan sebelum",
+				"type": "Jenis item",
+				"quantity": "Jumlah",
+				"lateBadge": "Terlambat",
+				"types": {
+					"host": "Host",
+					"storageNode": "Node penyimpanan",
+					"storageService": "Layanan penyimpanan"
+				}
+			},
+			"hosts": {
+				"allProjects": "Semua proyek",
+				"allRegions": "Semua wilayah",
+				"allStatuses": "Semua status",
+				"empty": "Tidak ada host yang cocok dengan filter.",
+				"host": "Host",
+				"ramPeak": "Penggunaan memori puncak",
+				"ramUse": "Penggunaan memori {{host}}",
+				"vms": "VM",
+				"warnings": "Peringatan host"
+			},
+			"warnings": {
+				"title": "Peringatan kapasitas",
+				"none": "Tidak ada peringatan kapasitas.",
+				"showAll": "Tampilkan semua ({{total}})",
+				"showFewer": "Tampilkan lebih sedikit",
+				"severity": {
+					"error": "Kesalahan: {{total}}",
+					"warning": "Peringatan: {{total}}",
+					"info": "Informasi: {{total}}"
+				},
+				"severityName": {
+					"error": "Kesalahan",
+					"warning": "Peringatan",
+					"info": "Informasi"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) dimulai pada {{date}}, tetapi {{host}} belum dikirim pada saat itu.",
+				"ORDER_LATE": "{{target}} seharusnya sudah dipesan sebelum {{date}}.",
+				"OVER_100": "{{target}} melebihi kapasitas sejak {{date}}.",
+				"OVER_80": "{{target}} mencapai 80% kapasitasnya pada {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) belum ditempatkan di host mana pun.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) tidak memiliki tanggal mulai.",
+				"CLUSTER_NOT_READY": "{{target}}: kapasitas belum dikirim saat VM membutuhkannya, mulai {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} tidak memiliki kapasitas yang cukup; kekurangan dimulai pada {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} tidak memiliki kapasitas yang cukup."
+			},
+			"storage": {
+				"addCluster": "Tambah klaster",
+				"addEntry": "Tambah kapasitas",
+				"editCluster": "Edit",
+				"empty": "Belum ada klaster Ceph.",
+				"noEntries": "Klaster ini belum memiliki entri kapasitas.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Terpasang (mentah)",
+				"usable": "Dapat digunakan",
+				"used": "Dipakai VM",
+				"firstOver80": "Pertama melewati 80%",
+				"firstOver100": "Pertama melewati 100%",
+				"usage": "Penggunaan {{cluster}}",
+				"shortfall": "Kekurangan: {{shortfall}}",
+				"suggestionService": "Beli {{buy}} sebelum {{date}}.",
+				"suggestionServiceNoDate": "Beli {{buy}}.",
+				"suggestionNodes": "Tambahkan {{nodes}} × node {{node}} sebelum {{date}}.",
+				"suggestionNodesNoDate": "Tambahkan {{nodes}} × node {{node}}.",
+				"suggestionNodesUnknown": "Tambahkan node penyimpanan senilai {{shortfall}} sebelum {{date}}.",
+				"suggestionNodesUnknownNoDate": "Tambahkan node penyimpanan senilai {{shortfall}}.",
+				"deleteClusterTitle": "Hapus {{name}}?",
+				"deleteClusterDescription": "Klaster dan entri kapasitasnya akan dihapus. Klaster yang digunakan oleh VM tidak dapat dihapus.",
+				"deleteEntryTitle": "Hapus {{name}}?",
+				"deleteEntryDescription": "Hanya kapasitas yang direncanakan yang dapat dihapus."
+			},
+			"clusterDialog": {
+				"createTitle": "Tambah klaster Ceph",
+				"editTitle": "Edit klaster Ceph",
+				"selfManagedHint": "Kapasitas yang dapat digunakan adalah kapasitas mentah × k / (k + m), dibatasi oleh batas pengisian.",
+				"managedHint": "Layanan terkelola tidak memiliki erasure coding. Kapasitas yang dapat digunakan dibatasi oleh batas pengisian."
+			},
+			"entryDialog": {
+				"title": "Tambah kapasitas",
+				"capacityHint": "Kapasitas mentah node atau blok layanan, dalam GB.",
+				"labelHint": "Opsional. Tanpa label, entri diberi nama sesuai klaster."
 			}
 		}
 	},

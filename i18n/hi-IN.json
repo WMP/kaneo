@@ -2347,7 +2347,8 @@
 			"backToBoard": "बोर्ड पर वापस जाएँ",
 			"portfolio": "पोर्टफोलियो",
 			"activity": "गतिविधि",
-			"workload": "कार्यभार"
+			"workload": "कार्यभार",
+			"datacenter": "डेटासेंटर"
 		},
 		"projectList": {
 			"viewProject": "प्रोजेक्ट देखें",
@@ -3609,6 +3610,155 @@
 				"empty": "इस श्रेणी में कोई मेल खाता कार्य नहीं है।",
 				"error": "कार्य लोड करने में विफल रहा।",
 				"dueOn": " · नियत तिथि {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "ऑर्डर योजना",
+				"hosts": "होस्ट",
+				"storage": "Ceph स्टोरेज"
+			},
+			"loadFailed": "डेटासेंटर का डेटा लोड नहीं हो सका।",
+			"noAccess": {
+				"title": "डेटासेंटर तक पहुँच नहीं है",
+				"description": "आपकी भूमिका में डेटासेंटर की अनुमति शामिल नहीं है। वर्कस्पेस व्यवस्थापक से पहुँच माँगें।"
+			},
+			"actions": {
+				"save": "सहेजें",
+				"changeStatus": "स्थिति बदलें"
+			},
+			"errors": {
+				"availableFromRequired": "ऑर्डर की गई मद के लिए अपेक्षित डिलीवरी तिथि आवश्यक है।",
+				"clusterNameTaken": "इस नाम का क्लस्टर वर्कस्पेस में पहले से मौजूद है।",
+				"clusterInUse": "कोई VM अभी भी इस क्लस्टर का उपयोग कर रही है। पहले VM को किसी दूसरे क्लस्टर में ले जाएँ।",
+				"capacityLocked": "इस तरह केवल नियोजित मद बदली जा सकती है।",
+				"clusterInvalid": "क्लस्टर की सेटिंग मान्य नहीं हैं। erasure coding के मान जाँचें।",
+				"regionInUse": "कोई होस्ट अभी भी इस क्षेत्र का उपयोग कर रहा है।",
+				"saveFailed": "बदलाव सहेजा नहीं जा सका।",
+				"deleteFailed": "मद हटाई नहीं जा सकी।"
+			},
+			"fields": {
+				"status": "स्थिति",
+				"availableFrom": "डिलीवरी तिथि",
+				"hostname": "होस्ट का नाम",
+				"needDate": "आवश्यकता तिथि",
+				"provider": "प्रदाता",
+				"region": "डेटासेंटर क्षेत्र",
+				"model": "मॉडल",
+				"ramGb": "मेमोरी (GB)",
+				"vcpu": "vCPU कोर",
+				"storageGb": "स्थानीय डिस्क (GB)",
+				"capacity": "क्षमता",
+				"capacityGb": "क्षमता (GB)",
+				"project": "प्रोजेक्ट",
+				"cluster": "Ceph क्लस्टर",
+				"name": "नाम",
+				"kind": "क्लस्टर का प्रकार",
+				"dataChunks": "डेटा चंक (k)",
+				"codingChunks": "कोडिंग चंक (m)",
+				"fillThreshold": "भराव सीमा (%)",
+				"leadTimeDays": "डिलीवरी समय (दिन)",
+				"label": "लेबल"
+			},
+			"kind": {
+				"self_managed": "स्वयं-प्रबंधित",
+				"managed_service": "प्रबंधित सेवा"
+			},
+			"provider": {
+				"other": "अन्य"
+			},
+			"statusDialog": {
+				"title": "स्थिति बदलें",
+				"dateRequired": "ऑर्डर की गई मद के लिए अनिवार्य: अपेक्षित डिलीवरी तिथि।",
+				"dateOptional": "वैकल्पिक। तिथि के बिना स्थापित मद को आज की तिथि मिलती है; नियोजित मद की कोई तिथि नहीं होती।"
+			},
+			"orderPlan": {
+				"rows": "पंक्तियाँ: {{rows}}",
+				"late": "विलंबित: {{late}}",
+				"download": "XLSX डाउनलोड करें",
+				"downloadFailed": "ऑर्डर योजना डाउनलोड नहीं हो सकी।",
+				"empty": "अभी ऑर्डर करने के लिए कुछ नहीं है।",
+				"orderBy": "इस तिथि तक ऑर्डर करें",
+				"type": "मद का प्रकार",
+				"quantity": "मात्रा",
+				"lateBadge": "विलंबित",
+				"types": {
+					"host": "होस्ट",
+					"storageNode": "स्टोरेज नोड",
+					"storageService": "स्टोरेज सेवा"
+				}
+			},
+			"hosts": {
+				"allProjects": "सभी प्रोजेक्ट",
+				"allRegions": "सभी क्षेत्र",
+				"allStatuses": "सभी स्थितियाँ",
+				"empty": "कोई होस्ट फ़िल्टर से मेल नहीं खाता।",
+				"host": "होस्ट",
+				"ramPeak": "मेमोरी का अधिकतम उपयोग",
+				"ramUse": "{{host}} का मेमोरी उपयोग",
+				"vms": "वर्चुअल मशीनें",
+				"warnings": "होस्ट चेतावनियाँ"
+			},
+			"warnings": {
+				"title": "क्षमता चेतावनियाँ",
+				"none": "कोई क्षमता चेतावनी नहीं है।",
+				"showAll": "सभी दिखाएँ ({{total}})",
+				"showFewer": "कम दिखाएँ",
+				"severity": {
+					"error": "त्रुटियाँ: {{total}}",
+					"warning": "चेतावनियाँ: {{total}}",
+					"info": "सूचनाएँ: {{total}}"
+				},
+				"severityName": {
+					"error": "त्रुटि",
+					"warning": "चेतावनी",
+					"info": "सूचना"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) {{date}} को शुरू होती है, लेकिन तब तक {{host}} की डिलीवरी नहीं हुई होगी।",
+				"ORDER_LATE": "{{target}} का ऑर्डर {{date}} तक दे दिया जाना चाहिए था।",
+				"OVER_100": "{{target}} {{date}} से क्षमता से अधिक हो गया है।",
+				"OVER_80": "{{target}} {{date}} को अपनी क्षमता के 80% तक पहुँच जाता है।",
+				"VM_UNPLACED": "{{vm}} ({{project}}) किसी होस्ट पर नहीं रखी गई है।",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) की कोई आरंभ तिथि नहीं है।",
+				"CLUSTER_NOT_READY": "{{target}}: जब VM को क्षमता चाहिए, यानी {{date}} से, तब तक क्षमता की डिलीवरी नहीं हुई है।",
+				"CLUSTER_SHORTFALL": "{{target}} में पर्याप्त क्षमता नहीं है; कमी {{date}} से शुरू होती है।",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} में पर्याप्त क्षमता नहीं है।"
+			},
+			"storage": {
+				"addCluster": "क्लस्टर जोड़ें",
+				"addEntry": "क्षमता जोड़ें",
+				"editCluster": "संपादित करें",
+				"empty": "अभी कोई Ceph क्लस्टर नहीं है।",
+				"noEntries": "इस क्लस्टर में अभी कोई क्षमता मद नहीं है।",
+				"erasureCoding": "Erasure coding",
+				"installed": "स्थापित (कच्ची)",
+				"usable": "उपयोग योग्य",
+				"used": "VM द्वारा उपयोग की गई",
+				"firstOver80": "80% पार होने की पहली तिथि",
+				"firstOver100": "100% पार होने की पहली तिथि",
+				"usage": "{{cluster}} का उपयोग",
+				"shortfall": "कमी: {{shortfall}}",
+				"suggestionService": "{{date}} तक {{buy}} खरीदें।",
+				"suggestionServiceNoDate": "{{buy}} खरीदें।",
+				"suggestionNodes": "{{date}} तक {{nodes}} × {{node}} नोड जोड़ें।",
+				"suggestionNodesNoDate": "{{nodes}} × {{node}} नोड जोड़ें।",
+				"suggestionNodesUnknown": "{{date}} तक {{shortfall}} मूल्य के स्टोरेज नोड जोड़ें।",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} मूल्य के स्टोरेज नोड जोड़ें।",
+				"deleteClusterTitle": "{{name}} हटाएँ?",
+				"deleteClusterDescription": "क्लस्टर और उसकी क्षमता मदें हटा दी जाएँगी। जिस क्लस्टर का कोई VM उपयोग कर रही है, उसे हटाया नहीं जा सकता।",
+				"deleteEntryTitle": "{{name}} हटाएँ?",
+				"deleteEntryDescription": "केवल नियोजित क्षमता हटाई जा सकती है।"
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph क्लस्टर जोड़ें",
+				"editTitle": "Ceph क्लस्टर संपादित करें",
+				"selfManagedHint": "उपयोग योग्य क्षमता कच्ची क्षमता × k / (k + m) होती है, जो भराव सीमा से सीमित है।",
+				"managedHint": "प्रबंधित सेवा में erasure coding नहीं होती। उपयोग योग्य क्षमता भराव सीमा से सीमित है।"
+			},
+			"entryDialog": {
+				"title": "क्षमता जोड़ें",
+				"capacityHint": "नोड या सेवा ब्लॉक की कच्ची क्षमता, GB में।",
+				"labelHint": "वैकल्पिक। लेबल के बिना मद को क्लस्टर का नाम मिलता है।"
 			}
 		}
 	},

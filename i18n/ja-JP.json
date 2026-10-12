@@ -2344,7 +2344,8 @@
 			"backToBoard": "ボードに戻る",
 			"portfolio": "ポートフォリオ",
 			"activity": "アクティビティ",
-			"workload": "ワークロード"
+			"workload": "ワークロード",
+			"datacenter": "データセンター"
 		},
 		"projectList": {
 			"viewProject": "プロジェクトを表示",
@@ -3596,6 +3597,155 @@
 				"empty": "この範囲に一致するタスクはありません。",
 				"error": "タスクの読み込みに失敗しました。",
 				"dueOn": " · 期限 {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "発注計画",
+				"hosts": "ホスト",
+				"storage": "Ceph ストレージ"
+			},
+			"loadFailed": "データセンターのデータを読み込めませんでした。",
+			"noAccess": {
+				"title": "データセンターにアクセスできません",
+				"description": "あなたのロールにはデータセンターの権限が含まれていません。ワークスペース管理者にアクセスを依頼してください。"
+			},
+			"actions": {
+				"save": "保存",
+				"changeStatus": "ステータスを変更"
+			},
+			"errors": {
+				"availableFromRequired": "発注済みの項目には納品予定日が必要です。",
+				"clusterNameTaken": "この名前のクラスターはワークスペースにすでに存在します。",
+				"clusterInUse": "このクラスターは VM がまだ使用しています。先に VM を別のクラスターへ移動してください。",
+				"capacityLocked": "この方法で変更できるのは計画中の項目だけです。",
+				"clusterInvalid": "クラスターの設定が正しくありません。イレイジャーコーディングの値を確認してください。",
+				"regionInUse": "このリージョンはホストがまだ使用しています。",
+				"saveFailed": "変更を保存できませんでした。",
+				"deleteFailed": "項目を削除できませんでした。"
+			},
+			"fields": {
+				"status": "ステータス",
+				"availableFrom": "納品日",
+				"hostname": "ホスト名",
+				"needDate": "必要日",
+				"provider": "プロバイダー",
+				"region": "データセンターのリージョン",
+				"model": "モデル",
+				"ramGb": "メモリ (GB)",
+				"vcpu": "vCPU コア数",
+				"storageGb": "ローカルディスク (GB)",
+				"capacity": "容量",
+				"capacityGb": "容量 (GB)",
+				"project": "プロジェクト",
+				"cluster": "Ceph クラスター",
+				"name": "名前",
+				"kind": "クラスターの種類",
+				"dataChunks": "データチャンク (k)",
+				"codingChunks": "コーディングチャンク (m)",
+				"fillThreshold": "使用率のしきい値 (%)",
+				"leadTimeDays": "リードタイム (日)",
+				"label": "ラベル"
+			},
+			"kind": {
+				"self_managed": "自己管理",
+				"managed_service": "マネージドサービス"
+			},
+			"provider": {
+				"other": "その他"
+			},
+			"statusDialog": {
+				"title": "ステータスを変更",
+				"dateRequired": "発注済みの項目では必須です：納品予定日。",
+				"dateOptional": "任意です。日付のない設置済みの項目には今日の日付が入ります。計画中の項目には日付がありません。"
+			},
+			"orderPlan": {
+				"rows": "行数: {{rows}}",
+				"late": "遅延: {{late}}",
+				"download": "XLSX をダウンロード",
+				"downloadFailed": "発注計画をダウンロードできませんでした。",
+				"empty": "現在、発注するものはありません。",
+				"orderBy": "発注期限",
+				"type": "項目の種類",
+				"quantity": "数量",
+				"lateBadge": "遅延",
+				"types": {
+					"host": "ホスト",
+					"storageNode": "ストレージノード",
+					"storageService": "ストレージサービス"
+				}
+			},
+			"hosts": {
+				"allProjects": "すべてのプロジェクト",
+				"allRegions": "すべてのリージョン",
+				"allStatuses": "すべてのステータス",
+				"empty": "フィルターに一致するホストはありません。",
+				"host": "ホスト",
+				"ramPeak": "メモリ使用のピーク",
+				"ramUse": "{{host}} のメモリ使用率",
+				"vms": "VM",
+				"warnings": "ホストの警告"
+			},
+			"warnings": {
+				"title": "容量の警告",
+				"none": "容量の警告はありません。",
+				"showAll": "すべて表示 ({{total}})",
+				"showFewer": "表示を減らす",
+				"severity": {
+					"error": "エラー: {{total}}",
+					"warning": "警告: {{total}}",
+					"info": "通知: {{total}}"
+				},
+				"severityName": {
+					"error": "エラー",
+					"warning": "警告",
+					"info": "通知"
+				},
+				"HOST_NOT_READY": "{{vm}}（{{project}}）は {{date}} に開始しますが、その時点で {{host}} は納品されていません。",
+				"ORDER_LATE": "{{target}} は {{date}} までに発注する必要がありました。",
+				"OVER_100": "{{target}} は {{date}} から容量を超えています。",
+				"OVER_80": "{{target}} は {{date}} に容量の 80% に達します。",
+				"VM_UNPLACED": "{{vm}}（{{project}}）はどのホストにも配置されていません。",
+				"VM_UNSCHEDULED": "{{vm}}（{{project}}）には開始日がありません。",
+				"CLUSTER_NOT_READY": "{{target}}: VM が容量を必要とする {{date}} 以降、容量がまだ納品されていません。",
+				"CLUSTER_SHORTFALL": "{{target}} は容量が不足しています。不足は {{date}} から始まります。",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} は容量が不足しています。"
+			},
+			"storage": {
+				"addCluster": "クラスターを追加",
+				"addEntry": "容量を追加",
+				"editCluster": "編集",
+				"empty": "Ceph クラスターはまだありません。",
+				"noEntries": "このクラスターにはまだ容量の項目がありません。",
+				"erasureCoding": "イレイジャーコーディング",
+				"installed": "設置済み (物理)",
+				"usable": "使用可能",
+				"used": "VM の使用量",
+				"firstOver80": "80% を最初に超える日",
+				"firstOver100": "100% を最初に超える日",
+				"usage": "{{cluster}} の使用率",
+				"shortfall": "不足: {{shortfall}}",
+				"suggestionService": "{{date}} までに {{buy}} を追加購入してください。",
+				"suggestionServiceNoDate": "{{buy}} を追加購入してください。",
+				"suggestionNodes": "{{date}} までに {{node}} ノードを {{nodes}} 台追加してください。",
+				"suggestionNodesNoDate": "{{node}} ノードを {{nodes}} 台追加してください。",
+				"suggestionNodesUnknown": "{{date}} までに {{shortfall}} 分のストレージノードを追加してください。",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} 分のストレージノードを追加してください。",
+				"deleteClusterTitle": "{{name}} を削除しますか？",
+				"deleteClusterDescription": "クラスターとその容量の項目が削除されます。VM が使用しているクラスターは削除できません。",
+				"deleteEntryTitle": "{{name}} を削除しますか？",
+				"deleteEntryDescription": "削除できるのは計画中の容量だけです。"
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph クラスターを追加",
+				"editTitle": "Ceph クラスターを編集",
+				"selfManagedHint": "使用可能容量は、物理容量 × k / (k + m) を使用率のしきい値で制限した値です。",
+				"managedHint": "マネージドサービスにはイレイジャーコーディングがありません。使用可能容量は使用率のしきい値で制限されます。"
+			},
+			"entryDialog": {
+				"title": "容量を追加",
+				"capacityHint": "ノードまたはサービスブロックの物理容量 (GB)。",
+				"labelHint": "任意です。ラベルがない場合、項目にはクラスター名が付きます。"
 			}
 		}
 	},

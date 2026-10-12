@@ -2344,7 +2344,8 @@
 			"backToBoard": "返回看板",
 			"portfolio": "项目组合",
 			"activity": "活动",
-			"workload": "工作量"
+			"workload": "工作量",
+			"datacenter": "数据中心"
 		},
 		"projectList": {
 			"viewProject": "查看项目",
@@ -3596,6 +3597,155 @@
 				"empty": "此范围内没有匹配的任务。",
 				"error": "加载任务失败。",
 				"dueOn": " · 截止 {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "订购计划",
+				"hosts": "主机",
+				"storage": "Ceph 存储"
+			},
+			"loadFailed": "无法加载数据中心数据。",
+			"noAccess": {
+				"title": "无权访问数据中心",
+				"description": "你的角色不包含数据中心权限。请向工作区管理员申请访问权限。"
+			},
+			"actions": {
+				"save": "保存",
+				"changeStatus": "更改状态"
+			},
+			"errors": {
+				"availableFromRequired": "已订购的项目需要填写预计交付日期。",
+				"clusterNameTaken": "工作区中已存在同名集群。",
+				"clusterInUse": "仍有虚拟机在使用此集群。请先将虚拟机迁移到其他集群。",
+				"capacityLocked": "这种方式只能更改处于计划状态的条目。",
+				"clusterInvalid": "集群设置无效。请检查纠删码参数。",
+				"regionInUse": "仍有主机在使用此区域。",
+				"saveFailed": "无法保存更改。",
+				"deleteFailed": "无法删除该项目。"
+			},
+			"fields": {
+				"status": "状态",
+				"availableFrom": "交付日期",
+				"hostname": "主机名",
+				"needDate": "需求日期",
+				"provider": "提供商",
+				"region": "数据中心区域",
+				"model": "型号",
+				"ramGb": "内存 (GB)",
+				"vcpu": "vCPU 核数",
+				"storageGb": "本地磁盘 (GB)",
+				"capacity": "容量",
+				"capacityGb": "容量 (GB)",
+				"project": "项目",
+				"cluster": "Ceph 集群",
+				"name": "名称",
+				"kind": "集群类型",
+				"dataChunks": "数据块 (k)",
+				"codingChunks": "编码块 (m)",
+				"fillThreshold": "填充阈值 (%)",
+				"leadTimeDays": "交付周期（天）",
+				"label": "标签"
+			},
+			"kind": {
+				"self_managed": "自行管理",
+				"managed_service": "托管服务"
+			},
+			"provider": {
+				"other": "其他"
+			},
+			"statusDialog": {
+				"title": "更改状态",
+				"dateRequired": "已订购的项目必填：预计交付日期。",
+				"dateOptional": "可选。未填日期的已安装项目将使用今天的日期；计划中的项目没有日期。"
+			},
+			"orderPlan": {
+				"rows": "行数：{{rows}}",
+				"late": "已延误：{{late}}",
+				"download": "下载 XLSX",
+				"downloadFailed": "无法下载订购计划。",
+				"empty": "目前没有需要订购的项目。",
+				"orderBy": "最晚订购日期",
+				"type": "项目类型",
+				"quantity": "数量",
+				"lateBadge": "已延误",
+				"types": {
+					"host": "主机",
+					"storageNode": "存储节点",
+					"storageService": "存储服务"
+				}
+			},
+			"hosts": {
+				"allProjects": "所有项目",
+				"allRegions": "所有区域",
+				"allStatuses": "所有状态",
+				"empty": "没有符合筛选条件的主机。",
+				"host": "主机",
+				"ramPeak": "内存使用峰值",
+				"ramUse": "{{host}} 的内存使用率",
+				"vms": "虚拟机",
+				"warnings": "主机警告"
+			},
+			"warnings": {
+				"title": "容量警告",
+				"none": "没有容量警告。",
+				"showAll": "显示全部（{{total}}）",
+				"showFewer": "收起",
+				"severity": {
+					"error": "错误：{{total}}",
+					"warning": "警告：{{total}}",
+					"info": "提示：{{total}}"
+				},
+				"severityName": {
+					"error": "错误",
+					"warning": "警告",
+					"info": "提示"
+				},
+				"HOST_NOT_READY": "{{vm}}（{{project}}）将于 {{date}} 开始，但届时 {{host}} 尚未交付。",
+				"ORDER_LATE": "{{target}} 本应在 {{date}} 之前订购。",
+				"OVER_100": "{{target}} 自 {{date}} 起超出容量。",
+				"OVER_80": "{{target}} 将在 {{date}} 达到容量的 80%。",
+				"VM_UNPLACED": "{{vm}}（{{project}}）尚未分配到任何主机。",
+				"VM_UNSCHEDULED": "{{vm}}（{{project}}）没有开始日期。",
+				"CLUSTER_NOT_READY": "{{target}}：自 {{date}} 起虚拟机需要容量时，容量尚未交付。",
+				"CLUSTER_SHORTFALL": "{{target}} 容量不足；缺口自 {{date}} 开始。",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} 容量不足。"
+			},
+			"storage": {
+				"addCluster": "添加集群",
+				"addEntry": "添加容量",
+				"editCluster": "编辑",
+				"empty": "还没有 Ceph 集群。",
+				"noEntries": "此集群还没有容量条目。",
+				"erasureCoding": "纠删码",
+				"installed": "已安装（裸容量）",
+				"usable": "可用",
+				"used": "虚拟机已用",
+				"firstOver80": "首次超过 80%",
+				"firstOver100": "首次超过 100%",
+				"usage": "{{cluster}} 的使用率",
+				"shortfall": "缺口：{{shortfall}}",
+				"suggestionService": "请在 {{date}} 前加购 {{buy}}。",
+				"suggestionServiceNoDate": "请加购 {{buy}}。",
+				"suggestionNodes": "请在 {{date}} 前添加 {{nodes}} 个 {{node}} 节点。",
+				"suggestionNodesNoDate": "请添加 {{nodes}} 个 {{node}} 节点。",
+				"suggestionNodesUnknown": "请在 {{date}} 前添加容量为 {{shortfall}} 的存储节点。",
+				"suggestionNodesUnknownNoDate": "请添加容量为 {{shortfall}} 的存储节点。",
+				"deleteClusterTitle": "删除 {{name}}？",
+				"deleteClusterDescription": "集群及其容量条目将被删除。正在被虚拟机使用的集群无法删除。",
+				"deleteEntryTitle": "删除 {{name}}？",
+				"deleteEntryDescription": "只能删除处于计划状态的容量。"
+			},
+			"clusterDialog": {
+				"createTitle": "添加 Ceph 集群",
+				"editTitle": "编辑 Ceph 集群",
+				"selfManagedHint": "可用容量为裸容量 × k / (k + m)，并受填充阈值限制。",
+				"managedHint": "托管服务没有纠删码。可用容量受填充阈值限制。"
+			},
+			"entryDialog": {
+				"title": "添加容量",
+				"capacityHint": "节点或服务块的裸容量，单位为 GB。",
+				"labelHint": "可选。未填标签时，条目将以集群名称命名。"
 			}
 		}
 	},

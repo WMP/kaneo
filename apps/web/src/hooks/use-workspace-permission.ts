@@ -38,6 +38,10 @@ const CAPABILITIES = {
   removeMembers: { member: ["delete"] },
   // Exactly what POST /api/resource/{id}/link requires (workspace role).
   linkResources: { project: ["update"], member: ["update"] },
+  // The workspace-level datacenter: capacity of every host and Ceph cluster,
+  // the order plan, and changing host and capacity status.
+  datacenterRead: { datacenter: ["read"] },
+  datacenterManage: { datacenter: ["manage"] },
 } as const satisfies Record<string, Record<string, string[]>>;
 
 type Capability = keyof typeof CAPABILITIES;
@@ -121,6 +125,8 @@ export function useWorkspacePermission() {
       canManageTeam: () => can.manageTeam,
       canRemoveMembers: () => can.removeMembers,
       canLinkResources: () => can.linkResources,
+      canReadDatacenter: () => can.datacenterRead,
+      canManageDatacenter: () => can.datacenterManage,
       // Escape hatch for ad-hoc permission checks (uncached). Prefer adding
       // a capability above.
       hasPermission: async (permissions: Record<string, string[]>) => {

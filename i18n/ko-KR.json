@@ -2344,7 +2344,8 @@
 			"backToBoard": "보드로 돌아가기",
 			"portfolio": "포트폴리오",
 			"activity": "활동",
-			"workload": "업무량"
+			"workload": "업무량",
+			"datacenter": "데이터센터"
 		},
 		"projectList": {
 			"viewProject": "프로젝트 보기",
@@ -3596,6 +3597,155 @@
 				"empty": "이 범위에 일치하는 작업이 없습니다.",
 				"error": "작업을 불러오지 못했습니다.",
 				"dueOn": " · 마감 {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "주문 계획",
+				"hosts": "호스트",
+				"storage": "Ceph 스토리지"
+			},
+			"loadFailed": "데이터센터 데이터를 불러오지 못했습니다.",
+			"noAccess": {
+				"title": "데이터센터에 접근할 수 없습니다",
+				"description": "내 역할에 데이터센터 권한이 포함되어 있지 않습니다. 워크스페이스 관리자에게 접근 권한을 요청하세요."
+			},
+			"actions": {
+				"save": "저장",
+				"changeStatus": "상태 변경"
+			},
+			"errors": {
+				"availableFromRequired": "주문한 항목에는 예상 납품일이 필요합니다.",
+				"clusterNameTaken": "이 이름의 클러스터가 워크스페이스에 이미 있습니다.",
+				"clusterInUse": "아직 VM이 이 클러스터를 사용하고 있습니다. 먼저 VM을 다른 클러스터로 옮기세요.",
+				"capacityLocked": "이 방법으로는 계획 상태의 항목만 변경할 수 있습니다.",
+				"clusterInvalid": "클러스터 설정이 올바르지 않습니다. 이레이저 코딩 값을 확인하세요.",
+				"regionInUse": "아직 호스트가 이 리전을 사용하고 있습니다.",
+				"saveFailed": "변경 사항을 저장하지 못했습니다.",
+				"deleteFailed": "항목을 삭제하지 못했습니다."
+			},
+			"fields": {
+				"status": "상태",
+				"availableFrom": "납품일",
+				"hostname": "호스트 이름",
+				"needDate": "필요일",
+				"provider": "제공업체",
+				"region": "데이터센터 리전",
+				"model": "모델",
+				"ramGb": "메모리 (GB)",
+				"vcpu": "vCPU 코어",
+				"storageGb": "로컬 디스크 (GB)",
+				"capacity": "용량",
+				"capacityGb": "용량 (GB)",
+				"project": "프로젝트",
+				"cluster": "Ceph 클러스터",
+				"name": "이름",
+				"kind": "클러스터 유형",
+				"dataChunks": "데이터 청크 (k)",
+				"codingChunks": "코딩 청크 (m)",
+				"fillThreshold": "사용률 임계값 (%)",
+				"leadTimeDays": "리드 타임 (일)",
+				"label": "레이블"
+			},
+			"kind": {
+				"self_managed": "자체 관리",
+				"managed_service": "관리형 서비스"
+			},
+			"provider": {
+				"other": "기타"
+			},
+			"statusDialog": {
+				"title": "상태 변경",
+				"dateRequired": "주문한 항목에는 필수입니다: 예상 납품일.",
+				"dateOptional": "선택 사항입니다. 날짜가 없는 설치 완료 항목에는 오늘 날짜가 들어가며, 계획 상태 항목에는 날짜가 없습니다."
+			},
+			"orderPlan": {
+				"rows": "행: {{rows}}",
+				"late": "지연: {{late}}",
+				"download": "XLSX 다운로드",
+				"downloadFailed": "주문 계획을 다운로드하지 못했습니다.",
+				"empty": "지금은 주문할 항목이 없습니다.",
+				"orderBy": "주문 기한",
+				"type": "항목 유형",
+				"quantity": "수량",
+				"lateBadge": "지연",
+				"types": {
+					"host": "호스트",
+					"storageNode": "스토리지 노드",
+					"storageService": "스토리지 서비스"
+				}
+			},
+			"hosts": {
+				"allProjects": "모든 프로젝트",
+				"allRegions": "모든 리전",
+				"allStatuses": "모든 상태",
+				"empty": "필터와 일치하는 호스트가 없습니다.",
+				"host": "호스트",
+				"ramPeak": "메모리 최대 사용률",
+				"ramUse": "{{host}}의 메모리 사용률",
+				"vms": "VM",
+				"warnings": "호스트 경고"
+			},
+			"warnings": {
+				"title": "용량 경고",
+				"none": "용량 경고가 없습니다.",
+				"showAll": "모두 보기 ({{total}})",
+				"showFewer": "줄여서 보기",
+				"severity": {
+					"error": "오류: {{total}}",
+					"warning": "경고: {{total}}",
+					"info": "알림: {{total}}"
+				},
+				"severityName": {
+					"error": "오류",
+					"warning": "경고",
+					"info": "알림"
+				},
+				"HOST_NOT_READY": "{{vm}}({{project}})은(는) {{date}}에 시작하지만 그때까지 {{host}}이(가) 납품되지 않습니다.",
+				"ORDER_LATE": "{{target}}은(는) {{date}}까지 주문했어야 합니다.",
+				"OVER_100": "{{target}}은(는) {{date}}부터 용량을 초과합니다.",
+				"OVER_80": "{{target}}은(는) {{date}}에 용량의 80%에 도달합니다.",
+				"VM_UNPLACED": "{{vm}}({{project}})이(가) 어떤 호스트에도 배치되지 않았습니다.",
+				"VM_UNSCHEDULED": "{{vm}}({{project}})에 시작일이 없습니다.",
+				"CLUSTER_NOT_READY": "{{target}}: VM이 용량을 필요로 하는 {{date}}부터 용량이 아직 납품되지 않았습니다.",
+				"CLUSTER_SHORTFALL": "{{target}}의 용량이 부족합니다. 부족은 {{date}}부터 시작됩니다.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}}의 용량이 부족합니다."
+			},
+			"storage": {
+				"addCluster": "클러스터 추가",
+				"addEntry": "용량 추가",
+				"editCluster": "편집",
+				"empty": "아직 Ceph 클러스터가 없습니다.",
+				"noEntries": "이 클러스터에는 아직 용량 항목이 없습니다.",
+				"erasureCoding": "이레이저 코딩",
+				"installed": "설치됨 (원시)",
+				"usable": "사용 가능",
+				"used": "VM 사용량",
+				"firstOver80": "80%를 처음 넘는 날",
+				"firstOver100": "100%를 처음 넘는 날",
+				"usage": "{{cluster}} 사용률",
+				"shortfall": "부족분: {{shortfall}}",
+				"suggestionService": "{{date}}까지 {{buy}}을(를) 추가로 구매하세요.",
+				"suggestionServiceNoDate": "{{buy}}을(를) 추가로 구매하세요.",
+				"suggestionNodes": "{{date}}까지 {{node}} 노드 {{nodes}}대를 추가하세요.",
+				"suggestionNodesNoDate": "{{node}} 노드 {{nodes}}대를 추가하세요.",
+				"suggestionNodesUnknown": "{{date}}까지 {{shortfall}} 규모의 스토리지 노드를 추가하세요.",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} 규모의 스토리지 노드를 추가하세요.",
+				"deleteClusterTitle": "{{name}}을(를) 삭제할까요?",
+				"deleteClusterDescription": "클러스터와 용량 항목이 삭제됩니다. VM이 사용 중인 클러스터는 삭제할 수 없습니다.",
+				"deleteEntryTitle": "{{name}}을(를) 삭제할까요?",
+				"deleteEntryDescription": "계획 상태의 용량만 삭제할 수 있습니다."
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph 클러스터 추가",
+				"editTitle": "Ceph 클러스터 편집",
+				"selfManagedHint": "사용 가능 용량은 원시 용량 × k / (k + m)이며, 사용률 임계값으로 제한됩니다.",
+				"managedHint": "관리형 서비스에는 이레이저 코딩이 없습니다. 사용 가능 용량은 사용률 임계값으로 제한됩니다."
+			},
+			"entryDialog": {
+				"title": "용량 추가",
+				"capacityHint": "노드 또는 서비스 블록의 원시 용량(GB)입니다.",
+				"labelHint": "선택 사항입니다. 레이블이 없으면 항목에 클러스터 이름이 사용됩니다."
 			}
 		}
 	},
