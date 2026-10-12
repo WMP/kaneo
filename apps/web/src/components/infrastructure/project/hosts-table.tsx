@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -83,13 +84,13 @@ function RenameHostDialog({
       }}
     >
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
               {t("settings:projectInfrastructure.hosts.rename")}
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 py-4">
+          <DialogPanel className="grid gap-2">
             <Label htmlFor="host-label">
               {t("settings:projectInfrastructure.hosts.label")}
             </Label>
@@ -100,7 +101,7 @@ function RenameHostDialog({
               onChange={(event) => setLabel(event.target.value)}
               autoFocus
             />
-          </div>
+          </DialogPanel>
           <DialogFooter>
             <Button
               type="button"

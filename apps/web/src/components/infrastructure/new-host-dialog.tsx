@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -68,7 +69,7 @@ export function NewHostDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
               {t("settings:projectInfrastructure.hosts.add")}
@@ -80,7 +81,7 @@ export function NewHostDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <DialogPanel className="grid gap-4">
             <div className="grid gap-2">
               <Label>
                 {t("settings:projectInfrastructure.hosts.newModel")}
@@ -122,7 +123,7 @@ export function NewHostDialog({
                 onChange={setRegion}
               />
             </div>
-          </div>
+          </DialogPanel>
 
           <DialogFooter>
             <Button

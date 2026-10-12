@@ -1,6 +1,6 @@
 # Plan: infrastructure capacity for migrations
 
-Status: accepted by the product owner on 2026-10-12. Stages 1, 1b (Ceph storage) and 2 (capacity engine, order plan, XLSX) are implemented on `claude/gracious-bohr-oi8g60`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: accepted by the product owner on 2026-10-12. Stages 1, 1b (Ceph storage), 2 (capacity engine, order plan, XLSX), 3 (project lead UI) and the datacenter page of stage 4 are implemented on `claude/gracious-bohr-oi8g60`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 

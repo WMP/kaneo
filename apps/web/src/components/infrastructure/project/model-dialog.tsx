@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -190,7 +191,11 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
       }}
     >
       <DialogContent>
-        <form onSubmit={handleSubmit} noValidate>
+        <form
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           <DialogHeader>
             <DialogTitle>
               {model
@@ -199,7 +204,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4 sm:grid-cols-2">
+          <DialogPanel className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2 sm:col-span-2">
               <Label htmlFor="model-name">
                 {t("settings:projectInfrastructure.models.columns.name")}
@@ -288,7 +293,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
               </p>
               {errorText("regions")}
             </div>
-          </div>
+          </DialogPanel>
 
           <DialogFooter>
             <Button

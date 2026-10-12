@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight, Copy, Plus, X } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { InfraHost } from "@/fetchers/infrastructure/get-project-hosts";
 import useReplaceTaskVms from "@/hooks/mutations/infrastructure/use-replace-task-vms";
 import useProjectCapacity from "@/hooks/queries/infrastructure/use-project-capacity";
@@ -262,199 +254,178 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
                 {t("tasks:infrastructure.empty")}
               </p>
             ) : (
-              <div className="overflow-x-auto rounded-md border">
-                <Table className="min-w-[56rem]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>
-                        {t("tasks:infrastructure.columns.name")}
-                      </TableHead>
-                      {NUMBER_FIELDS.map((field) => (
-                        <TableHead key={field} className="w-24">
-                          {t(NUMBER_COLUMN_KEYS[field])}
-                        </TableHead>
-                      ))}
-                      <TableHead>
-                        {t("tasks:infrastructure.columns.host")}
-                      </TableHead>
-                      <TableHead>
-                        {t("tasks:infrastructure.columns.cluster")}
-                      </TableHead>
-                      {canPlan && <TableHead className="w-20" />}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rows.map((row, index) => {
-                      const number = index + 1;
-                      const host = row.hostId
-                        ? hostById.get(row.hostId)
-                        : undefined;
-                      const cluster = clusters.find(
-                        (item) => item.id === row.storageClusterId,
-                      );
-                      return (
-                        <TableRow key={row.key}>
-                          <TableCell className="align-top">
+              <ul className="flex flex-col gap-2">
+                {rows.map((row, index) => {
+                  const number = index + 1;
+                  const host = row.hostId
+                    ? hostById.get(row.hostId)
+                    : undefined;
+                  const cluster = clusters.find(
+                    (item) => item.id === row.storageClusterId,
+                  );
+                  return (
+                    // One VM per block: identity and placement on the first
+                    // line, sizes on the second, so it fits the task panel.
+                    <li key={row.key} className="rounded-md border p-3">
+                      <div className="grid gap-2 sm:grid-cols-[minmax(9rem,1fr)_minmax(12rem,1.4fr)_minmax(9rem,1fr)_auto]">
+                        <VmField label={t("tasks:infrastructure.columns.name")}>
+                          {canPlan ? (
+                            <>
+                              <Input
+                                size="sm"
+                                aria-label={t(
+                                  "tasks:infrastructure.columns.name",
+                                )}
+                                value={row.name}
+                                maxLength={200}
+                                aria-invalid={
+                                  showError(row, "name") || undefined
+                                }
+                                onChange={(event) => {
+                                  touch(row.key, "name");
+                                  updateRow(row.key, {
+                                    name: event.target.value,
+                                  });
+                                }}
+                              />
+                              {showError(row, "name") && (
+                                <p className="mt-1 text-xs text-destructive-foreground">
+                                  {t(
+                                    "tasks:infrastructure.validation.nameRequired",
+                                  )}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <span className="font-medium">{row.name}</span>
+                          )}
+                        </VmField>
+                        <VmField label={t("tasks:infrastructure.columns.host")}>
+                          {canPlan ? (
+                            <InfraSelect
+                              ariaLabel={t("tasks:infrastructure.columns.host")}
+                              placeholder={t("tasks:infrastructure.noHost")}
+                              value={row.hostId ?? NONE}
+                              options={hostOptions}
+                              onChange={(value) => {
+                                if (value === NEW_HOST) {
+                                  setNewHostRowKey(row.key);
+                                } else {
+                                  setHost(row, value === NONE ? null : value);
+                                }
+                              }}
+                            />
+                          ) : host ? (
+                            t("tasks:infrastructure.hostOption", {
+                              label: host.label,
+                              region: host.region,
+                              status: statusText(host.status),
+                            })
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {t("tasks:infrastructure.noHost")}
+                            </span>
+                          )}
+                        </VmField>
+                        <VmField
+                          label={t("tasks:infrastructure.columns.cluster")}
+                        >
+                          {canPlan ? (
+                            <InfraSelect
+                              ariaLabel={t(
+                                "tasks:infrastructure.columns.cluster",
+                              )}
+                              placeholder={t("tasks:infrastructure.noCluster")}
+                              value={row.storageClusterId ?? NONE}
+                              options={clusterOptionsFor(row)}
+                              onChange={(value) =>
+                                updateRow(row.key, {
+                                  storageClusterId:
+                                    value === NONE ? null : value,
+                                })
+                              }
+                            />
+                          ) : cluster ? (
+                            t("tasks:infrastructure.clusterOption", {
+                              name: cluster.name,
+                              region: cluster.region,
+                            })
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {t("tasks:infrastructure.noCluster")}
+                            </span>
+                          )}
+                        </VmField>
+                        {canPlan && (
+                          <div className="flex items-end justify-end gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={t(
+                                "tasks:infrastructure.duplicateRow",
+                                { number },
+                              )}
+                              disabled={rows.length >= MAX_VMS}
+                              onClick={() => duplicateRow(row.key)}
+                            >
+                              <Copy aria-hidden="true" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={t("tasks:infrastructure.removeRow", {
+                                number,
+                              })}
+                              onClick={() => removeRow(row.key)}
+                            >
+                              <X aria-hidden="true" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {NUMBER_FIELDS.map((field) => (
+                          <VmField
+                            key={field}
+                            label={t(NUMBER_COLUMN_KEYS[field])}
+                          >
                             {canPlan ? (
                               <>
                                 <Input
                                   size="sm"
-                                  aria-label={t(
-                                    "tasks:infrastructure.columns.name",
-                                  )}
-                                  value={row.name}
-                                  maxLength={200}
+                                  inputMode="numeric"
+                                  aria-label={t(NUMBER_COLUMN_KEYS[field])}
+                                  value={row[field]}
                                   aria-invalid={
-                                    showError(row, "name") || undefined
+                                    showError(row, field) || undefined
                                   }
                                   onChange={(event) => {
-                                    touch(row.key, "name");
+                                    touch(row.key, field);
                                     updateRow(row.key, {
-                                      name: event.target.value,
+                                      [field]: event.target.value,
                                     });
                                   }}
                                 />
-                                {showError(row, "name") && (
+                                {showError(row, field) && (
                                   <p className="mt-1 text-xs text-destructive-foreground">
                                     {t(
-                                      "tasks:infrastructure.validation.nameRequired",
+                                      "tasks:infrastructure.validation.number",
                                     )}
                                   </p>
                                 )}
                               </>
                             ) : (
-                              <span className="font-medium">{row.name}</span>
+                              <span className="tabular-nums">{row[field]}</span>
                             )}
-                          </TableCell>
-                          {NUMBER_FIELDS.map((field) => (
-                            <TableCell key={field} className="align-top">
-                              {canPlan ? (
-                                <>
-                                  <Input
-                                    size="sm"
-                                    inputMode="numeric"
-                                    aria-label={t(NUMBER_COLUMN_KEYS[field])}
-                                    value={row[field]}
-                                    aria-invalid={
-                                      showError(row, field) || undefined
-                                    }
-                                    onChange={(event) => {
-                                      touch(row.key, field);
-                                      updateRow(row.key, {
-                                        [field]: event.target.value,
-                                      });
-                                    }}
-                                  />
-                                  {showError(row, field) && (
-                                    <p className="mt-1 text-xs text-destructive-foreground">
-                                      {t(
-                                        "tasks:infrastructure.validation.number",
-                                      )}
-                                    </p>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="tabular-nums">
-                                  {row[field]}
-                                </span>
-                              )}
-                            </TableCell>
-                          ))}
-                          <TableCell className="align-top">
-                            {canPlan ? (
-                              <InfraSelect
-                                ariaLabel={t(
-                                  "tasks:infrastructure.columns.host",
-                                )}
-                                placeholder={t("tasks:infrastructure.noHost")}
-                                value={row.hostId ?? NONE}
-                                options={hostOptions}
-                                onChange={(value) => {
-                                  if (value === NEW_HOST) {
-                                    setNewHostRowKey(row.key);
-                                  } else {
-                                    setHost(row, value === NONE ? null : value);
-                                  }
-                                }}
-                              />
-                            ) : host ? (
-                              t("tasks:infrastructure.hostOption", {
-                                label: host.label,
-                                region: host.region,
-                                status: statusText(host.status),
-                              })
-                            ) : (
-                              <span className="text-muted-foreground">
-                                {t("tasks:infrastructure.noHost")}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            {canPlan ? (
-                              <InfraSelect
-                                ariaLabel={t(
-                                  "tasks:infrastructure.columns.cluster",
-                                )}
-                                placeholder={t(
-                                  "tasks:infrastructure.noCluster",
-                                )}
-                                value={row.storageClusterId ?? NONE}
-                                options={clusterOptionsFor(row)}
-                                onChange={(value) =>
-                                  updateRow(row.key, {
-                                    storageClusterId:
-                                      value === NONE ? null : value,
-                                  })
-                                }
-                              />
-                            ) : cluster ? (
-                              t("tasks:infrastructure.clusterOption", {
-                                name: cluster.name,
-                                region: cluster.region,
-                              })
-                            ) : (
-                              <span className="text-muted-foreground">
-                                {t("tasks:infrastructure.noCluster")}
-                              </span>
-                            )}
-                          </TableCell>
-                          {canPlan && (
-                            <TableCell className="align-top">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  aria-label={t(
-                                    "tasks:infrastructure.duplicateRow",
-                                    { number },
-                                  )}
-                                  disabled={rows.length >= MAX_VMS}
-                                  onClick={() => duplicateRow(row.key)}
-                                >
-                                  <Copy aria-hidden="true" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  aria-label={t(
-                                    "tasks:infrastructure.removeRow",
-                                    { number },
-                                  )}
-                                  onClick={() => removeRow(row.key)}
-                                >
-                                  <X aria-hidden="true" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                          </VmField>
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
 
             {canPlan && (
@@ -524,5 +495,15 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
         />
       )}
     </>
+  );
+}
+
+// A labelled cell of a VM block; the inputs keep their own accessible name.
+function VmField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <div className="min-w-0 text-sm">{children}</div>
+    </div>
   );
 }
