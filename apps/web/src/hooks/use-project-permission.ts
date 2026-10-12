@@ -72,6 +72,9 @@ export function useProjectPermission(projectId: string | undefined) {
       canInviteToProject: () => can.inviteToProject,
       canCancelProjectInvitations: () => can.cancelProjectInvitations,
       canManageIntegrations: () => can.manageIntegrations,
+      canReadInfrastructure: () => can.infrastructureRead,
+      canPlanInfrastructure: () => can.infrastructurePlan,
+      canManageInfrastructure: () => can.infrastructureManage,
       mode: data?.mode ?? null,
       role: data?.role ?? null,
       // True until the first answer arrives, so action UI is not flashed on

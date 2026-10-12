@@ -1737,6 +1737,106 @@
 				"manageLink": "Otwórz ustawienia przepływu pracy przestrzeni"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Infrastruktura",
+			"description": "Modele serwerów, hosty i ostrzeżenia o pojemności dla migracji w tym projekcie.",
+			"loadError": "Nie udało się wczytać danych infrastruktury.",
+			"save": "Zapisz",
+			"saving": "Zapisywanie...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Inny"
+			},
+			"validation": {
+				"required": "To pole jest wymagane.",
+				"integer": "Wpisz liczbę całkowitą od {{min}} do {{max}}.",
+				"regions": "Wpisz co najmniej jeden kod regionu (litery, cyfry i myślniki), oddzielając kody przecinkami."
+			},
+			"models": {
+				"title": "Modele serwerów",
+				"description": "Modele serwerów, z których może korzystać ten projekt. Host to jedna sztuka modelu w jednym z jego regionów.",
+				"add": "Dodaj model",
+				"edit": "Edytuj model",
+				"empty": "Brak modeli serwerów.",
+				"regionsHint": "Kody regionów oddzielone przecinkami, na przykład GRA, PAR.",
+				"editAction": "Edytuj {{name}}",
+				"deleteAction": "Usuń {{name}}",
+				"deleteTitle": "Usunąć model {{name}}?",
+				"deleteDescription": "Model zostanie usunięty z puli tego projektu. Nie można usunąć modelu, którego używają hosty.",
+				"columns": {
+					"name": "Nazwa",
+					"family": "Rodzina",
+					"provider": "Dostawca",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Dysk lokalny (GB)",
+					"regions": "Regiony",
+					"leadTime": "Czas realizacji (dni)",
+					"reserve": "Rezerwa hiperwizora (%)"
+				}
+			},
+			"hosts": {
+				"title": "Hosty",
+				"description": "Fizyczne serwery tego projektu. Zespół datacenter zamawia je i instaluje, a Ty planujesz je tutaj.",
+				"add": "Dodaj host",
+				"empty": "Brak hostów.",
+				"noModels": "Dodaj model serwera, zanim dodasz host.",
+				"newDescription": "Tworzy planowany host na podstawie modelu serwera. Zamawia go zespół datacenter.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Wybierz model",
+				"newRegion": "Region",
+				"newRegionPlaceholder": "Wybierz region",
+				"label": "Etykieta",
+				"rename": "Zmień nazwę hosta",
+				"renameAction": "Zmień nazwę {{label}}",
+				"deleteAction": "Usuń {{label}}",
+				"deleteTitle": "Usunąć host {{label}}?",
+				"deleteDescription": "Usunąć można tylko planowany host. Jego VM pozostają w zadaniach, ale bez hosta.",
+				"orderLate": "Termin zamówienia już minął.",
+				"ramUsage": "Użycie RAM hosta {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Region",
+					"status": "Status",
+					"needDate": "Data potrzeby",
+					"orderBy": "Zamówić do",
+					"ram": "Użycie RAM (szczyt)",
+					"vms": "VM",
+					"localDisk": "Dysk lokalny (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Ostrzeżenia",
+				"empty": "Brak ostrzeżeń o pojemności.",
+				"severity": {
+					"error": "Błąd",
+					"warning": "Ostrzeżenie",
+					"info": "Informacja"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} będzie dostępny od {{available}}, a zadanie zaczyna się {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} nie został jeszcze zamówiony, a zadanie zaczyna się {{date}}.",
+					"orderLate": "Host {{host}} należało zamówić do {{date}}.",
+					"over100": "Host {{host}} przekracza swoją pojemność od {{date}}.",
+					"over80": "Host {{host}} jest zapełniony w ponad 80% od {{date}}.",
+					"vmUnplaced": "{{vm}} nie ma jeszcze hosta.",
+					"vmUnscheduled": "{{vm}}: zadanie nie ma daty rozpoczęcia ani terminu, więc nie można zaplanować zajęcia hosta.",
+					"unknown": "Ostrzeżenie o pojemności."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Ten model nie jest dostępny w tym regionie.",
+				"modelInUse": "Ten model jest używany przez host, więc nie można go usunąć.",
+				"regionInUse": "Host używa regionu, który usunięto z tego modelu.",
+				"hostLocked": "Tylko planowany host można zmienić lub usunąć.",
+				"hostNotInProject": "Wybrany host nie należy do tego projektu.",
+				"clusterRegionMismatch": "Klaster Ceph musi znajdować się w tym samym regionie co host.",
+				"clusterNotInWorkspace": "Klaster Ceph nie należy do tej przestrzeni roboczej.",
+				"vmNotInTask": "Jedna z VM na liście nie należy do tego zadania. Wczytaj zadanie ponownie i spróbuj jeszcze raz."
+			}
+		},
 		"repositoryBrowser": {
 			"description": "Wybierz repozytorium, w którym zainstalowano aplikację GitHub, aby włączyć synchronizację zgłoszeń.",
 			"emptyHint": "Zainstaluj aplikację GitHub w swoich repozytoriach, aby zobaczyć je tutaj.",
@@ -3753,6 +3853,33 @@
 					"accepted": "Zaakceptował(a) {{name}}",
 					"rejectedBy": "Odrzucił(a) {{name}}"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Infrastruktura",
+			"empty": "Do tego zadania nie dodano jeszcze żadnych VM.",
+			"columns": {
+				"name": "Nazwa VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokalny (GB)",
+				"host": "Host",
+				"cluster": "Klaster Ceph"
+			},
+			"addVm": "Dodaj VM",
+			"duplicateRow": "Duplikuj VM {{number}}",
+			"removeRow": "Usuń VM {{number}}",
+			"noHost": "Brak hosta",
+			"newHost": "Nowy host…",
+			"noCluster": "Brak klastra Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Zapisano listę VM.",
+			"warningsTitle": "Ostrzeżenia dla tego zadania",
+			"validation": {
+				"nameRequired": "Wpisz nazwę VM.",
+				"number": "Wpisz liczbę całkowitą, 0 lub większą."
 			}
 		}
 	},

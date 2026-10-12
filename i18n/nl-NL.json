@@ -722,6 +722,106 @@
 				"title": "Kolommen worden beheerd door de werkruimte"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Infrastructuur",
+			"description": "Servermodellen, hosts en capaciteitswaarschuwingen voor de migraties van dit project.",
+			"loadError": "De infrastructuurgegevens konden niet worden geladen.",
+			"save": "Opslaan",
+			"saving": "Opslaan...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Overig"
+			},
+			"validation": {
+				"required": "Dit veld is verplicht.",
+				"integer": "Voer een geheel getal in van {{min}} tot {{max}}.",
+				"regions": "Voer een of meer regiocodes in (letters, cijfers en streepjes), gescheiden door komma's."
+			},
+			"models": {
+				"title": "Servermodellen",
+				"description": "De servermodellen die dit project mag gebruiken. Een host is één exemplaar van een model in een van de regio's van dat model.",
+				"add": "Model toevoegen",
+				"edit": "Model bewerken",
+				"empty": "Nog geen servermodellen.",
+				"regionsHint": "Regiocodes gescheiden door komma's, bijvoorbeeld GRA, PAR.",
+				"editAction": "{{name}} bewerken",
+				"deleteAction": "{{name}} verwijderen",
+				"deleteTitle": "Model {{name}} verwijderen?",
+				"deleteDescription": "Het model wordt uit de pool van dit project verwijderd. Een model dat door hosts wordt gebruikt, kan niet worden verwijderd.",
+				"columns": {
+					"name": "Naam",
+					"family": "Familie",
+					"provider": "Aanbieder",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Lokale schijf (GB)",
+					"regions": "Regio's",
+					"leadTime": "Levertijd (dagen)",
+					"reserve": "Hypervisorreserve (%)"
+				}
+			},
+			"hosts": {
+				"title": "Hosts",
+				"description": "Fysieke servers van dit project. Het datacenterteam bestelt en installeert ze; u plant ze hier.",
+				"add": "Host toevoegen",
+				"empty": "Nog geen hosts.",
+				"noModels": "Voeg een servermodel toe voordat u een host toevoegt.",
+				"newDescription": "Maakt een geplande host op basis van een servermodel. Het datacenterteam bestelt hem.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Kies een model",
+				"newRegion": "Regio",
+				"newRegionPlaceholder": "Kies een regio",
+				"label": "Label",
+				"rename": "Host hernoemen",
+				"renameAction": "{{label}} hernoemen",
+				"deleteAction": "{{label}} verwijderen",
+				"deleteTitle": "Host {{label}} verwijderen?",
+				"deleteDescription": "Alleen een geplande host kan worden verwijderd. De VM's blijven zonder host in hun taken staan.",
+				"orderLate": "De uiterste besteldatum is verstreken.",
+				"ramUsage": "RAM-gebruik van {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Regio",
+					"status": "Status",
+					"needDate": "Benodigd op",
+					"orderBy": "Bestellen vóór",
+					"ram": "RAM-gebruik (piek)",
+					"vms": "VM's",
+					"localDisk": "Lokale schijf (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Waarschuwingen",
+				"empty": "Geen capaciteitswaarschuwingen.",
+				"severity": {
+					"error": "Fout",
+					"warning": "Waarschuwing",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} is beschikbaar vanaf {{available}}, maar de taak begint op {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} is nog niet besteld, maar de taak begint op {{date}}.",
+					"orderLate": "Host {{host}} had vóór {{date}} besteld moeten worden.",
+					"over100": "Host {{host}} zit vanaf {{date}} boven zijn capaciteit.",
+					"over80": "Host {{host}} is vanaf {{date}} voor meer dan 80% vol.",
+					"vmUnplaced": "{{vm}} heeft nog geen host.",
+					"vmUnscheduled": "{{vm}}: de taak heeft geen start- of einddatum, dus het gebruik van de host kan niet worden ingepland.",
+					"unknown": "Capaciteitswaarschuwing."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Dit model is niet beschikbaar in die regio.",
+				"modelInUse": "Een host gebruikt dit model, dus het kan niet worden verwijderd.",
+				"regionInUse": "Een host gebruikt een regio die u uit dit model hebt verwijderd.",
+				"hostLocked": "Alleen een geplande host kan worden gewijzigd of verwijderd.",
+				"hostNotInProject": "De gekozen host hoort niet bij dit project.",
+				"clusterRegionMismatch": "Het Ceph-cluster moet in dezelfde regio staan als de host.",
+				"clusterNotInWorkspace": "Het Ceph-cluster hoort niet bij deze werkruimte.",
+				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Project selecteren",
 			"noProjects": "Geen projecten"
@@ -3427,6 +3527,33 @@
 					"targetMissing": "Kies een Jira-project en een issuetype om verplichte velden en toegestane waarden te zien.",
 					"title": "Controleren voor het versturen"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Infrastructuur",
+			"empty": "Voor deze taak zijn nog geen VM's vermeld.",
+			"columns": {
+				"name": "VM-naam",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokaal (GB)",
+				"host": "Host",
+				"cluster": "Ceph-cluster"
+			},
+			"addVm": "VM toevoegen",
+			"duplicateRow": "VM {{number}} dupliceren",
+			"removeRow": "VM {{number}} verwijderen",
+			"noHost": "Nog geen host",
+			"newHost": "Nieuwe host…",
+			"noCluster": "Geen Ceph-cluster",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM-lijst opgeslagen.",
+			"warningsTitle": "Waarschuwingen voor deze taak",
+			"validation": {
+				"nameRequired": "Voer een VM-naam in.",
+				"number": "Voer een geheel getal in, 0 of hoger."
 			}
 		}
 	},

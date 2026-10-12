@@ -825,6 +825,106 @@
 				"title": "Kolom dikelola oleh ruang kerja"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Infrastruktur",
+			"description": "Model server, host, dan peringatan kapasitas untuk migrasi proyek ini.",
+			"loadError": "Data infrastruktur tidak dapat dimuat.",
+			"save": "Simpan",
+			"saving": "Menyimpan...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Lainnya"
+			},
+			"validation": {
+				"required": "Kolom ini wajib diisi.",
+				"integer": "Masukkan bilangan bulat dari {{min}} sampai {{max}}.",
+				"regions": "Masukkan satu atau beberapa kode wilayah (huruf, angka, dan tanda hubung), dipisahkan koma."
+			},
+			"models": {
+				"title": "Model server",
+				"description": "Model server yang dapat digunakan proyek ini. Host adalah satu unit dari sebuah model di salah satu wilayahnya.",
+				"add": "Tambah model",
+				"edit": "Ubah model",
+				"empty": "Belum ada model server.",
+				"regionsHint": "Kode wilayah dipisahkan koma, misalnya GRA, PAR.",
+				"editAction": "Ubah {{name}}",
+				"deleteAction": "Hapus {{name}}",
+				"deleteTitle": "Hapus model {{name}}?",
+				"deleteDescription": "Model dihapus dari pool proyek ini. Model yang digunakan oleh host tidak dapat dihapus.",
+				"columns": {
+					"name": "Nama",
+					"family": "Keluarga",
+					"provider": "Penyedia",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Disk lokal (GB)",
+					"regions": "Wilayah",
+					"leadTime": "Lead time (hari)",
+					"reserve": "Cadangan hypervisor (%)"
+				}
+			},
+			"hosts": {
+				"title": "Host",
+				"description": "Server fisik proyek ini. Tim datacenter memesan dan memasangnya; Anda merencanakannya di sini.",
+				"add": "Tambah host",
+				"empty": "Belum ada host.",
+				"noModels": "Tambahkan model server sebelum menambahkan host.",
+				"newDescription": "Membuat host terencana dari sebuah model server. Tim datacenter yang memesannya.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Pilih model",
+				"newRegion": "Wilayah",
+				"newRegionPlaceholder": "Pilih wilayah",
+				"label": "Label",
+				"rename": "Ganti nama host",
+				"renameAction": "Ganti nama {{label}}",
+				"deleteAction": "Hapus {{label}}",
+				"deleteTitle": "Hapus host {{label}}?",
+				"deleteDescription": "Hanya host yang berstatus terencana yang dapat dihapus. VM-nya tetap berada di tugasnya tanpa host.",
+				"orderLate": "Batas waktu pemesanan sudah lewat.",
+				"ramUsage": "Penggunaan RAM {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Wilayah",
+					"status": "Status",
+					"needDate": "Tanggal dibutuhkan",
+					"orderBy": "Pesan paling lambat",
+					"ram": "Penggunaan RAM (puncak)",
+					"vms": "VM",
+					"localDisk": "Disk lokal (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Peringatan",
+				"empty": "Tidak ada peringatan kapasitas.",
+				"severity": {
+					"error": "Kesalahan",
+					"warning": "Peringatan",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} tersedia mulai {{available}}, tetapi tugas dimulai pada {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} belum dipesan, tetapi tugas dimulai pada {{date}}.",
+					"orderLate": "Host {{host}} seharusnya dipesan paling lambat {{date}}.",
+					"over100": "Host {{host}} melebihi kapasitas mulai {{date}}.",
+					"over80": "Host {{host}} terisi lebih dari 80% mulai {{date}}.",
+					"vmUnplaced": "{{vm}} belum memiliki host.",
+					"vmUnscheduled": "{{vm}}: tugas tidak memiliki tanggal mulai atau tenggat, sehingga penggunaan host tidak dapat dijadwalkan.",
+					"unknown": "Peringatan kapasitas."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Model ini tidak tersedia di wilayah tersebut.",
+				"modelInUse": "Sebuah host menggunakan model ini, sehingga tidak dapat dihapus.",
+				"regionInUse": "Sebuah host menggunakan wilayah yang Anda hapus dari model ini.",
+				"hostLocked": "Hanya host yang berstatus terencana yang dapat diubah atau dihapus.",
+				"hostNotInProject": "Host yang dipilih bukan bagian dari proyek ini.",
+				"clusterRegionMismatch": "Klaster Ceph harus berada di wilayah yang sama dengan host.",
+				"clusterNotInWorkspace": "Klaster Ceph bukan bagian dari ruang kerja ini.",
+				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Pilih proyek",
 			"noProjects": "Tidak ada proyek"
@@ -3415,6 +3515,33 @@
 					"targetMissing": "Pilih proyek Jira dan tipe isu untuk melihat bidang wajib dan nilai yang diizinkan.",
 					"title": "Periksa sebelum mengirim"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Infrastruktur",
+			"empty": "Belum ada VM yang terdaftar untuk tugas ini.",
+			"columns": {
+				"name": "Nama VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokal (GB)",
+				"host": "Host",
+				"cluster": "Klaster Ceph"
+			},
+			"addVm": "Tambah VM",
+			"duplicateRow": "Duplikat VM {{number}}",
+			"removeRow": "Hapus VM {{number}}",
+			"noHost": "Belum ada host",
+			"newHost": "Host baru…",
+			"noCluster": "Tanpa klaster Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Daftar VM disimpan.",
+			"warningsTitle": "Peringatan untuk tugas ini",
+			"validation": {
+				"nameRequired": "Masukkan nama VM.",
+				"number": "Masukkan bilangan bulat, 0 atau lebih."
 			}
 		}
 	},

@@ -1061,6 +1061,106 @@
 				"title": "Các cột do không gian làm việc quản lý"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Hạ tầng",
+			"description": "Mẫu máy chủ, máy chủ vật lý (host) và cảnh báo dung lượng cho các đợt di chuyển của dự án này.",
+			"loadError": "Không thể tải dữ liệu hạ tầng.",
+			"save": "Lưu",
+			"saving": "Đang lưu...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Khác"
+			},
+			"validation": {
+				"required": "Trường này là bắt buộc.",
+				"integer": "Nhập một số nguyên từ {{min}} đến {{max}}.",
+				"regions": "Nhập một hoặc nhiều mã vùng (chữ cái, chữ số và dấu gạch ngang), phân tách bằng dấu phẩy."
+			},
+			"models": {
+				"title": "Mẫu máy chủ",
+				"description": "Các mẫu máy chủ mà dự án này có thể dùng. Một host là một đơn vị của một mẫu ở một trong các vùng của mẫu đó.",
+				"add": "Thêm mẫu",
+				"edit": "Sửa mẫu",
+				"empty": "Chưa có mẫu máy chủ nào.",
+				"regionsHint": "Mã vùng phân tách bằng dấu phẩy, ví dụ GRA, PAR.",
+				"editAction": "Sửa {{name}}",
+				"deleteAction": "Xóa {{name}}",
+				"deleteTitle": "Xóa mẫu {{name}}?",
+				"deleteDescription": "Mẫu sẽ bị xóa khỏi nhóm của dự án này. Không thể xóa mẫu đang được các host sử dụng.",
+				"columns": {
+					"name": "Tên",
+					"family": "Dòng",
+					"provider": "Nhà cung cấp",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Ổ đĩa cục bộ (GB)",
+					"regions": "Vùng",
+					"leadTime": "Thời gian giao hàng (ngày)",
+					"reserve": "Dự phòng hypervisor (%)"
+				}
+			},
+			"hosts": {
+				"title": "Host",
+				"description": "Các máy chủ vật lý của dự án này. Nhóm trung tâm dữ liệu đặt hàng và cài đặt chúng; bạn lập kế hoạch tại đây.",
+				"add": "Thêm host",
+				"empty": "Chưa có host nào.",
+				"noModels": "Hãy thêm một mẫu máy chủ trước khi thêm host.",
+				"newDescription": "Tạo một host đã lên kế hoạch từ một mẫu máy chủ. Nhóm trung tâm dữ liệu sẽ đặt hàng.",
+				"newModel": "Mẫu",
+				"newModelPlaceholder": "Chọn một mẫu",
+				"newRegion": "Vùng",
+				"newRegionPlaceholder": "Chọn một vùng",
+				"label": "Nhãn",
+				"rename": "Đổi tên host",
+				"renameAction": "Đổi tên {{label}}",
+				"deleteAction": "Xóa {{label}}",
+				"deleteTitle": "Xóa host {{label}}?",
+				"deleteDescription": "Chỉ có thể xóa host đã lên kế hoạch. Các VM của host vẫn ở trong công việc nhưng không có host.",
+				"orderLate": "Đã quá hạn đặt hàng.",
+				"ramUsage": "Mức dùng RAM của {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Mẫu",
+					"region": "Vùng",
+					"status": "Trạng thái",
+					"needDate": "Ngày cần",
+					"orderBy": "Đặt hàng trước",
+					"ram": "Mức dùng RAM (đỉnh)",
+					"vms": "VM",
+					"localDisk": "Ổ đĩa cục bộ (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Cảnh báo",
+				"empty": "Không có cảnh báo dung lượng.",
+				"severity": {
+					"error": "Lỗi",
+					"warning": "Cảnh báo",
+					"info": "Thông tin"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} khả dụng từ {{available}}, nhưng công việc bắt đầu vào {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} chưa được đặt hàng, nhưng công việc bắt đầu vào {{date}}.",
+					"orderLate": "Host {{host}} lẽ ra phải được đặt hàng trước {{date}}.",
+					"over100": "Host {{host}} vượt quá dung lượng từ {{date}}.",
+					"over80": "Host {{host}} đã đầy hơn 80% từ {{date}}.",
+					"vmUnplaced": "{{vm}} chưa có host.",
+					"vmUnscheduled": "{{vm}}: công việc không có ngày bắt đầu hoặc hạn chót nên không thể lập lịch mức dùng host.",
+					"unknown": "Cảnh báo dung lượng."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Mẫu này không khả dụng ở vùng đó.",
+				"modelInUse": "Có host đang dùng mẫu này nên không thể xóa.",
+				"regionInUse": "Có host đang dùng một vùng mà bạn đã xóa khỏi mẫu này.",
+				"hostLocked": "Chỉ có thể thay đổi hoặc xóa host đã lên kế hoạch.",
+				"hostNotInProject": "Host đã chọn không thuộc dự án này.",
+				"clusterRegionMismatch": "Cụm Ceph phải ở cùng vùng với host.",
+				"clusterNotInWorkspace": "Cụm Ceph không thuộc không gian làm việc này.",
+				"vmNotInTask": "Một VM trong danh sách không thuộc công việc này. Hãy tải lại công việc và thử lại."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Chọn dự án",
 			"noProjects": "Không có dự án"
@@ -3415,6 +3515,33 @@
 					"targetMissing": "Chọn một dự án Jira và một loại issue để xem các trường bắt buộc và giá trị được phép.",
 					"title": "Kiểm tra trước khi gửi"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Hạ tầng",
+			"empty": "Chưa có VM nào được liệt kê cho công việc này.",
+			"columns": {
+				"name": "Tên VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Cục bộ (GB)",
+				"host": "Host",
+				"cluster": "Cụm Ceph"
+			},
+			"addVm": "Thêm VM",
+			"duplicateRow": "Nhân bản VM {{number}}",
+			"removeRow": "Xóa VM {{number}}",
+			"noHost": "Chưa có host",
+			"newHost": "Host mới…",
+			"noCluster": "Không có cụm Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Đã lưu danh sách VM.",
+			"warningsTitle": "Cảnh báo cho công việc này",
+			"validation": {
+				"nameRequired": "Nhập tên VM.",
+				"number": "Nhập một số nguyên, từ 0 trở lên."
 			}
 		}
 	},

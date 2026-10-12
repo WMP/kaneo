@@ -55,6 +55,34 @@ describe("useProjectPermission", () => {
     auth.user = { id: "user-1" };
   });
 
+  it("exposes the infrastructure capabilities and denies them by default", async () => {
+    getProjectAccess.mockResolvedValue({
+      mode: "member",
+      role: "member",
+      capabilities: {
+        ...capabilities,
+        infrastructureRead: true,
+        infrastructurePlan: true,
+        infrastructureManage: false,
+      },
+    });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useProjectPermission("project-1"), {
+      wrapper,
+    });
+
+    expect(result.current.canReadInfrastructure()).toBe(false);
+    expect(result.current.canPlanInfrastructure()).toBe(false);
+    expect(result.current.canManageInfrastructure()).toBe(false);
+
+    await waitFor(() =>
+      expect(result.current.isCheckingPermissions).toBe(false),
+    );
+    expect(result.current.canReadInfrastructure()).toBe(true);
+    expect(result.current.canPlanInfrastructure()).toBe(true);
+    expect(result.current.canManageInfrastructure()).toBe(false);
+  });
+
   it("denies everything until the API answers, then follows the capabilities", async () => {
     getProjectAccess.mockResolvedValue({
       mode: "member",

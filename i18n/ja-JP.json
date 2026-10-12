@@ -1061,6 +1061,106 @@
 				"title": "カラムはワークスペースで管理されています"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "インフラストラクチャ",
+			"description": "このプロジェクトの移行向けのサーバーモデル、ホスト、容量の警告。",
+			"loadError": "インフラストラクチャのデータを読み込めませんでした。",
+			"save": "保存",
+			"saving": "保存中...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "その他"
+			},
+			"validation": {
+				"required": "この項目は必須です。",
+				"integer": "{{min}}から{{max}}までの整数を入力してください。",
+				"regions": "1つ以上のリージョンコード（英数字とハイフン）をカンマ区切りで入力してください。"
+			},
+			"models": {
+				"title": "サーバーモデル",
+				"description": "このプロジェクトで使用できるサーバーモデルです。ホストは、モデルのいずれかのリージョンにある1台分です。",
+				"add": "モデルを追加",
+				"edit": "モデルを編集",
+				"empty": "サーバーモデルはまだありません。",
+				"regionsHint": "カンマ区切りのリージョンコード（例：GRA, PAR）。",
+				"editAction": "{{name}}を編集",
+				"deleteAction": "{{name}}を削除",
+				"deleteTitle": "モデル{{name}}を削除しますか？",
+				"deleteDescription": "モデルはこのプロジェクトのプールから削除されます。ホストが使用しているモデルは削除できません。",
+				"columns": {
+					"name": "名前",
+					"family": "ファミリー",
+					"provider": "プロバイダー",
+					"ram": "RAM（GB）",
+					"vcpu": "vCPU",
+					"localDisk": "ローカルディスク（GB）",
+					"regions": "リージョン",
+					"leadTime": "リードタイム（日）",
+					"reserve": "ハイパーバイザー予約（%）"
+				}
+			},
+			"hosts": {
+				"title": "ホスト",
+				"description": "このプロジェクトの物理サーバーです。データセンターチームが発注と設置を行い、ここでは計画を立てます。",
+				"add": "ホストを追加",
+				"empty": "ホストはまだありません。",
+				"noModels": "ホストを追加する前に、サーバーモデルを追加してください。",
+				"newDescription": "サーバーモデルから計画済みのホストを作成します。発注はデータセンターチームが行います。",
+				"newModel": "モデル",
+				"newModelPlaceholder": "モデルを選択",
+				"newRegion": "リージョン",
+				"newRegionPlaceholder": "リージョンを選択",
+				"label": "ラベル",
+				"rename": "ホスト名を変更",
+				"renameAction": "{{label}}の名前を変更",
+				"deleteAction": "{{label}}を削除",
+				"deleteTitle": "ホスト{{label}}を削除しますか？",
+				"deleteDescription": "削除できるのは計画済みのホストのみです。そのVMはホストなしのままタスクに残ります。",
+				"orderLate": "発注期限を過ぎています。",
+				"ramUsage": "{{host}}のRAM使用率",
+				"columns": {
+					"label": "ホスト",
+					"model": "モデル",
+					"region": "リージョン",
+					"status": "ステータス",
+					"needDate": "必要日",
+					"orderBy": "発注期限",
+					"ram": "RAM使用率（ピーク）",
+					"vms": "VM",
+					"localDisk": "ローカルディスク（GB）"
+				}
+			},
+			"warnings": {
+				"title": "警告",
+				"empty": "容量の警告はありません。",
+				"severity": {
+					"error": "エラー",
+					"warning": "警告",
+					"info": "情報"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}：ホスト{{host}}は{{available}}から利用可能ですが、タスクは{{date}}に開始します。",
+					"hostNotReadyPlanned": "{{vm}}：ホスト{{host}}はまだ発注されていませんが、タスクは{{date}}に開始します。",
+					"orderLate": "ホスト{{host}}は{{date}}までに発注する必要がありました。",
+					"over100": "ホスト{{host}}は{{date}}から容量を超過しています。",
+					"over80": "ホスト{{host}}は{{date}}から使用率が80%を超えています。",
+					"vmUnplaced": "{{vm}}にはまだホストがありません。",
+					"vmUnscheduled": "{{vm}}：タスクに開始日も期限もないため、ホストの使用をスケジュールできません。",
+					"unknown": "容量の警告。"
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "このモデルはそのリージョンでは利用できません。",
+				"modelInUse": "ホストがこのモデルを使用しているため、削除できません。",
+				"regionInUse": "ホストが、このモデルから削除したリージョンを使用しています。",
+				"hostLocked": "変更または削除できるのは計画済みのホストのみです。",
+				"hostNotInProject": "選択したホストはこのプロジェクトに属していません。",
+				"clusterRegionMismatch": "Cephクラスターはホストと同じリージョンにある必要があります。",
+				"clusterNotInWorkspace": "Cephクラスターはこのワークスペースに属していません。",
+				"vmNotInTask": "リスト内のVMがこのタスクに属していません。タスクを再読み込みして、もう一度お試しください。"
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "プロジェクトを選択",
 			"noProjects": "プロジェクトがありません"
@@ -3415,6 +3515,33 @@
 					"targetMissing": "必須フィールドと許可される値を表示するには、Jira プロジェクトと課題タイプを選択してください。",
 					"title": "送信前に確認"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "インフラストラクチャ",
+			"empty": "このタスクにはまだVMが登録されていません。",
+			"columns": {
+				"name": "VM名",
+				"vcpu": "vCPU",
+				"ram": "RAM（GB）",
+				"ceph": "Ceph（GB）",
+				"local": "ローカル（GB）",
+				"host": "ホスト",
+				"cluster": "Cephクラスター"
+			},
+			"addVm": "VMを追加",
+			"duplicateRow": "VM {{number}}を複製",
+			"removeRow": "VM {{number}}を削除",
+			"noHost": "ホストなし",
+			"newHost": "新しいホスト…",
+			"noCluster": "Cephクラスターなし",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}}（{{region}}）",
+			"saved": "VMリストを保存しました。",
+			"warningsTitle": "このタスクの警告",
+			"validation": {
+				"nameRequired": "VM名を入力してください。",
+				"number": "0以上の整数を入力してください。"
 			}
 		}
 	},

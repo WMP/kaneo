@@ -825,6 +825,106 @@
 				"title": "Les colonnes sont gérées par l'espace de travail"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Infrastructure",
+			"description": "Modèles de serveurs, hôtes et alertes de capacité pour les migrations de ce projet.",
+			"loadError": "Impossible de charger les données d'infrastructure.",
+			"save": "Enregistrer",
+			"saving": "Enregistrement...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Autre"
+			},
+			"validation": {
+				"required": "Ce champ est obligatoire.",
+				"integer": "Saisissez un nombre entier de {{min}} à {{max}}.",
+				"regions": "Saisissez un ou plusieurs codes de région (lettres, chiffres et tirets), séparés par des virgules."
+			},
+			"models": {
+				"title": "Modèles de serveurs",
+				"description": "Les modèles de serveurs que ce projet peut utiliser. Un hôte est une unité d'un modèle dans l'une de ses régions.",
+				"add": "Ajouter un modèle",
+				"edit": "Modifier le modèle",
+				"empty": "Aucun modèle de serveur pour le moment.",
+				"regionsHint": "Codes de région séparés par des virgules, par exemple GRA, PAR.",
+				"editAction": "Modifier {{name}}",
+				"deleteAction": "Supprimer {{name}}",
+				"deleteTitle": "Supprimer le modèle {{name}} ?",
+				"deleteDescription": "Le modèle est retiré du pool de ce projet. Un modèle utilisé par des hôtes ne peut pas être supprimé.",
+				"columns": {
+					"name": "Nom",
+					"family": "Famille",
+					"provider": "Fournisseur",
+					"ram": "RAM (Go)",
+					"vcpu": "vCPU",
+					"localDisk": "Disque local (Go)",
+					"regions": "Régions",
+					"leadTime": "Délai de livraison (jours)",
+					"reserve": "Réserve hyperviseur (%)"
+				}
+			},
+			"hosts": {
+				"title": "Hôtes",
+				"description": "Serveurs physiques de ce projet. L'équipe datacenter les commande et les installe ; vous les planifiez ici.",
+				"add": "Ajouter un hôte",
+				"empty": "Aucun hôte pour le moment.",
+				"noModels": "Ajoutez un modèle de serveur avant d'ajouter un hôte.",
+				"newDescription": "Crée un hôte planifié à partir d'un modèle de serveur. L'équipe datacenter le commande.",
+				"newModel": "Modèle",
+				"newModelPlaceholder": "Sélectionner un modèle",
+				"newRegion": "Région",
+				"newRegionPlaceholder": "Sélectionner une région",
+				"label": "Libellé",
+				"rename": "Renommer l'hôte",
+				"renameAction": "Renommer {{label}}",
+				"deleteAction": "Supprimer {{label}}",
+				"deleteTitle": "Supprimer l'hôte {{label}} ?",
+				"deleteDescription": "Seul un hôte planifié peut être supprimé. Ses VM restent dans leurs tâches, sans hôte.",
+				"orderLate": "La date limite de commande est dépassée.",
+				"ramUsage": "Utilisation de la RAM de {{host}}",
+				"columns": {
+					"label": "Hôte",
+					"model": "Modèle",
+					"region": "Région",
+					"status": "Statut",
+					"needDate": "Date de besoin",
+					"orderBy": "Commander avant",
+					"ram": "Utilisation de la RAM (pic)",
+					"vms": "VM",
+					"localDisk": "Disque local (Go)"
+				}
+			},
+			"warnings": {
+				"title": "Alertes",
+				"empty": "Aucune alerte de capacité.",
+				"severity": {
+					"error": "Erreur",
+					"warning": "Avertissement",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}} : l'hôte {{host}} est disponible à partir du {{available}}, mais la tâche commence le {{date}}.",
+					"hostNotReadyPlanned": "{{vm}} : l'hôte {{host}} n'est pas encore commandé, mais la tâche commence le {{date}}.",
+					"orderLate": "L'hôte {{host}} aurait dû être commandé avant le {{date}}.",
+					"over100": "L'hôte {{host}} dépasse sa capacité à partir du {{date}}.",
+					"over80": "L'hôte {{host}} est rempli à plus de 80 % à partir du {{date}}.",
+					"vmUnplaced": "{{vm}} n'a pas encore d'hôte.",
+					"vmUnscheduled": "{{vm}} : la tâche n'a ni date de début ni échéance, son utilisation de l'hôte ne peut donc pas être planifiée.",
+					"unknown": "Alerte de capacité."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Ce modèle n'est pas disponible dans cette région.",
+				"modelInUse": "Un hôte utilise ce modèle, il ne peut donc pas être supprimé.",
+				"regionInUse": "Un hôte utilise une région que vous avez retirée de ce modèle.",
+				"hostLocked": "Seul un hôte planifié peut être modifié ou supprimé.",
+				"hostNotInProject": "L'hôte sélectionné n'appartient pas à ce projet.",
+				"clusterRegionMismatch": "Le cluster Ceph doit se trouver dans la même région que l'hôte.",
+				"clusterNotInWorkspace": "Le cluster Ceph ne fait pas partie de cet espace de travail.",
+				"vmNotInTask": "Une VM de la liste n'appartient pas à cette tâche. Rechargez la tâche et réessayez."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Sélectionner un projet",
 			"noProjects": "Aucun projet"
@@ -3439,6 +3539,33 @@
 					"targetMissing": "Choisissez un projet Jira et un type de ticket pour voir les champs obligatoires et les valeurs autorisées.",
 					"title": "À vérifier avant l'envoi"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Infrastructure",
+			"empty": "Aucune VM n'est encore listée pour cette tâche.",
+			"columns": {
+				"name": "Nom de la VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (Go)",
+				"ceph": "Ceph (Go)",
+				"local": "Local (Go)",
+				"host": "Hôte",
+				"cluster": "Cluster Ceph"
+			},
+			"addVm": "Ajouter une VM",
+			"duplicateRow": "Dupliquer la VM {{number}}",
+			"removeRow": "Supprimer la VM {{number}}",
+			"noHost": "Pas encore d'hôte",
+			"newHost": "Nouvel hôte…",
+			"noCluster": "Aucun cluster Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Liste des VM enregistrée.",
+			"warningsTitle": "Alertes pour cette tâche",
+			"validation": {
+				"nameRequired": "Saisissez un nom de VM.",
+				"number": "Saisissez un nombre entier, 0 ou plus."
 			}
 		}
 	},

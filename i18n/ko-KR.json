@@ -825,6 +825,106 @@
 				"title": "컬럼은 워크스페이스에서 관리됩니다"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "인프라",
+			"description": "이 프로젝트의 마이그레이션을 위한 서버 모델, 호스트, 용량 경고입니다.",
+			"loadError": "인프라 데이터를 불러오지 못했습니다.",
+			"save": "저장",
+			"saving": "저장 중...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "기타"
+			},
+			"validation": {
+				"required": "이 필드는 필수입니다.",
+				"integer": "{{min}}에서 {{max}} 사이의 정수를 입력하세요.",
+				"regions": "쉼표로 구분하여 리전 코드(영문, 숫자, 하이픈)를 하나 이상 입력하세요."
+			},
+			"models": {
+				"title": "서버 모델",
+				"description": "이 프로젝트에서 사용할 수 있는 서버 모델입니다. 호스트는 모델의 리전 중 한 곳에 있는 한 대입니다.",
+				"add": "모델 추가",
+				"edit": "모델 편집",
+				"empty": "아직 서버 모델이 없습니다.",
+				"regionsHint": "쉼표로 구분한 리전 코드입니다. 예: GRA, PAR.",
+				"editAction": "{{name}} 편집",
+				"deleteAction": "{{name}} 삭제",
+				"deleteTitle": "{{name}} 모델을 삭제할까요?",
+				"deleteDescription": "모델이 이 프로젝트의 풀에서 제거됩니다. 호스트가 사용 중인 모델은 삭제할 수 없습니다.",
+				"columns": {
+					"name": "이름",
+					"family": "제품군",
+					"provider": "제공업체",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "로컬 디스크 (GB)",
+					"regions": "리전",
+					"leadTime": "리드 타임 (일)",
+					"reserve": "하이퍼바이저 예약 (%)"
+				}
+			},
+			"hosts": {
+				"title": "호스트",
+				"description": "이 프로젝트의 물리 서버입니다. 데이터센터 팀이 주문하고 설치하며, 여기서는 계획을 세웁니다.",
+				"add": "호스트 추가",
+				"empty": "아직 호스트가 없습니다.",
+				"noModels": "호스트를 추가하기 전에 서버 모델을 먼저 추가하세요.",
+				"newDescription": "서버 모델로 계획된 호스트를 만듭니다. 주문은 데이터센터 팀이 합니다.",
+				"newModel": "모델",
+				"newModelPlaceholder": "모델 선택",
+				"newRegion": "리전",
+				"newRegionPlaceholder": "리전 선택",
+				"label": "레이블",
+				"rename": "호스트 이름 변경",
+				"renameAction": "{{label}} 이름 변경",
+				"deleteAction": "{{label}} 삭제",
+				"deleteTitle": "{{label}} 호스트를 삭제할까요?",
+				"deleteDescription": "계획된 호스트만 삭제할 수 있습니다. 해당 VM은 호스트 없이 작업에 남습니다.",
+				"orderLate": "주문 기한이 지났습니다.",
+				"ramUsage": "{{host}}의 RAM 사용량",
+				"columns": {
+					"label": "호스트",
+					"model": "모델",
+					"region": "리전",
+					"status": "상태",
+					"needDate": "필요일",
+					"orderBy": "주문 기한",
+					"ram": "RAM 사용량 (최대)",
+					"vms": "VM",
+					"localDisk": "로컬 디스크 (GB)"
+				}
+			},
+			"warnings": {
+				"title": "경고",
+				"empty": "용량 경고가 없습니다.",
+				"severity": {
+					"error": "오류",
+					"warning": "경고",
+					"info": "정보"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: 호스트 {{host}}은(는) {{available}}부터 사용할 수 있지만 작업은 {{date}}에 시작합니다.",
+					"hostNotReadyPlanned": "{{vm}}: 호스트 {{host}}은(는) 아직 주문되지 않았지만 작업은 {{date}}에 시작합니다.",
+					"orderLate": "호스트 {{host}}은(는) {{date}}까지 주문했어야 합니다.",
+					"over100": "호스트 {{host}}은(는) {{date}}부터 용량을 초과합니다.",
+					"over80": "호스트 {{host}}은(는) {{date}}부터 80% 넘게 사용됩니다.",
+					"vmUnplaced": "{{vm}}에는 아직 호스트가 없습니다.",
+					"vmUnscheduled": "{{vm}}: 작업에 시작일이나 마감일이 없어 호스트 사용을 일정에 반영할 수 없습니다.",
+					"unknown": "용량 경고입니다."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "이 모델은 해당 리전에서 사용할 수 없습니다.",
+				"modelInUse": "호스트가 이 모델을 사용하고 있어 삭제할 수 없습니다.",
+				"regionInUse": "호스트가 이 모델에서 제거한 리전을 사용하고 있습니다.",
+				"hostLocked": "계획된 호스트만 변경하거나 삭제할 수 있습니다.",
+				"hostNotInProject": "선택한 호스트가 이 프로젝트에 속하지 않습니다.",
+				"clusterRegionMismatch": "Ceph 클러스터는 호스트와 같은 리전에 있어야 합니다.",
+				"clusterNotInWorkspace": "Ceph 클러스터가 이 워크스페이스에 속하지 않습니다.",
+				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "프로젝트 선택",
 			"noProjects": "프로젝트 없음"
@@ -3415,6 +3515,33 @@
 					"targetMissing": "필수 필드와 허용되는 값을 보려면 Jira 프로젝트와 이슈 유형을 선택하세요.",
 					"title": "전송 전 확인"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "인프라",
+			"empty": "이 작업에는 아직 등록된 VM이 없습니다.",
+			"columns": {
+				"name": "VM 이름",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "로컬 (GB)",
+				"host": "호스트",
+				"cluster": "Ceph 클러스터"
+			},
+			"addVm": "VM 추가",
+			"duplicateRow": "VM {{number}} 복제",
+			"removeRow": "VM {{number}} 제거",
+			"noHost": "아직 호스트 없음",
+			"newHost": "새 호스트…",
+			"noCluster": "Ceph 클러스터 없음",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM 목록을 저장했습니다.",
+			"warningsTitle": "이 작업의 경고",
+			"validation": {
+				"nameRequired": "VM 이름을 입력하세요.",
+				"number": "0 이상의 정수를 입력하세요."
 			}
 		}
 	},
