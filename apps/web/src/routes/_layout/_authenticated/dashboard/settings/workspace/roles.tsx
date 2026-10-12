@@ -58,6 +58,8 @@ const RESOURCE_LABELS: Record<string, string> = {
   task: "Tasks",
   label: "Labels",
   workspace: "Workspace",
+  infrastructure: "Infrastructure resources",
+  datacenter: "Datacenter",
 };
 
 const PERMISSION_LABELS: Record<
@@ -193,6 +195,30 @@ const PERMISSION_LABELS: Record<
     label: "Manage settings",
     description:
       "Configure integrations, notification rules, and workspace preferences.",
+  },
+  "infrastructure:read": {
+    label: "View infrastructure",
+    description:
+      "See the server model pool, hosts and VMs listed in tasks of a project.",
+  },
+  "infrastructure:plan": {
+    label: "Plan infrastructure",
+    description:
+      "List VMs in tasks, create planned hosts from the project model pool and place VMs on hosts.",
+  },
+  "infrastructure:manage": {
+    label: "Manage infrastructure",
+    description: "Edit the project model pool and delete planned hosts.",
+  },
+  "datacenter:read": {
+    label: "View datacenter hosts",
+    description:
+      "See the hosts and VMs of every project in this workspace, without project membership.",
+  },
+  "datacenter:manage": {
+    label: "Manage datacenter hosts",
+    description:
+      "Set the status, expected delivery date and hostname of hosts in every project.",
   },
 };
 

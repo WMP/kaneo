@@ -449,6 +449,13 @@
       "when": 1791208555645,
       "tag": "20261005135555_ganttpro_task_estimate",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1791801165648,
+      "tag": "20261012103245_ganttpro_infrastructure_capacity",
+      "breakpoints": true
     }
   ]
 }

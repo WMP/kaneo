@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   foreignKey,
   index,
   integer,
@@ -1998,5 +1999,137 @@ export const jiraStatusProposalTable = pgTable(
       "ganttpro_jira_status_proposal_source_check",
       sql`${table.source} IN ('webhook', 'poll', 'manual')`,
     ),
+  ],
+);
+
+// Infrastructure capacity (see docs/plans/infrastructure-capacity.md).
+// The server models a project may use for its migrations: one row per
+// model/size, for example "ADVANCE-2 256 GB". RAM and storage are whole GB and
+// vCPU whole threads. `regions` is a jsonb array of region codes (at least
+// one); the API checks that a host's region is one of them.
+export const infraModelTable = pgTable(
+  "ganttpro_infra_model",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    provider: text("provider").$type<"ovh" | "azure" | "other">().notNull(),
+    family: text("family"),
+    ramGb: integer("ram_gb").notNull(),
+    vcpu: integer("vcpu").notNull(),
+    storageGb: integer("storage_gb").notNull(),
+    regions: jsonb("regions").$type<string[]>().notNull(),
+    leadTimeDays: integer("lead_time_days").notNull().default(0),
+    hypervisorReservePercent: integer("hypervisor_reserve_percent")
+      .notNull()
+      .default(5),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_model_project_id_idx").on(table.projectId),
+    check(
+      "ganttpro_infra_model_provider_check",
+      sql`${table.provider} IN ('ovh', 'azure', 'other')`,
+    ),
+    check("ganttpro_infra_model_ram_gb_check", sql`${table.ramGb} > 0`),
+    check("ganttpro_infra_model_vcpu_check", sql`${table.vcpu} > 0`),
+    check(
+      "ganttpro_infra_model_storage_gb_check",
+      sql`${table.storageGb} >= 0`,
+    ),
+    check(
+      "ganttpro_infra_model_lead_time_days_check",
+      sql`${table.leadTimeDays} >= 0`,
+    ),
+    check(
+      "ganttpro_infra_model_hypervisor_reserve_check",
+      sql`${table.hypervisorReservePercent} BETWEEN 0 AND 90`,
+    ),
+  ],
+);
+
+// One physical server (one unit of a model in one region) owned by a project.
+// A project lead creates it as `planned`; the datacenter team moves it to
+// `ordered` (with the expected delivery date in `available_from`) and then
+// `installed`. The model is protected (RESTRICT) while a host uses it.
+export const infraHostTable = pgTable(
+  "ganttpro_infra_host",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    modelId: text("model_id")
+      .notNull()
+      .references(() => infraModelTable.id, { onDelete: "restrict" }),
+    region: text("region").notNull(),
+    label: text("label").notNull(),
+    status: text("status")
+      .$type<"planned" | "ordered" | "installed">()
+      .notNull()
+      .default("planned"),
+    // Date-only (YYYY-MM-DD): expected delivery while ordered, installation
+    // date once installed.
+    availableFrom: date("available_from", { mode: "string" }),
+    hostname: text("hostname"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_host_project_id_idx").on(table.projectId),
+    index("ganttpro_infra_host_model_id_idx").on(table.modelId),
+    check(
+      "ganttpro_infra_host_status_check",
+      sql`${table.status} IN ('planned', 'ordered', 'installed')`,
+    ),
+  ],
+);
+
+// A virtual machine listed in a migration task and the host it goes to (null
+// while not placed yet). Deleting a planned host leaves its VMs unplaced
+// (SET NULL). The API checks that the host belongs to the task's project.
+export const infraVmTable = pgTable(
+  "ganttpro_infra_vm",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
+    hostId: text("host_id").references(() => infraHostTable.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    vcpu: integer("vcpu").notNull().default(0),
+    ramGb: integer("ram_gb").notNull().default(0),
+    storageGb: integer("storage_gb").notNull().default(0),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_vm_task_id_idx").on(table.taskId),
+    index("ganttpro_infra_vm_host_id_idx").on(table.hostId),
+    check("ganttpro_infra_vm_vcpu_check", sql`${table.vcpu} >= 0`),
+    check("ganttpro_infra_vm_ram_gb_check", sql`${table.ramGb} >= 0`),
+    check("ganttpro_infra_vm_storage_gb_check", sql`${table.storageGb} >= 0`),
   ],
 );

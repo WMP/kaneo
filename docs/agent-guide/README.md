@@ -10,6 +10,7 @@ Paths in these contracts are relative to the repository root unless a command ex
 | [Web and realtime](web-and-realtime.md) | Typed client, cache, events and translation |
 | [Database](database.md) | Drizzle, migration lineage and existing data |
 | [Jira integration](jira-integration.md) | Per-user Jira tokens, webhook, poll and status proposals |
+| [Infrastructure capacity](infrastructure-capacity.md) | Server model pools, hosts, VM items and datacenter permissions |
 | [Scheduling](scheduling.md) | Gantt dates, relations, cascade and calendar |
 | [Deployment and release](deployment.md) | Images, self-hosting and release behavior |
 | [Verification](verification.md) | Read-only checks, focused tests and broader gates |

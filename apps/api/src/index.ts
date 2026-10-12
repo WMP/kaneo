@@ -38,6 +38,7 @@ import githubIntegration, {
 import gitlabIntegration, {
   handleGitlabWebhookRoute,
 } from "./gitlab-integration";
+import infrastructure from "./infrastructure";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
@@ -823,6 +824,7 @@ export function createApp() {
   const workspaceApi = api.route("/workspace", workspace);
   const workloadApi = api.route("/workload", workload);
   const customFieldApi = api.route("/custom-field", customField);
+  const infrastructureApi = api.route("/infrastructure", infrastructure);
   const workspaceColumnApi = api.route("/workspace-column", workspaceColumn);
   const resourceApi = api.route("/resource", resource);
   const userApi = api.route("/user", user);
@@ -997,6 +999,7 @@ export function createApp() {
     workspaceApi,
     workloadApi,
     customFieldApi,
+    infrastructureApi,
     workspaceColumnApi,
     resourceApi,
     oauthApi,
@@ -1145,6 +1148,7 @@ const {
   workspaceApi,
   workloadApi,
   customFieldApi,
+  infrastructureApi,
   workspaceColumnApi,
   resourceApi,
   oauthApi,
@@ -1193,6 +1197,7 @@ export type AppType =
   | typeof workspaceApi
   | typeof workloadApi
   | typeof customFieldApi
+  | typeof infrastructureApi
   | typeof workspaceColumnApi
   | typeof resourceApi
   | typeof userApi
