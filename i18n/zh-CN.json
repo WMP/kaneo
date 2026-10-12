@@ -1061,6 +1061,106 @@
 				"title": "列由工作区管理"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "基础设施",
+			"description": "此项目迁移所需的服务器型号、主机和容量警告。",
+			"loadError": "无法加载基础设施数据。",
+			"save": "保存",
+			"saving": "正在保存...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "其他"
+			},
+			"validation": {
+				"required": "此字段为必填项。",
+				"integer": "请输入 {{min}} 到 {{max}} 之间的整数。",
+				"regions": "请输入一个或多个区域代码（字母、数字和连字符），以逗号分隔。"
+			},
+			"models": {
+				"title": "服务器型号",
+				"description": "此项目可以使用的服务器型号。一台主机是某个型号在其某个区域中的一个单元。",
+				"add": "添加型号",
+				"edit": "编辑型号",
+				"empty": "暂无服务器型号。",
+				"regionsHint": "以逗号分隔的区域代码，例如 GRA, PAR。",
+				"editAction": "编辑 {{name}}",
+				"deleteAction": "删除 {{name}}",
+				"deleteTitle": "删除型号 {{name}}？",
+				"deleteDescription": "该型号将从此项目的资源池中移除。已被主机使用的型号无法删除。",
+				"columns": {
+					"name": "名称",
+					"family": "系列",
+					"provider": "提供商",
+					"ram": "内存 (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "本地磁盘 (GB)",
+					"regions": "区域",
+					"leadTime": "交付周期（天）",
+					"reserve": "虚拟化层预留 (%)"
+				}
+			},
+			"hosts": {
+				"title": "主机",
+				"description": "此项目的物理服务器。数据中心团队负责订购和安装，你在这里进行规划。",
+				"add": "添加主机",
+				"empty": "暂无主机。",
+				"noModels": "添加主机之前，请先添加服务器型号。",
+				"newDescription": "根据服务器型号创建一台计划中的主机。由数据中心团队订购。",
+				"newModel": "型号",
+				"newModelPlaceholder": "选择型号",
+				"newRegion": "区域",
+				"newRegionPlaceholder": "选择区域",
+				"label": "标签",
+				"rename": "重命名主机",
+				"renameAction": "重命名 {{label}}",
+				"deleteAction": "删除 {{label}}",
+				"deleteTitle": "删除主机 {{label}}？",
+				"deleteDescription": "只能删除计划中的主机。其 VM 仍保留在任务中，但不再有主机。",
+				"orderLate": "订购截止日期已过。",
+				"ramUsage": "{{host}} 的内存使用率",
+				"columns": {
+					"label": "主机",
+					"model": "型号",
+					"region": "区域",
+					"status": "状态",
+					"needDate": "需求日期",
+					"orderBy": "最迟订购日期",
+					"ram": "内存使用率（峰值）",
+					"vms": "VM",
+					"localDisk": "本地磁盘 (GB)"
+				}
+			},
+			"warnings": {
+				"title": "警告",
+				"empty": "没有容量警告。",
+				"severity": {
+					"error": "错误",
+					"warning": "警告",
+					"info": "信息"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}：主机 {{host}} 自 {{available}} 起可用，但任务从 {{date}} 开始。",
+					"hostNotReadyPlanned": "{{vm}}：主机 {{host}} 尚未订购，但任务从 {{date}} 开始。",
+					"orderLate": "主机 {{host}} 本应在 {{date}} 之前订购。",
+					"over100": "自 {{date}} 起，主机 {{host}} 超出容量。",
+					"over80": "自 {{date}} 起，主机 {{host}} 的使用率超过 80%。",
+					"vmUnplaced": "{{vm}} 尚未分配主机。",
+					"vmUnscheduled": "{{vm}}：任务没有开始日期或截止日期，因此无法安排其对主机的占用。",
+					"unknown": "容量警告。"
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "该型号在此区域不可用。",
+				"modelInUse": "有主机正在使用此型号，因此无法删除。",
+				"regionInUse": "有主机正在使用你已从此型号中移除的区域。",
+				"hostLocked": "只能更改或删除计划中的主机。",
+				"hostNotInProject": "所选主机不属于此项目。",
+				"clusterRegionMismatch": "Ceph 集群必须与主机位于同一区域。",
+				"clusterNotInWorkspace": "该 Ceph 集群不属于此工作区。",
+				"vmNotInTask": "列表中有一台 VM 不属于此任务。请重新加载任务后重试。"
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "选择项目",
 			"noProjects": "无项目"
@@ -3416,6 +3516,33 @@
 					"targetMissing": "选择 Jira 项目和问题类型以查看必填字段和允许的值。",
 					"title": "发送前检查"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "基础设施",
+			"empty": "此任务尚未列出任何 VM。",
+			"columns": {
+				"name": "VM 名称",
+				"vcpu": "vCPU",
+				"ram": "内存 (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "本地 (GB)",
+				"host": "主机",
+				"cluster": "Ceph 集群"
+			},
+			"addVm": "添加 VM",
+			"duplicateRow": "复制 VM {{number}}",
+			"removeRow": "移除 VM {{number}}",
+			"noHost": "尚无主机",
+			"newHost": "新建主机…",
+			"noCluster": "无 Ceph 集群",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}}（{{region}}）",
+			"saved": "VM 列表已保存。",
+			"warningsTitle": "此任务的警告",
+			"validation": {
+				"nameRequired": "请输入 VM 名称。",
+				"number": "请输入 0 或更大的整数。"
 			}
 		}
 	},

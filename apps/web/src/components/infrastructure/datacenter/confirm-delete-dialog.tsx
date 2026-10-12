@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
+import { getDatacenterErrorMessage } from "@/lib/infrastructure-error";
 import { toast } from "@/lib/toast";
 
 export function ConfirmDeleteDialog({
@@ -33,7 +33,7 @@ export function ConfirmDeleteDialog({
       onClose();
     } catch (error) {
       toast.error(
-        getInfrastructureErrorMessage(
+        getDatacenterErrorMessage(
           error,
           t,
           "workspace:datacenter.errors.deleteFailed",

@@ -5481,6 +5481,399 @@
 						"enforced"
 					]
 				},
+				"projectInfrastructure": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						},
+						"loadError": {
+							"type": "string"
+						},
+						"save": {
+							"type": "string"
+						},
+						"saving": {
+							"type": "string"
+						},
+						"providers": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"ovh": {
+									"type": "string"
+								},
+								"azure": {
+									"type": "string"
+								},
+								"other": {
+									"type": "string"
+								}
+							},
+							"required": ["ovh", "azure", "other"]
+						},
+						"validation": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"required": {
+									"type": "string"
+								},
+								"integer": {
+									"type": "string"
+								},
+								"regions": {
+									"type": "string"
+								}
+							},
+							"required": ["required", "integer", "regions"]
+						},
+						"models": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								},
+								"add": {
+									"type": "string"
+								},
+								"edit": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"regionsHint": {
+									"type": "string"
+								},
+								"editAction": {
+									"type": "string"
+								},
+								"deleteAction": {
+									"type": "string"
+								},
+								"deleteTitle": {
+									"type": "string"
+								},
+								"deleteDescription": {
+									"type": "string"
+								},
+								"columns": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"name": {
+											"type": "string"
+										},
+										"family": {
+											"type": "string"
+										},
+										"provider": {
+											"type": "string"
+										},
+										"ram": {
+											"type": "string"
+										},
+										"vcpu": {
+											"type": "string"
+										},
+										"localDisk": {
+											"type": "string"
+										},
+										"regions": {
+											"type": "string"
+										},
+										"leadTime": {
+											"type": "string"
+										},
+										"reserve": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"family",
+										"provider",
+										"ram",
+										"vcpu",
+										"localDisk",
+										"regions",
+										"leadTime",
+										"reserve"
+									]
+								}
+							},
+							"required": [
+								"title",
+								"description",
+								"add",
+								"edit",
+								"empty",
+								"regionsHint",
+								"editAction",
+								"deleteAction",
+								"deleteTitle",
+								"deleteDescription",
+								"columns"
+							]
+						},
+						"hosts": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								},
+								"add": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"noModels": {
+									"type": "string"
+								},
+								"newDescription": {
+									"type": "string"
+								},
+								"newModel": {
+									"type": "string"
+								},
+								"newModelPlaceholder": {
+									"type": "string"
+								},
+								"newRegion": {
+									"type": "string"
+								},
+								"newRegionPlaceholder": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"rename": {
+									"type": "string"
+								},
+								"renameAction": {
+									"type": "string"
+								},
+								"deleteAction": {
+									"type": "string"
+								},
+								"deleteTitle": {
+									"type": "string"
+								},
+								"deleteDescription": {
+									"type": "string"
+								},
+								"orderLate": {
+									"type": "string"
+								},
+								"ramUsage": {
+									"type": "string"
+								},
+								"columns": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"label": {
+											"type": "string"
+										},
+										"model": {
+											"type": "string"
+										},
+										"region": {
+											"type": "string"
+										},
+										"status": {
+											"type": "string"
+										},
+										"needDate": {
+											"type": "string"
+										},
+										"orderBy": {
+											"type": "string"
+										},
+										"ram": {
+											"type": "string"
+										},
+										"vms": {
+											"type": "string"
+										},
+										"localDisk": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"label",
+										"model",
+										"region",
+										"status",
+										"needDate",
+										"orderBy",
+										"ram",
+										"vms",
+										"localDisk"
+									]
+								}
+							},
+							"required": [
+								"title",
+								"description",
+								"add",
+								"empty",
+								"noModels",
+								"newDescription",
+								"newModel",
+								"newModelPlaceholder",
+								"newRegion",
+								"newRegionPlaceholder",
+								"label",
+								"rename",
+								"renameAction",
+								"deleteAction",
+								"deleteTitle",
+								"deleteDescription",
+								"orderLate",
+								"ramUsage",
+								"columns"
+							]
+						},
+						"warnings": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"severity": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"error": {
+											"type": "string"
+										},
+										"warning": {
+											"type": "string"
+										},
+										"info": {
+											"type": "string"
+										}
+									},
+									"required": ["error", "warning", "info"]
+								},
+								"types": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"hostNotReadyAvailable": {
+											"type": "string"
+										},
+										"hostNotReadyPlanned": {
+											"type": "string"
+										},
+										"orderLate": {
+											"type": "string"
+										},
+										"over100": {
+											"type": "string"
+										},
+										"over80": {
+											"type": "string"
+										},
+										"vmUnplaced": {
+											"type": "string"
+										},
+										"vmUnscheduled": {
+											"type": "string"
+										},
+										"unknown": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"hostNotReadyAvailable",
+										"hostNotReadyPlanned",
+										"orderLate",
+										"over100",
+										"over80",
+										"vmUnplaced",
+										"vmUnscheduled",
+										"unknown"
+									]
+								}
+							},
+							"required": ["title", "empty", "severity", "types"]
+						},
+						"errors": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"regionNotAllowed": {
+									"type": "string"
+								},
+								"modelInUse": {
+									"type": "string"
+								},
+								"regionInUse": {
+									"type": "string"
+								},
+								"hostLocked": {
+									"type": "string"
+								},
+								"hostNotInProject": {
+									"type": "string"
+								},
+								"clusterRegionMismatch": {
+									"type": "string"
+								},
+								"clusterNotInWorkspace": {
+									"type": "string"
+								},
+								"vmNotInTask": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"regionNotAllowed",
+								"modelInUse",
+								"regionInUse",
+								"hostLocked",
+								"hostNotInProject",
+								"clusterRegionMismatch",
+								"clusterNotInWorkspace",
+								"vmNotInTask"
+							]
+						}
+					},
+					"required": [
+						"title",
+						"description",
+						"loadError",
+						"save",
+						"saving",
+						"providers",
+						"validation",
+						"models",
+						"hosts",
+						"warnings",
+						"errors"
+					]
+				},
 				"projectSwitcher": {
 					"type": "object",
 					"additionalProperties": false,
@@ -9296,6 +9689,7 @@
 				"projectIntegrations",
 				"projectVisibility",
 				"projectWorkflow",
+				"projectInfrastructure",
 				"projectSwitcher",
 				"columnEditor",
 				"customFields",
@@ -9437,6 +9831,9 @@
 						},
 						"backToBoard": {
 							"type": "string"
+						},
+						"datacenter": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -9448,7 +9845,8 @@
 						"workload",
 						"invitations",
 						"more",
-						"backToBoard"
+						"backToBoard",
+						"datacenter"
 					]
 				},
 				"projectList": {
@@ -14001,6 +14399,113 @@
 						}
 					},
 					"required": ["button", "send", "panel"]
+				},
+				"infrastructure": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"empty": {
+							"type": "string"
+						},
+						"columns": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"name": {
+									"type": "string"
+								},
+								"vcpu": {
+									"type": "string"
+								},
+								"ram": {
+									"type": "string"
+								},
+								"ceph": {
+									"type": "string"
+								},
+								"local": {
+									"type": "string"
+								},
+								"host": {
+									"type": "string"
+								},
+								"cluster": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name",
+								"vcpu",
+								"ram",
+								"ceph",
+								"local",
+								"host",
+								"cluster"
+							]
+						},
+						"addVm": {
+							"type": "string"
+						},
+						"duplicateRow": {
+							"type": "string"
+						},
+						"removeRow": {
+							"type": "string"
+						},
+						"noHost": {
+							"type": "string"
+						},
+						"newHost": {
+							"type": "string"
+						},
+						"noCluster": {
+							"type": "string"
+						},
+						"hostOption": {
+							"type": "string"
+						},
+						"clusterOption": {
+							"type": "string"
+						},
+						"saved": {
+							"type": "string"
+						},
+						"warningsTitle": {
+							"type": "string"
+						},
+						"validation": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"nameRequired": {
+									"type": "string"
+								},
+								"number": {
+									"type": "string"
+								}
+							},
+							"required": ["nameRequired", "number"]
+						}
+					},
+					"required": [
+						"title",
+						"empty",
+						"columns",
+						"addVm",
+						"duplicateRow",
+						"removeRow",
+						"noHost",
+						"newHost",
+						"noCluster",
+						"hostOption",
+						"clusterOption",
+						"saved",
+						"warningsTitle",
+						"validation"
+					]
 				}
 			},
 			"required": [
@@ -14047,7 +14552,8 @@
 				"descriptionLoading",
 				"descriptionLoadError",
 				"approval",
-				"jira"
+				"jira",
+				"infrastructure"
 			]
 		},
 		"invitations": {
@@ -14840,9 +15346,594 @@
 						"success",
 						"error"
 					]
+				},
+				"datacenter": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"tabs": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"orderPlan": {
+									"type": "string"
+								},
+								"hosts": {
+									"type": "string"
+								},
+								"storage": {
+									"type": "string"
+								}
+							},
+							"required": ["orderPlan", "hosts", "storage"]
+						},
+						"loadFailed": {
+							"type": "string"
+						},
+						"noAccess": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								}
+							},
+							"required": ["title", "description"]
+						},
+						"actions": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"save": {
+									"type": "string"
+								},
+								"changeStatus": {
+									"type": "string"
+								}
+							},
+							"required": ["save", "changeStatus"]
+						},
+						"errors": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"availableFromRequired": {
+									"type": "string"
+								},
+								"clusterNameTaken": {
+									"type": "string"
+								},
+								"clusterInUse": {
+									"type": "string"
+								},
+								"capacityLocked": {
+									"type": "string"
+								},
+								"clusterInvalid": {
+									"type": "string"
+								},
+								"regionInUse": {
+									"type": "string"
+								},
+								"saveFailed": {
+									"type": "string"
+								},
+								"deleteFailed": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"availableFromRequired",
+								"clusterNameTaken",
+								"clusterInUse",
+								"capacityLocked",
+								"clusterInvalid",
+								"regionInUse",
+								"saveFailed",
+								"deleteFailed"
+							]
+						},
+						"fields": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"status": {
+									"type": "string"
+								},
+								"availableFrom": {
+									"type": "string"
+								},
+								"hostname": {
+									"type": "string"
+								},
+								"needDate": {
+									"type": "string"
+								},
+								"provider": {
+									"type": "string"
+								},
+								"region": {
+									"type": "string"
+								},
+								"model": {
+									"type": "string"
+								},
+								"ramGb": {
+									"type": "string"
+								},
+								"vcpu": {
+									"type": "string"
+								},
+								"storageGb": {
+									"type": "string"
+								},
+								"capacity": {
+									"type": "string"
+								},
+								"capacityGb": {
+									"type": "string"
+								},
+								"project": {
+									"type": "string"
+								},
+								"cluster": {
+									"type": "string"
+								},
+								"name": {
+									"type": "string"
+								},
+								"kind": {
+									"type": "string"
+								},
+								"dataChunks": {
+									"type": "string"
+								},
+								"codingChunks": {
+									"type": "string"
+								},
+								"fillThreshold": {
+									"type": "string"
+								},
+								"leadTimeDays": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"status",
+								"availableFrom",
+								"hostname",
+								"needDate",
+								"provider",
+								"region",
+								"model",
+								"ramGb",
+								"vcpu",
+								"storageGb",
+								"capacity",
+								"capacityGb",
+								"project",
+								"cluster",
+								"name",
+								"kind",
+								"dataChunks",
+								"codingChunks",
+								"fillThreshold",
+								"leadTimeDays",
+								"label"
+							]
+						},
+						"kind": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"self_managed": {
+									"type": "string"
+								},
+								"managed_service": {
+									"type": "string"
+								}
+							},
+							"required": ["self_managed", "managed_service"]
+						},
+						"provider": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"other": {
+									"type": "string"
+								}
+							},
+							"required": ["other"]
+						},
+						"statusDialog": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"dateRequired": {
+									"type": "string"
+								},
+								"dateOptional": {
+									"type": "string"
+								}
+							},
+							"required": ["title", "dateRequired", "dateOptional"]
+						},
+						"orderPlan": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"rows": {
+									"type": "string"
+								},
+								"late": {
+									"type": "string"
+								},
+								"download": {
+									"type": "string"
+								},
+								"downloadFailed": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"orderBy": {
+									"type": "string"
+								},
+								"type": {
+									"type": "string"
+								},
+								"quantity": {
+									"type": "string"
+								},
+								"lateBadge": {
+									"type": "string"
+								},
+								"types": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"host": {
+											"type": "string"
+										},
+										"storageNode": {
+											"type": "string"
+										},
+										"storageService": {
+											"type": "string"
+										}
+									},
+									"required": ["host", "storageNode", "storageService"]
+								}
+							},
+							"required": [
+								"rows",
+								"late",
+								"download",
+								"downloadFailed",
+								"empty",
+								"orderBy",
+								"type",
+								"quantity",
+								"lateBadge",
+								"types"
+							]
+						},
+						"hosts": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"allProjects": {
+									"type": "string"
+								},
+								"allRegions": {
+									"type": "string"
+								},
+								"allStatuses": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"host": {
+									"type": "string"
+								},
+								"ramPeak": {
+									"type": "string"
+								},
+								"ramUse": {
+									"type": "string"
+								},
+								"vms": {
+									"type": "string"
+								},
+								"warnings": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"allProjects",
+								"allRegions",
+								"allStatuses",
+								"empty",
+								"host",
+								"ramPeak",
+								"ramUse",
+								"vms",
+								"warnings"
+							]
+						},
+						"warnings": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"none": {
+									"type": "string"
+								},
+								"showAll": {
+									"type": "string"
+								},
+								"showFewer": {
+									"type": "string"
+								},
+								"severity": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"error": {
+											"type": "string"
+										},
+										"warning": {
+											"type": "string"
+										},
+										"info": {
+											"type": "string"
+										}
+									},
+									"required": ["error", "warning", "info"]
+								},
+								"severityName": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"error": {
+											"type": "string"
+										},
+										"warning": {
+											"type": "string"
+										},
+										"info": {
+											"type": "string"
+										}
+									},
+									"required": ["error", "warning", "info"]
+								},
+								"HOST_NOT_READY": {
+									"type": "string"
+								},
+								"ORDER_LATE": {
+									"type": "string"
+								},
+								"OVER_100": {
+									"type": "string"
+								},
+								"OVER_80": {
+									"type": "string"
+								},
+								"VM_UNPLACED": {
+									"type": "string"
+								},
+								"VM_UNSCHEDULED": {
+									"type": "string"
+								},
+								"CLUSTER_NOT_READY": {
+									"type": "string"
+								},
+								"CLUSTER_SHORTFALL": {
+									"type": "string"
+								},
+								"CLUSTER_SHORTFALL_NO_DATE": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"title",
+								"none",
+								"showAll",
+								"showFewer",
+								"severity",
+								"severityName",
+								"HOST_NOT_READY",
+								"ORDER_LATE",
+								"OVER_100",
+								"OVER_80",
+								"VM_UNPLACED",
+								"VM_UNSCHEDULED",
+								"CLUSTER_NOT_READY",
+								"CLUSTER_SHORTFALL",
+								"CLUSTER_SHORTFALL_NO_DATE"
+							]
+						},
+						"storage": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"addCluster": {
+									"type": "string"
+								},
+								"addEntry": {
+									"type": "string"
+								},
+								"editCluster": {
+									"type": "string"
+								},
+								"empty": {
+									"type": "string"
+								},
+								"noEntries": {
+									"type": "string"
+								},
+								"erasureCoding": {
+									"type": "string"
+								},
+								"installed": {
+									"type": "string"
+								},
+								"usable": {
+									"type": "string"
+								},
+								"used": {
+									"type": "string"
+								},
+								"firstOver80": {
+									"type": "string"
+								},
+								"firstOver100": {
+									"type": "string"
+								},
+								"usage": {
+									"type": "string"
+								},
+								"shortfall": {
+									"type": "string"
+								},
+								"suggestionService": {
+									"type": "string"
+								},
+								"suggestionServiceNoDate": {
+									"type": "string"
+								},
+								"suggestionNodes": {
+									"type": "string"
+								},
+								"suggestionNodesNoDate": {
+									"type": "string"
+								},
+								"suggestionNodesUnknown": {
+									"type": "string"
+								},
+								"suggestionNodesUnknownNoDate": {
+									"type": "string"
+								},
+								"deleteClusterTitle": {
+									"type": "string"
+								},
+								"deleteClusterDescription": {
+									"type": "string"
+								},
+								"deleteEntryTitle": {
+									"type": "string"
+								},
+								"deleteEntryDescription": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"addCluster",
+								"addEntry",
+								"editCluster",
+								"empty",
+								"noEntries",
+								"erasureCoding",
+								"installed",
+								"usable",
+								"used",
+								"firstOver80",
+								"firstOver100",
+								"usage",
+								"shortfall",
+								"suggestionService",
+								"suggestionServiceNoDate",
+								"suggestionNodes",
+								"suggestionNodesNoDate",
+								"suggestionNodesUnknown",
+								"suggestionNodesUnknownNoDate",
+								"deleteClusterTitle",
+								"deleteClusterDescription",
+								"deleteEntryTitle",
+								"deleteEntryDescription"
+							]
+						},
+						"clusterDialog": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"createTitle": {
+									"type": "string"
+								},
+								"editTitle": {
+									"type": "string"
+								},
+								"selfManagedHint": {
+									"type": "string"
+								},
+								"managedHint": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"createTitle",
+								"editTitle",
+								"selfManagedHint",
+								"managedHint"
+							]
+						},
+						"entryDialog": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"capacityHint": {
+									"type": "string"
+								},
+								"labelHint": {
+									"type": "string"
+								}
+							},
+							"required": ["title", "capacityHint", "labelHint"]
+						}
+					},
+					"required": [
+						"tabs",
+						"loadFailed",
+						"noAccess",
+						"actions",
+						"errors",
+						"fields",
+						"kind",
+						"provider",
+						"statusDialog",
+						"orderPlan",
+						"hosts",
+						"warnings",
+						"storage",
+						"clusterDialog",
+						"entryDialog"
+					]
 				}
 			},
-			"required": ["projects", "search", "activityLog", "workload", "create"]
+			"required": [
+				"projects",
+				"search",
+				"activityLog",
+				"workload",
+				"create",
+				"datacenter"
+			]
 		},
 		"portfolio": {
 			"type": "object",

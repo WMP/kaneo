@@ -13,7 +13,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import type { HostStatus } from "@/fetchers/infrastructure/datacenter/set-host-status";
-import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
+import { getDatacenterErrorMessage } from "@/lib/infrastructure-error";
 import { toast } from "@/lib/toast";
 import { DcSelect } from "./dc-select";
 
@@ -72,7 +72,7 @@ export function StatusDialog({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        getInfrastructureErrorMessage(
+        getDatacenterErrorMessage(
           error,
           t,
           "workspace:datacenter.errors.saveFailed",

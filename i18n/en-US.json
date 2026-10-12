@@ -1400,6 +1400,106 @@
 				"manageLink": "Open workspace workflow settings"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Infrastructure",
+			"description": "Server models, hosts and capacity warnings for the migrations of this project.",
+			"loadError": "Could not load the infrastructure data.",
+			"save": "Save",
+			"saving": "Saving...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Other"
+			},
+			"validation": {
+				"required": "This field is required.",
+				"integer": "Enter a whole number from {{min}} to {{max}}.",
+				"regions": "Enter one or more region codes (letters, digits and dashes), separated by commas."
+			},
+			"models": {
+				"title": "Server models",
+				"description": "The server models this project may use. A host is one unit of a model in one of its regions.",
+				"add": "Add model",
+				"edit": "Edit model",
+				"empty": "No server models yet.",
+				"regionsHint": "Region codes separated by commas, for example GRA, PAR.",
+				"editAction": "Edit {{name}}",
+				"deleteAction": "Delete {{name}}",
+				"deleteTitle": "Delete model {{name}}?",
+				"deleteDescription": "The model is removed from the pool of this project. A model that hosts use cannot be deleted.",
+				"columns": {
+					"name": "Name",
+					"family": "Family",
+					"provider": "Provider",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Local disk (GB)",
+					"regions": "Regions",
+					"leadTime": "Lead time (days)",
+					"reserve": "Hypervisor reserve (%)"
+				}
+			},
+			"hosts": {
+				"title": "Hosts",
+				"description": "Physical servers of this project. The datacenter team orders and installs them; you plan them here.",
+				"add": "Add host",
+				"empty": "No hosts yet.",
+				"noModels": "Add a server model before you add a host.",
+				"newDescription": "Creates a planned host from a server model. The datacenter team orders it.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Select a model",
+				"newRegion": "Region",
+				"newRegionPlaceholder": "Select a region",
+				"label": "Label",
+				"rename": "Rename host",
+				"renameAction": "Rename {{label}}",
+				"deleteAction": "Delete {{label}}",
+				"deleteTitle": "Delete host {{label}}?",
+				"deleteDescription": "Only a planned host can be deleted. Its VMs stay in their tasks without a host.",
+				"orderLate": "The order-by date has passed.",
+				"ramUsage": "RAM use of {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Region",
+					"status": "Status",
+					"needDate": "Need date",
+					"orderBy": "Order by",
+					"ram": "RAM use (peak)",
+					"vms": "VMs",
+					"localDisk": "Local disk (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Warnings",
+				"empty": "No capacity warnings.",
+				"severity": {
+					"error": "Error",
+					"warning": "Warning",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} is available from {{available}}, but the task starts {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} is not ordered yet, but the task starts {{date}}.",
+					"orderLate": "Host {{host}} should have been ordered by {{date}}.",
+					"over100": "Host {{host}} is over capacity from {{date}}.",
+					"over80": "Host {{host}} is more than 80% full from {{date}}.",
+					"vmUnplaced": "{{vm}} has no host yet.",
+					"vmUnscheduled": "{{vm}}: the task has no start or due date, so its use of the host cannot be scheduled.",
+					"unknown": "Capacity warning."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "This model is not available in that region.",
+				"modelInUse": "A host uses this model, so it cannot be deleted.",
+				"regionInUse": "A host uses a region that you removed from this model.",
+				"hostLocked": "Only a planned host can be changed or deleted.",
+				"hostNotInProject": "The selected host does not belong to this project.",
+				"clusterRegionMismatch": "The Ceph cluster must be in the same region as the host.",
+				"clusterNotInWorkspace": "The Ceph cluster is not part of this workspace.",
+				"vmNotInTask": "A VM in the list does not belong to this task. Reload the task and try again."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Select project",
 			"noProjects": "No projects"
@@ -3428,6 +3528,33 @@
 					"accepted": "Accepted by {{name}}",
 					"rejectedBy": "Rejected by {{name}}"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Infrastructure",
+			"empty": "No VMs are listed for this task yet.",
+			"columns": {
+				"name": "VM name",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Local (GB)",
+				"host": "Host",
+				"cluster": "Ceph cluster"
+			},
+			"addVm": "Add VM",
+			"duplicateRow": "Duplicate VM {{number}}",
+			"removeRow": "Remove VM {{number}}",
+			"noHost": "No host yet",
+			"newHost": "New host…",
+			"noCluster": "No Ceph cluster",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM list saved.",
+			"warningsTitle": "Warnings for this task",
+			"validation": {
+				"nameRequired": "Enter a VM name.",
+				"number": "Enter a whole number, 0 or more."
 			}
 		}
 	},

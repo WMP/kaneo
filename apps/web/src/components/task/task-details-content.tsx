@@ -7,6 +7,7 @@ import Activity from "@/components/activity";
 import CommentInput from "@/components/activity/comment-input";
 import { isCommentActivity } from "@/components/activity/utils";
 import { ExternalLinksAccordion } from "@/components/external-links/external-links-accordion";
+import { TaskInfrastructureSection } from "@/components/infrastructure/task/task-infrastructure-section";
 import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
 import {
   Accordion,
@@ -133,7 +134,8 @@ export default function TaskDetailsContent({
   );
 
   const { mutateAsync: setCustomFieldValue } = useSetCustomFieldValue();
-  const { canUpdateTasks } = useProjectPermission(projectId);
+  const { canUpdateTasks, canReadInfrastructure } =
+    useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
 
   const [localValues, setLocalValues] = useState<CustomFieldValueMap>({});
@@ -657,6 +659,11 @@ export default function TaskDetailsContent({
           isLoading={isLoadingExternalLinks}
         />
       </div>
+      {canReadInfrastructure() && (
+        <div className="mt-4">
+          <TaskInfrastructureSection taskId={taskId} projectId={projectId} />
+        </div>
+      )}
       <div className="mt-4">
         {task && (
           <TaskSubtasks

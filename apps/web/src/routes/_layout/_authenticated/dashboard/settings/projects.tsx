@@ -10,6 +10,7 @@ import {
   Eye,
   GitBranch,
   Plug,
+  Server,
   Settings,
   Users,
 } from "lucide-react";
@@ -32,6 +33,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
+import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
@@ -47,6 +49,13 @@ function RouteComponent() {
   const { workspace, role } = useWorkspacePermission();
   const location = useLocation();
   const navigate = useNavigate();
+  const selectedProjectMatch = location.pathname.match(
+    /^\/dashboard\/settings\/projects\/([^/]+)\//,
+  );
+  const selectedProjectId = selectedProjectMatch?.[1] || "";
+  const { canReadInfrastructure } = useProjectPermission(
+    selectedProjectId || undefined,
+  );
   const menuItems = [
     {
       title: t("settings:projectGeneral.title"),
@@ -78,6 +87,15 @@ function RouteComponent() {
       icon: GitBranch,
       segment: "workflow",
     },
+    ...(canReadInfrastructure()
+      ? [
+          {
+            title: t("settings:projectInfrastructure.title"),
+            icon: Server,
+            segment: "infrastructure",
+          },
+        ]
+      : []),
   ];
   const { data: projects } = useGetProjects({
     workspaceId: workspace?.id || "",
@@ -85,10 +103,6 @@ function RouteComponent() {
 
   const workspaceInitials = getInitials(workspace?.name, "WS");
 
-  const selectedProjectMatch = location.pathname.match(
-    /^\/dashboard\/settings\/projects\/([^/]+)\//,
-  );
-  const selectedProjectId = selectedProjectMatch?.[1] || "";
   const selectedSegment =
     location.pathname.match(
       /^\/dashboard\/settings\/projects\/[^/]+\/([^/]+)/,

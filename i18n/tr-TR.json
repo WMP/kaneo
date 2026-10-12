@@ -825,6 +825,106 @@
 				"title": "Sütunlar çalışma alanı tarafından yönetiliyor"
 			}
 		},
+		"projectInfrastructure": {
+			"title": "Altyapı",
+			"description": "Bu projenin geçişleri için sunucu modelleri, ana makineler ve kapasite uyarıları.",
+			"loadError": "Altyapı verileri yüklenemedi.",
+			"save": "Kaydet",
+			"saving": "Kaydediliyor...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Diğer"
+			},
+			"validation": {
+				"required": "Bu alan zorunludur.",
+				"integer": "{{min}} ile {{max}} arasında bir tam sayı girin.",
+				"regions": "Virgülle ayrılmış bir veya daha fazla bölge kodu girin (harf, rakam ve tire)."
+			},
+			"models": {
+				"title": "Sunucu modelleri",
+				"description": "Bu projenin kullanabileceği sunucu modelleri. Bir ana makine, bir modelin bölgelerinden birindeki tek bir birimidir.",
+				"add": "Model ekle",
+				"edit": "Modeli düzenle",
+				"empty": "Henüz sunucu modeli yok.",
+				"regionsHint": "Virgülle ayrılmış bölge kodları, örneğin GRA, PAR.",
+				"editAction": "{{name}} öğesini düzenle",
+				"deleteAction": "{{name}} öğesini sil",
+				"deleteTitle": "{{name}} modeli silinsin mi?",
+				"deleteDescription": "Model bu projenin havuzundan kaldırılır. Ana makinelerin kullandığı bir model silinemez.",
+				"columns": {
+					"name": "Ad",
+					"family": "Aile",
+					"provider": "Sağlayıcı",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Yerel disk (GB)",
+					"regions": "Bölgeler",
+					"leadTime": "Teslim süresi (gün)",
+					"reserve": "Hipervizör rezervi (%)"
+				}
+			},
+			"hosts": {
+				"title": "Ana makineler",
+				"description": "Bu projenin fiziksel sunucuları. Veri merkezi ekibi bunları sipariş eder ve kurar; siz burada planlarsınız.",
+				"add": "Ana makine ekle",
+				"empty": "Henüz ana makine yok.",
+				"noModels": "Ana makine eklemeden önce bir sunucu modeli ekleyin.",
+				"newDescription": "Bir sunucu modelinden planlanmış bir ana makine oluşturur. Veri merkezi ekibi bunu sipariş eder.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Model seçin",
+				"newRegion": "Bölge",
+				"newRegionPlaceholder": "Bölge seçin",
+				"label": "Etiket",
+				"rename": "Ana makineyi yeniden adlandır",
+				"renameAction": "{{label}} öğesini yeniden adlandır",
+				"deleteAction": "{{label}} öğesini sil",
+				"deleteTitle": "{{label}} ana makinesi silinsin mi?",
+				"deleteDescription": "Yalnızca planlanmış bir ana makine silinebilir. Sanal makineleri (VM) ana makinesiz olarak görevlerinde kalır.",
+				"orderLate": "Sipariş son tarihi geçti.",
+				"ramUsage": "{{host}} RAM kullanımı",
+				"columns": {
+					"label": "Ana makine",
+					"model": "Model",
+					"region": "Bölge",
+					"status": "Durum",
+					"needDate": "İhtiyaç tarihi",
+					"orderBy": "Sipariş son tarihi",
+					"ram": "RAM kullanımı (tepe)",
+					"vms": "VM",
+					"localDisk": "Yerel disk (GB)"
+				}
+			},
+			"warnings": {
+				"title": "Uyarılar",
+				"empty": "Kapasite uyarısı yok.",
+				"severity": {
+					"error": "Hata",
+					"warning": "Uyarı",
+					"info": "Bilgi"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: {{host}} ana makinesi {{available}} tarihinden itibaren kullanılabilir, ancak görev {{date}} tarihinde başlıyor.",
+					"hostNotReadyPlanned": "{{vm}}: {{host}} ana makinesi henüz sipariş edilmedi, ancak görev {{date}} tarihinde başlıyor.",
+					"orderLate": "{{host}} ana makinesinin {{date}} tarihine kadar sipariş edilmesi gerekiyordu.",
+					"over100": "{{host}} ana makinesi {{date}} tarihinden itibaren kapasitesini aşıyor.",
+					"over80": "{{host}} ana makinesi {{date}} tarihinden itibaren %80'den fazla dolu.",
+					"vmUnplaced": "{{vm}} için henüz bir ana makine yok.",
+					"vmUnscheduled": "{{vm}}: Görevin başlangıç veya bitiş tarihi olmadığından ana makine kullanımı planlanamaz.",
+					"unknown": "Kapasite uyarısı."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Bu model o bölgede kullanılamıyor.",
+				"modelInUse": "Bir ana makine bu modeli kullanıyor, bu yüzden silinemez.",
+				"regionInUse": "Bir ana makine, bu modelden kaldırdığınız bir bölgeyi kullanıyor.",
+				"hostLocked": "Yalnızca planlanmış bir ana makine değiştirilebilir veya silinebilir.",
+				"hostNotInProject": "Seçilen ana makine bu projeye ait değil.",
+				"clusterRegionMismatch": "Ceph kümesi ana makineyle aynı bölgede olmalıdır.",
+				"clusterNotInWorkspace": "Ceph kümesi bu çalışma alanının parçası değil.",
+				"vmNotInTask": "Listedeki bir VM bu göreve ait değil. Görevi yeniden yükleyip tekrar deneyin."
+			}
+		},
 		"projectSwitcher": {
 			"selectProject": "Proje seç",
 			"noProjects": "Proje yok"
@@ -3428,6 +3528,33 @@
 					"targetMissing": "Zorunlu alanları ve izin verilen değerleri görmek için bir Jira projesi ve bir kayıt türü seçin.",
 					"title": "Göndermeden önce kontrol edin"
 				}
+			}
+		},
+		"infrastructure": {
+			"title": "Altyapı",
+			"empty": "Bu görev için henüz VM listelenmedi.",
+			"columns": {
+				"name": "VM adı",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Yerel (GB)",
+				"host": "Ana makine",
+				"cluster": "Ceph kümesi"
+			},
+			"addVm": "VM ekle",
+			"duplicateRow": "{{number}}. VM'yi çoğalt",
+			"removeRow": "{{number}}. VM'yi kaldır",
+			"noHost": "Henüz ana makine yok",
+			"newHost": "Yeni ana makine…",
+			"noCluster": "Ceph kümesi yok",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM listesi kaydedildi.",
+			"warningsTitle": "Bu görevin uyarıları",
+			"validation": {
+				"nameRequired": "Bir VM adı girin.",
+				"number": "0 veya daha büyük bir tam sayı girin."
 			}
 		}
 	},

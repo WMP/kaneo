@@ -13,7 +13,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import type { CreateStorageCapacityRequest } from "@/fetchers/infrastructure/datacenter/create-storage-capacity";
-import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
+import { getDatacenterErrorMessage } from "@/lib/infrastructure-error";
 import { toast } from "@/lib/toast";
 
 // Adds a planned capacity entry (a storage node or a block of a managed service) to a cluster.
@@ -49,7 +49,7 @@ export function EntryDialog({
       onOpenChange(false);
     } catch (error) {
       toast.error(
-        getInfrastructureErrorMessage(
+        getDatacenterErrorMessage(
           error,
           t,
           "workspace:datacenter.errors.saveFailed",

@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDownloadOrderPlan } from "@/hooks/mutations/infrastructure/datacenter/use-datacenter-mutations";
-import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
+import { getDatacenterErrorMessage } from "@/lib/infrastructure-error";
 import { toast } from "@/lib/toast";
 import { formatDay, formatGb, formatNumber, providerName } from "./format";
 import type { OrderPlanRow } from "./types";
@@ -40,7 +40,7 @@ export function OrderPlanTab({
       await download.mutateAsync(workspaceId);
     } catch (error) {
       toast.error(
-        getInfrastructureErrorMessage(
+        getDatacenterErrorMessage(
           error,
           t,
           "workspace:datacenter.orderPlan.downloadFailed",
