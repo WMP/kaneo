@@ -80,6 +80,7 @@ export function HostsTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <DcSelect
+          className="w-full sm:w-52"
           ariaLabel={t("workspace:datacenter.fields.project")}
           value={project}
           onChange={setProject}
@@ -89,6 +90,7 @@ export function HostsTab({
           ]}
         />
         <DcSelect
+          className="w-full sm:w-52"
           ariaLabel={t("workspace:datacenter.fields.region")}
           value={region}
           onChange={setRegion}
@@ -98,6 +100,7 @@ export function HostsTab({
           ]}
         />
         <DcSelect
+          className="w-full sm:w-52"
           ariaLabel={t("workspace:datacenter.fields.status")}
           value={statusFilter}
           onChange={setStatusFilter}

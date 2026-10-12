@@ -87,12 +87,9 @@ function SuggestionText({ result }: { result: ClusterCapacity["result"] }) {
       </>
     );
   }
-  const node = [
-    suggestion.modelName,
-    formatGb(suggestion.nodeCapacityGb, locale),
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // A model name usually carries the size already ("STOR-2 24 TB").
+  const node =
+    suggestion.modelName || formatGb(suggestion.nodeCapacityGb, locale);
   const params = { nodes: formatNumber(suggestion.nodes, locale), node, date };
   return (
     <>
