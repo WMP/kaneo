@@ -213,12 +213,12 @@ const PERMISSION_LABELS: Record<
   "datacenter:read": {
     label: "View datacenter hosts",
     description:
-      "See the hosts and VMs of every project in this workspace, without project membership.",
+      "See hosts, VMs and Ceph storage clusters of every project in this workspace, without project membership.",
   },
   "datacenter:manage": {
     label: "Manage datacenter hosts",
     description:
-      "Set the status, expected delivery date and hostname of hosts in every project.",
+      "Set host and storage status, expected delivery dates and hostnames, and manage Ceph storage clusters and their capacity.",
   },
 };
 

@@ -38,11 +38,12 @@ const hostColumns = {
     vmCount: sql<number>`count(${infraVmTable.id})::int`,
     vcpu: sql<number>`coalesce(sum(${infraVmTable.vcpu}), 0)::int`,
     ramGb: sql<number>`coalesce(sum(${infraVmTable.ramGb}), 0)::int`,
-    storageGb: sql<number>`coalesce(sum(${infraVmTable.storageGb}), 0)::int`,
+    localStorageGb: sql<number>`coalesce(sum(${infraVmTable.localStorageGb}), 0)::int`,
+    cephStorageGb: sql<number>`coalesce(sum(${infraVmTable.cephStorageGb}), 0)::int`,
   },
 };
 
-type HostStatus = "planned" | "ordered" | "installed";
+export type HostStatus = "planned" | "ordered" | "installed";
 
 function hostsWithTotals(where: SQL | undefined) {
   return db
@@ -240,6 +241,25 @@ function todayUtc() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// The stored date for a status change, shared by hosts and storage capacity:
+// `planned` clears it, `installed` without a date stores today, `ordered`
+// needs the expected delivery date.
+export function resolveAvailableFrom(
+  status: HostStatus,
+  availableFrom: string | null | undefined,
+) {
+  if (status === "ordered" && !availableFrom) {
+    throw infraError(
+      400,
+      INFRA_ERROR_CODES.availableFromRequired,
+      "An ordered entry needs the expected delivery date (availableFrom)",
+    );
+  }
+  if (status === "planned") return null;
+  if (status === "installed") return availableFrom ?? todayUtc();
+  return availableFrom ?? null;
+}
+
 // Datacenter status change. `ordered` needs the expected delivery date;
 // `installed` without a date stores today; `planned` clears the date. The
 // hostname is only changed when the body names it.
@@ -252,13 +272,7 @@ export async function setHostStatus(
     hostname?: string | null;
   },
 ) {
-  if (input.status === "ordered" && !input.availableFrom) {
-    throw infraError(
-      400,
-      INFRA_ERROR_CODES.availableFromRequired,
-      "An ordered host needs the expected delivery date (availableFrom)",
-    );
-  }
+  const availableFrom = resolveAvailableFrom(input.status, input.availableFrom);
   await db.transaction(async (tx) => {
     // Scope by the workspace of the host's project; a host of another
     // workspace is a 404.
@@ -278,12 +292,6 @@ export async function setHostStatus(
         message: "Infrastructure host not found",
       });
     }
-    const availableFrom =
-      input.status === "planned"
-        ? null
-        : input.status === "installed"
-          ? (input.availableFrom ?? todayUtc())
-          : (input.availableFrom ?? null);
     await tx
       .update(infraHostTable)
       .set({

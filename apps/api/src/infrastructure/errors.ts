@@ -10,6 +10,12 @@ export const INFRA_ERROR_CODES = {
   hostLocked: "INFRA_HOST_LOCKED",
   hostNotInProject: "INFRA_HOST_NOT_IN_PROJECT",
   vmNotInTask: "INFRA_VM_NOT_IN_TASK",
+  clusterNotInWorkspace: "INFRA_CLUSTER_NOT_IN_WORKSPACE",
+  clusterRegionMismatch: "INFRA_CLUSTER_REGION_MISMATCH",
+  clusterNameTaken: "INFRA_CLUSTER_NAME_TAKEN",
+  clusterInUse: "INFRA_CLUSTER_IN_USE",
+  capacityLocked: "INFRA_CAPACITY_LOCKED",
+  clusterInvalid: "INFRA_CLUSTER_INVALID",
   availableFromRequired: "INFRA_AVAILABLE_FROM_REQUIRED",
 } as const;
 

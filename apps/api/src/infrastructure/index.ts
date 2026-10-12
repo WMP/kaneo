@@ -23,6 +23,16 @@ import {
   listModels,
   updateModel,
 } from "./controllers/models";
+import {
+  createCapacity,
+  createCluster,
+  deleteCapacity,
+  deleteCluster,
+  listClusterSummaries,
+  listClusters,
+  updateCapacity,
+  updateCluster,
+} from "./controllers/storage";
 import { listTaskVms, replaceTaskVms } from "./controllers/vms";
 import {
   deletedInfraItemSchema,
@@ -32,9 +42,15 @@ import {
   infraHostSchema,
   infraModelListSchema,
   infraModelSchema,
+  infraStorageCapacitySchema,
+  infraStorageClusterListSchema,
+  infraStorageClusterSchema,
+  infraStorageClusterSummaryListSchema,
   infraVmListSchema,
 } from "./response";
 import {
+  createCapacityBody,
+  createClusterBody,
   createHostBody,
   createModelBody,
   hostParam,
@@ -43,8 +59,12 @@ import {
   replaceVmsBody,
   setHostStatusBody,
   taskIdParam,
+  updateCapacityBody,
+  updateClusterBody,
   updateHostBody,
   updateModelBody,
+  workspaceCapacityParam,
+  workspaceClusterParam,
   workspaceHostParam,
   workspaceIdParam,
 } from "./schema";
@@ -311,6 +331,183 @@ const setHostStatusRoute = createRoute({
   },
 });
 
+const getProjectClustersRoute = createRoute({
+  method: "get",
+  operationId: "getProjectInfraStorageClusters",
+  path: "/project/{projectId}/storage-clusters",
+  tags: ["Infrastructure"],
+  summary: "List the Ceph storage clusters a VM of the project may use",
+  description:
+    "The clusters of the project's workspace with id, name, region and kind only. Capacity and use are never included.",
+  middleware: [
+    workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ infrastructure: ["read"] }),
+  ] as const,
+  request: { params: projectIdParam },
+  responses: {
+    200: jsonResponse(
+      "Storage cluster summaries",
+      infraStorageClusterSummaryListSchema,
+    ),
+    403: forbidden,
+  },
+});
+
+const getClustersRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceInfraStorageClusters",
+  path: "/workspace/{workspaceId}/storage-clusters",
+  tags: ["Infrastructure"],
+  summary: "List the Ceph storage clusters of a workspace (datacenter)",
+  description:
+    "Every cluster with its capacity entries and totals: installed raw capacity, planned or ordered capacity, and the Ceph storage used by VMs of all projects.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["read"] }),
+  ] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse("Storage clusters", infraStorageClusterListSchema),
+    403: dcForbidden,
+  },
+});
+
+const clusterErrors = {
+  400: codedErrorResponse("Invalid cluster (INFRA_CLUSTER_INVALID)"),
+  403: dcForbidden,
+  404: errorResponse("Cluster not found in this workspace"),
+  409: codedErrorResponse(
+    "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+  ),
+};
+
+const createClusterRoute = createRoute({
+  method: "post",
+  operationId: "createInfraStorageCluster",
+  path: "/workspace/{workspaceId}/storage-clusters",
+  tags: ["Infrastructure"],
+  summary: "Create a Ceph storage cluster (datacenter)",
+  description:
+    "`self_managed` needs ecDataChunks (k) and ecCodingChunks (m); `managed_service` has neither. The name is unique in the workspace (409 `INFRA_CLUSTER_NAME_TAKEN`).",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceIdParam, body: jsonBody(createClusterBody) },
+  responses: {
+    200: jsonResponse("Cluster created", infraStorageClusterSchema),
+    ...clusterErrors,
+  },
+});
+
+const updateClusterRoute = createRoute({
+  method: "put",
+  operationId: "updateInfraStorageCluster",
+  path: "/workspace/{workspaceId}/storage-clusters/{clusterId}",
+  tags: ["Infrastructure"],
+  summary: "Update a Ceph storage cluster (datacenter)",
+  description:
+    "Only the sent fields change. Switching to `managed_service` clears k and m; switching to `self_managed` needs them.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceClusterParam, body: jsonBody(updateClusterBody) },
+  responses: {
+    200: jsonResponse("Cluster updated", infraStorageClusterSchema),
+    ...clusterErrors,
+  },
+});
+
+const deleteClusterRoute = createRoute({
+  method: "delete",
+  operationId: "deleteInfraStorageCluster",
+  path: "/workspace/{workspaceId}/storage-clusters/{clusterId}",
+  tags: ["Infrastructure"],
+  summary: "Delete a Ceph storage cluster (datacenter)",
+  description:
+    "A cluster that a VM uses answers 409 with code `INFRA_CLUSTER_IN_USE`.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceClusterParam },
+  responses: {
+    200: jsonResponse("Cluster deleted", deletedInfraItemSchema),
+    ...clusterErrors,
+  },
+});
+
+const capacityErrors = {
+  400: codedErrorResponse("Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)"),
+  403: dcForbidden,
+  404: errorResponse("Cluster or entry not found in this workspace"),
+  409: codedErrorResponse("The entry is not planned (INFRA_CAPACITY_LOCKED)"),
+};
+
+const createCapacityRoute = createRoute({
+  method: "post",
+  operationId: "createInfraStorageCapacity",
+  path: "/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity",
+  tags: ["Infrastructure"],
+  summary: "Add a capacity entry to a cluster (datacenter)",
+  description:
+    "The entry starts `planned`. Without a label it is named `<cluster name> #<n>`, n being the highest number used in the cluster plus one.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: {
+    params: workspaceClusterParam,
+    body: jsonBody(createCapacityBody),
+  },
+  responses: {
+    200: jsonResponse("Entry created", infraStorageCapacitySchema),
+    ...capacityErrors,
+  },
+});
+
+const updateCapacityRoute = createRoute({
+  method: "put",
+  operationId: "updateInfraStorageCapacity",
+  path: "/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity/{entryId}",
+  tags: ["Infrastructure"],
+  summary: "Update a capacity entry (datacenter)",
+  description:
+    "Status rules as for hosts: `ordered` needs `availableFrom` (400 `INFRA_AVAILABLE_FROM_REQUIRED`), `installed` without a date stores today, `planned` clears the date.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: {
+    params: workspaceCapacityParam,
+    body: jsonBody(updateCapacityBody),
+  },
+  responses: {
+    200: jsonResponse("Entry updated", infraStorageCapacitySchema),
+    ...capacityErrors,
+  },
+});
+
+const deleteCapacityRoute = createRoute({
+  method: "delete",
+  operationId: "deleteInfraStorageCapacity",
+  path: "/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity/{entryId}",
+  tags: ["Infrastructure"],
+  summary: "Delete a planned capacity entry (datacenter)",
+  description:
+    "Only a `planned` entry can be deleted (else 409 `INFRA_CAPACITY_LOCKED`).",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceCapacityParam },
+  responses: {
+    200: jsonResponse("Entry deleted", deletedInfraItemSchema),
+    ...capacityErrors,
+  },
+});
+
 const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getModelsRoute, async (c) => {
     const { projectId } = c.req.valid("param");
@@ -362,6 +559,51 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getWorkspaceHostsRoute, async (c) => {
     const { workspaceId } = c.req.valid("param");
     return c.json(await listWorkspaceHosts(workspaceId), 200);
+  })
+  .openapi(getProjectClustersRoute, async (c) => {
+    return c.json(await listClusterSummaries(c.get("workspaceId")), 200);
+  })
+  .openapi(getClustersRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    return c.json(await listClusters(workspaceId), 200);
+  })
+  .openapi(createClusterRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    return c.json(await createCluster(workspaceId, c.req.valid("json")), 200);
+  })
+  .openapi(updateClusterRoute, async (c) => {
+    const { workspaceId, clusterId } = c.req.valid("param");
+    return c.json(
+      await updateCluster(workspaceId, clusterId, c.req.valid("json")),
+      200,
+    );
+  })
+  .openapi(deleteClusterRoute, async (c) => {
+    const { workspaceId, clusterId } = c.req.valid("param");
+    return c.json(await deleteCluster(workspaceId, clusterId), 200);
+  })
+  .openapi(createCapacityRoute, async (c) => {
+    const { workspaceId, clusterId } = c.req.valid("param");
+    return c.json(
+      await createCapacity(workspaceId, clusterId, c.req.valid("json")),
+      200,
+    );
+  })
+  .openapi(updateCapacityRoute, async (c) => {
+    const { workspaceId, clusterId, entryId } = c.req.valid("param");
+    return c.json(
+      await updateCapacity(
+        workspaceId,
+        clusterId,
+        entryId,
+        c.req.valid("json"),
+      ),
+      200,
+    );
+  })
+  .openapi(deleteCapacityRoute, async (c) => {
+    const { workspaceId, clusterId, entryId } = c.req.valid("param");
+    return c.json(await deleteCapacity(workspaceId, clusterId, entryId), 200);
   })
   .openapi(setHostStatusRoute, async (c) => {
     const { workspaceId, hostId } = c.req.valid("param");

@@ -217,8 +217,20 @@ describe("hosts", () => {
       .where(eq(schema.infraHostTable.id, ordered.id));
     await w.call(w.owner, "PUT", `/api/infrastructure/task/${w.task1.id}/vms`, {
       vms: [
-        { name: "a", vcpu: 2, ramGb: 8, storageGb: 50, hostId: planned.id },
-        { name: "b", vcpu: 2, ramGb: 8, storageGb: 50, hostId: ordered.id },
+        {
+          name: "a",
+          vcpu: 2,
+          ramGb: 8,
+          localStorageGb: 50,
+          hostId: planned.id,
+        },
+        {
+          name: "b",
+          vcpu: 2,
+          ramGb: 8,
+          localStorageGb: 50,
+          hostId: ordered.id,
+        },
       ],
     });
 
@@ -250,8 +262,8 @@ describe("hosts", () => {
     await newHost(w, "PAR");
     await w.call(w.owner, "PUT", `/api/infrastructure/task/${w.task1.id}/vms`, {
       vms: [
-        { name: "a", vcpu: 2, ramGb: 8, storageGb: 50, hostId: host.id },
-        { name: "b", vcpu: 4, ramGb: 16, storageGb: 100, hostId: host.id },
+        { name: "a", vcpu: 2, ramGb: 8, localStorageGb: 50, hostId: host.id },
+        { name: "b", vcpu: 4, ramGb: 16, localStorageGb: 100, hostId: host.id },
       ],
     });
     const list = await w.call(
@@ -265,7 +277,8 @@ describe("hosts", () => {
       vmCount: 2,
       vcpu: 6,
       ramGb: 24,
-      storageGb: 150,
+      localStorageGb: 150,
+      cephStorageGb: 0,
     });
     expect(used.model.name).toBe("ADVANCE-2");
     const empty = list.json.find((h: { id: string }) => h.id !== host.id);
@@ -273,7 +286,8 @@ describe("hosts", () => {
       vmCount: 0,
       vcpu: 0,
       ramGb: 0,
-      storageGb: 0,
+      localStorageGb: 0,
+      cephStorageGb: 0,
     });
   });
 });
@@ -285,8 +299,8 @@ describe("task VMs", () => {
     const url = `/api/infrastructure/task/${w.task1.id}/vms`;
     const first = await w.call(w.owner, "PUT", url, {
       vms: [
-        { name: "web", vcpu: 2, ramGb: 8, storageGb: 50, hostId: host.id },
-        { name: "db", vcpu: 8, ramGb: 64, storageGb: 500, hostId: null },
+        { name: "web", vcpu: 2, ramGb: 8, localStorageGb: 50, hostId: host.id },
+        { name: "db", vcpu: 8, ramGb: 64, localStorageGb: 500, hostId: null },
       ],
     });
     expect(first.status, first.text).toBe(200);
@@ -300,7 +314,7 @@ describe("task VMs", () => {
     const web = first.json[0];
     const second = await w.call(w.owner, "PUT", url, {
       vms: [
-        { name: "cache", vcpu: 1, ramGb: 4, storageGb: 0, hostId: null },
+        { name: "cache", vcpu: 1, ramGb: 4, localStorageGb: 0, hostId: null },
         { ...web, name: "web-renamed", hostId: null },
       ],
     });
@@ -335,17 +349,19 @@ describe("task VMs", () => {
     );
     const url = `/api/infrastructure/task/${w.task1.id}/vms`;
     await w.call(w.owner, "PUT", url, {
-      vms: [{ name: "keep", vcpu: 1, ramGb: 1, storageGb: 1, hostId: null }],
+      vms: [
+        { name: "keep", vcpu: 1, ramGb: 1, localStorageGb: 1, hostId: null },
+      ],
     });
 
     const res = await w.call(w.owner, "PUT", url, {
       vms: [
-        { name: "new", vcpu: 1, ramGb: 1, storageGb: 1, hostId: null },
+        { name: "new", vcpu: 1, ramGb: 1, localStorageGb: 1, hostId: null },
         {
           name: "bad",
           vcpu: 1,
           ramGb: 1,
-          storageGb: 1,
+          localStorageGb: 1,
           hostId: foreignHost.json.id,
         },
       ],
@@ -354,7 +370,13 @@ describe("task VMs", () => {
     expect(res.json.code).toBe("INFRA_HOST_NOT_IN_PROJECT");
     const unknown = await w.call(w.owner, "PUT", url, {
       vms: [
-        { name: "x", vcpu: 1, ramGb: 1, storageGb: 1, hostId: "no-such-host" },
+        {
+          name: "x",
+          vcpu: 1,
+          ramGb: 1,
+          localStorageGb: 1,
+          hostId: "no-such-host",
+        },
       ],
     });
     expect(unknown.status).toBe(400);
@@ -369,12 +391,16 @@ describe("task VMs", () => {
       "PUT",
       `/api/infrastructure/task/${w.task2.id}/vms`,
       {
-        vms: [{ name: "o", vcpu: 1, ramGb: 1, storageGb: 1, hostId: null }],
+        vms: [
+          { name: "o", vcpu: 1, ramGb: 1, localStorageGb: 1, hostId: null },
+        ],
       },
     );
     const url = `/api/infrastructure/task/${w.task1.id}/vms`;
     await w.call(w.owner, "PUT", url, {
-      vms: [{ name: "mine", vcpu: 1, ramGb: 1, storageGb: 1, hostId: null }],
+      vms: [
+        { name: "mine", vcpu: 1, ramGb: 1, localStorageGb: 1, hostId: null },
+      ],
     });
 
     const res = await w.call(w.owner, "PUT", url, {
@@ -384,7 +410,7 @@ describe("task VMs", () => {
           name: "stolen",
           vcpu: 1,
           ramGb: 1,
-          storageGb: 1,
+          localStorageGb: 1,
           hostId: null,
         },
       ],
@@ -393,7 +419,13 @@ describe("task VMs", () => {
     expect(res.json.code).toBe("INFRA_VM_NOT_IN_TASK");
     expect((await vmsInDb()).map((v) => v.name).sort()).toEqual(["mine", "o"]);
 
-    const item = { name: "v", vcpu: 1, ramGb: 1, storageGb: 1, hostId: null };
+    const item = {
+      name: "v",
+      vcpu: 1,
+      ramGb: 1,
+      localStorageGb: 1,
+      hostId: null,
+    };
     const many = await w.call(w.owner, "PUT", url, {
       vms: Array.from({ length: 201 }, () => item),
     });
@@ -411,7 +443,11 @@ describe("task VMs", () => {
       w.owner,
       "PUT",
       `/api/infrastructure/task/${w.task1.id}/vms`,
-      { vms: [{ name: "n", vcpu: -1, ramGb: 1, storageGb: 1, hostId: null }] },
+      {
+        vms: [
+          { name: "n", vcpu: -1, ramGb: 1, localStorageGb: 1, hostId: null },
+        ],
+      },
     );
     expect(res.status).toBe(400);
     expect(await vmsInDb()).toHaveLength(0);
@@ -423,7 +459,9 @@ describe("datacenter status", () => {
     const w = await withModel();
     const host = await newHost(w, "GRA");
     await w.call(w.owner, "PUT", `/api/infrastructure/task/${w.task1.id}/vms`, {
-      vms: [{ name: "vm1", vcpu: 2, ramGb: 8, storageGb: 50, hostId: host.id }],
+      vms: [
+        { name: "vm1", vcpu: 2, ramGb: 8, localStorageGb: 50, hostId: host.id },
+      ],
     });
     const base = `/api/infrastructure/workspace/${w.workspaceId}/hosts`;
     const list = await w.call(w.owner, "GET", base);
@@ -494,7 +532,7 @@ describe("cascades", () => {
             name: task.title,
             vcpu: 1,
             ramGb: 1,
-            storageGb: 1,
+            localStorageGb: 1,
             hostId: host.id,
           },
         ],

@@ -7228,7 +7228,8 @@
             "type": "integer"
           },
           "storageGb": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Local disk of the host, in GB."
           },
           "leadTimeDays": {
             "type": "integer"
@@ -7391,7 +7392,8 @@
             "type": "integer"
           },
           "storageGb": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Local disk of the host, in GB."
           },
           "leadTimeDays": {
             "type": "integer"
@@ -7424,15 +7426,20 @@
           "ramGb": {
             "type": "integer"
           },
-          "storageGb": {
+          "localStorageGb": {
             "type": "integer"
+          },
+          "cephStorageGb": {
+            "type": "integer",
+            "description": "Ceph storage of the VMs on the host. Informational: it counts against the Ceph clusters, not the host."
           }
         },
         "required": [
           "vmCount",
           "vcpu",
           "ramGb",
-          "storageGb"
+          "localStorageGb",
+          "cephStorageGb"
         ]
       },
       "InfraVmList": {
@@ -7465,8 +7472,17 @@
           "ramGb": {
             "type": "integer"
           },
-          "storageGb": {
+          "localStorageGb": {
             "type": "integer"
+          },
+          "cephStorageGb": {
+            "type": "integer"
+          },
+          "storageClusterId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "position": {
             "type": "integer"
@@ -7479,6 +7495,9 @@
             "type": "string",
             "format": "date-time"
           },
+          "storageCluster": {
+            "$ref": "#/components/schemas/InfraVmStorageCluster"
+          },
           "host": {
             "$ref": "#/components/schemas/InfraVmHost"
           }
@@ -7490,11 +7509,44 @@
           "name",
           "vcpu",
           "ramGb",
-          "storageGb",
+          "localStorageGb",
+          "cephStorageGb",
+          "storageClusterId",
           "position",
           "createdAt",
           "updatedAt",
+          "storageCluster",
           "host"
+        ]
+      },
+      "InfraVmStorageCluster": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "kind"
         ]
       },
       "InfraVmHost": {
@@ -7615,6 +7667,213 @@
           "projectName",
           "model",
           "totals"
+        ]
+      },
+      "InfraStorageClusterSummaryList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraStorageClusterSummary"
+        }
+      },
+      "InfraStorageClusterSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "kind"
+        ]
+      },
+      "InfraStorageClusterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraStorageCluster"
+        }
+      },
+      "InfraStorageCluster": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          },
+          "ecDataChunks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ecCodingChunks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "fillThresholdPercent": {
+            "type": "integer"
+          },
+          "leadTimeDays": {
+            "type": "integer"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "capacity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraStorageCapacity"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InfraStorageClusterTotals"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "region",
+          "kind",
+          "ecDataChunks",
+          "ecCodingChunks",
+          "fillThresholdPercent",
+          "leadTimeDays",
+          "position",
+          "createdAt",
+          "updatedAt",
+          "capacity",
+          "totals"
+        ]
+      },
+      "InfraStorageCapacity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "clusterId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "capacityGb": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "clusterId",
+          "label",
+          "modelName",
+          "capacityGb",
+          "status",
+          "availableFrom",
+          "hostname",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "InfraStorageClusterTotals": {
+        "type": "object",
+        "properties": {
+          "rawCapacityGb": {
+            "type": "integer",
+            "description": "Sum of the installed capacity entries."
+          },
+          "plannedOrOrderedCapacityGb": {
+            "type": "integer"
+          },
+          "usedCephGb": {
+            "type": "integer",
+            "description": "Ceph storage of the VMs that use the cluster, across all projects."
+          },
+          "vmCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rawCapacityGb",
+          "plannedOrOrderedCapacityGb",
+          "usedCephGb",
+          "vmCount"
         ]
       },
       "WorkspaceColumns": {
@@ -27963,10 +28222,23 @@
                           "minimum": 0,
                           "maximum": 1000000
                         },
-                        "storageGb": {
+                        "localStorageGb": {
                           "type": "integer",
                           "minimum": 0,
                           "maximum": 100000000
+                        },
+                        "cephStorageGb": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000000,
+                          "default": 0
+                        },
+                        "storageClusterId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "default": null
                         },
                         "hostId": {
                           "type": [
@@ -27979,7 +28251,7 @@
                         "name",
                         "vcpu",
                         "ramGb",
-                        "storageGb",
+                        "localStorageGb",
                         "hostId"
                       ]
                     },
@@ -28070,6 +28342,862 @@
           "403": {
             "description": "No workspace access, or missing datacenter permission",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/storage-clusters": {
+      "get": {
+        "operationId": "getProjectInfraStorageClusters",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the Ceph storage clusters a VM of the project may use",
+        "description": "The clusters of the project's workspace with id, name, region and kind only. Capacity and use are never included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storage cluster summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageClusterSummaryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters": {
+      "get": {
+        "operationId": "getWorkspaceInfraStorageClusters",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the Ceph storage clusters of a workspace (datacenter)",
+        "description": "Every cluster with its capacity entries and totals: installed raw capacity, planned or ordered capacity, and the Ceph storage used by VMs of all projects.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storage clusters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageClusterList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Create a Ceph storage cluster (datacenter)",
+        "description": "`self_managed` needs ecDataChunks (k) and ecCodingChunks (m); `managed_service` has neither. The name is unique in the workspace (409 `INFRA_CLUSTER_NAME_TAKEN`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "self_managed",
+                      "managed_service"
+                    ]
+                  },
+                  "ecDataChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "ecCodingChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "fillThresholdPercent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 80
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650,
+                    "default": 0
+                  }
+                },
+                "required": [
+                  "name",
+                  "region",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cluster created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCluster"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}": {
+      "put": {
+        "operationId": "updateInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Update a Ceph storage cluster (datacenter)",
+        "description": "Only the sent fields change. Switching to `managed_service` clears k and m; switching to `self_managed` needs them.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "self_managed",
+                      "managed_service"
+                    ]
+                  },
+                  "ecDataChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "ecCodingChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "fillThresholdPercent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cluster updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCluster"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a Ceph storage cluster (datacenter)",
+        "description": "A cluster that a VM uses answers 409 with code `INFRA_CLUSTER_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cluster deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity": {
+      "post": {
+        "operationId": "createInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Add a capacity entry to a cluster (datacenter)",
+        "description": "The entry starts `planned`. Without a label it is named `<cluster name> #<n>`, n being the highest number used in the cluster plus one.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "modelName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "capacityGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000
+                  }
+                },
+                "required": [
+                  "capacityGb"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCapacity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity/{entryId}": {
+      "put": {
+        "operationId": "updateInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Update a capacity entry (datacenter)",
+        "description": "Status rules as for hosts: `ordered` needs `availableFrom` (400 `INFRA_AVAILABLE_FROM_REQUIRED`), `installed` without a date stores today, `planned` clears the date.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "entryId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "modelName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "capacityGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "planned",
+                      "ordered",
+                      "installed"
+                    ]
+                  },
+                  "availableFrom": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "hostname": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCapacity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a planned capacity entry (datacenter)",
+        "description": "Only a `planned` entry can be deleted (else 409 `INFRA_CAPACITY_LOCKED`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "entryId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

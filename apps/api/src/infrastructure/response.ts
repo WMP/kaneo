@@ -1,5 +1,9 @@
 import { responseTimestamp, z } from "../openapi";
-import { INFRA_HOST_STATUSES, INFRA_PROVIDERS } from "./schema";
+import {
+  INFRA_CLUSTER_KINDS,
+  INFRA_HOST_STATUSES,
+  INFRA_PROVIDERS,
+} from "./schema";
 
 const statusSchema = z.enum(INFRA_HOST_STATUSES);
 const availableFrom = z.string().nullable().openapi({
@@ -13,7 +17,11 @@ const totalsSchema = z
     vmCount: z.number().int(),
     vcpu: z.number().int(),
     ramGb: z.number().int(),
-    storageGb: z.number().int(),
+    localStorageGb: z.number().int(),
+    cephStorageGb: z.number().int().openapi({
+      description:
+        "Ceph storage of the VMs on the host. Informational: it counts against the Ceph clusters, not the host.",
+    }),
   })
   .openapi("InfraHostTotals");
 
@@ -24,7 +32,10 @@ const modelSummaryFields = {
   family: z.string().nullable(),
   ramGb: z.number().int(),
   vcpu: z.number().int(),
-  storageGb: z.number().int(),
+  storageGb: z
+    .number()
+    .int()
+    .openapi({ description: "Local disk of the host, in GB." }),
   leadTimeDays: z.number().int(),
   hypervisorReservePercent: z.number().int(),
 };
@@ -96,10 +107,21 @@ export const infraVmSchema = z
     name: z.string(),
     vcpu: z.number().int(),
     ramGb: z.number().int(),
-    storageGb: z.number().int(),
+    localStorageGb: z.number().int(),
+    cephStorageGb: z.number().int(),
+    storageClusterId: z.string().nullable(),
     position: z.number().int(),
     createdAt: responseTimestamp,
     updatedAt: responseTimestamp,
+    storageCluster: z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        region: z.string(),
+        kind: z.enum(INFRA_CLUSTER_KINDS),
+      })
+      .nullable()
+      .openapi("InfraVmStorageCluster"),
     host: z
       .object({
         id: z.string(),
@@ -118,3 +140,73 @@ export const infraVmListSchema = z.array(infraVmSchema).openapi("InfraVmList");
 export const deletedInfraItemSchema = z
   .object({ id: z.string() })
   .openapi("DeletedInfraItem");
+
+const clusterKind = z.enum(INFRA_CLUSTER_KINDS);
+
+// What a project sees of a cluster: never capacity or use.
+export const infraStorageClusterSummarySchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    region: z.string(),
+    kind: clusterKind,
+  })
+  .openapi("InfraStorageClusterSummary");
+
+export const infraStorageClusterSummaryListSchema = z
+  .array(infraStorageClusterSummarySchema)
+  .openapi("InfraStorageClusterSummaryList");
+
+export const infraStorageCapacitySchema = z
+  .object({
+    id: z.string(),
+    clusterId: z.string(),
+    label: z.string(),
+    modelName: z.string().nullable(),
+    capacityGb: z.number().int(),
+    status: statusSchema,
+    availableFrom,
+    hostname: z.string().nullable(),
+    createdAt: responseTimestamp,
+    updatedAt: responseTimestamp,
+  })
+  .openapi("InfraStorageCapacity");
+
+const clusterFields = {
+  id: z.string(),
+  workspaceId: z.string(),
+  name: z.string(),
+  region: z.string(),
+  kind: clusterKind,
+  ecDataChunks: z.number().int().nullable(),
+  ecCodingChunks: z.number().int().nullable(),
+  fillThresholdPercent: z.number().int(),
+  leadTimeDays: z.number().int(),
+  position: z.number().int(),
+  createdAt: responseTimestamp,
+  updatedAt: responseTimestamp,
+};
+
+export const infraStorageClusterSchema = z
+  .object({
+    ...clusterFields,
+    capacity: z.array(infraStorageCapacitySchema),
+    totals: z
+      .object({
+        rawCapacityGb: z.number().int().openapi({
+          description: "Sum of the installed capacity entries.",
+        }),
+        plannedOrOrderedCapacityGb: z.number().int(),
+        usedCephGb: z.number().int().openapi({
+          description:
+            "Ceph storage of the VMs that use the cluster, across all projects.",
+        }),
+        vmCount: z.number().int(),
+      })
+      .openapi("InfraStorageClusterTotals"),
+  })
+  .openapi("InfraStorageCluster");
+
+export const infraStorageClusterListSchema = z
+  .array(infraStorageClusterSchema)
+  .openapi("InfraStorageClusterList");

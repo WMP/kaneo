@@ -5,12 +5,19 @@ export const modelParam = projectIdParam.extend({ modelId: z.string() });
 export const hostParam = projectIdParam.extend({ hostId: z.string() });
 export const taskIdParam = z.object({ taskId: z.string() });
 export const workspaceIdParam = z.object({ workspaceId: z.string() });
+export const workspaceClusterParam = workspaceIdParam.extend({
+  clusterId: z.string(),
+});
+export const workspaceCapacityParam = workspaceClusterParam.extend({
+  entryId: z.string(),
+});
 export const workspaceHostParam = workspaceIdParam.extend({
   hostId: z.string(),
 });
 
 export const INFRA_PROVIDERS = ["ovh", "azure", "other"] as const;
 export const INFRA_HOST_STATUSES = ["planned", "ordered", "installed"] as const;
+export const INFRA_CLUSTER_KINDS = ["self_managed", "managed_service"] as const;
 export const MAX_VMS_PER_TASK = 200;
 
 // A region code is trimmed and upper-cased, 1 to 16 characters of A-Z, 0-9
@@ -70,7 +77,9 @@ export const vmItem = z.object({
   name: z.string().trim().min(1).max(200),
   vcpu: z.number().int().min(0).max(1_000_000),
   ramGb: z.number().int().min(0).max(1_000_000),
-  storageGb: z.number().int().min(0).max(100_000_000),
+  localStorageGb: z.number().int().min(0).max(100_000_000),
+  cephStorageGb: z.number().int().min(0).max(100_000_000).default(0),
+  storageClusterId: z.string().nullable().default(null),
   hostId: z.string().nullable(),
 });
 
@@ -91,6 +100,61 @@ const dateOnly = z
 
 export const setHostStatusBody = z.object({
   status: z.enum(INFRA_HOST_STATUSES),
+  availableFrom: dateOnly.nullable().optional(),
+  hostname: z.string().trim().max(255).nullable().optional(),
+});
+
+const clusterFields = {
+  name: z.string().trim().min(1).max(200),
+  region: regionCode,
+  kind: z.enum(INFRA_CLUSTER_KINDS),
+  ecDataChunks: z.number().int().min(1).max(1000).nullable(),
+  ecCodingChunks: z.number().int().min(1).max(1000).nullable(),
+  fillThresholdPercent: z.number().int().min(1).max(100),
+  leadTimeDays: z.number().int().min(0).max(3650),
+};
+
+const ecConsistent = (v: {
+  kind?: string;
+  ecDataChunks?: number | null;
+  ecCodingChunks?: number | null;
+}) =>
+  v.kind === "self_managed"
+    ? v.ecDataChunks != null && v.ecCodingChunks != null
+    : v.kind === "managed_service"
+      ? v.ecDataChunks == null && v.ecCodingChunks == null
+      : true;
+
+const ecMessage =
+  "A self_managed cluster needs ecDataChunks and ecCodingChunks; a managed_service cluster has neither";
+
+export const createClusterBody = z
+  .object({
+    ...clusterFields,
+    ecDataChunks: clusterFields.ecDataChunks.optional(),
+    ecCodingChunks: clusterFields.ecCodingChunks.optional(),
+    fillThresholdPercent: clusterFields.fillThresholdPercent.default(80),
+    leadTimeDays: clusterFields.leadTimeDays.default(0),
+  })
+  .refine(ecConsistent, { message: ecMessage });
+
+// Partial update. The consistency of the merged cluster is checked by the
+// controller (a kind switch also needs the stored values).
+export const updateClusterBody = z.object(clusterFields).partial();
+
+const capacityGb = z.number().int().min(1).max(1_000_000_000);
+
+export const createCapacityBody = z.object({
+  label: z.string().trim().min(1).max(200).optional(),
+  modelName: z.string().trim().min(1).max(200).nullable().optional(),
+  capacityGb,
+});
+
+export const updateCapacityBody = z.object({
+  label: z.string().trim().min(1).max(200).optional(),
+  modelName: z.string().trim().min(1).max(200).nullable().optional(),
+  capacityGb: capacityGb.optional(),
+  status: z.enum(INFRA_HOST_STATUSES).optional(),
   availableFrom: dateOnly.nullable().optional(),
   hostname: z.string().trim().max(255).nullable().optional(),
 });

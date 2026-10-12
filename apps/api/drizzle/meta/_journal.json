@@ -456,6 +456,13 @@
       "when": 1791801165648,
       "tag": "20261012103245_ganttpro_infrastructure_capacity",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1791802458377,
+      "tag": "20261012105418_ganttpro_infrastructure_storage",
+      "breakpoints": true
     }
   ]
 }
