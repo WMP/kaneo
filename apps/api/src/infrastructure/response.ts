@@ -210,3 +210,200 @@ export const infraStorageClusterSchema = z
 export const infraStorageClusterListSchema = z
   .array(infraStorageClusterSchema)
   .openapi("InfraStorageClusterList");
+
+const dateOrNull = z.string().nullable();
+const percentOrNull = z.number().nullable();
+
+export const infraHostCapacityResultSchema = z
+  .object({
+    hostId: z.string(),
+    usableRamGb: z.number().int(),
+    vcpu: z.number().int(),
+    localStorageGb: z.number().int(),
+    needDate: dateOrNull.openapi({
+      description: "Earliest start date of a task with a VM on the host.",
+    }),
+    orderByDate: dateOrNull.openapi({
+      description: "needDate minus the model lead time.",
+    }),
+    steps: z.array(
+      z.object({
+        date: z.string(),
+        ramGb: z.number().int(),
+        vcpu: z.number().int(),
+        localStorageGb: z.number().int(),
+        ramPercent: percentOrNull,
+        vcpuPercent: percentOrNull,
+        localStoragePercent: percentOrNull,
+      }),
+    ),
+    peakRamPercent: percentOrNull,
+    firstOver80Date: dateOrNull,
+    firstOver100Date: dateOrNull,
+  })
+  .openapi("InfraHostCapacityResult");
+
+export const infraClusterCapacityResultSchema = z
+  .object({
+    clusterId: z.string(),
+    needDate: dateOrNull,
+    steps: z.array(
+      z.object({
+        date: z.string(),
+        usedCephGb: z.number().int(),
+        usableGb: z.number().int(),
+        percent: percentOrNull,
+      }),
+    ),
+    firstOver80Date: dateOrNull,
+    firstOver100Date: dateOrNull,
+    usableAllGb: z.number().int(),
+    shortfallGb: z.number().int(),
+    plannedNeedDate: dateOrNull,
+    suggestion: z
+      .object({
+        kind: z.enum(["nodes", "service"]),
+        shortfallGb: z.number().int(),
+        nodes: z.number().int().nullable(),
+        nodeCapacityGb: z.number().int().nullable(),
+        modelName: z.string().nullable(),
+        buyGb: z.number().int().nullable(),
+        needDate: dateOrNull,
+        orderByDate: dateOrNull,
+      })
+      .nullable()
+      .openapi("InfraClusterSuggestion"),
+  })
+  .openapi("InfraClusterCapacityResult");
+
+export const infraCapacityWarningSchema = z
+  .object({
+    type: z.enum([
+      "HOST_NOT_READY",
+      "ORDER_LATE",
+      "OVER_100",
+      "OVER_80",
+      "VM_UNPLACED",
+      "VM_UNSCHEDULED",
+      "CLUSTER_NOT_READY",
+      "CLUSTER_SHORTFALL",
+    ]),
+    severity: z.enum(["error", "warning", "info"]),
+    hostId: z.string().optional(),
+    clusterId: z.string().optional(),
+    vmId: z.string().optional(),
+    vmName: z.string().optional(),
+    taskId: z.string().optional(),
+    taskTitle: z.string().optional(),
+    projectId: z.string().optional(),
+    projectName: z.string().optional(),
+    date: z.string().optional(),
+  })
+  .openapi("InfraCapacityWarning", {
+    description:
+      "Task ids and titles appear only on the project route. The datacenter route names the VM and its project.",
+  });
+
+const capacityHostSummary = z
+  .object({
+    id: z.string(),
+    label: z.string(),
+    region: z.string(),
+    status: statusSchema,
+    availableFrom,
+    hostname: z.string().nullable(),
+    projectId: z.string(),
+    projectName: z.string(),
+    model: z.object({
+      id: z.string(),
+      name: z.string(),
+      provider: z.string(),
+      family: z.string().nullable(),
+      ramGb: z.number().int(),
+      vcpu: z.number().int(),
+      storageGb: z.number().int(),
+      leadTimeDays: z.number().int(),
+      hypervisorReservePercent: z.number().int(),
+    }),
+  })
+  .openapi("InfraCapacityHost");
+
+const capacityHost = z
+  .object({ host: capacityHostSummary, result: infraHostCapacityResultSchema })
+  .openapi("InfraHostCapacity");
+
+const projectVm = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    taskId: z.string(),
+    taskTitle: z.string(),
+    hostId: z.string().nullable(),
+    startDate: z.string().nullable(),
+    cephStorageGb: z.number().int(),
+    storageCluster: z
+      .object({ id: z.string(), name: z.string() })
+      .nullable()
+      .openapi("InfraCapacityVmCluster"),
+  })
+  .openapi("InfraCapacityVm");
+
+export const infraProjectCapacitySchema = z
+  .object({
+    today: z.string(),
+    hosts: z.array(capacityHost),
+    warnings: z.array(infraCapacityWarningSchema),
+    unplacedVms: z.array(projectVm),
+    unscheduledVms: z.array(projectVm),
+  })
+  .openapi("InfraProjectCapacity");
+
+export const infraOrderPlanRowSchema = z
+  .object({
+    type: z.enum(["host", "storage_node", "storage_service"]),
+    orderByDate: dateOrNull,
+    needDate: dateOrNull,
+    provider: z.string().nullable(),
+    region: z.string(),
+    model: z.string().nullable(),
+    family: z.string().nullable(),
+    ramGb: z.number().int().nullable(),
+    vcpu: z.number().int().nullable(),
+    storageGb: z.number().int().nullable(),
+    quantity: z.number().int(),
+    capacityGb: z.number().int().nullable(),
+    projectId: z.string().nullable(),
+    projectName: z.string().nullable(),
+    clusterId: z.string().nullable(),
+    clusterName: z.string().nullable(),
+    labels: z.array(z.string()),
+    status: z.enum(["planned", "suggested"]),
+    late: z.boolean(),
+  })
+  .openapi("InfraOrderPlanRow");
+
+export const infraWorkspaceCapacitySchema = z
+  .object({
+    today: z.string(),
+    hosts: z.array(capacityHost),
+    clusters: z.array(
+      z
+        .object({
+          cluster: z.object({
+            id: z.string(),
+            name: z.string(),
+            region: z.string(),
+            kind: clusterKind,
+            ecDataChunks: z.number().int().nullable(),
+            ecCodingChunks: z.number().int().nullable(),
+            fillThresholdPercent: z.number().int(),
+            leadTimeDays: z.number().int(),
+          }),
+          result: infraClusterCapacityResultSchema,
+        })
+        .openapi("InfraClusterCapacity"),
+    ),
+    warnings: z.array(infraCapacityWarningSchema),
+    orderPlan: z.array(infraOrderPlanRowSchema),
+  })
+  .openapi("InfraWorkspaceCapacity");

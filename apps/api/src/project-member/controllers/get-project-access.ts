@@ -53,6 +53,9 @@ export type ProjectCapabilities = {
   inviteToProject: boolean;
   cancelProjectInvitations: boolean;
   manageIntegrations: boolean;
+  infrastructureRead: boolean;
+  infrastructurePlan: boolean;
+  infrastructureManage: boolean;
 };
 
 function getProjectAccess(c: Context, access: ProjectAccess) {
@@ -83,6 +86,17 @@ function getProjectAccess(c: Context, access: ProjectAccess) {
       !isCloudGuest(c.get("user")),
     cancelProjectInvitations: mayUseProjectStatements(c, access, {
       invitation: ["cancel"],
+    }),
+    // Infrastructure capacity is project-level: the effective project
+    // statements decide, like the infrastructure routes.
+    infrastructureRead: allowedByProject(c, access, {
+      infrastructure: ["read"],
+    }),
+    infrastructurePlan: allowedByProject(c, access, {
+      infrastructure: ["plan"],
+    }),
+    infrastructureManage: allowedByProject(c, access, {
+      infrastructure: ["manage"],
     }),
     // Full access holds `workspace:manage_settings`, a project role never
     // does; the routes decide on the workspace role.

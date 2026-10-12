@@ -1,6 +1,6 @@
 # Plan: infrastructure capacity for migrations
 
-Status: accepted by the product owner on 2026-10-12. Stage 1 (database, API, permissions) is implemented on `claude/gracious-bohr-oi8g60`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
+Status: accepted by the product owner on 2026-10-12. Stages 1, 1b (Ceph storage) and 2 (capacity engine, order plan, XLSX) are implemented on `claude/gracious-bohr-oi8g60`. This plan describes the target. The [invariant index](../agent-guide/invariants.md) records what the code and tests enforce today.
 
 ## Goal
 
@@ -60,6 +60,22 @@ Pure functions in `apps/api/src/infrastructure/capacity.ts`, no database access,
 - **Order plan rows** (DC): every planned host (`host`), every planned capacity entry and every cluster suggestion (`storage_node` in a self-managed cluster, `storage_service` in a managed one), with order-by date, need date, provider, region, model, RAM, vCPU, storage, quantity, project (hosts only) and status, sorted by order-by date, region and model.
 
 Routes: `GET /project/{projectId}/capacity` (`infrastructure:read`, the project's hosts and warnings with task ids and titles of this project only), `GET /workspace/{workspaceId}/capacity` (`datacenter:read`, every host and cluster and the order plan, no task titles) and `GET /workspace/{workspaceId}/order-plan.xlsx` (`datacenter:read`, one sheet built with `exceljs`). `today` is a parameter of the pure functions so tests are deterministic; the routes pass the UTC date.
+
+## Web UI (stages 3 and 4)
+
+Every string is a static i18n key in `i18n/en-US.json`, translated into every locale in the same change. Data comes from the typed `client` through fetchers in `apps/web/src/fetchers/infrastructure/` and hooks in `apps/web/src/hooks/{queries,mutations}/infrastructure/`; mutations invalidate the affected query keys (no realtime events yet).
+
+**Project lead (stage 3)**
+
+- **Project settings › Infrastructure** (`settings/projects/$projectId/infrastructure.tsx`, new item in the project settings menu, shown with `infrastructureRead`): the model pool table with add/edit/delete dialogs (`infrastructureManage`) and the hosts table: label, model, region, status badge, need date, order-by date, a RAM usage bar with the peak percent (amber from 80, red over 100), VM count, and "Add host" (`infrastructurePlan`) choosing a model and one of its regions. A warnings panel lists the project's capacity warnings with links to their tasks.
+- **Task details › Infrastructure** section (in `components/task/task-details-content.tsx`, shown with `infrastructureRead`): an editable table of the task's VMs (name, vCPU, RAM GB, Ceph GB, local GB, host select, Ceph cluster select filtered to the host's region), add/duplicate/remove rows, one Save that calls `PUT /task/{taskId}/vms`, and "New host" in the host select that creates a planned host from a model and region and selects it. Editing needs `infrastructurePlan`; others see a read-only table. The section shows this task's warnings (host not ready on the task's start date, unplaced VM, no date).
+
+**Datacenter (stage 4)**
+
+- **Workspace › Datacenter** page (`workspace/$workspaceId/datacenter.tsx`, sidebar item shown with `datacenter:read`), three tabs:
+  - *Order plan*: the order plan table (late rows highlighted) and "Download XLSX".
+  - *Hosts*: every host of every project with project, model, region, status, delivery date, hostname, peak RAM percent and warnings; with `datacenter:manage` a status dialog (status, expected delivery date, hostname).
+  - *Ceph storage*: one card per cluster with kind, erasure coding, threshold, usable vs used, usage bar, shortfall and suggestion, the capacity entries with their status; with `datacenter:manage` create/edit/delete clusters and entries and change entry status.
 
 ## API (stage 1, `apps/api/src/infrastructure/`, mounted at `/api/infrastructure`)
 

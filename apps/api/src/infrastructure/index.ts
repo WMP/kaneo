@@ -4,11 +4,18 @@ import {
   createRoute,
   errorResponse,
   jsonResponse,
-  type z,
+  z,
 } from "../openapi";
 import { codedErrorResponse } from "../utils/coded-error";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
+import {
+  buildOrderPlanWorkbook,
+  getProjectCapacity,
+  getWorkspaceCapacity,
+  getWorkspaceSlug,
+  todayUtc,
+} from "./controllers/capacity";
 import {
   createHost,
   deleteHost,
@@ -42,11 +49,13 @@ import {
   infraHostSchema,
   infraModelListSchema,
   infraModelSchema,
+  infraProjectCapacitySchema,
   infraStorageCapacitySchema,
   infraStorageClusterListSchema,
   infraStorageClusterSchema,
   infraStorageClusterSummaryListSchema,
   infraVmListSchema,
+  infraWorkspaceCapacitySchema,
 } from "./response";
 import {
   createCapacityBody,
@@ -508,6 +517,77 @@ const deleteCapacityRoute = createRoute({
   },
 });
 
+const getProjectCapacityRoute = createRoute({
+  method: "get",
+  operationId: "getProjectInfraCapacity",
+  path: "/project/{projectId}/capacity",
+  tags: ["Infrastructure"],
+  summary: "Day-by-day capacity of the hosts of a project",
+  description:
+    "Per host: need date, order-by date, use steps, first day over 80 and over 100 percent. Warnings carry the ids and titles of this project's tasks. Ceph cluster capacity and use are not included.",
+  middleware: [
+    workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ infrastructure: ["read"] }),
+  ] as const,
+  request: { params: projectIdParam },
+  responses: {
+    200: jsonResponse("Capacity of the project", infraProjectCapacitySchema),
+    403: forbidden,
+  },
+});
+
+const getWorkspaceCapacityRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceInfraCapacity",
+  path: "/workspace/{workspaceId}/capacity",
+  tags: ["Infrastructure"],
+  summary:
+    "Capacity of every host and Ceph cluster, and the order plan (datacenter)",
+  description:
+    "Hosts of every project, Ceph clusters, warnings and the order plan. Warnings name VMs and projects; task titles and task ids are never included.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["read"] }),
+  ] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse(
+      "Capacity of the workspace",
+      infraWorkspaceCapacitySchema,
+    ),
+    403: dcForbidden,
+  },
+});
+
+const XLSX_TYPE =
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+const getOrderPlanXlsxRoute = createRoute({
+  method: "get",
+  operationId: "getInfraOrderPlanXlsx",
+  path: "/workspace/{workspaceId}/order-plan.xlsx",
+  tags: ["Infrastructure"],
+  summary: "Export the order plan as an XLSX file (datacenter)",
+  description:
+    "One sheet, `Order plan`, with a row per planned host group, planned storage entry and storage suggestion, sorted by order-by date, region and model. Late rows are highlighted.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["read"] }),
+  ] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: {
+      description: "The order plan workbook",
+      content: {
+        [XLSX_TYPE]: {
+          schema: z.string().openapi({ type: "string", format: "binary" }),
+        },
+      },
+    },
+    403: dcForbidden,
+  },
+});
+
 const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getModelsRoute, async (c) => {
     const { projectId } = c.req.valid("param");
@@ -604,6 +684,29 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(deleteCapacityRoute, async (c) => {
     const { workspaceId, clusterId, entryId } = c.req.valid("param");
     return c.json(await deleteCapacity(workspaceId, clusterId, entryId), 200);
+  })
+  .openapi(getProjectCapacityRoute, async (c) => {
+    const { projectId } = c.req.valid("param");
+    return c.json(await getProjectCapacity(projectId), 200);
+  })
+  .openapi(getWorkspaceCapacityRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    return c.json(await getWorkspaceCapacity(workspaceId), 200);
+  })
+  .openapi(getOrderPlanXlsxRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    const { orderPlan } = await getWorkspaceCapacity(workspaceId);
+    const [file, slug] = await Promise.all([
+      buildOrderPlanWorkbook(orderPlan),
+      getWorkspaceSlug(workspaceId),
+    ]);
+    const safeSlug = slug.replace(/[^A-Za-z0-9_-]/g, "-");
+    c.header("Content-Type", XLSX_TYPE);
+    c.header(
+      "Content-Disposition",
+      `attachment; filename="order-plan-${safeSlug}-${todayUtc()}.xlsx"`,
+    );
+    return c.body(new Uint8Array(file), 200);
   })
   .openapi(setHostStatusRoute, async (c) => {
     const { workspaceId, hostId } = c.req.valid("param");

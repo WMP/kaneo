@@ -29,6 +29,9 @@ const NO_CAPABILITIES: ProjectCapabilities = {
   inviteToProject: false,
   cancelProjectInvitations: false,
   manageIntegrations: false,
+  infrastructureRead: false,
+  infrastructurePlan: false,
+  infrastructureManage: false,
 };
 
 // What the signed-in user may do INSIDE one project: the project role for a

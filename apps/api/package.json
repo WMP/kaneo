@@ -50,6 +50,7 @@
     "croner": "^10.0.1",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
+    "exceljs": "4.4.0",
     "hono": "^4.13.8",
     "ioredis": "^6.0.0",
     "octokit": "^5.0.5",

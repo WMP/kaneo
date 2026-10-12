@@ -1345,6 +1345,18 @@
               "manageIntegrations": {
                 "type": "boolean",
                 "description": "workspace:manage_settings in the caller's workspace role."
+              },
+              "infrastructureRead": {
+                "type": "boolean",
+                "description": "infrastructure:read in the effective project statements."
+              },
+              "infrastructurePlan": {
+                "type": "boolean",
+                "description": "infrastructure:plan in the effective project statements."
+              },
+              "infrastructureManage": {
+                "type": "boolean",
+                "description": "infrastructure:manage in the effective project statements."
               }
             },
             "required": [
@@ -1362,7 +1374,10 @@
               "addMembers",
               "inviteToProject",
               "cancelProjectInvitations",
-              "manageIntegrations"
+              "manageIntegrations",
+              "infrastructureRead",
+              "infrastructurePlan",
+              "infrastructureManage"
             ],
             "description": "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; workspace labels and integrations from the workspace role). The API key scope is intersected. Billing is not considered: an expired Kaneo Cloud plan still answers 402 on writes."
           }
@@ -7874,6 +7889,767 @@
           "plannedOrOrderedCapacityGb",
           "usedCephGb",
           "vmCount"
+        ]
+      },
+      "InfraProjectCapacity": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHostCapacity"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityWarning"
+            }
+          },
+          "unplacedVms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityVm"
+            }
+          },
+          "unscheduledVms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityVm"
+            }
+          }
+        },
+        "required": [
+          "today",
+          "hosts",
+          "warnings",
+          "unplacedVms",
+          "unscheduledVms"
+        ]
+      },
+      "InfraHostCapacity": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "#/components/schemas/InfraCapacityHost"
+          },
+          "result": {
+            "$ref": "#/components/schemas/InfraHostCapacityResult"
+          }
+        },
+        "required": [
+          "host",
+          "result"
+        ]
+      },
+      "InfraCapacityHost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "model": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ramGb": {
+                "type": "integer"
+              },
+              "vcpu": {
+                "type": "integer"
+              },
+              "storageGb": {
+                "type": "integer"
+              },
+              "leadTimeDays": {
+                "type": "integer"
+              },
+              "hypervisorReservePercent": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "provider",
+              "family",
+              "ramGb",
+              "vcpu",
+              "storageGb",
+              "leadTimeDays",
+              "hypervisorReservePercent"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "region",
+          "status",
+          "availableFrom",
+          "hostname",
+          "projectId",
+          "projectName",
+          "model"
+        ]
+      },
+      "InfraHostCapacityResult": {
+        "type": "object",
+        "properties": {
+          "hostId": {
+            "type": "string"
+          },
+          "usableRamGb": {
+            "type": "integer"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "localStorageGb": {
+            "type": "integer"
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Earliest start date of a task with a VM on the host."
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "needDate minus the model lead time."
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "ramGb": {
+                  "type": "integer"
+                },
+                "vcpu": {
+                  "type": "integer"
+                },
+                "localStorageGb": {
+                  "type": "integer"
+                },
+                "ramPercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "vcpuPercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "localStoragePercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "ramGb",
+                "vcpu",
+                "localStorageGb",
+                "ramPercent",
+                "vcpuPercent",
+                "localStoragePercent"
+              ]
+            }
+          },
+          "peakRamPercent": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "firstOver80Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "firstOver100Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "hostId",
+          "usableRamGb",
+          "vcpu",
+          "localStorageGb",
+          "needDate",
+          "orderByDate",
+          "steps",
+          "peakRamPercent",
+          "firstOver80Date",
+          "firstOver100Date"
+        ]
+      },
+      "InfraCapacityWarning": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOST_NOT_READY",
+              "ORDER_LATE",
+              "OVER_100",
+              "OVER_80",
+              "VM_UNPLACED",
+              "VM_UNSCHEDULED",
+              "CLUSTER_NOT_READY",
+              "CLUSTER_SHORTFALL"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "hostId": {
+            "type": "string"
+          },
+          "clusterId": {
+            "type": "string"
+          },
+          "vmId": {
+            "type": "string"
+          },
+          "vmName": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "severity"
+        ],
+        "description": "Task ids and titles appear only on the project route. The datacenter route names the VM and its project."
+      },
+      "InfraCapacityVm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cephStorageGb": {
+            "type": "integer"
+          },
+          "storageCluster": {
+            "$ref": "#/components/schemas/InfraCapacityVmCluster"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "taskId",
+          "taskTitle",
+          "hostId",
+          "startDate",
+          "cephStorageGb",
+          "storageCluster"
+        ]
+      },
+      "InfraCapacityVmCluster": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "InfraWorkspaceCapacity": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHostCapacity"
+            }
+          },
+          "clusters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraClusterCapacity"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityWarning"
+            }
+          },
+          "orderPlan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraOrderPlanRow"
+            }
+          }
+        },
+        "required": [
+          "today",
+          "hosts",
+          "clusters",
+          "warnings",
+          "orderPlan"
+        ]
+      },
+      "InfraClusterCapacity": {
+        "type": "object",
+        "properties": {
+          "cluster": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "self_managed",
+                  "managed_service"
+                ]
+              },
+              "ecDataChunks": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "ecCodingChunks": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "fillThresholdPercent": {
+                "type": "integer"
+              },
+              "leadTimeDays": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "region",
+              "kind",
+              "ecDataChunks",
+              "ecCodingChunks",
+              "fillThresholdPercent",
+              "leadTimeDays"
+            ]
+          },
+          "result": {
+            "$ref": "#/components/schemas/InfraClusterCapacityResult"
+          }
+        },
+        "required": [
+          "cluster",
+          "result"
+        ]
+      },
+      "InfraClusterCapacityResult": {
+        "type": "object",
+        "properties": {
+          "clusterId": {
+            "type": "string"
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "usedCephGb": {
+                  "type": "integer"
+                },
+                "usableGb": {
+                  "type": "integer"
+                },
+                "percent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "usedCephGb",
+                "usableGb",
+                "percent"
+              ]
+            }
+          },
+          "firstOver80Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "firstOver100Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usableAllGb": {
+            "type": "integer"
+          },
+          "shortfallGb": {
+            "type": "integer"
+          },
+          "plannedNeedDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "suggestion": {
+            "$ref": "#/components/schemas/InfraClusterSuggestion"
+          }
+        },
+        "required": [
+          "clusterId",
+          "needDate",
+          "steps",
+          "firstOver80Date",
+          "firstOver100Date",
+          "usableAllGb",
+          "shortfallGb",
+          "plannedNeedDate",
+          "suggestion"
+        ]
+      },
+      "InfraClusterSuggestion": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "nodes",
+              "service"
+            ]
+          },
+          "shortfallGb": {
+            "type": "integer"
+          },
+          "nodes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "nodeCapacityGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "modelName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "buyGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "shortfallGb",
+          "nodes",
+          "nodeCapacityGb",
+          "modelName",
+          "buyGb",
+          "needDate",
+          "orderByDate"
+        ]
+      },
+      "InfraOrderPlanRow": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "host",
+              "storage_node",
+              "storage_service"
+            ]
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": "string"
+          },
+          "model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ramGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "vcpu": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "storageGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "capacityGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clusterId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clusterName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "suggested"
+            ]
+          },
+          "late": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "orderByDate",
+          "needDate",
+          "provider",
+          "region",
+          "model",
+          "family",
+          "ramGb",
+          "vcpu",
+          "storageGb",
+          "quantity",
+          "capacityGb",
+          "projectId",
+          "projectName",
+          "clusterId",
+          "clusterName",
+          "labels",
+          "status",
+          "late"
         ]
       },
       "WorkspaceColumns": {
@@ -29198,6 +29974,142 @@
                   "$ref": "#/components/schemas/CodedError"
                 }
               },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/capacity": {
+      "get": {
+        "operationId": "getProjectInfraCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Day-by-day capacity of the hosts of a project",
+        "description": "Per host: need date, order-by date, use steps, first day over 80 and over 100 percent. Warnings carry the ids and titles of this project's tasks. Ceph cluster capacity and use are not included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Capacity of the project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraProjectCapacity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/capacity": {
+      "get": {
+        "operationId": "getWorkspaceInfraCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Capacity of every host and Ceph cluster, and the order plan (datacenter)",
+        "description": "Hosts of every project, Ceph clusters, warnings and the order plan. Warnings name VMs and projects; task titles and task ids are never included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Capacity of the workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraWorkspaceCapacity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/order-plan.xlsx": {
+      "get": {
+        "operationId": "getInfraOrderPlanXlsx",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Export the order plan as an XLSX file (datacenter)",
+        "description": "One sheet, `Order plan`, with a row per planned host group, planned storage entry and storage suggestion, sorted by order-by date, region and model. Late rows are highlighted.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order plan workbook",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
               "text/plain": {
                 "schema": {
                   "type": "string"
