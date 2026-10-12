@@ -49,6 +49,18 @@ The API checks what the database cannot: a host's region is one of its model's r
 - `ganttpro_infra_vm` gains `ceph_storage_gb` (>= 0, default 0) and `storage_cluster_id` (FK, set null). The existing `storage_gb` column is the local storage; the API names it `localStorageGb`.
 - Routes: `GET /project/{projectId}/storage-clusters` (`infrastructure:read`, id, name, region, kind only); `GET|POST /workspace/{workspaceId}/storage-clusters`, `PUT|DELETE .../{clusterId}` and `POST|PUT|DELETE .../{clusterId}/capacity[/{entryId}]` (`datacenter:read` / `datacenter:manage`). A cluster used by a VM cannot be deleted (409 `INFRA_CLUSTER_IN_USE`); capacity entries follow the host status rules (ordered needs `availableFrom`, only a planned entry can be deleted). In `PUT /task/{taskId}/vms`, a cluster of another workspace answers 400 `INFRA_CLUSTER_NOT_IN_WORKSPACE`, and a cluster in another region than the VM's host 400 `INFRA_CLUSTER_REGION_MISMATCH`.
 
+## Capacity engine and order plan (stage 2)
+
+Pure functions in `apps/api/src/infrastructure/capacity.ts`, no database access, unit tested in `tests/api/infrastructure/`. A VM's **start date** is its task's start date, else its due date, else none (unscheduled). VMs never leave a host, so use is a step function that rises on start dates.
+
+- **Host capacity**: usable RAM = model RAM × (100 − reserve) / 100, vCPU = model vCPU, local storage = model storage. A host is **available** from `available_from` when `ordered` or `installed`; a `planned` host is never available.
+- **Host result**: `needDate` (earliest VM start), `orderByDate` (`needDate` − model lead time), use steps `[{ date, ramGb, vcpu, localStorageGb, ramPercent }]`, `peakRamPercent`, `firstOver80Date`, `firstOver100Date` (RAM, vCPU or local storage above the threshold).
+- **Cluster capacity** on a day = sum of `capacity_gb` of entries available that day × k/(k+m) (self-managed) × fill threshold. **Cluster result**: use steps of Ceph GB, `needDate`, first day over 80 and 100 percent of usable capacity, the shortfall at the last step, and a suggestion: for `self_managed` the number of nodes of the size of the latest entry (its `model_name` and `capacity_gb`) that removes the shortfall; for `managed_service` the GB to buy.
+- **Warnings**: `HOST_NOT_READY` (a VM starts before its host is available, or the host is planned), `ORDER_LATE` (planned host or entry whose order-by date is before today), `OVER_80`, `OVER_100`, `VM_UNPLACED` (no host), `VM_UNSCHEDULED` (no date), `CLUSTER_NOT_READY` and `CLUSTER_SHORTFALL` (DC only).
+- **Order plan rows** (DC): every planned host (`host`), every planned capacity entry and every cluster suggestion (`storage_node` in a self-managed cluster, `storage_service` in a managed one), with order-by date, need date, provider, region, model, RAM, vCPU, storage, quantity, project (hosts only) and status, sorted by order-by date, region and model.
+
+Routes: `GET /project/{projectId}/capacity` (`infrastructure:read`, the project's hosts and warnings with task ids and titles of this project only), `GET /workspace/{workspaceId}/capacity` (`datacenter:read`, every host and cluster and the order plan, no task titles) and `GET /workspace/{workspaceId}/order-plan.xlsx` (`datacenter:read`, one sheet built with `exceljs`). `today` is a parameter of the pure functions so tests are deterministic; the routes pass the UTC date.
+
 ## API (stage 1, `apps/api/src/infrastructure/`, mounted at `/api/infrastructure`)
 
 | Route | Permission | Behavior |
