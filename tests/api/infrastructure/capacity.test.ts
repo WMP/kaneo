@@ -22,6 +22,7 @@ function host(
     projectId: "p1",
     projectName: "Project 1",
     region: "GRA",
+    zone: null,
     status: "installed",
     availableFrom: "2026-01-01",
     model: {
@@ -552,6 +553,20 @@ describe("order plan", () => {
     // a, b, c have different (need date | region); d has no VMs (null dates).
     expect(r.orderPlan).toHaveLength(4);
     expect(r.orderPlan.every((row) => row.status === "planned")).toBe(true);
+  });
+
+  it("groups identical planned hosts per zone", () => {
+    const hosts = [
+      planned("a", { region: "PAR", zone: "PAR1" }),
+      planned("b", { region: "PAR", zone: "PAR1" }),
+      planned("c", { region: "PAR", zone: "PAR2" }),
+    ];
+    const vms = hosts.map((h) => vm({ hostId: h.id }));
+    const r = computeCapacity({ hosts, vms, clusters: [], today: TODAY });
+    expect(r.orderPlan.map((row) => [row.zone, row.quantity])).toEqual([
+      ["PAR1", 2],
+      ["PAR2", 1],
+    ]);
   });
 
   it("sorts by order-by date (nulls last), region and model", () => {

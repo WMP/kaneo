@@ -52,13 +52,25 @@ const modelFields = {
   hypervisorReservePercent: z.number().int().min(0).max(90),
 };
 
+// Availability zone codes follow the region code format.
+export const zoneCode = regionCode;
+
+const zoneList = z
+  .array(zoneCode)
+  .max(20)
+  .refine((zones) => new Set(zones).size === zones.length, {
+    message: "Zones must be unique",
+  });
+
 export const createRegionBody = z.object({
   code: regionCode,
   name: z.string().trim().min(1).max(200),
+  zones: zoneList.default([]),
 });
 
 export const updateRegionBody = z.object({
   name: z.string().trim().min(1).max(200).optional(),
+  zones: zoneList.optional(),
   position: z.number().int().min(0).max(100_000).optional(),
 });
 
@@ -81,6 +93,14 @@ export const createHostBody = z
     region: regionCode,
     label: z.string().trim().min(1).max(200).optional(),
     quantity: z.number().int().min(1).max(50).default(1),
+    zones: z
+      .array(zoneCode)
+      .min(1)
+      .max(20)
+      .refine((zones) => new Set(zones).size === zones.length, {
+        message: "Zones must be unique",
+      })
+      .optional(),
   })
   .refine((body) => body.label === undefined || body.quantity === 1, {
     message: "A custom label is allowed only with quantity 1",
@@ -90,6 +110,7 @@ export const createHostBody = z
 export const updateHostBody = z.object({
   label: z.string().trim().min(1).max(200).optional(),
   region: regionCode.optional(),
+  zone: zoneCode.nullable().optional(),
 });
 
 export const vmItem = z.object({

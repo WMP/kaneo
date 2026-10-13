@@ -33,6 +33,7 @@ function row(overrides: Partial<OrderPlanRow>): OrderPlanRow {
     needDate: "2027-01-04",
     provider: "ovh",
     region: "GRA",
+    zone: null,
     model: "ADVANCE-2",
     family: null,
     ramGb: 256,

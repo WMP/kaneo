@@ -7,6 +7,7 @@ export type CreateProjectHostRequest = {
   region: string;
   label?: string;
   quantity?: number;
+  zones?: string[];
 };
 
 async function createProjectHost({

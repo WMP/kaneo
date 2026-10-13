@@ -2016,6 +2016,9 @@ export const infraRegionTable = pgTable(
       .references(() => workspaceTable.id, { onDelete: "cascade" }),
     code: text("code").notNull(),
     name: text("name").notNull(),
+    // Availability zone codes of the region (for example PAR1, PAR2, PAR3);
+    // empty for a region without zones.
+    zones: jsonb("zones").$type<string[]>().notNull().default([]),
     position: integer("position").notNull().default(0),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
@@ -2108,6 +2111,9 @@ export const infraHostTable = pgTable(
       .notNull()
       .references(() => infraModelTable.id, { onDelete: "restrict" }),
     region: text("region").notNull(),
+    // Availability zone inside the region; null for a region without zones
+    // and for hosts that existed before zones.
+    zone: text("zone"),
     label: text("label").notNull(),
     status: text("status")
       .$type<"planned" | "ordered" | "installed">()

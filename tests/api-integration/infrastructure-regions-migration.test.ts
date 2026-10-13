@@ -155,6 +155,13 @@ describe("migration ganttpro_infrastructure_regions", () => {
       { workspace_id: "w2", code: "GRA", name: "GRA", position: 0 },
     ]);
 
+    // Zones (migration ganttpro_infrastructure_zones) default to an empty list
+    // and existing hosts have no zone.
+    const zones = await client.query("SELECT zones FROM ganttpro_infra_region");
+    expect(zones.rows.every((row) => row.zones.length === 0)).toBe(true);
+    const hostZone = await client.query("SELECT zone FROM ganttpro_infra_host");
+    expect(hostZone.rows).toEqual([{ zone: null }]);
+
     // The existing rows are untouched.
     const hosts = await client.query(
       "SELECT region FROM ganttpro_infra_host ORDER BY id",

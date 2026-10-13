@@ -77,7 +77,7 @@ describe("region permissions", () => {
       "PAR-2",
       "WAW",
     ]);
-    expect(Object.keys(res.json[0]).sort()).toEqual(["code", "name"]);
+    expect(Object.keys(res.json[0]).sort()).toEqual(["code", "name", "zones"]);
     // No infrastructure:read, no list.
     const bare = await userWith(w.workspaceId, "bare", {
       id: w.p1.id,

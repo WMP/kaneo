@@ -64,6 +64,7 @@ const hostFields = {
   projectId: z.string(),
   modelId: z.string(),
   region: z.string(),
+  zone: z.string().nullable(),
   label: z.string(),
   status: statusSchema,
   availableFrom,
@@ -127,6 +128,7 @@ export const infraVmSchema = z
         id: z.string(),
         label: z.string(),
         region: z.string(),
+        zone: z.string().nullable(),
         status: statusSchema,
         availableFrom,
       })
@@ -309,6 +311,7 @@ const capacityHostSummary = z
     id: z.string(),
     label: z.string(),
     region: z.string(),
+    zone: z.string().nullable(),
     status: statusSchema,
     availableFrom,
     hostname: z.string().nullable(),
@@ -365,6 +368,7 @@ export const infraOrderPlanRowSchema = z
     needDate: dateOrNull,
     provider: z.string().nullable(),
     region: z.string(),
+    zone: z.string().nullable(),
     model: z.string().nullable(),
     family: z.string().nullable(),
     ramGb: z.number().int().nullable(),
@@ -413,9 +417,13 @@ export const infraRegionSchema = z
     id: z.string(),
     code: z.string(),
     name: z.string(),
+    zones: z.array(z.string()),
     position: z.number().int(),
     createdAt: responseTimestamp,
     updatedAt: responseTimestamp,
+    zoneUsage: z.record(z.string(), z.number().int()).openapi({
+      description: "Hosts per zone code.",
+    }),
     usage: z
       .object({
         models: z.number().int(),
@@ -434,7 +442,11 @@ export const infraRegionListSchema = z
 export const infraRegionSummaryListSchema = z
   .array(
     z
-      .object({ code: z.string(), name: z.string() })
+      .object({
+        code: z.string(),
+        name: z.string(),
+        zones: z.array(z.string()),
+      })
       .openapi("InfraRegionSummary"),
   )
   .openapi("InfraRegionSummaryList");

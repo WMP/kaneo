@@ -43,10 +43,35 @@ export async function assertRegionsInCatalog(
   }
 }
 
-// What the project pickers need: code and name only.
+// The zones of a region, read FOR SHARE so that a concurrent zone removal
+// (which locks the region row FOR UPDATE) waits for the host write. A region
+// that is not in the catalog has no zones.
+export async function readRegionZones(
+  tx: Transaction,
+  workspaceId: string,
+  code: string,
+) {
+  const [row] = await tx
+    .select({ zones: infraRegionTable.zones })
+    .from(infraRegionTable)
+    .where(
+      and(
+        eq(infraRegionTable.workspaceId, workspaceId),
+        eq(infraRegionTable.code, code),
+      ),
+    )
+    .for("share");
+  return row?.zones ?? [];
+}
+
+// What the project pickers need: code, name and zones.
 export async function listProjectRegions(workspaceId: string) {
   return db
-    .select({ code: infraRegionTable.code, name: infraRegionTable.name })
+    .select({
+      code: infraRegionTable.code,
+      name: infraRegionTable.name,
+      zones: infraRegionTable.zones,
+    })
     .from(infraRegionTable)
     .where(eq(infraRegionTable.workspaceId, workspaceId))
     .orderBy(asc(infraRegionTable.position), asc(infraRegionTable.code));
@@ -88,10 +113,26 @@ export async function listRegions(workspaceId: string) {
     .where(eq(infraStorageClusterTable.workspaceId, workspaceId))
     .groupBy(infraStorageClusterTable.region);
 
+  const zoneHosts = await db
+    .select({
+      code: infraHostTable.region,
+      zone: infraHostTable.zone,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(infraHostTable)
+    .innerJoin(projectTable, eq(projectTable.id, infraHostTable.projectId))
+    .where(eq(projectTable.workspaceId, workspaceId))
+    .groupBy(infraHostTable.region, infraHostTable.zone);
+
   const countOf = (rows: { code: string; count: number }[], code: string) =>
     rows.find((row) => row.code === code)?.count ?? 0;
   return regions.map((region) => ({
     ...region,
+    zoneUsage: Object.fromEntries(
+      zoneHosts
+        .filter((row) => row.code === region.code && row.zone != null)
+        .map((row) => [row.zone as string, row.count]),
+    ),
     usage: {
       models: countOf(models, region.code),
       hosts: countOf(hosts, region.code),
@@ -117,7 +158,7 @@ function pgCode(error: unknown) {
 
 export async function createRegion(
   workspaceId: string,
-  input: { code: string; name: string },
+  input: { code: string; name: string; zones?: string[] },
 ) {
   let id: string;
   try {
@@ -134,6 +175,7 @@ export async function createRegion(
           workspaceId,
           code: input.code,
           name: input.name,
+          zones: input.zones ?? [],
           position: (last?.position ?? -1) + 1,
         })
         .returning({ id: infraRegionTable.id });
@@ -155,25 +197,62 @@ export async function createRegion(
   return getRegion(workspaceId, id);
 }
 
-// The code is immutable: only the name and the position change.
+// The code is immutable: only the name, the zones and the position change.
+// Removing a zone that a host of the workspace uses is refused.
 export async function updateRegion(
   workspaceId: string,
   regionId: string,
-  input: { name?: string; position?: number },
+  input: { name?: string; zones?: string[]; position?: number },
 ) {
-  const updated = await db
-    .update(infraRegionTable)
-    .set({ name: input.name, position: input.position })
-    .where(
-      and(
-        eq(infraRegionTable.id, regionId),
-        eq(infraRegionTable.workspaceId, workspaceId),
-      ),
-    )
-    .returning({ id: infraRegionTable.id });
-  if (updated.length === 0) {
-    throw new HTTPException(404, { message: "Region not found" });
-  }
+  await db.transaction(async (tx) => {
+    const [region] = await tx
+      .select()
+      .from(infraRegionTable)
+      .where(
+        and(
+          eq(infraRegionTable.id, regionId),
+          eq(infraRegionTable.workspaceId, workspaceId),
+        ),
+      )
+      .for("update");
+    if (!region) throw new HTTPException(404, { message: "Region not found" });
+
+    if (input.zones) {
+      const kept = new Set(input.zones);
+      const removed = region.zones.filter((zone) => !kept.has(zone));
+      if (removed.length > 0) {
+        const [used] = await tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(infraHostTable)
+          .innerJoin(
+            projectTable,
+            eq(projectTable.id, infraHostTable.projectId),
+          )
+          .where(
+            and(
+              eq(projectTable.workspaceId, workspaceId),
+              eq(infraHostTable.region, region.code),
+              inArray(infraHostTable.zone, removed),
+            ),
+          );
+        if ((used?.count ?? 0) > 0) {
+          throw infraError(
+            409,
+            INFRA_ERROR_CODES.zoneInUse,
+            "Hosts still use a zone that would be removed",
+          );
+        }
+      }
+    }
+    await tx
+      .update(infraRegionTable)
+      .set({
+        name: input.name,
+        zones: input.zones,
+        position: input.position,
+      })
+      .where(eq(infraRegionTable.id, regionId));
+  });
   return getRegion(workspaceId, regionId);
 }
 

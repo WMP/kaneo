@@ -7322,6 +7322,12 @@
           "region": {
             "type": "string"
           },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "label": {
             "type": "string"
           },
@@ -7367,6 +7373,7 @@
           "projectId",
           "modelId",
           "region",
+          "zone",
           "label",
           "status",
           "availableFrom",
@@ -7593,6 +7600,12 @@
           "region": {
             "type": "string"
           },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -7614,6 +7627,7 @@
           "id",
           "label",
           "region",
+          "zone",
           "status",
           "availableFrom"
         ]
@@ -7638,6 +7652,12 @@
           },
           "region": {
             "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "label": {
             "type": "string"
@@ -7687,6 +7707,7 @@
           "projectId",
           "modelId",
           "region",
+          "zone",
           "label",
           "status",
           "availableFrom",
@@ -7971,6 +7992,12 @@
           "region": {
             "type": "string"
           },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -8050,6 +8077,7 @@
           "id",
           "label",
           "region",
+          "zone",
           "status",
           "availableFrom",
           "hostname",
@@ -8564,6 +8592,12 @@
           "region": {
             "type": "string"
           },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "model": {
             "type": [
               "string",
@@ -8650,6 +8684,7 @@
           "needDate",
           "provider",
           "region",
+          "zone",
           "model",
           "family",
           "ramGb",
@@ -8680,11 +8715,18 @@
           },
           "name": {
             "type": "string"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "code",
-          "name"
+          "name",
+          "zones"
         ]
       },
       "InfraRegionList": {
@@ -8705,6 +8747,12 @@
           "name": {
             "type": "string"
           },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "position": {
             "type": "integer"
           },
@@ -8716,6 +8764,13 @@
             "type": "string",
             "format": "date-time"
           },
+          "zoneUsage": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Hosts per zone code."
+          },
           "usage": {
             "$ref": "#/components/schemas/InfraRegionUsage"
           }
@@ -8724,9 +8779,11 @@
           "id",
           "code",
           "name",
+          "zones",
           "position",
           "createdAt",
           "updatedAt",
+          "zoneUsage",
           "usage"
         ]
       },
@@ -28756,6 +28813,18 @@
                     "minimum": 1,
                     "maximum": 50,
                     "default": 1
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
                   }
                 },
                 "required": [
@@ -28858,6 +28927,16 @@
                   },
                   "region": {
                     "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "zone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "minLength": 1,
                     "maxLength": 16,
                     "pattern": "^[A-Z0-9-]+$",
@@ -30357,6 +30436,18 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "maxItems": 20,
+                    "default": []
                   }
                 },
                 "required": [
@@ -30466,6 +30557,17 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "maxItems": 20
                   },
                   "position": {
                     "type": "integer",

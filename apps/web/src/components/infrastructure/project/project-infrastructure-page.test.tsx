@@ -191,8 +191,8 @@ beforeEach(() => {
   ] as never);
   vi.mocked(getProjectCapacity).mockResolvedValue(capacity as never);
   vi.mocked(getProjectRegions).mockResolvedValue([
-    { code: "GRA", name: "Gravelines" },
-    { code: "PAR", name: "Paris" },
+    { code: "GRA", name: "Gravelines", zones: [] },
+    { code: "PAR", name: "Paris", zones: [] },
   ]);
 });
 afterEach(cleanup);
@@ -387,7 +387,7 @@ describe("project infrastructure settings", () => {
 
   it("lists a model region outside the catalog so it can be unchecked", async () => {
     vi.mocked(getProjectRegions).mockResolvedValue([
-      { code: "GRA", name: "Gravelines" },
+      { code: "GRA", name: "Gravelines", zones: [] },
     ]);
     renderPage();
     await screen.findByText("SCALE-256");

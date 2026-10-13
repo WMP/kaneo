@@ -49,6 +49,7 @@ async function selectVms(executor: Executor, taskId: string) {
         id: infraHostTable.id,
         label: infraHostTable.label,
         region: infraHostTable.region,
+        zone: infraHostTable.zone,
         status: infraHostTable.status,
         availableFrom: infraHostTable.availableFrom,
       },

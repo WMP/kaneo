@@ -126,13 +126,15 @@ await request(admin.cookie, "POST", `/project/${billing.id}/members`, {
 });
 
 // Region catalog (datacenter team). Models and clusters may only name these.
-for (const [code, name] of [
-  ["GRA", "Gravelines"],
-  ["PAR", "Paris"],
+// Paris is a 3-AZ region: workload hosts there sit in PAR1, PAR2 or PAR3.
+for (const [code, name, zones] of [
+  ["GRA", "Gravelines", []],
+  ["PAR", "Paris", ["PAR1", "PAR2", "PAR3"]],
 ]) {
   await request(dc.cookie, "POST", `/infrastructure/workspace/${W}/regions`, {
     code,
     name,
+    zones,
   });
 }
 
@@ -183,21 +185,30 @@ const portalScale = await createModel(admin, portal, {
   leadTimeDays: 21,
 });
 
-const createHost = async (user, project, modelId, region) =>
+// One request creates `quantity` hosts, spread round-robin over `zones`
+// (a region with zones needs them, a region without zones takes none).
+const createHosts = async (user, project, modelId, region, options = {}) =>
   (
     await request(
       user.cookie,
       "POST",
       `/infrastructure/project/${project.id}/hosts`,
-      { modelId, region },
+      { modelId, region, ...options },
     )
-  ).json.hosts[0];
-const gra1 = await createHost(lead, billing, advance256.id, "GRA");
-const gra2 = await createHost(lead, billing, advance256.id, "GRA");
-const par1 = await createHost(lead, billing, scale256.id, "PAR");
-const par2 = await createHost(lead, billing, scale256.id, "PAR");
-const portalPar1 = await createHost(admin, portal, portalScale.id, "PAR");
-const portalPar2 = await createHost(admin, portal, portalScale.id, "PAR");
+  ).json.hosts;
+const [gra1, gra2] = await createHosts(lead, billing, advance256.id, "GRA", {
+  quantity: 2,
+});
+const [par1, par2] = await createHosts(lead, billing, scale256.id, "PAR", {
+  quantity: 2,
+  zones: ["PAR1", "PAR2"],
+});
+const [portalPar1] = await createHosts(admin, portal, portalScale.id, "PAR", {
+  zones: ["PAR2"],
+});
+const [portalPar2] = await createHosts(admin, portal, portalScale.id, "PAR", {
+  zones: ["PAR3"],
+});
 
 // Ceph storage clusters (datacenter team): self-managed in PAR, an OVH
 // managed service in GRA.

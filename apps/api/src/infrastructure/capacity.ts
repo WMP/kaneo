@@ -19,6 +19,7 @@ export type CapHost = {
   projectId: string;
   projectName: string;
   region: string;
+  zone: string | null;
   status: Status;
   availableFrom: string | null;
   model: {
@@ -156,6 +157,7 @@ export type OrderPlanRow = {
   needDate: string | null;
   provider: string | null;
   region: string;
+  zone: string | null;
   model: string | null;
   family: string | null;
   ramGb: number | null;
@@ -434,6 +436,7 @@ export function buildOrderPlan(input: {
       orderByDate,
       needDate,
       host.region,
+      host.zone,
       host.model.name,
       host.model.ramGb,
       host.projectId,
@@ -450,6 +453,7 @@ export function buildOrderPlan(input: {
       needDate,
       provider: host.model.provider,
       region: host.region,
+      zone: host.zone,
       model: host.model.name,
       family: host.model.family,
       ramGb: host.model.ramGb,
@@ -479,6 +483,7 @@ export function buildOrderPlan(input: {
       type,
       provider: null,
       region: cluster.region,
+      zone: null,
       family: null,
       ramGb: null,
       vcpu: null,

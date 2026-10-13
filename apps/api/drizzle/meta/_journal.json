@@ -470,6 +470,13 @@
       "when": 1791896562090,
       "tag": "20261013130242_ganttpro_infrastructure_regions",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1791900000078,
+      "tag": "20261013140000_ganttpro_infrastructure_zones",
+      "breakpoints": true
     }
   ]
 }

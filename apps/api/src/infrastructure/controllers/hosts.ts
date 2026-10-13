@@ -9,6 +9,7 @@ import {
 } from "../../database/schema";
 import { INFRA_ERROR_CODES, infraError } from "../errors";
 import { lockModel } from "./models";
+import { readRegionZones } from "./regions";
 
 // One query, no N+1: the host, its model and the VM totals (an aggregate over
 // a left join, so a host without VMs has zeros).
@@ -17,6 +18,7 @@ const hostColumns = {
   projectId: infraHostTable.projectId,
   modelId: infraHostTable.modelId,
   region: infraHostTable.region,
+  zone: infraHostTable.zone,
   label: infraHostTable.label,
   status: infraHostTable.status,
   availableFrom: infraHostTable.availableFrom,
@@ -101,21 +103,65 @@ function regionNotAllowed(region: string) {
   );
 }
 
-// Default labels: `<model name> <ram> GB <region> #<n>` where n is the highest
-// number already used in a label of the same model and region in the project,
-// plus one (1 when there is none); several hosts get consecutive numbers. It is
-// deterministic and never reuses the number of a deleted host that is not the
-// highest. The model row is locked by the caller, so two concurrent creations
-// get different numbers.
+// Zones for the hosts of one request. A region with zones needs `zones` (every
+// one of the region); a region without zones takes none. Hosts are spread over
+// the zones round-robin in the given order.
+function assignZones(
+  regionZones: string[],
+  requested: string[] | undefined,
+  quantity: number,
+): (string | null)[] {
+  if (regionZones.length === 0) {
+    if (requested && requested.length > 0) {
+      throw infraError(
+        400,
+        INFRA_ERROR_CODES.zoneUnknown,
+        "The region has no zones",
+      );
+    }
+    return Array.from({ length: quantity }, () => null);
+  }
+  if (!requested || requested.length === 0) {
+    throw infraError(
+      400,
+      INFRA_ERROR_CODES.zoneRequired,
+      "The region has zones: choose at least one",
+    );
+  }
+  assertZonesOfRegion(regionZones, requested);
+  return Array.from(
+    { length: quantity },
+    (_, i) => requested[i % requested.length] as string,
+  );
+}
+
+function assertZonesOfRegion(regionZones: string[], zones: string[]) {
+  const unknown = zones.filter((zone) => !regionZones.includes(zone));
+  if (unknown.length > 0) {
+    throw infraError(
+      400,
+      INFRA_ERROR_CODES.zoneUnknown,
+      `Unknown zone(s) for the region: ${unknown.join(", ")}`,
+    );
+  }
+}
+
+// Default labels: `<model name> <ram> GB <zone or region> #<n>` where n is the
+// highest number already used in a label of the same model, region and zone
+// (no zone is its own group) in the project, plus one (1 when there is none);
+// several hosts of a group get consecutive numbers. It is deterministic and
+// never reuses the number of a deleted host that is not the highest. The model
+// row is locked by the caller, so two concurrent creations get different
+// numbers.
 async function nextLabels(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
   model: { id: string; name: string; ramGb: number },
   projectId: string,
   region: string,
-  count: number,
+  zones: (string | null)[],
 ) {
   const rows = await tx
-    .select({ label: infraHostTable.label })
+    .select({ label: infraHostTable.label, zone: infraHostTable.zone })
     .from(infraHostTable)
     .where(
       and(
@@ -124,26 +170,34 @@ async function nextLabels(
         eq(infraHostTable.region, region),
       ),
     );
-  let max = 0;
-  for (const { label } of rows) {
-    const match = /#(\d+)$/.exec(label);
-    if (match?.[1]) max = Math.max(max, Number(match[1]));
+  const next = new Map<string | null, number>();
+  for (const zone of new Set(zones)) {
+    let max = 0;
+    for (const row of rows) {
+      if ((row.zone ?? null) !== zone) continue;
+      const match = /#(\d+)$/.exec(row.label);
+      if (match?.[1]) max = Math.max(max, Number(match[1]));
+    }
+    next.set(zone, max + 1);
   }
-  return Array.from(
-    { length: count },
-    (_, i) => `${model.name} ${model.ramGb} GB ${region} #${max + 1 + i}`,
-  );
+  return zones.map((zone) => {
+    const n = next.get(zone) as number;
+    next.set(zone, n + 1);
+    return `${model.name} ${model.ramGb} GB ${zone ?? region} #${n}`;
+  });
 }
 
 // Creates `quantity` planned hosts in one transaction (all or none) and returns
 // them in creation order.
 export async function createHosts(
   projectId: string,
+  workspaceId: string,
   input: {
     modelId: string;
     region: string;
     label?: string;
     quantity: number;
+    zones?: string[];
   },
 ) {
   const ids = await db.transaction(async (tx) => {
@@ -151,16 +205,19 @@ export async function createHosts(
     if (!model.regions.includes(input.region)) {
       throw regionNotAllowed(input.region);
     }
+    const regionZones = await readRegionZones(tx, workspaceId, input.region);
+    const zones = assignZones(regionZones, input.zones, input.quantity);
     const labels = input.label
       ? [input.label]
-      : await nextLabels(tx, model, projectId, input.region, input.quantity);
+      : await nextLabels(tx, model, projectId, input.region, zones);
     const created = await tx
       .insert(infraHostTable)
       .values(
-        labels.map((label) => ({
+        labels.map((label, index) => ({
           projectId,
           modelId: model.id,
           region: input.region,
+          zone: zones[index] ?? null,
           label,
           status: "planned" as const,
         })),
@@ -182,8 +239,9 @@ export async function createHosts(
 
 export async function updateHost(
   projectId: string,
+  workspaceId: string,
   hostId: string,
-  input: { label?: string; region?: string },
+  input: { label?: string; region?: string; zone?: string | null },
 ) {
   await db.transaction(async (tx) => {
     const [host] = await tx
@@ -201,21 +259,55 @@ export async function updateHost(
         message: "Infrastructure host not found",
       });
     }
-    const changes: { label?: string; region?: string } = {};
+    const changes: {
+      label?: string;
+      region?: string;
+      zone?: string | null;
+    } = {};
     if (input.label !== undefined) changes.label = input.label;
-    if (input.region !== undefined && input.region !== host.region) {
-      if (host.status !== "planned") {
+
+    const regionChanges =
+      input.region !== undefined && input.region !== host.region;
+    const zoneGiven = input.zone !== undefined;
+    if (regionChanges || zoneGiven) {
+      const region = regionChanges ? (input.region as string) : host.region;
+      const nextZone = zoneGiven ? (input.zone ?? null) : null;
+      // Without a new zone a region change drops the old zone, which only
+      // stays valid when the new region has no zones.
+      const zoneChanges = regionChanges || nextZone !== host.zone;
+      if (zoneChanges && host.status !== "planned") {
         throw infraError(
           409,
           INFRA_ERROR_CODES.hostLocked,
-          "The region of an ordered or installed host cannot change",
+          "The region and zone of an ordered or installed host cannot change",
         );
       }
-      const model = await lockModel(tx, projectId, host.modelId);
-      if (!model.regions.includes(input.region)) {
-        throw regionNotAllowed(input.region);
+      if (zoneChanges) {
+        if (regionChanges) {
+          const model = await lockModel(tx, projectId, host.modelId);
+          if (!model.regions.includes(region)) throw regionNotAllowed(region);
+          changes.region = region;
+        }
+        const regionZones = await readRegionZones(tx, workspaceId, region);
+        if (regionZones.length === 0) {
+          if (nextZone !== null) {
+            throw infraError(
+              400,
+              INFRA_ERROR_CODES.zoneUnknown,
+              "The region has no zones",
+            );
+          }
+        } else if (nextZone === null) {
+          throw infraError(
+            400,
+            INFRA_ERROR_CODES.zoneRequired,
+            "The region has zones: choose one",
+          );
+        } else {
+          assertZonesOfRegion(regionZones, [nextZone]);
+        }
+        changes.zone = nextZone;
       }
-      changes.region = input.region;
     }
     if (Object.keys(changes).length > 0) {
       await tx

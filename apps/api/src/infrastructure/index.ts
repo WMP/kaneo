@@ -748,14 +748,25 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(createHostRoute, async (c) => {
     const { projectId } = c.req.valid("param");
     return c.json(
-      { hosts: await createHosts(projectId, c.req.valid("json")) },
+      {
+        hosts: await createHosts(
+          projectId,
+          c.get("workspaceId"),
+          c.req.valid("json"),
+        ),
+      },
       200,
     );
   })
   .openapi(updateHostRoute, async (c) => {
     const { projectId, hostId } = c.req.valid("param");
     return c.json(
-      await updateHost(projectId, hostId, c.req.valid("json")),
+      await updateHost(
+        projectId,
+        c.get("workspaceId"),
+        hostId,
+        c.req.valid("json"),
+      ),
       200,
     );
   })

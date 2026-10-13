@@ -40,6 +40,10 @@ async function setup() {
     .set({ startDate: new Date(`${day(5)}T00:00:00.000Z`) })
     .where(eq(schema.taskTable.id, w.task2.id));
 
+  await db
+    .update(schema.infraRegionTable)
+    .set({ zones: ["PAR1", "PAR2"] })
+    .where(eq(schema.infraRegionTable.code, "PAR"));
   const hostIds: Record<string, string[]> = { p1: [], p2: [] };
   for (const [key, project] of [
     ["p1", w.p1],
@@ -57,7 +61,11 @@ async function setup() {
         w.owner,
         "POST",
         `/api/infrastructure/project/${project.id}/hosts`,
-        { modelId: model.json.id, region: "PAR" },
+        {
+          modelId: model.json.id,
+          region: "PAR",
+          zones: [key === "p1" ? "PAR1" : "PAR2"],
+        },
       );
       hostIds[key].push(host.json.hosts[0].id);
     }
@@ -207,12 +215,14 @@ describe("workspace capacity and order plan", () => {
     const p1Row = hostRows.find(
       (r: { projectId: string }) => r.projectId === w.p1.id,
     );
+    expect(p1Row.zone).toBe("PAR1");
     expect(p1Row.quantity).toBe(2);
     expect(p1Row.labels).toHaveLength(2);
     expect(p1Row.late).toBe(false);
     const p2Row = hostRows.find(
       (r: { projectId: string }) => r.projectId === w.p2.id,
     );
+    expect(p2Row.zone).toBe("PAR2");
     expect(p2Row.quantity).toBe(1);
     expect(p2Row.late).toBe(true);
     expect(p2Row.orderByDate).toBe(day(-9));
@@ -245,6 +255,36 @@ describe("workspace capacity and order plan", () => {
     expect(vmWarning.projectName).toBeTruthy();
     // Sorted by order-by date: the late p2 row comes first.
     expect(rows[0].projectId).toBe(w.p2.id);
+  });
+
+  it("does not group identical planned hosts of different zones", async () => {
+    const w = await setup();
+    const models = await db.select().from(schema.infraModelTable);
+    const model = models.find((m) => m.projectId === w.p1.id);
+    // Two more planned hosts without VMs (no dates): one per zone.
+    for (const zone of ["PAR1", "PAR2"]) {
+      const res = await w.call(
+        w.owner,
+        "POST",
+        `/api/infrastructure/project/${w.p1.id}/hosts`,
+        { modelId: model?.id, region: "PAR", zones: [zone] },
+      );
+      expect(res.status, res.text).toBe(200);
+    }
+    const res = await w.call(w.dcUser, "GET", `${w.dcBase}/capacity`);
+    const undated = res.json.orderPlan.filter(
+      (r: { type: string; projectId: string; needDate: string | null }) =>
+        r.type === "host" && r.projectId === w.p1.id && r.needDate === null,
+    );
+    expect(
+      undated.map((r: { zone: string; quantity: number }) => [
+        r.zone,
+        r.quantity,
+      ]),
+    ).toEqual([
+      ["PAR1", 1],
+      ["PAR2", 1],
+    ]);
   });
 
   it("enforces datacenter:read on the workspace routes", async () => {
@@ -284,6 +324,7 @@ describe("workspace capacity and order plan", () => {
       "Type",
       "Provider",
       "Region",
+      "Zone",
       "Model",
       "Family",
       "RAM (GB)",
@@ -300,6 +341,9 @@ describe("workspace capacity and order plan", () => {
     // 2 host rows (p1 grouped, p2) + 1 storage suggestion.
     expect(sheet?.rowCount).toBe(4);
     expect(sheet?.getRow(2).getCell(1).value).toBeInstanceOf(Date);
-    expect(sheet?.getRow(2).getCell(17).value).toBe("yes");
+    expect(sheet?.getRow(2).getCell(18).value).toBe("yes");
+    // Zone column follows Region; the late p2 row is in PAR2.
+    expect(sheet?.getRow(2).getCell(5).value).toBe("PAR");
+    expect(sheet?.getRow(2).getCell(6).value).toBe("PAR2");
   });
 });
