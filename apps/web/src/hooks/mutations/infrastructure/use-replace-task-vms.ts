@@ -16,7 +16,8 @@ type ReplaceTaskVmsRequest = {
   vms: TaskVmInput[];
 };
 
-function useReplaceTaskVms() {
+// `notifyError: false` leaves the failure to the caller, which words it itself.
+function useReplaceTaskVms({ notifyError = true } = {}) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -32,7 +33,7 @@ function useReplaceTaskVms() {
       void invalidateInfrastructure(queryClient);
     },
     onError: (error) => {
-      toast.error(getInfrastructureErrorMessage(error, t));
+      if (notifyError) toast.error(getInfrastructureErrorMessage(error, t));
     },
   });
 }

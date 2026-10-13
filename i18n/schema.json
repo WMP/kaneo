@@ -575,6 +575,15 @@
 								"dependencyLinkError": {
 									"type": "string"
 								},
+								"infrastructureProjectChanged": {
+									"type": "string"
+								},
+								"infrastructureInvalid": {
+									"type": "string"
+								},
+								"infrastructureSaveError": {
+									"type": "string"
+								},
 								"labels": {
 									"type": "string"
 								},
@@ -692,6 +701,9 @@
 								"dependencies",
 								"removeDependency",
 								"dependencyLinkError",
+								"infrastructureProjectChanged",
+								"infrastructureInvalid",
+								"infrastructureSaveError",
 								"labels",
 								"searchLabels",
 								"noLabelsFound",
