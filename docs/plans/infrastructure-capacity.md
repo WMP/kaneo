@@ -57,6 +57,16 @@ The API checks what the database cannot: a host's region is one of its model's r
 - `POST /project/{projectId}/hosts` takes `quantity` (1 to 50, default 1) and returns the created hosts; each gets the next number of the default label rule. A custom `label` is allowed only with quantity 1.
 - Web: a *Regions* tab on the Datacenter page; region pickers in the model and cluster dialogs; a quantity field when adding hosts in project settings. Infrastructure queries refetch on mount, and host changes also refresh task VM lists, so a deleted host or task never lingers in a view.
 
+## Availability zones (stage 1d, additive migration `<timestamp>_ganttpro_infrastructure_zones`)
+
+A region can have availability zones (for example OVH Paris 3-AZ: PAR1, PAR2, PAR3). Workload hosts sit in one zone; a Ceph cluster serves the whole region.
+
+- `ganttpro_infra_region.zones`: jsonb array of zone codes (same format as region codes, unique in the region, default `[]`). Managed with the region (`datacenter:manage`); removing a zone that a host uses answers 409 `INFRA_ZONE_IN_USE`.
+- `ganttpro_infra_host.zone`: nullable text. In a region with zones a new or moved host needs a zone of that region (400 `INFRA_ZONE_REQUIRED` / `INFRA_ZONE_UNKNOWN`); in a region without zones the zone stays null. Hosts that existed before keep a null zone. The default label uses the zone when there is one: `<model> <ram> GB <zone or region> #<n>`, numbered per model, region and zone.
+- `POST /project/{projectId}/hosts` takes `zones` (array): the hosts of one request are spread over them round-robin, so quantity 3 with PAR1, PAR2, PAR3 gives one host per zone.
+- VM and cluster checks compare regions only, so VMs in PAR1, PAR2 and PAR3 can use one cluster in PAR.
+- Host responses, the order plan and the XLSX carry the zone; identical planned hosts are grouped per zone.
+
 ## Capacity engine and order plan (stage 2)
 
 Pure functions in `apps/api/src/infrastructure/capacity.ts`, no database access, unit tested in `tests/api/infrastructure/`. A VM's **start date** is its task's start date, else its due date, else none (unscheduled). VMs never leave a host, so use is a step function that rises on start dates.
