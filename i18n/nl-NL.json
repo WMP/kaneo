@@ -790,11 +790,17 @@
 					"orderBy": "Bestellen vóór",
 					"ram": "RAM-gebruik (piek)",
 					"vms": "VM's",
-					"localDisk": "Lokale schijf (GB)"
+					"localDisk": "Lokale schijf (GB)",
+					"zone": "Zone"
 				},
 				"quantity": "Aantal",
 				"added_one": "{{count}} host toegevoegd",
-				"added_other": "{{count}} hosts toegevoegd"
+				"added_other": "{{count}} hosts toegevoegd",
+				"zone": "Zone",
+				"zones": "Zones",
+				"zonePlaceholder": "Selecteer een zone",
+				"zonesHint": "Hosts worden op volgorde over de geselecteerde zones verdeeld: 3 hosts en PAR1, PAR2, PAR3 geven één host per zone.",
+				"zonesRequired": "Selecteer ten minste één zone."
 			},
 			"warnings": {
 				"title": "Waarschuwingen",
@@ -824,7 +830,9 @@
 				"clusterRegionMismatch": "Het Ceph-cluster moet in dezelfde regio staan als de host.",
 				"clusterNotInWorkspace": "Het Ceph-cluster hoort niet bij deze werkruimte.",
 				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens.",
-				"regionUnknown": "Deze regio staat niet in de regiocatalogus."
+				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
+				"zoneRequired": "Selecteer een zone voor de host.",
+				"zoneUnknown": "Deze zone hoort niet bij de regio."
 			}
 		},
 		"projectSwitcher": {
@@ -3777,7 +3785,9 @@
 				"saveFailed": "De wijziging kon niet worden opgeslagen.",
 				"deleteFailed": "De post kon niet worden verwijderd.",
 				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
-				"regionCodeTaken": "Er bestaat al een regio met deze code."
+				"regionCodeTaken": "Er bestaat al een regio met deze code.",
+				"zoneInUse": "Een zone die een host gebruikt, kan niet worden verwijderd.",
+				"zoneUnknown": "Deze zone hoort niet bij de regio."
 			},
 			"fields": {
 				"status": "Status",
@@ -3800,7 +3810,8 @@
 				"codingChunks": "Codeerchunks (m)",
 				"fillThreshold": "Vuldrempel (%)",
 				"leadTimeDays": "Levertijd (dagen)",
-				"label": "Label"
+				"label": "Label",
+				"zone": "Zone"
 			},
 			"kind": {
 				"self_managed": "Zelfbeheerd",
@@ -3839,7 +3850,8 @@
 				"ramPeak": "Piekgebruik geheugen",
 				"ramUse": "Geheugengebruik van {{host}}",
 				"vms": "VM's",
-				"warnings": "Hostwaarschuwingen"
+				"warnings": "Hostwaarschuwingen",
+				"allZones": "Alle zones"
 			},
 			"warnings": {
 				"title": "Capaciteitswaarschuwingen",
@@ -3919,7 +3931,15 @@
 				"editAction": "{{code}} bewerken",
 				"deleteAction": "{{code}} verwijderen",
 				"deleteTitle": "Regio {{code}} verwijderen?",
-				"deleteDescription": "De regio wordt uit de catalogus verwijderd. Een regio die door een model, een host of een cluster wordt gebruikt, kan niet worden verwijderd."
+				"deleteDescription": "De regio wordt uit de catalogus verwijderd. Een regio die door een model, een host of een cluster wordt gebruikt, kan niet worden verwijderd.",
+				"zones": "Zones",
+				"zonesLabel": "Beschikbaarheidszones",
+				"zonesHint": "Beschikbaarheidszones van deze regio, bijvoorbeeld PAR1, PAR2, PAR3. Laat leeg voor een regio zonder zones.",
+				"zoneInput": "Zonecode",
+				"addZone": "Zone toevoegen",
+				"removeZone": "Zone {{zone}} verwijderen",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_other": "{{zone}} · {{count}} hosts"
 			}
 		}
 	},

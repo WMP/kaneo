@@ -3,7 +3,7 @@ import { readInfrastructureError } from "@/lib/infrastructure-error";
 
 export type CreateRegionRequest = {
   workspaceId: string;
-  data: { code: string; name: string };
+  data: { code: string; name: string; zones?: string[] };
 };
 
 async function createRegion({ workspaceId, data }: CreateRegionRequest) {

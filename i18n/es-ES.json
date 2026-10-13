@@ -790,12 +790,18 @@
 					"orderBy": "Pedir antes de",
 					"ram": "Uso de RAM (pico)",
 					"vms": "VM",
-					"localDisk": "Disco local (GB)"
+					"localDisk": "Disco local (GB)",
+					"zone": "Zona"
 				},
 				"quantity": "Cantidad",
 				"added_one": "Se añadió {{count}} host",
 				"added_many": "Se añadieron {{count}} de hosts",
-				"added_other": "Se añadieron {{count}} hosts"
+				"added_other": "Se añadieron {{count}} hosts",
+				"zone": "Zona",
+				"zones": "Zonas",
+				"zonePlaceholder": "Selecciona una zona",
+				"zonesHint": "Los hosts se reparten por orden entre las zonas seleccionadas: 3 hosts y PAR1, PAR2, PAR3 dan un host por zona.",
+				"zonesRequired": "Selecciona al menos una zona."
 			},
 			"warnings": {
 				"title": "Avisos",
@@ -825,7 +831,9 @@
 				"clusterRegionMismatch": "El clúster de Ceph debe estar en la misma región que el host.",
 				"clusterNotInWorkspace": "El clúster de Ceph no forma parte de este espacio de trabajo.",
 				"vmNotInTask": "Una VM de la lista no pertenece a esta tarea. Vuelve a cargar la tarea e inténtalo de nuevo.",
-				"regionUnknown": "Esta región no está en el catálogo de regiones."
+				"regionUnknown": "Esta región no está en el catálogo de regiones.",
+				"zoneRequired": "Selecciona una zona para el host.",
+				"zoneUnknown": "Esta zona no pertenece a la región."
 			}
 		},
 		"projectSwitcher": {
@@ -3791,7 +3799,9 @@
 				"saveFailed": "No se pudo guardar el cambio.",
 				"deleteFailed": "No se pudo eliminar el elemento.",
 				"regionUnknown": "Esta región no está en el catálogo de regiones.",
-				"regionCodeTaken": "Ya existe una región con este código."
+				"regionCodeTaken": "Ya existe una región con este código.",
+				"zoneInUse": "No se puede quitar una zona que usa un host.",
+				"zoneUnknown": "Esta zona no pertenece a la región."
 			},
 			"fields": {
 				"status": "Estado",
@@ -3814,7 +3824,8 @@
 				"codingChunks": "Fragmentos de codificación (m)",
 				"fillThreshold": "Umbral de llenado (%)",
 				"leadTimeDays": "Plazo de entrega (días)",
-				"label": "Etiqueta"
+				"label": "Etiqueta",
+				"zone": "Zona"
 			},
 			"kind": {
 				"self_managed": "Autogestionado",
@@ -3853,7 +3864,8 @@
 				"ramPeak": "Uso máximo de memoria",
 				"ramUse": "Uso de memoria de {{host}}",
 				"vms": "VM",
-				"warnings": "Avisos de hosts"
+				"warnings": "Avisos de hosts",
+				"allZones": "Todas las zonas"
 			},
 			"warnings": {
 				"title": "Avisos de capacidad",
@@ -3933,7 +3945,16 @@
 				"editAction": "Editar {{code}}",
 				"deleteAction": "Eliminar {{code}}",
 				"deleteTitle": "¿Eliminar la región {{code}}?",
-				"deleteDescription": "La región se quita del catálogo. No se puede eliminar una región que usa un modelo, un host o un clúster."
+				"deleteDescription": "La región se quita del catálogo. No se puede eliminar una región que usa un modelo, un host o un clúster.",
+				"zones": "Zonas",
+				"zonesLabel": "Zonas de disponibilidad",
+				"zonesHint": "Zonas de disponibilidad de esta región, por ejemplo PAR1, PAR2, PAR3. Déjalo vacío para una región sin zonas.",
+				"zoneInput": "Código de zona",
+				"addZone": "Añadir zona",
+				"removeZone": "Quitar la zona {{zone}}",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_many": "{{zone}} · {{count}} hosts",
+				"zoneHosts_other": "{{zone}} · {{count}} hosts"
 			}
 		}
 	},

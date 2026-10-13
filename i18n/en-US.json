@@ -1468,11 +1468,17 @@
 					"orderBy": "Order by",
 					"ram": "RAM use (peak)",
 					"vms": "VMs",
-					"localDisk": "Local disk (GB)"
+					"localDisk": "Local disk (GB)",
+					"zone": "Zone"
 				},
 				"quantity": "Quantity",
 				"added_one": "Added {{count}} host",
-				"added_other": "Added {{count}} hosts"
+				"added_other": "Added {{count}} hosts",
+				"zone": "Zone",
+				"zones": "Zones",
+				"zonePlaceholder": "Select a zone",
+				"zonesHint": "Hosts are spread over the selected zones in order: 3 hosts and PAR1, PAR2, PAR3 give one host per zone.",
+				"zonesRequired": "Select at least one zone."
 			},
 			"warnings": {
 				"title": "Warnings",
@@ -1502,7 +1508,9 @@
 				"clusterRegionMismatch": "The Ceph cluster must be in the same region as the host.",
 				"clusterNotInWorkspace": "The Ceph cluster is not part of this workspace.",
 				"vmNotInTask": "A VM in the list does not belong to this task. Reload the task and try again.",
-				"regionUnknown": "This region is not in the region catalog."
+				"regionUnknown": "This region is not in the region catalog.",
+				"zoneRequired": "Select a zone for the host.",
+				"zoneUnknown": "This zone does not belong to the region."
 			}
 		},
 		"projectSwitcher": {
@@ -3777,7 +3785,9 @@
 				"saveFailed": "The change could not be saved.",
 				"deleteFailed": "The item could not be deleted.",
 				"regionUnknown": "This region is not in the region catalog.",
-				"regionCodeTaken": "A region with this code already exists."
+				"regionCodeTaken": "A region with this code already exists.",
+				"zoneInUse": "A zone that a host uses cannot be removed.",
+				"zoneUnknown": "This zone does not belong to the region."
 			},
 			"fields": {
 				"status": "Status",
@@ -3800,7 +3810,8 @@
 				"codingChunks": "Coding chunks (m)",
 				"fillThreshold": "Fill threshold (%)",
 				"leadTimeDays": "Lead time (days)",
-				"label": "Label"
+				"label": "Label",
+				"zone": "Zone"
 			},
 			"kind": {
 				"self_managed": "Self-managed",
@@ -3839,7 +3850,8 @@
 				"ramPeak": "Peak memory use",
 				"ramUse": "Memory use of {{host}}",
 				"vms": "VMs",
-				"warnings": "Host warnings"
+				"warnings": "Host warnings",
+				"allZones": "All zones"
 			},
 			"warnings": {
 				"title": "Capacity warnings",
@@ -3919,7 +3931,15 @@
 				"editAction": "Edit {{code}}",
 				"deleteAction": "Delete {{code}}",
 				"deleteTitle": "Delete region {{code}}?",
-				"deleteDescription": "The region is removed from the catalog. A region that a model, a host or a cluster uses cannot be deleted."
+				"deleteDescription": "The region is removed from the catalog. A region that a model, a host or a cluster uses cannot be deleted.",
+				"zones": "Zones",
+				"zonesLabel": "Availability zones",
+				"zonesHint": "Availability zones of this region, for example PAR1, PAR2, PAR3. Leave empty for a region without zones.",
+				"zoneInput": "Zone code",
+				"addZone": "Add zone",
+				"removeZone": "Remove zone {{zone}}",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_other": "{{zone}} · {{count}} hosts"
 			}
 		}
 	},

@@ -34,8 +34,10 @@ import type { InfraHost } from "@/fetchers/infrastructure/get-project-hosts";
 import type { InfraModel } from "@/fetchers/infrastructure/get-project-models";
 import useDeleteProjectHost from "@/hooks/mutations/infrastructure/use-delete-project-host";
 import useUpdateProjectHost from "@/hooks/mutations/infrastructure/use-update-project-host";
+import useProjectRegions from "@/hooks/queries/infrastructure/use-project-regions";
 import { cn } from "@/lib/cn";
 import { formatInfraDate, isBeforeDay } from "@/lib/infrastructure-format";
+import { InfraSelect } from "../infra-select";
 import { NewHostDialog } from "../new-host-dialog";
 import { InfrastructureStatusBadge } from "../status-badge";
 import { UsageBar } from "../usage-bar";
@@ -61,17 +63,31 @@ function RenameHostDialog({
   const { t } = useTranslation();
   const updateHost = useUpdateProjectHost();
   const [label, setLabel] = useState(host.label);
+  const [zone, setZone] = useState<string | null>(host.zone);
   const trimmed = label.trim();
+  const regionsQuery = useProjectRegions(projectId);
+  const regionZones =
+    regionsQuery.data?.find((item) => item.code === host.region)?.zones ?? [];
+  // The zone can change only while the host is planned (the API answers 409
+  // otherwise), and only to a zone of its region.
+  const zoneEditable = host.status === "planned" && regionZones.length > 0;
+  const zoneChanged = zoneEditable && zone !== null && zone !== host.zone;
+  const labelChanged = trimmed !== host.label;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!trimmed || updateHost.isPending) return;
-    if (trimmed === host.label) {
+    if (!labelChanged && !zoneChanged) {
       onClose();
       return;
     }
     updateHost.mutate(
-      { projectId, hostId: host.id, label: trimmed },
+      {
+        projectId,
+        hostId: host.id,
+        ...(labelChanged ? { label: trimmed } : {}),
+        ...(zoneChanged ? { zone } : {}),
+      },
       { onSuccess: onClose },
     );
   };
@@ -90,17 +106,45 @@ function RenameHostDialog({
               {t("settings:projectInfrastructure.hosts.rename")}
             </DialogTitle>
           </DialogHeader>
-          <DialogPanel className="grid gap-2">
-            <Label htmlFor="host-label">
-              {t("settings:projectInfrastructure.hosts.label")}
-            </Label>
-            <Input
-              id="host-label"
-              value={label}
-              maxLength={200}
-              onChange={(event) => setLabel(event.target.value)}
-              autoFocus
-            />
+          <DialogPanel className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="host-label">
+                {t("settings:projectInfrastructure.hosts.label")}
+              </Label>
+              <Input
+                id="host-label"
+                value={label}
+                maxLength={200}
+                onChange={(event) => setLabel(event.target.value)}
+                autoFocus
+              />
+            </div>
+            {zoneEditable ? (
+              <div className="grid gap-2">
+                <Label>{t("settings:projectInfrastructure.hosts.zone")}</Label>
+                <InfraSelect
+                  ariaLabel={t("settings:projectInfrastructure.hosts.zone")}
+                  placeholder={t(
+                    "settings:projectInfrastructure.hosts.zonePlaceholder",
+                  )}
+                  value={zone}
+                  options={regionZones.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                  onChange={setZone}
+                />
+              </div>
+            ) : (
+              host.zone && (
+                <div className="grid gap-1">
+                  <span className="font-medium text-base/4.5 sm:text-sm/4">
+                    {t("settings:projectInfrastructure.hosts.zone")}
+                  </span>
+                  <span className="text-sm">{host.zone}</span>
+                </div>
+              )
+            )}
           </DialogPanel>
           <DialogFooter>
             <Button
@@ -193,6 +237,9 @@ export function HostsTable({
                   {t("settings:projectInfrastructure.hosts.columns.region")}
                 </TableHead>
                 <TableHead>
+                  {t("settings:projectInfrastructure.hosts.columns.zone")}
+                </TableHead>
+                <TableHead>
                   {t("settings:projectInfrastructure.hosts.columns.status")}
                 </TableHead>
                 <TableHead>
@@ -226,6 +273,7 @@ export function HostsTable({
                       {host.model.name} · {host.model.ramGb} GB
                     </TableCell>
                     <TableCell>{host.region}</TableCell>
+                    <TableCell>{host.zone ?? "–"}</TableCell>
                     <TableCell>
                       <InfrastructureStatusBadge status={host.status} />
                     </TableCell>

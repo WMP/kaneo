@@ -1,6 +1,7 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -74,6 +75,7 @@ export function RegionsTab({
               <TableRow>
                 <TableHead>{t("workspace:datacenter.regions.code")}</TableHead>
                 <TableHead>{t("workspace:datacenter.fields.name")}</TableHead>
+                <TableHead>{t("workspace:datacenter.regions.zones")}</TableHead>
                 <TableHead>
                   {t("workspace:datacenter.regions.usedBy")}
                 </TableHead>
@@ -87,6 +89,22 @@ export function RegionsTab({
                   <TableRow key={region.id}>
                     <TableCell className="font-medium">{region.code}</TableCell>
                     <TableCell>{region.name}</TableCell>
+                    <TableCell>
+                      {region.zones.length === 0 ? (
+                        "–"
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {region.zones.map((zone) => (
+                            <Badge key={zone} variant="outline">
+                              {t("workspace:datacenter.regions.zoneHosts", {
+                                zone,
+                                count: region.zoneUsage[zone] ?? 0,
+                              })}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm tabular-nums">
                         <span>
@@ -185,7 +203,7 @@ export function RegionsTab({
               ? updateRegion.mutateAsync({
                   workspaceId,
                   regionId: dialog.region.id,
-                  data: { name: data.name },
+                  data: { name: data.name, zones: data.zones },
                 })
               : createRegion.mutateAsync({ workspaceId, data })
           }

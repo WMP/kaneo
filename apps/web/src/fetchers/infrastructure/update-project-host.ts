@@ -6,6 +6,7 @@ export type UpdateProjectHostRequest = {
   hostId: string;
   label?: string;
   region?: string;
+  zone?: string | null;
 };
 
 async function updateProjectHost({

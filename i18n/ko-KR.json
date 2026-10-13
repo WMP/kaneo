@@ -893,10 +893,16 @@
 					"orderBy": "주문 기한",
 					"ram": "RAM 사용량 (최대)",
 					"vms": "VM",
-					"localDisk": "로컬 디스크 (GB)"
+					"localDisk": "로컬 디스크 (GB)",
+					"zone": "가용 영역"
 				},
 				"quantity": "수량",
-				"added_other": "호스트 {{count}}개를 추가했습니다"
+				"added_other": "호스트 {{count}}개를 추가했습니다",
+				"zone": "가용 영역",
+				"zones": "가용 영역",
+				"zonePlaceholder": "가용 영역 선택",
+				"zonesHint": "호스트는 선택한 가용 영역에 순서대로 분산됩니다. 호스트 3개와 PAR1, PAR2, PAR3을 선택하면 영역마다 호스트가 하나씩 배치됩니다.",
+				"zonesRequired": "가용 영역을 하나 이상 선택하세요."
 			},
 			"warnings": {
 				"title": "경고",
@@ -926,7 +932,9 @@
 				"clusterRegionMismatch": "Ceph 클러스터는 호스트와 같은 리전에 있어야 합니다.",
 				"clusterNotInWorkspace": "Ceph 클러스터가 이 워크스페이스에 속하지 않습니다.",
 				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요.",
-				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다."
+				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
+				"zoneRequired": "호스트의 가용 영역을 선택하세요.",
+				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다."
 			}
 		},
 		"projectSwitcher": {
@@ -3763,7 +3771,9 @@
 				"saveFailed": "변경 사항을 저장하지 못했습니다.",
 				"deleteFailed": "항목을 삭제하지 못했습니다.",
 				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
-				"regionCodeTaken": "이 코드의 리전이 이미 있습니다."
+				"regionCodeTaken": "이 코드의 리전이 이미 있습니다.",
+				"zoneInUse": "호스트가 사용 중인 가용 영역은 제거할 수 없습니다.",
+				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다."
 			},
 			"fields": {
 				"status": "상태",
@@ -3786,7 +3796,8 @@
 				"codingChunks": "코딩 청크 (m)",
 				"fillThreshold": "사용률 임계값 (%)",
 				"leadTimeDays": "리드 타임 (일)",
-				"label": "레이블"
+				"label": "레이블",
+				"zone": "가용 영역"
 			},
 			"kind": {
 				"self_managed": "자체 관리",
@@ -3825,7 +3836,8 @@
 				"ramPeak": "메모리 최대 사용률",
 				"ramUse": "{{host}}의 메모리 사용률",
 				"vms": "VM",
-				"warnings": "호스트 경고"
+				"warnings": "호스트 경고",
+				"allZones": "모든 가용 영역"
 			},
 			"warnings": {
 				"title": "용량 경고",
@@ -3905,7 +3917,14 @@
 				"editAction": "{{code}} 편집",
 				"deleteAction": "{{code}} 삭제",
 				"deleteTitle": "리전 {{code}}을(를) 삭제할까요?",
-				"deleteDescription": "리전이 카탈로그에서 제거됩니다. 모델, 호스트 또는 클러스터에서 사용 중인 리전은 삭제할 수 없습니다."
+				"deleteDescription": "리전이 카탈로그에서 제거됩니다. 모델, 호스트 또는 클러스터에서 사용 중인 리전은 삭제할 수 없습니다.",
+				"zones": "가용 영역",
+				"zonesLabel": "가용 영역",
+				"zonesHint": "이 리전의 가용 영역입니다(예: PAR1, PAR2, PAR3). 가용 영역이 없는 리전이면 비워 두세요.",
+				"zoneInput": "가용 영역 코드",
+				"addZone": "가용 영역 추가",
+				"removeZone": "가용 영역 {{zone}} 제거",
+				"zoneHosts_other": "{{zone}} · 호스트 {{count}}개"
 			}
 		}
 	},

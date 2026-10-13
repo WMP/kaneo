@@ -1129,10 +1129,16 @@
 					"orderBy": "Đặt hàng trước",
 					"ram": "Mức dùng RAM (đỉnh)",
 					"vms": "VM",
-					"localDisk": "Ổ đĩa cục bộ (GB)"
+					"localDisk": "Ổ đĩa cục bộ (GB)",
+					"zone": "Vùng khả dụng"
 				},
 				"quantity": "Số lượng",
-				"added_other": "Đã thêm {{count}} host"
+				"added_other": "Đã thêm {{count}} host",
+				"zone": "Vùng khả dụng",
+				"zones": "Vùng khả dụng",
+				"zonePlaceholder": "Chọn vùng khả dụng",
+				"zonesHint": "Các host được phân bổ lần lượt vào các vùng khả dụng đã chọn: 3 host và PAR1, PAR2, PAR3 cho mỗi vùng một host.",
+				"zonesRequired": "Chọn ít nhất một vùng khả dụng."
 			},
 			"warnings": {
 				"title": "Cảnh báo",
@@ -1162,7 +1168,9 @@
 				"clusterRegionMismatch": "Cụm Ceph phải ở cùng vùng với host.",
 				"clusterNotInWorkspace": "Cụm Ceph không thuộc không gian làm việc này.",
 				"vmNotInTask": "Một VM trong danh sách không thuộc công việc này. Hãy tải lại công việc và thử lại.",
-				"regionUnknown": "Vùng này không có trong danh mục vùng."
+				"regionUnknown": "Vùng này không có trong danh mục vùng.",
+				"zoneRequired": "Chọn vùng khả dụng cho host.",
+				"zoneUnknown": "Vùng khả dụng này không thuộc vùng."
 			}
 		},
 		"projectSwitcher": {
@@ -3763,7 +3771,9 @@
 				"saveFailed": "Không thể lưu thay đổi.",
 				"deleteFailed": "Không thể xóa mục.",
 				"regionUnknown": "Vùng này không có trong danh mục vùng.",
-				"regionCodeTaken": "Đã có vùng với mã này."
+				"regionCodeTaken": "Đã có vùng với mã này.",
+				"zoneInUse": "Không thể xóa vùng khả dụng đang được host sử dụng.",
+				"zoneUnknown": "Vùng khả dụng này không thuộc vùng."
 			},
 			"fields": {
 				"status": "Trạng thái",
@@ -3786,7 +3796,8 @@
 				"codingChunks": "Khối mã hóa (m)",
 				"fillThreshold": "Ngưỡng lấp đầy (%)",
 				"leadTimeDays": "Thời gian giao hàng (ngày)",
-				"label": "Nhãn"
+				"label": "Nhãn",
+				"zone": "Vùng khả dụng"
 			},
 			"kind": {
 				"self_managed": "Tự quản lý",
@@ -3825,7 +3836,8 @@
 				"ramPeak": "Mức dùng bộ nhớ cao nhất",
 				"ramUse": "Mức dùng bộ nhớ của {{host}}",
 				"vms": "Máy ảo",
-				"warnings": "Cảnh báo máy chủ"
+				"warnings": "Cảnh báo máy chủ",
+				"allZones": "Tất cả vùng khả dụng"
 			},
 			"warnings": {
 				"title": "Cảnh báo dung lượng",
@@ -3905,7 +3917,14 @@
 				"editAction": "Sửa {{code}}",
 				"deleteAction": "Xóa {{code}}",
 				"deleteTitle": "Xóa vùng {{code}}?",
-				"deleteDescription": "Vùng sẽ bị gỡ khỏi danh mục. Không thể xóa vùng đang được một mẫu, máy chủ hoặc cụm sử dụng."
+				"deleteDescription": "Vùng sẽ bị gỡ khỏi danh mục. Không thể xóa vùng đang được một mẫu, máy chủ hoặc cụm sử dụng.",
+				"zones": "Vùng khả dụng",
+				"zonesLabel": "Vùng khả dụng",
+				"zonesHint": "Các vùng khả dụng của vùng này, ví dụ PAR1, PAR2, PAR3. Để trống nếu vùng không có vùng khả dụng.",
+				"zoneInput": "Mã vùng khả dụng",
+				"addZone": "Thêm vùng khả dụng",
+				"removeZone": "Xóa vùng khả dụng {{zone}}",
+				"zoneHosts_other": "{{zone}} · {{count}} host"
 			}
 		}
 	},

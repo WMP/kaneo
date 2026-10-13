@@ -766,7 +766,9 @@
 				"saveFailed": "Nie udało się zapisać zmiany.",
 				"deleteFailed": "Nie udało się usunąć pozycji.",
 				"regionUnknown": "Tego regionu nie ma w katalogu regionów.",
-				"regionCodeTaken": "Region o tym kodzie już istnieje."
+				"regionCodeTaken": "Region o tym kodzie już istnieje.",
+				"zoneInUse": "Strefy używanej przez host nie można usunąć.",
+				"zoneUnknown": "Ta strefa nie należy do regionu."
 			},
 			"fields": {
 				"status": "Status",
@@ -789,7 +791,8 @@
 				"codingChunks": "Fragmenty kodujące (m)",
 				"fillThreshold": "Próg zapełnienia (%)",
 				"leadTimeDays": "Czas realizacji (dni)",
-				"label": "Etykieta"
+				"label": "Etykieta",
+				"zone": "Strefa"
 			},
 			"kind": {
 				"self_managed": "Własny (self-managed)",
@@ -828,7 +831,8 @@
 				"ramPeak": "Szczytowe użycie pamięci",
 				"ramUse": "Użycie pamięci hosta {{host}}",
 				"vms": "Maszyny wirtualne",
-				"warnings": "Ostrzeżenia dotyczące hostów"
+				"warnings": "Ostrzeżenia dotyczące hostów",
+				"allZones": "Wszystkie strefy"
 			},
 			"warnings": {
 				"title": "Ostrzeżenia o pojemności",
@@ -908,7 +912,17 @@
 				"editAction": "Edytuj {{code}}",
 				"deleteAction": "Usuń {{code}}",
 				"deleteTitle": "Usunąć region {{code}}?",
-				"deleteDescription": "Region zostanie usunięty z katalogu. Nie można usunąć regionu używanego przez model, host lub klaster."
+				"deleteDescription": "Region zostanie usunięty z katalogu. Nie można usunąć regionu używanego przez model, host lub klaster.",
+				"zones": "Strefy",
+				"zonesLabel": "Strefy dostępności",
+				"zonesHint": "Strefy dostępności tego regionu, na przykład PAR1, PAR2, PAR3. Zostaw puste dla regionu bez stref.",
+				"zoneInput": "Kod strefy",
+				"addZone": "Dodaj strefę",
+				"removeZone": "Usuń strefę {{zone}}",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_few": "{{zone}} · {{count}} hosty",
+				"zoneHosts_many": "{{zone}} · {{count}} hostów",
+				"zoneHosts_other": "{{zone}} · {{count}} hosta"
 			}
 		}
 	},
@@ -1977,13 +1991,19 @@
 					"orderBy": "Zamówić do",
 					"ram": "Użycie RAM (szczyt)",
 					"vms": "VM",
-					"localDisk": "Dysk lokalny (GB)"
+					"localDisk": "Dysk lokalny (GB)",
+					"zone": "Strefa"
 				},
 				"quantity": "Liczba",
 				"added_one": "Dodano {{count}} host",
 				"added_few": "Dodano {{count}} hosty",
 				"added_many": "Dodano {{count}} hostów",
-				"added_other": "Dodano {{count}} hosta"
+				"added_other": "Dodano {{count}} hosta",
+				"zone": "Strefa",
+				"zones": "Strefy",
+				"zonePlaceholder": "Wybierz strefę",
+				"zonesHint": "Hosty są rozkładane po wybranych strefach po kolei: 3 hosty i PAR1, PAR2, PAR3 dają po jednym hoście w każdej strefie.",
+				"zonesRequired": "Wybierz co najmniej jedną strefę."
 			},
 			"warnings": {
 				"title": "Ostrzeżenia",
@@ -2013,7 +2033,9 @@
 				"clusterRegionMismatch": "Klaster Ceph musi znajdować się w tym samym regionie co host.",
 				"clusterNotInWorkspace": "Klaster Ceph nie należy do tej przestrzeni roboczej.",
 				"vmNotInTask": "Jedna z VM na liście nie należy do tego zadania. Wczytaj zadanie ponownie i spróbuj jeszcze raz.",
-				"regionUnknown": "Tego regionu nie ma w katalogu regionów."
+				"regionUnknown": "Tego regionu nie ma w katalogu regionów.",
+				"zoneRequired": "Wybierz strefę dla hosta.",
+				"zoneUnknown": "Ta strefa nie należy do regionu."
 			}
 		},
 		"repositoryBrowser": {

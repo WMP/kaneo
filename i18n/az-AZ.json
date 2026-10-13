@@ -1130,11 +1130,17 @@
 					"orderBy": "Bu tarixə qədər sifariş et",
 					"ram": "RAM istifadəsi (pik)",
 					"vms": "VM",
-					"localDisk": "Lokal disk (GB)"
+					"localDisk": "Lokal disk (GB)",
+					"zone": "Zona"
 				},
 				"quantity": "Say",
 				"added_one": "{{count}} host əlavə edildi",
-				"added_other": "{{count}} host əlavə edildi"
+				"added_other": "{{count}} host əlavə edildi",
+				"zone": "Zona",
+				"zones": "Zonalar",
+				"zonePlaceholder": "Zona seçin",
+				"zonesHint": "Hostlar seçilmiş zonalar üzrə ardıcıllıqla bölüşdürülür: 3 host və PAR1, PAR2, PAR3 hər zonada bir host verir.",
+				"zonesRequired": "Ən azı bir zona seçin."
 			},
 			"warnings": {
 				"title": "Xəbərdarlıqlar",
@@ -1164,7 +1170,9 @@
 				"clusterRegionMismatch": "Ceph klasteri host ilə eyni regionda olmalıdır.",
 				"clusterNotInWorkspace": "Ceph klasteri bu iş sahəsinə aid deyil.",
 				"vmNotInTask": "Siyahıdakı bir VM bu tapşırığa aid deyil. Tapşırığı yenidən yükləyin və təkrar cəhd edin.",
-				"regionUnknown": "Bu region region kataloqunda yoxdur."
+				"regionUnknown": "Bu region region kataloqunda yoxdur.",
+				"zoneRequired": "Host üçün zona seçin.",
+				"zoneUnknown": "Bu zona regiona aid deyil."
 			}
 		},
 		"projectSwitcher": {
@@ -3777,7 +3785,9 @@
 				"saveFailed": "Dəyişiklik yadda saxlanıla bilmədi.",
 				"deleteFailed": "Mövqe silinə bilmədi.",
 				"regionUnknown": "Bu region region kataloqunda yoxdur.",
-				"regionCodeTaken": "Bu kodlu region artıq mövcuddur."
+				"regionCodeTaken": "Bu kodlu region artıq mövcuddur.",
+				"zoneInUse": "Hostun istifadə etdiyi zona silinə bilməz.",
+				"zoneUnknown": "Bu zona regiona aid deyil."
 			},
 			"fields": {
 				"status": "Status",
@@ -3800,7 +3810,8 @@
 				"codingChunks": "Kodlama hissələri (m)",
 				"fillThreshold": "Dolma həddi (%)",
 				"leadTimeDays": "Çatdırılma müddəti (gün)",
-				"label": "Etiket"
+				"label": "Etiket",
+				"zone": "Zona"
 			},
 			"kind": {
 				"self_managed": "Özü idarə olunan",
@@ -3839,7 +3850,8 @@
 				"ramPeak": "Yaddaşın pik istifadəsi",
 				"ramUse": "{{host}} hostunun yaddaş istifadəsi",
 				"vms": "Virtual maşınlar",
-				"warnings": "Host xəbərdarlıqları"
+				"warnings": "Host xəbərdarlıqları",
+				"allZones": "Bütün zonalar"
 			},
 			"warnings": {
 				"title": "Tutum xəbərdarlıqları",
@@ -3919,7 +3931,15 @@
 				"editAction": "{{code}} redaktə et",
 				"deleteAction": "{{code}} sil",
 				"deleteTitle": "{{code}} regionu silinsin?",
-				"deleteDescription": "Region kataloqdan silinəcək. Model, host və ya klaster tərəfindən istifadə olunan region silinə bilməz."
+				"deleteDescription": "Region kataloqdan silinəcək. Model, host və ya klaster tərəfindən istifadə olunan region silinə bilməz.",
+				"zones": "Zonalar",
+				"zonesLabel": "Əlçatanlıq zonaları",
+				"zonesHint": "Bu regionun əlçatanlıq zonaları, məsələn, PAR1, PAR2, PAR3. Zonası olmayan region üçün boş buraxın.",
+				"zoneInput": "Zona kodu",
+				"addZone": "Zona əlavə et",
+				"removeZone": "{{zone}} zonasını sil",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_other": "{{zone}} · {{count}} host"
 			}
 		}
 	},

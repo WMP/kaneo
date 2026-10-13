@@ -17,6 +17,7 @@ import getProjectCapacity from "@/fetchers/infrastructure/get-project-capacity";
 import getProjectHosts from "@/fetchers/infrastructure/get-project-hosts";
 import getProjectModels from "@/fetchers/infrastructure/get-project-models";
 import getProjectRegions from "@/fetchers/infrastructure/get-project-regions";
+import updateProjectHost from "@/fetchers/infrastructure/update-project-host";
 import { toast } from "@/lib/toast";
 import { ProjectInfrastructurePage } from "./project-infrastructure-page";
 
@@ -42,6 +43,9 @@ vi.mock("@/fetchers/infrastructure/delete-project-model", () => ({
   default: vi.fn(),
 }));
 vi.mock("@/fetchers/infrastructure/delete-project-host", () => ({
+  default: vi.fn(),
+}));
+vi.mock("@/fetchers/infrastructure/update-project-host", () => ({
   default: vi.fn(),
 }));
 
@@ -117,6 +121,7 @@ const baseHost = {
   projectId: "project-1",
   modelId: "model-1",
   hostname: null,
+  zone: null,
   model,
   totals: { vmCount: 3, vcpu: 24, ramGb: 180, localStorageGb: 300 },
 };
@@ -488,5 +493,181 @@ describe("project infrastructure settings", () => {
         "settings:projectInfrastructure.hosts.added 3",
       ),
     );
+  });
+  describe("availability zones", () => {
+    const zonedRegions = [
+      { code: "GRA", name: "Gravelines", zones: [] },
+      { code: "PAR", name: "Paris", zones: ["PAR1", "PAR2", "PAR3"] },
+    ];
+
+    async function openAddDialog() {
+      renderPage();
+      await screen.findByText("58%");
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "settings:projectInfrastructure.hosts.add",
+        }),
+      );
+      const dialog = await screen.findByRole("dialog");
+      fireEvent.change(
+        within(dialog).getByLabelText(
+          "settings:projectInfrastructure.hosts.newModel",
+        ),
+        { target: { value: "model-1" } },
+      );
+      return dialog;
+    }
+
+    it("shows zone checkboxes only for a zoned region and requires one", async () => {
+      vi.mocked(getProjectRegions).mockResolvedValue(zonedRegions);
+      vi.mocked(createProjectHost).mockResolvedValue({
+        hosts: [plannedHost],
+      } as never);
+      const dialog = await openAddDialog();
+      const regionSelect = within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.newRegion",
+      );
+      const submit = within(dialog).getByRole("button", {
+        name: "settings:projectInfrastructure.hosts.add",
+      });
+
+      // A region without zones shows no zone control.
+      fireEvent.change(regionSelect, { target: { value: "GRA" } });
+      expect(within(dialog).queryByRole("checkbox")).toBeNull();
+      expect(submit).toBeEnabled();
+
+      fireEvent.change(regionSelect, { target: { value: "PAR" } });
+      const checkboxes = await within(dialog).findAllByRole("checkbox");
+      expect(checkboxes.map((box) => box.getAttribute("aria-checked"))).toEqual(
+        ["false", "false", "false"],
+      );
+      expect(
+        within(dialog).getByText(
+          "settings:projectInfrastructure.hosts.zonesHint",
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(dialog).getByText(
+          "settings:projectInfrastructure.hosts.zonesRequired",
+        ),
+      ).toBeInTheDocument();
+      expect(submit).toBeDisabled();
+
+      // Zones are sent in the order shown, whatever order they were ticked in.
+      fireEvent.click(within(dialog).getByRole("checkbox", { name: "PAR3" }));
+      fireEvent.click(within(dialog).getByRole("checkbox", { name: "PAR1" }));
+      expect(submit).toBeEnabled();
+      fireEvent.change(
+        within(dialog).getByLabelText(
+          "settings:projectInfrastructure.hosts.quantity",
+        ),
+        { target: { value: "4" } },
+      );
+      fireEvent.click(submit);
+
+      await waitFor(() =>
+        expect(createProjectHost).toHaveBeenCalledWith({
+          projectId: "project-1",
+          modelId: "model-1",
+          region: "PAR",
+          quantity: 4,
+          zones: ["PAR1", "PAR3"],
+        }),
+      );
+    });
+
+    it("clears the chosen zones when the region changes", async () => {
+      vi.mocked(getProjectRegions).mockResolvedValue(zonedRegions);
+      const dialog = await openAddDialog();
+      const regionSelect = within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.newRegion",
+      );
+      fireEvent.change(regionSelect, { target: { value: "PAR" } });
+      fireEvent.click(
+        await within(dialog).findByRole("checkbox", { name: "PAR2" }),
+      );
+      fireEvent.change(regionSelect, { target: { value: "GRA" } });
+      fireEvent.change(regionSelect, { target: { value: "PAR" } });
+      expect(
+        (
+          await within(dialog).findByRole("checkbox", { name: "PAR2" })
+        ).getAttribute("aria-checked"),
+      ).toBe("false");
+    });
+
+    it("shows the zone of each host, a dash when it has none", async () => {
+      vi.mocked(getProjectHosts).mockResolvedValue([
+        { ...plannedHost, zone: "PAR2" },
+        installedHost,
+      ] as never);
+      renderPage();
+      await screen.findByText("58%");
+      const headers = screen
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent);
+      const zoneIndex = headers.indexOf(
+        "settings:projectInfrastructure.hosts.columns.zone",
+      );
+      expect(zoneIndex).toBe(
+        headers.indexOf("settings:projectInfrastructure.hosts.columns.region") +
+          1,
+      );
+      const zoneOf = (label: string) =>
+        (screen.getByText(label).closest("tr") as HTMLElement).querySelectorAll(
+          "td",
+        )[zoneIndex].textContent;
+      expect(zoneOf("SCALE-1")).toBe("PAR2");
+      expect(zoneOf("SCALE-2")).toBe("–");
+    });
+
+    it("changes the zone of a planned host and shows it read-only otherwise", async () => {
+      vi.mocked(getProjectRegions).mockResolvedValue(zonedRegions);
+      vi.mocked(getProjectHosts).mockResolvedValue([
+        { ...plannedHost, zone: "PAR1" },
+        { ...installedHost, region: "PAR", zone: "PAR3" },
+      ] as never);
+      vi.mocked(updateProjectHost).mockResolvedValue(plannedHost as never);
+      renderPage();
+      await screen.findByText("58%");
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "settings:projectInfrastructure.hosts.renameAction SCALE-1",
+        }),
+      );
+      let dialog = await screen.findByRole("dialog");
+      const zoneSelect = await within(dialog).findByLabelText(
+        "settings:projectInfrastructure.hosts.zone",
+      );
+      expect(zoneSelect).toHaveValue("PAR1");
+      fireEvent.change(zoneSelect, { target: { value: "PAR2" } });
+      fireEvent.click(
+        within(dialog).getByRole("button", {
+          name: "settings:projectInfrastructure.save",
+        }),
+      );
+      await waitFor(() =>
+        expect(updateProjectHost).toHaveBeenCalledWith({
+          projectId: "project-1",
+          hostId: "host-planned",
+          zone: "PAR2",
+        }),
+      );
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+      // An installed host keeps its zone: shown as text, not editable.
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "settings:projectInfrastructure.hosts.renameAction SCALE-2",
+        }),
+      );
+      dialog = await screen.findByRole("dialog");
+      expect(
+        within(dialog).queryByLabelText(
+          "settings:projectInfrastructure.hosts.zone",
+        ),
+      ).toBeNull();
+      expect(within(dialog).getByText("PAR3")).toBeInTheDocument();
+    });
   });
 });

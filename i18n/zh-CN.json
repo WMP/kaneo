@@ -1129,10 +1129,16 @@
 					"orderBy": "最迟订购日期",
 					"ram": "内存使用率（峰值）",
 					"vms": "VM",
-					"localDisk": "本地磁盘 (GB)"
+					"localDisk": "本地磁盘 (GB)",
+					"zone": "可用区"
 				},
 				"quantity": "数量",
-				"added_other": "已添加 {{count}} 台主机"
+				"added_other": "已添加 {{count}} 台主机",
+				"zone": "可用区",
+				"zones": "可用区",
+				"zonePlaceholder": "选择可用区",
+				"zonesHint": "主机会按顺序分布到所选可用区:3 台主机和 PAR1、PAR2、PAR3 会在每个可用区放置一台主机。",
+				"zonesRequired": "请至少选择一个可用区。"
 			},
 			"warnings": {
 				"title": "警告",
@@ -1162,7 +1168,9 @@
 				"clusterRegionMismatch": "Ceph 集群必须与主机位于同一区域。",
 				"clusterNotInWorkspace": "该 Ceph 集群不属于此工作区。",
 				"vmNotInTask": "列表中有一台 VM 不属于此任务。请重新加载任务后重试。",
-				"regionUnknown": "此区域不在区域目录中。"
+				"regionUnknown": "此区域不在区域目录中。",
+				"zoneRequired": "请为主机选择可用区。",
+				"zoneUnknown": "该可用区不属于此区域。"
 			}
 		},
 		"projectSwitcher": {
@@ -3763,7 +3771,9 @@
 				"saveFailed": "无法保存更改。",
 				"deleteFailed": "无法删除该项目。",
 				"regionUnknown": "此区域不在区域目录中。",
-				"regionCodeTaken": "已存在使用此代码的区域。"
+				"regionCodeTaken": "已存在使用此代码的区域。",
+				"zoneInUse": "主机正在使用的可用区无法移除。",
+				"zoneUnknown": "该可用区不属于此区域。"
 			},
 			"fields": {
 				"status": "状态",
@@ -3786,7 +3796,8 @@
 				"codingChunks": "编码块 (m)",
 				"fillThreshold": "填充阈值 (%)",
 				"leadTimeDays": "交付周期（天）",
-				"label": "标签"
+				"label": "标签",
+				"zone": "可用区"
 			},
 			"kind": {
 				"self_managed": "自行管理",
@@ -3825,7 +3836,8 @@
 				"ramPeak": "内存使用峰值",
 				"ramUse": "{{host}} 的内存使用率",
 				"vms": "虚拟机",
-				"warnings": "主机警告"
+				"warnings": "主机警告",
+				"allZones": "所有可用区"
 			},
 			"warnings": {
 				"title": "容量警告",
@@ -3905,7 +3917,14 @@
 				"editAction": "编辑 {{code}}",
 				"deleteAction": "删除 {{code}}",
 				"deleteTitle": "删除区域 {{code}}？",
-				"deleteDescription": "该区域将从目录中移除。被模型、主机或集群使用的区域无法删除。"
+				"deleteDescription": "该区域将从目录中移除。被模型、主机或集群使用的区域无法删除。",
+				"zones": "可用区",
+				"zonesLabel": "可用区",
+				"zonesHint": "此区域的可用区,例如 PAR1、PAR2、PAR3。没有可用区的区域请留空。",
+				"zoneInput": "可用区代码",
+				"addZone": "添加可用区",
+				"removeZone": "移除可用区 {{zone}}",
+				"zoneHosts_other": "{{zone}} · {{count}} 台主机"
 			}
 		}
 	},

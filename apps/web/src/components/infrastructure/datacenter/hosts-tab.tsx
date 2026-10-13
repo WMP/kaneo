@@ -36,6 +36,7 @@ export function HostsTab({
   const hostStatus = useSetHostStatus();
   const [project, setProject] = useState(ALL);
   const [region, setRegion] = useState(ALL);
+  const [zone, setZone] = useState(ALL);
   const [statusFilter, setStatusFilter] = useState(ALL);
   const [editing, setEditing] = useState<DatacenterHost | null>(null);
 
@@ -64,10 +65,19 @@ export function HostsTab({
     [hosts],
   );
 
+  const zones = useMemo(
+    () =>
+      [
+        ...new Set(hosts.flatMap((host) => (host.zone ? [host.zone] : []))),
+      ].sort(),
+    [hosts],
+  );
+
   const visible = hosts.filter(
     (host) =>
       (project === ALL || host.projectName === project) &&
       (region === ALL || host.region === region) &&
+      (zone === ALL || host.zone === zone) &&
       (statusFilter === ALL || host.status === statusFilter),
   );
   const visibleIds = new Set(visible.map((host) => host.id));
@@ -101,6 +111,16 @@ export function HostsTab({
         />
         <DcSelect
           className="w-full sm:w-52"
+          ariaLabel={t("workspace:datacenter.fields.zone")}
+          value={zone}
+          onChange={setZone}
+          options={[
+            { value: ALL, label: t("workspace:datacenter.hosts.allZones") },
+            ...zones.map((value) => ({ value, label: value })),
+          ]}
+        />
+        <DcSelect
+          className="w-full sm:w-52"
           ariaLabel={t("workspace:datacenter.fields.status")}
           value={statusFilter}
           onChange={setStatusFilter}
@@ -129,6 +149,7 @@ export function HostsTab({
                 <TableHead>{t("workspace:datacenter.hosts.host")}</TableHead>
                 <TableHead>{t("workspace:datacenter.fields.model")}</TableHead>
                 <TableHead>{t("workspace:datacenter.fields.region")}</TableHead>
+                <TableHead>{t("workspace:datacenter.fields.zone")}</TableHead>
                 <TableHead>{t("workspace:datacenter.fields.status")}</TableHead>
                 <TableHead>
                   {t("workspace:datacenter.fields.availableFrom")}
@@ -161,6 +182,7 @@ export function HostsTab({
                       {formatNumber(host.model.ramGb, locale)} GB
                     </TableCell>
                     <TableCell>{host.region}</TableCell>
+                    <TableCell>{host.zone ?? dash}</TableCell>
                     <TableCell>
                       <InfrastructureStatusBadge status={host.status} />
                     </TableCell>

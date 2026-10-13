@@ -893,12 +893,18 @@
 					"orderBy": "Commander avant",
 					"ram": "Utilisation de la RAM (pic)",
 					"vms": "VM",
-					"localDisk": "Disque local (Go)"
+					"localDisk": "Disque local (Go)",
+					"zone": "Zone"
 				},
 				"quantity": "Quantité",
 				"added_one": "{{count}} hôte ajouté",
 				"added_many": "{{count}} d'hôtes ajoutés",
-				"added_other": "{{count}} hôtes ajoutés"
+				"added_other": "{{count}} hôtes ajoutés",
+				"zone": "Zone",
+				"zones": "Zones",
+				"zonePlaceholder": "Sélectionner une zone",
+				"zonesHint": "Les hôtes sont répartis dans l'ordre sur les zones sélectionnées : 3 hôtes et PAR1, PAR2, PAR3 donnent un hôte par zone.",
+				"zonesRequired": "Sélectionnez au moins une zone."
 			},
 			"warnings": {
 				"title": "Alertes",
@@ -928,7 +934,9 @@
 				"clusterRegionMismatch": "Le cluster Ceph doit se trouver dans la même région que l'hôte.",
 				"clusterNotInWorkspace": "Le cluster Ceph ne fait pas partie de cet espace de travail.",
 				"vmNotInTask": "Une VM de la liste n'appartient pas à cette tâche. Rechargez la tâche et réessayez.",
-				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions."
+				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions.",
+				"zoneRequired": "Sélectionnez une zone pour l'hôte.",
+				"zoneUnknown": "Cette zone n'appartient pas à la région."
 			}
 		},
 		"projectSwitcher": {
@@ -3791,7 +3799,9 @@
 				"saveFailed": "Impossible d'enregistrer la modification.",
 				"deleteFailed": "Impossible de supprimer l'élément.",
 				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions.",
-				"regionCodeTaken": "Une région avec ce code existe déjà."
+				"regionCodeTaken": "Une région avec ce code existe déjà.",
+				"zoneInUse": "Une zone utilisée par un hôte ne peut pas être supprimée.",
+				"zoneUnknown": "Cette zone n'appartient pas à la région."
 			},
 			"fields": {
 				"status": "Statut",
@@ -3814,7 +3824,8 @@
 				"codingChunks": "Fragments de codage (m)",
 				"fillThreshold": "Seuil de remplissage (%)",
 				"leadTimeDays": "Délai de livraison (jours)",
-				"label": "Libellé"
+				"label": "Libellé",
+				"zone": "Zone"
 			},
 			"kind": {
 				"self_managed": "Auto-géré",
@@ -3853,7 +3864,8 @@
 				"ramPeak": "Pic d'utilisation de la mémoire",
 				"ramUse": "Utilisation de la mémoire de {{host}}",
 				"vms": "VM",
-				"warnings": "Alertes des hôtes"
+				"warnings": "Alertes des hôtes",
+				"allZones": "Toutes les zones"
 			},
 			"warnings": {
 				"title": "Alertes de capacité",
@@ -3933,7 +3945,16 @@
 				"editAction": "Modifier {{code}}",
 				"deleteAction": "Supprimer {{code}}",
 				"deleteTitle": "Supprimer la région {{code}} ?",
-				"deleteDescription": "La région est retirée du catalogue. Une région utilisée par un modèle, un hôte ou un cluster ne peut pas être supprimée."
+				"deleteDescription": "La région est retirée du catalogue. Une région utilisée par un modèle, un hôte ou un cluster ne peut pas être supprimée.",
+				"zones": "Zones",
+				"zonesLabel": "Zones de disponibilité",
+				"zonesHint": "Zones de disponibilité de cette région, par exemple PAR1, PAR2, PAR3. Laissez vide pour une région sans zones.",
+				"zoneInput": "Code de la zone",
+				"addZone": "Ajouter une zone",
+				"removeZone": "Supprimer la zone {{zone}}",
+				"zoneHosts_one": "{{zone}} · {{count}} hôte",
+				"zoneHosts_many": "{{zone}} · {{count}} hôtes",
+				"zoneHosts_other": "{{zone}} · {{count}} hôtes"
 			}
 		}
 	},

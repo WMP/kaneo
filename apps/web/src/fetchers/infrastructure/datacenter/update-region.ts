@@ -4,7 +4,7 @@ import { readInfrastructureError } from "@/lib/infrastructure-error";
 export type UpdateRegionRequest = {
   workspaceId: string;
   regionId: string;
-  data: { name?: string; position?: number };
+  data: { name?: string; position?: number; zones?: string[] };
 };
 
 async function updateRegion({

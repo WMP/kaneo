@@ -13,6 +13,7 @@ import createProjectHost from "@/fetchers/infrastructure/create-project-host";
 import getProjectCapacity from "@/fetchers/infrastructure/get-project-capacity";
 import getProjectHosts from "@/fetchers/infrastructure/get-project-hosts";
 import getProjectModels from "@/fetchers/infrastructure/get-project-models";
+import getProjectRegions from "@/fetchers/infrastructure/get-project-regions";
 import getProjectStorageClusters from "@/fetchers/infrastructure/get-project-storage-clusters";
 import getTaskVms from "@/fetchers/infrastructure/get-task-vms";
 import replaceTaskVms from "@/fetchers/infrastructure/replace-task-vms";
@@ -24,6 +25,9 @@ vi.mock("@/fetchers/infrastructure/get-project-hosts", () => ({
   default: vi.fn(),
 }));
 vi.mock("@/fetchers/infrastructure/get-project-models", () => ({
+  default: vi.fn(),
+}));
+vi.mock("@/fetchers/infrastructure/get-project-regions", () => ({
   default: vi.fn(),
 }));
 vi.mock("@/fetchers/infrastructure/get-project-capacity", () => ({
@@ -169,6 +173,10 @@ beforeEach(() => {
     { id: "cl-gra", name: "ceph-gra", region: "GRA", kind: "managed_service" },
   ] as never);
   vi.mocked(getProjectCapacity).mockResolvedValue(capacity as never);
+  vi.mocked(getProjectRegions).mockResolvedValue([
+    { code: "PAR", name: "Paris", zones: [] },
+    { code: "GRA", name: "Gravelines", zones: [] },
+  ]);
   vi.mocked(getProjectModels).mockResolvedValue([
     {
       id: "model-1",
@@ -438,6 +446,92 @@ describe("task infrastructure section", () => {
         vms: [expect.objectContaining({ id: "vm-1", hostId: "host-new" })],
       }),
     );
+  });
+
+  it("requires a zone for 'New host...' in a zoned region and sends it", async () => {
+    vi.mocked(getProjectRegions).mockResolvedValue([
+      { code: "PAR", name: "Paris", zones: [] },
+      { code: "GRA", name: "Gravelines", zones: ["GRA1", "GRA2"] },
+    ]);
+    vi.mocked(createProjectHost).mockResolvedValue({
+      hosts: [
+        { ...host("host-new", "SCALE 256 GB GRA2 #1", "GRA"), zone: "GRA2" },
+      ],
+    } as never);
+    renderSection();
+    await screen.findByDisplayValue("billing-db-1");
+    fireEvent.change(
+      screen.getByLabelText("tasks:infrastructure.columns.host"),
+      { target: { value: "__new_host__" } },
+    );
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(
+      within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.newModel",
+      ),
+      { target: { value: "model-1" } },
+    );
+    const regionSelect = within(dialog).getByLabelText(
+      "settings:projectInfrastructure.hosts.newRegion",
+    );
+    const submit = within(dialog).getByRole("button", {
+      name: "settings:projectInfrastructure.hosts.add",
+    });
+
+    // PAR has no zones: no zone control, nothing sent.
+    fireEvent.change(regionSelect, { target: { value: "PAR" } });
+    expect(
+      within(dialog).queryByLabelText(
+        "settings:projectInfrastructure.hosts.zone",
+      ),
+    ).toBeNull();
+    expect(submit).toBeEnabled();
+
+    // One host: a single select, not checkboxes, and it is required.
+    fireEvent.change(regionSelect, { target: { value: "GRA" } });
+    const zoneSelect = await within(dialog).findByLabelText(
+      "settings:projectInfrastructure.hosts.zone",
+    );
+    expect(within(dialog).queryByRole("checkbox")).toBeNull();
+    expect(submit).toBeDisabled();
+    fireEvent.change(zoneSelect, { target: { value: "GRA2" } });
+    expect(submit).toBeEnabled();
+    fireEvent.click(submit);
+
+    await waitFor(() =>
+      expect(createProjectHost).toHaveBeenCalledWith({
+        projectId: "project-1",
+        modelId: "model-1",
+        region: "GRA",
+        zones: ["GRA2"],
+      }),
+    );
+  });
+
+  it("appends the zone to the region part of a host option", async () => {
+    vi.mocked(getProjectHosts).mockResolvedValue([
+      host("host-1", "SCALE-1", "PAR"),
+      { ...host("host-3", "SCALE 256 GB PAR2 #1", "PAR"), zone: "PAR2" },
+    ] as never);
+    renderSection();
+    await screen.findByDisplayValue("billing-db-1");
+    const options = within(
+      screen.getByLabelText("tasks:infrastructure.columns.host"),
+    )
+      .getAllByRole("option")
+      .map((option) => option.textContent ?? "");
+    expect(
+      options.some((text) =>
+        text.startsWith(
+          "tasks:infrastructure.hostOption SCALE 256 GB PAR2 #1 PAR / PAR2 ",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      options.some((text) =>
+        text.startsWith("tasks:infrastructure.hostOption SCALE-1 PAR common"),
+      ),
+    ).toBe(true);
   });
 
   it("reports a failed save and keeps the edits", async () => {

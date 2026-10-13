@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import type { InfraHost } from "@/fetchers/infrastructure/get-project-hosts";
 import type { InfraModel } from "@/fetchers/infrastructure/get-project-models";
 import useCreateProjectHost from "@/hooks/mutations/infrastructure/use-create-project-host";
+import useProjectRegions from "@/hooks/queries/infrastructure/use-project-regions";
 import { toast } from "@/lib/toast";
 import { InfraSelect } from "./infra-select";
 
@@ -53,16 +55,35 @@ export function NewHostDialog({
   const [modelId, setModelId] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
   const [quantityText, setQuantityText] = useState("1");
+  // Zones chosen for the hosts (checkboxes with a quantity) or the single zone
+  // of one host (a select); both reset when the region changes.
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const quantity = allowQuantity ? parseQuantity(quantityText) : 1;
 
   const model = models.find((item) => item.id === modelId);
   const regions = model?.regions ?? [];
+  const regionsQuery = useProjectRegions(projectId, open);
+  const regionZones =
+    regionsQuery.data?.find((item) => item.code === region)?.zones ?? [];
+  const zoned = regionZones.length > 0;
+  // Sent in the order shown, which is the order the hosts are spread in.
+  const zones = regionZones.filter((zone) => selectedZones.includes(zone));
+  // The zones of the region are unknown until the region list has loaded (a
+  // failed load is left to the API), and a zoned region needs a zone.
+  const zonesReady = !region || !regionsQuery.isPending;
+  const zonesValid = !zoned || zones.length > 0;
+
+  const chooseRegion = (next: string | null) => {
+    setRegion(next);
+    setSelectedZones([]);
+  };
 
   const handleOpenChange = (next: boolean) => {
     if (createHost.isPending) return;
     if (!next) {
       setModelId(null);
       setRegion(null);
+      setSelectedZones([]);
       setQuantityText("1");
     }
     onOpenChange(next);
@@ -70,14 +91,28 @@ export function NewHostDialog({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!modelId || !region || quantity === null || createHost.isPending)
+    if (
+      !modelId ||
+      !region ||
+      quantity === null ||
+      !zonesReady ||
+      !zonesValid ||
+      createHost.isPending
+    )
       return;
     createHost.mutate(
-      { projectId, modelId, region, ...(allowQuantity ? { quantity } : {}) },
+      {
+        projectId,
+        modelId,
+        region,
+        ...(allowQuantity ? { quantity } : {}),
+        ...(zoned ? { zones } : {}),
+      },
       {
         onSuccess: ({ hosts }) => {
           setModelId(null);
           setRegion(null);
+          setSelectedZones([]);
           setQuantityText("1");
           onOpenChange(false);
           if (allowQuantity) {
@@ -128,7 +163,7 @@ export function NewHostDialog({
                   setModelId(next);
                   const nextModel = models.find((item) => item.id === next);
                   // A model with one region needs no second choice.
-                  setRegion(
+                  chooseRegion(
                     nextModel && nextModel.regions.length === 1
                       ? nextModel.regions[0]
                       : null,
@@ -148,9 +183,75 @@ export function NewHostDialog({
                 value={region}
                 disabled={!model}
                 options={regions.map((item) => ({ value: item, label: item }))}
-                onChange={setRegion}
+                onChange={chooseRegion}
               />
             </div>
+            {zoned &&
+              (allowQuantity ? (
+                <fieldset
+                  className="grid min-w-0 gap-2"
+                  aria-describedby="new-host-zones-hint"
+                >
+                  <legend className="mb-2 font-medium text-base/4.5 sm:text-sm/4">
+                    {t("settings:projectInfrastructure.hosts.zones")}
+                  </legend>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {regionZones.map((zone) => (
+                      <div
+                        key={zone}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Checkbox
+                          id={`new-host-zone-${zone}`}
+                          checked={selectedZones.includes(zone)}
+                          onCheckedChange={(checked) =>
+                            setSelectedZones(
+                              checked
+                                ? [...selectedZones, zone]
+                                : selectedZones.filter((item) => item !== zone),
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor={`new-host-zone-${zone}`}
+                          className="font-normal"
+                        >
+                          {zone}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p
+                    id="new-host-zones-hint"
+                    className="text-xs text-muted-foreground"
+                  >
+                    {t("settings:projectInfrastructure.hosts.zonesHint")}
+                  </p>
+                  {zones.length === 0 && (
+                    <p className="text-xs text-destructive-foreground">
+                      {t("settings:projectInfrastructure.hosts.zonesRequired")}
+                    </p>
+                  )}
+                </fieldset>
+              ) : (
+                <div className="grid gap-2">
+                  <Label>
+                    {t("settings:projectInfrastructure.hosts.zone")}
+                  </Label>
+                  <InfraSelect
+                    ariaLabel={t("settings:projectInfrastructure.hosts.zone")}
+                    placeholder={t(
+                      "settings:projectInfrastructure.hosts.zonePlaceholder",
+                    )}
+                    value={selectedZones[0] ?? null}
+                    options={regionZones.map((item) => ({
+                      value: item,
+                      label: item,
+                    }))}
+                    onChange={(next) => setSelectedZones([next])}
+                  />
+                </div>
+              ))}
             {allowQuantity && (
               <div className="grid gap-2">
                 <Label htmlFor="new-host-quantity">
@@ -196,7 +297,12 @@ export function NewHostDialog({
             <Button
               type="submit"
               disabled={
-                !modelId || !region || quantity === null || createHost.isPending
+                !modelId ||
+                !region ||
+                quantity === null ||
+                !zonesReady ||
+                !zonesValid ||
+                createHost.isPending
               }
             >
               {createHost.isPending

@@ -25,6 +25,8 @@ const PROJECT_ERROR_KEYS: Record<string, string> = {
   INFRA_CLUSTER_NOT_IN_WORKSPACE:
     "settings:projectInfrastructure.errors.clusterNotInWorkspace",
   INFRA_VM_NOT_IN_TASK: "settings:projectInfrastructure.errors.vmNotInTask",
+  INFRA_ZONE_REQUIRED: "settings:projectInfrastructure.errors.zoneRequired",
+  INFRA_ZONE_UNKNOWN: "settings:projectInfrastructure.errors.zoneUnknown",
 };
 
 const DATACENTER_ERROR_KEYS: Record<string, string> = {
@@ -37,6 +39,8 @@ const DATACENTER_ERROR_KEYS: Record<string, string> = {
   INFRA_REGION_IN_USE: "workspace:datacenter.errors.regionInUse",
   INFRA_REGION_UNKNOWN: "workspace:datacenter.errors.regionUnknown",
   INFRA_REGION_CODE_TAKEN: "workspace:datacenter.errors.regionCodeTaken",
+  INFRA_ZONE_IN_USE: "workspace:datacenter.errors.zoneInUse",
+  INFRA_ZONE_UNKNOWN: "workspace:datacenter.errors.zoneUnknown",
 };
 
 /** A translated message for a failed project infrastructure request. */

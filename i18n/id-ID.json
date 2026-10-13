@@ -893,10 +893,16 @@
 					"orderBy": "Pesan paling lambat",
 					"ram": "Penggunaan RAM (puncak)",
 					"vms": "VM",
-					"localDisk": "Disk lokal (GB)"
+					"localDisk": "Disk lokal (GB)",
+					"zone": "Zona"
 				},
 				"quantity": "Jumlah",
-				"added_other": "{{count}} host ditambahkan"
+				"added_other": "{{count}} host ditambahkan",
+				"zone": "Zona",
+				"zones": "Zona",
+				"zonePlaceholder": "Pilih zona",
+				"zonesHint": "Host disebar ke zona yang dipilih secara berurutan: 3 host dan PAR1, PAR2, PAR3 menghasilkan satu host per zona.",
+				"zonesRequired": "Pilih setidaknya satu zona."
 			},
 			"warnings": {
 				"title": "Peringatan",
@@ -926,7 +932,9 @@
 				"clusterRegionMismatch": "Klaster Ceph harus berada di wilayah yang sama dengan host.",
 				"clusterNotInWorkspace": "Klaster Ceph bukan bagian dari ruang kerja ini.",
 				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi.",
-				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah."
+				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
+				"zoneRequired": "Pilih zona untuk host.",
+				"zoneUnknown": "Zona ini bukan bagian dari wilayah."
 			}
 		},
 		"projectSwitcher": {
@@ -3763,7 +3771,9 @@
 				"saveFailed": "Perubahan tidak dapat disimpan.",
 				"deleteFailed": "Item tidak dapat dihapus.",
 				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
-				"regionCodeTaken": "Wilayah dengan kode ini sudah ada."
+				"regionCodeTaken": "Wilayah dengan kode ini sudah ada.",
+				"zoneInUse": "Zona yang digunakan oleh host tidak dapat dihapus.",
+				"zoneUnknown": "Zona ini bukan bagian dari wilayah."
 			},
 			"fields": {
 				"status": "Status",
@@ -3786,7 +3796,8 @@
 				"codingChunks": "Chunk pengodean (m)",
 				"fillThreshold": "Batas pengisian (%)",
 				"leadTimeDays": "Waktu tunggu (hari)",
-				"label": "Label"
+				"label": "Label",
+				"zone": "Zona"
 			},
 			"kind": {
 				"self_managed": "Dikelola sendiri",
@@ -3825,7 +3836,8 @@
 				"ramPeak": "Penggunaan memori puncak",
 				"ramUse": "Penggunaan memori {{host}}",
 				"vms": "VM",
-				"warnings": "Peringatan host"
+				"warnings": "Peringatan host",
+				"allZones": "Semua zona"
 			},
 			"warnings": {
 				"title": "Peringatan kapasitas",
@@ -3905,7 +3917,14 @@
 				"editAction": "Edit {{code}}",
 				"deleteAction": "Hapus {{code}}",
 				"deleteTitle": "Hapus wilayah {{code}}?",
-				"deleteDescription": "Wilayah dihapus dari katalog. Wilayah yang digunakan oleh model, host, atau klaster tidak dapat dihapus."
+				"deleteDescription": "Wilayah dihapus dari katalog. Wilayah yang digunakan oleh model, host, atau klaster tidak dapat dihapus.",
+				"zones": "Zona",
+				"zonesLabel": "Zona ketersediaan",
+				"zonesHint": "Zona ketersediaan wilayah ini, misalnya PAR1, PAR2, PAR3. Kosongkan untuk wilayah tanpa zona.",
+				"zoneInput": "Kode zona",
+				"addZone": "Tambah zona",
+				"removeZone": "Hapus zona {{zone}}",
+				"zoneHosts_other": "{{zone}} · {{count}} host"
 			}
 		}
 	},

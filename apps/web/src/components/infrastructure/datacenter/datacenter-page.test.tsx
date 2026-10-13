@@ -260,6 +260,8 @@ const region = (
     code,
     name: `${code} name`,
     position: 0,
+    zones: [],
+    zoneUsage: {},
     usage,
   }) as unknown as CatalogRegion;
 

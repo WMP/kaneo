@@ -96,6 +96,7 @@ export function OrderPlanTab({
                   {t("workspace:datacenter.fields.provider")}
                 </TableHead>
                 <TableHead>{t("workspace:datacenter.fields.region")}</TableHead>
+                <TableHead>{t("workspace:datacenter.fields.zone")}</TableHead>
                 <TableHead>{t("workspace:datacenter.fields.model")}</TableHead>
                 <TableHead className="text-right">
                   {t("workspace:datacenter.fields.ramGb")}
@@ -164,6 +165,7 @@ export function OrderPlanTab({
                           t("workspace:datacenter.provider.other"))}
                     </TableCell>
                     <TableCell>{row.region}</TableCell>
+                    <TableCell>{row.zone ?? dash}</TableCell>
                     <TableCell>{row.model ?? dash}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {row.ramGb == null

@@ -57,7 +57,14 @@ type Props = {
   projectId: string;
 };
 
-type HostSummary = Pick<InfraHost, "id" | "label" | "region" | "status">;
+type HostSummary = Pick<
+  InfraHost,
+  "id" | "label" | "region" | "zone" | "status"
+>;
+
+// "PAR" for a host without a zone, "PAR / PAR2" for one in a zone.
+const regionText = (host: Pick<HostSummary, "region" | "zone">) =>
+  host.zone ? `${host.region} / ${host.zone}` : host.region;
 
 // Task details > Infrastructure: the VMs a migration task moves, the host and
 // Ceph cluster of each, and the capacity warnings of this task. Shown to users
@@ -122,7 +129,7 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
   const hostOptionLabel = (row: VmRow, listed: HostSummary) => {
     const base = t("tasks:infrastructure.hostOption", {
       label: listed.label,
-      region: listed.region,
+      region: regionText(listed),
       status: statusText(listed.status),
     });
     // Hosts created in this section have no capacity figures yet.
@@ -376,7 +383,7 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
                           ) : host ? (
                             t("tasks:infrastructure.hostOption", {
                               label: host.label,
-                              region: host.region,
+                              region: regionText(host),
                               status: statusText(host.status),
                             })
                           ) : isHostRemoved(row) ? (

@@ -125,6 +125,28 @@ describe("OrderPlanTab", () => {
     expect(screen.getByText("2,500 GB")).toBeInTheDocument();
   });
 
+  it("shows the zone after the region, with a dash for no zone", () => {
+    renderTab([
+      row({ model: "IN-ZONE", zone: "PAR2", region: "PAR" }),
+      row({ model: "NO-ZONE" }),
+    ]);
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers.indexOf("workspace:datacenter.fields.zone")).toBe(
+      headers.indexOf("workspace:datacenter.fields.region") + 1,
+    );
+    const cells = (model: string) =>
+      Array.from(
+        (screen.getByText(model).closest("tr") as HTMLElement).querySelectorAll(
+          "td",
+        ),
+      );
+    const zoneIndex = headers.indexOf("workspace:datacenter.fields.zone");
+    expect(cells("IN-ZONE")[zoneIndex].textContent).toBe("PAR2");
+    expect(cells("NO-ZONE")[zoneIndex].textContent).toBe("–");
+  });
+
   it("downloads the XLSX through the fetcher with the workspace id", async () => {
     renderTab([row({})]);
 

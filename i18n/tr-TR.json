@@ -893,11 +893,17 @@
 					"orderBy": "Sipariş son tarihi",
 					"ram": "RAM kullanımı (tepe)",
 					"vms": "VM",
-					"localDisk": "Yerel disk (GB)"
+					"localDisk": "Yerel disk (GB)",
+					"zone": "Zon"
 				},
 				"quantity": "Adet",
 				"added_one": "{{count}} ana makine eklendi",
-				"added_other": "{{count}} ana makine eklendi"
+				"added_other": "{{count}} ana makine eklendi",
+				"zone": "Zon",
+				"zones": "Zonlar",
+				"zonePlaceholder": "Zon seçin",
+				"zonesHint": "Ana makineler seçilen zonlara sırayla dağıtılır: 3 ana makine ve PAR1, PAR2, PAR3 her zona bir ana makine verir.",
+				"zonesRequired": "En az bir zon seçin."
 			},
 			"warnings": {
 				"title": "Uyarılar",
@@ -927,7 +933,9 @@
 				"clusterRegionMismatch": "Ceph kümesi ana makineyle aynı bölgede olmalıdır.",
 				"clusterNotInWorkspace": "Ceph kümesi bu çalışma alanının parçası değil.",
 				"vmNotInTask": "Listedeki bir VM bu göreve ait değil. Görevi yeniden yükleyip tekrar deneyin.",
-				"regionUnknown": "Bu bölge bölge kataloğunda yok."
+				"regionUnknown": "Bu bölge bölge kataloğunda yok.",
+				"zoneRequired": "Ana makine için bir zon seçin.",
+				"zoneUnknown": "Bu zon bölgeye ait değil."
 			}
 		},
 		"projectSwitcher": {
@@ -3777,7 +3785,9 @@
 				"saveFailed": "Değişiklik kaydedilemedi.",
 				"deleteFailed": "Kalem silinemedi.",
 				"regionUnknown": "Bu bölge bölge kataloğunda yok.",
-				"regionCodeTaken": "Bu kodlu bir bölge zaten var."
+				"regionCodeTaken": "Bu kodlu bir bölge zaten var.",
+				"zoneInUse": "Bir ana makinenin kullandığı zon kaldırılamaz.",
+				"zoneUnknown": "Bu zon bölgeye ait değil."
 			},
 			"fields": {
 				"status": "Durum",
@@ -3800,7 +3810,8 @@
 				"codingChunks": "Kodlama parçaları (m)",
 				"fillThreshold": "Doluluk eşiği (%)",
 				"leadTimeDays": "Teslim süresi (gün)",
-				"label": "Etiket"
+				"label": "Etiket",
+				"zone": "Zon"
 			},
 			"kind": {
 				"self_managed": "Kendi yönetimimizde",
@@ -3839,7 +3850,8 @@
 				"ramPeak": "Tepe bellek kullanımı",
 				"ramUse": "{{host}} bellek kullanımı",
 				"vms": "Sanal makineler",
-				"warnings": "Ana makine uyarıları"
+				"warnings": "Ana makine uyarıları",
+				"allZones": "Tüm zonlar"
 			},
 			"warnings": {
 				"title": "Kapasite uyarıları",
@@ -3919,7 +3931,15 @@
 				"editAction": "{{code}} düzenle",
 				"deleteAction": "{{code}} sil",
 				"deleteTitle": "{{code}} bölgesi silinsin mi?",
-				"deleteDescription": "Bölge katalogdan kaldırılır. Bir model, ana makine veya küme tarafından kullanılan bölge silinemez."
+				"deleteDescription": "Bölge katalogdan kaldırılır. Bir model, ana makine veya küme tarafından kullanılan bölge silinemez.",
+				"zones": "Zonlar",
+				"zonesLabel": "Kullanılabilirlik zonları",
+				"zonesHint": "Bu bölgenin kullanılabilirlik zonları, örneğin PAR1, PAR2, PAR3. Zonu olmayan bölge için boş bırakın.",
+				"zoneInput": "Zon kodu",
+				"addZone": "Zon ekle",
+				"removeZone": "{{zone}} zonunu kaldır",
+				"zoneHosts_one": "{{zone}} · {{count}} ana makine",
+				"zoneHosts_other": "{{zone}} · {{count}} ana makine"
 			}
 		}
 	},

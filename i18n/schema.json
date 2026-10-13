@@ -5717,6 +5717,9 @@
 										},
 										"localDisk": {
 											"type": "string"
+										},
+										"zone": {
+											"type": "string"
 										}
 									},
 									"required": [
@@ -5728,7 +5731,8 @@
 										"orderBy",
 										"ram",
 										"vms",
-										"localDisk"
+										"localDisk",
+										"zone"
 									]
 								},
 								"quantity": {
@@ -5750,6 +5754,21 @@
 									"type": "string"
 								},
 								"added_other": {
+									"type": "string"
+								},
+								"zone": {
+									"type": "string"
+								},
+								"zones": {
+									"type": "string"
+								},
+								"zonePlaceholder": {
+									"type": "string"
+								},
+								"zonesHint": {
+									"type": "string"
+								},
+								"zonesRequired": {
 									"type": "string"
 								}
 							},
@@ -5773,7 +5792,12 @@
 								"orderLate",
 								"ramUsage",
 								"columns",
-								"quantity"
+								"quantity",
+								"zone",
+								"zones",
+								"zonePlaceholder",
+								"zonesHint",
+								"zonesRequired"
 							]
 						},
 						"warnings": {
@@ -5875,6 +5899,12 @@
 								},
 								"regionUnknown": {
 									"type": "string"
+								},
+								"zoneRequired": {
+									"type": "string"
+								},
+								"zoneUnknown": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5886,7 +5916,9 @@
 								"clusterRegionMismatch",
 								"clusterNotInWorkspace",
 								"vmNotInTask",
-								"regionUnknown"
+								"regionUnknown",
+								"zoneRequired",
+								"zoneUnknown"
 							]
 						}
 					},
@@ -15490,6 +15522,12 @@
 								},
 								"regionCodeTaken": {
 									"type": "string"
+								},
+								"zoneInUse": {
+									"type": "string"
+								},
+								"zoneUnknown": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -15502,7 +15540,9 @@
 								"saveFailed",
 								"deleteFailed",
 								"regionUnknown",
-								"regionCodeTaken"
+								"regionCodeTaken",
+								"zoneInUse",
+								"zoneUnknown"
 							]
 						},
 						"fields": {
@@ -15571,6 +15611,9 @@
 								},
 								"label": {
 									"type": "string"
+								},
+								"zone": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -15594,7 +15637,8 @@
 								"codingChunks",
 								"fillThreshold",
 								"leadTimeDays",
-								"label"
+								"label",
+								"zone"
 							]
 						},
 						"kind": {
@@ -15727,6 +15771,9 @@
 								},
 								"warnings": {
 									"type": "string"
+								},
+								"allZones": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -15738,7 +15785,8 @@
 								"ramPeak",
 								"ramUse",
 								"vms",
-								"warnings"
+								"warnings",
+								"allZones"
 							]
 						},
 						"warnings": {
@@ -16032,6 +16080,42 @@
 								},
 								"deleteDescription": {
 									"type": "string"
+								},
+								"zones": {
+									"type": "string"
+								},
+								"zonesLabel": {
+									"type": "string"
+								},
+								"zonesHint": {
+									"type": "string"
+								},
+								"zoneInput": {
+									"type": "string"
+								},
+								"addZone": {
+									"type": "string"
+								},
+								"removeZone": {
+									"type": "string"
+								},
+								"zoneHosts_one": {
+									"type": "string"
+								},
+								"zoneHosts_zero": {
+									"type": "string"
+								},
+								"zoneHosts_two": {
+									"type": "string"
+								},
+								"zoneHosts_few": {
+									"type": "string"
+								},
+								"zoneHosts_many": {
+									"type": "string"
+								},
+								"zoneHosts_other": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -16045,7 +16129,13 @@
 								"editAction",
 								"deleteAction",
 								"deleteTitle",
-								"deleteDescription"
+								"deleteDescription",
+								"zones",
+								"zonesLabel",
+								"zonesHint",
+								"zoneInput",
+								"addZone",
+								"removeZone"
 							]
 						}
 					},
