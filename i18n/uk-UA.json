@@ -3587,7 +3587,13 @@
 				"nameRequired": "Введіть назву VM.",
 				"number": "Введіть ціле число, 0 або більше."
 			},
-			"hostRemoved": "Хост видалено"
+			"hostRemoved": "Хост видалено",
+			"hostFree": "вільно {{ram}} ГБ RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "недостатньо місця",
+			"usageHelp": "Завантаження після запуску всіх ВМ, розміщених на хості.",
+			"usageRamLabel": "Використання RAM хоста {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · локальний диск {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Недостатньо ресурсів на цьому хості"
 		}
 	},
 	"invitations": {

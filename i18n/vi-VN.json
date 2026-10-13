@@ -3548,7 +3548,13 @@
 				"nameRequired": "Nhập tên VM.",
 				"number": "Nhập một số nguyên, từ 0 trở lên."
 			},
-			"hostRemoved": "Host đã bị xóa"
+			"hostRemoved": "Host đã bị xóa",
+			"hostFree": "còn trống {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "không đủ chỗ",
+			"usageHelp": "Mức sử dụng sau khi tất cả VM được đặt trên máy chủ đều chạy.",
+			"usageRamLabel": "Mức dùng RAM của {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · ổ đĩa cục bộ {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Máy chủ này không đủ tài nguyên"
 		}
 	},
 	"invitations": {

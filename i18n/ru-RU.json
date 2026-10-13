@@ -3643,7 +3643,13 @@
 				"nameRequired": "Введите имя VM.",
 				"number": "Введите целое число, 0 или больше."
 			},
-			"hostRemoved": "Хост удалён"
+			"hostRemoved": "Хост удалён",
+			"hostFree": "свободно {{ram}} ГБ RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "недостаточно места",
+			"usageHelp": "Загрузка после запуска всех ВМ, размещённых на хосте.",
+			"usageRamLabel": "Использование RAM хоста {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · локальный диск {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Недостаточно ресурсов на этом хосте"
 		}
 	},
 	"invitations": {

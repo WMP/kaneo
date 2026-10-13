@@ -3561,7 +3561,13 @@
 				"nameRequired": "VM adını daxil edin.",
 				"number": "0 və ya daha böyük tam ədəd daxil edin."
 			},
-			"hostRemoved": "Host silinib"
+			"hostRemoved": "Host silinib",
+			"hostFree": "boş {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "kifayət qədər yer yoxdur",
+			"usageHelp": "Hostda yerləşdirilmiş bütün VM-lər işə düşdükdən sonrakı istifadə.",
+			"usageRamLabel": "{{host}} hostunun RAM istifadəsi",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · lokal disk {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Bu hostda resurslar kifayət etmir"
 		}
 	},
 	"invitations": {

@@ -3561,7 +3561,13 @@
 				"nameRequired": "VM का नाम दर्ज करें।",
 				"number": "0 या उससे बड़ी कोई पूर्ण संख्या दर्ज करें।"
 			},
-			"hostRemoved": "होस्ट हटाया गया"
+			"hostRemoved": "होस्ट हटाया गया",
+			"hostFree": "खाली {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "पर्याप्त जगह नहीं है",
+			"usageHelp": "होस्ट पर रखे गए सभी VM चलने के बाद का उपयोग।",
+			"usageRamLabel": "{{host}} का RAM उपयोग",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · लोकल डिस्क {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "इस होस्ट पर पर्याप्त संसाधन नहीं हैं"
 		}
 	},
 	"invitations": {

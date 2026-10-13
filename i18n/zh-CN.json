@@ -3548,7 +3548,13 @@
 				"nameRequired": "请输入 VM 名称。",
 				"number": "请输入 0 或更大的整数。"
 			},
-			"hostRemoved": "主机已删除"
+			"hostRemoved": "主机已删除",
+			"hostFree": "可用 RAM {{ram}} GB,vCPU {{vcpu}}",
+			"hostNoRoom": "空间不足",
+			"usageHelp": "主机上放置的所有虚拟机运行后的使用量。",
+			"usageRamLabel": "{{host}} 的 RAM 使用率",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · 本地磁盘 {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "此主机资源不足"
 		}
 	},
 	"invitations": {

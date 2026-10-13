@@ -3548,7 +3548,13 @@
 				"nameRequired": "Masukkan nama VM.",
 				"number": "Masukkan bilangan bulat, 0 atau lebih."
 			},
-			"hostRemoved": "Host dihapus"
+			"hostRemoved": "Host dihapus",
+			"hostFree": "tersisa {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "ruang tidak cukup",
+			"usageHelp": "Penggunaan setelah semua VM yang ditempatkan di host berjalan.",
+			"usageRamLabel": "Penggunaan RAM {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · disk lokal {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Sumber daya di host ini tidak cukup"
 		}
 	},
 	"invitations": {

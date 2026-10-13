@@ -3561,7 +3561,13 @@
 				"nameRequired": "Внесете име на VM.",
 				"number": "Внесете цел број, 0 или поголем."
 			},
-			"hostRemoved": "Хостот е отстранет"
+			"hostRemoved": "Хостот е отстранет",
+			"hostFree": "слободни {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "нема доволно простор",
+			"usageHelp": "Искористеност откако ќе работат сите VM поставени на хостот.",
+			"usageRamLabel": "Искористеност на RAM на {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · локален диск {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Нема доволно ресурси на овој хост"
 		}
 	},
 	"invitations": {

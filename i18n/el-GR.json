@@ -3561,7 +3561,13 @@
 				"nameRequired": "Εισαγάγετε ένα όνομα VM.",
 				"number": "Εισαγάγετε έναν ακέραιο αριθμό, 0 ή μεγαλύτερο."
 			},
-			"hostRemoved": "Το host αφαιρέθηκε"
+			"hostRemoved": "Το host αφαιρέθηκε",
+			"hostFree": "ελεύθερα {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "δεν υπάρχει αρκετός χώρος",
+			"usageHelp": "Χρήση όταν εκτελούνται όλα τα VM που έχουν τοποθετηθεί στον host.",
+			"usageRamLabel": "Χρήση RAM του {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · τοπικός δίσκος {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Δεν υπάρχουν αρκετοί πόροι σε αυτόν τον host"
 		}
 	},
 	"invitations": {

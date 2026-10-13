@@ -3548,7 +3548,13 @@
 				"nameRequired": "VM 이름을 입력하세요.",
 				"number": "0 이상의 정수를 입력하세요."
 			},
-			"hostRemoved": "호스트 삭제됨"
+			"hostRemoved": "호스트 삭제됨",
+			"hostFree": "여유 RAM {{ram}} GB, vCPU {{vcpu}}",
+			"hostNoRoom": "공간 부족",
+			"usageHelp": "호스트에 배치된 모든 VM이 실행된 후의 사용량입니다.",
+			"usageRamLabel": "{{host}}의 RAM 사용량",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · 로컬 디스크 {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "이 호스트의 리소스가 부족합니다"
 		}
 	},
 	"invitations": {

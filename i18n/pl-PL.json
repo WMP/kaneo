@@ -4060,7 +4060,13 @@
 				"nameRequired": "Wpisz nazwę VM.",
 				"number": "Wpisz liczbę całkowitą, 0 lub większą."
 			},
-			"hostRemoved": "Host usunięty"
+			"hostRemoved": "Host usunięty",
+			"hostFree": "wolne {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "brak miejsca",
+			"usageHelp": "Zajętość po uruchomieniu wszystkich VM przypisanych do hosta.",
+			"usageRamLabel": "Zajętość RAM hosta {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · dysk lokalny {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Za mało zasobów na hoście"
 		}
 	},
 	"press": {

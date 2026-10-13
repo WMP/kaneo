@@ -3561,7 +3561,13 @@
 				"nameRequired": "Bir VM adı girin.",
 				"number": "0 veya daha büyük bir tam sayı girin."
 			},
-			"hostRemoved": "Ana makine kaldırıldı"
+			"hostRemoved": "Ana makine kaldırıldı",
+			"hostFree": "boş {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "yeterli yer yok",
+			"usageHelp": "Ana makineye yerleştirilen tüm VM'ler çalıştıktan sonraki kullanım.",
+			"usageRamLabel": "{{host}} RAM kullanımı",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · yerel disk {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Bu ana makinede yeterli kaynak yok"
 		}
 	},
 	"invitations": {

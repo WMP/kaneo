@@ -103,14 +103,32 @@ const vm = {
   host: null,
 };
 
-const host = (id: string, label: string, region: string) => ({
+// Totals default to the saved VM of the tests (vm-1 on host-1).
+const host = (
+  id: string,
+  label: string,
+  region: string,
+  totals = {
+    vmCount: 1,
+    vcpu: 8,
+    ramGb: 64,
+    localStorageGb: 100,
+    cephStorageGb: 500,
+  },
+) => ({
   id,
   label,
   region,
   status: "ordered" as const,
   availableFrom: "2026-11-26",
-  model: { name: "SCALE", ramGb: 256, storageGb: 1000 },
-  totals: { vmCount: 1, localStorageGb: 100 },
+  model: {
+    name: "SCALE",
+    ramGb: 256,
+    vcpu: 64,
+    storageGb: 1000,
+    hypervisorReservePercent: 0,
+  },
+  totals,
 });
 
 const capacity = {
@@ -431,5 +449,96 @@ describe("task infrastructure section", () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(screen.getByDisplayValue("kept")).toBeInTheDocument();
+  });
+
+  describe("host load", () => {
+    const hostOptionTexts = () =>
+      within(screen.getByLabelText("tasks:infrastructure.columns.host"))
+        .getAllByRole("option")
+        .map((option) => option.textContent ?? "");
+
+    it("shows the free RAM and vCPU in the host options", async () => {
+      renderSection();
+      await screen.findByDisplayValue("billing-db-1");
+      // host-1 carries only this task's saved VM: all of it is free for the row.
+      expect(hostOptionTexts()).toContain(
+        "tasks:infrastructure.hostOption SCALE-1 PAR common:infrastructureStatus.ordered — tasks:infrastructure.hostFree 256 64",
+      );
+    });
+
+    it("marks a host without room for the row", async () => {
+      vi.mocked(getProjectHosts).mockResolvedValue([
+        host("host-1", "SCALE-1", "PAR"),
+        host("host-2", "SCALE-2", "GRA", {
+          vmCount: 5,
+          vcpu: 60,
+          ramGb: 200,
+          localStorageGb: 0,
+          cephStorageGb: 0,
+        }),
+      ] as never);
+      renderSection();
+      await screen.findByDisplayValue("billing-db-1");
+
+      const options = hostOptionTexts();
+      expect(options).toContain(
+        "tasks:infrastructure.hostOption SCALE-2 GRA common:infrastructureStatus.ordered — tasks:infrastructure.hostFree 56 4 — tasks:infrastructure.hostNoRoom",
+      );
+      expect(options.find((text) => text.includes("SCALE-1"))).not.toContain(
+        "hostNoRoom",
+      );
+    });
+
+    it("updates the usage line while the RAM input changes", async () => {
+      renderSection();
+      await screen.findByDisplayValue("billing-db-1");
+      expect(
+        screen.getByText("tasks:infrastructure.usageText 64 256 8 64 100 1000"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText("tasks:infrastructure.usageRamLabel SCALE-1"),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("status")).toBeNull();
+
+      fireEvent.change(screen.getByDisplayValue("64"), {
+        target: { value: "128" },
+      });
+      expect(
+        screen.getByText(
+          "tasks:infrastructure.usageText 128 256 8 64 100 1000",
+        ),
+      ).toBeInTheDocument();
+      expect(saveButton()).toBeEnabled();
+    });
+
+    it("warns when the host is over capacity", async () => {
+      renderSection();
+      await screen.findByDisplayValue("billing-db-1");
+
+      fireEvent.change(screen.getByDisplayValue("64"), {
+        target: { value: "300" },
+      });
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "tasks:infrastructure.usageOver",
+      );
+      expect(
+        screen.getByText(
+          "tasks:infrastructure.usageText 300 256 8 64 100 1000",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("shows the usage line in the read-only view", async () => {
+      canPlanInfrastructure.mockReturnValue(false);
+      renderSection();
+      expect(
+        await screen.findByText(
+          "tasks:infrastructure.usageText 64 256 8 64 100 1000",
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("tasks:infrastructure.usageHelp"),
+      ).toBeInTheDocument();
+    });
   });
 });

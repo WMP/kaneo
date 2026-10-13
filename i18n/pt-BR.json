@@ -3574,7 +3574,13 @@
 				"nameRequired": "Informe um nome para a VM.",
 				"number": "Informe um número inteiro, 0 ou mais."
 			},
-			"hostRemoved": "Host removido"
+			"hostRemoved": "Host removido",
+			"hostFree": "livres {{ram}} GB de RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "espaço insuficiente",
+			"usageHelp": "Uso depois que todas as VMs alocadas no host estiverem em execução.",
+			"usageRamLabel": "Uso de RAM de {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · disco local {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Recursos insuficientes neste host"
 		}
 	},
 	"invitations": {

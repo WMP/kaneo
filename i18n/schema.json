@@ -14521,6 +14521,24 @@
 						},
 						"hostRemoved": {
 							"type": "string"
+						},
+						"hostFree": {
+							"type": "string"
+						},
+						"hostNoRoom": {
+							"type": "string"
+						},
+						"usageHelp": {
+							"type": "string"
+						},
+						"usageRamLabel": {
+							"type": "string"
+						},
+						"usageText": {
+							"type": "string"
+						},
+						"usageOver": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -14538,7 +14556,13 @@
 						"saved",
 						"warningsTitle",
 						"validation",
-						"hostRemoved"
+						"hostRemoved",
+						"hostFree",
+						"hostNoRoom",
+						"usageHelp",
+						"usageRamLabel",
+						"usageText",
+						"usageOver"
 					]
 				}
 			},

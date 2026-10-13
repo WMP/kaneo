@@ -18,10 +18,18 @@ import useProjectStorageClusters from "@/hooks/queries/infrastructure/use-projec
 import useTaskVms from "@/hooks/queries/infrastructure/use-task-vms";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { nextVmName } from "@/lib/infrastructure-format";
+import {
+  computeHostUsage,
+  freeCapacityForRow,
+  type HostUsage,
+  isOverCapacity,
+  usagePercent,
+} from "@/lib/infrastructure-host-usage";
 import { toast } from "@/lib/toast";
 import { InfraSelect } from "../infra-select";
 import { InfrastructureWarningList } from "../infrastructure-warning-list";
 import { NewHostDialog } from "../new-host-dialog";
+import { UsageBar } from "../usage-bar";
 import {
   NUMBER_FIELDS,
   newRow,
@@ -105,18 +113,47 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
   const statusText = (status: HostSummary["status"]) =>
     t(`common:infrastructureStatus.${status}`);
 
+  // Peak use of every project host with this editor's rows, saved or not.
+  const usageByHost = useMemo(
+    () => computeHostUsage(hostsQuery.data ?? [], vmsQuery.data ?? [], rows),
+    [hostsQuery.data, vmsQuery.data, rows],
+  );
+
+  const hostOptionLabel = (row: VmRow, listed: HostSummary) => {
+    const base = t("tasks:infrastructure.hostOption", {
+      label: listed.label,
+      region: listed.region,
+      status: statusText(listed.status),
+    });
+    // Hosts created in this section have no capacity figures yet.
+    const detailed = hostsQuery.data?.find((item) => item.id === listed.id);
+    if (!detailed) return base;
+    const free = freeCapacityForRow(
+      detailed,
+      vmsQuery.data ?? [],
+      rows,
+      row.key,
+    );
+    const need = rowNeed(row);
+    const noRoom = need.ram > free.ram || need.vcpu > free.vcpu;
+    return [
+      base,
+      t("tasks:infrastructure.hostFree", {
+        ram: Math.max(0, free.ram),
+        vcpu: Math.max(0, free.vcpu),
+      }),
+      ...(noRoom ? [t("tasks:infrastructure.hostNoRoom")] : []),
+    ].join(" — ");
+  };
+
   const hostOptionsFor = (row: VmRow) => [
     { value: NONE, label: t("tasks:infrastructure.noHost") },
     ...(row.hostId && isHostRemoved(row)
       ? [{ value: row.hostId, label: t("tasks:infrastructure.hostRemoved") }]
       : []),
-    ...hosts.map((host) => ({
-      value: host.id,
-      label: t("tasks:infrastructure.hostOption", {
-        label: host.label,
-        region: host.region,
-        status: statusText(host.status),
-      }),
+    ...hosts.map((listed) => ({
+      value: listed.id,
+      label: hostOptionLabel(row, listed),
     })),
     ...(canPlan
       ? [{ value: NEW_HOST, label: t("tasks:infrastructure.newHost") }]
@@ -447,10 +484,22 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
                           </VmField>
                         ))}
                       </div>
+                      {host && usageByHost.get(host.id) && (
+                        <HostUsageLine
+                          hostLabel={host.label}
+                          usage={usageByHost.get(host.id) as HostUsage}
+                        />
+                      )}
                     </li>
                   );
                 })}
               </ul>
+            )}
+
+            {rows.some((row) => row.hostId && usageByHost.has(row.hostId)) && (
+              <p className="px-1 text-muted-foreground text-xs">
+                {t("tasks:infrastructure.usageHelp")}
+              </p>
             )}
 
             {canPlan && (
@@ -520,6 +569,49 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
         />
       )}
     </>
+  );
+}
+
+function rowNeed(row: VmRow) {
+  const parse = (value: string) =>
+    /^\d+$/.test(value.trim()) ? Number(value) : 0;
+  return { ram: parse(row.ramGb), vcpu: parse(row.vcpu) };
+}
+
+// Peak use of the host of a VM, with this task's rows included.
+function HostUsageLine({
+  hostLabel,
+  usage,
+}: {
+  hostLabel: string;
+  usage: HostUsage;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-2 flex flex-col gap-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <UsageBar
+          className="w-40 min-w-0 shrink-0"
+          percent={usagePercent(usage.ram)}
+          label={t("tasks:infrastructure.usageRamLabel", { host: hostLabel })}
+        />
+        <span className="text-muted-foreground text-xs tabular-nums">
+          {t("tasks:infrastructure.usageText", {
+            ramUsed: usage.ram.used,
+            ramCapacity: usage.ram.capacity,
+            vcpuUsed: usage.vcpu.used,
+            vcpuCapacity: usage.vcpu.capacity,
+            localUsed: usage.localStorage.used,
+            localCapacity: usage.localStorage.capacity,
+          })}
+        </span>
+      </div>
+      {isOverCapacity(usage) && (
+        <p role="status" className="text-destructive-foreground text-xs">
+          {t("tasks:infrastructure.usageOver")}
+        </p>
+      )}
+    </div>
   );
 }
 

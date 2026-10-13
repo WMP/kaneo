@@ -3548,7 +3548,13 @@
 				"nameRequired": "VM名を入力してください。",
 				"number": "0以上の整数を入力してください。"
 			},
-			"hostRemoved": "ホストは削除されました"
+			"hostRemoved": "ホストは削除されました",
+			"hostFree": "空き RAM {{ram}} GB、vCPU {{vcpu}}",
+			"hostNoRoom": "空きが不足しています",
+			"usageHelp": "ホストに配置されたすべての VM が稼働した後の使用量です。",
+			"usageRamLabel": "{{host}} の RAM 使用率",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · ローカルディスク {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "このホストはリソースが不足しています"
 		}
 	},
 	"invitations": {
