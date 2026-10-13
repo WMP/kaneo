@@ -1075,7 +1075,7 @@
 			"validation": {
 				"required": "此字段为必填项。",
 				"integer": "请输入 {{min}} 到 {{max}} 之间的整数。",
-				"regions": "请输入一个或多个区域代码（字母、数字和连字符），以逗号分隔。"
+				"regionsRequired": "请至少选择一个区域。"
 			},
 			"models": {
 				"title": "服务器型号",
@@ -1083,7 +1083,6 @@
 				"add": "添加型号",
 				"edit": "编辑型号",
 				"empty": "暂无服务器型号。",
-				"regionsHint": "以逗号分隔的区域代码，例如 GRA, PAR。",
 				"editAction": "编辑 {{name}}",
 				"deleteAction": "删除 {{name}}",
 				"deleteTitle": "删除型号 {{name}}？",
@@ -1098,7 +1097,9 @@
 					"regions": "区域",
 					"leadTime": "交付周期（天）",
 					"reserve": "虚拟化层预留 (%)"
-				}
+				},
+				"regionsEmpty": "暂无区域。请让数据中心团队添加区域。",
+				"regionNotInCatalog": "(不在目录中)"
 			},
 			"hosts": {
 				"title": "主机",
@@ -1129,7 +1130,9 @@
 					"ram": "内存使用率（峰值）",
 					"vms": "VM",
 					"localDisk": "本地磁盘 (GB)"
-				}
+				},
+				"quantity": "数量",
+				"added_other": "已添加 {{count}} 台主机"
 			},
 			"warnings": {
 				"title": "警告",
@@ -1158,7 +1161,8 @@
 				"hostNotInProject": "所选主机不属于此项目。",
 				"clusterRegionMismatch": "Ceph 集群必须与主机位于同一区域。",
 				"clusterNotInWorkspace": "该 Ceph 集群不属于此工作区。",
-				"vmNotInTask": "列表中有一台 VM 不属于此任务。请重新加载任务后重试。"
+				"vmNotInTask": "列表中有一台 VM 不属于此任务。请重新加载任务后重试。",
+				"regionUnknown": "此区域不在区域目录中。"
 			}
 		},
 		"projectSwitcher": {
@@ -3543,7 +3547,8 @@
 			"validation": {
 				"nameRequired": "请输入 VM 名称。",
 				"number": "请输入 0 或更大的整数。"
-			}
+			},
+			"hostRemoved": "主机已删除"
 		}
 	},
 	"invitations": {
@@ -3730,7 +3735,8 @@
 			"tabs": {
 				"orderPlan": "订购计划",
 				"hosts": "主机",
-				"storage": "Ceph 存储"
+				"storage": "Ceph 存储",
+				"regions": "区域"
 			},
 			"loadFailed": "无法加载数据中心数据。",
 			"noAccess": {
@@ -3747,9 +3753,11 @@
 				"clusterInUse": "仍有虚拟机在使用此集群。请先将虚拟机迁移到其他集群。",
 				"capacityLocked": "这种方式只能更改处于计划状态的条目。",
 				"clusterInvalid": "集群设置无效。请检查纠删码参数。",
-				"regionInUse": "仍有主机在使用此区域。",
+				"regionInUse": "此区域仍被模型、主机或集群使用。",
 				"saveFailed": "无法保存更改。",
-				"deleteFailed": "无法删除该项目。"
+				"deleteFailed": "无法删除该项目。",
+				"regionUnknown": "此区域不在区域目录中。",
+				"regionCodeTaken": "已存在使用此代码的区域。"
 			},
 			"fields": {
 				"status": "状态",
@@ -3867,12 +3875,31 @@
 				"createTitle": "添加 Ceph 集群",
 				"editTitle": "编辑 Ceph 集群",
 				"selfManagedHint": "可用容量为裸容量 × k / (k + m)，并受填充阈值限制。",
-				"managedHint": "托管服务没有纠删码。可用容量受填充阈值限制。"
+				"managedHint": "托管服务没有纠删码。可用容量受填充阈值限制。",
+				"regionPlaceholder": "选择区域",
+				"noRegions": "暂无区域。请先在“区域”标签页中添加区域。"
 			},
 			"entryDialog": {
 				"title": "添加容量",
 				"capacityHint": "节点或服务块的裸容量，单位为 GB。",
 				"labelHint": "可选。未填标签时，条目将以集群名称命名。"
+			},
+			"regions": {
+				"add": "添加区域",
+				"editTitle": "编辑区域",
+				"code": "代码",
+				"codeHint": "字母 A–Z、数字和连字符，最多 16 个字符；代码创建后无法更改",
+				"usedBy": "使用方",
+				"usage": {
+					"models": "模型",
+					"hosts": "主机",
+					"clusters": "集群"
+				},
+				"empty": "暂无区域。请添加第一个区域。",
+				"editAction": "编辑 {{code}}",
+				"deleteAction": "删除 {{code}}",
+				"deleteTitle": "删除区域 {{code}}？",
+				"deleteDescription": "该区域将从目录中移除。被模型、主机或集群使用的区域无法删除。"
 			}
 		}
 	},

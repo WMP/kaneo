@@ -8,6 +8,7 @@ function useWorkspaceCapacity(workspaceId: string | undefined) {
     queryKey: datacenterCapacityKey(workspaceId),
     queryFn: workspaceId ? () => getWorkspaceCapacity(workspaceId) : skipToken,
     staleTime: DATACENTER_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import bulkOperation from "@/fetchers/task/bulk-operation";
 import deleteTask from "@/fetchers/task/delete-task";
 import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 
 export function useBulkOperations() {
   const queryClientRef = useQueryClient();
@@ -11,6 +12,8 @@ export function useBulkOperations() {
     queryClientRef.invalidateQueries({ queryKey: ["projects"] });
     // Status, dates and deletions change relation endpoints a Gantt draws.
     invalidateGanttRelations(queryClientRef);
+    // Deletion, archiving and dates change the capacity warnings of the tasks.
+    invalidateInfrastructure(queryClientRef);
   };
 
   const bulkDelete = useMutation({

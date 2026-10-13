@@ -11,6 +11,7 @@ function useTaskVms(taskId: string, enabled = true) {
     queryFn: () => getTaskVms(taskId),
     enabled: enabled && !!taskId,
     staleTime: INFRASTRUCTURE_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

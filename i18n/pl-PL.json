@@ -744,7 +744,8 @@
 			"tabs": {
 				"orderPlan": "Plan zamówień",
 				"hosts": "Hosty",
-				"storage": "Storage Ceph"
+				"storage": "Storage Ceph",
+				"regions": "Regiony"
 			},
 			"loadFailed": "Nie udało się wczytać danych centrum danych.",
 			"noAccess": {
@@ -761,9 +762,11 @@
 				"clusterInUse": "Klaster jest nadal używany przez maszynę wirtualną. Najpierw przenieś maszynę do innego klastra.",
 				"capacityLocked": "W ten sposób można zmienić tylko pozycję w statusie planowanym.",
 				"clusterInvalid": "Ustawienia klastra są nieprawidłowe. Sprawdź wartości erasure coding.",
-				"regionInUse": "Region jest nadal używany przez host.",
+				"regionInUse": "Ten region jest nadal używany przez model, host lub klaster.",
 				"saveFailed": "Nie udało się zapisać zmiany.",
-				"deleteFailed": "Nie udało się usunąć pozycji."
+				"deleteFailed": "Nie udało się usunąć pozycji.",
+				"regionUnknown": "Tego regionu nie ma w katalogu regionów.",
+				"regionCodeTaken": "Region o tym kodzie już istnieje."
 			},
 			"fields": {
 				"status": "Status",
@@ -881,12 +884,31 @@
 				"createTitle": "Dodaj klaster Ceph",
 				"editTitle": "Edytuj klaster Ceph",
 				"selfManagedHint": "Pojemność użyteczna to pojemność surowa × k / (k + m), ograniczona progiem zapełnienia.",
-				"managedHint": "Usługa zarządzana nie ma erasure coding. Pojemność użyteczna jest ograniczona progiem zapełnienia."
+				"managedHint": "Usługa zarządzana nie ma erasure coding. Pojemność użyteczna jest ograniczona progiem zapełnienia.",
+				"regionPlaceholder": "Wybierz region",
+				"noRegions": "Brak regionów. Najpierw dodaj region na karcie Regiony."
 			},
 			"entryDialog": {
 				"title": "Dodaj pojemność",
 				"capacityHint": "Pojemność surowa węzła lub bloku usługi, w GB.",
 				"labelHint": "Opcjonalnie. Bez etykiety pozycja otrzyma nazwę od klastra."
+			},
+			"regions": {
+				"add": "Dodaj region",
+				"editTitle": "Edytuj region",
+				"code": "Kod",
+				"codeHint": "Litery A–Z, cyfry i myślniki, do 16 znaków; kodu nie można później zmienić",
+				"usedBy": "Używany przez",
+				"usage": {
+					"models": "Modele",
+					"hosts": "Hosty",
+					"clusters": "Klastry"
+				},
+				"empty": "Brak regionów. Dodaj pierwszy region.",
+				"editAction": "Edytuj {{code}}",
+				"deleteAction": "Usuń {{code}}",
+				"deleteTitle": "Usunąć region {{code}}?",
+				"deleteDescription": "Region zostanie usunięty z katalogu. Nie można usunąć regionu używanego przez model, host lub klaster."
 			}
 		}
 	},
@@ -1901,7 +1923,7 @@
 			"validation": {
 				"required": "To pole jest wymagane.",
 				"integer": "Wpisz liczbę całkowitą od {{min}} do {{max}}.",
-				"regions": "Wpisz co najmniej jeden kod regionu (litery, cyfry i myślniki), oddzielając kody przecinkami."
+				"regionsRequired": "Wybierz co najmniej jeden region."
 			},
 			"models": {
 				"title": "Modele serwerów",
@@ -1909,7 +1931,6 @@
 				"add": "Dodaj model",
 				"edit": "Edytuj model",
 				"empty": "Brak modeli serwerów.",
-				"regionsHint": "Kody regionów oddzielone przecinkami, na przykład GRA, PAR.",
 				"editAction": "Edytuj {{name}}",
 				"deleteAction": "Usuń {{name}}",
 				"deleteTitle": "Usunąć model {{name}}?",
@@ -1924,7 +1945,9 @@
 					"regions": "Regiony",
 					"leadTime": "Czas realizacji (dni)",
 					"reserve": "Rezerwa hiperwizora (%)"
-				}
+				},
+				"regionsEmpty": "Brak regionów. Poproś zespół datacenter o dodanie regionów.",
+				"regionNotInCatalog": "(spoza katalogu)"
 			},
 			"hosts": {
 				"title": "Hosty",
@@ -1955,7 +1978,12 @@
 					"ram": "Użycie RAM (szczyt)",
 					"vms": "VM",
 					"localDisk": "Dysk lokalny (GB)"
-				}
+				},
+				"quantity": "Liczba",
+				"added_one": "Dodano {{count}} host",
+				"added_few": "Dodano {{count}} hosty",
+				"added_many": "Dodano {{count}} hostów",
+				"added_other": "Dodano {{count}} hosta"
 			},
 			"warnings": {
 				"title": "Ostrzeżenia",
@@ -1984,7 +2012,8 @@
 				"hostNotInProject": "Wybrany host nie należy do tego projektu.",
 				"clusterRegionMismatch": "Klaster Ceph musi znajdować się w tym samym regionie co host.",
 				"clusterNotInWorkspace": "Klaster Ceph nie należy do tej przestrzeni roboczej.",
-				"vmNotInTask": "Jedna z VM na liście nie należy do tego zadania. Wczytaj zadanie ponownie i spróbuj jeszcze raz."
+				"vmNotInTask": "Jedna z VM na liście nie należy do tego zadania. Wczytaj zadanie ponownie i spróbuj jeszcze raz.",
+				"regionUnknown": "Tego regionu nie ma w katalogu regionów."
 			}
 		},
 		"repositoryBrowser": {
@@ -4030,7 +4059,8 @@
 			"validation": {
 				"nameRequired": "Wpisz nazwę VM.",
 				"number": "Wpisz liczbę całkowitą, 0 lub większą."
-			}
+			},
+			"hostRemoved": "Host usunięty"
 		}
 	},
 	"press": {

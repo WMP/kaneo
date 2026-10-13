@@ -246,6 +246,48 @@ describe("task infrastructure section", () => {
     );
   });
 
+  it("shows a host that is no longer in the list as removed and saves it as no host", async () => {
+    vi.mocked(getTaskVms).mockResolvedValue([
+      { ...vm, hostId: "host-gone" },
+    ] as never);
+    vi.mocked(replaceTaskVms).mockResolvedValue([vm] as never);
+    renderSection();
+
+    const hostSelect = (await screen.findByLabelText(
+      "tasks:infrastructure.columns.host",
+    )) as HTMLSelectElement;
+    expect(hostSelect.value).toBe("host-gone");
+    expect(
+      within(hostSelect).getByRole("option", {
+        name: "tasks:infrastructure.hostRemoved",
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByDisplayValue("billing-db-1"), {
+      target: { value: "billing-db-b" },
+    });
+    fireEvent.click(saveButton());
+
+    await waitFor(() =>
+      expect(replaceTaskVms).toHaveBeenCalledWith({
+        taskId: "task-1",
+        vms: [expect.objectContaining({ id: "vm-1", hostId: null })],
+      }),
+    );
+  });
+
+  it("shows a removed host in the read-only view too", async () => {
+    canPlanInfrastructure.mockReturnValue(false);
+    vi.mocked(getTaskVms).mockResolvedValue([
+      { ...vm, hostId: "host-gone" },
+    ] as never);
+    renderSection();
+
+    expect(
+      await screen.findByText("tasks:infrastructure.hostRemoved"),
+    ).toBeInTheDocument();
+  });
+
   it("restores the saved list on Cancel", async () => {
     renderSection();
     const name = await screen.findByDisplayValue("billing-db-1");

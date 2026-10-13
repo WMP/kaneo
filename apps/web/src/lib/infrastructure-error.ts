@@ -9,11 +9,12 @@ export const readInfrastructureError = readProjectApiError;
 
 // Static keys keep the i18n checker able to see every string in use. One code
 // can mean different things on the two surfaces (INFRA_REGION_IN_USE: a model
-// region a host uses, or the region of a Ceph cluster VMs use), so each
+// region a host uses, or a catalog region a model, host or cluster uses), so each
 // surface has its own map.
 const PROJECT_ERROR_KEYS: Record<string, string> = {
   INFRA_REGION_NOT_ALLOWED:
     "settings:projectInfrastructure.errors.regionNotAllowed",
+  INFRA_REGION_UNKNOWN: "settings:projectInfrastructure.errors.regionUnknown",
   INFRA_MODEL_IN_USE: "settings:projectInfrastructure.errors.modelInUse",
   INFRA_REGION_IN_USE: "settings:projectInfrastructure.errors.regionInUse",
   INFRA_HOST_LOCKED: "settings:projectInfrastructure.errors.hostLocked",
@@ -34,6 +35,8 @@ const DATACENTER_ERROR_KEYS: Record<string, string> = {
   INFRA_CAPACITY_LOCKED: "workspace:datacenter.errors.capacityLocked",
   INFRA_CLUSTER_INVALID: "workspace:datacenter.errors.clusterInvalid",
   INFRA_REGION_IN_USE: "workspace:datacenter.errors.regionInUse",
+  INFRA_REGION_UNKNOWN: "workspace:datacenter.errors.regionUnknown",
+  INFRA_REGION_CODE_TAKEN: "workspace:datacenter.errors.regionCodeTaken",
 };
 
 /** A translated message for a failed project infrastructure request. */

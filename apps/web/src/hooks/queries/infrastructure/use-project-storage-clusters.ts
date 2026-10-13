@@ -11,6 +11,7 @@ function useProjectStorageClusters(projectId: string, enabled = true) {
     queryFn: () => getProjectStorageClusters(projectId),
     enabled: enabled && !!projectId,
     staleTime: INFRASTRUCTURE_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

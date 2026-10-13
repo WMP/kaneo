@@ -8,6 +8,7 @@ function useStorageClusters(workspaceId: string | undefined) {
     queryKey: datacenterClustersKey(workspaceId),
     queryFn: workspaceId ? () => getStorageClusters(workspaceId) : skipToken,
     staleTime: DATACENTER_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

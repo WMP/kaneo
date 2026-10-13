@@ -736,7 +736,7 @@
 			"validation": {
 				"required": "Dit veld is verplicht.",
 				"integer": "Voer een geheel getal in van {{min}} tot {{max}}.",
-				"regions": "Voer een of meer regiocodes in (letters, cijfers en streepjes), gescheiden door komma's."
+				"regionsRequired": "Selecteer minstens één regio."
 			},
 			"models": {
 				"title": "Servermodellen",
@@ -744,7 +744,6 @@
 				"add": "Model toevoegen",
 				"edit": "Model bewerken",
 				"empty": "Nog geen servermodellen.",
-				"regionsHint": "Regiocodes gescheiden door komma's, bijvoorbeeld GRA, PAR.",
 				"editAction": "{{name}} bewerken",
 				"deleteAction": "{{name}} verwijderen",
 				"deleteTitle": "Model {{name}} verwijderen?",
@@ -759,7 +758,9 @@
 					"regions": "Regio's",
 					"leadTime": "Levertijd (dagen)",
 					"reserve": "Hypervisorreserve (%)"
-				}
+				},
+				"regionsEmpty": "Nog geen regio's. Vraag het datacenterteam om regio's toe te voegen.",
+				"regionNotInCatalog": "(niet in de catalogus)"
 			},
 			"hosts": {
 				"title": "Hosts",
@@ -790,7 +791,10 @@
 					"ram": "RAM-gebruik (piek)",
 					"vms": "VM's",
 					"localDisk": "Lokale schijf (GB)"
-				}
+				},
+				"quantity": "Aantal",
+				"added_one": "{{count}} host toegevoegd",
+				"added_other": "{{count}} hosts toegevoegd"
 			},
 			"warnings": {
 				"title": "Waarschuwingen",
@@ -819,7 +823,8 @@
 				"hostNotInProject": "De gekozen host hoort niet bij dit project.",
 				"clusterRegionMismatch": "Het Ceph-cluster moet in dezelfde regio staan als de host.",
 				"clusterNotInWorkspace": "Het Ceph-cluster hoort niet bij deze werkruimte.",
-				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens."
+				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens.",
+				"regionUnknown": "Deze regio staat niet in de regiocatalogus."
 			}
 		},
 		"projectSwitcher": {
@@ -3555,7 +3560,8 @@
 			"validation": {
 				"nameRequired": "Voer een VM-naam in.",
 				"number": "Voer een geheel getal in, 0 of hoger."
-			}
+			},
+			"hostRemoved": "Host verwijderd"
 		}
 	},
 	"invitations": {
@@ -3743,7 +3749,8 @@
 			"tabs": {
 				"orderPlan": "Bestelplan",
 				"hosts": "Hosts",
-				"storage": "Ceph-opslag"
+				"storage": "Ceph-opslag",
+				"regions": "Regio's"
 			},
 			"loadFailed": "De datacentergegevens konden niet worden geladen.",
 			"noAccess": {
@@ -3760,9 +3767,11 @@
 				"clusterInUse": "Een VM gebruikt dit cluster nog. Verplaats de VM eerst naar een ander cluster.",
 				"capacityLocked": "Alleen een geplande post kan op deze manier worden gewijzigd.",
 				"clusterInvalid": "De clusterinstellingen zijn ongeldig. Controleer de erasure-codingwaarden.",
-				"regionInUse": "Een host gebruikt deze regio nog.",
+				"regionInUse": "Deze regio wordt nog gebruikt door een model, een host of een cluster.",
 				"saveFailed": "De wijziging kon niet worden opgeslagen.",
-				"deleteFailed": "De post kon niet worden verwijderd."
+				"deleteFailed": "De post kon niet worden verwijderd.",
+				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
+				"regionCodeTaken": "Er bestaat al een regio met deze code."
 			},
 			"fields": {
 				"status": "Status",
@@ -3880,12 +3889,31 @@
 				"createTitle": "Ceph-cluster toevoegen",
 				"editTitle": "Ceph-cluster bewerken",
 				"selfManagedHint": "De bruikbare capaciteit is de ruwe capaciteit × k / (k + m), begrensd door de vuldrempel.",
-				"managedHint": "Een beheerde dienst heeft geen erasure coding. De bruikbare capaciteit wordt begrensd door de vuldrempel."
+				"managedHint": "Een beheerde dienst heeft geen erasure coding. De bruikbare capaciteit wordt begrensd door de vuldrempel.",
+				"regionPlaceholder": "Selecteer een regio",
+				"noRegions": "Nog geen regio's. Voeg eerst een regio toe op het tabblad Regio's."
 			},
 			"entryDialog": {
 				"title": "Capaciteit toevoegen",
 				"capacityHint": "Ruwe capaciteit van de node of het dienstblok, in GB.",
 				"labelHint": "Optioneel. Zonder label krijgt de post de naam van het cluster."
+			},
+			"regions": {
+				"add": "Regio toevoegen",
+				"editTitle": "Regio bewerken",
+				"code": "Code",
+				"codeHint": "Letters A–Z, cijfers en streepjes, maximaal 16 tekens; de code kan later niet meer worden gewijzigd",
+				"usedBy": "Gebruikt door",
+				"usage": {
+					"models": "Modellen",
+					"hosts": "Hosts",
+					"clusters": "Clusters"
+				},
+				"empty": "Nog geen regio's. Voeg de eerste regio toe.",
+				"editAction": "{{code}} bewerken",
+				"deleteAction": "{{code}} verwijderen",
+				"deleteTitle": "Regio {{code}} verwijderen?",
+				"deleteDescription": "De regio wordt uit de catalogus verwijderd. Een regio die door een model, een host of een cluster wordt gebruikt, kan niet worden verwijderd."
 			}
 		}
 	},

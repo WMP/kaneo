@@ -312,10 +312,12 @@ export function StorageTab({
   workspaceId,
   clusters,
   results,
+  regions,
   canManage,
 }: {
   workspaceId: string;
   clusters: StorageCluster[];
+  regions: { code: string; name: string }[];
   results: ClusterCapacity[];
   canManage: boolean;
 }) {
@@ -375,6 +377,7 @@ export function StorageTab({
             if (!open) close();
           }}
           cluster={dialog.cluster}
+          regions={regions}
           onSubmit={(data) =>
             dialog.cluster
               ? updateCluster.mutateAsync({

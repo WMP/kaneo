@@ -123,6 +123,30 @@ it("refreshes the Jira state and the activity of a task another client changed",
   }
 });
 
+it.each(["TASK_CREATED", "TASK_UPDATED", "TASK_DELETED"])(
+  "refreshes the infrastructure data on %s",
+  (type) => {
+    const sockets = stubSocket();
+    invalidateQueries.mockClear();
+    try {
+      renderHook(() => useProjectWebSocket("project-1"));
+      sockets[0].onmessage?.({
+        data: JSON.stringify({
+          type,
+          projectId: "project-1",
+          taskId: "task-1",
+        }),
+      });
+      expect(invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ["infrastructure"],
+      });
+    } finally {
+      cleanup();
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
 describe("getWsUrl", () => {
   beforeEach(() => {
     vi.stubEnv("VITE_API_URL", "http://localhost:1337");

@@ -839,7 +839,7 @@
 			"validation": {
 				"required": "Ce champ est obligatoire.",
 				"integer": "Saisissez un nombre entier de {{min}} à {{max}}.",
-				"regions": "Saisissez un ou plusieurs codes de région (lettres, chiffres et tirets), séparés par des virgules."
+				"regionsRequired": "Sélectionnez au moins une région."
 			},
 			"models": {
 				"title": "Modèles de serveurs",
@@ -847,7 +847,6 @@
 				"add": "Ajouter un modèle",
 				"edit": "Modifier le modèle",
 				"empty": "Aucun modèle de serveur pour le moment.",
-				"regionsHint": "Codes de région séparés par des virgules, par exemple GRA, PAR.",
 				"editAction": "Modifier {{name}}",
 				"deleteAction": "Supprimer {{name}}",
 				"deleteTitle": "Supprimer le modèle {{name}} ?",
@@ -862,7 +861,9 @@
 					"regions": "Régions",
 					"leadTime": "Délai de livraison (jours)",
 					"reserve": "Réserve hyperviseur (%)"
-				}
+				},
+				"regionsEmpty": "Aucune région pour le moment. Demandez à l'équipe datacenter d'ajouter des régions.",
+				"regionNotInCatalog": "(absente du catalogue)"
 			},
 			"hosts": {
 				"title": "Hôtes",
@@ -893,7 +894,11 @@
 					"ram": "Utilisation de la RAM (pic)",
 					"vms": "VM",
 					"localDisk": "Disque local (Go)"
-				}
+				},
+				"quantity": "Quantité",
+				"added_one": "{{count}} hôte ajouté",
+				"added_many": "{{count}} d'hôtes ajoutés",
+				"added_other": "{{count}} hôtes ajoutés"
 			},
 			"warnings": {
 				"title": "Alertes",
@@ -922,7 +927,8 @@
 				"hostNotInProject": "L'hôte sélectionné n'appartient pas à ce projet.",
 				"clusterRegionMismatch": "Le cluster Ceph doit se trouver dans la même région que l'hôte.",
 				"clusterNotInWorkspace": "Le cluster Ceph ne fait pas partie de cet espace de travail.",
-				"vmNotInTask": "Une VM de la liste n'appartient pas à cette tâche. Rechargez la tâche et réessayez."
+				"vmNotInTask": "Une VM de la liste n'appartient pas à cette tâche. Rechargez la tâche et réessayez.",
+				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions."
 			}
 		},
 		"projectSwitcher": {
@@ -3567,7 +3573,8 @@
 			"validation": {
 				"nameRequired": "Saisissez un nom de VM.",
 				"number": "Saisissez un nombre entier, 0 ou plus."
-			}
+			},
+			"hostRemoved": "Hôte supprimé"
 		}
 	},
 	"invitations": {
@@ -3756,7 +3763,8 @@
 			"tabs": {
 				"orderPlan": "Plan de commande",
 				"hosts": "Hôtes",
-				"storage": "Stockage Ceph"
+				"storage": "Stockage Ceph",
+				"regions": "Régions"
 			},
 			"loadFailed": "Impossible de charger les données du datacenter.",
 			"noAccess": {
@@ -3773,9 +3781,11 @@
 				"clusterInUse": "Une VM utilise encore ce cluster. Déplacez d'abord la VM vers un autre cluster.",
 				"capacityLocked": "Seule une entrée planifiée peut être modifiée de cette façon.",
 				"clusterInvalid": "Les paramètres du cluster ne sont pas valides. Vérifiez les valeurs d'erasure coding.",
-				"regionInUse": "Un hôte utilise encore cette région.",
+				"regionInUse": "Cette région est encore utilisée par un modèle, un hôte ou un cluster.",
 				"saveFailed": "Impossible d'enregistrer la modification.",
-				"deleteFailed": "Impossible de supprimer l'élément."
+				"deleteFailed": "Impossible de supprimer l'élément.",
+				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions.",
+				"regionCodeTaken": "Une région avec ce code existe déjà."
 			},
 			"fields": {
 				"status": "Statut",
@@ -3893,12 +3903,31 @@
 				"createTitle": "Ajouter un cluster Ceph",
 				"editTitle": "Modifier le cluster Ceph",
 				"selfManagedHint": "La capacité utilisable est la capacité brute × k / (k + m), limitée par le seuil de remplissage.",
-				"managedHint": "Un service managé n'a pas d'erasure coding. La capacité utilisable est limitée par le seuil de remplissage."
+				"managedHint": "Un service managé n'a pas d'erasure coding. La capacité utilisable est limitée par le seuil de remplissage.",
+				"regionPlaceholder": "Sélectionnez une région",
+				"noRegions": "Aucune région pour le moment. Ajoutez d'abord une région dans l'onglet Régions."
 			},
 			"entryDialog": {
 				"title": "Ajouter de la capacité",
 				"capacityHint": "Capacité brute du nœud ou du bloc de service, en Go.",
 				"labelHint": "Facultatif. Sans libellé, l'entrée porte le nom du cluster."
+			},
+			"regions": {
+				"add": "Ajouter une région",
+				"editTitle": "Modifier la région",
+				"code": "Code",
+				"codeHint": "Lettres A–Z, chiffres et tirets, 16 caractères maximum ; le code ne pourra plus être modifié",
+				"usedBy": "Utilisée par",
+				"usage": {
+					"models": "Modèles",
+					"hosts": "Hôtes",
+					"clusters": "Clusters"
+				},
+				"empty": "Aucune région pour le moment. Ajoutez la première région.",
+				"editAction": "Modifier {{code}}",
+				"deleteAction": "Supprimer {{code}}",
+				"deleteTitle": "Supprimer la région {{code}} ?",
+				"deleteDescription": "La région est retirée du catalogue. Une région utilisée par un modèle, un hôte ou un cluster ne peut pas être supprimée."
 			}
 		}
 	},

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTaskStatus from "@/fetchers/task/update-task-status";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import type Task from "@/types/task";
 
 export function useUpdateTaskStatus() {
@@ -26,6 +27,8 @@ export function useUpdateTaskStatus() {
       queryClient.invalidateQueries({
         queryKey: ["task-relations"],
       });
+      // Archiving a task removes its capacity warnings.
+      invalidateInfrastructure(queryClient);
     },
   });
 }

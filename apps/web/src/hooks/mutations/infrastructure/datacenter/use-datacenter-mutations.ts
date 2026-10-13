@@ -1,45 +1,26 @@
-import {
-  type QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import createRegion from "@/fetchers/infrastructure/datacenter/create-region";
 import createStorageCapacity from "@/fetchers/infrastructure/datacenter/create-storage-capacity";
 import createStorageCluster from "@/fetchers/infrastructure/datacenter/create-storage-cluster";
+import deleteRegion from "@/fetchers/infrastructure/datacenter/delete-region";
 import deleteStorageCapacity from "@/fetchers/infrastructure/datacenter/delete-storage-capacity";
 import deleteStorageCluster from "@/fetchers/infrastructure/datacenter/delete-storage-cluster";
 import downloadOrderPlan from "@/fetchers/infrastructure/datacenter/download-order-plan";
 import setHostStatus from "@/fetchers/infrastructure/datacenter/set-host-status";
+import updateRegion from "@/fetchers/infrastructure/datacenter/update-region";
 import updateStorageCapacity from "@/fetchers/infrastructure/datacenter/update-storage-capacity";
 import updateStorageCluster from "@/fetchers/infrastructure/datacenter/update-storage-cluster";
-import {
-  datacenterCapacityKey,
-  datacenterClustersKey,
-  datacenterHostsKey,
-} from "@/hooks/queries/infrastructure/datacenter/keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 
-// A host or capacity change moves the day-by-day capacity, the order plan, the
-// warnings and the cluster totals together, so every mutation refreshes all of
-// the workspace's datacenter data.
-function invalidateDatacenter(queryClient: QueryClient, workspaceId: string) {
-  return Promise.all([
-    queryClient.invalidateQueries({
-      queryKey: datacenterCapacityKey(workspaceId),
-    }),
-    queryClient.invalidateQueries({
-      queryKey: datacenterHostsKey(workspaceId),
-    }),
-    queryClient.invalidateQueries({
-      queryKey: datacenterClustersKey(workspaceId),
-    }),
-  ]);
-}
-
+// Every infrastructure mutation refreshes the whole infrastructure cache: a
+// host, capacity or region change moves the day-by-day capacity, the order
+// plan, the warnings and the totals together, and the project views read the
+// same data.
 export function useSetHostStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: setHostStatus,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -47,8 +28,7 @@ export function useCreateStorageCluster() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createStorageCluster,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -56,8 +36,7 @@ export function useUpdateStorageCluster() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateStorageCluster,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -65,8 +44,7 @@ export function useDeleteStorageCluster() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteStorageCluster,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -74,8 +52,7 @@ export function useCreateStorageCapacity() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createStorageCapacity,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -83,8 +60,7 @@ export function useUpdateStorageCapacity() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateStorageCapacity,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 
@@ -92,8 +68,31 @@ export function useDeleteStorageCapacity() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteStorageCapacity,
-    onSettled: (_data, _error, { workspaceId }) =>
-      invalidateDatacenter(queryClient, workspaceId),
+    onSettled: () => invalidateInfrastructure(queryClient),
+  });
+}
+
+export function useCreateRegion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createRegion,
+    onSettled: () => invalidateInfrastructure(queryClient),
+  });
+}
+
+export function useUpdateRegion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateRegion,
+    onSettled: () => invalidateInfrastructure(queryClient),
+  });
+}
+
+export function useDeleteRegion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteRegion,
+    onSettled: () => invalidateInfrastructure(queryClient),
   });
 }
 

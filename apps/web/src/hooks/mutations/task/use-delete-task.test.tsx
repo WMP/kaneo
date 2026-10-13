@@ -134,6 +134,43 @@ describe("useDeleteTask", () => {
     expect(storedProject?.archivedTasks).toEqual([]);
   });
 
+  it("invalidates the infrastructure data, so the warnings of the task disappear", async () => {
+    const task = makeTask("delete-me");
+    queryClient.setQueryData(
+      ["infrastructure", "project", "project-1", "capacity"],
+      { warnings: [{ taskId: task.id }] },
+    );
+    queryClient.setQueryData(["infrastructure", "task", task.id, "vms"], []);
+    vi.mocked(deleteTask).mockResolvedValue({
+      ...task,
+      priority: "no-priority",
+      constraintType: "none" as const,
+      constraintDate: null as string | null,
+      estimateMinutes: null as number | null,
+      estimateUnit: "hours",
+      approvalStatus: "none",
+      approvalNote: null,
+    });
+
+    const { result } = renderHook(() => useDeleteTask(), { wrapper: Wrapper });
+    await act(async () => {
+      await result.current.mutateAsync(task.id);
+    });
+
+    expect(
+      queryClient.getQueryState([
+        "infrastructure",
+        "project",
+        "project-1",
+        "capacity",
+      ])?.isInvalidated,
+    ).toBe(true);
+    expect(
+      queryClient.getQueryState(["infrastructure", "task", task.id, "vms"])
+        ?.isInvalidated,
+    ).toBe(true);
+  });
+
   it("leaves query and project-store state unchanged when deletion fails", async () => {
     const project = makeProject();
     const task = makeTask("delete-me");

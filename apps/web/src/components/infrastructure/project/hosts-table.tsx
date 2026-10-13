@@ -311,6 +311,7 @@ export function HostsTable({
         <NewHostDialog
           projectId={projectId}
           models={models}
+          allowQuantity
           open={addOpen}
           onOpenChange={setAddOpen}
         />

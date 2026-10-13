@@ -5526,11 +5526,11 @@
 								"integer": {
 									"type": "string"
 								},
-								"regions": {
+								"regionsRequired": {
 									"type": "string"
 								}
 							},
-							"required": ["required", "integer", "regions"]
+							"required": ["required", "integer", "regionsRequired"]
 						},
 						"models": {
 							"type": "object",
@@ -5549,9 +5549,6 @@
 									"type": "string"
 								},
 								"empty": {
-									"type": "string"
-								},
-								"regionsHint": {
 									"type": "string"
 								},
 								"editAction": {
@@ -5609,6 +5606,12 @@
 										"leadTime",
 										"reserve"
 									]
+								},
+								"regionsEmpty": {
+									"type": "string"
+								},
+								"regionNotInCatalog": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5617,12 +5620,13 @@
 								"add",
 								"edit",
 								"empty",
-								"regionsHint",
 								"editAction",
 								"deleteAction",
 								"deleteTitle",
 								"deleteDescription",
-								"columns"
+								"columns",
+								"regionsEmpty",
+								"regionNotInCatalog"
 							]
 						},
 						"hosts": {
@@ -5726,6 +5730,27 @@
 										"vms",
 										"localDisk"
 									]
+								},
+								"quantity": {
+									"type": "string"
+								},
+								"added_one": {
+									"type": "string"
+								},
+								"added_zero": {
+									"type": "string"
+								},
+								"added_two": {
+									"type": "string"
+								},
+								"added_few": {
+									"type": "string"
+								},
+								"added_many": {
+									"type": "string"
+								},
+								"added_other": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5747,7 +5772,8 @@
 								"deleteDescription",
 								"orderLate",
 								"ramUsage",
-								"columns"
+								"columns",
+								"quantity"
 							]
 						},
 						"warnings": {
@@ -5846,6 +5872,9 @@
 								},
 								"vmNotInTask": {
 									"type": "string"
+								},
+								"regionUnknown": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5856,7 +5885,8 @@
 								"hostNotInProject",
 								"clusterRegionMismatch",
 								"clusterNotInWorkspace",
-								"vmNotInTask"
+								"vmNotInTask",
+								"regionUnknown"
 							]
 						}
 					},
@@ -14488,6 +14518,9 @@
 								}
 							},
 							"required": ["nameRequired", "number"]
+						},
+						"hostRemoved": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -14504,7 +14537,8 @@
 						"clusterOption",
 						"saved",
 						"warningsTitle",
-						"validation"
+						"validation",
+						"hostRemoved"
 					]
 				}
 			},
@@ -15363,9 +15397,12 @@
 								},
 								"storage": {
 									"type": "string"
+								},
+								"regions": {
+									"type": "string"
 								}
 							},
-							"required": ["orderPlan", "hosts", "storage"]
+							"required": ["orderPlan", "hosts", "storage", "regions"]
 						},
 						"loadFailed": {
 							"type": "string"
@@ -15423,6 +15460,12 @@
 								},
 								"deleteFailed": {
 									"type": "string"
+								},
+								"regionUnknown": {
+									"type": "string"
+								},
+								"regionCodeTaken": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -15433,7 +15476,9 @@
 								"clusterInvalid",
 								"regionInUse",
 								"saveFailed",
-								"deleteFailed"
+								"deleteFailed",
+								"regionUnknown",
+								"regionCodeTaken"
 							]
 						},
 						"fields": {
@@ -15881,13 +15926,21 @@
 								},
 								"managedHint": {
 									"type": "string"
+								},
+								"regionPlaceholder": {
+									"type": "string"
+								},
+								"noRegions": {
+									"type": "string"
 								}
 							},
 							"required": [
 								"createTitle",
 								"editTitle",
 								"selfManagedHint",
-								"managedHint"
+								"managedHint",
+								"regionPlaceholder",
+								"noRegions"
 							]
 						},
 						"entryDialog": {
@@ -15905,6 +15958,71 @@
 								}
 							},
 							"required": ["title", "capacityHint", "labelHint"]
+						},
+						"regions": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"add": {
+									"type": "string"
+								},
+								"editTitle": {
+									"type": "string"
+								},
+								"code": {
+									"type": "string"
+								},
+								"codeHint": {
+									"type": "string"
+								},
+								"usedBy": {
+									"type": "string"
+								},
+								"usage": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"models": {
+											"type": "string"
+										},
+										"hosts": {
+											"type": "string"
+										},
+										"clusters": {
+											"type": "string"
+										}
+									},
+									"required": ["models", "hosts", "clusters"]
+								},
+								"empty": {
+									"type": "string"
+								},
+								"editAction": {
+									"type": "string"
+								},
+								"deleteAction": {
+									"type": "string"
+								},
+								"deleteTitle": {
+									"type": "string"
+								},
+								"deleteDescription": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"add",
+								"editTitle",
+								"code",
+								"codeHint",
+								"usedBy",
+								"usage",
+								"empty",
+								"editAction",
+								"deleteAction",
+								"deleteTitle",
+								"deleteDescription"
+							]
 						}
 					},
 					"required": [
@@ -15922,7 +16040,8 @@
 						"warnings",
 						"storage",
 						"clusterDialog",
-						"entryDialog"
+						"entryDialog",
+						"regions"
 					]
 				}
 			},

@@ -96,12 +96,20 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
     [hosts],
   );
   const clusters = clustersQuery.data ?? [];
+  // A host that is no longer in the loaded list was deleted (in project
+  // settings, or by someone else): the VM shows "Host removed" and is saved
+  // without a host. Nothing is judged before the host list has loaded.
+  const isHostRemoved = (row: VmRow) =>
+    row.hostId !== null && hostsQuery.isSuccess && !hostById.has(row.hostId);
 
   const statusText = (status: HostSummary["status"]) =>
     t(`common:infrastructureStatus.${status}`);
 
-  const hostOptions = [
+  const hostOptionsFor = (row: VmRow) => [
     { value: NONE, label: t("tasks:infrastructure.noHost") },
+    ...(row.hostId && isHostRemoved(row)
+      ? [{ value: row.hostId, label: t("tasks:infrastructure.hostRemoved") }]
+      : []),
     ...hosts.map((host) => ({
       value: host.id,
       label: t("tasks:infrastructure.hostOption", {
@@ -199,7 +207,15 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
     setSubmitted(true);
     if (draft.some((row) => Object.keys(validateRow(row)).length > 0)) return;
     replaceVms.mutate(
-      { projectId, taskId, vms: toVmInputs(draft) },
+      {
+        projectId,
+        taskId,
+        vms: toVmInputs(
+          draft.map((row) =>
+            isHostRemoved(row) ? { ...row, hostId: null } : row,
+          ),
+        ),
+      },
       {
         onSuccess: () => {
           reset();
@@ -306,7 +322,12 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
                               ariaLabel={t("tasks:infrastructure.columns.host")}
                               placeholder={t("tasks:infrastructure.noHost")}
                               value={row.hostId ?? NONE}
-                              options={hostOptions}
+                              options={hostOptionsFor(row)}
+                              className={
+                                isHostRemoved(row)
+                                  ? "text-warning-foreground"
+                                  : undefined
+                              }
                               onChange={(value) => {
                                 if (value === NEW_HOST) {
                                   setNewHostRowKey(row.key);
@@ -321,6 +342,10 @@ export function TaskInfrastructureSection({ taskId, projectId }: Props) {
                               region: host.region,
                               status: statusText(host.status),
                             })
+                          ) : isHostRemoved(row) ? (
+                            <span className="text-warning-foreground">
+                              {t("tasks:infrastructure.hostRemoved")}
+                            </span>
                           ) : (
                             <span className="text-muted-foreground">
                               {t("tasks:infrastructure.noHost")}

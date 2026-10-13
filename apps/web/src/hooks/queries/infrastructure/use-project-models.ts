@@ -11,6 +11,7 @@ function useProjectModels(projectId: string, enabled = true) {
     queryFn: () => getProjectModels(projectId),
     enabled: enabled && !!projectId,
     staleTime: INFRASTRUCTURE_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

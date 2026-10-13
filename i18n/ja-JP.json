@@ -1075,7 +1075,7 @@
 			"validation": {
 				"required": "この項目は必須です。",
 				"integer": "{{min}}から{{max}}までの整数を入力してください。",
-				"regions": "1つ以上のリージョンコード（英数字とハイフン）をカンマ区切りで入力してください。"
+				"regionsRequired": "リージョンを1つ以上選択してください。"
 			},
 			"models": {
 				"title": "サーバーモデル",
@@ -1083,7 +1083,6 @@
 				"add": "モデルを追加",
 				"edit": "モデルを編集",
 				"empty": "サーバーモデルはまだありません。",
-				"regionsHint": "カンマ区切りのリージョンコード（例：GRA, PAR）。",
 				"editAction": "{{name}}を編集",
 				"deleteAction": "{{name}}を削除",
 				"deleteTitle": "モデル{{name}}を削除しますか？",
@@ -1098,7 +1097,9 @@
 					"regions": "リージョン",
 					"leadTime": "リードタイム（日）",
 					"reserve": "ハイパーバイザー予約（%）"
-				}
+				},
+				"regionsEmpty": "リージョンがまだありません。データセンターチームにリージョンの追加を依頼してください。",
+				"regionNotInCatalog": "(カタログにありません)"
 			},
 			"hosts": {
 				"title": "ホスト",
@@ -1129,7 +1130,9 @@
 					"ram": "RAM使用率（ピーク）",
 					"vms": "VM",
 					"localDisk": "ローカルディスク（GB）"
-				}
+				},
+				"quantity": "数量",
+				"added_other": "{{count}} 台のホストを追加しました"
 			},
 			"warnings": {
 				"title": "警告",
@@ -1158,7 +1161,8 @@
 				"hostNotInProject": "選択したホストはこのプロジェクトに属していません。",
 				"clusterRegionMismatch": "Cephクラスターはホストと同じリージョンにある必要があります。",
 				"clusterNotInWorkspace": "Cephクラスターはこのワークスペースに属していません。",
-				"vmNotInTask": "リスト内のVMがこのタスクに属していません。タスクを再読み込みして、もう一度お試しください。"
+				"vmNotInTask": "リスト内のVMがこのタスクに属していません。タスクを再読み込みして、もう一度お試しください。",
+				"regionUnknown": "このリージョンはリージョンカタログにありません。"
 			}
 		},
 		"projectSwitcher": {
@@ -3543,7 +3547,8 @@
 			"validation": {
 				"nameRequired": "VM名を入力してください。",
 				"number": "0以上の整数を入力してください。"
-			}
+			},
+			"hostRemoved": "ホストは削除されました"
 		}
 	},
 	"invitations": {
@@ -3730,7 +3735,8 @@
 			"tabs": {
 				"orderPlan": "発注計画",
 				"hosts": "ホスト",
-				"storage": "Ceph ストレージ"
+				"storage": "Ceph ストレージ",
+				"regions": "リージョン"
 			},
 			"loadFailed": "データセンターのデータを読み込めませんでした。",
 			"noAccess": {
@@ -3747,9 +3753,11 @@
 				"clusterInUse": "このクラスターは VM がまだ使用しています。先に VM を別のクラスターへ移動してください。",
 				"capacityLocked": "この方法で変更できるのは計画中の項目だけです。",
 				"clusterInvalid": "クラスターの設定が正しくありません。イレイジャーコーディングの値を確認してください。",
-				"regionInUse": "このリージョンはホストがまだ使用しています。",
+				"regionInUse": "このリージョンは、モデル、ホスト、またはクラスターがまだ使用しています。",
 				"saveFailed": "変更を保存できませんでした。",
-				"deleteFailed": "項目を削除できませんでした。"
+				"deleteFailed": "項目を削除できませんでした。",
+				"regionUnknown": "このリージョンはリージョンカタログにありません。",
+				"regionCodeTaken": "このコードのリージョンは既に存在します。"
 			},
 			"fields": {
 				"status": "ステータス",
@@ -3867,12 +3875,31 @@
 				"createTitle": "Ceph クラスターを追加",
 				"editTitle": "Ceph クラスターを編集",
 				"selfManagedHint": "使用可能容量は、物理容量 × k / (k + m) を使用率のしきい値で制限した値です。",
-				"managedHint": "マネージドサービスにはイレイジャーコーディングがありません。使用可能容量は使用率のしきい値で制限されます。"
+				"managedHint": "マネージドサービスにはイレイジャーコーディングがありません。使用可能容量は使用率のしきい値で制限されます。",
+				"regionPlaceholder": "リージョンを選択",
+				"noRegions": "リージョンがまだありません。先に「リージョン」タブでリージョンを追加してください。"
 			},
 			"entryDialog": {
 				"title": "容量を追加",
 				"capacityHint": "ノードまたはサービスブロックの物理容量 (GB)。",
 				"labelHint": "任意です。ラベルがない場合、項目にはクラスター名が付きます。"
+			},
+			"regions": {
+				"add": "リージョンを追加",
+				"editTitle": "リージョンを編集",
+				"code": "コード",
+				"codeHint": "英字 A–Z、数字、ハイフンで最大16文字。コードは後から変更できません",
+				"usedBy": "使用元",
+				"usage": {
+					"models": "モデル",
+					"hosts": "ホスト",
+					"clusters": "クラスター"
+				},
+				"empty": "リージョンがまだありません。最初のリージョンを追加してください。",
+				"editAction": "{{code}} を編集",
+				"deleteAction": "{{code}} を削除",
+				"deleteTitle": "リージョン {{code}} を削除しますか?",
+				"deleteDescription": "リージョンはカタログから削除されます。モデル、ホスト、またはクラスターが使用しているリージョンは削除できません。"
 			}
 		}
 	},

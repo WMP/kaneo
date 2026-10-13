@@ -919,7 +919,7 @@
 			"validation": {
 				"required": "Dieses Feld ist erforderlich.",
 				"integer": "Geben Sie eine ganze Zahl von {{min}} bis {{max}} ein.",
-				"regions": "Geben Sie einen oder mehrere Regionscodes (Buchstaben, Ziffern und Bindestriche) ein, durch Kommas getrennt."
+				"regionsRequired": "Wählen Sie mindestens eine Region aus."
 			},
 			"models": {
 				"title": "Servermodelle",
@@ -927,7 +927,6 @@
 				"add": "Modell hinzufügen",
 				"edit": "Modell bearbeiten",
 				"empty": "Noch keine Servermodelle.",
-				"regionsHint": "Regionscodes durch Kommas getrennt, zum Beispiel GRA, PAR.",
 				"editAction": "{{name}} bearbeiten",
 				"deleteAction": "{{name}} löschen",
 				"deleteTitle": "Modell {{name}} löschen?",
@@ -942,7 +941,9 @@
 					"regions": "Regionen",
 					"leadTime": "Lieferzeit (Tage)",
 					"reserve": "Hypervisor-Reserve (%)"
-				}
+				},
+				"regionsEmpty": "Noch keine Regionen. Bitten Sie das Datacenter-Team, Regionen anzulegen.",
+				"regionNotInCatalog": "(nicht im Katalog)"
 			},
 			"hosts": {
 				"title": "Hosts",
@@ -973,7 +974,10 @@
 					"ram": "RAM-Auslastung (Spitze)",
 					"vms": "VMs",
 					"localDisk": "Lokaler Speicher (GB)"
-				}
+				},
+				"quantity": "Anzahl",
+				"added_one": "{{count}} Host hinzugefügt",
+				"added_other": "{{count}} Hosts hinzugefügt"
 			},
 			"warnings": {
 				"title": "Warnungen",
@@ -1002,7 +1006,8 @@
 				"hostNotInProject": "Der gewählte Host gehört nicht zu diesem Projekt.",
 				"clusterRegionMismatch": "Der Ceph-Cluster muss in derselben Region wie der Host liegen.",
 				"clusterNotInWorkspace": "Der Ceph-Cluster gehört nicht zu diesem Arbeitsbereich.",
-				"vmNotInTask": "Eine VM in der Liste gehört nicht zu dieser Aufgabe. Laden Sie die Aufgabe neu und versuchen Sie es erneut."
+				"vmNotInTask": "Eine VM in der Liste gehört nicht zu dieser Aufgabe. Laden Sie die Aufgabe neu und versuchen Sie es erneut.",
+				"regionUnknown": "Diese Region ist nicht im Regionskatalog."
 			}
 		},
 		"projectSwitcher": {
@@ -3555,7 +3560,8 @@
 			"validation": {
 				"nameRequired": "Geben Sie einen VM-Namen ein.",
 				"number": "Geben Sie eine ganze Zahl ein, 0 oder größer."
-			}
+			},
+			"hostRemoved": "Host entfernt"
 		}
 	},
 	"invitations": {
@@ -3743,7 +3749,8 @@
 			"tabs": {
 				"orderPlan": "Bestellplan",
 				"hosts": "Hosts",
-				"storage": "Ceph-Speicher"
+				"storage": "Ceph-Speicher",
+				"regions": "Regionen"
 			},
 			"loadFailed": "Die Rechenzentrumsdaten konnten nicht geladen werden.",
 			"noAccess": {
@@ -3760,9 +3767,11 @@
 				"clusterInUse": "Eine VM nutzt diesen Cluster noch. Verschieben Sie die VM zuerst in einen anderen Cluster.",
 				"capacityLocked": "Auf diese Weise kann nur ein geplanter Eintrag geändert werden.",
 				"clusterInvalid": "Die Cluster-Einstellungen sind ungültig. Prüfen Sie die Erasure-Coding-Werte.",
-				"regionInUse": "Ein Host nutzt diese Region noch.",
+				"regionInUse": "Diese Region wird noch von einem Modell, einem Host oder einem Cluster verwendet.",
 				"saveFailed": "Die Änderung konnte nicht gespeichert werden.",
-				"deleteFailed": "Der Eintrag konnte nicht gelöscht werden."
+				"deleteFailed": "Der Eintrag konnte nicht gelöscht werden.",
+				"regionUnknown": "Diese Region ist nicht im Regionskatalog.",
+				"regionCodeTaken": "Eine Region mit diesem Code existiert bereits."
 			},
 			"fields": {
 				"status": "Status",
@@ -3880,12 +3889,31 @@
 				"createTitle": "Ceph-Cluster hinzufügen",
 				"editTitle": "Ceph-Cluster bearbeiten",
 				"selfManagedHint": "Die nutzbare Kapazität ist die Rohkapazität × k / (k + m), begrenzt durch die Füllgrenze.",
-				"managedHint": "Ein Managed Service hat kein Erasure Coding. Die nutzbare Kapazität wird durch die Füllgrenze begrenzt."
+				"managedHint": "Ein Managed Service hat kein Erasure Coding. Die nutzbare Kapazität wird durch die Füllgrenze begrenzt.",
+				"regionPlaceholder": "Region auswählen",
+				"noRegions": "Noch keine Regionen. Legen Sie zuerst auf dem Tab „Regionen“ eine Region an."
 			},
 			"entryDialog": {
 				"title": "Kapazität hinzufügen",
 				"capacityHint": "Rohkapazität des Knotens oder des Dienstblocks in GB.",
 				"labelHint": "Optional. Ohne Bezeichnung wird der Eintrag nach dem Cluster benannt."
+			},
+			"regions": {
+				"add": "Region hinzufügen",
+				"editTitle": "Region bearbeiten",
+				"code": "Code",
+				"codeHint": "Buchstaben A–Z, Ziffern und Bindestriche, bis zu 16 Zeichen; der Code lässt sich später nicht mehr ändern",
+				"usedBy": "Verwendet von",
+				"usage": {
+					"models": "Modelle",
+					"hosts": "Hosts",
+					"clusters": "Cluster"
+				},
+				"empty": "Noch keine Regionen. Legen Sie die erste Region an.",
+				"editAction": "{{code}} bearbeiten",
+				"deleteAction": "{{code}} löschen",
+				"deleteTitle": "Region {{code}} löschen?",
+				"deleteDescription": "Die Region wird aus dem Katalog entfernt. Eine Region, die ein Modell, ein Host oder ein Cluster verwendet, kann nicht gelöscht werden."
 			}
 		}
 	},

@@ -1,21 +1,21 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import updateProjectHost, {
   type UpdateProjectHostRequest,
 } from "@/fetchers/infrastructure/update-project-host";
 import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import { toast } from "@/lib/toast";
-import { useInfrastructureInvalidation } from "./use-infrastructure-invalidation";
 
 function useUpdateProjectHost() {
   const { t } = useTranslation();
-  const invalidate = useInfrastructureInvalidation();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: UpdateProjectHostRequest) =>
       updateProjectHost(request),
-    onSuccess: (_data, variables) => {
-      invalidate(variables.projectId);
+    onSuccess: () => {
+      void invalidateInfrastructure(queryClient);
     },
     onError: (error) => {
       toast.error(getInfrastructureErrorMessage(error, t));

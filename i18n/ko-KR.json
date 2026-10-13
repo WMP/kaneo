@@ -839,7 +839,7 @@
 			"validation": {
 				"required": "이 필드는 필수입니다.",
 				"integer": "{{min}}에서 {{max}} 사이의 정수를 입력하세요.",
-				"regions": "쉼표로 구분하여 리전 코드(영문, 숫자, 하이픈)를 하나 이상 입력하세요."
+				"regionsRequired": "리전을 하나 이상 선택하세요."
 			},
 			"models": {
 				"title": "서버 모델",
@@ -847,7 +847,6 @@
 				"add": "모델 추가",
 				"edit": "모델 편집",
 				"empty": "아직 서버 모델이 없습니다.",
-				"regionsHint": "쉼표로 구분한 리전 코드입니다. 예: GRA, PAR.",
 				"editAction": "{{name}} 편집",
 				"deleteAction": "{{name}} 삭제",
 				"deleteTitle": "{{name}} 모델을 삭제할까요?",
@@ -862,7 +861,9 @@
 					"regions": "리전",
 					"leadTime": "리드 타임 (일)",
 					"reserve": "하이퍼바이저 예약 (%)"
-				}
+				},
+				"regionsEmpty": "아직 리전이 없습니다. 데이터센터 팀에 리전 추가를 요청하세요.",
+				"regionNotInCatalog": "(카탈로그에 없음)"
 			},
 			"hosts": {
 				"title": "호스트",
@@ -893,7 +894,9 @@
 					"ram": "RAM 사용량 (최대)",
 					"vms": "VM",
 					"localDisk": "로컬 디스크 (GB)"
-				}
+				},
+				"quantity": "수량",
+				"added_other": "호스트 {{count}}개를 추가했습니다"
 			},
 			"warnings": {
 				"title": "경고",
@@ -922,7 +925,8 @@
 				"hostNotInProject": "선택한 호스트가 이 프로젝트에 속하지 않습니다.",
 				"clusterRegionMismatch": "Ceph 클러스터는 호스트와 같은 리전에 있어야 합니다.",
 				"clusterNotInWorkspace": "Ceph 클러스터가 이 워크스페이스에 속하지 않습니다.",
-				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요."
+				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요.",
+				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다."
 			}
 		},
 		"projectSwitcher": {
@@ -3543,7 +3547,8 @@
 			"validation": {
 				"nameRequired": "VM 이름을 입력하세요.",
 				"number": "0 이상의 정수를 입력하세요."
-			}
+			},
+			"hostRemoved": "호스트 삭제됨"
 		}
 	},
 	"invitations": {
@@ -3730,7 +3735,8 @@
 			"tabs": {
 				"orderPlan": "주문 계획",
 				"hosts": "호스트",
-				"storage": "Ceph 스토리지"
+				"storage": "Ceph 스토리지",
+				"regions": "리전"
 			},
 			"loadFailed": "데이터센터 데이터를 불러오지 못했습니다.",
 			"noAccess": {
@@ -3747,9 +3753,11 @@
 				"clusterInUse": "아직 VM이 이 클러스터를 사용하고 있습니다. 먼저 VM을 다른 클러스터로 옮기세요.",
 				"capacityLocked": "이 방법으로는 계획 상태의 항목만 변경할 수 있습니다.",
 				"clusterInvalid": "클러스터 설정이 올바르지 않습니다. 이레이저 코딩 값을 확인하세요.",
-				"regionInUse": "아직 호스트가 이 리전을 사용하고 있습니다.",
+				"regionInUse": "이 리전은 아직 모델, 호스트 또는 클러스터에서 사용 중입니다.",
 				"saveFailed": "변경 사항을 저장하지 못했습니다.",
-				"deleteFailed": "항목을 삭제하지 못했습니다."
+				"deleteFailed": "항목을 삭제하지 못했습니다.",
+				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
+				"regionCodeTaken": "이 코드의 리전이 이미 있습니다."
 			},
 			"fields": {
 				"status": "상태",
@@ -3867,12 +3875,31 @@
 				"createTitle": "Ceph 클러스터 추가",
 				"editTitle": "Ceph 클러스터 편집",
 				"selfManagedHint": "사용 가능 용량은 원시 용량 × k / (k + m)이며, 사용률 임계값으로 제한됩니다.",
-				"managedHint": "관리형 서비스에는 이레이저 코딩이 없습니다. 사용 가능 용량은 사용률 임계값으로 제한됩니다."
+				"managedHint": "관리형 서비스에는 이레이저 코딩이 없습니다. 사용 가능 용량은 사용률 임계값으로 제한됩니다.",
+				"regionPlaceholder": "리전 선택",
+				"noRegions": "아직 리전이 없습니다. 먼저 리전 탭에서 리전을 추가하세요."
 			},
 			"entryDialog": {
 				"title": "용량 추가",
 				"capacityHint": "노드 또는 서비스 블록의 원시 용량(GB)입니다.",
 				"labelHint": "선택 사항입니다. 레이블이 없으면 항목에 클러스터 이름이 사용됩니다."
+			},
+			"regions": {
+				"add": "리전 추가",
+				"editTitle": "리전 편집",
+				"code": "코드",
+				"codeHint": "영문 A–Z, 숫자, 하이픈으로 최대 16자. 코드는 나중에 변경할 수 없습니다",
+				"usedBy": "사용처",
+				"usage": {
+					"models": "모델",
+					"hosts": "호스트",
+					"clusters": "클러스터"
+				},
+				"empty": "아직 리전이 없습니다. 첫 리전을 추가하세요.",
+				"editAction": "{{code}} 편집",
+				"deleteAction": "{{code}} 삭제",
+				"deleteTitle": "리전 {{code}}을(를) 삭제할까요?",
+				"deleteDescription": "리전이 카탈로그에서 제거됩니다. 모델, 호스트 또는 클러스터에서 사용 중인 리전은 삭제할 수 없습니다."
 			}
 		}
 	},

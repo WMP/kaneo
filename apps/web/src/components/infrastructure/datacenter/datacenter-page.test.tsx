@@ -3,8 +3,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DatacenterPage } from "./datacenter-page";
 import { HostsTab } from "./hosts-tab";
+import { RegionsTab } from "./regions-tab";
 import { StorageTab } from "./storage-tab";
-import type { DatacenterHost, StorageCluster } from "./types";
+import type { CatalogRegion, DatacenterHost, StorageCluster } from "./types";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -32,6 +33,7 @@ const queries = vi.hoisted(() => ({
   capacity: vi.fn(),
   hosts: vi.fn(),
   clusters: vi.fn(),
+  regions: vi.fn(),
 }));
 vi.mock(
   "@/hooks/queries/infrastructure/datacenter/use-workspace-capacity",
@@ -45,6 +47,10 @@ vi.mock(
   "@/hooks/queries/infrastructure/datacenter/use-storage-clusters",
   () => ({ default: queries.clusters }),
 );
+
+vi.mock("@/hooks/queries/infrastructure/datacenter/use-regions", () => ({
+  default: queries.regions,
+}));
 
 const pending = { data: undefined, isError: false };
 
@@ -106,6 +112,7 @@ beforeEach(() => {
   queries.capacity.mockReturnValue(pending);
   queries.hosts.mockReturnValue(pending);
   queries.clusters.mockReturnValue(pending);
+  queries.regions.mockReturnValue(pending);
 });
 
 afterEach(() => {
@@ -124,6 +131,7 @@ describe("DatacenterPage", () => {
     expect(queries.capacity).toHaveBeenCalledWith(undefined);
     expect(queries.hosts).toHaveBeenCalledWith(undefined);
     expect(queries.clusters).toHaveBeenCalledWith(undefined);
+    expect(queries.regions).toHaveBeenCalledWith(undefined);
   });
 
   it("requests the workspace data with datacenter read", () => {
@@ -133,6 +141,7 @@ describe("DatacenterPage", () => {
     expect(queries.capacity).toHaveBeenCalledWith("workspace-1");
     expect(queries.hosts).toHaveBeenCalledWith("workspace-1");
     expect(queries.clusters).toHaveBeenCalledWith("workspace-1");
+    expect(queries.regions).toHaveBeenCalledWith("workspace-1");
     expect(
       screen.queryByText("workspace:datacenter.noAccess.title"),
     ).not.toBeInTheDocument();
@@ -188,6 +197,7 @@ describe("StorageTab", () => {
           workspaceId="workspace-1"
           clusters={[cluster]}
           results={[]}
+          regions={[]}
           canManage={false}
         />,
       ),
@@ -213,6 +223,7 @@ describe("StorageTab", () => {
           workspaceId="workspace-1"
           clusters={[cluster]}
           results={[]}
+          regions={[]}
           canManage
         />,
       ),
@@ -237,5 +248,81 @@ describe("StorageTab", () => {
     expect(
       screen.getAllByRole("button", { name: "common:actions.delete" }),
     ).toHaveLength(2);
+  });
+});
+
+const region = (
+  code: string,
+  usage: { models: number; hosts: number; clusters: number },
+) =>
+  ({
+    id: `region-${code}`,
+    code,
+    name: `${code} name`,
+    position: 0,
+    usage,
+  }) as unknown as CatalogRegion;
+
+describe("RegionsTab", () => {
+  const regions = [
+    region("GRA", { models: 2, hosts: 3, clusters: 1 }),
+    region("PAR", { models: 0, hosts: 0, clusters: 0 }),
+  ];
+
+  it("is read-only without datacenter manage", () => {
+    render(
+      wrap(
+        <RegionsTab
+          workspaceId="workspace-1"
+          regions={regions}
+          canManage={false}
+        />,
+      ),
+    );
+
+    expect(screen.getByText("GRA")).toBeInTheDocument();
+    expect(screen.getByText("PAR name")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: "workspace:datacenter.regions.add",
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: /workspace:datacenter\.regions\.(edit|delete)Action/,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("lets a manager edit every region but delete only an unused one", () => {
+    render(
+      wrap(
+        <RegionsTab workspaceId="workspace-1" regions={regions} canManage />,
+      ),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "workspace:datacenter.regions.add" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", {
+        name: /workspace:datacenter\.regions\.editAction/,
+      }),
+    ).toHaveLength(2);
+    // The mocked `t` ignores interpolation: one delete button per row, in order.
+    const [usedDelete, unusedDelete] = screen.getAllByRole("button", {
+      name: "workspace:datacenter.regions.deleteAction",
+    });
+    expect(usedDelete).toBeDisabled();
+    expect(unusedDelete).toBeEnabled();
+  });
+
+  it("shows an empty state", () => {
+    render(
+      wrap(<RegionsTab workspaceId="workspace-1" regions={[]} canManage />),
+    );
+    expect(
+      screen.getByText("workspace:datacenter.regions.empty"),
+    ).toBeInTheDocument();
   });
 });

@@ -1414,7 +1414,7 @@
 			"validation": {
 				"required": "This field is required.",
 				"integer": "Enter a whole number from {{min}} to {{max}}.",
-				"regions": "Enter one or more region codes (letters, digits and dashes), separated by commas."
+				"regionsRequired": "Select at least one region."
 			},
 			"models": {
 				"title": "Server models",
@@ -1422,7 +1422,6 @@
 				"add": "Add model",
 				"edit": "Edit model",
 				"empty": "No server models yet.",
-				"regionsHint": "Region codes separated by commas, for example GRA, PAR.",
 				"editAction": "Edit {{name}}",
 				"deleteAction": "Delete {{name}}",
 				"deleteTitle": "Delete model {{name}}?",
@@ -1437,7 +1436,9 @@
 					"regions": "Regions",
 					"leadTime": "Lead time (days)",
 					"reserve": "Hypervisor reserve (%)"
-				}
+				},
+				"regionsEmpty": "No regions yet. Ask the datacenter team to add regions.",
+				"regionNotInCatalog": "(not in catalog)"
 			},
 			"hosts": {
 				"title": "Hosts",
@@ -1468,7 +1469,10 @@
 					"ram": "RAM use (peak)",
 					"vms": "VMs",
 					"localDisk": "Local disk (GB)"
-				}
+				},
+				"quantity": "Quantity",
+				"added_one": "Added {{count}} host",
+				"added_other": "Added {{count}} hosts"
 			},
 			"warnings": {
 				"title": "Warnings",
@@ -1497,7 +1501,8 @@
 				"hostNotInProject": "The selected host does not belong to this project.",
 				"clusterRegionMismatch": "The Ceph cluster must be in the same region as the host.",
 				"clusterNotInWorkspace": "The Ceph cluster is not part of this workspace.",
-				"vmNotInTask": "A VM in the list does not belong to this task. Reload the task and try again."
+				"vmNotInTask": "A VM in the list does not belong to this task. Reload the task and try again.",
+				"regionUnknown": "This region is not in the region catalog."
 			}
 		},
 		"projectSwitcher": {
@@ -3555,7 +3560,8 @@
 			"validation": {
 				"nameRequired": "Enter a VM name.",
 				"number": "Enter a whole number, 0 or more."
-			}
+			},
+			"hostRemoved": "Host removed"
 		}
 	},
 	"invitations": {
@@ -3743,7 +3749,8 @@
 			"tabs": {
 				"orderPlan": "Order plan",
 				"hosts": "Hosts",
-				"storage": "Ceph storage"
+				"storage": "Ceph storage",
+				"regions": "Regions"
 			},
 			"loadFailed": "The datacenter data could not be loaded.",
 			"noAccess": {
@@ -3760,9 +3767,11 @@
 				"clusterInUse": "A VM still uses this cluster. Move the VM to another cluster first.",
 				"capacityLocked": "Only a planned entry can be changed this way.",
 				"clusterInvalid": "The cluster settings are not valid. Check the erasure coding values.",
-				"regionInUse": "A host still uses this region.",
+				"regionInUse": "This region is still used by a model, a host or a cluster.",
 				"saveFailed": "The change could not be saved.",
-				"deleteFailed": "The item could not be deleted."
+				"deleteFailed": "The item could not be deleted.",
+				"regionUnknown": "This region is not in the region catalog.",
+				"regionCodeTaken": "A region with this code already exists."
 			},
 			"fields": {
 				"status": "Status",
@@ -3880,12 +3889,31 @@
 				"createTitle": "Add Ceph cluster",
 				"editTitle": "Edit Ceph cluster",
 				"selfManagedHint": "Usable capacity is the raw capacity × k / (k + m), limited by the fill threshold.",
-				"managedHint": "A managed service has no erasure coding. Usable capacity is limited by the fill threshold."
+				"managedHint": "A managed service has no erasure coding. Usable capacity is limited by the fill threshold.",
+				"regionPlaceholder": "Select a region",
+				"noRegions": "No regions yet. Add a region in the Regions tab first."
 			},
 			"entryDialog": {
 				"title": "Add capacity",
 				"capacityHint": "Raw capacity of the node or of the service block, in GB.",
 				"labelHint": "Optional. Without a label the entry is named after the cluster."
+			},
+			"regions": {
+				"add": "Add region",
+				"editTitle": "Edit region",
+				"code": "Code",
+				"codeHint": "Letters A–Z, digits and hyphens, up to 16 characters; it cannot change later",
+				"usedBy": "Used by",
+				"usage": {
+					"models": "Models",
+					"hosts": "Hosts",
+					"clusters": "Clusters"
+				},
+				"empty": "No regions yet. Add the first region.",
+				"editAction": "Edit {{code}}",
+				"deleteAction": "Delete {{code}}",
+				"deleteTitle": "Delete region {{code}}?",
+				"deleteDescription": "The region is removed from the catalog. A region that a model, a host or a cluster uses cannot be deleted."
 			}
 		}
 	},

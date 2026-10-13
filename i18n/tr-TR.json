@@ -839,7 +839,7 @@
 			"validation": {
 				"required": "Bu alan zorunludur.",
 				"integer": "{{min}} ile {{max}} arasında bir tam sayı girin.",
-				"regions": "Virgülle ayrılmış bir veya daha fazla bölge kodu girin (harf, rakam ve tire)."
+				"regionsRequired": "En az bir bölge seçin."
 			},
 			"models": {
 				"title": "Sunucu modelleri",
@@ -847,7 +847,6 @@
 				"add": "Model ekle",
 				"edit": "Modeli düzenle",
 				"empty": "Henüz sunucu modeli yok.",
-				"regionsHint": "Virgülle ayrılmış bölge kodları, örneğin GRA, PAR.",
 				"editAction": "{{name}} öğesini düzenle",
 				"deleteAction": "{{name}} öğesini sil",
 				"deleteTitle": "{{name}} modeli silinsin mi?",
@@ -862,7 +861,9 @@
 					"regions": "Bölgeler",
 					"leadTime": "Teslim süresi (gün)",
 					"reserve": "Hipervizör rezervi (%)"
-				}
+				},
+				"regionsEmpty": "Henüz bölge yok. Veri merkezi ekibinden bölge eklemesini isteyin.",
+				"regionNotInCatalog": "(katalogda yok)"
 			},
 			"hosts": {
 				"title": "Ana makineler",
@@ -893,7 +894,10 @@
 					"ram": "RAM kullanımı (tepe)",
 					"vms": "VM",
 					"localDisk": "Yerel disk (GB)"
-				}
+				},
+				"quantity": "Adet",
+				"added_one": "{{count}} ana makine eklendi",
+				"added_other": "{{count}} ana makine eklendi"
 			},
 			"warnings": {
 				"title": "Uyarılar",
@@ -922,7 +926,8 @@
 				"hostNotInProject": "Seçilen ana makine bu projeye ait değil.",
 				"clusterRegionMismatch": "Ceph kümesi ana makineyle aynı bölgede olmalıdır.",
 				"clusterNotInWorkspace": "Ceph kümesi bu çalışma alanının parçası değil.",
-				"vmNotInTask": "Listedeki bir VM bu göreve ait değil. Görevi yeniden yükleyip tekrar deneyin."
+				"vmNotInTask": "Listedeki bir VM bu göreve ait değil. Görevi yeniden yükleyip tekrar deneyin.",
+				"regionUnknown": "Bu bölge bölge kataloğunda yok."
 			}
 		},
 		"projectSwitcher": {
@@ -3555,7 +3560,8 @@
 			"validation": {
 				"nameRequired": "Bir VM adı girin.",
 				"number": "0 veya daha büyük bir tam sayı girin."
-			}
+			},
+			"hostRemoved": "Ana makine kaldırıldı"
 		}
 	},
 	"invitations": {
@@ -3743,7 +3749,8 @@
 			"tabs": {
 				"orderPlan": "Sipariş planı",
 				"hosts": "Ana makineler",
-				"storage": "Ceph depolama"
+				"storage": "Ceph depolama",
+				"regions": "Bölgeler"
 			},
 			"loadFailed": "Veri merkezi verileri yüklenemedi.",
 			"noAccess": {
@@ -3760,9 +3767,11 @@
 				"clusterInUse": "Bir sanal makine bu kümeyi hâlâ kullanıyor. Önce sanal makineyi başka bir kümeye taşıyın.",
 				"capacityLocked": "Bu şekilde yalnızca planlanmış bir kalem değiştirilebilir.",
 				"clusterInvalid": "Küme ayarları geçersiz. Erasure coding değerlerini kontrol edin.",
-				"regionInUse": "Bir ana makine bu bölgeyi hâlâ kullanıyor.",
+				"regionInUse": "Bu bölge hâlâ bir model, bir ana makine veya bir küme tarafından kullanılıyor.",
 				"saveFailed": "Değişiklik kaydedilemedi.",
-				"deleteFailed": "Kalem silinemedi."
+				"deleteFailed": "Kalem silinemedi.",
+				"regionUnknown": "Bu bölge bölge kataloğunda yok.",
+				"regionCodeTaken": "Bu kodlu bir bölge zaten var."
 			},
 			"fields": {
 				"status": "Durum",
@@ -3880,12 +3889,31 @@
 				"createTitle": "Ceph kümesi ekle",
 				"editTitle": "Ceph kümesini düzenle",
 				"selfManagedHint": "Kullanılabilir kapasite, ham kapasite × k / (k + m) değeridir ve doluluk eşiğiyle sınırlanır.",
-				"managedHint": "Yönetilen hizmette erasure coding yoktur. Kullanılabilir kapasite doluluk eşiğiyle sınırlanır."
+				"managedHint": "Yönetilen hizmette erasure coding yoktur. Kullanılabilir kapasite doluluk eşiğiyle sınırlanır.",
+				"regionPlaceholder": "Bölge seçin",
+				"noRegions": "Henüz bölge yok. Önce Bölgeler sekmesinden bir bölge ekleyin."
 			},
 			"entryDialog": {
 				"title": "Kapasite ekle",
 				"capacityHint": "Düğümün veya hizmet bloğunun ham kapasitesi, GB cinsinden.",
 				"labelHint": "İsteğe bağlı. Etiket yoksa kalem kümenin adını alır."
+			},
+			"regions": {
+				"add": "Bölge ekle",
+				"editTitle": "Bölgeyi düzenle",
+				"code": "Kod",
+				"codeHint": "A–Z harfleri, rakamlar ve tireler, en fazla 16 karakter; kod sonradan değiştirilemez",
+				"usedBy": "Kullanan",
+				"usage": {
+					"models": "Modeller",
+					"hosts": "Ana makineler",
+					"clusters": "Kümeler"
+				},
+				"empty": "Henüz bölge yok. İlk bölgeyi ekleyin.",
+				"editAction": "{{code}} düzenle",
+				"deleteAction": "{{code}} sil",
+				"deleteTitle": "{{code}} bölgesi silinsin mi?",
+				"deleteDescription": "Bölge katalogdan kaldırılır. Bir model, ana makine veya küme tarafından kullanılan bölge silinemez."
 			}
 		}
 	},

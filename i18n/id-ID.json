@@ -839,7 +839,7 @@
 			"validation": {
 				"required": "Kolom ini wajib diisi.",
 				"integer": "Masukkan bilangan bulat dari {{min}} sampai {{max}}.",
-				"regions": "Masukkan satu atau beberapa kode wilayah (huruf, angka, dan tanda hubung), dipisahkan koma."
+				"regionsRequired": "Pilih setidaknya satu wilayah."
 			},
 			"models": {
 				"title": "Model server",
@@ -847,7 +847,6 @@
 				"add": "Tambah model",
 				"edit": "Ubah model",
 				"empty": "Belum ada model server.",
-				"regionsHint": "Kode wilayah dipisahkan koma, misalnya GRA, PAR.",
 				"editAction": "Ubah {{name}}",
 				"deleteAction": "Hapus {{name}}",
 				"deleteTitle": "Hapus model {{name}}?",
@@ -862,7 +861,9 @@
 					"regions": "Wilayah",
 					"leadTime": "Lead time (hari)",
 					"reserve": "Cadangan hypervisor (%)"
-				}
+				},
+				"regionsEmpty": "Belum ada wilayah. Minta tim datacenter untuk menambahkan wilayah.",
+				"regionNotInCatalog": "(tidak ada di katalog)"
 			},
 			"hosts": {
 				"title": "Host",
@@ -893,7 +894,9 @@
 					"ram": "Penggunaan RAM (puncak)",
 					"vms": "VM",
 					"localDisk": "Disk lokal (GB)"
-				}
+				},
+				"quantity": "Jumlah",
+				"added_other": "{{count}} host ditambahkan"
 			},
 			"warnings": {
 				"title": "Peringatan",
@@ -922,7 +925,8 @@
 				"hostNotInProject": "Host yang dipilih bukan bagian dari proyek ini.",
 				"clusterRegionMismatch": "Klaster Ceph harus berada di wilayah yang sama dengan host.",
 				"clusterNotInWorkspace": "Klaster Ceph bukan bagian dari ruang kerja ini.",
-				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi."
+				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi.",
+				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah."
 			}
 		},
 		"projectSwitcher": {
@@ -3543,7 +3547,8 @@
 			"validation": {
 				"nameRequired": "Masukkan nama VM.",
 				"number": "Masukkan bilangan bulat, 0 atau lebih."
-			}
+			},
+			"hostRemoved": "Host dihapus"
 		}
 	},
 	"invitations": {
@@ -3730,7 +3735,8 @@
 			"tabs": {
 				"orderPlan": "Rencana pemesanan",
 				"hosts": "Host",
-				"storage": "Penyimpanan Ceph"
+				"storage": "Penyimpanan Ceph",
+				"regions": "Wilayah"
 			},
 			"loadFailed": "Data pusat data tidak dapat dimuat.",
 			"noAccess": {
@@ -3747,9 +3753,11 @@
 				"clusterInUse": "Sebuah VM masih menggunakan klaster ini. Pindahkan VM ke klaster lain terlebih dahulu.",
 				"capacityLocked": "Dengan cara ini hanya item yang direncanakan yang dapat diubah.",
 				"clusterInvalid": "Pengaturan klaster tidak valid. Periksa nilai erasure coding.",
-				"regionInUse": "Sebuah host masih menggunakan wilayah ini.",
+				"regionInUse": "Wilayah ini masih digunakan oleh sebuah model, host, atau klaster.",
 				"saveFailed": "Perubahan tidak dapat disimpan.",
-				"deleteFailed": "Item tidak dapat dihapus."
+				"deleteFailed": "Item tidak dapat dihapus.",
+				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
+				"regionCodeTaken": "Wilayah dengan kode ini sudah ada."
 			},
 			"fields": {
 				"status": "Status",
@@ -3867,12 +3875,31 @@
 				"createTitle": "Tambah klaster Ceph",
 				"editTitle": "Edit klaster Ceph",
 				"selfManagedHint": "Kapasitas yang dapat digunakan adalah kapasitas mentah × k / (k + m), dibatasi oleh batas pengisian.",
-				"managedHint": "Layanan terkelola tidak memiliki erasure coding. Kapasitas yang dapat digunakan dibatasi oleh batas pengisian."
+				"managedHint": "Layanan terkelola tidak memiliki erasure coding. Kapasitas yang dapat digunakan dibatasi oleh batas pengisian.",
+				"regionPlaceholder": "Pilih wilayah",
+				"noRegions": "Belum ada wilayah. Tambahkan wilayah terlebih dahulu di tab Wilayah."
 			},
 			"entryDialog": {
 				"title": "Tambah kapasitas",
 				"capacityHint": "Kapasitas mentah node atau blok layanan, dalam GB.",
 				"labelHint": "Opsional. Tanpa label, entri diberi nama sesuai klaster."
+			},
+			"regions": {
+				"add": "Tambah wilayah",
+				"editTitle": "Edit wilayah",
+				"code": "Kode",
+				"codeHint": "Huruf A–Z, angka, dan tanda hubung, hingga 16 karakter; kode tidak dapat diubah nanti",
+				"usedBy": "Digunakan oleh",
+				"usage": {
+					"models": "Model",
+					"hosts": "Host",
+					"clusters": "Klaster"
+				},
+				"empty": "Belum ada wilayah. Tambahkan wilayah pertama.",
+				"editAction": "Edit {{code}}",
+				"deleteAction": "Hapus {{code}}",
+				"deleteTitle": "Hapus wilayah {{code}}?",
+				"deleteDescription": "Wilayah dihapus dari katalog. Wilayah yang digunakan oleh model, host, atau klaster tidak dapat dihapus."
 			}
 		}
 	},

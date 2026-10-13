@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +16,14 @@ import type { InfraModelInput } from "@/fetchers/infrastructure/create-project-m
 import type { InfraModel } from "@/fetchers/infrastructure/get-project-models";
 import useCreateProjectModel from "@/hooks/mutations/infrastructure/use-create-project-model";
 import useUpdateProjectModel from "@/hooks/mutations/infrastructure/use-update-project-model";
+import useProjectRegions from "@/hooks/queries/infrastructure/use-project-regions";
 import { InfraSelect } from "../infra-select";
 
 const PROVIDERS = ["ovh", "azure", "other"] as const;
 type Provider = (typeof PROVIDERS)[number];
+
+// Limit of `regions` in apps/api/src/infrastructure/schema.ts.
+const MAX_REGIONS = 20;
 
 // Limits of apps/api/src/infrastructure/schema.ts.
 const LIMITS = {
@@ -34,14 +39,15 @@ type FormState = {
   name: string;
   family: string;
   provider: Provider;
-  regions: string;
+  // Selected region codes.
+  regions: string[];
 } & Record<NumberField, string>;
 
 const EMPTY: FormState = {
   name: "",
   family: "",
   provider: "ovh",
-  regions: "",
+  regions: [],
   ramGb: "",
   vcpu: "",
   storageGb: "0",
@@ -54,21 +60,13 @@ function fromModel(model: InfraModel): FormState {
     name: model.name,
     family: model.family ?? "",
     provider: model.provider,
-    regions: model.regions.join(", "),
+    regions: [...model.regions],
     ramGb: String(model.ramGb),
     vcpu: String(model.vcpu),
     storageGb: String(model.storageGb),
     leadTimeDays: String(model.leadTimeDays),
     hypervisorReservePercent: String(model.hypervisorReservePercent),
   };
-}
-
-function parseRegions(value: string): string[] {
-  const regions = value
-    .split(/[\s,;]+/)
-    .map((item) => item.trim().toUpperCase())
-    .filter(Boolean);
-  return [...new Set(regions)];
 }
 
 function parseInteger(value: string, field: NumberField): number | null {
@@ -86,15 +84,12 @@ export function validateModelForm(form: FormState) {
   for (const field of Object.keys(LIMITS) as NumberField[]) {
     if (parseInteger(form[field], field) === null) errors[field] = "integer";
   }
-  const regions = parseRegions(form.regions);
-  if (
-    regions.length === 0 ||
-    regions.length > 20 ||
-    regions.some((region) => !/^[A-Z0-9-]{1,16}$/.test(region))
-  ) {
+  // The codes come from the catalog (or from the model itself), so only the
+  // count is checked here; the API validates them against the catalog.
+  if (form.regions.length === 0 || form.regions.length > MAX_REGIONS) {
     errors.regions = "regions";
   }
-  return { errors, regions };
+  return { errors };
 }
 
 type Props = {
@@ -114,7 +109,25 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
   );
   const [submitted, setSubmitted] = useState(false);
   const isPending = createModel.isPending || updateModel.isPending;
-  const { errors, regions } = validateModelForm(form);
+  const { errors } = validateModelForm(form);
+  const regionsQuery = useProjectRegions(projectId);
+  const catalog = regionsQuery.data ?? [];
+  const catalogEmpty = regionsQuery.isSuccess && catalog.length === 0;
+  // A code the model already has that left the catalog stays listed, so it
+  // can be unchecked.
+  const catalogCodes = new Set(catalog.map((region) => region.code));
+  const regionOptions = [
+    ...catalog.map((region) => ({
+      code: region.code,
+      label: `${region.code} — ${region.name}`,
+    })),
+    ...form.regions
+      .filter((code) => regionsQuery.isSuccess && !catalogCodes.has(code))
+      .map((code) => ({
+        code,
+        label: `${code} ${t("settings:projectInfrastructure.models.regionNotInCatalog")}`,
+      })),
+  ];
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -129,7 +142,13 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
       name: form.name.trim(),
       provider: form.provider,
       family: form.family.trim() || null,
-      regions,
+      // Catalog order, then the codes outside the catalog.
+      regions: [
+        ...catalog
+          .map((region) => region.code)
+          .filter((code) => form.regions.includes(code)),
+        ...form.regions.filter((code) => !catalogCodes.has(code)),
+      ],
       ramGb: Number(form.ramGb),
       vcpu: Number(form.vcpu),
       storageGb: Number(form.storageGb),
@@ -151,7 +170,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
       error === "required"
         ? t("settings:projectInfrastructure.validation.required")
         : error === "regions"
-          ? t("settings:projectInfrastructure.validation.regions")
+          ? t("settings:projectInfrastructure.validation.regionsRequired")
           : t("settings:projectInfrastructure.validation.integer", {
               min: LIMITS[field as NumberField].min,
               max: LIMITS[field as NumberField].max,
@@ -272,27 +291,59 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
               "hypervisorReservePercent",
               t("settings:projectInfrastructure.models.columns.reserve"),
             )}
-            <div className="grid gap-2 sm:col-span-2">
-              <Label htmlFor="model-regions">
+            <fieldset
+              className="grid min-w-0 gap-2 sm:col-span-2"
+              aria-describedby={
+                submitted && errors.regions ? "model-regions-error" : undefined
+              }
+            >
+              <legend className="mb-2 font-medium text-base/4.5 sm:text-sm/4">
                 {t("settings:projectInfrastructure.models.columns.regions")}
-              </Label>
-              <Input
-                id="model-regions"
-                value={form.regions}
-                placeholder="GRA, PAR"
-                onChange={(event) => setField("regions", event.target.value)}
-                aria-invalid={submitted && errors.regions ? true : undefined}
-                aria-describedby={
-                  submitted && errors.regions
-                    ? "model-regions-error"
-                    : undefined
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("settings:projectInfrastructure.models.regionsHint")}
-              </p>
+              </legend>
+              {regionsQuery.isError ? (
+                <p className="text-xs text-destructive-foreground">
+                  {t("settings:projectInfrastructure.loadError")}
+                </p>
+              ) : (
+                <>
+                  {catalogEmpty && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("settings:projectInfrastructure.models.regionsEmpty")}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {regionOptions.map((option) => (
+                      <div
+                        key={option.code}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Checkbox
+                          id={`model-region-${option.code}`}
+                          checked={form.regions.includes(option.code)}
+                          onCheckedChange={(checked) =>
+                            setField(
+                              "regions",
+                              checked
+                                ? [...form.regions, option.code]
+                                : form.regions.filter(
+                                    (code) => code !== option.code,
+                                  ),
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor={`model-region-${option.code}`}
+                          className="font-normal"
+                        >
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               {errorText("regions")}
-            </div>
+            </fieldset>
           </DialogPanel>
 
           <DialogFooter>
@@ -304,7 +355,10 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
             >
               {t("common:actions.cancel")}
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button
+              type="submit"
+              disabled={isPending || catalogEmpty || regionsQuery.isError}
+            >
               {isPending
                 ? t("settings:projectInfrastructure.saving")
                 : t("settings:projectInfrastructure.save")}

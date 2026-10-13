@@ -16,6 +16,7 @@ export function DcSelect({
   ariaLabel,
   disabled,
   className,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -23,18 +24,19 @@ export function DcSelect({
   ariaLabel: string;
   disabled?: boolean;
   className?: string;
+  placeholder?: string;
 }) {
   const current = options.find((option) => option.value === value);
   return (
     <Select
-      value={value}
+      value={value || null}
       onValueChange={(next) => {
         if (typeof next === "string") onChange(next);
       }}
       disabled={disabled}
     >
       <SelectTrigger size="sm" className={className} aria-label={ariaLabel}>
-        <SelectValue>{current?.label}</SelectValue>
+        <SelectValue placeholder={placeholder}>{current?.label}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

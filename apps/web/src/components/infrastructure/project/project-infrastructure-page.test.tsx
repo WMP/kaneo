@@ -9,12 +9,15 @@ import {
 } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import createProjectHost from "@/fetchers/infrastructure/create-project-host";
 import createProjectModel from "@/fetchers/infrastructure/create-project-model";
 import deleteProjectHost from "@/fetchers/infrastructure/delete-project-host";
 import deleteProjectModel from "@/fetchers/infrastructure/delete-project-model";
 import getProjectCapacity from "@/fetchers/infrastructure/get-project-capacity";
 import getProjectHosts from "@/fetchers/infrastructure/get-project-hosts";
 import getProjectModels from "@/fetchers/infrastructure/get-project-models";
+import getProjectRegions from "@/fetchers/infrastructure/get-project-regions";
+import { toast } from "@/lib/toast";
 import { ProjectInfrastructurePage } from "./project-infrastructure-page";
 
 vi.mock("@/fetchers/infrastructure/get-project-models", () => ({
@@ -26,7 +29,13 @@ vi.mock("@/fetchers/infrastructure/get-project-hosts", () => ({
 vi.mock("@/fetchers/infrastructure/get-project-capacity", () => ({
   default: vi.fn(),
 }));
+vi.mock("@/fetchers/infrastructure/get-project-regions", () => ({
+  default: vi.fn(),
+}));
 vi.mock("@/fetchers/infrastructure/create-project-model", () => ({
+  default: vi.fn(),
+}));
+vi.mock("@/fetchers/infrastructure/create-project-host", () => ({
   default: vi.fn(),
 }));
 vi.mock("@/fetchers/infrastructure/delete-project-model", () => ({
@@ -181,6 +190,10 @@ beforeEach(() => {
     installedHost,
   ] as never);
   vi.mocked(getProjectCapacity).mockResolvedValue(capacity as never);
+  vi.mocked(getProjectRegions).mockResolvedValue([
+    { code: "GRA", name: "Gravelines" },
+    { code: "PAR", name: "Paris" },
+  ]);
 });
 afterEach(cleanup);
 
@@ -288,14 +301,12 @@ describe("project infrastructure settings", () => {
         hostId: "host-planned",
       }),
     );
+    // The whole feature refreshes: task VM lists show the host as gone too.
     await waitFor(() =>
       expect(invalidate).toHaveBeenCalledWith({
-        queryKey: ["infrastructure", "project", "project-1", "capacity"],
+        queryKey: ["infrastructure"],
       }),
     );
-    expect(invalidate).toHaveBeenCalledWith({
-      queryKey: ["infrastructure", "project", "project-1", "hosts"],
-    });
   });
 
   it("deletes a model after a confirmation", async () => {
@@ -345,9 +356,13 @@ describe("project infrastructure settings", () => {
     fireEvent.change(field("model-name"), { target: { value: "ADVANCE-2" } });
     fireEvent.change(field("model-ramGb"), { target: { value: "128" } });
     fireEvent.change(field("model-vcpu"), { target: { value: "16" } });
-    fireEvent.change(field("model-regions"), {
-      target: { value: "gra, par gra" },
-    });
+    // The catalog regions are checkboxes labelled "CODE — Name".
+    fireEvent.click(
+      await within(dialog).findByRole("checkbox", { name: "GRA — Gravelines" }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("checkbox", { name: "PAR — Paris" }),
+    );
     fireEvent.click(
       within(dialog).getByRole("button", {
         name: "settings:projectInfrastructure.save",
@@ -367,6 +382,111 @@ describe("project infrastructure settings", () => {
         leadTimeDays: 0,
         hypervisorReservePercent: 5,
       }),
+    );
+  });
+
+  it("lists a model region outside the catalog so it can be unchecked", async () => {
+    vi.mocked(getProjectRegions).mockResolvedValue([
+      { code: "GRA", name: "Gravelines" },
+    ]);
+    renderPage();
+    await screen.findByText("SCALE-256");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:projectInfrastructure.models.editAction SCALE-256",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      await within(dialog).findByRole("checkbox", { name: "GRA — Gravelines" }),
+    ).toBeChecked();
+    const orphan = within(dialog).getByRole("checkbox", {
+      name: "PAR settings:projectInfrastructure.models.regionNotInCatalog",
+    });
+    expect(orphan).toBeChecked();
+    // Unchecking drops the code from the model; it cannot come back, as it is
+    // not in the catalog.
+    fireEvent.click(orphan);
+    expect(orphan).not.toBeInTheDocument();
+  });
+
+  it("shows a message and disables Save when the catalog is empty", async () => {
+    vi.mocked(getProjectRegions).mockResolvedValue([]);
+    renderPage();
+    await screen.findByText("SCALE-256");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:projectInfrastructure.models.add",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      await within(dialog).findByText(
+        "settings:projectInfrastructure.models.regionsEmpty",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", {
+        name: "settings:projectInfrastructure.save",
+      }),
+    ).toBeDisabled();
+  });
+
+  it("adds several hosts with the quantity field and reports the count", async () => {
+    vi.mocked(createProjectHost).mockResolvedValue({
+      hosts: [plannedHost, installedHost, plannedHost],
+    } as never);
+    renderPage();
+    await screen.findByText("58%");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "settings:projectInfrastructure.hosts.add",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(
+      within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.newModel",
+      ),
+      { target: { value: "model-1" } },
+    );
+    fireEvent.change(
+      within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.newRegion",
+      ),
+      { target: { value: "GRA" } },
+    );
+    const submit = within(dialog).getByRole("button", {
+      name: "settings:projectInfrastructure.hosts.add",
+    });
+    // 51 is above the limit of the API.
+    fireEvent.change(
+      within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.quantity",
+      ),
+      { target: { value: "51" } },
+    );
+    expect(submit).toBeDisabled();
+    fireEvent.change(
+      within(dialog).getByLabelText(
+        "settings:projectInfrastructure.hosts.quantity",
+      ),
+      { target: { value: "3" } },
+    );
+    fireEvent.click(submit);
+
+    await waitFor(() =>
+      expect(createProjectHost).toHaveBeenCalledWith({
+        projectId: "project-1",
+        modelId: "model-1",
+        region: "GRA",
+        quantity: 3,
+      }),
+    );
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        "settings:projectInfrastructure.hosts.added 3",
+      ),
     );
   });
 });

@@ -31,12 +31,15 @@ export function ClusterDialog({
   open,
   onOpenChange,
   cluster,
+  regions,
   onSubmit,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** The cluster being edited; omit to create one. */
   cluster?: StorageCluster;
+  /** The workspace's region catalog. */
+  regions: { code: string; name: string }[];
   onSubmit: (data: StorageClusterInput) => Promise<unknown>;
 }) {
   const { t } = useTranslation();
@@ -51,6 +54,18 @@ export function ClusterDialog({
   const [leadTime, setLeadTime] = useState(String(cluster?.leadTimeDays ?? 0));
   const [pending, setPending] = useState(false);
 
+  // The region of an edited cluster stays selectable even if it left the
+  // catalog, so the dialog never shows an empty value for saved data.
+  const regionOptions = [
+    ...regions.map((item) => ({
+      value: item.code,
+      label: `${item.code} — ${item.name}`,
+    })),
+    ...(region && !regions.some((item) => item.code === region)
+      ? [{ value: region, label: region }]
+      : []),
+  ];
+
   const selfManaged = kind === "self_managed";
   const kValue = toInt(k);
   const mValue = toInt(m);
@@ -58,7 +73,7 @@ export function ClusterDialog({
   const leadTimeValue = toInt(leadTime);
   const valid =
     name.trim() !== "" &&
-    region.trim() !== "" &&
+    region !== "" &&
     thresholdValue != null &&
     thresholdValue >= 1 &&
     thresholdValue <= 100 &&
@@ -73,7 +88,7 @@ export function ClusterDialog({
     try {
       await onSubmit({
         name: name.trim(),
-        region: region.trim().toUpperCase(),
+        region,
         kind,
         ecDataChunks: selfManaged ? kValue : null,
         ecCodingChunks: selfManaged ? mValue : null,
@@ -124,13 +139,21 @@ export function ClusterDialog({
             </Field>
             <Field>
               <FieldLabel>{t("workspace:datacenter.fields.region")}</FieldLabel>
-              <Input
-                nativeInput
-                aria-label={t("workspace:datacenter.fields.region")}
-                maxLength={16}
+              <DcSelect
+                className="w-full"
+                ariaLabel={t("workspace:datacenter.fields.region")}
                 value={region}
-                onChange={(event) => setRegion(event.target.value)}
+                onChange={setRegion}
+                options={regionOptions}
+                placeholder={t(
+                  "workspace:datacenter.clusterDialog.regionPlaceholder",
+                )}
               />
+              {regions.length === 0 && (
+                <p className="text-muted-foreground text-xs">
+                  {t("workspace:datacenter.clusterDialog.noRegions")}
+                </p>
+              )}
             </Field>
             <Field>
               <FieldLabel>{t("workspace:datacenter.fields.kind")}</FieldLabel>

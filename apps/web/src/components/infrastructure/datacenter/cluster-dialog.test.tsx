@@ -49,8 +49,23 @@ afterEach(cleanup);
 
 const label = (key: string) => screen.queryByLabelText(`workspace:${key}`);
 
-function renderDialog(onSubmit = vi.fn().mockResolvedValue(undefined)) {
-  render(<ClusterDialog open onOpenChange={vi.fn()} onSubmit={onSubmit} />);
+const REGIONS = [
+  { code: "GRA", name: "Gravelines" },
+  { code: "PAR", name: "Paris" },
+];
+
+function renderDialog(
+  onSubmit = vi.fn().mockResolvedValue(undefined),
+  regions = REGIONS,
+) {
+  render(
+    <ClusterDialog
+      open
+      onOpenChange={vi.fn()}
+      regions={regions}
+      onSubmit={onSubmit}
+    />,
+  );
   return onSubmit;
 }
 
@@ -83,7 +98,7 @@ describe("ClusterDialog", () => {
       target: { value: "Ceph GRA" },
     });
     fireEvent.change(label("datacenter.fields.region") as HTMLElement, {
-      target: { value: "gra" },
+      target: { value: "GRA" },
     });
     expect(save()).toBeEnabled();
     fireEvent.click(save());
@@ -125,6 +140,41 @@ describe("ClusterDialog", () => {
       target: { value: "0" },
     });
 
+    expect(
+      screen.getByRole("button", { name: "workspace:datacenter.actions.save" }),
+    ).toBeDisabled();
+  });
+
+  it("offers the catalog regions as a select and sends the chosen code", async () => {
+    const onSubmit = renderDialog();
+    const region = label("datacenter.fields.region") as HTMLSelectElement;
+    expect(
+      Array.from(region.options).map((option) => option.textContent),
+    ).toEqual(["GRA — Gravelines", "PAR — Paris"]);
+
+    fireEvent.change(label("datacenter.fields.name") as HTMLElement, {
+      target: { value: "Ceph PAR" },
+    });
+    fireEvent.change(region, { target: { value: "PAR" } });
+    fireEvent.click(
+      screen.getByRole("button", { name: "workspace:datacenter.actions.save" }),
+    );
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce());
+    expect(onSubmit).toHaveBeenLastCalledWith(
+      expect.objectContaining({ name: "Ceph PAR", region: "PAR" }),
+    );
+  });
+
+  it("explains an empty catalog and cannot be saved", () => {
+    renderDialog(undefined, []);
+    fireEvent.change(label("datacenter.fields.name") as HTMLElement, {
+      target: { value: "Ceph" },
+    });
+
+    expect(
+      screen.getByText("workspace:datacenter.clusterDialog.noRegions"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "workspace:datacenter.actions.save" }),
     ).toBeDisabled();

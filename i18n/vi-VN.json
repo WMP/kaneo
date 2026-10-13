@@ -1075,7 +1075,7 @@
 			"validation": {
 				"required": "Trường này là bắt buộc.",
 				"integer": "Nhập một số nguyên từ {{min}} đến {{max}}.",
-				"regions": "Nhập một hoặc nhiều mã vùng (chữ cái, chữ số và dấu gạch ngang), phân tách bằng dấu phẩy."
+				"regionsRequired": "Chọn ít nhất một vùng."
 			},
 			"models": {
 				"title": "Mẫu máy chủ",
@@ -1083,7 +1083,6 @@
 				"add": "Thêm mẫu",
 				"edit": "Sửa mẫu",
 				"empty": "Chưa có mẫu máy chủ nào.",
-				"regionsHint": "Mã vùng phân tách bằng dấu phẩy, ví dụ GRA, PAR.",
 				"editAction": "Sửa {{name}}",
 				"deleteAction": "Xóa {{name}}",
 				"deleteTitle": "Xóa mẫu {{name}}?",
@@ -1098,7 +1097,9 @@
 					"regions": "Vùng",
 					"leadTime": "Thời gian giao hàng (ngày)",
 					"reserve": "Dự phòng hypervisor (%)"
-				}
+				},
+				"regionsEmpty": "Chưa có vùng nào. Hãy nhờ nhóm trung tâm dữ liệu thêm vùng.",
+				"regionNotInCatalog": "(không có trong danh mục)"
 			},
 			"hosts": {
 				"title": "Host",
@@ -1129,7 +1130,9 @@
 					"ram": "Mức dùng RAM (đỉnh)",
 					"vms": "VM",
 					"localDisk": "Ổ đĩa cục bộ (GB)"
-				}
+				},
+				"quantity": "Số lượng",
+				"added_other": "Đã thêm {{count}} host"
 			},
 			"warnings": {
 				"title": "Cảnh báo",
@@ -1158,7 +1161,8 @@
 				"hostNotInProject": "Host đã chọn không thuộc dự án này.",
 				"clusterRegionMismatch": "Cụm Ceph phải ở cùng vùng với host.",
 				"clusterNotInWorkspace": "Cụm Ceph không thuộc không gian làm việc này.",
-				"vmNotInTask": "Một VM trong danh sách không thuộc công việc này. Hãy tải lại công việc và thử lại."
+				"vmNotInTask": "Một VM trong danh sách không thuộc công việc này. Hãy tải lại công việc và thử lại.",
+				"regionUnknown": "Vùng này không có trong danh mục vùng."
 			}
 		},
 		"projectSwitcher": {
@@ -3543,7 +3547,8 @@
 			"validation": {
 				"nameRequired": "Nhập tên VM.",
 				"number": "Nhập một số nguyên, từ 0 trở lên."
-			}
+			},
+			"hostRemoved": "Host đã bị xóa"
 		}
 	},
 	"invitations": {
@@ -3730,7 +3735,8 @@
 			"tabs": {
 				"orderPlan": "Kế hoạch đặt hàng",
 				"hosts": "Máy chủ",
-				"storage": "Lưu trữ Ceph"
+				"storage": "Lưu trữ Ceph",
+				"regions": "Vùng"
 			},
 			"loadFailed": "Không thể tải dữ liệu trung tâm dữ liệu.",
 			"noAccess": {
@@ -3747,9 +3753,11 @@
 				"clusterInUse": "Một máy ảo vẫn đang dùng cụm này. Hãy chuyển máy ảo sang cụm khác trước.",
 				"capacityLocked": "Cách này chỉ đổi được mục đã lên kế hoạch.",
 				"clusterInvalid": "Cài đặt cụm không hợp lệ. Hãy kiểm tra các giá trị erasure coding.",
-				"regionInUse": "Một máy chủ vẫn đang dùng vùng này.",
+				"regionInUse": "Vùng này vẫn đang được một mẫu, một máy chủ hoặc một cụm sử dụng.",
 				"saveFailed": "Không thể lưu thay đổi.",
-				"deleteFailed": "Không thể xóa mục."
+				"deleteFailed": "Không thể xóa mục.",
+				"regionUnknown": "Vùng này không có trong danh mục vùng.",
+				"regionCodeTaken": "Đã có vùng với mã này."
 			},
 			"fields": {
 				"status": "Trạng thái",
@@ -3867,12 +3875,31 @@
 				"createTitle": "Thêm cụm Ceph",
 				"editTitle": "Sửa cụm Ceph",
 				"selfManagedHint": "Dung lượng có thể dùng là dung lượng thô × k / (k + m), bị giới hạn bởi ngưỡng lấp đầy.",
-				"managedHint": "Dịch vụ được quản lý không có erasure coding. Dung lượng có thể dùng bị giới hạn bởi ngưỡng lấp đầy."
+				"managedHint": "Dịch vụ được quản lý không có erasure coding. Dung lượng có thể dùng bị giới hạn bởi ngưỡng lấp đầy.",
+				"regionPlaceholder": "Chọn vùng",
+				"noRegions": "Chưa có vùng nào. Hãy thêm vùng trước trong tab Vùng."
 			},
 			"entryDialog": {
 				"title": "Thêm dung lượng",
 				"capacityHint": "Dung lượng thô của nút hoặc khối dịch vụ, tính bằng GB.",
 				"labelHint": "Tùy chọn. Không có nhãn, mục sẽ được đặt theo tên cụm."
+			},
+			"regions": {
+				"add": "Thêm vùng",
+				"editTitle": "Sửa vùng",
+				"code": "Mã",
+				"codeHint": "Chữ A–Z, chữ số và dấu gạch ngang, tối đa 16 ký tự; không thể đổi mã sau này",
+				"usedBy": "Được dùng bởi",
+				"usage": {
+					"models": "Mẫu",
+					"hosts": "Máy chủ",
+					"clusters": "Cụm"
+				},
+				"empty": "Chưa có vùng nào. Hãy thêm vùng đầu tiên.",
+				"editAction": "Sửa {{code}}",
+				"deleteAction": "Xóa {{code}}",
+				"deleteTitle": "Xóa vùng {{code}}?",
+				"deleteDescription": "Vùng sẽ bị gỡ khỏi danh mục. Không thể xóa vùng đang được một mẫu, máy chủ hoặc cụm sử dụng."
 			}
 		}
 	},

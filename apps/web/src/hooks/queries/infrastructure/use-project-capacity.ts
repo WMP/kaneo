@@ -11,6 +11,7 @@ function useProjectCapacity(projectId: string, enabled = true) {
     queryFn: () => getProjectCapacity(projectId),
     enabled: enabled && !!projectId,
     staleTime: INFRASTRUCTURE_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

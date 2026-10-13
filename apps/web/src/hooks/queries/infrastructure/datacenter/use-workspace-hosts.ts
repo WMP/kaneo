@@ -8,6 +8,7 @@ function useWorkspaceHosts(workspaceId: string | undefined) {
     queryKey: datacenterHostsKey(workspaceId),
     queryFn: workspaceId ? () => getWorkspaceHosts(workspaceId) : skipToken,
     staleTime: DATACENTER_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 

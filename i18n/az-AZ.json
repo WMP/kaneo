@@ -1076,7 +1076,7 @@
 			"validation": {
 				"required": "Bu sahə məcburidir.",
 				"integer": "{{min}} ilə {{max}} arasında tam ədəd daxil edin.",
-				"regions": "Vergüllə ayrılmış bir və ya daha çox region kodu daxil edin (hərflər, rəqəmlər və defis)."
+				"regionsRequired": "Ən azı bir region seçin."
 			},
 			"models": {
 				"title": "Server modelləri",
@@ -1084,7 +1084,6 @@
 				"add": "Model əlavə et",
 				"edit": "Modeli redaktə et",
 				"empty": "Hələ server modeli yoxdur.",
-				"regionsHint": "Vergüllə ayrılmış region kodları, məsələn, GRA, PAR.",
 				"editAction": "{{name}} elementini redaktə et",
 				"deleteAction": "{{name}} elementini sil",
 				"deleteTitle": "{{name}} modeli silinsin?",
@@ -1099,7 +1098,9 @@
 					"regions": "Regionlar",
 					"leadTime": "Çatdırılma müddəti (gün)",
 					"reserve": "Hipervizor ehtiyatı (%)"
-				}
+				},
+				"regionsEmpty": "Hələ region yoxdur. Datacenter komandasından region əlavə etməsini xahiş edin.",
+				"regionNotInCatalog": "(kataloqda yoxdur)"
 			},
 			"hosts": {
 				"title": "Hostlar",
@@ -1130,7 +1131,10 @@
 					"ram": "RAM istifadəsi (pik)",
 					"vms": "VM",
 					"localDisk": "Lokal disk (GB)"
-				}
+				},
+				"quantity": "Say",
+				"added_one": "{{count}} host əlavə edildi",
+				"added_other": "{{count}} host əlavə edildi"
 			},
 			"warnings": {
 				"title": "Xəbərdarlıqlar",
@@ -1159,7 +1163,8 @@
 				"hostNotInProject": "Seçilmiş host bu layihəyə aid deyil.",
 				"clusterRegionMismatch": "Ceph klasteri host ilə eyni regionda olmalıdır.",
 				"clusterNotInWorkspace": "Ceph klasteri bu iş sahəsinə aid deyil.",
-				"vmNotInTask": "Siyahıdakı bir VM bu tapşırığa aid deyil. Tapşırığı yenidən yükləyin və təkrar cəhd edin."
+				"vmNotInTask": "Siyahıdakı bir VM bu tapşırığa aid deyil. Tapşırığı yenidən yükləyin və təkrar cəhd edin.",
+				"regionUnknown": "Bu region region kataloqunda yoxdur."
 			}
 		},
 		"projectSwitcher": {
@@ -3555,7 +3560,8 @@
 			"validation": {
 				"nameRequired": "VM adını daxil edin.",
 				"number": "0 və ya daha böyük tam ədəd daxil edin."
-			}
+			},
+			"hostRemoved": "Host silinib"
 		}
 	},
 	"invitations": {
@@ -3743,7 +3749,8 @@
 			"tabs": {
 				"orderPlan": "Sifariş planı",
 				"hosts": "Hostlar",
-				"storage": "Ceph saxlama"
+				"storage": "Ceph saxlama",
+				"regions": "Regionlar"
 			},
 			"loadFailed": "Data mərkəzi məlumatları yüklənə bilmədi.",
 			"noAccess": {
@@ -3760,9 +3767,11 @@
 				"clusterInUse": "Bir virtual maşın hələ də bu klasterdən istifadə edir. Əvvəlcə maşını başqa klasterə köçürün.",
 				"capacityLocked": "Bu yolla yalnız planlaşdırılmış mövqeni dəyişmək olar.",
 				"clusterInvalid": "Klaster parametrləri yanlışdır. Erasure coding dəyərlərini yoxlayın.",
-				"regionInUse": "Bir host hələ də bu regiondan istifadə edir.",
+				"regionInUse": "Bu regiondan hələ də model, host və ya klaster istifadə edir.",
 				"saveFailed": "Dəyişiklik yadda saxlanıla bilmədi.",
-				"deleteFailed": "Mövqe silinə bilmədi."
+				"deleteFailed": "Mövqe silinə bilmədi.",
+				"regionUnknown": "Bu region region kataloqunda yoxdur.",
+				"regionCodeTaken": "Bu kodlu region artıq mövcuddur."
 			},
 			"fields": {
 				"status": "Status",
@@ -3880,12 +3889,31 @@
 				"createTitle": "Ceph klasteri əlavə et",
 				"editTitle": "Ceph klasterini redaktə et",
 				"selfManagedHint": "İstifadə oluna bilən tutum xam tutum × k / (k + m) olub dolma həddi ilə məhdudlaşır.",
-				"managedHint": "İdarə olunan xidmətdə erasure coding yoxdur. İstifadə oluna bilən tutum dolma həddi ilə məhdudlaşır."
+				"managedHint": "İdarə olunan xidmətdə erasure coding yoxdur. İstifadə oluna bilən tutum dolma həddi ilə məhdudlaşır.",
+				"regionPlaceholder": "Region seçin",
+				"noRegions": "Hələ region yoxdur. Əvvəlcə Regionlar sekməsində region əlavə edin."
 			},
 			"entryDialog": {
 				"title": "Tutum əlavə et",
 				"capacityHint": "Qovşağın və ya xidmət blokunun xam tutumu, GB ilə.",
 				"labelHint": "İstəyə bağlı. Etiket olmasa, mövqe klasterin adını alır."
+			},
+			"regions": {
+				"add": "Region əlavə et",
+				"editTitle": "Regionu redaktə et",
+				"code": "Kod",
+				"codeHint": "A–Z hərfləri, rəqəmlər və defislər, 16 simvola qədər; kod sonradan dəyişdirilə bilməz",
+				"usedBy": "İstifadə edən",
+				"usage": {
+					"models": "Modellər",
+					"hosts": "Hostlar",
+					"clusters": "Klasterlər"
+				},
+				"empty": "Hələ region yoxdur. İlk regionu əlavə edin.",
+				"editAction": "{{code}} redaktə et",
+				"deleteAction": "{{code}} sil",
+				"deleteTitle": "{{code}} regionu silinsin?",
+				"deleteDescription": "Region kataloqdan silinəcək. Model, host və ya klaster tərəfindən istifadə olunan region silinə bilməz."
 			}
 		}
 	},

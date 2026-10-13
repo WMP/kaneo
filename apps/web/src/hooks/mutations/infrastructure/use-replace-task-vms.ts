@@ -4,9 +4,11 @@ import replaceTaskVms, {
   type TaskVmInput,
 } from "@/fetchers/infrastructure/replace-task-vms";
 import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
-import { infrastructureKeys } from "@/lib/infrastructure-keys";
+import {
+  infrastructureKeys,
+  invalidateInfrastructure,
+} from "@/lib/infrastructure-keys";
 import { toast } from "@/lib/toast";
-import { useInfrastructureInvalidation } from "./use-infrastructure-invalidation";
 
 type ReplaceTaskVmsRequest = {
   projectId: string;
@@ -17,7 +19,6 @@ type ReplaceTaskVmsRequest = {
 function useReplaceTaskVms() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const invalidate = useInfrastructureInvalidation();
 
   return useMutation({
     mutationFn: ({ taskId, vms }: ReplaceTaskVmsRequest) =>
@@ -28,7 +29,7 @@ function useReplaceTaskVms() {
         infrastructureKeys.taskVms(variables.taskId),
         data,
       );
-      invalidate(variables.projectId, { taskId: variables.taskId });
+      void invalidateInfrastructure(queryClient);
     },
     onError: (error) => {
       toast.error(getInfrastructureErrorMessage(error, t));

@@ -10,6 +10,7 @@ import {
   ganttTasksKey,
 } from "@/lib/gantt-query-keys";
 import { isUnauthorizedError } from "@/lib/http-error";
+import { INFRASTRUCTURE_QUERY_KEY } from "@/lib/infrastructure-keys";
 import {
   isProjectAccessDenied,
   projectAccessQueryKey,
@@ -198,6 +199,15 @@ export function useProjectWebSocket(
                 // API sends this project a TASK_RELATION_UPDATED without ids
                 // (handled above); nothing about that task is sent or read here.
                 invalidate(ganttProjectRelationsKey(message.projectId));
+              }
+              if (
+                message.type === "TASK_UPDATED" ||
+                message.type === "TASK_CREATED" ||
+                message.type === "TASK_DELETED"
+              ) {
+                // A deleted task or a moved date changes the VM lists and the
+                // capacity warnings, which are read by project settings.
+                invalidate(INFRASTRUCTURE_QUERY_KEY);
               }
               invalidate(["task", message.taskId]);
             }

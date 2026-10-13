@@ -11,6 +11,7 @@ function useProjectHosts(projectId: string, enabled = true) {
     queryFn: () => getProjectHosts(projectId),
     enabled: enabled && !!projectId,
     staleTime: INFRASTRUCTURE_STALE_TIME,
+    refetchOnMount: "always",
   });
 }
 
