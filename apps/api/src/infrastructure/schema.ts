@@ -49,7 +49,7 @@ const modelFields = {
   storageGb: z.number().int().min(0).max(100_000_000),
   regions: regionList,
   leadTimeDays: z.number().int().min(0).max(3650),
-  hypervisorReservePercent: z.number().int().min(0).max(90),
+  hypervisorReserveGb: z.number().int().min(0).max(1_000_000),
 };
 
 // Availability zone codes follow the region code format.
@@ -82,7 +82,7 @@ export const createModelBody = z.object({
   ...modelFields,
   family: modelFields.family.optional(),
   leadTimeDays: modelFields.leadTimeDays.default(0),
-  hypervisorReservePercent: modelFields.hypervisorReservePercent.default(5),
+  hypervisorReserveGb: modelFields.hypervisorReserveGb.default(8),
 });
 
 export const updateModelBody = z.object(modelFields).partial();

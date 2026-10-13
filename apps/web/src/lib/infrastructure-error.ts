@@ -26,6 +26,8 @@ const PROJECT_ERROR_KEYS: Record<string, string> = {
     "settings:projectInfrastructure.errors.clusterNotInWorkspace",
   INFRA_VM_NOT_IN_TASK: "settings:projectInfrastructure.errors.vmNotInTask",
   INFRA_ZONE_REQUIRED: "settings:projectInfrastructure.errors.zoneRequired",
+  INFRA_RESERVE_TOO_LARGE:
+    "settings:projectInfrastructure.errors.reserveTooLarge",
   INFRA_ZONE_UNKNOWN: "settings:projectInfrastructure.errors.zoneUnknown",
 };
 

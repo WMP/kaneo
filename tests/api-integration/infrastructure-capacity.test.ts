@@ -40,7 +40,8 @@ describe("models", () => {
   it("creates, lists by position, normalizes regions and validates ranges", async () => {
     const w = await withModel();
     expect(w.model.regions).toEqual(["GRA", "PAR"]);
-    expect(w.model.hypervisorReservePercent).toBe(5);
+    expect(w.model.hypervisorReserveGb).toBe(8);
+    expect(w.model).not.toHaveProperty("hypervisorReservePercent");
 
     const second = await w.call(
       w.owner,
@@ -72,8 +73,8 @@ describe("models", () => {
       { vcpu: 0 },
       { storageGb: -1 },
       { leadTimeDays: -1 },
-      { hypervisorReservePercent: 91 },
-      { hypervisorReservePercent: -1 },
+      { hypervisorReserveGb: -1 },
+      { hypervisorReserveGb: 1.5 },
       { provider: "aws" },
     ]) {
       const res = await w.call(

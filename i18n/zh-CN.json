@@ -1075,7 +1075,8 @@
 			"validation": {
 				"required": "此字段为必填项。",
 				"integer": "请输入 {{min}} 到 {{max}} 之间的整数。",
-				"regionsRequired": "请至少选择一个区域。"
+				"regionsRequired": "请至少选择一个区域。",
+				"reserveTooLarge": "虚拟化层预留必须小于模型的内存。"
 			},
 			"models": {
 				"title": "服务器型号",
@@ -1096,10 +1097,11 @@
 					"localDisk": "本地磁盘 (GB)",
 					"regions": "区域",
 					"leadTime": "交付周期（天）",
-					"reserve": "虚拟化层预留 (%)"
+					"reserve": "虚拟化层预留 (GB)"
 				},
 				"regionsEmpty": "暂无区域。请让数据中心团队添加区域。",
-				"regionNotInCatalog": "(不在目录中)"
+				"regionNotInCatalog": "(不在目录中)",
+				"reserveHelp": "每台主机为虚拟化层保留的内存；虚拟机可使用其余部分。"
 			},
 			"hosts": {
 				"title": "主机",
@@ -1170,7 +1172,8 @@
 				"vmNotInTask": "列表中有一台 VM 不属于此任务。请重新加载任务后重试。",
 				"regionUnknown": "此区域不在区域目录中。",
 				"zoneRequired": "请为主机选择可用区。",
-				"zoneUnknown": "该可用区不属于此区域。"
+				"zoneUnknown": "该可用区不属于此区域。",
+				"reserveTooLarge": "虚拟化层预留必须小于模型的内存。"
 			}
 		},
 		"projectSwitcher": {

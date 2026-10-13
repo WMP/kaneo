@@ -1077,7 +1077,8 @@
 			"validation": {
 				"required": "Questo campo è obbligatorio.",
 				"integer": "Inserisci un numero intero da {{min}} a {{max}}.",
-				"regionsRequired": "Seleziona almeno una regione."
+				"regionsRequired": "Seleziona almeno una regione.",
+				"reserveTooLarge": "La riserva dell'hypervisor deve essere inferiore alla RAM del modello."
 			},
 			"models": {
 				"title": "Modelli di server",
@@ -1098,10 +1099,11 @@
 					"localDisk": "Disco locale (GB)",
 					"regions": "Regioni",
 					"leadTime": "Tempo di consegna (giorni)",
-					"reserve": "Riserva dell'hypervisor (%)"
+					"reserve": "Riserva dell'hypervisor (GB)"
 				},
 				"regionsEmpty": "Ancora nessuna regione. Chiedi al team del datacenter di aggiungere delle regioni.",
-				"regionNotInCatalog": "(non presente nel catalogo)"
+				"regionNotInCatalog": "(non presente nel catalogo)",
+				"reserveHelp": "RAM riservata all'hypervisor su ogni host; le VM possono usare il resto."
 			},
 			"hosts": {
 				"title": "Host",
@@ -1174,7 +1176,8 @@
 				"vmNotInTask": "Una VM dell'elenco non appartiene a questa attività. Ricarica l'attività e riprova.",
 				"regionUnknown": "Questa regione non è presente nel catalogo delle regioni.",
 				"zoneRequired": "Seleziona una zona per l'host.",
-				"zoneUnknown": "Questa zona non appartiene alla regione."
+				"zoneUnknown": "Questa zona non appartiene alla regione.",
+				"reserveTooLarge": "La riserva dell'hypervisor deve essere inferiore alla RAM del modello."
 			}
 		},
 		"projectSwitcher": {

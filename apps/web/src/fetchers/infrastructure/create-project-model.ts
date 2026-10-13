@@ -10,7 +10,7 @@ export type InfraModelInput = {
   storageGb: number;
   regions: string[];
   leadTimeDays: number;
-  hypervisorReservePercent: number;
+  hypervisorReserveGb: number;
 };
 
 export type CreateProjectModelRequest = { projectId: string } & InfraModelInput;

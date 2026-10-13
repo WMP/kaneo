@@ -839,7 +839,8 @@
 			"validation": {
 				"required": "Kolom ini wajib diisi.",
 				"integer": "Masukkan bilangan bulat dari {{min}} sampai {{max}}.",
-				"regionsRequired": "Pilih setidaknya satu wilayah."
+				"regionsRequired": "Pilih setidaknya satu wilayah.",
+				"reserveTooLarge": "Cadangan hypervisor harus lebih kecil daripada RAM model."
 			},
 			"models": {
 				"title": "Model server",
@@ -860,10 +861,11 @@
 					"localDisk": "Disk lokal (GB)",
 					"regions": "Wilayah",
 					"leadTime": "Lead time (hari)",
-					"reserve": "Cadangan hypervisor (%)"
+					"reserve": "Cadangan hypervisor (GB)"
 				},
 				"regionsEmpty": "Belum ada wilayah. Minta tim datacenter untuk menambahkan wilayah.",
-				"regionNotInCatalog": "(tidak ada di katalog)"
+				"regionNotInCatalog": "(tidak ada di katalog)",
+				"reserveHelp": "RAM yang disisihkan untuk hypervisor di setiap host; VM dapat memakai sisanya."
 			},
 			"hosts": {
 				"title": "Host",
@@ -934,7 +936,8 @@
 				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi.",
 				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
 				"zoneRequired": "Pilih zona untuk host.",
-				"zoneUnknown": "Zona ini bukan bagian dari wilayah."
+				"zoneUnknown": "Zona ini bukan bagian dari wilayah.",
+				"reserveTooLarge": "Cadangan hypervisor harus lebih kecil daripada RAM model."
 			}
 		},
 		"projectSwitcher": {

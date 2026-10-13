@@ -67,7 +67,7 @@ async function loadHosts(scope: Scope) {
       vcpu: model.vcpu,
       storageGb: model.storageGb,
       leadTimeDays: model.leadTimeDays,
-      hypervisorReservePercent: model.hypervisorReservePercent,
+      hypervisorReserveGb: model.hypervisorReserveGb,
     },
   }));
 }

@@ -839,7 +839,8 @@
 			"validation": {
 				"required": "이 필드는 필수입니다.",
 				"integer": "{{min}}에서 {{max}} 사이의 정수를 입력하세요.",
-				"regionsRequired": "리전을 하나 이상 선택하세요."
+				"regionsRequired": "리전을 하나 이상 선택하세요.",
+				"reserveTooLarge": "하이퍼바이저 예약은 모델의 RAM보다 작아야 합니다."
 			},
 			"models": {
 				"title": "서버 모델",
@@ -860,10 +861,11 @@
 					"localDisk": "로컬 디스크 (GB)",
 					"regions": "리전",
 					"leadTime": "리드 타임 (일)",
-					"reserve": "하이퍼바이저 예약 (%)"
+					"reserve": "하이퍼바이저 예약 (GB)"
 				},
 				"regionsEmpty": "아직 리전이 없습니다. 데이터센터 팀에 리전 추가를 요청하세요.",
-				"regionNotInCatalog": "(카탈로그에 없음)"
+				"regionNotInCatalog": "(카탈로그에 없음)",
+				"reserveHelp": "각 호스트에서 하이퍼바이저를 위해 남겨 두는 RAM이며, VM은 나머지를 사용할 수 있습니다."
 			},
 			"hosts": {
 				"title": "호스트",
@@ -934,7 +936,8 @@
 				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요.",
 				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
 				"zoneRequired": "호스트의 가용 영역을 선택하세요.",
-				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다."
+				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다.",
+				"reserveTooLarge": "하이퍼바이저 예약은 모델의 RAM보다 작아야 합니다."
 			}
 		},
 		"projectSwitcher": {

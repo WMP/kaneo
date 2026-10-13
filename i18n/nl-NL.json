@@ -736,7 +736,8 @@
 			"validation": {
 				"required": "Dit veld is verplicht.",
 				"integer": "Voer een geheel getal in van {{min}} tot {{max}}.",
-				"regionsRequired": "Selecteer minstens één regio."
+				"regionsRequired": "Selecteer minstens één regio.",
+				"reserveTooLarge": "De hypervisorreserve moet kleiner zijn dan het RAM van het model."
 			},
 			"models": {
 				"title": "Servermodellen",
@@ -757,10 +758,11 @@
 					"localDisk": "Lokale schijf (GB)",
 					"regions": "Regio's",
 					"leadTime": "Levertijd (dagen)",
-					"reserve": "Hypervisorreserve (%)"
+					"reserve": "Hypervisorreserve (GB)"
 				},
 				"regionsEmpty": "Nog geen regio's. Vraag het datacenterteam om regio's toe te voegen.",
-				"regionNotInCatalog": "(niet in de catalogus)"
+				"regionNotInCatalog": "(niet in de catalogus)",
+				"reserveHelp": "RAM die op elke host voor de hypervisor gereserveerd blijft; VM's kunnen de rest gebruiken."
 			},
 			"hosts": {
 				"title": "Hosts",
@@ -832,7 +834,8 @@
 				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens.",
 				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
 				"zoneRequired": "Selecteer een zone voor de host.",
-				"zoneUnknown": "Deze zone hoort niet bij de regio."
+				"zoneUnknown": "Deze zone hoort niet bij de regio.",
+				"reserveTooLarge": "De hypervisorreserve moet kleiner zijn dan het RAM van het model."
 			}
 		},
 		"projectSwitcher": {

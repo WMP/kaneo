@@ -130,7 +130,7 @@ const host = (
     ramGb: 256,
     vcpu: 64,
     storageGb: 1000,
-    hypervisorReservePercent: 0,
+    hypervisorReserveGb: 0,
   },
   totals,
 });

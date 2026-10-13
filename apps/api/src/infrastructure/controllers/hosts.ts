@@ -34,7 +34,7 @@ const hostColumns = {
     vcpu: infraModelTable.vcpu,
     storageGb: infraModelTable.storageGb,
     leadTimeDays: infraModelTable.leadTimeDays,
-    hypervisorReservePercent: infraModelTable.hypervisorReservePercent,
+    hypervisorReserveGb: infraModelTable.hypervisorReserveGb,
   },
   totals: {
     vmCount: sql<number>`count(${infraVmTable.id})::int`,

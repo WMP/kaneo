@@ -10,7 +10,7 @@ export type HostUsageInput = {
     ramGb: number;
     vcpu: number;
     storageGb: number;
-    hypervisorReservePercent: number;
+    hypervisorReserveGb: number;
   };
   totals: { vcpu: number; ramGb: number; localStorageGb: number };
 };
@@ -62,9 +62,7 @@ function rowAmounts(row: EditorRowUsage): Amounts {
 export function hostCapacity(host: HostUsageInput): Amounts {
   const { model } = host;
   return {
-    ram: Math.floor(
-      (model.ramGb * (100 - model.hypervisorReservePercent)) / 100,
-    ),
+    ram: Math.max(0, model.ramGb - model.hypervisorReserveGb),
     vcpu: model.vcpu,
     localStorage: model.storageGb,
   };

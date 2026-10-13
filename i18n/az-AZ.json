@@ -1076,7 +1076,8 @@
 			"validation": {
 				"required": "Bu sahə məcburidir.",
 				"integer": "{{min}} ilə {{max}} arasında tam ədəd daxil edin.",
-				"regionsRequired": "Ən azı bir region seçin."
+				"regionsRequired": "Ən azı bir region seçin.",
+				"reserveTooLarge": "Hipervizor ehtiyatı modelin RAM-ından kiçik olmalıdır."
 			},
 			"models": {
 				"title": "Server modelləri",
@@ -1097,10 +1098,11 @@
 					"localDisk": "Lokal disk (GB)",
 					"regions": "Regionlar",
 					"leadTime": "Çatdırılma müddəti (gün)",
-					"reserve": "Hipervizor ehtiyatı (%)"
+					"reserve": "Hipervizor ehtiyatı (GB)"
 				},
 				"regionsEmpty": "Hələ region yoxdur. Datacenter komandasından region əlavə etməsini xahiş edin.",
-				"regionNotInCatalog": "(kataloqda yoxdur)"
+				"regionNotInCatalog": "(kataloqda yoxdur)",
+				"reserveHelp": "Hər hostda hipervizor üçün saxlanılan RAM; VM-lər qalanını istifadə edə bilər."
 			},
 			"hosts": {
 				"title": "Hostlar",
@@ -1172,7 +1174,8 @@
 				"vmNotInTask": "Siyahıdakı bir VM bu tapşırığa aid deyil. Tapşırığı yenidən yükləyin və təkrar cəhd edin.",
 				"regionUnknown": "Bu region region kataloqunda yoxdur.",
 				"zoneRequired": "Host üçün zona seçin.",
-				"zoneUnknown": "Bu zona regiona aid deyil."
+				"zoneUnknown": "Bu zona regiona aid deyil.",
+				"reserveTooLarge": "Hipervizor ehtiyatı modelin RAM-ından kiçik olmalıdır."
 			}
 		},
 		"projectSwitcher": {

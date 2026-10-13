@@ -5528,9 +5528,17 @@
 								},
 								"regionsRequired": {
 									"type": "string"
+								},
+								"reserveTooLarge": {
+									"type": "string"
 								}
 							},
-							"required": ["required", "integer", "regionsRequired"]
+							"required": [
+								"required",
+								"integer",
+								"regionsRequired",
+								"reserveTooLarge"
+							]
 						},
 						"models": {
 							"type": "object",
@@ -5612,6 +5620,9 @@
 								},
 								"regionNotInCatalog": {
 									"type": "string"
+								},
+								"reserveHelp": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5626,7 +5637,8 @@
 								"deleteDescription",
 								"columns",
 								"regionsEmpty",
-								"regionNotInCatalog"
+								"regionNotInCatalog",
+								"reserveHelp"
 							]
 						},
 						"hosts": {
@@ -5905,6 +5917,9 @@
 								},
 								"zoneUnknown": {
 									"type": "string"
+								},
+								"reserveTooLarge": {
+									"type": "string"
 								}
 							},
 							"required": [
@@ -5918,7 +5933,8 @@
 								"vmNotInTask",
 								"regionUnknown",
 								"zoneRequired",
-								"zoneUnknown"
+								"zoneUnknown",
+								"reserveTooLarge"
 							]
 						}
 					},

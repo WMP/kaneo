@@ -31,7 +31,7 @@ const LIMITS = {
   vcpu: { min: 1, max: 1_000_000 },
   storageGb: { min: 0, max: 100_000_000 },
   leadTimeDays: { min: 0, max: 3650 },
-  hypervisorReservePercent: { min: 0, max: 90 },
+  hypervisorReserveGb: { min: 0, max: 1_000_000 },
 } as const;
 
 type NumberField = keyof typeof LIMITS;
@@ -52,7 +52,7 @@ const EMPTY: FormState = {
   vcpu: "",
   storageGb: "0",
   leadTimeDays: "0",
-  hypervisorReservePercent: "5",
+  hypervisorReserveGb: "8",
 };
 
 function fromModel(model: InfraModel): FormState {
@@ -65,7 +65,7 @@ function fromModel(model: InfraModel): FormState {
     vcpu: String(model.vcpu),
     storageGb: String(model.storageGb),
     leadTimeDays: String(model.leadTimeDays),
-    hypervisorReservePercent: String(model.hypervisorReservePercent),
+    hypervisorReserveGb: String(model.hypervisorReserveGb),
   };
 }
 
@@ -78,11 +78,20 @@ function parseInteger(value: string, field: NumberField): number | null {
 
 export function validateModelForm(form: FormState) {
   const errors: Partial<
-    Record<keyof FormState, "required" | "integer" | "regions">
+    Record<keyof FormState, "required" | "integer" | "regions" | "reserve">
   > = {};
   if (!form.name.trim()) errors.name = "required";
   for (const field of Object.keys(LIMITS) as NumberField[]) {
     if (parseInteger(form[field], field) === null) errors[field] = "integer";
+  }
+  // The reserve stays below the RAM (the API answers INFRA_RESERVE_TOO_LARGE).
+  const ramGb = parseInteger(form.ramGb, "ramGb");
+  const reserveGb = parseInteger(
+    form.hypervisorReserveGb,
+    "hypervisorReserveGb",
+  );
+  if (ramGb !== null && reserveGb !== null && reserveGb >= ramGb) {
+    errors.hypervisorReserveGb = "reserve";
   }
   // The codes come from the catalog (or from the model itself), so only the
   // count is checked here; the API validates them against the catalog.
@@ -153,7 +162,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
       vcpu: Number(form.vcpu),
       storageGb: Number(form.storageGb),
       leadTimeDays: Number(form.leadTimeDays),
-      hypervisorReservePercent: Number(form.hypervisorReservePercent),
+      hypervisorReserveGb: Number(form.hypervisorReserveGb),
     };
     const options = { onSuccess: () => onOpenChange(false) };
     if (model) {
@@ -171,10 +180,12 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
         ? t("settings:projectInfrastructure.validation.required")
         : error === "regions"
           ? t("settings:projectInfrastructure.validation.regionsRequired")
-          : t("settings:projectInfrastructure.validation.integer", {
-              min: LIMITS[field as NumberField].min,
-              max: LIMITS[field as NumberField].max,
-            });
+          : error === "reserve"
+            ? t("settings:projectInfrastructure.validation.reserveTooLarge")
+            : t("settings:projectInfrastructure.validation.integer", {
+                min: LIMITS[field as NumberField].min,
+                max: LIMITS[field as NumberField].max,
+              });
     return (
       <p
         id={`model-${field}-error`}
@@ -185,7 +196,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
     );
   };
 
-  const numberField = (field: NumberField, label: string) => (
+  const numberField = (field: NumberField, label: string, help?: string) => (
     <div className="grid gap-2">
       <Label htmlFor={`model-${field}`}>{label}</Label>
       <Input
@@ -198,6 +209,7 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
           submitted && errors[field] ? `model-${field}-error` : undefined
         }
       />
+      {help && <p className="text-xs text-muted-foreground">{help}</p>}
       {errorText(field)}
     </div>
   );
@@ -288,8 +300,9 @@ export function ModelDialog({ projectId, model, open, onOpenChange }: Props) {
               t("settings:projectInfrastructure.models.columns.leadTime"),
             )}
             {numberField(
-              "hypervisorReservePercent",
+              "hypervisorReserveGb",
               t("settings:projectInfrastructure.models.columns.reserve"),
+              t("settings:projectInfrastructure.models.reserveHelp"),
             )}
             <fieldset
               className="grid min-w-0 gap-2 sm:col-span-2"

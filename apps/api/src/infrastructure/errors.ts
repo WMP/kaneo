@@ -5,6 +5,7 @@ import { codedError } from "../utils/coded-error";
 // branches on the code instead of on English text.
 export const INFRA_ERROR_CODES = {
   regionNotAllowed: "INFRA_REGION_NOT_ALLOWED",
+  reserveTooLarge: "INFRA_RESERVE_TOO_LARGE",
   zoneRequired: "INFRA_ZONE_REQUIRED",
   zoneUnknown: "INFRA_ZONE_UNKNOWN",
   zoneInUse: "INFRA_ZONE_IN_USE",

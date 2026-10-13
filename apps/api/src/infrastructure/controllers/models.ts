@@ -16,15 +16,49 @@ export type ModelInput = {
   storageGb: number;
   regions: string[];
   leadTimeDays: number;
-  hypervisorReservePercent: number;
+  hypervisorReserveGb: number;
 };
 
+// The deprecated percent column is never part of a response.
+function publicModel<T extends { hypervisorReservePercent: number }>(row: T) {
+  const { hypervisorReservePercent: _deprecated, ...model } = row;
+  return model;
+}
+
+function reserveTooLarge() {
+  return infraError(
+    400,
+    INFRA_ERROR_CODES.reserveTooLarge,
+    "The hypervisor reserve must be smaller than the model's RAM",
+  );
+}
+
+// Defensive: a check violation that the API's own comparison missed answers
+// like the comparison does.
+function mapReserveViolation(error: unknown): never {
+  const e = error as {
+    code?: string;
+    constraint?: string;
+    cause?: { code?: string; constraint?: string };
+  };
+  const code = e?.cause?.code ?? e?.code;
+  const constraint = e?.cause?.constraint ?? e?.constraint;
+  if (
+    code === "23514" &&
+    constraint === "ganttpro_infra_model_hypervisor_reserve_gb_check"
+  ) {
+    throw reserveTooLarge();
+  }
+  throw error;
+}
+
 export async function listModels(projectId: string) {
-  return db
+  const rows = await db
     .select()
     .from(infraModelTable)
     .where(eq(infraModelTable.projectId, projectId))
     .orderBy(asc(infraModelTable.position), asc(infraModelTable.createdAt));
+  return rows.map(publicModel);
 }
 
 // Locks the model row so that host creation, region removal and deletion for
@@ -55,28 +89,31 @@ export async function createModel(
   workspaceId: string,
   input: ModelInput,
 ) {
-  const [created] = await db.transaction(async (tx) => {
-    await assertRegionsInCatalog(tx, workspaceId, input.regions);
-    const [last] = await tx
-      .select({
-        position: sql<number>`coalesce(max(${infraModelTable.position}), -1)::int`,
-      })
-      .from(infraModelTable)
-      .where(eq(infraModelTable.projectId, projectId));
-    return tx
-      .insert(infraModelTable)
-      .values({
-        ...input,
-        family: input.family ?? null,
-        projectId,
-        position: (last?.position ?? -1) + 1,
-      })
-      .returning();
-  });
+  if (input.hypervisorReserveGb >= input.ramGb) throw reserveTooLarge();
+  const [created] = await db
+    .transaction(async (tx) => {
+      await assertRegionsInCatalog(tx, workspaceId, input.regions);
+      const [last] = await tx
+        .select({
+          position: sql<number>`coalesce(max(${infraModelTable.position}), -1)::int`,
+        })
+        .from(infraModelTable)
+        .where(eq(infraModelTable.projectId, projectId));
+      return tx
+        .insert(infraModelTable)
+        .values({
+          ...input,
+          family: input.family ?? null,
+          projectId,
+          position: (last?.position ?? -1) + 1,
+        })
+        .returning();
+    })
+    .catch(mapReserveViolation);
   if (!created) {
     throw new HTTPException(500, { message: "Failed to create model" });
   }
-  return created;
+  return publicModel(created);
 }
 
 export async function updateModel(
@@ -85,40 +122,47 @@ export async function updateModel(
   modelId: string,
   input: Partial<ModelInput>,
 ) {
-  return db.transaction(async (tx) => {
-    await lockModel(tx, projectId, modelId);
+  return db
+    .transaction(async (tx) => {
+      const current = await lockModel(tx, projectId, modelId);
+      // The effective values after the partial merge.
+      const ramGb = input.ramGb ?? current.ramGb;
+      const reserveGb =
+        input.hypervisorReserveGb ?? current.hypervisorReserveGb;
+      if (reserveGb >= ramGb) throw reserveTooLarge();
 
-    if (input.regions) {
-      await assertRegionsInCatalog(tx, workspaceId, input.regions);
-      const kept = input.regions;
-      const used = await tx
-        .selectDistinct({ region: infraHostTable.region })
-        .from(infraHostTable)
-        .where(eq(infraHostTable.modelId, modelId));
-      const blocked = used
-        .map((row) => row.region)
-        .filter((region) => !kept.includes(region));
-      if (blocked.length > 0) {
-        throw infraError(
-          409,
-          INFRA_ERROR_CODES.regionInUse,
-          `Hosts still use the region(s): ${blocked.join(", ")}`,
-        );
+      if (input.regions) {
+        await assertRegionsInCatalog(tx, workspaceId, input.regions);
+        const kept = input.regions;
+        const used = await tx
+          .selectDistinct({ region: infraHostTable.region })
+          .from(infraHostTable)
+          .where(eq(infraHostTable.modelId, modelId));
+        const blocked = used
+          .map((row) => row.region)
+          .filter((region) => !kept.includes(region));
+        if (blocked.length > 0) {
+          throw infraError(
+            409,
+            INFRA_ERROR_CODES.regionInUse,
+            `Hosts still use the region(s): ${blocked.join(", ")}`,
+          );
+        }
       }
-    }
 
-    const [updated] = await tx
-      .update(infraModelTable)
-      .set(input)
-      .where(eq(infraModelTable.id, modelId))
-      .returning();
-    if (!updated) {
-      throw new HTTPException(404, {
-        message: "Infrastructure model not found",
-      });
-    }
-    return updated;
-  });
+      const [updated] = await tx
+        .update(infraModelTable)
+        .set(input)
+        .where(eq(infraModelTable.id, modelId))
+        .returning();
+      if (!updated) {
+        throw new HTTPException(404, {
+          message: "Infrastructure model not found",
+        });
+      }
+      return publicModel(updated);
+    })
+    .catch(mapReserveViolation);
 }
 
 export async function deleteModel(projectId: string, modelId: string) {

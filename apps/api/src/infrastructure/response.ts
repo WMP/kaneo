@@ -37,7 +37,9 @@ const modelSummaryFields = {
     .int()
     .openapi({ description: "Local disk of the host, in GB." }),
   leadTimeDays: z.number().int(),
-  hypervisorReservePercent: z.number().int(),
+  hypervisorReserveGb: z.number().int().openapi({
+    description: "RAM kept for the hypervisor on each host, in GB.",
+  }),
 };
 
 export const infraModelSchema = z
@@ -326,7 +328,9 @@ const capacityHostSummary = z
       vcpu: z.number().int(),
       storageGb: z.number().int(),
       leadTimeDays: z.number().int(),
-      hypervisorReservePercent: z.number().int(),
+      hypervisorReserveGb: z.number().int().openapi({
+        description: "RAM kept for the hypervisor on each host, in GB.",
+      }),
     }),
   })
   .openapi("InfraCapacityHost");

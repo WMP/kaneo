@@ -58,7 +58,7 @@ export const modelBody = (overrides: Record<string, unknown> = {}) => ({
   storageGb: 4000,
   regions: ["GRA", "PAR"],
   leadTimeDays: 14,
-  hypervisorReservePercent: 5,
+  hypervisorReserveGb: 8,
   ...overrides,
 });
 

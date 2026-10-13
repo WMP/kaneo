@@ -1414,7 +1414,8 @@
 			"validation": {
 				"required": "This field is required.",
 				"integer": "Enter a whole number from {{min}} to {{max}}.",
-				"regionsRequired": "Select at least one region."
+				"regionsRequired": "Select at least one region.",
+				"reserveTooLarge": "The hypervisor reserve must be smaller than the model's RAM."
 			},
 			"models": {
 				"title": "Server models",
@@ -1435,10 +1436,11 @@
 					"localDisk": "Local disk (GB)",
 					"regions": "Regions",
 					"leadTime": "Lead time (days)",
-					"reserve": "Hypervisor reserve (%)"
+					"reserve": "Hypervisor reserve (GB)"
 				},
 				"regionsEmpty": "No regions yet. Ask the datacenter team to add regions.",
-				"regionNotInCatalog": "(not in catalog)"
+				"regionNotInCatalog": "(not in catalog)",
+				"reserveHelp": "RAM kept for the hypervisor on each host; VMs can use the rest."
 			},
 			"hosts": {
 				"title": "Hosts",
@@ -1510,7 +1512,8 @@
 				"vmNotInTask": "A VM in the list does not belong to this task. Reload the task and try again.",
 				"regionUnknown": "This region is not in the region catalog.",
 				"zoneRequired": "Select a zone for the host.",
-				"zoneUnknown": "This zone does not belong to the region."
+				"zoneUnknown": "This zone does not belong to the region.",
+				"reserveTooLarge": "The hypervisor reserve must be smaller than the model's RAM."
 			}
 		},
 		"projectSwitcher": {

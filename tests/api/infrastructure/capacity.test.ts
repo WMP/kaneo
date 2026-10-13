@@ -8,6 +8,7 @@ import {
   computeCapacity,
   computeClusterResult,
   computeHostResult,
+  usableRamGb,
 } from "../../../apps/api/src/infrastructure/capacity";
 
 const TODAY = "2026-10-12";
@@ -34,7 +35,7 @@ function host(
       vcpu: 32,
       storageGb: 4000,
       leadTimeDays: 14,
-      hypervisorReservePercent: 5,
+      hypervisorReserveGb: 13,
       ...model,
     },
     ...overrides,
@@ -100,11 +101,17 @@ describe("addDays", () => {
 });
 
 describe("host result", () => {
+  it("never has negative usable RAM", () => {
+    expect(usableRamGb(8, 8)).toBe(0);
+    expect(usableRamGb(8, 20)).toBe(0);
+    expect(usableRamGb(256, 8)).toBe(248);
+  });
+
   it("applies the hypervisor reserve to RAM only", () => {
     const r = computeHostResult(host(), [
       vm({ ramGb: 100, vcpu: 8, localStorageGb: 1000 }),
     ]);
-    expect(r.usableRamGb).toBe(243); // floor(256 * 95 / 100)
+    expect(r.usableRamGb).toBe(243); // 256 - 13 GB reserve
     expect(r.vcpu).toBe(32);
     expect(r.localStorageGb).toBe(4000);
     expect(r.steps[0]).toMatchObject({
@@ -147,7 +154,7 @@ describe("host result", () => {
     // usable RAM 100 (reserve 0 on a 100 GB model).
     const m = {
       ramGb: 100,
-      hypervisorReservePercent: 0,
+      hypervisorReserveGb: 0,
       vcpu: 10,
       storageGb: 100,
     };
@@ -177,7 +184,7 @@ describe("host result", () => {
   });
 
   it("reports the first date a threshold is crossed", () => {
-    const m = { ramGb: 100, hypervisorReservePercent: 0 };
+    const m = { ramGb: 100, hypervisorReserveGb: 0 };
     const r = computeHostResult(host({}, m), [
       vm({ startDate: "2026-11-01", ramGb: 50 }),
       vm({ startDate: "2026-11-05", ramGb: 40 }),
@@ -271,7 +278,7 @@ describe("host warnings", () => {
   });
 
   it("reports only the highest over-threshold level per host", () => {
-    const m = { ramGb: 100, hypervisorReservePercent: 0 };
+    const m = { ramGb: 100, hypervisorReserveGb: 0 };
     const at85 = run([host({}, m)], [vm({ ramGb: 85 })]);
     expect(at85.warnings.map((w) => w.type)).toEqual(["OVER_80"]);
     const at120 = run([host({}, m)], [vm({ ramGb: 120 })]);

@@ -1937,7 +1937,8 @@
 			"validation": {
 				"required": "To pole jest wymagane.",
 				"integer": "Wpisz liczbę całkowitą od {{min}} do {{max}}.",
-				"regionsRequired": "Wybierz co najmniej jeden region."
+				"regionsRequired": "Wybierz co najmniej jeden region.",
+				"reserveTooLarge": "Rezerwa hiperwizora musi być mniejsza niż RAM modelu."
 			},
 			"models": {
 				"title": "Modele serwerów",
@@ -1958,10 +1959,11 @@
 					"localDisk": "Dysk lokalny (GB)",
 					"regions": "Regiony",
 					"leadTime": "Czas realizacji (dni)",
-					"reserve": "Rezerwa hiperwizora (%)"
+					"reserve": "Rezerwa hiperwizora (GB)"
 				},
 				"regionsEmpty": "Brak regionów. Poproś zespół datacenter o dodanie regionów.",
-				"regionNotInCatalog": "(spoza katalogu)"
+				"regionNotInCatalog": "(spoza katalogu)",
+				"reserveHelp": "RAM zarezerwowany dla hiperwizora na każdym hoście; VM mogą użyć reszty."
 			},
 			"hosts": {
 				"title": "Hosty",
@@ -2035,7 +2037,8 @@
 				"vmNotInTask": "Jedna z VM na liście nie należy do tego zadania. Wczytaj zadanie ponownie i spróbuj jeszcze raz.",
 				"regionUnknown": "Tego regionu nie ma w katalogu regionów.",
 				"zoneRequired": "Wybierz strefę dla hosta.",
-				"zoneUnknown": "Ta strefa nie należy do regionu."
+				"zoneUnknown": "Ta strefa nie należy do regionu.",
+				"reserveTooLarge": "Rezerwa hiperwizora musi być mniejsza niż RAM modelu."
 			}
 		},
 		"repositoryBrowser": {

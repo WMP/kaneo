@@ -2061,6 +2061,10 @@ export const infraModelTable = pgTable(
     storageGb: integer("storage_gb").notNull(),
     regions: jsonb("regions").$type<string[]>().notNull(),
     leadTimeDays: integer("lead_time_days").notNull().default(0),
+    // RAM kept for the hypervisor on each host, in GB (0 up to below ram_gb).
+    hypervisorReserveGb: integer("hypervisor_reserve_gb").notNull().default(8),
+    // Deprecated, no longer read or written; drop in a later migration. Kept
+    // (with its default) so that an older binary can still insert models.
     hypervisorReservePercent: integer("hypervisor_reserve_percent")
       .notNull()
       .default(5),
@@ -2090,6 +2094,10 @@ export const infraModelTable = pgTable(
     check(
       "ganttpro_infra_model_hypervisor_reserve_check",
       sql`${table.hypervisorReservePercent} BETWEEN 0 AND 90`,
+    ),
+    check(
+      "ganttpro_infra_model_hypervisor_reserve_gb_check",
+      sql`${table.hypervisorReserveGb} >= 0 AND ${table.hypervisorReserveGb} < ${table.ramGb}`,
     ),
   ],
 );

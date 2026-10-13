@@ -839,7 +839,8 @@
 			"validation": {
 				"required": "Bu alan zorunludur.",
 				"integer": "{{min}} ile {{max}} arasında bir tam sayı girin.",
-				"regionsRequired": "En az bir bölge seçin."
+				"regionsRequired": "En az bir bölge seçin.",
+				"reserveTooLarge": "Hipervizör rezervi modelin RAM'inden küçük olmalıdır."
 			},
 			"models": {
 				"title": "Sunucu modelleri",
@@ -860,10 +861,11 @@
 					"localDisk": "Yerel disk (GB)",
 					"regions": "Bölgeler",
 					"leadTime": "Teslim süresi (gün)",
-					"reserve": "Hipervizör rezervi (%)"
+					"reserve": "Hipervizör rezervi (GB)"
 				},
 				"regionsEmpty": "Henüz bölge yok. Veri merkezi ekibinden bölge eklemesini isteyin.",
-				"regionNotInCatalog": "(katalogda yok)"
+				"regionNotInCatalog": "(katalogda yok)",
+				"reserveHelp": "Her ana makinede hipervizör için ayrılan RAM; VM'ler geri kalanını kullanabilir."
 			},
 			"hosts": {
 				"title": "Ana makineler",
@@ -935,7 +937,8 @@
 				"vmNotInTask": "Listedeki bir VM bu göreve ait değil. Görevi yeniden yükleyip tekrar deneyin.",
 				"regionUnknown": "Bu bölge bölge kataloğunda yok.",
 				"zoneRequired": "Ana makine için bir zon seçin.",
-				"zoneUnknown": "Bu zon bölgeye ait değil."
+				"zoneUnknown": "Bu zon bölgeye ait değil.",
+				"reserveTooLarge": "Hipervizör rezervi modelin RAM'inden küçük olmalıdır."
 			}
 		},
 		"projectSwitcher": {

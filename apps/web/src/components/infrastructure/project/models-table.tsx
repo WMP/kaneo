@@ -137,7 +137,7 @@ export function ModelsTable({ projectId, models, canManage }: Props) {
                     {model.leadTimeDays}
                   </TableCell>
                   <TableCell className="tabular-nums">
-                    {model.hypervisorReservePercent}
+                    {model.hypervisorReserveGb}
                   </TableCell>
                   {canManage && (
                     <TableCell>

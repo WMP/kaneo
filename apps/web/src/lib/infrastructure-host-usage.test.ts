@@ -13,7 +13,7 @@ const host = (
   totals: HostUsageInput["totals"] = { vcpu: 0, ramGb: 0, localStorageGb: 0 },
 ): HostUsageInput => ({
   id,
-  model: { ramGb: 256, vcpu: 64, storageGb: 1000, hypervisorReservePercent: 7 },
+  model: { ramGb: 256, vcpu: 64, storageGb: 1000, hypervisorReserveGb: 18 },
   totals,
 });
 
@@ -35,7 +35,7 @@ const saved = (
 describe("computeHostUsage", () => {
   it("reserves part of the RAM for the hypervisor (rounded down)", () => {
     const usage = computeHostUsage([host("a")], [], []).get("a");
-    // 256 * 93 / 100 = 238.08
+    // 256 GB RAM minus the 18 GB reserve
     expect(usage?.ram.capacity).toBe(238);
     expect(usage?.vcpu.capacity).toBe(64);
     expect(usage?.localStorage.capacity).toBe(1000);

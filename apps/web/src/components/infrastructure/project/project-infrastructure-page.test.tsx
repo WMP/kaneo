@@ -113,7 +113,7 @@ const model = {
   storageGb: 2000,
   regions: ["GRA", "PAR"],
   leadTimeDays: 21,
-  hypervisorReservePercent: 5,
+  hypervisorReserveGb: 8,
   position: 0,
 };
 
@@ -385,7 +385,7 @@ describe("project infrastructure settings", () => {
         vcpu: 16,
         storageGb: 0,
         leadTimeDays: 0,
-        hypervisorReservePercent: 5,
+        hypervisorReserveGb: 8,
       }),
     );
   });

@@ -1075,7 +1075,8 @@
 			"validation": {
 				"required": "この項目は必須です。",
 				"integer": "{{min}}から{{max}}までの整数を入力してください。",
-				"regionsRequired": "リージョンを1つ以上選択してください。"
+				"regionsRequired": "リージョンを1つ以上選択してください。",
+				"reserveTooLarge": "ハイパーバイザー予約はモデルのRAMより小さくする必要があります。"
 			},
 			"models": {
 				"title": "サーバーモデル",
@@ -1096,10 +1097,11 @@
 					"localDisk": "ローカルディスク（GB）",
 					"regions": "リージョン",
 					"leadTime": "リードタイム（日）",
-					"reserve": "ハイパーバイザー予約（%）"
+					"reserve": "ハイパーバイザー予約（GB）"
 				},
 				"regionsEmpty": "リージョンがまだありません。データセンターチームにリージョンの追加を依頼してください。",
-				"regionNotInCatalog": "(カタログにありません)"
+				"regionNotInCatalog": "(カタログにありません)",
+				"reserveHelp": "各ホストでハイパーバイザー用に確保されるRAM。VMは残りを使用できます。"
 			},
 			"hosts": {
 				"title": "ホスト",
@@ -1170,7 +1172,8 @@
 				"vmNotInTask": "リスト内のVMがこのタスクに属していません。タスクを再読み込みして、もう一度お試しください。",
 				"regionUnknown": "このリージョンはリージョンカタログにありません。",
 				"zoneRequired": "ホストのゾーンを選択してください。",
-				"zoneUnknown": "このゾーンはリージョンに属していません。"
+				"zoneUnknown": "このゾーンはリージョンに属していません。",
+				"reserveTooLarge": "ハイパーバイザー予約はモデルのRAMより小さくする必要があります。"
 			}
 		},
 		"projectSwitcher": {

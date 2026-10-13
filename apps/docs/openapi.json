@@ -7249,8 +7249,9 @@
           "leadTimeDays": {
             "type": "integer"
           },
-          "hypervisorReservePercent": {
-            "type": "integer"
+          "hypervisorReserveGb": {
+            "type": "integer",
+            "description": "RAM kept for the hypervisor on each host, in GB."
           },
           "projectId": {
             "type": "string"
@@ -7282,7 +7283,7 @@
           "vcpu",
           "storageGb",
           "leadTimeDays",
-          "hypervisorReservePercent",
+          "hypervisorReserveGb",
           "projectId",
           "regions",
           "position",
@@ -7420,8 +7421,9 @@
           "leadTimeDays": {
             "type": "integer"
           },
-          "hypervisorReservePercent": {
-            "type": "integer"
+          "hypervisorReserveGb": {
+            "type": "integer",
+            "description": "RAM kept for the hypervisor on each host, in GB."
           }
         },
         "required": [
@@ -7433,7 +7435,7 @@
           "vcpu",
           "storageGb",
           "leadTimeDays",
-          "hypervisorReservePercent"
+          "hypervisorReserveGb"
         ]
       },
       "InfraHostTotals": {
@@ -8056,8 +8058,9 @@
               "leadTimeDays": {
                 "type": "integer"
               },
-              "hypervisorReservePercent": {
-                "type": "integer"
+              "hypervisorReserveGb": {
+                "type": "integer",
+                "description": "RAM kept for the hypervisor on each host, in GB."
               }
             },
             "required": [
@@ -8069,7 +8072,7 @@
               "vcpu",
               "storageGb",
               "leadTimeDays",
-              "hypervisorReservePercent"
+              "hypervisorReserveGb"
             ]
           }
         },
@@ -28425,11 +28428,11 @@
                     "maximum": 3650,
                     "default": 0
                   },
-                  "hypervisorReservePercent": {
+                  "hypervisorReserveGb": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 90,
-                    "default": 5
+                    "maximum": 1000000,
+                    "default": 8
                   }
                 },
                 "required": [
@@ -28572,10 +28575,10 @@
                     "minimum": 0,
                     "maximum": 3650
                   },
-                  "hypervisorReservePercent": {
+                  "hypervisorReserveGb": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 90
+                    "maximum": 1000000
                   }
                 }
               }

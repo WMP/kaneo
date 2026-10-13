@@ -1075,7 +1075,8 @@
 			"validation": {
 				"required": "Trường này là bắt buộc.",
 				"integer": "Nhập một số nguyên từ {{min}} đến {{max}}.",
-				"regionsRequired": "Chọn ít nhất một vùng."
+				"regionsRequired": "Chọn ít nhất một vùng.",
+				"reserveTooLarge": "Mức dự phòng hypervisor phải nhỏ hơn RAM của mô hình."
 			},
 			"models": {
 				"title": "Mẫu máy chủ",
@@ -1096,10 +1097,11 @@
 					"localDisk": "Ổ đĩa cục bộ (GB)",
 					"regions": "Vùng",
 					"leadTime": "Thời gian giao hàng (ngày)",
-					"reserve": "Dự phòng hypervisor (%)"
+					"reserve": "Dự phòng hypervisor (GB)"
 				},
 				"regionsEmpty": "Chưa có vùng nào. Hãy nhờ nhóm trung tâm dữ liệu thêm vùng.",
-				"regionNotInCatalog": "(không có trong danh mục)"
+				"regionNotInCatalog": "(không có trong danh mục)",
+				"reserveHelp": "RAM dành riêng cho hypervisor trên mỗi máy chủ; các VM có thể dùng phần còn lại."
 			},
 			"hosts": {
 				"title": "Host",
@@ -1170,7 +1172,8 @@
 				"vmNotInTask": "Một VM trong danh sách không thuộc công việc này. Hãy tải lại công việc và thử lại.",
 				"regionUnknown": "Vùng này không có trong danh mục vùng.",
 				"zoneRequired": "Chọn vùng khả dụng cho host.",
-				"zoneUnknown": "Vùng khả dụng này không thuộc vùng."
+				"zoneUnknown": "Vùng khả dụng này không thuộc vùng.",
+				"reserveTooLarge": "Mức dự phòng hypervisor phải nhỏ hơn RAM của mô hình."
 			}
 		},
 		"projectSwitcher": {

@@ -31,7 +31,7 @@ export type CapHost = {
     vcpu: number;
     storageGb: number;
     leadTimeDays: number;
-    hypervisorReservePercent: number;
+    hypervisorReserveGb: number;
   };
 };
 
@@ -214,8 +214,8 @@ function entryAvailableOn(entry: CapEntry, date: string) {
   return entry.availableFrom <= date;
 }
 
-export function usableRamGb(ramGb: number, reservePercent: number) {
-  return Math.floor((ramGb * (100 - reservePercent)) / 100);
+export function usableRamGb(ramGb: number, reserveGb: number) {
+  return Math.max(0, ramGb - reserveGb);
 }
 
 export function clusterUsableGb(
@@ -238,10 +238,7 @@ function sortedDistinct(dates: Iterable<string>) {
 
 export function computeHostResult(host: CapHost, vms: CapVm[]): HostResult {
   const own = vms.filter((v) => v.hostId === host.id && v.startDate != null);
-  const capRam = usableRamGb(
-    host.model.ramGb,
-    host.model.hypervisorReservePercent,
-  );
+  const capRam = usableRamGb(host.model.ramGb, host.model.hypervisorReserveGb);
   const capCpu = host.model.vcpu;
   const capDisk = host.model.storageGb;
   const steps: HostStep[] = [];
