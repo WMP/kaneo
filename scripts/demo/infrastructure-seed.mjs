@@ -125,6 +125,17 @@ await request(admin.cookie, "POST", `/project/${billing.id}/members`, {
   role: "project-lead",
 });
 
+// Region catalog (datacenter team). Models and clusters may only name these.
+for (const [code, name] of [
+  ["GRA", "Gravelines"],
+  ["PAR", "Paris"],
+]) {
+  await request(dc.cookie, "POST", `/infrastructure/workspace/${W}/regions`, {
+    code,
+    name,
+  });
+}
+
 // Server model pools (project leads).
 const createModel = async (user, project, body) =>
   (
@@ -180,7 +191,7 @@ const createHost = async (user, project, modelId, region) =>
       `/infrastructure/project/${project.id}/hosts`,
       { modelId, region },
     )
-  ).json;
+  ).json.hosts[0];
 const gra1 = await createHost(lead, billing, advance256.id, "GRA");
 const gra2 = await createHost(lead, billing, advance256.id, "GRA");
 const par1 = await createHost(lead, billing, scale256.id, "PAR");

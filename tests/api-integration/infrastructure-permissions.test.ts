@@ -25,6 +25,7 @@ async function setup() {
     `/api/infrastructure/project/${w.p1.id}/hosts`,
     { modelId: model.json.id, region: "GRA" },
   );
+  host.json = host.json.hosts[0];
   const ws = w.workspaceId;
   await defineRole(ws, "bare", { project: ["read"] });
   await defineRole(ws, "infra_reader", { infrastructure: ["read"] });

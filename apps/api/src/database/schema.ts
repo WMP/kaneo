@@ -2002,6 +2002,40 @@ export const jiraStatusProposalTable = pgTable(
   ],
 );
 
+// Region catalog of a workspace (see docs/plans/infrastructure-capacity.md).
+// Models, hosts and storage clusters name a region by its code; the API checks
+// that the code is in this catalog. A code never changes after creation.
+export const infraRegionTable = pgTable(
+  "ganttpro_infra_region",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_region_workspace_id_idx").on(table.workspaceId),
+    unique("ganttpro_infra_region_workspace_id_code_unique").on(
+      table.workspaceId,
+      table.code,
+    ),
+    check(
+      "ganttpro_infra_region_code_check",
+      sql`${table.code} ~ '^[A-Z0-9-]{1,16}$'`,
+    ),
+  ],
+);
+
 // Infrastructure capacity (see docs/plans/infrastructure-capacity.md).
 // The server models a project may use for its migrations: one row per
 // model/size, for example "ADVANCE-2 256 GB". RAM and storage are whole GB and

@@ -17,7 +17,7 @@ import {
   todayUtc,
 } from "./controllers/capacity";
 import {
-  createHost,
+  createHosts,
   deleteHost,
   listProjectHosts,
   listWorkspaceHosts,
@@ -31,6 +31,13 @@ import {
   updateModel,
 } from "./controllers/models";
 import {
+  createRegion,
+  deleteRegion,
+  listProjectRegions,
+  listRegions,
+  updateRegion,
+} from "./controllers/regions";
+import {
   createCapacity,
   createCluster,
   deleteCapacity,
@@ -43,6 +50,7 @@ import {
 import { listTaskVms, replaceTaskVms } from "./controllers/vms";
 import {
   deletedInfraItemSchema,
+  infraCreatedHostsSchema,
   infraDatacenterHostListSchema,
   infraDatacenterHostSchema,
   infraHostListSchema,
@@ -50,6 +58,9 @@ import {
   infraModelListSchema,
   infraModelSchema,
   infraProjectCapacitySchema,
+  infraRegionListSchema,
+  infraRegionSchema,
+  infraRegionSummaryListSchema,
   infraStorageCapacitySchema,
   infraStorageClusterListSchema,
   infraStorageClusterSchema,
@@ -62,6 +73,7 @@ import {
   createClusterBody,
   createHostBody,
   createModelBody,
+  createRegionBody,
   hostParam,
   modelParam,
   projectIdParam,
@@ -72,10 +84,12 @@ import {
   updateClusterBody,
   updateHostBody,
   updateModelBody,
+  updateRegionBody,
   workspaceCapacityParam,
   workspaceClusterParam,
   workspaceHostParam,
   workspaceIdParam,
+  workspaceRegionParam,
 } from "./schema";
 
 // `infrastructure` is a project-level resource: the caller's role IN the
@@ -123,7 +137,9 @@ const createModelRoute = createRoute({
   request: { params: projectIdParam, body: jsonBody(createModelBody) },
   responses: {
     200: jsonResponse("Model created", infraModelSchema),
-    400: errorResponse("Invalid model"),
+    400: codedErrorResponse(
+      "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
+    ),
     403: forbidden,
   },
 });
@@ -143,7 +159,9 @@ const updateModelRoute = createRoute({
   request: { params: modelParam, body: jsonBody(updateModelBody) },
   responses: {
     200: jsonResponse("Model updated", infraModelSchema),
-    400: errorResponse("Invalid model"),
+    400: codedErrorResponse(
+      "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
+    ),
     403: forbidden,
     404: errorResponse("Model not found in this project"),
     409: codedErrorResponse("A region is used by a host (INFRA_REGION_IN_USE)"),
@@ -197,14 +215,17 @@ const createHostRoute = createRoute({
   tags: ["Infrastructure"],
   summary: "Create a planned host from the model pool",
   description:
-    "The host starts `planned`. Without a label it is named `<model name> <ram> GB <region> #<n>`, n being the highest number used for the model and region in the project plus one. A region outside the model answers 400 with code `INFRA_REGION_NOT_ALLOWED`.",
+    "Creates `quantity` (1 to 50, default 1) hosts in one transaction, all `planned`. Without a label each is named `<model name> <ram> GB <region> #<n>`, n being the highest number used for the model and region in the project plus one, then consecutive. A custom `label` is allowed only with quantity 1. A region outside the model answers 400 with code `INFRA_REGION_NOT_ALLOWED`.",
   middleware: [
     workspaceAccess.fromProject("projectId"),
     requireWorkspacePermission({ infrastructure: ["plan"] }),
   ] as const,
   request: { params: projectIdParam, body: jsonBody(createHostBody) },
   responses: {
-    200: jsonResponse("Host created", infraHostSchema),
+    200: jsonResponse(
+      "Hosts created, in creation order",
+      infraCreatedHostsSchema,
+    ),
     400: codedErrorResponse(
       "Invalid host or region (INFRA_REGION_NOT_ALLOWED)",
     ),
@@ -382,7 +403,9 @@ const getClustersRoute = createRoute({
 });
 
 const clusterErrors = {
-  400: codedErrorResponse("Invalid cluster (INFRA_CLUSTER_INVALID)"),
+  400: codedErrorResponse(
+    "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
+  ),
   403: dcForbidden,
   404: errorResponse("Cluster not found in this workspace"),
   409: codedErrorResponse(
@@ -588,6 +611,108 @@ const getOrderPlanXlsxRoute = createRoute({
   },
 });
 
+const regionErrors = {
+  400: errorResponse("Invalid region"),
+  403: dcForbidden,
+  404: errorResponse("Region not found in this workspace"),
+  409: codedErrorResponse(
+    "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+  ),
+};
+
+const getProjectRegionsRoute = createRoute({
+  method: "get",
+  operationId: "getProjectInfraRegions",
+  path: "/project/{projectId}/regions",
+  tags: ["Infrastructure"],
+  summary: "List the regions of the project's workspace",
+  description: "Code and name only, for the pickers.",
+  middleware: [
+    workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ infrastructure: ["read"] }),
+  ] as const,
+  request: { params: projectIdParam },
+  responses: {
+    200: jsonResponse("Regions", infraRegionSummaryListSchema),
+    403: forbidden,
+  },
+});
+
+const getRegionsRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspaceInfraRegions",
+  path: "/workspace/{workspaceId}/regions",
+  tags: ["Infrastructure"],
+  summary: "List the region catalog of a workspace (datacenter)",
+  description:
+    "Regions with how many models, hosts and storage clusters use each.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["read"] }),
+  ] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse("Regions", infraRegionListSchema),
+    403: dcForbidden,
+  },
+});
+
+const createRegionRoute = createRoute({
+  method: "post",
+  operationId: "createInfraRegion",
+  path: "/workspace/{workspaceId}/regions",
+  tags: ["Infrastructure"],
+  summary: "Add a region to the workspace catalog (datacenter)",
+  description:
+    "The code is trimmed and upper-cased. A code already in the catalog answers 409 `INFRA_REGION_CODE_TAKEN`.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceIdParam, body: jsonBody(createRegionBody) },
+  responses: {
+    200: jsonResponse("Region created", infraRegionSchema),
+    ...regionErrors,
+  },
+});
+
+const updateRegionRoute = createRoute({
+  method: "put",
+  operationId: "updateInfraRegion",
+  path: "/workspace/{workspaceId}/regions/{regionId}",
+  tags: ["Infrastructure"],
+  summary: "Rename or reorder a region (datacenter)",
+  description: "The code never changes.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceRegionParam, body: jsonBody(updateRegionBody) },
+  responses: {
+    200: jsonResponse("Region updated", infraRegionSchema),
+    ...regionErrors,
+  },
+});
+
+const deleteRegionRoute = createRoute({
+  method: "delete",
+  operationId: "deleteInfraRegion",
+  path: "/workspace/{workspaceId}/regions/{regionId}",
+  tags: ["Infrastructure"],
+  summary: "Delete a region (datacenter)",
+  description:
+    "A region that a model lists, or a host or storage cluster uses, answers 409 `INFRA_REGION_IN_USE`.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ datacenter: ["manage"] }),
+  ] as const,
+  request: { params: workspaceRegionParam },
+  responses: {
+    200: jsonResponse("Region deleted", deletedInfraItemSchema),
+    ...regionErrors,
+  },
+});
+
 const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(getModelsRoute, async (c) => {
     const { projectId } = c.req.valid("param");
@@ -595,12 +720,20 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   .openapi(createModelRoute, async (c) => {
     const { projectId } = c.req.valid("param");
-    return c.json(await createModel(projectId, c.req.valid("json")), 200);
+    return c.json(
+      await createModel(projectId, c.get("workspaceId"), c.req.valid("json")),
+      200,
+    );
   })
   .openapi(updateModelRoute, async (c) => {
     const { projectId, modelId } = c.req.valid("param");
     return c.json(
-      await updateModel(projectId, modelId, c.req.valid("json")),
+      await updateModel(
+        projectId,
+        c.get("workspaceId"),
+        modelId,
+        c.req.valid("json"),
+      ),
       200,
     );
   })
@@ -614,7 +747,10 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   .openapi(createHostRoute, async (c) => {
     const { projectId } = c.req.valid("param");
-    return c.json(await createHost(projectId, c.req.valid("json")), 200);
+    return c.json(
+      { hosts: await createHosts(projectId, c.req.valid("json")) },
+      200,
+    );
   })
   .openapi(updateHostRoute, async (c) => {
     const { projectId, hostId } = c.req.valid("param");
@@ -707,6 +843,28 @@ const infrastructure = apiRouter<BaseVariables & { workspaceId: string }>()
       `attachment; filename="order-plan-${safeSlug}-${todayUtc()}.xlsx"`,
     );
     return c.body(new Uint8Array(file), 200);
+  })
+  .openapi(getProjectRegionsRoute, async (c) =>
+    c.json(await listProjectRegions(c.get("workspaceId")), 200),
+  )
+  .openapi(getRegionsRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    return c.json(await listRegions(workspaceId), 200);
+  })
+  .openapi(createRegionRoute, async (c) => {
+    const { workspaceId } = c.req.valid("param");
+    return c.json(await createRegion(workspaceId, c.req.valid("json")), 200);
+  })
+  .openapi(updateRegionRoute, async (c) => {
+    const { workspaceId, regionId } = c.req.valid("param");
+    return c.json(
+      await updateRegion(workspaceId, regionId, c.req.valid("json")),
+      200,
+    );
+  })
+  .openapi(deleteRegionRoute, async (c) => {
+    const { workspaceId, regionId } = c.req.valid("param");
+    return c.json(await deleteRegion(workspaceId, regionId), 200);
   })
   .openapi(setHostStatusRoute, async (c) => {
     const { workspaceId, hostId } = c.req.valid("param");

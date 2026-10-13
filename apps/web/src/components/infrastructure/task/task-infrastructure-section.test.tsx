@@ -325,9 +325,9 @@ describe("task infrastructure section", () => {
   });
 
   it("creates a planned host from 'New host...' and selects it", async () => {
-    vi.mocked(createProjectHost).mockResolvedValue(
-      host("host-new", "SCALE 256 GB GRA #1", "GRA") as never,
-    );
+    vi.mocked(createProjectHost).mockResolvedValue({
+      hosts: [host("host-new", "SCALE 256 GB GRA #1", "GRA")],
+    } as never);
     vi.mocked(replaceTaskVms).mockResolvedValue([vm] as never);
     renderSection();
     await screen.findByDisplayValue("billing-db-1");

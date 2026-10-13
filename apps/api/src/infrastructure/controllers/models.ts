@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { infraHostTable, infraModelTable } from "../../database/schema";
 import { INFRA_ERROR_CODES, infraError } from "../errors";
+import { assertRegionsInCatalog } from "./regions";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -49,8 +50,13 @@ export async function lockModel(
   return model;
 }
 
-export async function createModel(projectId: string, input: ModelInput) {
+export async function createModel(
+  projectId: string,
+  workspaceId: string,
+  input: ModelInput,
+) {
   const [created] = await db.transaction(async (tx) => {
+    await assertRegionsInCatalog(tx, workspaceId, input.regions);
     const [last] = await tx
       .select({
         position: sql<number>`coalesce(max(${infraModelTable.position}), -1)::int`,
@@ -75,6 +81,7 @@ export async function createModel(projectId: string, input: ModelInput) {
 
 export async function updateModel(
   projectId: string,
+  workspaceId: string,
   modelId: string,
   input: Partial<ModelInput>,
 ) {
@@ -82,6 +89,7 @@ export async function updateModel(
     await lockModel(tx, projectId, modelId);
 
     if (input.regions) {
+      await assertRegionsInCatalog(tx, workspaceId, input.regions);
       const kept = input.regions;
       const used = await tx
         .selectDistinct({ region: infraHostTable.region })

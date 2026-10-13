@@ -7457,6 +7457,20 @@
           "cephStorageGb"
         ]
       },
+      "InfraCreatedHosts": {
+        "type": "object",
+        "properties": {
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHost"
+            }
+          }
+        },
+        "required": [
+          "hosts"
+        ]
+      },
       "InfraVmList": {
         "type": "array",
         "items": {
@@ -8650,6 +8664,89 @@
           "labels",
           "status",
           "late"
+        ]
+      },
+      "InfraRegionSummaryList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraRegionSummary"
+        }
+      },
+      "InfraRegionSummary": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "InfraRegionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraRegion"
+        }
+      },
+      "InfraRegion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/InfraRegionUsage"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "position",
+          "createdAt",
+          "updatedAt",
+          "usage"
+        ]
+      },
+      "InfraRegionUsage": {
+        "type": "object",
+        "properties": {
+          "models": {
+            "type": "integer"
+          },
+          "hosts": {
+            "type": "integer"
+          },
+          "clusters": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "models",
+          "hosts",
+          "clusters"
         ]
       },
       "WorkspaceColumns": {
@@ -28302,8 +28399,13 @@
             }
           },
           "400": {
-            "description": "Invalid model",
+            "description": "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -28435,8 +28537,13 @@
             }
           },
           "400": {
-            "description": "Invalid model",
+            "description": "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
             "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"
@@ -28611,7 +28718,7 @@
           "Infrastructure"
         ],
         "summary": "Create a planned host from the model pool",
-        "description": "The host starts `planned`. Without a label it is named `<model name> <ram> GB <region> #<n>`, n being the highest number used for the model and region in the project plus one. A region outside the model answers 400 with code `INFRA_REGION_NOT_ALLOWED`.",
+        "description": "Creates `quantity` (1 to 50, default 1) hosts in one transaction, all `planned`. Without a label each is named `<model name> <ram> GB <region> #<n>`, n being the highest number used for the model and region in the project plus one, then consecutive. A custom `label` is allowed only with quantity 1. A region outside the model answers 400 with code `INFRA_REGION_NOT_ALLOWED`.",
         "parameters": [
           {
             "schema": {
@@ -28643,6 +28750,12 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 1
                   }
                 },
                 "required": [
@@ -28655,11 +28768,11 @@
         },
         "responses": {
           "200": {
-            "description": "Host created",
+            "description": "Hosts created, in creation order",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InfraHost"
+                  "$ref": "#/components/schemas/InfraCreatedHosts"
                 }
               }
             }
@@ -29310,7 +29423,7 @@
             }
           },
           "400": {
-            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
             "content": {
               "application/json": {
                 "schema": {
@@ -29460,7 +29573,7 @@
             }
           },
           "400": {
-            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
             "content": {
               "application/json": {
                 "schema": {
@@ -29551,7 +29664,7 @@
             }
           },
           "400": {
-            "description": "Invalid cluster (INFRA_CLUSTER_INVALID)",
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
             "content": {
               "application/json": {
                 "schema": {
@@ -30110,6 +30223,398 @@
           "403": {
             "description": "No workspace access, or missing datacenter permission",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/regions": {
+      "get": {
+        "operationId": "getProjectInfraRegions",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the regions of the project's workspace",
+        "description": "Code and name only, for the pickers.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegionSummaryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/regions": {
+      "get": {
+        "operationId": "getWorkspaceInfraRegions",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the region catalog of a workspace (datacenter)",
+        "description": "Regions with how many models, hosts and storage clusters use each.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Add a region to the workspace catalog (datacenter)",
+        "description": "The code is trimmed and upper-cased. A code already in the catalog answers 409 `INFRA_REGION_CODE_TAKEN`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "code",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/regions/{regionId}": {
+      "put": {
+        "operationId": "updateInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Rename or reorder a region (datacenter)",
+        "description": "The code never changes.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "regionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a region (datacenter)",
+        "description": "A region that a model lists, or a host or storage cluster uses, answers 409 `INFRA_REGION_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "regionId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
               "text/plain": {
                 "schema": {
                   "type": "string"

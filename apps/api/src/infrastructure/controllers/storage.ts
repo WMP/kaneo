@@ -8,6 +8,7 @@ import {
 } from "../../database/schema";
 import { INFRA_ERROR_CODES, infraError } from "../errors";
 import { resolveAvailableFrom } from "./hosts";
+import { assertRegionsInCatalog } from "./regions";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type ClusterKind = "self_managed" | "managed_service";
@@ -172,6 +173,7 @@ export async function createCluster(workspaceId: string, input: ClusterInput) {
   const selfManaged = input.kind === "self_managed";
   const id = await db
     .transaction(async (tx) => {
+      await assertRegionsInCatalog(tx, workspaceId, [input.region]);
       const [last] = await tx
         .select({
           position: sql<number>`coalesce(max(${infraStorageClusterTable.position}), -1)::int`,
@@ -205,6 +207,9 @@ export async function updateCluster(
   await db
     .transaction(async (tx) => {
       const current = await lockCluster(tx, workspaceId, clusterId);
+      if (input.region !== undefined) {
+        await assertRegionsInCatalog(tx, workspaceId, [input.region]);
+      }
       // A VM's cluster must stay in the region of its host, so the region of
       // a cluster that VMs use is fixed (VM writes lock the cluster row too).
       if (input.region !== undefined && input.region !== current.region) {

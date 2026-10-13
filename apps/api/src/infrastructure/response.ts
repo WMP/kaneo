@@ -407,3 +407,38 @@ export const infraWorkspaceCapacitySchema = z
     orderPlan: z.array(infraOrderPlanRowSchema),
   })
   .openapi("InfraWorkspaceCapacity");
+
+export const infraRegionSchema = z
+  .object({
+    id: z.string(),
+    code: z.string(),
+    name: z.string(),
+    position: z.number().int(),
+    createdAt: responseTimestamp,
+    updatedAt: responseTimestamp,
+    usage: z
+      .object({
+        models: z.number().int(),
+        hosts: z.number().int(),
+        clusters: z.number().int(),
+      })
+      .openapi("InfraRegionUsage"),
+  })
+  .openapi("InfraRegion");
+
+export const infraRegionListSchema = z
+  .array(infraRegionSchema)
+  .openapi("InfraRegionList");
+
+// What a project sees of the catalog.
+export const infraRegionSummaryListSchema = z
+  .array(
+    z
+      .object({ code: z.string(), name: z.string() })
+      .openapi("InfraRegionSummary"),
+  )
+  .openapi("InfraRegionSummaryList");
+
+export const infraCreatedHostsSchema = z
+  .object({ hosts: z.array(infraHostSchema) })
+  .openapi("InfraCreatedHosts");

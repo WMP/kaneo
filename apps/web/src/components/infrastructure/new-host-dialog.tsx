@@ -56,11 +56,12 @@ export function NewHostDialog({
     createHost.mutate(
       { projectId, modelId, region },
       {
-        onSuccess: (host) => {
+        onSuccess: ({ hosts }) => {
           setModelId(null);
           setRegion(null);
           onOpenChange(false);
-          onCreated?.(host);
+          const [host] = hosts;
+          if (host) onCreated?.(host);
         },
       },
     );

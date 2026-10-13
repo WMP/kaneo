@@ -30,7 +30,7 @@ async function newHost(
     { modelId: w.model.id, region, ...body },
   );
   expect(res.status, res.text).toBe(200);
-  return res.json;
+  return res.json.hosts[0];
 }
 
 const hostsInDb = () => db.select().from(schema.infraHostTable);
@@ -347,6 +347,7 @@ describe("task VMs", () => {
       `/api/infrastructure/project/${w.p2.id}/hosts`,
       { modelId: model2.json.id, region: "GRA" },
     );
+    foreignHost.json = foreignHost.json.hosts[0];
     const url = `/api/infrastructure/task/${w.task1.id}/vms`;
     await w.call(w.owner, "PUT", url, {
       vms: [

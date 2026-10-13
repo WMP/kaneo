@@ -59,7 +59,7 @@ async function setup() {
         `/api/infrastructure/project/${project.id}/hosts`,
         { modelId: model.json.id, region: "PAR" },
       );
-      hostIds[key].push(host.json.id);
+      hostIds[key].push(host.json.hosts[0].id);
     }
   }
 

@@ -1,4 +1,4 @@
-import { and, asc, eq, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -101,16 +101,18 @@ function regionNotAllowed(region: string) {
   );
 }
 
-// Default label: `<model name> <ram> GB <region> #<n>` where n is the highest
+// Default labels: `<model name> <ram> GB <region> #<n>` where n is the highest
 // number already used in a label of the same model and region in the project,
-// plus one (1 when there is none). It is deterministic and never reuses the
-// number of a deleted host that is not the highest. The model row is locked by
-// the caller, so two concurrent creations get different numbers.
-async function nextLabel(
+// plus one (1 when there is none); several hosts get consecutive numbers. It is
+// deterministic and never reuses the number of a deleted host that is not the
+// highest. The model row is locked by the caller, so two concurrent creations
+// get different numbers.
+async function nextLabels(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
   model: { id: string; name: string; ramGb: number },
   projectId: string,
   region: string,
+  count: number,
 ) {
   const rows = await tx
     .select({ label: infraHostTable.label })
@@ -127,36 +129,55 @@ async function nextLabel(
     const match = /#(\d+)$/.exec(label);
     if (match?.[1]) max = Math.max(max, Number(match[1]));
   }
-  return `${model.name} ${model.ramGb} GB ${region} #${max + 1}`;
+  return Array.from(
+    { length: count },
+    (_, i) => `${model.name} ${model.ramGb} GB ${region} #${max + 1 + i}`,
+  );
 }
 
-export async function createHost(
+// Creates `quantity` planned hosts in one transaction (all or none) and returns
+// them in creation order.
+export async function createHosts(
   projectId: string,
-  input: { modelId: string; region: string; label?: string },
+  input: {
+    modelId: string;
+    region: string;
+    label?: string;
+    quantity: number;
+  },
 ) {
-  const id = await db.transaction(async (tx) => {
+  const ids = await db.transaction(async (tx) => {
     const model = await lockModel(tx, projectId, input.modelId);
     if (!model.regions.includes(input.region)) {
       throw regionNotAllowed(input.region);
     }
-    const label =
-      input.label ?? (await nextLabel(tx, model, projectId, input.region));
-    const [host] = await tx
+    const labels = input.label
+      ? [input.label]
+      : await nextLabels(tx, model, projectId, input.region, input.quantity);
+    const created = await tx
       .insert(infraHostTable)
-      .values({
-        projectId,
-        modelId: model.id,
-        region: input.region,
-        label,
-        status: "planned",
-      })
+      .values(
+        labels.map((label) => ({
+          projectId,
+          modelId: model.id,
+          region: input.region,
+          label,
+          status: "planned" as const,
+        })),
+      )
       .returning({ id: infraHostTable.id });
-    if (!host) {
-      throw new HTTPException(500, { message: "Failed to create host" });
-    }
-    return host.id;
+    return created.map((host) => host.id);
   });
-  return getProjectHost(projectId, id);
+  const rows = await hostsWithTotals(
+    and(
+      eq(infraHostTable.projectId, projectId),
+      inArray(infraHostTable.id, ids),
+    ),
+  );
+  const order = new Map(ids.map((id, index) => [id, index]));
+  return rows
+    .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+    .map(({ projectName: _name, ...host }) => host);
 }
 
 export async function updateHost(

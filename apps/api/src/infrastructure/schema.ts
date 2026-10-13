@@ -52,6 +52,20 @@ const modelFields = {
   hypervisorReservePercent: z.number().int().min(0).max(90),
 };
 
+export const createRegionBody = z.object({
+  code: regionCode,
+  name: z.string().trim().min(1).max(200),
+});
+
+export const updateRegionBody = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  position: z.number().int().min(0).max(100_000).optional(),
+});
+
+export const workspaceRegionParam = workspaceIdParam.extend({
+  regionId: z.string(),
+});
+
 export const createModelBody = z.object({
   ...modelFields,
   family: modelFields.family.optional(),
@@ -61,11 +75,17 @@ export const createModelBody = z.object({
 
 export const updateModelBody = z.object(modelFields).partial();
 
-export const createHostBody = z.object({
-  modelId: z.string(),
-  region: regionCode,
-  label: z.string().trim().min(1).max(200).optional(),
-});
+export const createHostBody = z
+  .object({
+    modelId: z.string(),
+    region: regionCode,
+    label: z.string().trim().min(1).max(200).optional(),
+    quantity: z.number().int().min(1).max(50).default(1),
+  })
+  .refine((body) => body.label === undefined || body.quantity === 1, {
+    message: "A custom label is allowed only with quantity 1",
+    path: ["label"],
+  });
 
 export const updateHostBody = z.object({
   label: z.string().trim().min(1).max(200).optional(),

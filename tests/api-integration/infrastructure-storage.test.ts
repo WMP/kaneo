@@ -81,7 +81,7 @@ async function planHost(w: World, region: string) {
     { modelId: model.json.id, region },
   );
   expect(host.status, host.text).toBe(200);
-  return host.json;
+  return host.json.hosts[0];
 }
 
 describe("storage cluster permissions", () => {

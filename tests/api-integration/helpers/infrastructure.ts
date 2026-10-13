@@ -62,6 +62,24 @@ export const modelBody = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+// Region codes that the existing tests use; models, hosts and clusters may only
+// name regions of the workspace catalog.
+export const DEFAULT_REGIONS = ["GRA", "PAR", "SBG", "PAR-2", "WAW"];
+
+export async function seedRegions(
+  workspaceId: string,
+  codes: string[] = DEFAULT_REGIONS,
+) {
+  await db.insert(schema.infraRegionTable).values(
+    codes.map((code, position) => ({
+      workspaceId,
+      code,
+      name: code,
+      position,
+    })),
+  );
+}
+
 let taskNumber = 0;
 
 export async function insertTask(projectId: string, columnId: string) {
@@ -84,6 +102,7 @@ export async function insertTask(projectId: string, columnId: string) {
 export async function infraWorld() {
   const owner = await createWorkspaceMember({ role: "owner" });
   const workspaceId = owner.workspace.id;
+  await seedRegions(workspaceId);
   const p1 = await createProjectFixture({ workspaceId, members: "none" });
   const p2 = await createProjectFixture({
     workspaceId,
