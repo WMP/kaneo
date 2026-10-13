@@ -49,6 +49,14 @@ The API checks what the database cannot: a host's region is one of its model's r
 - `ganttpro_infra_vm` gains `ceph_storage_gb` (>= 0, default 0) and `storage_cluster_id` (FK, set null). The existing `storage_gb` column is the local storage; the API names it `localStorageGb`.
 - Routes: `GET /project/{projectId}/storage-clusters` (`infrastructure:read`, id, name, region, kind only); `GET|POST /workspace/{workspaceId}/storage-clusters`, `PUT|DELETE .../{clusterId}` and `POST|PUT|DELETE .../{clusterId}/capacity[/{entryId}]` (`datacenter:read` / `datacenter:manage`). A cluster used by a VM cannot be deleted (409 `INFRA_CLUSTER_IN_USE`); capacity entries follow the host status rules (ordered needs `availableFrom`, only a planned entry can be deleted). In `PUT /task/{taskId}/vms`, a cluster of another workspace answers 400 `INFRA_CLUSTER_NOT_IN_WORKSPACE`, and a cluster in another region than the VM's host 400 `INFRA_CLUSTER_REGION_MISMATCH`.
 
+## Region catalog and host quantity (stage 1c, additive migration `<timestamp>_ganttpro_infrastructure_regions`)
+
+- `ganttpro_infra_region`: `id`, `workspace_id` (FK, cascade), `code` (same rules as before: 1 to 16 characters of A-Z, 0-9 and `-`; unique in the workspace; never changes after creation), `name` (for example "Gravelines"), `position`, timestamps. The migration backfills, per workspace, every region code already used by a model, a host or a cluster (name = code), so existing data stays valid.
+- Routes: `GET /workspace/{workspaceId}/regions` (`datacenter:read`), `POST`, `PUT .../{regionId}` (name only), `DELETE .../{regionId}` (`datacenter:manage`; 409 `INFRA_REGION_IN_USE` while a model lists it or a host or cluster uses it); `GET /project/{projectId}/regions` (`infrastructure:read`, code and name only, for the pickers).
+- Model regions and cluster regions must exist in the workspace catalog: 400 `INFRA_REGION_UNKNOWN`. Region rows are read `FOR SHARE` by those writes and locked `FOR UPDATE` by the delete.
+- `POST /project/{projectId}/hosts` takes `quantity` (1 to 50, default 1) and returns the created hosts; each gets the next number of the default label rule. A custom `label` is allowed only with quantity 1.
+- Web: a *Regions* tab on the Datacenter page; region pickers in the model and cluster dialogs; a quantity field when adding hosts in project settings. Infrastructure queries refetch on mount, and host changes also refresh task VM lists, so a deleted host or task never lingers in a view.
+
 ## Capacity engine and order plan (stage 2)
 
 Pure functions in `apps/api/src/infrastructure/capacity.ts`, no database access, unit tested in `tests/api/infrastructure/`. A VM's **start date** is its task's start date, else its due date, else none (unscheduled). VMs never leave a host, so use is a step function that rises on start dates.
