@@ -134,6 +134,12 @@ Both the HTTP endpoint and stdio package expose the same tools:
 - Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`, `delete_label`
 - Task relations: `create_task_relation`, `get_task_relations`, `delete_task_relation`
 - Custom fields: `list_project_custom_fields`, `get_task_custom_fields`, `set_task_custom_field_value`
+- Infrastructure: `list_infrastructure_regions`, `list_project_server_models`, `list_project_hosts`, `list_project_storage_clusters`, `get_project_capacity`, `get_task_vms`, `get_datacenter_order_plan`, `create_project_server_model`, `update_project_server_model`, `delete_project_server_model`, `create_project_hosts`, `update_project_host`, `delete_project_host`, `set_task_vms`, `add_task_vms`
+
+`set_task_vms` replaces a task's whole VM list (VMs left out are deleted; pass
+`id` to keep one), while `add_task_vms` appends VMs and leaves the existing ones
+alone. `get_datacenter_order_plan` needs the `datacenter:read` permission.
+Host status, regions and storage clusters can only be changed in the web UI.
 
 `list_project_columns` is worth calling first when setting a status: the column
 slugs it returns are exactly the values `create_task` and `update_task_status`

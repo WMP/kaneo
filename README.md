@@ -183,6 +183,9 @@ New MCP tools:
 | Tool | What it does |
 | --- | --- |
 | `list_project_custom_fields`, `get_task_custom_fields`, `set_task_custom_field_value` | Read and write custom fields |
+| `list_infrastructure_regions`, `list_project_server_models`, `list_project_hosts`, `list_project_storage_clusters`, `get_project_capacity`, `get_task_vms`, `get_datacenter_order_plan` | Read infrastructure capacity |
+| `create_project_server_model`, `update_project_server_model`, `delete_project_server_model`, `create_project_hosts`, `update_project_host`, `delete_project_host` | Manage a project's server models and hosts |
+| `set_task_vms`, `add_task_vms` | Replace or extend a task's VMs |
 | `set_task_baseline`, `clear_task_baseline` | Save or clear a task's baseline |
 | `update_task_assignees` | Replace a task's assignees |
 | `update_task_relation` | Change a dependency's type and lag |

@@ -345,6 +345,126 @@ const constraintTypeSchema = z.enum(VALID_TASK_CONSTRAINT_TYPES);
 // from the taskTable.approvalStatus column.
 const approvalStatusSchema = approvalStatusEnum;
 
+// Infrastructure tools. These limits mirror apps/api/src/infrastructure/schema.ts
+// (the stdio package cannot import it); the API stays the authority.
+const infraRegionCodeSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .min(1)
+  .max(16)
+  .regex(/^[A-Z0-9-]+$/, "Region codes use A-Z, 0-9 and -");
+const infraProviderSchema = z.enum(["ovh", "azure", "other"]);
+const MAX_INFRA_VMS_PER_TASK = 200;
+
+const infraModelFields = {
+  name: z.string().trim().min(1).max(200),
+  provider: infraProviderSchema.describe("ovh, azure or other"),
+  family: z
+    .string()
+    .trim()
+    .max(200)
+    .nullable()
+    .optional()
+    .describe("Optional model family, for example a provider product line."),
+  ramGb: z.number().int().min(1).max(1_000_000).describe("RAM in GB."),
+  vcpu: z.number().int().min(1).max(1_000_000).describe("Number of vCPUs."),
+  storageGb: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000_000)
+    .describe("Local storage in GB."),
+  regions: z
+    .array(infraRegionCodeSchema)
+    .min(1)
+    .max(20)
+    .refine((regions) => new Set(regions).size === regions.length, {
+      message: "Regions must be unique",
+    })
+    .describe(
+      "Allowed region codes (1 to 20 unique), taken from the workspace region catalog; see list_infrastructure_regions.",
+    ),
+  leadTimeDays: z
+    .number()
+    .int()
+    .min(0)
+    .max(3650)
+    .optional()
+    .describe("Order lead time in days. Defaults to 0."),
+  hypervisorReserveGb: z
+    .number()
+    .int()
+    .min(0)
+    .max(1_000_000)
+    .optional()
+    .describe("RAM reserved for the hypervisor in GB. Defaults to 8."),
+};
+
+const infraVmItemFields = {
+  name: z.string().trim().min(1).max(200),
+  vcpu: z.number().int().min(0).max(1_000_000),
+  ramGb: z.number().int().min(0).max(1_000_000),
+  cephStorageGb: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000_000)
+    .optional()
+    .describe("Ceph (shared) storage in GB. Defaults to 0."),
+  localStorageGb: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000_000)
+    .optional()
+    .describe("Local storage in GB. Defaults to 0."),
+  hostId: nonEmptyString
+    .nullable()
+    .optional()
+    .describe(
+      "ID of a host of the task's project (list_project_hosts), or null for unplaced. Defaults to null.",
+    ),
+  storageClusterId: nonEmptyString
+    .nullable()
+    .optional()
+    .describe(
+      "ID of a storage cluster (list_project_storage_clusters), or null. Defaults to null.",
+    ),
+};
+
+const infraNewVmSchema = z.strictObject(infraVmItemFields);
+const infraVmSchema = z.strictObject({
+  id: nonEmptyString
+    .optional()
+    .describe(
+      "ID of an existing VM of this task to keep and update; omit to create a new VM.",
+    ),
+  ...infraVmItemFields,
+});
+
+type InfraNewVm = z.output<typeof infraNewVmSchema>;
+
+function toInfraVmBody(vm: InfraNewVm & { id?: string }) {
+  return {
+    ...(vm.id !== undefined ? { id: vm.id } : {}),
+    name: vm.name,
+    vcpu: vm.vcpu,
+    ramGb: vm.ramGb,
+    cephStorageGb: vm.cephStorageGb ?? 0,
+    localStorageGb: vm.localStorageGb ?? 0,
+    hostId: vm.hostId ?? null,
+    storageClusterId: vm.storageClusterId ?? null,
+  };
+}
+
+/** Drops undefined entries so only supplied fields reach the API. */
+function definedOnly(values: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== undefined),
+  );
+}
+
 /** Register Kaneo's authenticated tool catalog on an MCP server adapter. */
 export function registerMcpTools(
   server: McpToolRegistrar,
@@ -1477,5 +1597,342 @@ export function registerMcpTools(
           }),
         }),
       ),
+  );
+
+  registerTool(
+    "list_infrastructure_regions",
+    {
+      description:
+        "List the infrastructure regions available to a project's workspace: region codes, names and availability zones. Use the codes when creating server models and hosts.",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/regions`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "list_project_server_models",
+    {
+      description:
+        "List a project's server models (name, provider, RAM, vCPU, storage, regions, lead time, hypervisor reserve).",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/models`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "list_project_hosts",
+    {
+      description:
+        "List a project's hosts (server instances of its models) with model, region, zone and status (planned, ordered, installed).",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/hosts`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "list_project_storage_clusters",
+    {
+      description:
+        "List the storage clusters relevant to a project, whose IDs a VM's storageClusterId expects.",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/storage-clusters`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "get_project_capacity",
+    {
+      description:
+        "Get a project's capacity plan: host use by its VMs, need-by and order-by dates, and warnings (for example unplaced VMs).",
+      inputSchema: z.strictObject({ projectId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/capacity`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "get_task_vms",
+    {
+      description:
+        "List a task's VMs with their host and storage cluster. Use before set_task_vms to see current IDs.",
+      inputSchema: z.strictObject({ taskId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/task/${encodeURIComponent(args.taskId)}/vms`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "get_datacenter_order_plan",
+    {
+      description:
+        "Get the workspace-wide datacenter order plan across all projects. Requires the datacenter:read permission, which project-level roles may lack.",
+      inputSchema: z.strictObject({ workspaceId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/capacity`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "create_project_server_model",
+    {
+      description:
+        "Create a server model in a project. Regions must be codes from the workspace region catalog (list_infrastructure_regions). Hosts are added separately with create_project_hosts.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        ...infraModelFields,
+      }),
+    },
+    async (args) => {
+      const { projectId, ...model } = args;
+      return run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(projectId)}/models`,
+          { method: "POST", body: JSON.stringify(definedOnly(model)) },
+        ),
+      );
+    },
+  );
+
+  registerTool(
+    "update_project_server_model",
+    {
+      description:
+        "Update a project's server model (PATCH-style: only provided fields change). Regions replace the whole list when provided.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        modelId: nonEmptyString,
+        name: infraModelFields.name.optional(),
+        provider: infraModelFields.provider.optional(),
+        family: infraModelFields.family,
+        ramGb: infraModelFields.ramGb.optional(),
+        vcpu: infraModelFields.vcpu.optional(),
+        storageGb: infraModelFields.storageGb.optional(),
+        regions: infraModelFields.regions.optional(),
+        leadTimeDays: infraModelFields.leadTimeDays,
+        hypervisorReserveGb: infraModelFields.hypervisorReserveGb,
+      }),
+    },
+    async (args) => {
+      const { projectId, modelId, ...patch } = args;
+      return run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(projectId)}/models/${encodeURIComponent(modelId)}`,
+          { method: "PUT", body: JSON.stringify(definedOnly(patch)) },
+        ),
+      );
+    },
+  );
+
+  registerTool(
+    "delete_project_server_model",
+    {
+      description:
+        "Delete a project's server model. The API rejects it while hosts still use the model.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        modelId: nonEmptyString,
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/models/${encodeURIComponent(args.modelId)}`,
+          { method: "DELETE" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "create_project_hosts",
+    {
+      description:
+        "Add planned hosts of a server model to a project. For a region with availability zones, pass zones (hosts are spread round-robin across them). label is allowed only with quantity 1. Returns { hosts }.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        modelId: nonEmptyString,
+        region: infraRegionCodeSchema.describe(
+          "Region code; must be one of the model's regions.",
+        ),
+        quantity: z
+          .number()
+          .int()
+          .min(1)
+          .max(50)
+          .optional()
+          .describe("Number of hosts, 1 to 50. Defaults to 1."),
+        zones: z
+          .array(infraRegionCodeSchema)
+          .min(1)
+          .max(20)
+          .refine((zones) => new Set(zones).size === zones.length, {
+            message: "Zones must be unique",
+          })
+          .optional()
+          .describe(
+            "Availability zone codes of the region; required when the region has zones.",
+          ),
+        label: z
+          .string()
+          .trim()
+          .min(1)
+          .max(200)
+          .optional()
+          .describe("Custom label; only with quantity 1."),
+      }),
+    },
+    async (args) => {
+      const { projectId, ...host } = args;
+      return run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(projectId)}/hosts`,
+          { method: "POST", body: JSON.stringify(definedOnly(host)) },
+        ),
+      );
+    },
+  );
+
+  registerTool(
+    "update_project_host",
+    {
+      description:
+        "Update a project's host (PATCH-style): label, region or zone. Pass zone null to clear the zone. The API rejects a region change on a host that is no longer planned.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        hostId: nonEmptyString,
+        label: z.string().trim().min(1).max(200).optional(),
+        region: infraRegionCodeSchema.optional(),
+        zone: infraRegionCodeSchema.nullable().optional(),
+      }),
+    },
+    async (args) => {
+      const { projectId, hostId, ...patch } = args;
+      return run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(projectId)}/hosts/${encodeURIComponent(hostId)}`,
+          { method: "PUT", body: JSON.stringify(definedOnly(patch)) },
+        ),
+      );
+    },
+  );
+
+  registerTool(
+    "delete_project_host",
+    {
+      description:
+        "Delete a project's host. Only hosts that are still planned can be deleted.",
+      inputSchema: z.strictObject({
+        projectId: nonEmptyString,
+        hostId: nonEmptyString,
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/project/${encodeURIComponent(args.projectId)}/hosts/${encodeURIComponent(args.hostId)}`,
+          { method: "DELETE" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "set_task_vms",
+    {
+      description:
+        "REPLACE a task's whole VM list in one transaction: VMs left out of the list are deleted, items without id are created, and items with the id of an existing VM are updated. Call get_task_vms first and pass id to keep a VM. At most 200 VMs. To only add VMs, use add_task_vms.",
+      inputSchema: z.strictObject({
+        taskId: nonEmptyString,
+        vms: z.array(infraVmSchema).max(MAX_INFRA_VMS_PER_TASK),
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/task/${encodeURIComponent(args.taskId)}/vms`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ vms: args.vms.map(toInfraVmBody) }),
+          },
+        ),
+      ),
+  );
+
+  registerTool(
+    "add_task_vms",
+    {
+      description:
+        "Add VMs to a task without touching its existing VMs (reads the current list, appends the new VMs and saves). At most 200 VMs in total.",
+      inputSchema: z.strictObject({
+        taskId: nonEmptyString,
+        vms: z.array(infraNewVmSchema).min(1).max(MAX_INFRA_VMS_PER_TASK),
+      }),
+    },
+    async (args) =>
+      run(async () => {
+        const path = `/api/infrastructure/task/${encodeURIComponent(args.taskId)}/vms`;
+        const current = await client.json(path, { method: "GET" });
+        const existing = (Array.isArray(current) ? current : []).map(
+          (raw): ReturnType<typeof toInfraVmBody> => {
+            const vm = raw as Record<string, unknown>;
+            return {
+              id: String(vm.id),
+              name: String(vm.name),
+              vcpu: Number(vm.vcpu),
+              ramGb: Number(vm.ramGb),
+              cephStorageGb: Number(vm.cephStorageGb ?? 0),
+              localStorageGb: Number(vm.localStorageGb ?? 0),
+              hostId: typeof vm.hostId === "string" ? vm.hostId : null,
+              storageClusterId:
+                typeof vm.storageClusterId === "string"
+                  ? vm.storageClusterId
+                  : null,
+            };
+          },
+        );
+        return client.json(path, {
+          method: "PUT",
+          body: JSON.stringify({
+            vms: [...existing, ...args.vms.map(toInfraVmBody)],
+          }),
+        });
+      }),
   );
 }
