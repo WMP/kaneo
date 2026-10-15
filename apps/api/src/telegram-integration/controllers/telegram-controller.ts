@@ -99,8 +99,14 @@ export function parseTelegramIntegrationConfig(
     );
     return normalizeTelegramConfig(parsed);
   } catch (error) {
+    // Never log the error itself: a ValiError's issues (and their messages)
+    // carry the rejected input, which can be the bot token.
     console.error("Failed to parse Telegram integration config", {
-      error,
+      reason: v.isValiError(error)
+        ? `invalid fields: ${error.issues
+            .map((issue) => v.getDotPath(issue) ?? "(root)")
+            .join(", ")}`
+        : "unparseable JSON",
       integrationId: integration.id,
       projectId: integration.projectId,
       sanitizedConfig: sanitizeTelegramConfigForLog(integration.config),
