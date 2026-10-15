@@ -398,18 +398,6 @@ export function NavProjects() {
                         : t("projectMembers:noProjects.description")}
                     </li>
                   ) : null}
-
-                  {canCreate && (
-                    <SidebarMenuItem className="mt-1">
-                      <SidebarMenuButton
-                        size="default"
-                        className="h-8 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
-                        onClick={() => setIsCreateProjectModalOpen(true)}
-                      >
-                        <span>{t("navigation:projectList.addProject")}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
                 </SidebarMenu>
 
                 {/* Portalled: `SidebarContent` is `overflow-auto` and clips it. */}

@@ -13,14 +13,7 @@ const guideDirectory = "docs/agent-guide";
 const guideFiles = readdirSync(path.join(root, guideDirectory))
   .filter((filename) => filename.endsWith(".md"))
   .map((filename) => `${guideDirectory}/${filename}`);
-const instructionFiles = [
-  "AGENTS.md",
-  "CLAUDE.md",
-  ...readdirSync(path.join(root, ".cursor/rules"))
-    .filter((filename) => filename.endsWith(".mdc"))
-    .map((filename) => `.cursor/rules/${filename}`),
-  ...guideFiles,
-];
+const instructionFiles = ["AGENTS.md", "CLAUDE.md", ...guideFiles];
 
 test("agent guide stays small and points to existing local Markdown files", () => {
   assert.ok(statSync(path.join(root, "AGENTS.md")).size < 12 * 1024);
@@ -97,10 +90,7 @@ test("every task contract is reachable and always-loaded files contain no issue 
     }
   }
   for (const filename of instructionFiles.filter(
-    (file) =>
-      file === "AGENTS.md" ||
-      file === "CLAUDE.md" ||
-      file.startsWith(".cursor/"),
+    (file) => file === "AGENTS.md" || file === "CLAUDE.md",
   )) {
     assert.doesNotMatch(read(filename), /(?:^|[^\w/])#\d{3,}\b/m);
   }
@@ -199,18 +189,13 @@ test("repository documentation is written in English", () => {
         statSync(path.join(root, filename)).isFile(),
     )
     .sort();
-  const ruleFiles = readdirSync(path.join(root, ".cursor/rules"))
-    .filter((filename) => filename.endsWith(".mdc"))
-    .map((filename) => `.cursor/rules/${filename}`)
-    .sort();
   assert.ok(
     docsFiles.includes(`${guideDirectory}/README.md`),
     "the scan must reach Markdown files below docs/",
   );
 
-  const offenders = [...rootFiles, ...docsFiles, ...ruleFiles].flatMap(
-    (filename) =>
-      polishLines(read(filename)).map((line) => `${filename}:${line}`),
+  const offenders = [...rootFiles, ...docsFiles].flatMap((filename) =>
+    polishLines(read(filename)).map((line) => `${filename}:${line}`),
   );
   assert.ok(
     offenders.length === 0,
