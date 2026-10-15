@@ -36,10 +36,12 @@ export function validateDateRange(
 }
 
 /**
- * Date-only semantics (matching startDate/dueDate/workspace holidays):
- * whatever time-of-day (or bare date) the caller sends, only the calendar
+ * Date-only semantics for task constraintDate and workspace holidays:
+ * whatever time-of-day (or bare date) the caller sends, only the UTC calendar
  * date survives, normalized to UTC midnight so it compares equal regardless
- * of the server or caller's local time zone.
+ * of the server or caller's local time zone. Task startDate/dueDate do NOT
+ * use this: validateAndParseDate keeps the instant the client sent, and
+ * validateDateRange compares instants.
  */
 export function normalizeToUtcMidnight(
   dateStr: string,

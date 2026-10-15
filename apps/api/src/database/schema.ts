@@ -688,8 +688,10 @@ export const taskTable = pgTable(
     //    (dueDate) after constraintDate (FNLT).
     //  - "must_start_on": the task's start is pinned to constraintDate (MSO);
     //    the dependency cascade never shifts it.
-    // constraintDate is date-only (UTC midnight), like startDate/dueDate, and
-    // is required whenever constraintType isn't "none".
+    // constraintDate is date-only: the API normalizes it to UTC midnight. It
+    // is required whenever constraintType isn't "none". startDate/dueDate are
+    // NOT normalized: they store the instant the client sent (the Gantt sends
+    // local midnight as a UTC ISO string) and are compared as instants.
     constraintType: text("ganttpro_constraint_type").notNull().default("none"),
     constraintDate: timestamp("ganttpro_constraint_date", { mode: "date" }),
     // Client-approval gate for a task (e.g. sign-off before a migration
