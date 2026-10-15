@@ -1,0 +1,13 @@
+diff --git a/apps/api/src/utils/validate-dates.ts b/apps/api/src/utils/validate-dates.ts
+index fb87aa7..77049bf 100644
+--- a/apps/api/src/utils/validate-dates.ts
++++ b/apps/api/src/utils/validate-dates.ts
+@@ -27,7 +27,7 @@ export function validateDateRange(
+   startDate: Date | undefined | null,
+   dueDate: Date | undefined | null,
+ ): void {
+-  if (startDate && dueDate && startDate.getTime() > dueDate.getTime()) {
++  if (startDate && dueDate && startDate.getTime() >= dueDate.getTime()) {
+     throw new HTTPException(400, {
+       message:
+         "Start date cannot be after due date. Please adjust the date range.",

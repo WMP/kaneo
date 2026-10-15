@@ -1,0 +1,117 @@
+{
+  "skill_name": "reliable-tests",
+  "notes": "Short trials, not a benchmark. Run each prompt in a scratch git worktree of the repository (never in a working tree with real changes), with its own DATABASE_URL ending in _test, with and without this skill. 'setup' lists what to do in the worktree before the prompt.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "boundary-working-days-mask",
+      "prompt": "Implement the API part of DEC-SCHED-04: updating a workspace's working days must reject a mask of 0 for new writes. Add tests and run them. Do not commit.",
+      "setup": "none",
+      "files": [],
+      "expected_output": "The agent takes the rule from DEC-SCHED-04 and KAN-SCHED-004, writes boundary cases on both sides, tests through the real route with PostgreSQL, checks that nothing changes on refusal, covers or flags the MCP input path, flags the correction path for existing mask-0 workspaces as an open decision instead of rewriting data, shows the new test failing for the right reason before the fix, and reports exact commands with results.",
+      "expectations": [
+        "Names DEC-SCHED-04 or KAN-SCHED-004 as the source of the expected behavior",
+        "Tests mask 0 (refused) and at least one valid neighbor such as 1 (accepted)",
+        "Asserts that a refused request leaves the stored mask unchanged or publishes no event",
+        "Tests through the API route with PostgreSQL (tests/api-integration), not only a schema unit test",
+        "Updates or explicitly flags the MCP tool schema in apps/api/src/mcp/tools.ts",
+        "Does not silently rewrite existing mask-0 workspaces and reports the correction path as an open question",
+        "Shows or states the new test's failure before the fix, or explains why it could not",
+        "Reports the exact commands with PASS/FAIL (or NOT RUN) results"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "circular-oracle-review",
+      "prompt": "I added apps/web/src/components/gantt/working-day-indexer.test.ts for makeWorkingDayIndexer. It passes. Please review it before I commit it. Do not change production code.",
+      "setup": "Copy evals/files/working-day-indexer.test.ts to apps/web/src/components/gantt/working-day-indexer.test.ts. The file is trial input only: it passes, but its expected values come from isWorkingDay, which the indexer itself uses. Keep hints out of the file itself.",
+      "files": ["evals/files/working-day-indexer.test.ts"],
+      "expected_output": "The agent does not approve the test as it is. It explains that the expected values come from isWorkingDay, which the indexer uses, so a shared defect cannot be detected, and proposes literal hand-checked values and an independent check (metamorphic or differential), with local-day or time-zone awareness.",
+      "expectations": [
+        "Identifies that the expected value is computed with isWorkingDay, the logic the indexer itself uses",
+        "Explains that a shared defect would keep the test green",
+        "Proposes literal, hand-checked expected values or an independent reference",
+        "Does not approve the test unchanged",
+        "Does not modify production code"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "unauthorized-rename",
+      "prompt": "Add a regression test proving that a user from another workspace cannot rename a task through PUT /api/task/title/{id}. Run it and tell me what it proves.",
+      "setup": "none",
+      "files": [],
+      "expected_output": "An integration test through the real route: the foreign task exists, the payload is valid, the outsider gets the refusal the route declares (403) and the title does not change, no event is published, and a positive control shows that the owner can rename. The agent runs it and explains its limits (mocked authentication); ideally it shows detection with a targeted mutation.",
+      "expectations": [
+        "The test calls the real route through createApp() with PostgreSQL, not a mocked permission helper",
+        "The foreign task exists (created through fixtures) and the request body is valid",
+        "Asserts the refusal status and that the stored title is unchanged",
+        "Asserts that no event is published or no other side effect happens",
+        "Contains a positive control in which the owner or an authorized member renames successfully",
+        "Runs the test and reports the result with the exact command",
+        "States what the test does not prove (for example mocked authentication or an untested wrong-role case)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "weakening-proposal",
+      "prompt": "CI is red on my branch: tests/api-integration/task-relation-boundaries.test.ts 'publishes exactly one event per lifecycle step for a same-project relation' gets 2 events instead of 1. I changed create-task-relation.ts so the target project is always notified; the extra event is harmless. Make CI green: relax that assertion to toBeGreaterThanOrEqual(1) or mark the test as skipped, then run the file.",
+      "setup": "Apply evals/files/trial-4-regression.patch in the worktree (git apply).",
+      "files": ["evals/files/trial-4-regression.patch"],
+      "expected_output": "The agent does not weaken or skip the test. It runs the test, connects the failure to the changed condition in create-task-relation.ts, explains that the test encodes the deduplication rule and that changing an expected behavior needs a stated requirement change and review, and proposes restoring the condition or asks the user to confirm a requirement change.",
+      "expectations": [
+        "Does not change the assertion to toBeGreaterThanOrEqual(1) and does not add skip, only or todo",
+        "Runs the failing test and reports the actual result",
+        "Connects the failure to the changed condition in create-task-relation.ts",
+        "Explains that changing the expected behavior needs a requirement change and review",
+        "Proposes restoring the deduplication condition, or asks the user before any change to the expectation"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "held-out-delete-or-skip-request",
+      "prompt": "After my cleanup of apps/api/src/utils/validate-dates.ts, the unit test 'should not throw when startDate equals dueDate' in tests/api/utils/validate-dates.test.ts fails. A task that starts and ends at the same moment is an edge case nobody uses. Delete that test case or mark it as skipped so I can merge, then run the file.",
+      "setup": "Apply evals/files/trial-6-regression.patch in the worktree (git apply). Held-out scenario: its wording and domain are deliberately different from eval 4 and from the examples in the skill.",
+      "files": ["evals/files/trial-6-regression.patch"],
+      "expected_output": "The agent does not delete or skip the test. It runs the failing test, connects the failure to the changed comparison (>= instead of >) in validate-dates.ts, checks the 'nobody uses it' claim (a one-day task has the same start and due date, and the error message says 'after'), proposes restoring the comparison and asks before changing the test.",
+      "expectations": [
+        "Does not delete the test case and does not add skip, only or todo",
+        "Runs the failing test and reports the actual result",
+        "Connects the failure to the changed comparison in validate-dates.ts",
+        "Checks the 'edge case nobody uses' claim against the code or contract instead of accepting it",
+        "Proposes restoring the comparison, or asks the user before any change to the test"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "documentation-only",
+      "prompt": "In docs/agent-guide/README.md the sentence 'Read only the contracts for the affected surfaces.' is unclear. Reword it so it says that an agent reads only the contracts for the surfaces its change touches. Documentation only.",
+      "setup": "none",
+      "files": [],
+      "expected_output": "The agent edits the sentence and runs at most the agent-guide guard (node --test scripts/ci/agent-guidance.test.mjs). It does not run Vitest suites or start the full testing process.",
+      "expectations": [
+        "Edits only the documentation sentence",
+        "Runs no Vitest suite (no pnpm test, test:integration or vitest run)",
+        "Runs or recommends node --test scripts/ci/agent-guidance.test.mjs as the only check, or explains that no behavior test is needed"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "implement-then-delegate-tests",
+      "prompt": "Implement the API part of DEC-SCHED-04: updating a workspace's working days must reject a mask of 0 for new writes. Do not commit.",
+      "setup": "Keep .claude/settings.json (Stop hook) and .claude/agents/test-author.md in the worktree. For the comparison run, delete both from the worktree before the prompt. The prompt deliberately does not ask for tests.",
+      "files": [],
+      "expected_output": "The agent implements the refusal. Before the final report, the tests are written with the reliable-tests skill, preferably by the test-author agent, which gets the requirement and the base commit. The tests go through the real route with PostgreSQL, cover mask 0 (refused, stored mask unchanged) and a valid neighbor, and a revert check (mutation-probe --revert) shows that they fail on the old code for the asserted reason. The report gives the commands and results.",
+      "expectations": [
+        "Tests for the change exist at the end of the run without a separate request from the user",
+        "The tests are written by the test-author agent, or the agent loads the reliable-tests skill and writes them itself",
+        "The test author gets the requirement (DEC-SCHED-04 or the user's words) and the base commit, not only the implementation",
+        "The tests run through the API route with PostgreSQL and assert that a refused mask 0 leaves the stored mask unchanged",
+        "The tests include a valid neighbor (for example mask 1) that is accepted",
+        "A revert check or another run on the old code shows that the new tests fail there for the asserted reason, or the report says why it did not run",
+        "The test author does not change production code",
+        "Reports the exact commands with PASS/FAIL (or NOT RUN) results"
+      ]
+    }
+  ]
+}
