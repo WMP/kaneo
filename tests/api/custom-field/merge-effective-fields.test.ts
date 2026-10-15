@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { mergeEffectiveFields } from "../../../apps/api/src/custom-field/effective-fields";
 
 function field(overrides: Partial<Record<string, unknown>> = {}) {
@@ -16,7 +16,6 @@ function field(overrides: Partial<Record<string, unknown>> = {}) {
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
-    // biome-ignore lint/suspicious/noExplicitAny: test fixture shortcut
   } as any;
 }
 

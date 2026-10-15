@@ -59,7 +59,7 @@ export function GanttSummaryTaskBar({
       className="pointer-events-none absolute inset-0 z-[1] grid items-center"
       style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; the actual interactive control is the button nested below */}
+      {/* hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; the actual interactive control is the button nested below */}
       <div
         style={{
           gridColumn: `${lineStart} / ${lineEnd}`,

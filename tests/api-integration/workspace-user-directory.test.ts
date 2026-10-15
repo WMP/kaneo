@@ -1,7 +1,14 @@
 import { randomUUID } from "node:crypto";
 import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { auth } from "../../apps/api/src/auth";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
@@ -147,7 +154,7 @@ describe("user directory: who may search", () => {
     const w = await buildWorld();
     const outsider = await createWorkspaceMember({ role: "owner" });
     as(outsider.user);
-    expect((await search(w.workspaceId, "zofia")).status).toBe(403);
+    expect((await search(w.workspaceId, "zofia")).status).toBe(404);
 
     vi.restoreAllMocks();
     expect((await search(w.workspaceId, "zofia")).status).toBe(401);

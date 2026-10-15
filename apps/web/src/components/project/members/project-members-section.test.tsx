@@ -5,7 +5,14 @@ import {
   render,
   screen,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { HttpError } from "@/lib/http-error";
 import ProjectMembersSection from "./project-members-section";
 
@@ -69,24 +76,24 @@ let membersState: {
 vi.mock("@/hooks/queries/project-member/use-get-project-members", () => ({
   default: () => ({ ...membersState, refetch: refetchMembers }),
 }));
-const useGetProjectInvitations = vi.fn(
+const mockUseGetProjectInvitations = vi.fn(
   (_projectId: string, _options: { enabled?: boolean }) => ({ data: [] }),
 );
 vi.mock(
   "@/hooks/queries/project-invitation/use-get-project-invitations",
   () => ({
     default: (projectId: string, options: { enabled?: boolean }) =>
-      useGetProjectInvitations(projectId, options),
+      mockUseGetProjectInvitations(projectId, options),
   }),
 );
-const useGetAssignableRoles = vi.fn((_workspaceId: string | undefined) => ({
+const mockUseGetAssignableRoles = vi.fn((_workspaceId: string | undefined) => ({
   data: [],
   isError: false,
   refetch: vi.fn(),
 }));
 vi.mock("@/hooks/queries/workspace/use-get-assignable-roles", () => ({
   default: (workspaceId: string | undefined) =>
-    useGetAssignableRoles(workspaceId),
+    mockUseGetAssignableRoles(workspaceId),
 }));
 
 type DialogProps = Record<string, unknown> & { open: boolean };
@@ -274,12 +281,12 @@ describe("ProjectMembersSection", () => {
   it("asks for the workspace assignable roles only when the caller can invite", () => {
     abilities = { ...ALL, canInvite: false };
     renderSection();
-    expect(useGetAssignableRoles).toHaveBeenLastCalledWith(undefined);
+    expect(mockUseGetAssignableRoles).toHaveBeenLastCalledWith(undefined);
 
     cleanup();
     abilities = { ...ALL, canInvite: true };
     renderSection();
-    expect(useGetAssignableRoles).toHaveBeenLastCalledWith("workspace-1");
+    expect(mockUseGetAssignableRoles).toHaveBeenLastCalledWith("workspace-1");
   });
 
   it("shows an error with a retry when a permission probe failed for another reason than 403", () => {
@@ -313,14 +320,14 @@ describe("ProjectMembersSection", () => {
       canViewInvitations: false,
     };
     renderSection();
-    expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
+    expect(mockUseGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
       enabled: false,
     });
 
     cleanup();
     abilities = { ...ALL };
     renderSection();
-    expect(useGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
+    expect(mockUseGetProjectInvitations).toHaveBeenLastCalledWith("project-1", {
       enabled: true,
     });
   });

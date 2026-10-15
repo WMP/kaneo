@@ -3,6 +3,10 @@ import { z } from "../openapi";
 export const workspaceIdParam = z.object({ workspaceId: z.string() });
 
 export const workspaceMembersQuery = z.object({
+  projectId: z.string().optional().openapi({
+    description:
+      "Only return members who can access this project, for example to fill an assignee picker. The caller needs access to the project.",
+  }),
   include: z.enum(["projects"]).optional().openapi({
     description:
       'Pass "projects" to add `projects` and `fullAccess` to every member. Only a caller who manages members (workspace role with member:create, member:update or member:delete) or has full access gets them; for anybody else the parameter has no effect.',

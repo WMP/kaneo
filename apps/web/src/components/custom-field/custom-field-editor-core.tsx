@@ -487,7 +487,7 @@ export default function CustomFieldEditorCore({
 
             if (field.id === editingField?.id) {
               return (
-                // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
+                // false positive for role="listitem"
                 <div
                   key={field.id}
                   role="listitem"
@@ -505,7 +505,7 @@ export default function CustomFieldEditorCore({
             }
 
             return (
-              // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
+              // false positive for role="listitem"
               <div
                 key={field.id}
                 role="listitem"
@@ -631,7 +631,7 @@ export default function CustomFieldEditorCore({
                             onSelect={async (colorValue) => {
                               try {
                                 await onUpdateOptionColor(field.id, {
-                                  ...(field.optionColors ?? {}),
+                                  ...field.optionColors,
                                   [option]: colorValue,
                                 });
                               } catch (error) {

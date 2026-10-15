@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAnonymousSession, mockAuthenticatedSession } from "./helpers/auth";
@@ -12,6 +12,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 vi.mock("../../apps/api/src/events", async (original) => ({
   ...(await original<object>()),
@@ -218,12 +219,13 @@ describe("GET /project/{projectId}/access", () => {
       as(user);
       const response = await accessOf(w);
       expect(response.status).toBe(403);
-      expect(await response.text()).toBe(
+      expect((await readErrorBody(response)).message).toBe(
         "You don't have access to this project",
       );
     }
+    // Not a member of the workspace: the project is reported as not found.
     as(w.outsider.user);
-    expect((await accessOf(w)).status).toBe(403);
+    expect((await accessOf(w)).status).toBe(404);
     mockAnonymousSession();
     expect((await accessOf(w)).status).toBe(401);
   });
@@ -264,11 +266,12 @@ describe("GET /project/{projectId}/access", () => {
     }
   });
 
-  it("returns 400 for an unknown project", async () => {
+  it("returns 404 for an unknown project", async () => {
     const w = await buildWorld();
     as(w.fullAdmin);
     const response = await app.request(`/api/project/${randomUUID()}/access`);
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
+    expect((await readErrorBody(response)).message).toBe("Project not found");
   });
 });
 

@@ -133,7 +133,7 @@ export function GanttExternalTaskBar({
         className="pointer-events-none absolute inset-0 z-[1] grid items-center"
         style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
       >
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
+        {/* hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
         <div
           data-gantt-external-bar=""
           style={{ gridColumn: `${lineStart} / ${lineEnd}` }}
@@ -181,7 +181,7 @@ export function GanttExternalTaskBar({
       className="pointer-events-none absolute inset-0 z-[1] grid items-center"
       style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
+      {/* hover/focus tracking drives dependency-line highlighting, matching GanttTaskBar; activation lives on the inner button. */}
       <div
         data-gantt-external-bar=""
         style={{

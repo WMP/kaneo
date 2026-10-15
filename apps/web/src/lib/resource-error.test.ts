@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { HttpError } from "@/lib/http-error";
 import { readProjectApiError } from "@/lib/project-member-error";
 import {

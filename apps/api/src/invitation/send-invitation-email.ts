@@ -2,7 +2,10 @@ import { sendWorkspaceInvitationEmail } from "@kaneo/email";
 import { getClientUrl } from "../utils/client-url";
 import { getInvitationEmailSubject } from "../utils/get-invitation-email-subject";
 import { getUserLocale } from "../utils/get-user-locale";
-import { getWorkspaceInvitationEmailCopy } from "../utils/get-workspace-invitation-email-copy";
+import {
+  getInvitationRoleLabel,
+  getWorkspaceInvitationEmailCopy,
+} from "../utils/get-workspace-invitation-email-copy";
 
 // The single place that builds and sends the invitation email. Better Auth's
 // `sendInvitationEmail` option (workspace invitations, re-sends) and the
@@ -28,12 +31,17 @@ export async function sendInvitationEmail({
   inviterName,
   inviterEmail,
   workspaceName,
+  role,
+  expiresAt,
 }: {
   invitationId: string;
   email: string;
   inviterName: string;
   inviterEmail: string;
   workspaceName: string;
+  // Shown in the email when given (the workspace role and the expiry).
+  role?: string;
+  expiresAt?: Date | string | null;
 }): Promise<InvitationEmailOutcome> {
   const locale = await getUserLocale(email);
   const copy = getWorkspaceInvitationEmailCopy(locale);
@@ -47,6 +55,9 @@ export async function sendInvitationEmail({
       workspaceName,
       invitationLink: getInvitationLink(invitationId),
       to: email,
+      locale,
+      role: role ? getInvitationRoleLabel(locale, role) : undefined,
+      expiresAt: expiresAt ?? undefined,
       copy,
     },
   );

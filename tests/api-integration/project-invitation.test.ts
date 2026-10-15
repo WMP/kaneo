@@ -2,7 +2,14 @@ import { randomUUID } from "node:crypto";
 import * as email from "@kaneo/email";
 import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { auth } from "../../apps/api/src/auth";
 import db, { getDatabase, schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
@@ -18,6 +25,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 vi.mock("../../apps/api/src/events", async (original) => ({
   ...(await original<object>()),
@@ -353,7 +361,9 @@ describe("POST /project/{id}/invitations", () => {
     as(w.projectAdmin);
     const denied = await invite(w, {}, w.other.id);
     expect(denied.status).toBe(403);
-    expect(await denied.text()).toBe("You don't have access to this project");
+    expect((await readErrorBody(denied)).message).toBe(
+      "You don't have access to this project",
+    );
 
     // No invitation:create in the project role (viewer), only cancel, or no
     // project role at all.
@@ -364,8 +374,9 @@ describe("POST /project/{id}/invitations", () => {
     as(w.workspaceOnly);
     expect((await invite(w, {})).status).toBe(403);
 
+    // Not a workspace member: the project is reported as not found.
     as(w.outsider.user);
-    expect((await invite(w, {})).status).toBe(403);
+    expect((await invite(w, {})).status).toBe(404);
     expect(await invitationRows(w.workspaceId)).toHaveLength(0);
   });
 
@@ -846,12 +857,15 @@ describe("GET /project/{id}/invitations", () => {
         200,
       );
     }
-    for (const user of [w.projectViewer, w.workspaceOnly, w.outsider.user]) {
+    for (const user of [w.projectViewer, w.workspaceOnly]) {
       as(user);
       expect((await call(invitationsPath(w.project.id), "GET")).status).toBe(
         403,
       );
     }
+    // Not a workspace member: the project is reported as not found.
+    as(w.outsider.user);
+    expect((await call(invitationsPath(w.project.id), "GET")).status).toBe(404);
   });
 });
 
@@ -1343,11 +1357,13 @@ describe("GET /project/{id}/member-candidates", () => {
       w.inviter,
       w.canceler,
       w.workspaceOnly,
-      w.outsider.user,
     ]) {
       as(user);
       expect((await candidates(w)).status).toBe(403);
     }
+    // Not a workspace member: the project is reported as not found.
+    as(w.outsider.user);
+    expect((await candidates(w)).status).toBe(404);
   });
 });
 

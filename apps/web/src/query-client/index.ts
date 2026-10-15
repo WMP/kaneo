@@ -10,6 +10,7 @@ import {
   isForbiddenError,
   isUnauthorizedError,
 } from "@/lib/http-error";
+import { isForbiddenOrNotFound } from "@/lib/is-forbidden-or-not-found";
 import { useConnectivityStore } from "@/store/connectivity";
 
 // A request that got no HTTP response (offline, server down, or a CORS
@@ -108,12 +109,12 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
-      // A 403 does not fix itself by asking again, and the project pages show
+      // A 403 or 404 does not fix itself by asking again, and the project pages show
       // their "no access" state as soon as it arrives.
       retry: (failureCount, error) =>
         isNetworkError(error) ||
         isUnauthorizedError(error) ||
-        isForbiddenError(error)
+        isForbiddenOrNotFound(error)
           ? false
           : failureCount < 2,
     },

@@ -133,6 +133,7 @@ async function updateTaskAssignees({
       title: taskTable.title,
       description: taskTable.description,
       status: taskTable.status,
+      columnId: taskTable.columnId,
       priority: taskTable.priority,
       startDate: taskTable.startDate,
       dueDate: taskTable.dueDate,

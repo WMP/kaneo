@@ -1,6 +1,13 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 // Proves the row virtualizer (useGanttRowVirtualizer, wired into the Gantt
 // route) actually windows a large task-heavy board's rows, and that
@@ -113,12 +120,36 @@ vi.mock("@/store/user-preferences", () => ({
 }));
 vi.mock("@/lib/i18n/domain", () => ({
   getStatusLabel: (status: string) => status,
+  getPriorityLabel: (priority: string) => priority,
 }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
   initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 vi.mock("@/lib/toast", () => ({ toast: { error: vi.fn() } }));
+// The route filters tasks through the shared project view; these tests are not
+// about filtering, so its data sources are inert.
+vi.mock("@/hooks/queries/task/use-description-matches", () => ({
+  useDescriptionMatches: () => ({
+    ids: new Set<string>(),
+    isLoading: false,
+    isError: false,
+  }),
+}));
+vi.mock("@/components/project/task-filters/use-task-filter-options", () => ({
+  useTaskFilterOptions: () => ({
+    members: [],
+    labels: [],
+    customFields: [],
+    usedCustomFieldValues: {},
+  }),
+}));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-all-custom-field-values-by-project",
+  () => ({
+    default: () => ({ getValuesForTask: () => [] }),
+  }),
+);
 // Rows only need to prove they mounted (or didn't) here, not render a real
 // bar's own drag/resize/link-handle wiring — same lean substitution
 // gantt.test.tsx uses.
@@ -129,9 +160,7 @@ vi.mock("@/components/gantt/gantt-task-bar", () => ({
   toIsoDay: (date: Date) => date.toISOString().slice(0, 10),
 }));
 
-await import(
-  "@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt"
-);
+await import("@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt");
 
 function show() {
   const Component = m.component;

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import getCustomFieldsByProject from "./get-custom-fields-by-project";
 
 const { getRequest } = vi.hoisted(() => ({ getRequest: vi.fn() }));

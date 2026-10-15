@@ -1,4 +1,4 @@
-# Kaneo agent guide
+# Kaneo
 
 Kaneo is a self-hosted project-management platform. The Hono API owns domain behavior and authorization; React/Vite consumes the typed client; PostgreSQL stores durable state; events and WebSockets keep clients current. Redis is optional for multi-instance realtime delivery. This file is the tool-neutral entry point. Explicit user instructions take precedence.
 
@@ -23,10 +23,11 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 
 ## Rules that apply everywhere
 
+- Keep modules small: one responsibility per file (one component per file; pure helpers and types in their own modules next to the code that uses them, with tests beside them). Split a file that grows a second concern into a folder, and inline one-line wrappers.
 - Keep Kaneo simple, responsive on large boards, and usable on a single instance without Redis. Preserve both bundled same-origin and separately hosted API/web deployments.
 - The API enforces authentication, workspace permissions and data scope; a hidden UI control is not authorization. Never expose credentials or private workspace data in responses, events, WebSockets, logs or MCP.
 - Follow a behavior change through its relevant surfaces: API schema/controller, permissions, typed client, UI/cache, events/realtime, MCP/integrations, database migration, documentation and translations. Check reverse actions and deletion where they apply; do not expand scope just to touch every surface.
-- Use `@hono/zod-openapi` and the `apiRouter()` pattern for public routes, `@kaneo/permissions` for workspace permissions, `@kaneo/libs` for typed web requests, and `publishEvent()` for mutations that drive activity or realtime. Details and exceptions live in the linked contracts.
+- Use `@hono/zod-openapi` and the `apiRouter()` pattern for public routes (middleware declared on `createRoute` runs before validators, so it must read the raw request instead of `c.req.valid()`), `@kaneo/permissions` for workspace permissions, `@kaneo/libs` for typed web requests, and `publishEvent()` for mutations that drive activity or realtime. Details and exceptions live in the linked contracts.
 - Add user-facing text through static i18n keys in `i18n/en-US.json`, and translate each new or changed value into every locale in `i18n/` in the same change. An English placeholder in another locale is not a translation. Preserve accessibility and verify the relevant UI states.
 - Write repository content in English (code, comments, documentation including the README, commit messages and PR text), whatever language the conversation uses. Other languages belong only in the i18n catalogs.
 - Existing installations and data matter. Generate a new Drizzle migration for schema changes, review its SQL and OpenAPI output where applicable, and test the upgrade path.
@@ -35,8 +36,8 @@ For work spanning multiple packages or pull requests, keep a short, self-contain
 ## Safe working practice
 
 - Use Node.js 24 (CI and images use 24.19.0) and pnpm 10.32.1, as declared in `package.json`. Server variables come from root `.env`; local Vite overrides belong in `apps/web/.env.development.local`, because the tracked `apps/web/.env.development` outranks `apps/web/.env.local`.
-- Never point development or test commands at production data, storage or credentials. Preserve unrelated work in a dirty worktree and stop only processes you started.
-- Root and package `lint` scripts use Biome `--write` and can change unrelated files. Prefer a targeted read-only check while iterating; inspect any formatter diff.
+- Never point development or test commands at production data, storage or credentials. Preserve unrelated work in a dirty worktree and stop only processes you started and tracked; never kill processes by a broad name or path match.
+- Root and package `lint` scripts run Vite+ checks (`vp check`) without writing. `pnpm exec vp check --fix` and `pnpm format` (`vp fmt`) rewrite files and can change unrelated ones; inspect any formatter diff. `pnpm typecheck` runs the package-specific TypeScript checks.
 - Do not commit, push or open a pull request unless explicitly requested.
 
 Run the smallest meaningful checks during implementation, then the affected package gates before a requested PR. Report the behavior changed, checks actually run, checks not run, and known limitations. Do not claim a behavior is protected by CI without identifying the job and its test.

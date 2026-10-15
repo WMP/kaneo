@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { UnassignedAvatar } from "@/components/common/unassigned-avatar";
 import type { AssigneeProfile } from "@/lib/find-assignee";
 import type Task from "@/types/task";
 import { AssigneeAvatars, resolveTaskAssignees } from "./assignee-avatars";
@@ -14,7 +15,8 @@ type TaskAssigneeTriggerContentProps = {
   assignee?: AssigneeProfile;
 };
 
-/** What the assignee trigger button of the task sidebar shows: the avatars of
+/** What the assignee value of the task properties rail (and the compact
+ * property chips) shows: the avatars of
  * everyone assigned (users and resources alike) with the name of a single
  * assignee or a count, or the "?" placeholder when nobody is. */
 export function TaskAssigneeTriggerContent({
@@ -36,13 +38,8 @@ export function TaskAssigneeTriggerContent({
   if (assignees.length === 0) {
     return (
       <>
-        <div
-          className="w-[16px] h-[16px] rounded-full bg-muted border border-border flex items-center justify-center shrink-0"
-          title={t("tasks:popover.assignee.unassigned")}
-        >
-          <span className="text-[8px] font-medium">?</span>
-        </div>
-        <span className="text-xs font-semibold truncate max-w-[100px]">
+        <UnassignedAvatar className="size-4.5" />
+        <span className="max-w-32 truncate text-muted-foreground">
           {t("tasks:popover.assignee.unassigned")}
         </span>
       </>
@@ -54,10 +51,10 @@ export function TaskAssigneeTriggerContent({
       <AssigneeAvatars
         assignees={assignees}
         max={TRIGGER_MAX_AVATARS}
-        avatarClassName="size-5"
+        avatarClassName="size-4.5"
         className="-space-x-1"
       />
-      <span className="text-xs font-semibold truncate max-w-[100px]">
+      <span className="max-w-32 truncate">
         {assignees.length === 1 && assignees[0].name
           ? assignees[0].name
           : t("tasks:popover.assignee.assignedCount", {

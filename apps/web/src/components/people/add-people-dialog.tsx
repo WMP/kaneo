@@ -338,7 +338,7 @@ function AddPeopleDialog({
         : `${option.kind}:${option.person.id}`,
     )
     .join("|");
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on a changed list
+  // reset on a changed list
   useEffect(() => setActiveIndex(-1), [optionsSignature]);
   const optionId = (index: number) => `${listboxId}-option-${index}`;
 
@@ -772,7 +772,7 @@ function AddPeopleDialog({
                       className="max-h-64 space-y-0.5 overflow-y-auto rounded-md border p-1"
                     >
                       {candidateSuggestions.length > 0 ? (
-                        // biome-ignore lint/a11y/useSemanticElements: a group of options inside a listbox cannot be a fieldset
+                        // a group of options inside a listbox cannot be a fieldset
                         <div
                           role="group"
                           aria-label={t("people:add.groups.workspace")}
@@ -796,7 +796,7 @@ function AddPeopleDialog({
                         </div>
                       ) : null}
                       {directorySuggestions.length > 0 ? (
-                        // biome-ignore lint/a11y/useSemanticElements: a group of options inside a listbox cannot be a fieldset
+                        // a group of options inside a listbox cannot be a fieldset
                         <div
                           role="group"
                           aria-label={t("people:add.groups.directory")}

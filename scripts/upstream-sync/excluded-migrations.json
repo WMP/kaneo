@@ -1,0 +1,22 @@
+[
+	{
+		"tag": "0051_modern_corsair",
+		"reason": "The change is part of the fork migration 0051_ganttpro_additions (with ganttpro_ object names).",
+		"replacedBy": "0051_ganttpro_additions"
+	},
+	{
+		"tag": "0052_dear_beyonder",
+		"reason": "The change is part of the fork migration 0051_ganttpro_additions (with ganttpro_ object names).",
+		"replacedBy": "0051_ganttpro_additions"
+	},
+	{
+		"tag": "0053_calendar_feeds",
+		"reason": "The change is part of the fork migration 0051_ganttpro_additions (with ganttpro_ object names).",
+		"replacedBy": "0051_ganttpro_additions"
+	},
+	{
+		"tag": "0060_flaky_ezekiel",
+		"reason": "The upstream project-access model is not adopted; the fork keeps its own project members.",
+		"replacedBy": "0056_ganttpro_project_members"
+	}
+]

@@ -53,7 +53,7 @@ export function McpSettings() {
   return (
     <>
       <PageTitle title={t("settings:mcpPage.pageTitle")} />
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-8 sm:py-10">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold">
             {t("settings:mcpPage.title")}

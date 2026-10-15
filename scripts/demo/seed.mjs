@@ -1041,7 +1041,7 @@ class Seeder {
         "externalLinks",
         "calendarFeeds",
       ]) {
-        ids[kind] = { ...(hint[kind] ?? {}), ...ids[kind] };
+        ids[kind] = { ...hint[kind], ...ids[kind] };
       }
       ids.comments = [
         ...(hint.comments ?? []).filter((comment) => comment.layer === "base"),

@@ -21,7 +21,7 @@ function RouteComponent() {
   return (
     <>
       <PageTitle title={t("settings:jiraIntegration.account.pageTitle")} />
-      <div className="mx-auto max-w-4xl space-y-8">
+      <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-8 sm:px-8 sm:py-10">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold">
             {t("settings:jiraIntegration.account.title")}

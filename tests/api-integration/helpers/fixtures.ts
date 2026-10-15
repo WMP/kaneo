@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import db, { schema } from "../../../apps/api/src/database";
-import { DEFAULT_PROJECT_COLUMNS } from "../../../apps/api/src/project/controllers/create-project";
+import { DEFAULT_PROJECT_COLUMNS } from "../../../apps/api/src/project/controllers/insert-project";
 
 export type SeededMemberContext = {
   user: typeof schema.userTable.$inferSelect;

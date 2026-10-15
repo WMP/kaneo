@@ -1,3 +1,5 @@
+import { dispatchIssueWrite } from "../../sync/dispatch-issue-write";
+import { canSyncTask } from "../../sync/eligibility";
 import { eq } from "drizzle-orm";
 import db from "../../../database";
 import { externalLinkTable } from "../../../database/schema";
@@ -64,6 +66,8 @@ async function getGitlabIssueContext(taskId: string) {
     return null;
   }
 
+  if (!(await canSyncTask(taskId, externalLink.integration.id))) return null;
+
   let config: GitlabConfig;
   try {
     config = JSON.parse(externalLink.integration.config) as GitlabConfig;
@@ -86,10 +90,20 @@ async function getGitlabIssueContext(taskId: string) {
   }
 
   return {
+    externalLink,
+    expectedConfig: externalLink.integration.config,
     client: createGitlabClient(config),
     config,
     issueIid,
   };
+}
+
+function containsTaskFieldLabel(labelName: string) {
+  // GitLab interprets add_labels/remove_labels as comma-separated names.
+  return labelName.split(",").some((name) => {
+    const label = name.trim();
+    return label.startsWith("priority:") || label.startsWith("status:");
+  });
 }
 
 export async function syncLabelToGitlab(
@@ -97,6 +111,9 @@ export async function syncLabelToGitlab(
   labelName: string,
   labelColor: string,
 ) {
+  // These labels drive task fields on the webhook return path. Ordinary label
+  // permissions must not grant the ability to update status or priority.
+  if (containsTaskFieldLabel(labelName)) return;
   const ctx = await getGitlabIssueContext(taskId);
   if (!ctx) return;
 
@@ -106,11 +123,17 @@ export async function syncLabelToGitlab(
 
   if (!labels.some((l) => l.name === labelName)) {
     try {
-      await client.createLabel(
-        config.projectPath,
-        labelName,
-        toHexColor(labelColor),
+      const created = await dispatchIssueWrite(
+        ctx.externalLink,
+        ctx.expectedConfig,
+        () =>
+          client.createLabel(
+            config.projectPath,
+            labelName,
+            toHexColor(labelColor),
+          ),
       );
+      if (!created) return;
     } catch (error) {
       console.error(`Failed to create label "${labelName}" in GitLab:`, error);
       return;
@@ -122,24 +145,29 @@ export async function syncLabelToGitlab(
     if (issue.labels?.includes(labelName)) {
       return;
     }
-    await client.updateIssue(config.projectPath, issueIid, {
-      add_labels: labelName,
-    });
+    await dispatchIssueWrite(ctx.externalLink, ctx.expectedConfig, () =>
+      client.updateIssue(config.projectPath, issueIid, {
+        add_labels: labelName,
+      }),
+    );
   } catch (error) {
     console.error(`Failed to add label "${labelName}" to GitLab issue:`, error);
   }
 }
 
 export async function removeLabelFromGitlab(taskId: string, labelName: string) {
+  if (containsTaskFieldLabel(labelName)) return;
   const ctx = await getGitlabIssueContext(taskId);
   if (!ctx) return;
 
   const { client, config, issueIid } = ctx;
 
   try {
-    await client.updateIssue(config.projectPath, issueIid, {
-      remove_labels: labelName,
-    });
+    await dispatchIssueWrite(ctx.externalLink, ctx.expectedConfig, () =>
+      client.updateIssue(config.projectPath, issueIid, {
+        remove_labels: labelName,
+      }),
+    );
   } catch (error) {
     console.error(
       `Failed to remove label "${labelName}" from GitLab issue:`,

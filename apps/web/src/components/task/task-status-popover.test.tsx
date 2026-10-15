@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { Button } from "@/components/ui/button";
 import type Task from "@/types/task";
 import TaskStatusPopover from "./task-status-popover";
@@ -17,10 +17,6 @@ vi.mock("@/hooks/queries/column/use-get-columns", () => ({
 
 vi.mock("@/hooks/mutations/task/use-update-task-status", () => ({
   useUpdateTaskStatus: () => ({ mutateAsync: vi.fn() }),
-}));
-
-vi.mock("@/hooks/use-numbered-shortcuts", () => ({
-  useNumberedShortcuts: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-project-permission", () => ({
@@ -75,11 +71,11 @@ describe("TaskStatusPopover", () => {
     );
 
     expect(useGetColumns).toHaveBeenCalledWith("project-1");
-    expect(screen.queryByRole("button", { name: /Ready/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /Ready/ })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Status" }));
 
-    expect(await screen.findByRole("button", { name: /Ready/ })).toBeVisible();
+    expect(await screen.findByRole("option", { name: /Ready/ })).toBeVisible();
   });
 
   it("shows loading feedback while status options are loading", async () => {
@@ -123,7 +119,13 @@ describe("TaskStatusPopover search", () => {
   it("filters statuses by the typed text and shows an empty state", async () => {
     useGetColumns.mockReturnValue({
       data: [
-        { id: "c1", slug: "to-do", name: "To do", icon: null, isFinal: false },
+        {
+          id: "c1",
+          slug: "queued",
+          name: "Queued",
+          icon: null,
+          isFinal: false,
+        },
         {
           id: "c2",
           slug: "review",
@@ -131,7 +133,13 @@ describe("TaskStatusPopover search", () => {
           icon: null,
           isFinal: false,
         },
-        { id: "c3", slug: "done", name: "Done", icon: null, isFinal: true },
+        {
+          id: "c3",
+          slug: "shipped",
+          name: "Shipped",
+          icon: null,
+          isFinal: true,
+        },
       ],
       isLoading: false,
       isError: false,
@@ -143,12 +151,14 @@ describe("TaskStatusPopover search", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Status" }));
 
-    const search = await screen.findByPlaceholderText("tasks:picker.search");
+    const search = await screen.findByPlaceholderText(
+      "tasks:bulk.statusPlaceholder",
+    );
     fireEvent.change(search, { target: { value: "zazolc" } });
-    expect(screen.getByRole("button", { name: /Zażółć review/ })).toBeVisible();
-    expect(screen.queryByRole("button", { name: /Done/ })).toBeNull();
+    expect(screen.getByRole("option", { name: /Zażółć review/ })).toBeVisible();
+    expect(screen.queryByRole("option", { name: /Shipped/ })).toBeNull();
 
     fireEvent.change(search, { target: { value: "zzz" } });
-    expect(screen.getByText("tasks:picker.noResults")).toBeVisible();
+    expect(screen.getByText("tasks:filterMenu.noResults")).toBeVisible();
   });
 });

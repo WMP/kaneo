@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { useTaskFiltersWithLabelsSupport } from "./use-task-filters-with-labels-support";
+
+const IGNORE_STATUS = ["status"] as const;
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -426,5 +428,52 @@ describe("useTaskFiltersWithLabelsSupport", () => {
     expect(
       result.current.filteredProject?.columns[0]?.tasks.map((t) => t.id),
     ).toEqual(["task-with-resource"]);
+  });
+
+  it("keeps an ignored status filter stored but out of the backlog", () => {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({ status: ["done"], priority: ["high"] }),
+    );
+    const planned = {
+      id: "planned-1",
+      title: "Planned work",
+      number: 7,
+      description: null,
+      status: "planned",
+      priority: "high",
+      dueDate: null,
+      userId: null,
+      labels: [],
+    };
+    const project = {
+      id: "project-1",
+      slug: "PROJ",
+      columns: [],
+      plannedTasks: [planned],
+      archivedTasks: [],
+    } as unknown as Parameters<typeof useTaskFiltersWithLabelsSupport>[0];
+
+    const { result } = renderHook(
+      () =>
+        useTaskFiltersWithLabelsSupport(
+          project,
+          "project-1",
+          "",
+          undefined,
+          IGNORE_STATUS,
+        ),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.filters.status).toBeNull();
+    expect(result.current.activeFilterCount).toBe(1);
+    expect(result.current.filteredProject?.plannedTasks).toHaveLength(1);
+
+    act(() => result.current.clearFilters());
+
+    expect(JSON.parse(window.localStorage.getItem(storageKey) ?? "{}")).toEqual(
+      expect.objectContaining({ status: ["done"], priority: null }),
+    );
   });
 });

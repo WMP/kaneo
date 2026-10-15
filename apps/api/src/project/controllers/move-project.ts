@@ -1,13 +1,4 @@
-import {
-  and,
-  eq,
-  inArray,
-  isNotNull,
-  max,
-  ne,
-  notInArray,
-  sql,
-} from "drizzle-orm";
+import { and, eq, inArray, isNotNull, max, notInArray, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { currentActorSource } from "../../activity/actor-source";
 import createActivities from "../../activity/controllers/create-activities";
@@ -15,6 +6,8 @@ import db from "../../database";
 import {
   assetTable,
   columnTable,
+  externalLinkTable,
+  integrationTable,
   invitationProjectTable,
   labelTable,
   projectMemberTable,
@@ -30,6 +23,7 @@ import { unusableProjectRoles } from "../../utils/project-access";
 import { readEnforcementShared } from "../../workspace-column/enforcement-lock";
 import { syncProjectToWorkspaceColumns } from "../../workspace-column/sync";
 import { closeProjectConnections } from "../../ws";
+import { findProjectKeyConflict } from "../project-key";
 
 async function moveProject(
   id: string,
@@ -86,17 +80,12 @@ async function moveProject(
     // rather than silently renaming a project out from under its ticket ids.
     // Compared case-insensitively, since the lookup is. Archived projects
     // count: their tasks still resolve by short id.
-    const [keyConflict] = await tx
-      .select({ name: projectTable.name })
-      .from(projectTable)
-      .where(
-        and(
-          eq(projectTable.workspaceId, targetWorkspaceId),
-          ne(projectTable.id, id),
-          sql`lower(${projectTable.slug}) = lower(${existingProject.slug})`,
-        ),
-      )
-      .limit(1);
+    const keyConflict = await findProjectKeyConflict(
+      tx,
+      targetWorkspaceId,
+      existingProject.slug,
+      { excludeProjectId: id },
+    );
 
     if (keyConflict) {
       throw new HTTPException(409, {
@@ -230,6 +219,29 @@ async function moveProject(
       });
     }
 
+    // Older task moves could leave links owned by a different project.
+    await tx
+      .delete(externalLinkTable)
+      .where(
+        and(
+          inArray(
+            externalLinkTable.taskId,
+            tx
+              .select({ id: taskTable.id })
+              .from(taskTable)
+              .where(eq(taskTable.projectId, id)),
+          ),
+          isNotNull(externalLinkTable.integrationId),
+          notInArray(
+            externalLinkTable.integrationId,
+            tx
+              .select({ id: integrationTable.id })
+              .from(integrationTable)
+              .where(eq(integrationTable.projectId, id)),
+          ),
+        ),
+      );
+
     // The columns were linked to the source workspace's columns. Unlink them;
     // when the target enforces its columns the project is matched to them (by
     // slug, then name) with the first target column as the fallback, without
@@ -329,6 +341,9 @@ async function moveProject(
   });
 
   await closeProjectConnections(id);
+
+  await publishEvent("integration.sync_labels_changed", { projectId: id });
+  await publishEvent("project.updated", { projectId: id });
 
   if (unassignedTasks.length > 0) {
     await publishEvent("task.bulk_unassigned", {

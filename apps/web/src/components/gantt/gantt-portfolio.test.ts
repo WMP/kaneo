@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { deriveUndatedSuccessorSchedules } from "./gantt-derived-schedule";
 import { deriveTaskScheduleWithEstimate } from "./gantt-estimated-span";
 import {

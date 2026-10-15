@@ -1,3 +1,5 @@
+import integrationSync from "./integration-sync";
+import { syncWorkspaceAccess } from "./ws/workspace-access";
 import { drainPasswordResetDeliveries } from "./utils/password-reset-delivery";
 import "./instrument";
 
@@ -14,6 +16,7 @@ import { compress } from "hono/compress";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import activity from "./activity";
+import admin from "./admin";
 import { auth } from "./auth";
 import { organizationRoutes } from "./auth-openapi";
 import billing from "./billing";
@@ -24,6 +27,17 @@ import comment from "./comment";
 import config from "./config";
 import customField from "./custom-field";
 import db, { getDatabase, schema } from "./database";
+import { apiErrorSchema } from "./errors/api-error-schema";
+import { httpExceptionResponse } from "./errors/http-exception-response";
+import {
+  notFoundResponse,
+  withJsonNotFound,
+} from "./errors/not-found-response";
+import { withJsonRateLimit } from "./errors/rate-limit-response";
+import {
+  validationHook,
+  validationHookWithMessage,
+} from "./errors/validation-error";
 import { prepareDatabaseStartup } from "./database/prepare-database-startup";
 import { runMigrations } from "./database/run-migrations";
 import { waitForDatabase } from "./database/wait-for-database";
@@ -38,6 +52,8 @@ import githubIntegration, {
 import gitlabIntegration, {
   handleGitlabWebhookRoute,
 } from "./gitlab-integration";
+import importRoutes from "./import";
+import { stopActiveImports } from "./import/runs/stop-active-imports";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import getInvitationDetailsController from "./invitation/controllers/get-invitation-details";
@@ -82,6 +98,8 @@ import user from "./user";
 import getAvatar from "./user/controllers/get-avatar";
 import { reconcileMigrationJournal } from "./utils/adopt-existing-database";
 import type { AuthSource } from "./utils/auth-source";
+import { apiKeyRejection } from "./utils/api-key-rejection";
+import { applyApiKeyHeaders } from "./utils/apply-api-key-headers";
 import { authenticateApiRequest } from "./utils/authenticate-api-request";
 import {
   authorizeAssetAccess,
@@ -98,6 +116,8 @@ import { requireProjectAccessFor } from "./utils/project-access";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
 import { drainSignInEmails } from "./utils/sign-in-email-tasks";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
+import { apiKeyResponseHeaders } from "./utils/rate-limit-headers";
+import { readApiKeyCheck, verifyApiKey } from "./utils/verify-api-key";
 import workflowRule from "./workflow-rule";
 import workload from "./workload";
 import workspace from "./workspace";
@@ -141,6 +161,7 @@ type ApiVariables = {
     userEmail: string;
     apiKey?: ApiKey;
     authSource?: AuthSource;
+    apiKeyHeaders?: Record<string, string>;
   };
 };
 
@@ -183,13 +204,13 @@ export function createApp() {
   const app = new Hono<AppVariables>();
   app.use("*", clientIpMiddleware());
 
-  app.onError((err, c) => {
+  app.onError((err) => {
     if (err instanceof HTTPException) {
       // expected errors (401/404/...) are not reported; real failures are
       if (err.status >= 500) {
         Sentry.captureException(err);
       }
-      return err.getResponse();
+      return httpExceptionResponse(err);
     }
 
     if (isEstimateDateRangeViolation(err)) {
@@ -199,8 +220,19 @@ export function createApp() {
     }
 
     Sentry.captureException(err);
-    return c.json({ message: "Internal Server Error" }, 500);
+    return httpExceptionResponse(
+      new HTTPException(500, { message: "Internal Server Error" }),
+    );
   });
+
+  app.notFound((c) => {
+    const path = c.req.path;
+    if (path === "/api" || path.startsWith("/api/")) {
+      return notFoundResponse();
+    }
+    return c.text("404 Not Found", 404);
+  });
+
   const nodeWs = createNodeWebSocket({ app });
   // node-ws exposes its ws server, but does not accept constructor options.
   // Set the receiver limit before any connection can upgrade, including
@@ -237,6 +269,9 @@ export function createApp() {
         "Content-Disposition",
         "X-Kaneo-Export-Truncated",
         "Retry-After",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
       ],
       origin: (origin) => {
         // Reflecting an arbitrary origin alongside credentials lets any site
@@ -259,7 +294,42 @@ export function createApp() {
   // JSON with repeated keys compresses extremely well.
   app.use(compress());
 
-  const api = new OpenAPIHono<ApiVariables>();
+  const api = new OpenAPIHono<ApiVariables>({ defaultHook: validationHook });
+
+  api.use("*", applyApiKeyHeaders);
+
+  const apiKeyRateLimited = api.openAPIRegistry.registerComponent(
+    "responses",
+    "ApiKeyRateLimited",
+    {
+      description:
+        "The API key exceeded its rate limit or usage quota. Wait the number of seconds in Retry-After before retrying. The X-RateLimit headers are sent only when the rate limit was hit.",
+      headers: {
+        "Retry-After": {
+          description:
+            "Seconds to wait before retrying. Omitted when an exhausted usage quota never refills.",
+          schema: { type: "integer" },
+        },
+        "X-RateLimit-Limit": {
+          description: "Requests the API key may make per window.",
+          schema: { type: "integer" },
+        },
+        "X-RateLimit-Remaining": {
+          description: "Requests left in the current window.",
+          schema: { type: "integer" },
+        },
+        "X-RateLimit-Reset": {
+          description: "Unix time in seconds when the current window resets.",
+          schema: { type: "integer" },
+        },
+      },
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/ApiError" },
+        },
+      },
+    },
+  );
 
   api.get("/health", (c) => {
     return c.json({ status: "ok" });
@@ -320,12 +390,7 @@ export function createApp() {
         const project = await getPublicProject(id, c.req.valid("query"));
         return c.json(project, 200);
       },
-      (result) => {
-        if (!result.success)
-          throw new HTTPException(400, {
-            message: "Invalid task pagination or filters",
-          });
-      },
+      validationHookWithMessage("Invalid task pagination or filters"),
     )
     .openapi(
       createRoute({
@@ -358,12 +423,7 @@ export function createApp() {
           ),
           200,
         ),
-      (result) => {
-        if (!result.success)
-          throw new HTTPException(400, {
-            message: "Invalid description cursor",
-          });
-      },
+      validationHookWithMessage("Invalid description cursor"),
     )
     .openapi(
       createRoute({
@@ -398,12 +458,7 @@ export function createApp() {
           200,
         );
       },
-      (result) => {
-        if (!result.success)
-          throw new HTTPException(400, {
-            message: "Invalid description cursor",
-          });
-      },
+      validationHookWithMessage("Invalid description cursor"),
     );
 
   api.route("/calendar-feed", publicCalendarFeed);
@@ -433,6 +488,22 @@ export function createApp() {
     return c.json(result);
   });
 
+  api.use("/auth/*", async (c, next) => {
+    const apiKeyHeader = c.req.header("x-api-key")?.trim();
+    if (!apiKeyHeader) return next();
+    const apiKeyResult = await verifyApiKey(apiKeyHeader, { consume: false });
+    if (apiKeyResult?.status !== "valid") throw apiKeyRejection(apiKeyResult);
+    await next();
+    c.set(
+      "apiKeyHeaders",
+      await apiKeyResponseHeaders(
+        await readApiKeyCheck(apiKeyHeader),
+        c.res,
+        new Date(),
+      ),
+    );
+  });
+
   api.openapi(
     createRoute({
       method: "get",
@@ -447,9 +518,10 @@ export function createApp() {
         200: {
           description: "Current session details, or null when unauthenticated",
         },
+        429: apiKeyRateLimited.ref,
       },
     }),
-    async (c) => auth.handler(c.req.raw),
+    async (c) => withJsonRateLimit(await auth.handler(c.req.raw)),
   );
 
   api.openapi(
@@ -469,8 +541,11 @@ export function createApp() {
           content: { "*/*": { schema: { type: "string", format: "binary" } } },
         },
         304: { description: "Not modified" },
-        403: { description: "No access to this asset" },
-        404: { description: "Asset not found" },
+        403: errorResponse(
+          "Staged upload owned by another user, or no access to the asset's project",
+        ),
+        404: errorResponse("Asset not found"),
+        429: apiKeyRateLimited.ref,
       },
     }),
     async (c) => {
@@ -482,6 +557,7 @@ export function createApp() {
           mimeType: schema.assetTable.mimeType,
           filename: schema.assetTable.filename,
           surface: schema.assetTable.surface,
+          createdBy: schema.assetTable.createdBy,
           workspaceId: schema.assetTable.workspaceId,
           projectId: schema.assetTable.projectId,
           isPublic: schema.projectTable.isPublic,
@@ -553,7 +629,7 @@ export function createApp() {
           },
         },
         304: { description: "Not modified" },
-        404: { description: "Avatar not found" },
+        404: errorResponse("Avatar not found"),
       },
     }),
     async (c) => {
@@ -589,6 +665,7 @@ export function createApp() {
     scheme: "bearer",
     description: "API key or session token (Bearer)",
   });
+  api.openAPIRegistry.register("ApiError", apiErrorSchema);
   organizationRoutes(api.openAPIRegistry);
 
   api.get("/openapi", (c) => {
@@ -612,9 +689,9 @@ export function createApp() {
     });
 
     // Every authenticated route sits behind the same app-wide
-    // authenticateApiRequest middleware, so the shared 401 is injected here
-    // rather than repeated on all ~120 route definitions. Routes that opt out
-    // of auth declare `security: []` and are skipped.
+    // authenticateApiRequest middleware, so the shared 401 and 429 are injected
+    // here rather than repeated on all ~120 route definitions. Routes that opt
+    // out of auth declare `security: []` and are skipped.
     const httpMethods = [
       "get",
       "post",
@@ -643,7 +720,13 @@ export function createApp() {
         }
         operation.responses["401"] ??= {
           description: "Missing or invalid credentials",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/ApiError" },
+            },
+          },
         };
+        operation.responses["429"] ??= apiKeyRateLimited.ref;
       }
     }
 
@@ -678,6 +761,7 @@ export function createApp() {
           description: "Redirects the browser to the web app device screen",
         },
         200: { description: "Device authorization payload from Better Auth" },
+        429: apiKeyRateLimited.ref,
       },
     }),
     async (c) => {
@@ -696,38 +780,54 @@ export function createApp() {
         }
         return c.redirect(deviceUrl.toString(), 302);
       }
-      return auth.handler(c.req.raw);
+      return withJsonRateLimit(await auth.handler(c.req.raw));
     },
   );
 
   api.on(["POST", "GET", "PUT", "PATCH", "DELETE"], "/auth/*", async (c) => {
     const authHeader = c.req.header("Authorization");
-    const apiKeyHeader = c.req.header("x-api-key");
+    const apiKeyHeader = c.req.header("x-api-key")?.trim();
     const bearerToken = authHeader?.match(/^Bearer\s+(\S+)$/i)?.[1];
 
     if (bearerToken && !apiKeyHeader) {
-      const session = await auth.api.getSession({
-        headers: c.req.raw.headers,
-      });
+      const headers = new Headers(c.req.raw.headers);
+      headers.delete("cookie");
+      const session = await auth.api.getSession({ headers });
 
       // Preserve Better Auth bearer session tokens on auth routes.
       if (session?.session && session.user) {
-        return auth.handler(c.req.raw);
+        return withJsonRateLimit(
+          await withJsonNotFound(
+            await auth.handler(new Request(c.req.raw, { headers })),
+          ),
+        );
       }
 
-      const headers = new Headers(c.req.raw.headers);
+      const apiKeyResult = await verifyApiKey(bearerToken, { consume: false });
+      if (apiKeyResult?.status !== "valid") throw apiKeyRejection(apiKeyResult);
 
       // Better Auth API key plugin validates from x-api-key by default.
       headers.set("x-api-key", bearerToken);
 
-      return auth.handler(
-        new Request(c.req.raw, {
-          headers,
-        }),
+      const response = await withJsonRateLimit(
+        await withJsonNotFound(
+          await auth.handler(new Request(c.req.raw, { headers })),
+        ),
       );
+      c.set(
+        "apiKeyHeaders",
+        await apiKeyResponseHeaders(
+          await readApiKeyCheck(bearerToken),
+          response,
+          new Date(),
+        ),
+      );
+      return response;
     }
 
-    return auth.handler(c.req.raw);
+    return withJsonRateLimit(
+      await withJsonNotFound(await auth.handler(c.req.raw)),
+    );
   });
 
   api.route("/", mcpRoutes);
@@ -789,6 +889,7 @@ export function createApp() {
     notificationPreferences,
   );
   const searchApi = api.route("/search", search);
+  const integrationSyncApi = api.route("/integration-sync", integrationSync);
   const githubIntegrationApi = api.route(
     "/github-integration",
     githubIntegration,
@@ -825,7 +926,9 @@ export function createApp() {
   const customFieldApi = api.route("/custom-field", customField);
   const workspaceColumnApi = api.route("/workspace-column", workspaceColumn);
   const resourceApi = api.route("/resource", resource);
+  const importApi = api.route("/import", importRoutes);
   const userApi = api.route("/user", user);
+  const adminApi = api.route("/admin", admin);
 
   app.route(
     "/",
@@ -843,15 +946,6 @@ export function createApp() {
     "/ws/user",
     upgradeWebSocket(async (c) => {
       assertWebSocketOrigin(c.req.raw.headers);
-      try {
-        await authenticateApiRequest(c);
-      } catch (error) {
-        if (error instanceof HTTPException) {
-          throw error;
-        }
-        console.error("API authentication failed:", error);
-        throw new HTTPException(500, { message: "Internal Server Error" });
-      }
 
       const userId = c.get("userId");
       let conn: ReturnType<typeof addUserConnection> | null = null;
@@ -860,6 +954,7 @@ export function createApp() {
         onOpen(_evt, ws) {
           if (userId) {
             conn = addUserConnection(userId, ws);
+            void syncWorkspaceAccess(userId, ws);
           }
         },
         onMessage: handleWebSocketMessage,
@@ -878,16 +973,6 @@ export function createApp() {
       assertWebSocketOrigin(c.req.raw.headers);
       const projectId = c.req.param("projectId");
 
-      try {
-        await authenticateApiRequest(c);
-      } catch (error) {
-        if (error instanceof HTTPException) {
-          throw error;
-        }
-        console.error("API authentication failed:", error);
-        throw new HTTPException(500, { message: "Internal Server Error" });
-      }
-
       const userId = c.get("userId");
 
       let workspaceId: string | undefined;
@@ -899,13 +984,14 @@ export function createApp() {
           .limit(1);
 
         if (!project) {
-          throw new HTTPException(401, { message: "Unauthorized" });
+          throw new HTTPException(404, { message: "Project not found" });
         }
 
         await validateWorkspaceAccess(
           userId,
           project.workspaceId,
           c.get("apiKey")?.id,
+          { notFoundMessage: "Project not found" },
         );
         // A project socket streams that project's events: it needs a project
         // membership (or full access), not just workspace membership.
@@ -971,6 +1057,7 @@ export function createApp() {
     discordIntegrationApi,
     externalLinkApi,
     genericWebhookIntegrationApi,
+    integrationSyncApi,
     githubIntegrationApi,
     giteaIntegrationApi,
     gitlabIntegrationApi,
@@ -993,12 +1080,14 @@ export function createApp() {
     telegramIntegrationApi,
     timeEntryApi,
     userApi,
+    adminApi,
     workflowRuleApi,
     workspaceApi,
     workloadApi,
     customFieldApi,
     workspaceColumnApi,
     resourceApi,
+    importApi,
     oauthApi,
   };
 }
@@ -1090,6 +1179,7 @@ export async function startServer(
     const [, signInEmailsDrained] = await Promise.all([
       drainPasswordResetDeliveries(),
       drainSignInEmails(),
+      stopActiveImports(),
     ]);
     if (!signInEmailsDrained) {
       console.warn("Timed out waiting for pending sign-in emails");
@@ -1119,6 +1209,7 @@ const {
   discordIntegrationApi,
   externalLinkApi,
   genericWebhookIntegrationApi,
+  integrationSyncApi,
   githubIntegrationApi,
   giteaIntegrationApi,
   gitlabIntegrationApi,
@@ -1141,12 +1232,14 @@ const {
   telegramIntegrationApi,
   timeEntryApi,
   userApi,
+  adminApi,
   workflowRuleApi,
   workspaceApi,
   workloadApi,
   customFieldApi,
   workspaceColumnApi,
   resourceApi,
+  importApi,
   oauthApi,
 } = createdApp;
 
@@ -1177,6 +1270,7 @@ export type AppType =
   | typeof notificationApi
   | typeof notificationPreferencesApi
   | typeof searchApi
+  | typeof integrationSyncApi
   | typeof githubIntegrationApi
   | typeof giteaIntegrationApi
   | typeof gitlabIntegrationApi
@@ -1195,7 +1289,9 @@ export type AppType =
   | typeof customFieldApi
   | typeof workspaceColumnApi
   | typeof resourceApi
+  | typeof importApi
   | typeof userApi
+  | typeof adminApi
   | typeof publicProjectApi
   | typeof invitationPublicApi
   | typeof oauthApi;

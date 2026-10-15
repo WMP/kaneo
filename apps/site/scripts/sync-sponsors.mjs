@@ -181,7 +181,7 @@ const outputPath = join(
   "sponsors.json",
 );
 const data = { current, past };
-// Tab indentation matches how Biome formats JSON in this repo.
+// Tab indentation matches how the repo formatter (vp fmt) formats JSON.
 await writeFile(outputPath, `${JSON.stringify(data, null, "\t")}\n`);
 console.log(
   `Wrote ${current.length} current and ${past.length} past sponsors to constants/sponsors.json`,

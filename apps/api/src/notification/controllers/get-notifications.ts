@@ -9,8 +9,9 @@ import {
 
 import { resolveUserProjectScope } from "../../utils/project-scope-filters";
 import { notificationResourceAccess } from "../resource-access";
+import { notificationWorkspaceFilter } from "../workspace-filter";
 
-async function getNotifications(userId: string) {
+async function getNotifications(userId: string, workspaceId?: string) {
   const scope = await resolveUserProjectScope(userId);
   const rows = await db
     .select({
@@ -31,6 +32,7 @@ async function getNotifications(userId: string) {
     .where(
       and(
         eq(notificationTable.userId, userId),
+        notificationWorkspaceFilter(workspaceId),
         notificationResourceAccess(
           userId,
           notificationTable.resourceId,

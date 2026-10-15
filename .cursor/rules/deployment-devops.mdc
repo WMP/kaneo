@@ -1,7 +1,0 @@
----
-description: Deployment and release workflows
-globs: compose*.yml,charts/**/*,.github/workflows/**/*,Dockerfile.kaneo,apps/*/Dockerfile
-alwaysApply: false
----
-
-Read `AGENTS.md` and `docs/agent-guide/deployment.md`. Validate the affected build or workflow. Branch image tags do not prove that CI passed for their source SHA.

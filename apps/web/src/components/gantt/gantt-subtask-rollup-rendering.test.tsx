@@ -1,6 +1,13 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 // End-to-end proof for the subtask summary-bar/collapse feature: a parent
 // task with two subtasks (plus one unrelated "blocks" relation touching a
@@ -27,9 +34,24 @@ vi.mock("@tanstack/react-router", () => ({
   },
   useNavigate: () => vi.fn(),
 }));
-vi.mock("@/components/common/project-layout", () => ({
-  default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}));
+// Renders the toolbar slot too: the search field lives there.
+vi.mock("@/components/common/project-layout", async () => {
+  const { TooltipProvider } = await import("@/components/ui/tooltip");
+  return {
+    default: ({
+      children,
+      toolbar,
+    }: {
+      children: ReactNode;
+      toolbar?: ReactNode;
+    }) => (
+      <TooltipProvider>
+        <div>{toolbar}</div>
+        <div>{children}</div>
+      </TooltipProvider>
+    ),
+  };
+});
 vi.mock("@/components/page-title", () => ({ default: () => null }));
 vi.mock("@/components/task/task-details-sheet", () => ({
   default: () => null,
@@ -149,6 +171,7 @@ vi.mock("@/store/user-preferences", () => ({
 }));
 vi.mock("@/lib/i18n/domain", () => ({
   getStatusLabel: (status: string) => status,
+  getPriorityLabel: (priority: string) => priority,
 }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -158,10 +181,31 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 vi.mock("@/lib/toast", () => ({ toast: { error: vi.fn() } }));
-
-await import(
-  "@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt"
+// The route filters tasks through the shared project view; these tests are not
+// about filtering, so its data sources are inert.
+vi.mock("@/hooks/queries/task/use-description-matches", () => ({
+  useDescriptionMatches: () => ({
+    ids: new Set<string>(),
+    isLoading: false,
+    isError: false,
+  }),
+}));
+vi.mock("@/components/project/task-filters/use-task-filter-options", () => ({
+  useTaskFilterOptions: () => ({
+    members: [],
+    labels: [],
+    customFields: [],
+    usedCustomFieldValues: {},
+  }),
+}));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-all-custom-field-values-by-project",
+  () => ({
+    default: () => ({ getValuesForTask: () => [] }),
+  }),
 );
+
+await import("@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt");
 
 function makeRelatedTask(overrides: Record<string, unknown>) {
   return {
@@ -334,10 +378,12 @@ describe("Gantt subtask rollup rendering", () => {
   it("still shows a child that matches the search even when its parent does not", () => {
     show();
 
-    fireEvent.change(
-      screen.getByPlaceholderText("tasks:gantt.searchPlaceholder"),
-      { target: { value: "changelog" } },
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:toolbar.search" }),
     );
+    fireEvent.change(screen.getByPlaceholderText("tasks:toolbar.search"), {
+      target: { value: "changelog" },
+    });
 
     // The child renders as an ordinary (unindented, chevron-less) row rather
     // than vanishing — a search matching only a child used to hide it

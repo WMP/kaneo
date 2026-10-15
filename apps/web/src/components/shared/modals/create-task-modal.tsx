@@ -2,6 +2,7 @@ import { useLocation, useParams } from "@tanstack/react-router";
 import { produce } from "immer";
 import {
   CalendarIcon,
+  CircleAlert,
   Check,
   FolderKanban,
   Hourglass,
@@ -11,9 +12,17 @@ import {
   Tag,
   UserIcon,
   X,
+  TagIcon,
+  SquarePlusIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CustomFieldChip } from "@/components/custom-fields/custom-field-chip";
+import {
+  findMissingRequiredFields,
+  isCustomFieldValueEmpty,
+} from "@/components/custom-fields/missing-required-fields";
+import type { CustomFieldDefinition } from "@/components/project/custom-fields/types";
 import ResourceInviteDialog from "@/components/resource/resource-invite-dialog";
 import {
   type AssigneeAvatarItem,
@@ -28,12 +37,6 @@ import TaskRelationPickerDialog, {
   type PickerRelationType,
   type RelationPick,
 } from "@/components/task/task-relation-picker";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -51,18 +54,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { DatePickerMenu } from "@/components/common/date-picker/date-picker-menu";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Combobox,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxPopup,
-  ComboboxValue,
-} from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -71,7 +64,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   PickerList,
   PickerNoResults,
@@ -82,24 +74,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/preview-card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import useSetCustomFieldValue from "@/hooks/mutations/custom-field/use-set-custom-field-value";
+import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
+import { getColumnIcon } from "@/lib/column";
+import { getStatusDisplayLabel } from "@/lib/i18n/domain";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useCreateTask from "@/hooks/mutations/task/use-create-task";
-import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
-import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-assignees";
 import useCreateTaskRelation from "@/hooks/mutations/task-relation/use-create-task-relation";
 import useGetCustomFieldsByProject from "@/hooks/queries/custom-field/use-get-custom-fields-by-project";
@@ -118,21 +97,26 @@ import {
   hasFullDateRange,
   isDateBlockedByEstimate,
 } from "@/lib/estimate";
+import { uploadDraftAsset } from "@/lib/upload-draft-asset";
 import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { matchesSearch } from "@/lib/search-match";
 import { toast } from "@/lib/toast";
+import { useAutoGrowTextarea } from "@/hooks/use-auto-grow-textarea";
+import { stripLineBreaks } from "@/lib/strip-line-breaks";
 import useProjectStore from "@/store/project";
 import type Resource from "@/types/resource";
 import type Task from "@/types/task";
+import { getInitialTaskColumn } from "./initial-task-column";
 
 type CreateTaskModalProps = {
   open: boolean;
   onClose: () => void;
   status?: string;
   projectId?: string;
+  instant?: boolean;
 };
 
 type Priority = "no-priority" | "low" | "medium" | "high" | "urgent";
@@ -177,27 +161,6 @@ const getMemberSearchText = (member: {
 const getProjectSearchText = (project: { name: string; slug?: string }) =>
   `${project.name} ${project.slug ?? ""}`;
 
-type CustomFieldType =
-  | "text"
-  | "number"
-  | "date"
-  | "dropdown"
-  | "boolean"
-  | "multiselect";
-
-type CustomFieldDefinition = {
-  id: string;
-  projectId: string;
-  name: string;
-  type: CustomFieldType;
-  required: boolean;
-  defaultValue: string | null;
-  options: string[] | null;
-  position: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
 function normalizeTask(
   task: Partial<Task> &
     Pick<Task, "id" | "title" | "status" | "projectId" | "createdAt">,
@@ -228,6 +191,7 @@ function CreateTaskModalContent({
   onClose,
   status,
   projectId,
+  instant = false,
 }: CreateTaskModalProps) {
   const { t } = useTranslation();
   const { project, setProject } = useProjectStore();
@@ -308,14 +272,14 @@ function CreateTaskModalContent({
   );
 
   const [title, setTitle] = useState("");
+  const titleRef = useAutoGrowTextarea(title);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("no-priority");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [resourceAssigneeIds, setResourceAssigneeIds] = useState<string[]>([]);
-  // The endpoints creating and updating a task still take one primary
-  // assignee; the first selected user fills that role, and the rest (if
-  // any) are pushed separately via the assignees endpoint below.
-  const primaryAssigneeId = assigneeIds[0] ?? "";
+  // The create endpoint takes one primary assignee; the first selected user
+  // fills that role, and the rest (plus every resource) are pushed through the
+  // assignees endpoint once the task has an id.
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   // Effort estimate (whole minutes) and the unit it is shown in. A task with
@@ -324,18 +288,17 @@ function CreateTaskModalContent({
   const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
   const [estimateUnit, setEstimateUnit] = useState<EstimateUnit>("hours");
   const [estimateOpen, setEstimateOpen] = useState(false);
-  const [createMore, setCreateMore] = useState(false);
-  const [labels, setLabels] = useState<Label[]>([]);
-  const [draftTask, setDraftTask] = useState<Task | null>(null);
-  const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false);
-
   const [pendingRelations, setPendingRelations] = useState<PendingRelation[]>(
     [],
   );
   const [relationPickerOpen, setRelationPickerOpen] = useState(false);
-  const [labelsOpen, setLabelsOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+  const [createMore, setCreateMore] = useState(false);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false);
+
+  const [labelsOpen, setLabelsOpen] = useState(false);
   const [labelsStep, setLabelsStep] = useState<PopoverStep>("select");
   const [searchValue, setSearchValue] = useState("");
   const [selectedColor, setSelectedColor] = useState<LabelColor>("gray");
@@ -354,17 +317,19 @@ function CreateTaskModalContent({
     (candidate) => candidate.id === (explicitProjectId || selectedProjectId),
   );
   const resolvedProjectId = resolvedProject?.id ?? "";
-
   // Task and label rights and the people to assign are those of the project
-  // the task is created in, not of the workspace role.
-  const { data: workspaceUsers } = useProjectMembers(resolvedProjectId);
-
+  // the task is created in, never the workspace role or the whole workspace
+  // list.
+  const { data: projectMembers } = useProjectMembers(resolvedProjectId);
+  const projectMembersPending =
+    Boolean(resolvedProjectId) && projectMembers === undefined;
+  const assigneeUnconfirmed = assigneeIds.length > 0 && projectMembersPending;
   const {
     query: assigneeQuery,
     setQuery: setAssigneeQuery,
     isSearching: isSearchingAssignees,
     filtered: filteredMembers,
-  } = usePickerSearch(workspaceUsers?.members, getMemberSearchText);
+  } = usePickerSearch(projectMembers?.members, getMemberSearchText);
   const {
     query: projectQuery,
     setQuery: setProjectQuery,
@@ -406,10 +371,62 @@ function CreateTaskModalContent({
           ? null
           : t("common:modals.createTask.noCreatePermission")
       : null;
+  // Only users that are members of the chosen project can be submitted; a
+  // selection made under another project is dropped, not sent.
+  const selectedUsers = useMemo(
+    () =>
+      assigneeIds
+        .map((id) => projectMembers?.members?.find((u) => u.userId === id))
+        .filter((member): member is NonNullable<typeof member> =>
+          Boolean(member),
+        ),
+    [assigneeIds, projectMembers],
+  );
+  const selectedUserIds = useMemo(
+    () => selectedUsers.map((member) => member.userId),
+    [selectedUsers],
+  );
+  const primaryAssigneeId = selectedUserIds[0] ?? "";
+  const selectedResources = useMemo(
+    () =>
+      resourceAssigneeIds
+        .map((id) => workspaceResources?.find((r) => r.id === id))
+        .filter((resource): resource is Resource => Boolean(resource)),
+    [resourceAssigneeIds, workspaceResources],
+  );
+  const selectedAssigneeAvatars = useMemo<AssigneeAvatarItem[]>(
+    () => [
+      ...selectedUsers.map((member) => ({
+        userId: member.userId,
+        name: member.user?.name ?? "",
+        image: member.user?.image ?? null,
+      })),
+      ...selectedResources.map((resource) => ({
+        userId: null,
+        resourceId: resource.id,
+        kind: resource.kind,
+        name: resource.name,
+        image: null,
+      })),
+    ],
+    [selectedUsers, selectedResources],
+  );
+  const {
+    data: projectColumns,
+    isError: columnsError,
+    refetch: refetchColumns,
+    isFetching: columnsFetching,
+  } = useGetColumns(open ? resolvedProjectId : "", { refreshOnMount: true });
+  const initialColumn = getInitialTaskColumn(projectColumns, status);
+  const taskStatus = status ?? initialColumn?.slug ?? "planned";
+  const awaitingColumns =
+    !status &&
+    Boolean(resolvedProjectId) &&
+    (!projectColumns || columnsFetching || columnsError);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const draftCreationPromiseRef = useRef<Promise<Task | null> | null>(null);
-  const draftTaskRef = useRef<Task | null>(null);
+  const stagedAssetsRef = useRef<string[]>([]);
+  const pendingUploadsRef = useRef(0);
   const activeRef = useRef(true);
   const submittingRef = useRef(false);
   const [isPreparingDraft, setIsPreparingDraft] = useState(false);
@@ -418,8 +435,6 @@ function CreateTaskModalContent({
   const didSubmitRef = useRef(false);
 
   const { mutateAsync: createTask } = useCreateTask();
-  const { mutateAsync: updateTask } = useUpdateTask();
-  const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
   const { mutateAsync: createTaskRelation } = useCreateTaskRelation();
 
@@ -429,11 +444,15 @@ function CreateTaskModalContent({
 
   const customFields = useMemo(() => rawCustomFields ?? [], [rawCustomFields]);
 
-  const { mutateAsync: setCustomFieldValue } = useSetCustomFieldValue();
-
   const [customFieldValues, setCustomFieldValues] = useState<
     Record<string, string>
   >({});
+
+  const [showMissingRequired, setShowMissingRequired] = useState(false);
+  const missingRequired = findMissingRequiredFields(
+    customFields,
+    customFieldValues,
+  );
 
   const handleCustomFieldChange = (fieldId: string, value: string) => {
     setCustomFieldValues((prev) => ({
@@ -506,47 +525,36 @@ function CreateTaskModalContent({
 
   const hasUnsavedChanges = Boolean(
     title.trim() ||
-      description.trim() ||
-      priority !== "no-priority" ||
-      assigneeIds.length > 0 ||
-      resourceAssigneeIds.length > 0 ||
-      startDate ||
-      dueDate ||
-      estimateMinutes !== null ||
-      selectedProjectId ||
-      labels.length > 0 ||
-      pendingRelations.length > 0 ||
-      draftTask ||
-      hasCustomFieldChanges,
+    description.trim() ||
+    priority !== "no-priority" ||
+    assigneeIds.length > 0 ||
+    resourceAssigneeIds.length > 0 ||
+    startDate ||
+    dueDate ||
+    estimateMinutes !== null ||
+    selectedProjectId ||
+    labels.length > 0 ||
+    pendingRelations.length > 0 ||
+    stagedAssetsRef.current.length > 0 ||
+    hasCustomFieldChanges,
   );
 
   // Pending dependencies were picked against one project's tasks.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: clears when the project changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- clears when the project changes.
   useEffect(() => {
     setPendingRelations([]);
   }, [resolvedProjectId]);
-
-  const discardDraft = useCallback(() => {
-    const abandoned = draftTaskRef.current;
-    if (abandoned && !didSubmitRef.current) {
-      draftTaskRef.current = null;
-      void deleteTask(abandoned.id).catch(() => {
-        // An expired session can prevent cleanup; never reuse the draft.
-      });
-    }
-  }, [deleteTask]);
 
   useEffect(() => {
     activeRef.current = true;
     return () => {
       activeRef.current = false;
-      discardDraft();
     };
-  }, [discardDraft]);
+  }, []);
 
   const handleClose = () => {
     activeRef.current = false;
-    discardDraft();
+
     onClose();
   };
 
@@ -601,13 +609,13 @@ function CreateTaskModalContent({
           ...task,
           assigneeId: task.userId,
           assigneeName:
-            workspaceUsers?.members?.find(
+            projectMembers?.members?.find(
               (member) => member.userId === task.userId,
             )?.user?.name ??
             existingTask?.assigneeName ??
             null,
           assigneeImage:
-            workspaceUsers?.members?.find(
+            projectMembers?.members?.find(
               (member) => member.userId === task.userId,
             )?.user?.image ??
             existingTask?.assigneeImage ??
@@ -618,169 +626,108 @@ function CreateTaskModalContent({
 
       setProject(updatedProject);
     },
-    [project, setProject, workspaceUsers?.members],
+    [project, setProject, projectMembers?.members],
   );
 
-  const ensureDraftTask = useCallback(async () => {
-    if (!activeRef.current || submittingRef.current) return null;
-    // A project that does not (or cannot yet) allow creating tasks gets no
-    // draft: it would only be refused.
-    if (projectBlocksCreating) return null;
-    if (draftTaskRef.current) {
-      return draftTaskRef.current.projectId === resolvedProjectId
-        ? draftTaskRef.current.id
-        : null;
-    }
-
-    if (draftCreationPromiseRef.current) {
-      const pendingTask = await draftCreationPromiseRef.current;
-      return activeRef.current ? (pendingTask?.id ?? null) : null;
-    }
-
-    if (!resolvedProjectId) {
-      toast.error(t("common:modals.createTask.chooseProjectForImages"));
-      return null;
-    }
-
-    setIsPreparingDraft(true);
-    const draftStatus = "planned";
-    const draftPromise = createTask({
-      title: title.trim() || t("common:modals.createTask.untitledTask"),
-      description: description.trim() || "",
-      userId: primaryAssigneeId,
-      priority,
-      projectId: resolvedProjectId,
-      startDate: startDate ? startDate.toISOString() : undefined,
-      dueDate: dueDate ? dueDate.toISOString() : undefined,
-      ...(estimateMinutes !== null ? { estimateMinutes, estimateUnit } : {}),
-      status: draftStatus,
-      customFields: Object.entries(customFieldValues)
-        .filter(([_, value]) => value.trim() !== "")
-        .map(([fieldId, value]) => ({
-          fieldId,
-          value,
-        })),
-    }).then((task) => {
-      const createdTask = normalizeTask(task);
-      if (!activeRef.current) {
-        void deleteTask(createdTask.id).catch(() => {});
-        return null;
+  const stageAsset = useCallback(
+    async (file: File) => {
+      if (!activeRef.current || submittingRef.current || !resolvedProjectId) {
+        throw new Error(t("common:modals.createTask.chooseProjectForImages"));
       }
-      draftTaskRef.current = createdTask;
-      setDraftTask(createdTask);
-      return createdTask;
-    });
-
-    draftCreationPromiseRef.current = draftPromise;
-
-    try {
-      const createdTask = await draftPromise;
-      return activeRef.current ? (createdTask?.id ?? null) : null;
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t("common:modals.createTask.prepareTaskError"),
-      );
-      return null;
-    } finally {
-      draftCreationPromiseRef.current = null;
-      if (activeRef.current) setIsPreparingDraft(false);
-    }
-  }, [
-    primaryAssigneeId,
-    createTask,
-    description,
-    deleteTask,
-    startDate,
-    dueDate,
-    estimateMinutes,
-    estimateUnit,
-    priority,
-    resolvedProjectId,
-    projectBlocksCreating,
-    title,
-    t,
-    customFieldValues,
-  ]);
+      pendingUploadsRef.current += 1;
+      setIsPreparingDraft(true);
+      try {
+        const asset = await uploadDraftAsset(resolvedProjectId, file);
+        if (!activeRef.current)
+          throw new Error(t("common:modals.createTask.prepareTaskError"));
+        stagedAssetsRef.current.push(asset.id);
+        return asset;
+      } finally {
+        pendingUploadsRef.current -= 1;
+        if (activeRef.current)
+          setIsPreparingDraft(pendingUploadsRef.current > 0);
+      }
+    },
+    [resolvedProjectId, t],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !activeRef.current ||
       submittingRef.current ||
-      !canCreateTaskCapability ||
+      pendingUploadsRef.current > 0 ||
+      projectBlocksCreating ||
+      awaitingColumns ||
       !title.trim() ||
       !resolvedProjectId ||
+      assigneeUnconfirmed ||
       !workspace?.id
     )
       return;
 
+    if (missingRequired.length > 0) {
+      setShowMissingRequired(true);
+      e.currentTarget
+        .querySelector<HTMLElement>(
+          `[data-custom-field="${missingRequired[0].id}"]`,
+        )
+        ?.focus();
+      return;
+    }
+
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      // Submitting while a file prepares its draft must update that same task.
-      const pendingDraft = draftCreationPromiseRef.current;
-      if (pendingDraft) await pendingDraft;
-      if (!activeRef.current) return;
-      const currentDraft = draftTaskRef.current;
-      if (currentDraft && currentDraft.projectId !== resolvedProjectId) return;
-      const taskStatus = status ?? "to-do";
+      let submitStatus = taskStatus;
+      if (!status) {
+        const workflow = await refetchColumns();
+        if (!activeRef.current) return;
+        if (workflow.isError || !workflow.data)
+          throw new Error(t("common:modals.createTask.statusLoadError"));
+        submitStatus = getInitialTaskColumn(workflow.data)?.slug ?? "planned";
+      }
       didSubmitRef.current = true;
+      const savedTask = normalizeTask(
+        await createTask({
+          title: title.trim(),
+          description: description.trim() || "",
+          userId: primaryAssigneeId,
+          priority,
+          projectId: resolvedProjectId,
+          startDate: startDate ? startDate.toISOString() : undefined,
+          dueDate: dueDate ? dueDate.toISOString() : undefined,
+          ...(estimateMinutes !== null
+            ? { estimateMinutes, estimateUnit }
+            : {}),
+          status: submitStatus,
+          draftAssetIds: stagedAssetsRef.current.filter((id) =>
+            description.includes(`/asset/${id}`),
+          ),
+          customFields: customFields
+            .filter(
+              (field) =>
+                !isCustomFieldValueEmpty(
+                  field.type,
+                  customFieldValues[field.id] ?? "",
+                ),
+            )
+            .map((field) => ({
+              fieldId: field.id,
+              value: customFieldValues[field.id] ?? "",
+            })),
+        }),
+      );
 
-      const savedTask = currentDraft
-        ? normalizeTask(
-            await updateTask({
-              ...currentDraft,
-              title: title.trim(),
-              description: description.trim() || "",
-              userId: primaryAssigneeId || null,
-              status: taskStatus,
-              priority,
-              startDate: startDate ? startDate.toISOString() : null,
-              dueDate: dueDate ? dueDate.toISOString() : null,
-              // The draft may have been created before the estimate changed;
-              // null clears it.
-              estimateMinutes,
-              estimateUnit,
-              projectId: resolvedProjectId,
-              customFieldValues: Object.entries(customFieldValues)
-                .filter(([_, value]) => value.trim() !== "")
-                .map(([fieldId, value]) => ({ fieldId, value })),
-            }),
-          )
-        : normalizeTask(
-            await createTask({
-              title: title.trim(),
-              description: description.trim() || "",
-              userId: primaryAssigneeId,
-              priority,
-              projectId: resolvedProjectId,
-              startDate: startDate ? startDate.toISOString() : undefined,
-              dueDate: dueDate ? dueDate.toISOString() : undefined,
-              ...(estimateMinutes !== null
-                ? { estimateMinutes, estimateUnit }
-                : {}),
-              status: taskStatus,
-              customFields: Object.entries(customFieldValues)
-                .filter(([_, value]) => value.trim() !== "")
-                .map(([fieldId, value]) => ({
-                  fieldId,
-                  value,
-                })),
-            }),
-          );
-
-      // The create/update endpoints above only take one primary assignee;
-      // push the rest (if any were selected), plus every resource assignee,
-      // as a second call now that the task has an id, whether it came from
-      // a fresh create or an existing draft.
-      if (assigneeIds.length > 1 || resourceAssigneeIds.length > 0) {
+      // The create endpoint only takes one primary assignee; push the rest
+      // (if any were selected), plus every resource assignee, as a second call
+      // now that the task has an id.
+      if (selectedUserIds.length > 1 || resourceAssigneeIds.length > 0) {
         try {
           await updateTaskAssignees({
             taskId: savedTask.id,
             projectId: savedTask.projectId,
-            userIds: assigneeIds,
+            userIds: selectedUserIds,
             resourceIds: resourceAssigneeIds,
           });
         } catch (error) {
@@ -842,27 +789,12 @@ function CreateTaskModalContent({
         }
       }
 
-      if (currentDraft) {
-        for (const [fieldId, value] of Object.entries(customFieldValues)) {
-          if (value) {
-            await setCustomFieldValue({
-              taskId: savedTask.id,
-              fieldId,
-              value: String(value),
-            });
-          }
-        }
-      }
-
-      draftTaskRef.current = null;
+      stagedAssetsRef.current = [];
       if (!activeRef.current) return;
-      setDraftTask(savedTask);
       syncTaskIntoProject(savedTask);
-      toast.success(
-        draftTask
-          ? t("common:modals.createTask.successUpdated")
-          : t("common:modals.createTask.successCreated"),
-      );
+      toast.success(t("common:modals.createTask.successCreated"), {
+        icon: SquarePlusIcon,
+      });
 
       if (createMore) {
         setTitle("");
@@ -880,18 +812,18 @@ function CreateTaskModalContent({
         setSearchValue("");
         setSelectedColor("gray");
         setNewLabelName("");
-        draftCreationPromiseRef.current = null;
+        stagedAssetsRef.current = [];
         setEditorVersion((version) => version + 1);
         didSubmitRef.current = false;
-        setDraftTask(null);
+
         setCustomFieldValues(buildDefaultCustomFieldValues());
+        setShowMissingRequired(false);
       } else {
         closeAndReset();
       }
     } catch (error) {
       didSubmitRef.current = false;
       if (!activeRef.current) {
-        discardDraft();
         return;
       }
       toast.error(
@@ -921,48 +853,7 @@ function CreateTaskModalContent({
     matchesSearch(option.label, priorityQuery),
   );
 
-  const statusLabel = useMemo(() => {
-    if (status) {
-      return t(`tasks:status.${status}`);
-    }
-    return t("tasks:status.in-progress");
-  }, [status, t]);
-  const selectedUsers = useMemo(
-    () =>
-      assigneeIds
-        .map((id) => workspaceUsers?.members?.find((u) => u.userId === id))
-        .filter((member): member is NonNullable<typeof member> =>
-          Boolean(member),
-        ),
-    [assigneeIds, workspaceUsers],
-  );
-
-  const selectedResources = useMemo(
-    () =>
-      resourceAssigneeIds
-        .map((id) => workspaceResources?.find((r) => r.id === id))
-        .filter((resource): resource is Resource => Boolean(resource)),
-    [resourceAssigneeIds, workspaceResources],
-  );
-
-  const selectedAssigneeAvatars = useMemo<AssigneeAvatarItem[]>(
-    () => [
-      ...selectedUsers.map((member) => ({
-        userId: member.userId,
-        name: member.user?.name ?? "",
-        image: member.user?.image ?? null,
-      })),
-      ...selectedResources.map((resource) => ({
-        userId: null,
-        resourceId: resource.id,
-        kind: resource.kind,
-        name: resource.name,
-        image: null,
-      })),
-    ],
-    [selectedUsers, selectedResources],
-  );
-
+  const statusLabel = getStatusDisplayLabel(taskStatus, initialColumn?.name);
   useEffect(() => {
     if (labelsOpen && labelsStep === "select" && searchInputRef.current) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
@@ -992,29 +883,6 @@ function CreateTaskModalContent({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
-
-  const handlePickRelation = (pick: RelationPick) => {
-    setPendingRelations((current) => [
-      ...current,
-      {
-        taskId: pick.task.id,
-        title: pick.task.title,
-        key:
-          pick.projectSlug && pick.task.number !== null
-            ? `${pick.projectSlug}-${pick.task.number}`
-            : null,
-        relationType: pick.relationType,
-        dependencyType: pick.dependencyType,
-        lagDays: pick.lagDays,
-      },
-    ]);
-    return true;
-  };
-
-  const pendingRelationTaskIds = useMemo(
-    () => new Set(pendingRelations.map((relation) => relation.taskId)),
-    [pendingRelations],
-  );
 
   const resetLabelsPopover = () => {
     setLabelsStep("select");
@@ -1077,7 +945,9 @@ function CreateTaskModalContent({
       };
 
       setLabels([...labels, newLabel]);
-      toast.success(t("common:modals.createTask.labelCreated"));
+      toast.success(t("common:modals.createTask.labelCreated"), {
+        icon: TagIcon,
+      });
       handleLabelsClose();
     } catch (error) {
       toast.error(
@@ -1092,247 +962,35 @@ function CreateTaskModalContent({
     setLabels(labels.filter((l) => l.name !== labelName));
   };
 
-  const renderCustomFieldInput = (field: CustomFieldDefinition) => {
-    const value = customFieldValues[field.id] ?? "";
-
-    switch (field.type) {
-      case "dropdown": {
-        const options = field.options || [];
-
-        return (
-          <Select
-            value={value}
-            onValueChange={(val) =>
-              handleCustomFieldChange(field.id, val as string)
-            }
-          >
-            <SelectTrigger className="h-9 w-full text-sm bg-background">
-              <SelectValue
-                placeholder={t(
-                  "common:modals.createTask.selectOptionPlaceholder",
-                  "Select an option",
-                )}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  <span className="block max-w-50 truncate">{opt}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-      }
-
-      case "date":
-        return (
-          <Input
-            type="date"
-            value={value}
-            onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
-            required={field.required}
-            className="h-9 w-full text-sm bg-background"
-          />
-        );
-
-      case "number":
-        return (
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
-            placeholder={field.defaultValue || ""}
-            required={field.required}
-            className="h-9 w-full text-sm bg-background"
-          />
-        );
-
-      case "boolean":
-        return (
-          <div className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm">
-            <span className="text-sm text-foreground capitalize">{value}</span>
-
-            <Switch
-              checked={value === "true"}
-              onCheckedChange={(checked) =>
-                handleCustomFieldChange(field.id, checked ? "true" : "false")
-              }
-            />
-          </div>
-        );
-
-      case "multiselect": {
-        const selectedValues: string[] = (() => {
-          if (!value) return [];
-          try {
-            const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return value.split(",").filter((v) => v.length > 0);
-          }
-        })();
-        const MAX_VISIBLE_CHIPS = 3;
-
-        return (
-          <Combobox
-            multiple={true}
-            autoHighlight
-            items={Array.from(new Set(field.options ?? []))}
-            value={selectedValues}
-            onValueChange={(val) =>
-              handleCustomFieldChange(field.id, JSON.stringify(val))
-            }
-          >
-            <ComboboxChips className="h-9 w-full flex-[2_0_0] select-none cursor-default text-sm disabled:opacity-50">
-              <ComboboxValue>
-                {(values: string[]) => {
-                  const visibleChips = values.slice(0, MAX_VISIBLE_CHIPS);
-                  const hiddenCount = values.length - MAX_VISIBLE_CHIPS;
-
-                  return (
-                    <>
-                      {visibleChips.map((value) => (
-                        <div
-                          key={value}
-                          className={cn(
-                            "min-w-0 max-w-full flex-1 shrink basis-0",
-                            "inline-flex items-center overflow-hidden",
-                            "rounded-md bg-secondary px-1.5 py-0.5",
-                            "select-none cursor-default",
-                          )}
-                        >
-                          <span className="block min-w-0 max-w-full truncate text-xs text-secondary-foreground">
-                            {value}
-                          </span>
-                        </div>
-                      ))}
-                      {values.length > MAX_VISIBLE_CHIPS && (
-                        <HoverCard>
-                          <HoverCardTrigger asChild>
-                            <button
-                              type="button"
-                              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium cursor-pointer text-foreground/50 pe-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                              }}
-                              onPointerDown={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                              }}
-                            >
-                              {t("settings:customFields.moreOptions", {
-                                hiddenCount,
-                              })}
-                            </button>
-                          </HoverCardTrigger>
-
-                          <HoverCardContent
-                            side="top"
-                            align="start"
-                            className="flex max-w-xs flex-wrap gap-1"
-                          >
-                            <div className="space-y-1.5">
-                              <div className="text-xs font-medium text-muted-foreground">
-                                {t(
-                                  "settings:customFields.availableOptions",
-                                  "Available options",
-                                )}
-                              </div>
-
-                              <div className="flex min-w-0 max-h-48 flex-wrap gap-x-1.5 gap-y-1.5 overflow-y-auto overflow-x-hidden">
-                                {values
-                                  .slice(MAX_VISIBLE_CHIPS)
-                                  .map((value) => (
-                                    <div
-                                      key={value}
-                                      className={cn(
-                                        "min-w-0 max-w-full",
-                                        "inline-flex items-center overflow-hidden",
-                                        "rounded bg-secondary px-1.5 py-0.5",
-                                        "select-none cursor-default",
-                                      )}
-                                    >
-                                      <span className="block min-w-0 max-w-[13rem] truncate text-xs">
-                                        {value}
-                                      </span>
-                                    </div>
-                                  ))}
-                              </div>
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
-
-                      <ComboboxChipsInput
-                        className={cn(
-                          "min-w-0 flex-1 caret-transparent",
-                          values.length > 0 && "hidden",
-                          "pointer-events-none",
-                          "placeholder:text-foreground/50",
-                          "text-transparent",
-                        )}
-                        placeholder={
-                          Array.from(new Set(field.options ?? [])).length === 0
-                            ? t(
-                                "settings:customFields.noOptionsPlaceholder",
-                                "No options",
-                              )
-                            : values.length === 0
-                              ? t(
-                                  "settings:customFields.defaultValuePlaceholder",
-                                  "Default value",
-                                )
-                              : undefined
-                        }
-                      />
-                    </>
-                  );
-                }}
-              </ComboboxValue>
-            </ComboboxChips>
-
-            <ComboboxPopup>
-              <ComboboxEmpty>
-                {t("settings:customFields.noOptionsPlaceholder", "No options")}
-              </ComboboxEmpty>
-
-              <ComboboxList>
-                {(option: string) => (
-                  <ComboboxItem
-                    className="min-w-0 max-w-full"
-                    key={`field_option_${option}`}
-                    value={option}
-                  >
-                    <span className="block max-w-50 truncate">{option}</span>
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxPopup>
-          </Combobox>
-        );
-      }
-
-      default:
-        return (
-          <Input
-            type="text"
-            value={value}
-            onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
-            placeholder={field.defaultValue || ""}
-            required={field.required}
-            className="h-9 w-full text-sm bg-background"
-          />
-        );
-    }
+  const handlePickRelation = (pick: RelationPick) => {
+    setPendingRelations((current) => [
+      ...current,
+      {
+        taskId: pick.task.id,
+        title: pick.task.title,
+        key:
+          pick.projectSlug && pick.task.number !== null
+            ? `${pick.projectSlug}-${pick.task.number}`
+            : null,
+        relationType: pick.relationType,
+        dependencyType: pick.dependencyType,
+        lagDays: pick.lagDays,
+      },
+    ]);
+    return true;
   };
+
+  const pendingRelationTaskIds = useMemo(
+    () => new Set(pendingRelations.map((relation) => relation.taskId)),
+    [pendingRelations],
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="kaneo-create-task-modal max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         showCloseButton={false}
+        instant={instant}
       >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle asChild>
@@ -1359,13 +1017,22 @@ function CreateTaskModalContent({
           className="flex flex-col flex-1 min-h-0 space-y-6"
         >
           <div className="flex-1 min-h-0 overflow-y-auto space-y-6 px-6">
-            <Input
-              unstyled
+            <textarea
+              ref={titleRef}
+              rows={1}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => setTitle(stripLineBreaks(e.target.value))}
+              onKeyDown={(e) => {
+                // Single-line title: Enter submits like the input it replaced.
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }}
               autoFocus
               placeholder={t("common:modals.createTask.taskTitlePlaceholder")}
-              className="w-full [&_[data-slot=input]]:h-auto [&_[data-slot=input]]:px-0 [&_[data-slot=input]]:py-3 [&_[data-slot=input]]:text-2xl [&_[data-slot=input]]:leading-tight [&_[data-slot=input]]:font-semibold [&_[data-slot=input]]:tracking-tight [&_[data-slot=input]]:text-foreground [&_[data-slot=input]]:placeholder:text-muted-foreground [&_[data-slot=input]]:outline-none"
+              aria-label={t("common:modals.createTask.taskTitlePlaceholder")}
+              className="block w-full resize-none overflow-hidden border-0 bg-transparent px-0 py-3 font-semibold text-2xl text-foreground leading-tight tracking-tight outline-none placeholder:text-muted-foreground"
               required
             />
 
@@ -1377,69 +1044,10 @@ function CreateTaskModalContent({
                 placeholder={t(
                   "common:modals.createTask.descriptionPlaceholder",
                 )}
-                taskId={draftTask?.id}
-                projectId={resolvedProjectId}
-                ensureTaskId={ensureDraftTask}
+                projectId={resolvedProjectId || undefined}
+                uploadAsset={stageAsset}
               />
             </div>
-
-            {customFields.length > 0 && (
-              <div className="mt-2">
-                <Accordion
-                  key={resolvedProjectId}
-                  className="w-full"
-                  defaultValue={
-                    customFields.some((field) => field.required)
-                      ? ["custom-fields"]
-                      : []
-                  }
-                >
-                  <AccordionItem
-                    value="custom-fields"
-                    className="rounded-lg border border-border bg-sidebar/30 px-4"
-                  >
-                    <AccordionTrigger className="py-4 hover:no-underline">
-                      <div className="flex items-center gap-2 text-left">
-                        <span className="text-sm font-semibold text-foreground">
-                          {t("tasks:common.customFields")}
-                        </span>
-                        <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          {customFields.length}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-
-                    <AccordionContent className="pb-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-4 pt-4 border-t border-border sm:col-span-2">
-                          <div className="grid gap-4 sm:grid-cols-2">
-                            {customFields.map((field) => (
-                              <div
-                                key={`custom-field_${field.id}`}
-                                className="space-y-1.5"
-                              >
-                                <label
-                                  htmlFor={`custom-field_${field.id}`}
-                                  className="text-xs font-medium text-muted-foreground flex items-center gap-1"
-                                >
-                                  {field.name}
-                                  {field.required && (
-                                    <span className="text-destructive">*</span>
-                                  )}
-                                </label>
-                                <div className="w-full">
-                                  {renderCustomFieldInput(field)}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-            )}
 
             {labels.length > 0 && (
               <div className="flex flex-wrap mb-2">
@@ -1547,8 +1155,8 @@ function CreateTaskModalContent({
                         const first = filteredProjects[0];
                         if (
                           first &&
-                          !draftCreationPromiseRef.current &&
-                          !draftTaskRef.current &&
+                          pendingUploadsRef.current === 0 &&
+                          stagedAssetsRef.current.length === 0 &&
                           !submittingRef.current
                         ) {
                           setSelectedProjectId(first.id);
@@ -1567,12 +1175,14 @@ function CreateTaskModalContent({
                           type="button"
                           className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/50 text-left transition-colors h-8"
                           disabled={
-                            isPreparingDraft || !!draftTask || isSubmitting
+                            isPreparingDraft ||
+                            stagedAssetsRef.current.length > 0 ||
+                            isSubmitting
                           }
                           onClick={() => {
                             if (
-                              !draftCreationPromiseRef.current &&
-                              !draftTaskRef.current &&
+                              pendingUploadsRef.current === 0 &&
+                              stagedAssetsRef.current.length === 0 &&
                               !submittingRef.current
                             ) {
                               setSelectedProjectId(workspaceProject.id);
@@ -1592,7 +1202,11 @@ function CreateTaskModalContent({
                 </Popover>
               )}
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-accent/50 text-foreground rounded-md text-xs font-medium border border-border">
-                <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
+                {getColumnIcon(
+                  taskStatus,
+                  initialColumn?.isFinal,
+                  initialColumn?.icon,
+                )}
                 {statusLabel}
               </div>
 
@@ -1620,31 +1234,19 @@ function CreateTaskModalContent({
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={(date) => {
-                      setStartDate(date);
-                      // Close the calendar once a day is picked; leaving it open
-                      // over the dialog is disorienting.
+                <PopoverContent className="w-65 p-0" align="start">
+                  <DatePickerMenu
+                    label={t("common:modals.createTask.startDate")}
+                    placeholder={t("tasks:datePicker.startDatePlaceholder")}
+                    clearLabel={t("common:modals.createTask.clearStartDate")}
+                    value={startDate ?? null}
+                    onChange={(date) => {
+                      setStartDate(date ?? undefined);
                       setStartDateOpen(false);
                     }}
-                    className="w-full bg-popover"
+                    bounds={dueDate ? { after: dueDate } : undefined}
+                    formatLimit={(date) => t("tasks:due.fullDate", { date })}
                   />
-                  {startDate && (
-                    <div className="p-2 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs"
-                        onClick={() => setStartDate(undefined)}
-                      >
-                        {t("common:modals.createTask.clearStartDate")}
-                      </Button>
-                    </div>
-                  )}
                 </PopoverContent>
               </Popover>
 
@@ -1823,7 +1425,7 @@ function CreateTaskModalContent({
                         workspaceId={workspace.id}
                         resources={workspaceResources ?? []}
                         projectUserIds={
-                          workspaceUsers?.members?.map(
+                          projectMembers?.members?.map(
                             (member) => member.userId,
                           ) ?? []
                         }
@@ -1878,29 +1480,21 @@ function CreateTaskModalContent({
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dueDate}
-                    onSelect={(date) => {
-                      setDueDate(date);
+                <PopoverContent className="w-65 p-0" align="start">
+                  <DatePickerMenu
+                    label={t("common:modals.createTask.dueDate")}
+                    placeholder={t("tasks:datePicker.dueDatePlaceholder")}
+                    clearLabel={t("common:modals.createTask.clearDueDate")}
+                    value={dueDate ?? null}
+                    onChange={(date) => {
+                      setDueDate(date ?? undefined);
                       setDueDateOpen(false);
                     }}
-                    className="w-full bg-popover"
+                    bounds={startDate ? { before: startDate } : undefined}
+                    formatLimit={(date) =>
+                      t("tasks:datePicker.startsOn", { date })
+                    }
                   />
-                  {dueDate && (
-                    <div className="p-2 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs"
-                        onClick={() => setDueDate(undefined)}
-                      >
-                        {t("common:modals.createTask.clearDueDate")}
-                      </Button>
-                    </div>
-                  )}
                 </PopoverContent>
               </Popover>
 
@@ -1998,7 +1592,7 @@ function CreateTaskModalContent({
                           placeholder={t(
                             "common:modals.createTask.searchLabels",
                           )}
-                          className="w-full bg-transparent border-none text-foreground text-xs focus:outline-none placeholder:text-muted-foreground"
+                          className="w-full bg-transparent border-none text-foreground text-base focus:outline-none placeholder:text-muted-foreground sm:text-xs"
                         />
                       </div>
 
@@ -2109,6 +1703,24 @@ function CreateTaskModalContent({
                   )}
                 </PopoverContent>
               </Popover>
+              {customFields.length > 0 && (
+                <div className="flex w-full flex-wrap items-center gap-2">
+                  {customFields.map((field) => (
+                    <CustomFieldChip
+                      key={field.id}
+                      field={field}
+                      value={customFieldValues[field.id] ?? ""}
+                      onChange={(value) =>
+                        handleCustomFieldChange(field.id, value)
+                      }
+                      invalid={
+                        showMissingRequired &&
+                        missingRequired.some(({ id }) => id === field.id)
+                      }
+                    />
+                  ))}
+                </div>
+              )}
             </div>
             {(estimateMinutes !== null || estimateBlocked) && (
               <p
@@ -2131,6 +1743,22 @@ function CreateTaskModalContent({
             </p>
           )}
 
+          {awaitingColumns && columnsError && (
+            <div
+              role="alert"
+              className="flex items-center gap-2 px-6 py-2 text-sm text-muted-foreground"
+            >
+              {t("common:modals.createTask.statusLoadError")}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void refetchColumns()}
+              >
+                {t("common:error.tryAgain")}
+              </Button>
+            </div>
+          )}
           <DialogFooter className="flex-shrink-0 border-t border-border bg-background px-6 py-4">
             <div className="flex items-center gap-3 mr-auto">
               <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
@@ -2144,6 +1772,17 @@ function CreateTaskModalContent({
               </label>
             </div>
 
+            {showMissingRequired && missingRequired.length > 0 && (
+              <p
+                role="alert"
+                className="flex items-center gap-1.5 text-destructive-foreground text-xs"
+              >
+                <CircleAlert aria-hidden="true" className="size-3.5" />
+                {t("tasks:customFields.missingRequired", {
+                  count: missingRequired.length,
+                })}
+              </p>
+            )}
             <Button
               type="button"
               onClick={() => handleOpenChange(false)}
@@ -2159,12 +1798,18 @@ function CreateTaskModalContent({
                 !title.trim() ||
                 !resolvedProjectId ||
                 projectBlocksCreating ||
-                isSubmitting
+                assigneeUnconfirmed ||
+                isSubmitting ||
+                awaitingColumns ||
+                isPreparingDraft
               }
+              aria-busy={isPreparingDraft || isSubmitting}
               size="sm"
               className="disabled:opacity-50"
             >
-              {t("common:modals.createTask.createButton")}
+              {isPreparingDraft
+                ? t("activity:comment.editor.uploadingFile")
+                : t("common:modals.createTask.createButton")}
             </Button>
           </DialogFooter>
         </form>

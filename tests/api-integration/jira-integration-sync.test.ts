@@ -7,7 +7,7 @@ import {
   expect,
   it,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { waitForPendingEventHandlers } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";
@@ -64,12 +64,10 @@ vi.mock(
   }),
 );
 
-const { JiraApiError } = await import(
-  "../../apps/api/src/jira-integration/jira-client"
-);
-const { pollJiraStatuses } = await import(
-  "../../apps/api/src/scheduler/jira-status-poll"
-);
+const { JiraApiError } =
+  await import("../../apps/api/src/jira-integration/jira-client");
+const { pollJiraStatuses } =
+  await import("../../apps/api/src/scheduler/jira-status-poll");
 
 const BASE_URL = "https://jira.example.test";
 const TOKEN_A = "test-pat-editor-a-0123456789";
@@ -121,7 +119,6 @@ beforeEach(async () => {
 afterEach(restoreKey);
 afterAll(restoreKey);
 
-// biome-ignore lint/suspicious/noExplicitAny: response bodies are asserted field by field
 type Body = any;
 
 type User = Awaited<ReturnType<typeof createWorkspaceMember>>["user"];
@@ -397,7 +394,7 @@ async function expectNoSecrets(s: Setup, ...responses: { text: string }[]) {
 }
 
 describe("Jira sync: workspace and project boundary", () => {
-  it("answers 403 to a member of another workspace and to a member without access to the project, on every task and proposal route", async () => {
+  it("answers 404 to a member of another workspace and 403 to a member without access to the project, on every task and proposal route", async () => {
     const s = await setup();
     const link = await s.seedLink();
     const proposal = await s.seedProposal(link);
@@ -418,7 +415,11 @@ describe("Jira sync: workspace and project boundary", () => {
     for (const user of [s.outsider, s.noProject]) {
       for (const [method, path, body] of routes) {
         const response = await s.call(user, method, path, body);
-        expect(response.status, `${user.id} ${method} ${path}`).toBe(403);
+        // A non-member does not learn that the workspace exists (404); a member
+        // without a membership of the project is refused (403).
+        expect(response.status, `${user.id} ${method} ${path}`).toBe(
+          user === s.outsider ? 404 : 403,
+        );
       }
     }
 
@@ -431,7 +432,7 @@ describe("Jira sync: workspace and project boundary", () => {
     expect(s.publishedOf("task.status_changed")).toHaveLength(0);
   });
 
-  it("answers 404 for an unknown proposal or task, and 403 for a task of a workspace the caller is not in", async () => {
+  it("answers 404 for an unknown proposal or task, and 404 for a task of a workspace the caller is not in", async () => {
     const s = await setup();
     const unknownProposal = await s.call(
       s.editor,
@@ -460,7 +461,7 @@ describe("Jira sync: workspace and project boundary", () => {
       "GET",
       `/task/${s.task.id}?workspaceId=${other.workspace.id}`,
     );
-    expect(crossed.status).toBe(403);
+    expect(crossed.status).toBe(404);
   });
 
   it("lets a viewer read the Jira state of a task, but not send, unlink, accept or reject", async () => {

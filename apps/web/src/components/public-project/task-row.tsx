@@ -15,7 +15,7 @@ import { formatDateShort } from "@/lib/format";
 import { getPriorityIcon } from "@/lib/priority";
 import type { ExternalLink } from "@/types/external-link";
 import type Task from "@/types/task";
-import { PublicPRBadge } from "./public-pr-badge";
+import { TaskPullRequests } from "@/components/task/task-pull-requests";
 import { PublicTaskLabels } from "./public-task-labels";
 
 type PublicTaskRowProps = {
@@ -43,15 +43,16 @@ export function PublicTaskRow({
   const taskAssignees = useMemo(() => resolveTaskAssignees(task), [task]);
 
   return (
-    <button
-      type="button"
-      className="group w-full text-left px-4 py-3 rounded-lg flex items-center gap-4 bg-card border border-border shadow-sm hover:shadow-md transition-[background-color,border-color,box-shadow] duration-200 ease-out hover:border-border/70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
-      onClick={() => onTaskClick(task)}
-      aria-label={t("publicProject:taskCard.viewDetailsAria", {
-        title: task.title,
-      })}
-    >
-      <div className="flex-1 min-w-0 flex items-center gap-3">
+    <div className="group relative w-full text-left px-4 py-3 rounded-lg flex items-center gap-4 bg-card border border-border shadow-sm hover:shadow-md transition-[background-color,border-color,box-shadow] duration-200 ease-out hover:border-border/70 cursor-pointer">
+      <button
+        type="button"
+        className="absolute inset-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        onClick={() => onTaskClick(task)}
+        aria-label={t("publicProject:taskCard.viewDetailsAria", {
+          title: task.title,
+        })}
+      />
+      <div className="pointer-events-none flex-1 min-w-0 flex items-center gap-3">
         <div className="text-xs font-mono text-muted-foreground shrink-0 font-medium">
           {projectSlug}-{task.number}
         </div>
@@ -63,7 +64,7 @@ export function PublicTaskRow({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="pointer-events-none flex flex-wrap items-center gap-2">
         <TaskProgressBadges task={task} asText />
         {taskAssignees.length > 0 && (
           <div className="flex items-center gap-1.5">
@@ -104,9 +105,14 @@ export function PublicTaskRow({
         )}
 
         {externalLinks.length > 0 && (
-          <PublicPRBadge externalLinks={externalLinks} />
+          <div className="pointer-events-auto relative">
+            <TaskPullRequests
+              externalLinks={externalLinks}
+              className="border-border bg-sidebar"
+            />
+          </div>
         )}
       </div>
-    </button>
+    </div>
   );
 }

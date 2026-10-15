@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { JiraRequestError } from "@/fetchers/jira-integration/jira-request-error";
 import {
   getJiraErrorMessage,

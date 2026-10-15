@@ -553,11 +553,11 @@ export function GanttTaskNeighborhood({
             // scroll lock only sets overflow:hidden on <html>/<body>, so wheel
             // and trackpad scrolling inside the popup is unaffected;
             // overscroll-contain stops it chaining to the page.
-            // biome-ignore lint/a11y/useSemanticElements: a labelled div is the scrollable-region pattern; a fieldset would be a form group
+            // A labelled div is the scrollable-region pattern; a fieldset would be a form group
             <div
               ref={scrollRef}
               role="group"
-              // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be focusable so the arrow keys scroll it
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be focusable so the arrow keys scroll it
               tabIndex={0}
               aria-label={t("tasks:gantt.neighborhoodScrollLabel")}
               data-testid="gantt-neighborhood-scroll"

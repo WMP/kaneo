@@ -1,6 +1,0 @@
----
-description: Tooling and checks for Kaneo changes
-alwaysApply: true
----
-
-Use the version, scope and safe working rules in `AGENTS.md`. For actual commands and non-mutating checks, consult `docs/agent-guide/verification.md`. `pnpm lint` writes files; inspect any changes it makes.

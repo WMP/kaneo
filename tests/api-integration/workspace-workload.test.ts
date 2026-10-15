@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAnonymousSession, mockAuthenticatedSession } from "./helpers/auth";
@@ -112,7 +112,7 @@ describe("API integration: workspace workload", () => {
       `/api/workload/${member.workspace.id}?from=2024-01-01&to=2024-01-21`,
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it("rejects a malformed date range", async () => {
@@ -390,7 +390,7 @@ describe("API integration: workspace workload tasks (drill-through)", () => {
       `/api/workload/${member.workspace.id}/tasks?from=2024-01-01&to=2024-01-21&assigneeId=${member.user.id}`,
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it("rejects `to` before `from`", async () => {

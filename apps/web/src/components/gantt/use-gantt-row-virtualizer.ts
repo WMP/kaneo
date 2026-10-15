@@ -118,7 +118,7 @@ export function useGanttRowVirtualizer({
   // unmeasured fallback. The row count crosses 0↔positive exactly when the
   // container mounts/unmounts, so re-running on it re-reads the now-present
   // element and (re)attaches the listeners.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keys.length is listed to re-attach when the conditionally-rendered scroll container mounts/remounts; the body reads scrollElementRef.current, not keys.
+  // keys.length is listed to re-attach when the conditionally-rendered scroll container mounts/remounts; the body reads scrollElementRef.current, not keys.
   useLayoutEffect(() => {
     const element = scrollElementRef.current;
     if (!element) return;
@@ -144,7 +144,6 @@ export function useGanttRowVirtualizer({
   // pass already did every layout — fine at Gantt's realistic scale
   // (task-heavy means hundreds, not the tens of thousands a binary-search
   // offset lookup would be worth building for).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: measureVersion forces a re-read of sizeCacheRef (a plain ref) after measureRow mutates it; the body itself doesn't reference the state value.
   const offsets = useMemo(() => {
     const list: { start: number; size: number }[] = new Array(keys.length);
     const byKey = new Map<string, GanttRowOffset>();
@@ -159,6 +158,7 @@ export function useGanttRowVirtualizer({
       cumulative += size;
     }
     return { list, byKey, totalSize: cumulative };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- measureVersion forces a re-read of sizeCacheRef (a plain ref) after measureRow mutates it; the body itself doesn't reference the state value.
   }, [keys, estimateSize, measureVersion]);
 
   const effectiveViewportPx =

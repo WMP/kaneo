@@ -1,10 +1,12 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
+import { hasInstanceAdminRole } from "./instance-admin-role";
 import {
   type PermissionMap,
   type RoleStatements,
   resolveRoleStatements,
+  type SelectExecutor,
   satisfies,
   statementsFromCatalogRow,
 } from "./role-statements";
@@ -13,7 +15,7 @@ import {
 // a `ganttpro_project_member` row, except for FULL-ACCESS users, who reach
 // every project of the workspace and act with their workspace role:
 //
-//   1. instance administrators (`user.role === "admin"`),
+//   1. instance administrators (`hasInstanceAdminRole`, also for a role list such as `user,admin`),
 //   2. workspace members whose role contains `owner`,
 //   3. workspace members whose role grants `workspace: ["manage_settings"]`.
 //
@@ -69,7 +71,7 @@ export function workspaceRoleSatisfies(
     access.unrestricted ||
     Boolean(
       access.workspaceStatements &&
-        satisfies(access.workspaceStatements, permissions),
+      satisfies(access.workspaceStatements, permissions),
     )
   );
 }
@@ -130,7 +132,7 @@ async function standingOf(
   workspaceRole: string | null | undefined,
   resolve: RoleResolver = resolveRoleStatements,
 ): Promise<WorkspaceStanding | null> {
-  if (userRole === "admin") return { kind: "instance-admin" };
+  if (hasInstanceAdminRole(userRole)) return { kind: "instance-admin" };
   if (!workspaceRole) return null;
   if (isOwnerRole(workspaceRole)) return { kind: "owner" };
 
@@ -505,7 +507,11 @@ export async function unusableProjectRoles(
 
 // Decides "full access" for many members of one workspace with one role
 // resolution per distinct (instance role, workspace role) pair.
-export function createFullAccessChecker(workspaceId: string) {
+export function createFullAccessChecker(
+  workspaceId: string,
+  // A caller inside a transaction resolves the roles on it too.
+  executor?: SelectExecutor,
+) {
   const cache = new Map<string, Promise<boolean>>();
   return (
     instanceRole: string | null | undefined,
@@ -514,9 +520,14 @@ export function createFullAccessChecker(workspaceId: string) {
     const key = `${instanceRole ?? ""}|${workspaceRole ?? ""}`;
     let result = cache.get(key);
     if (!result) {
-      result = standingOf(workspaceId, instanceRole, workspaceRole).then(
-        (standing) => standing !== null && standing.kind !== "restricted",
-      );
+      result = standingOf(
+        workspaceId,
+        instanceRole,
+        workspaceRole,
+        executor
+          ? (id, role) => resolveRoleStatements(id, role, executor)
+          : undefined,
+      ).then((standing) => standing !== null && standing.kind !== "restricted");
       cache.set(key, result);
     }
     return result;
@@ -527,15 +538,16 @@ export function createFullAccessChecker(workspaceId: string) {
 export async function removeUserProjectMemberships(
   userId: string,
   workspaceId: string,
+  executor: Pick<typeof db, "select" | "delete"> = db,
 ): Promise<number> {
-  const deleted = await db
+  const deleted = await executor
     .delete(schema.projectMemberTable)
     .where(
       and(
         eq(schema.projectMemberTable.userId, userId),
         inArray(
           schema.projectMemberTable.projectId,
-          db
+          executor
             .select({ id: schema.projectTable.id })
             .from(schema.projectTable)
             .where(eq(schema.projectTable.workspaceId, workspaceId)),

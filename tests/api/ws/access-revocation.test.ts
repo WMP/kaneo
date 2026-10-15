@@ -1,5 +1,12 @@
 import type { WSContext } from "hono/ws";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import {
   addConnection,
   closeUserProjectConnections,
@@ -16,15 +23,29 @@ const m = vi.hoisted(() => ({
 }));
 vi.mock("../../../apps/api/src/database", () => ({
   default: {
-    // The delivery path looks up the project's workspace.
-    select: () => ({
+    // The delivery path looks up the project's workspace and the recipients'
+    // membership.
+    select: (fields: Record<string, unknown>) => ({
       from: () => ({
-        where: () => ({ limit: async () => [{ workspaceId: "ws-1" }] }),
+        where: () =>
+          fields.userId
+            ? Promise.resolve([{ userId: "alice" }, { userId: "bob" }])
+            : { limit: async () => [{ workspaceId: "ws-1" }] },
       }),
     }),
   },
   schema: {},
 }));
+vi.mock(
+  "../../../apps/api/src/utils/project-scope-filters",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../apps/api/src/utils/project-scope-filters")
+    >()),
+    filterUsersWithProjectAccess: async (userIds: Iterable<string>) =>
+      new Set(userIds),
+  }),
+);
 vi.mock("../../../apps/api/src/events", () => ({ subscribeToEvent: vi.fn() }));
 vi.mock("../../../apps/api/src/redis", () => ({
   isRedisConfigured: () => m.redis,

@@ -1,6 +1,8 @@
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { ApiError } from "../errors/api-error";
 import { isInstanceAdmin } from "./is-instance-admin";
+import { missingPermissions } from "./missing-permissions";
 import {
   type ProjectAccess,
   projectAccessSatisfies,
@@ -8,14 +10,30 @@ import {
 } from "./project-access";
 import { type PermissionMap, satisfies } from "./role-statements";
 
+function apiKeyScope(c: Context) {
+  const apiKey = c.get("apiKey") as
+    | { permissions?: Record<string, string[]> | null }
+    | undefined;
+  return apiKey?.permissions ?? null;
+}
+
 // Does the API key behind this request (if any) allow `required`? A request
 // without a scoped key is not restricted here. Every scope check goes through
 // this helper.
 export function apiKeyAllows(c: Context, required: PermissionMap): boolean {
-  const apiKey = c.get("apiKey") as
-    | { permissions?: Record<string, string[]> | null }
-    | undefined;
-  return !apiKey?.permissions || satisfies(apiKey.permissions, required);
+  const scope = apiKeyScope(c);
+  return !scope || satisfies(scope, required);
+}
+
+function assertApiKeyScope(c: Context, permissions: PermissionMap) {
+  const scope = apiKeyScope(c);
+  if (scope && !satisfies(scope, permissions)) {
+    throw new ApiError(403, {
+      message: "Insufficient API key scope",
+      code: "API_KEY_SCOPE",
+      missingPermissions: missingPermissions(scope, permissions),
+    });
+  }
 }
 
 function projectAccessesOf(c: Context): ProjectAccess[] | null {
@@ -49,6 +67,83 @@ function splitPermissions(permissions: PermissionMap) {
   return { workspaceLevel, projectLevel };
 }
 
+type Decision = { allowed: true } | { allowed: false; missing: string[] };
+
+const DENIED = (missing: string[]): Decision => ({ allowed: false, missing });
+
+// The decision behind `hasWorkspacePermission` and `requireWorkspacePermission`
+// (see the former for the rules), with the permissions the caller lacks for the
+// error body.
+async function decide(
+  c: Context,
+  permissions: PermissionMap,
+  workspaceIdOverride?: string,
+): Promise<Decision> {
+  const workspaceId = workspaceIdOverride ?? c.get("workspaceId");
+  if (!workspaceId) return DENIED(missingPermissions(null, permissions));
+
+  if (!apiKeyAllows(c, permissions)) {
+    return DENIED(missingPermissions(apiKeyScope(c), permissions));
+  }
+
+  if (await isInstanceAdmin(c)) {
+    return { allowed: true };
+  }
+
+  const userId = c.get("userId");
+  if (!userId) return DENIED(missingPermissions(null, permissions));
+
+  const projectAccesses = workspaceIdOverride ? null : projectAccessesOf(c);
+  const { workspaceLevel, projectLevel } = projectAccesses
+    ? splitPermissions(permissions)
+    : { workspaceLevel: permissions, projectLevel: {} as PermissionMap };
+
+  if (Object.keys(projectLevel).length > 0) {
+    const missing = new Set<string>();
+    for (const access of projectAccesses ?? []) {
+      if (!projectAccessSatisfies(access, projectLevel)) {
+        for (const entry of missingPermissions(
+          access.statements,
+          projectLevel,
+        )) {
+          missing.add(entry);
+        }
+      }
+    }
+    if (!projectAccesses || missing.size > 0) {
+      return DENIED(
+        missing.size > 0
+          ? [...missing]
+          : missingPermissions(null, projectLevel),
+      );
+    }
+  }
+  if (Object.keys(workspaceLevel).length === 0) return { allowed: true };
+
+  // A full-access caller already holds their workspace role's statements in
+  // the resolved access (and owners, composite owner names included, are
+  // unrestricted): no second lookup. Only a project member needs their
+  // workspace role looked up.
+  const first = projectAccesses?.[0];
+  if (
+    first &&
+    projectAccesses?.every(
+      (access) => access.mode === "full" && access.workspaceId === workspaceId,
+    )
+  ) {
+    return projectAccessSatisfies(first, workspaceLevel)
+      ? { allowed: true }
+      : DENIED(missingPermissions(first.statements, workspaceLevel));
+  }
+
+  const standing = await workspaceMemberStanding(userId, workspaceId);
+  if (!standing) return DENIED(missingPermissions(null, workspaceLevel));
+  if (standing.owner) return { allowed: true };
+  return standing.statements && satisfies(standing.statements, workspaceLevel)
+    ? { allowed: true }
+    : DENIED(missingPermissions(standing.statements, workspaceLevel));
+}
+
 // Checks a permission for the current request.
 //
 // - Workspace-level resources (`workspace`, `member`, `invitation`,
@@ -73,53 +168,43 @@ export async function hasWorkspacePermission(
   // project), since the access middleware only resolves one.
   workspaceIdOverride?: string,
 ) {
-  const workspaceId = workspaceIdOverride ?? c.get("workspaceId");
-  if (!workspaceId) return false;
+  return (await decide(c, permissions, workspaceIdOverride)).allowed;
+}
 
-  if (!apiKeyAllows(c, permissions)) return false;
+// Same rules as `hasWorkspacePermission` for the WORKSPACE role (no project
+// context), but resolves the caller's standing once so many checks (the UI's
+// capability map) cost a single lookup.
+export async function workspacePermissionChecker(
+  c: Context,
+): Promise<(permissions: PermissionMap) => boolean> {
+  const workspaceId = c.get("workspaceId");
+  if (!workspaceId) return () => false;
 
-  if (await isInstanceAdmin(c)) {
-    return true;
-  }
-
+  const isAdmin = await isInstanceAdmin(c);
   const userId = c.get("userId");
-  if (!userId) return false;
+  const standing =
+    isAdmin || !userId
+      ? null
+      : await workspaceMemberStanding(userId, workspaceId);
 
-  const projectAccesses = workspaceIdOverride ? null : projectAccessesOf(c);
-  const { workspaceLevel, projectLevel } = projectAccesses
-    ? splitPermissions(permissions)
-    : { workspaceLevel: permissions, projectLevel: {} as PermissionMap };
+  return (permissions) => {
+    if (!apiKeyAllows(c, permissions)) return false;
+    if (isAdmin) return true;
+    if (!standing) return false;
+    if (standing.owner) return true;
+    return Boolean(
+      standing.statements && satisfies(standing.statements, permissions),
+    );
+  };
+}
 
-  if (
-    Object.keys(projectLevel).length > 0 &&
-    !projectAccesses?.every((access) =>
-      projectAccessSatisfies(access, projectLevel),
-    )
-  ) {
-    return false;
-  }
-  if (Object.keys(workspaceLevel).length === 0) return true;
-
-  // A full-access caller already holds their workspace role's statements in
-  // the resolved access (and owners, composite owner names included, are
-  // unrestricted): no second lookup. Only a project member needs their
-  // workspace role looked up.
-  const first = projectAccesses?.[0];
-  if (
-    first &&
-    projectAccesses?.every(
-      (access) => access.mode === "full" && access.workspaceId === workspaceId,
-    )
-  ) {
-    return projectAccessSatisfies(first, workspaceLevel);
-  }
-
-  const standing = await workspaceMemberStanding(userId, workspaceId);
-  if (!standing) return false;
-  if (standing.owner) return true;
-  return Boolean(
-    standing.statements && satisfies(standing.statements, workspaceLevel),
-  );
+// Only the API key scope; for routes that need no workspace role (for example
+// reading the caller's own workspaces).
+export function requireApiKeyScope(permissions: PermissionMap) {
+  return async (c: Context, next: Next) => {
+    assertApiKeyScope(c, permissions);
+    return next();
+  };
 }
 
 export function requireWorkspacePermission(permissions: PermissionMap) {
@@ -130,15 +215,18 @@ export function requireWorkspacePermission(permissions: PermissionMap) {
       });
     }
 
-    if (!apiKeyAllows(c, permissions)) {
-      throw new HTTPException(403, { message: "Insufficient API key scope" });
-    }
+    assertApiKeyScope(c, permissions);
 
-    if (!(await hasWorkspacePermission(c, permissions))) {
+    const decision = await decide(c, permissions);
+    if (!decision.allowed) {
       if (!c.get("userId")) {
         throw new HTTPException(401, { message: "Unauthorized" });
       }
-      throw new HTTPException(403, { message: "Insufficient permissions" });
+      throw new ApiError(403, {
+        message: "Insufficient permissions",
+        code: "MISSING_PERMISSION",
+        missingPermissions: decision.missing,
+      });
     }
 
     return next();

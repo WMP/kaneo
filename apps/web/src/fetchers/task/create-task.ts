@@ -19,6 +19,7 @@ async function createTask(
   customFields?: { fieldId: string; value: string }[],
   estimateMinutes?: number | null,
   estimateUnit?: CreateTaskRequest["estimateUnit"],
+  draftAssetIds?: string[],
 ) {
   if (!projectId) {
     throw new Error("No project selected for task creation");
@@ -38,12 +39,13 @@ async function createTask(
       ...(estimateMinutes != null
         ? { estimateMinutes, estimateUnit: estimateUnit ?? "hours" }
         : {}),
+      draftAssetIds,
     },
     param: { projectId },
   });
 
   if (!response.ok) {
-    throw new HttpError(response.status, await response.text());
+    throw await HttpError.fromResponse(response);
   }
 
   const data = await response.json();

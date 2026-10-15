@@ -1,8 +1,6 @@
-import { X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DatePickerMenu } from "@/components/common/date-picker/date-picker-menu";
 import {
   Popover,
   PopoverContent,
@@ -36,13 +34,12 @@ export default function TaskStartDatePopover({
     task.dueDate,
   );
 
-  const handleDateChange = async (date: Date | undefined) => {
+  const handleDateChange = async (date: Date | null) => {
     try {
       await updateTask({
         ...task,
-        startDate: date?.toISOString() || null,
+        startDate: date?.toISOString() ?? null,
       });
-      toast.success(t("tasks:popover.startDate.updateSuccess"));
       setOpen(false);
     } catch (error) {
       toast.error(
@@ -58,37 +55,23 @@ export default function TaskStartDatePopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="p-0" align="start">
-        {blockedByEstimate && (
-          <p className="m-0 max-w-64 px-3 pt-3 text-xs text-muted-foreground">
+      <PopoverContent className="w-65 p-0" align="start">
+        {blockedByEstimate ? (
+          <p className="m-0 px-3 py-3 text-xs text-muted-foreground">
             {t("tasks:popover.estimate.exclusiveHint")}
           </p>
-        )}
-        <Calendar
-          mode="single"
-          selected={task.startDate ? new Date(task.startDate) : undefined}
-          onSelect={handleDateChange}
-          disabled={
-            blockedByEstimate
-              ? true
-              : task.dueDate
-                ? { after: new Date(task.dueDate) }
-                : undefined
-          }
-          className="w-full bg-popover"
-        />
-        {task.startDate && (
-          <div className="pt-2 border-t border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
-              onClick={() => handleDateChange(undefined)}
-            >
-              <X className="h-4 w-4" />
-              {t("tasks:popover.startDate.clear")}
-            </Button>
-          </div>
+        ) : (
+          <DatePickerMenu
+            label={t("tasks:properties.startDate")}
+            placeholder={t("tasks:datePicker.startDatePlaceholder")}
+            clearLabel={t("tasks:popover.startDate.clear")}
+            value={task.startDate ? new Date(task.startDate) : null}
+            onChange={handleDateChange}
+            bounds={
+              task.dueDate ? { after: new Date(task.dueDate) } : undefined
+            }
+            formatLimit={(date) => t("tasks:due.fullDate", { date })}
+          />
         )}
       </PopoverContent>
     </Popover>

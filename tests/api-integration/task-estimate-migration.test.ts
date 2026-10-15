@@ -18,7 +18,7 @@ import {
   describe,
   expect,
   it,
-} from "vitest";
+} from "vite-plus/test";
 import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
 // A preview image applied an earlier migration, 20261005125019_ganttpro_task_estimate
@@ -135,7 +135,10 @@ describe("migration ganttpro_task_estimate on a preview database", () => {
     );
 
     const applied = await runMigrations(scratchDb, { migrationsFolder });
-    expect(applied).toEqual([TARGET_TAG]);
+    // Later migrations (upstream 0054 onwards) run as well; the replacement
+    // runs exactly once, first.
+    expect(applied[0]).toBe(TARGET_TAG);
+    expect(applied.filter((tag) => tag === TARGET_TAG)).toEqual([TARGET_TAG]);
 
     const recorded = await scratch.query(
       `SELECT created_at::bigint AS when FROM "drizzle"."__drizzle_migrations" WHERE created_at = $1`,

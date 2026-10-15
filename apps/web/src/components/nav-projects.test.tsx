@@ -1,5 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { NavProjects } from "./nav-projects";
 import { SidebarProvider } from "./ui/sidebar";
 
@@ -21,7 +28,13 @@ vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
 }));
 
-let projects: { id: string; name: string }[] | undefined;
+let projects:
+  | {
+      id: string;
+      name: string;
+      statistics?: { completionPercentage: number };
+    }[]
+  | undefined;
 vi.mock("@/hooks/queries/project/use-get-projects", () => ({
   default: () => ({ data: projects }),
 }));
@@ -125,7 +138,13 @@ describe("NavProjects empty state", () => {
   });
 
   it("does not show it once the person has a project", () => {
-    projects = [{ id: "p-1", name: "Apollo" }];
+    projects = [
+      {
+        id: "p-1",
+        name: "Apollo",
+        statistics: { completionPercentage: 0 },
+      },
+    ];
     renderNav();
 
     expect(screen.getByText("Apollo")).toBeVisible();

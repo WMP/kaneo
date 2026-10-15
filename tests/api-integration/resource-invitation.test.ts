@@ -1,7 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { subscribeToEvent } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";
@@ -522,12 +529,13 @@ describe("inviting a person resource", () => {
       expect(await invitationCount()).toBe(0);
     });
 
-    it("answers 403 for a resource of another workspace", async () => {
+    it("answers 404 for a resource of another workspace", async () => {
       const other = await makeWorkspace("Other");
       const stranger = await signUp(newEmail("stranger"));
       await join(stranger, other.id, "owner");
       const response = await invite(stranger);
-      expect(response.status).toBe(403);
+      // Not a member of the resource's workspace: it is reported as not found.
+      expect(response.status).toBe(404);
       expect(await invitationCount()).toBe(0);
       expect((await resourceRow()).invitationId).toBeNull();
     });

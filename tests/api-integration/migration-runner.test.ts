@@ -11,7 +11,14 @@ import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+} from "vite-plus/test";
 import {
   LEGACY_WATERMARK_LAST_TAG,
   runMigrations,
@@ -28,11 +35,19 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../apps/api/drizzle");
 
 // The `when` values of upstream's own 0051 to 0055 (0055_huge_sue_storm is the
-// newest, 2026-09-30). A database created by upstream records them; this
-// fork's journal has other entries with other `when` values at those places.
+// newest, 2026-09-30). A database created by upstream records them. This
+// fork's journal has other entries at upstream's 0051 to 0053 (their changes
+// are part of 0051_ganttpro_additions); upstream's 0054 and 0055 are entries of
+// this journal with their upstream tags and `when` values since the merge of
+// upstream's 0054 to 0063.
+const UPSTREAM_0051_TO_0053 = [1790370789562, 1790405156847, 1790406015959];
+const UPSTREAM_0054_AND_0055 = [1790438033113, 1790763801959];
 const UPSTREAM_0051_TO_0055 = [
-  1790370789562, 1790405156847, 1790406015959, 1790438033113, 1790763801959,
+  ...UPSTREAM_0051_TO_0053,
+  ...UPSTREAM_0054_AND_0055,
 ];
+// The newest entry before the merge of upstream's 0054 to 0063.
+const FORK_TASK_ESTIMATE_TAG = "20261005135555_ganttpro_task_estimate";
 const UPSTREAM_0045_TAG = "0045_fantastic_princess_powerful";
 
 type JournalEntry = {
@@ -184,8 +199,11 @@ describe("migration runner", () => {
     expect(cutoffIndex).toBeGreaterThan(0);
     expect(tagsAfterCutoff.length).toBeGreaterThanOrEqual(9);
     const whens = new Set(entries.map((entry) => entry.when));
-    for (const when of UPSTREAM_0051_TO_0055) {
+    for (const when of UPSTREAM_0051_TO_0053) {
       expect(whens.has(when)).toBe(false);
+    }
+    for (const when of UPSTREAM_0054_AND_0055) {
+      expect(whens.has(when)).toBe(true);
     }
   });
 
@@ -324,7 +342,7 @@ describe("migration runner", () => {
   });
 
   describe("a database created by upstream", () => {
-    it("at upstream's 0055 applies the fork migrations 0051 to 0059", async () => {
+    it("at upstream's 0055 applies the fork migrations and upstream's later ones", async () => {
       const scratch = await createScratch("upstream_0055");
       // Upstream's schema up to 0050, which is what this journal shares.
       await runMigrations(scratch.db, {
@@ -345,9 +363,19 @@ describe("migration runner", () => {
 
       const applied = await runMigrations(scratch.db, { migrationsFolder });
 
-      expect(applied).toEqual(tagsAfterCutoff);
+      // Upstream's 0054 and 0055 are recorded, so they do not run again.
+      const recordedByUpstream = new Set<number>(UPSTREAM_0051_TO_0055);
+      expect(applied).toEqual(
+        entries
+          .slice(cutoffIndex + 1)
+          .filter((entry) => !recordedByUpstream.has(entry.when))
+          .map((entry) => entry.tag),
+      );
+      expect(applied).not.toContain("0054_backfill_instance_admin");
+      expect(applied).not.toContain("0055_huge_sue_storm");
       expect(applied).toEqual(
         expect.arrayContaining([
+          "0063_import_runs",
           "0051_ganttpro_additions",
           "0055_ganttpro_resources",
           "0058_ganttpro_resource_invitation",
@@ -363,7 +391,7 @@ describe("migration runner", () => {
         true,
       );
       const whens = await recordedWhens(scratch.pool);
-      expect(whens).toHaveLength(entries.length + UPSTREAM_0051_TO_0055.length);
+      expect(whens).toHaveLength(entries.length + UPSTREAM_0051_TO_0053.length);
       for (const when of [
         ...entries.map((entry) => entry.when),
         ...UPSTREAM_0051_TO_0055,
@@ -385,7 +413,11 @@ describe("migration runner", () => {
         );
       }
 
-      await migrate(scratch.db, { migrationsFolder });
+      // The journal as it was before upstream's 0056 to 0063 were merged:
+      // later entries need objects that the skipped fork migrations create.
+      await migrate(scratch.db, {
+        migrationsFolder: truncatedFolder(FORK_TASK_ESTIMATE_TAG),
+      });
 
       // Only the fork's 0059 is newer than upstream's newest row.
       expect(await tableExists(scratch.pool, "ganttpro_resource")).toBe(false);
@@ -470,7 +502,10 @@ describe("migration runner", () => {
       return scratch;
     }
 
+    // The upstream entries up to the legacy cutoff; upstream entries merged
+    // after it are applied by the runner like fork entries.
     const baselineWhens = entries
+      .slice(0, cutoffIndex + 1)
       .filter((entry) => !entry.tag.includes("ganttpro"))
       .map((entry) => entry.when);
 

@@ -19,6 +19,7 @@ import TaskActionsMenuItems, {
 
 type TaskCardContext = {
   worskpaceId: string;
+  workspaceSlug?: string | null;
   projectId: string;
 };
 

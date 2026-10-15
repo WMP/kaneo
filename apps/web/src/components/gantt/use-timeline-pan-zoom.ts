@@ -186,7 +186,7 @@ export function useTimelinePanZoom(
   // which silently ignores preventDefault() and would leave the page
   // scrolling underneath the zoom. See gantt.tsx's identical listener for
   // the full reasoning behind each branch below.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `enabled` forces the listener to (re)attach once the viewport mounts (e.g. past a loading/empty conditional); the closure itself only reads optionsRef and refs, not this value.
+  // `enabled` forces the listener to (re)attach once the viewport mounts (e.g. past a loading/empty conditional); the closure itself only reads optionsRef and refs, not this value.
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -226,7 +226,7 @@ export function useTimelinePanZoom(
   // Applies the scrollLeft computed above once, after this render commits
   // the new zoomed width to the DOM -- otherwise it would be computed and
   // clamped against the OLD scrollWidth.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: zoom is listed to force this to run right after the zoomed grid commits; the body itself only reads the pending-scroll ref.
+  // zoom is listed to force this to run right after the zoomed grid commits; the body itself only reads the pending-scroll ref.
   useLayoutEffect(() => {
     const pending = pendingScrollLeftRef.current;
     if (pending == null) return;

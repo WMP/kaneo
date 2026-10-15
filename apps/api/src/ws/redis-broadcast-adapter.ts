@@ -21,10 +21,22 @@ const broadcastMessageSchema = v.union([
       type: v.string(),
       projectId: v.string(),
       taskId: v.optional(v.string()),
+      tasks: v.optional(
+        v.array(
+          v.object({
+            id: v.string(),
+            position: v.number(),
+            status: v.optional(v.string()),
+          }),
+        ),
+      ),
       sourceTaskId: v.optional(v.string()),
       targetTaskId: v.optional(v.string()),
+      linksChanged: v.optional(v.boolean()),
+      taskTitleChanged: v.optional(v.boolean()),
     }),
     excludeInitiatorId: v.optional(v.string()),
+    authorizationBatch: v.optional(v.string()),
   }),
   // Control envelope: kept apart from `message`, so what a browser receives is
   // built only from the client payload shape above.
@@ -46,6 +58,7 @@ const userBroadcastSchema = v.object({
 });
 
 export class RedisBroadcastAdapter implements BroadcastAdapter {
+  private recoveryHandler: (() => void) | null = null;
   private subscribed = false;
   private userSubscribed = false;
   private _pmessageHandler:
@@ -100,7 +113,10 @@ export class RedisBroadcastAdapter implements BroadcastAdapter {
     await getRedisSub().psubscribe(CHANNEL_PATTERN);
   }
 
-  async subscribeToUser(handler: (msg: UserBroadcast) => void): Promise<void> {
+  async subscribeToUser(
+    handler: (msg: UserBroadcast) => void | Promise<void>,
+    onRecovery?: () => Promise<void>,
+  ): Promise<void> {
     if (this.userSubscribed) return;
     this.userSubscribed = true;
 
@@ -120,17 +136,45 @@ export class RedisBroadcastAdapter implements BroadcastAdapter {
           console.error("User broadcast channel and payload disagree");
           return;
         }
-        handler(parsed.output as UserBroadcast);
+        void Promise.resolve(handler(parsed.output as UserBroadcast)).catch(
+          (error) => {
+            console.error("Failed to deliver user broadcast:", error);
+          },
+        );
       } catch (err) {
         console.error("Failed to parse user broadcast message:", err);
       }
     };
     (getRedisSub() as Redis).on("pmessage", this._userPmessageHandler);
+    if (onRecovery) {
+      this.recoveryHandler = () => {
+        if (!this.userSubscribed) return;
+        // A browser socket can stay open while this subscriber misses messages.
+        // Restore the subscription before taking an authoritative snapshot.
+        void getRedisSub()
+          .psubscribe(USER_CHANNEL_PATTERN)
+          .then(async () => {
+            if (this.userSubscribed) await onRecovery();
+          })
+          .catch((error) => {
+            console.error(
+              "Failed to recover user broadcast subscription:",
+              error,
+            );
+          });
+      };
+      getRedisSub().on("ready", this.recoveryHandler);
+    }
     await getRedisSub().psubscribe(USER_CHANNEL_PATTERN);
   }
 
   async shutdown(): Promise<void> {
     const sub = getRedisSub() as Redis;
+    this.userSubscribed = false;
+    if (this.recoveryHandler) {
+      sub.off("ready", this.recoveryHandler);
+      this.recoveryHandler = null;
+    }
 
     if (this._pmessageHandler) {
       sub.off("pmessage", this._pmessageHandler);

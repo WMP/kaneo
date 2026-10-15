@@ -5,7 +5,14 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { JiraRequestError } from "@/fetchers/jira-integration/jira-request-error";
 import { JiraTokenSettings } from "./jira-token-settings";
 

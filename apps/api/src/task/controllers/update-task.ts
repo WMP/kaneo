@@ -5,11 +5,11 @@ import db from "../../database";
 import {
   activityTable,
   columnTable,
+  projectTable,
   taskAssignmentTable,
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
-import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
 import { assertProjectAssignableUser } from "../../utils/assert-assignable-user";
 import { type AssigneeTarget, setTaskAssignees } from "../assignments";
 import { boardDescription, descriptionDeferred } from "../description-pages";
@@ -20,6 +20,10 @@ import {
 } from "../estimate";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { assertTaskPosition } from "./next-task-position";
+import {
+  publishTaskMutation,
+  recordTaskMutation,
+} from "./task-mutation-effects";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -98,26 +102,32 @@ async function updateTask(
 ) {
   assertTaskPosition(position);
 
-  const [existingTask] = await db
-    .select({
-      id: taskTable.id,
-      title: taskTable.title,
-      priority: taskTable.priority,
-      description:
-        description === undefined ? sql<null>`null` : taskTable.description,
-      status: taskTable.status,
-      projectId: taskTable.projectId,
-      userId: taskTable.userId,
-      startDate: taskTable.startDate,
-      dueDate: taskTable.dueDate,
-      progress: taskTable.progress,
-      estimateMinutes: taskTable.estimateMinutes,
-      isMilestone: taskTable.isMilestone,
-      constraintType: taskTable.constraintType,
-      constraintDate: taskTable.constraintDate,
-      approvalStatus: taskTable.approvalStatus,
-      approvalNote: taskTable.approvalNote,
-    })
+  // The columns the audit diff, the events and the checks below read. The
+  // description is only loaded when the request replaces it.
+  const existingSelection = {
+    id: taskTable.id,
+    title: taskTable.title,
+    priority: taskTable.priority,
+    description:
+      description === undefined ? sql<null>`null` : taskTable.description,
+    status: taskTable.status,
+    columnId: taskTable.columnId,
+    position: taskTable.position,
+    projectId: taskTable.projectId,
+    userId: taskTable.userId,
+    startDate: taskTable.startDate,
+    dueDate: taskTable.dueDate,
+    progress: taskTable.progress,
+    estimateMinutes: taskTable.estimateMinutes,
+    isMilestone: taskTable.isMilestone,
+    constraintType: taskTable.constraintType,
+    constraintDate: taskTable.constraintDate,
+    approvalStatus: taskTable.approvalStatus,
+    approvalNote: taskTable.approvalNote,
+  };
+
+  let [existingTask] = await db
+    .select(existingSelection)
     .from(taskTable)
     .where(eq(taskTable.id, id))
     .limit(1);
@@ -183,11 +193,39 @@ async function updateTask(
   const nextApprovalNote =
     approvalNote === undefined ? existingTask.approvalNote : approvalNote;
 
+  const initialPosition = existingTask.position;
+  const initialStatus = existingTask.status;
+
   // The approval gate's activity row is written in the same transaction as
   // the column update (see update-task-approval.ts for why: it is a
   // compliance-relevant audit trail that a fire-and-forget event subscriber
   // cannot guarantee exists).
   const updatedTask = await db.transaction(async (tx) => {
+    // Serialize with moves and reorders of the project, then re-read the task
+    // under its row lock: the diff below must describe the row that is
+    // actually replaced, and a write based on a stale order is refused.
+    const [project] = await tx
+      .select({ id: projectTable.id })
+      .from(projectTable)
+      .where(eq(projectTable.id, projectId))
+      .for("update");
+    if (!project)
+      throw new HTTPException(404, { message: "Project not found" });
+    const [locked] = await tx
+      .select(existingSelection)
+      .from(taskTable)
+      .where(and(eq(taskTable.id, id), eq(taskTable.projectId, projectId)))
+      .for("update");
+    if (!locked)
+      throw new HTTPException(409, {
+        message: "Task changed projects; retry the update",
+      });
+    if (locked.position !== initialPosition || locked.status !== initialStatus)
+      throw new HTTPException(409, {
+        message: "Task order changed; refresh before updating",
+      });
+    existingTask = locked;
+
     const [updatedRow] = await tx
       .update(taskTable)
       .set({
@@ -209,7 +247,7 @@ async function updateTask(
         approvalStatus: nextApprovalStatus,
         approvalNote: nextApprovalNote,
       })
-      .where(eq(taskTable.id, id))
+      .where(and(eq(taskTable.id, id), eq(taskTable.projectId, projectId)))
       .returning({
         ...getTableColumns(taskTable),
         description: boardDescription,
@@ -226,6 +264,13 @@ async function updateTask(
     // returned userId is the current primary assignee even if another request
     // changed it since existingTask was read.
     let task = updatedRow;
+
+    await recordTaskMutation(
+      tx,
+      existingTask,
+      { title, dueDate: dueDate ?? null },
+      currentUserId,
+    );
 
     if (approvalStatusChanged) {
       await tx.insert(activityTable).values({
@@ -255,23 +300,15 @@ async function updateTask(
     return task;
   });
 
-  if (existingTask.status !== status) {
-    await publishEvent("task.status_changed", {
-      taskId: updatedTask.id,
-      projectId: updatedTask.projectId,
-      userId: currentUserId,
-      oldStatus: existingTask.status,
-      newStatus: status,
-      title: updatedTask.title,
-      assigneeId: updatedTask.userId,
-      type: "status_changed",
-    });
-
-    await publishEvent("task-relation.refresh", {
-      projectId: updatedTask.projectId,
-      userId: currentUserId,
-    });
-  }
+  await publishTaskMutation(
+    {
+      ...existingTask,
+      description:
+        description === undefined ? undefined : existingTask.description,
+    },
+    { ...updatedTask, description: description ?? updatedTask.description },
+    currentUserId,
+  );
 
   if (approvalStatusChanged) {
     await publishEvent("task.approval_changed", {
@@ -283,40 +320,6 @@ async function updateTask(
       approvalNote: updatedTask.approvalNote,
       title: updatedTask.title,
       type: "approval_changed",
-    });
-  }
-
-  if (existingTask.title !== title) {
-    await publishEvent("task.title_changed", {
-      taskId: updatedTask.id,
-      projectId: updatedTask.projectId,
-      userId: currentUserId,
-      oldTitle: existingTask.title,
-      newTitle: title,
-      type: "title_changed",
-    });
-  }
-
-  if (description !== undefined && existingTask.description !== description) {
-    await publishEvent("task.description_changed", {
-      taskId: updatedTask.id,
-      projectId: updatedTask.projectId,
-      userId: currentUserId,
-      oldDescription: existingTask.description,
-      newDescription: description,
-      type: "description_changed",
-    });
-  }
-
-  if (existingTask.priority !== priority) {
-    await publishEvent("task.priority_changed", {
-      taskId: updatedTask.id,
-      projectId: updatedTask.projectId,
-      userId: currentUserId,
-      oldPriority: existingTask.priority,
-      newPriority: priority,
-      title: updatedTask.title,
-      type: "priority_changed",
     });
   }
 
@@ -337,12 +340,6 @@ async function updateTask(
     },
     { waitForHandlers: true },
   );
-
-  if (description !== undefined && existingTask.description !== description) {
-    deleteOrphanedAssets(existingTask.description, description, {
-      taskId: id,
-    }).catch(() => {});
-  }
 
   return updatedTask;
 }

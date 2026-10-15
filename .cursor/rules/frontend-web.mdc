@@ -1,7 +1,0 @@
----
-description: Web state, realtime and translated UI
-globs: apps/web/**/*
-alwaysApply: false
----
-
-Read `AGENTS.md` and `docs/agent-guide/web-and-realtime.md`. For Gantt, date or calendar work also read `docs/agent-guide/scheduling.md`. Use the typed client and established hooks; verify actual browser behavior when a component test cannot prove it.

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import enUS from "@i18n/en-US.json";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 // The component tests mock `t` and interpolate whatever options they are given,
 // so a call that passes `count` for a `{{total}}` string still passes there and

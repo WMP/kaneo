@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseJiraStatusWebhook } from "../../../apps/api/src/jira-integration/webhook-payload";
 
 const payload = (overrides: Record<string, unknown> = {}) => ({

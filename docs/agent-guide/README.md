@@ -14,6 +14,7 @@ Paths in these contracts are relative to the repository root unless a command ex
 | [Deployment and release](deployment.md) | Images, self-hosting and release behavior |
 | [Verification](verification.md) | Read-only checks, focused tests and broader gates |
 | [Invariant index](invariants.md) | Stable IDs, mechanisms, proof and known gaps |
+| [Upstream sync](../upstream-sync/decisions.md) | Merging usekaneo/kaneo: earlier decisions, [skipped changes](../upstream-sync/exceptions.md), scripts in `scripts/upstream-sync/`, procedure in `.claude/skills/upstream-sync/SKILL.md` |
 | [Project decisions](project-decisions.md) | Accepted direction and implementation state for scheduling, preview images and agent rules |
 
 An invariant's status means: **enforced** when the cited mechanism and appropriate test cover its stated scope; **partial** when some paths or proof are missing; **unenforced** when there is no guard. Change the status only after checking code and tests. Preserve IDs when reorganizing documents. Put implementation examples and edge cases in their topical contracts, not in `AGENTS.md`.

@@ -1,7 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type Task from "@/types/task";
 
 const m = vi.hoisted(() => ({
@@ -63,9 +70,8 @@ describe("task mutations refresh Gantt relation summaries", () => {
     act(() => result.current.mutate(task));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidated(client)).toBe(true);
-    expect(client.getQueryState(["tasks", "project-1"])?.isInvalidated).toBe(
-      true,
-    );
+    // The project's own board is patched in place (updateBoardTaskCache), not
+    // refetched, so only the relation summaries of other Gantts are refreshed.
   });
 
   it("title", async () => {

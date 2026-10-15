@@ -1,3 +1,6 @@
+import { retryStorageCleanup } from "../storage/cleanup-queue";
+import { cleanupDraftUploads } from "./draft-upload-cleanup";
+import { replayDeferredIssueEdits } from "../plugins/github/services/deferred-issue-edits";
 import * as Sentry from "@sentry/node";
 import { Cron } from "croner";
 import { enforceActivityRetention } from "./activity-retention";
@@ -49,6 +52,26 @@ function withCheckIn<T>(name: string, fn: () => Promise<T>) {
 export function initializeScheduler(): void {
   jobs.push(
     new Cron(
+      "* * * * *",
+      withCheckIn("deferred-issue-edits", replayDeferredIssueEdits),
+    ),
+  );
+  jobs.push(
+    new Cron(
+      "*/5 * * * *",
+      { protect: true },
+      withCheckIn("storage-cleanup", retryStorageCleanup),
+    ),
+  );
+  jobs.push(
+    new Cron(
+      "31 * * * *",
+      { protect: true },
+      withCheckIn("draft-upload-cleanup", cleanupDraftUploads),
+    ),
+  );
+  jobs.push(
+    new Cron(
       "*/5 * * * *",
       withCheckIn("due-date-reminders", checkDueDateReminders),
     ),
@@ -83,7 +106,7 @@ export function initializeScheduler(): void {
     ),
   );
   console.log(
-    "⏰ Scheduler started (reminders and Jira status polling every 5 minutes, seat reconciliation and trial reminders hourly, activity retention daily)",
+    "⏰ Scheduler started (deferred integration edits every minute, reminders and Jira status polling every 5 minutes, seat reconciliation and trial reminders hourly, activity retention daily)",
   );
 }
 

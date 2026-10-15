@@ -1,6 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { CheckCircle, Loader2, Mail, X } from "lucide-react";
+import {
+  CheckCircle,
+  Loader2,
+  Mail,
+  X,
+  UserXIcon,
+  UserCheckIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
@@ -70,7 +77,9 @@ function InvitationsPage() {
       });
 
       clearAutoAcceptMarker(invitationId);
-      toast.success(t("invitations:toast.acceptSuccess"));
+      toast.success(t("invitations:toast.acceptSuccess"), {
+        icon: UserCheckIcon,
+      });
 
       await queryClient.invalidateQueries({
         queryKey: ["invitations", "pending"],
@@ -106,7 +115,7 @@ function InvitationsPage() {
       }
 
       clearAutoAcceptMarker(invitationId);
-      toast.success(t("invitations:toast.rejectSuccess"));
+      toast.success(t("invitations:toast.rejectSuccess"), { icon: UserXIcon });
 
       await queryClient.invalidateQueries({
         queryKey: ["invitations", "pending"],
@@ -155,7 +164,7 @@ function InvitationsPage() {
   return (
     <>
       <PageTitle title={t("invitations:pageTitle")} />
-      <div className="flex w-full min-h-screen items-center justify-center p-6 bg-background">
+      <div className="flex w-full min-h-svh items-center justify-center p-6 bg-background">
         <div className="w-full max-w-2xl space-y-8">
           <div className="space-y-3 text-center">
             <h1 className="text-3xl font-semibold">

@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { ProjectMemberError } from "@/lib/project-member-error";
 import type Resource from "@/types/resource";
 import ResourceLinkDialog from "./resource-link-dialog";

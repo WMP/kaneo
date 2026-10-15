@@ -32,10 +32,8 @@ const getColumnsRoute = createRoute({
   request: { params: projectIdParam },
   responses: {
     200: jsonResponse("List of columns ordered by position", columnListSchema),
-    400: errorResponse(
-      "Unknown project, or its workspace could not be determined",
-    ),
-    403: errorResponse("No access to the project's workspace"),
+    403: errorResponse("No access to the project"),
+    404: errorResponse("Project not found"),
   },
 });
 
@@ -60,13 +58,14 @@ const createColumnRoute = createRoute({
   },
   responses: {
     200: jsonResponse("The created column", columnSchema),
-    400: errorResponse("Invalid body, or unknown project"),
+    400: errorResponse("Invalid body"),
     403: errorResponse(
-      "No workspace access, or missing project:update permission",
+      "No access to the project, or missing project:update permission",
     ),
     409: codedErrorResponse(
       "The slug is reserved or already used in this project, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
     ),
+    404: errorResponse("Project not found"),
   },
 });
 
@@ -93,11 +92,12 @@ const reorderColumnsRoute = createRoute({
     200: jsonResponse("The reordered columns", columnListSchema),
     400: errorResponse("A column does not belong to this project"),
     403: errorResponse(
-      "No workspace access, or missing project:update permission",
+      "No access to the project, or missing project:update permission",
     ),
     409: codedErrorResponse(
       "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
     ),
+    404: errorResponse("Project not found"),
   },
 });
 
@@ -122,13 +122,14 @@ const updateColumnRoute = createRoute({
   },
   responses: {
     200: jsonResponse("The updated column", columnSchema),
-    400: errorResponse("Invalid body, or unknown column"),
+    400: errorResponse("Invalid body"),
     403: errorResponse(
-      "No workspace access, or missing project:update permission",
+      "No access to the project, or missing project:update permission",
     ),
     409: codedErrorResponse(
       "The workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
     ),
+    404: errorResponse("Column not found"),
   },
 });
 
@@ -147,15 +148,13 @@ const deleteColumnRoute = createRoute({
   request: { params: columnParam },
   responses: {
     200: jsonResponse("The deleted column", columnSchema),
-    400: errorResponse(
-      "Unknown column, or its workspace could not be determined",
-    ),
     403: errorResponse(
-      "No workspace access, or missing project:update permission",
+      "No access to the project, or missing project:update permission",
     ),
     409: codedErrorResponse(
       "The column still contains tasks, or the workspace enforces its columns (code WORKSPACE_COLUMNS_ENFORCED)",
     ),
+    404: errorResponse("Column not found"),
   },
 });
 

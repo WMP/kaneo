@@ -1,5 +1,12 @@
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import {
   createInvalidationBatcher,
   INVALIDATION_COALESCE_MS,

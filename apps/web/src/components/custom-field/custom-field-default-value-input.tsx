@@ -102,7 +102,7 @@ export default function CustomFieldDefaultValueInput({
 
   if (type === "boolean") {
     return (
-      // biome-ignore lint/a11y/useSemanticElements: a fieldset would restyle the segmented control
+      // a fieldset would restyle the segmented control
       <div
         role="group"
         aria-label={ariaLabel}

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const m = vi.hoisted(() => ({
   handlers: new Map<string, (data: Record<string, unknown>) => Promise<void>>(),
@@ -22,13 +22,26 @@ vi.mock("../../../apps/api/src/task/get-subtask-parent-projects", () => ({
 }));
 vi.mock("../../../apps/api/src/database", () => ({
   default: {
-    select: () => ({
+    select: (fields: Record<string, unknown>) => ({
       from: () => ({
-        where: () => ({ limit: async () => [{ workspaceId: "workspace" }] }),
+        where: () =>
+          fields.userId
+            ? Promise.resolve([{ userId: "user" }])
+            : { limit: async () => [{ workspaceId: "workspace" }] },
       }),
     }),
   },
 }));
+vi.mock(
+  "../../../apps/api/src/utils/project-scope-filters",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../apps/api/src/utils/project-scope-filters")
+    >()),
+    filterUsersWithProjectAccess: async (userIds: Iterable<string>) =>
+      new Set(userIds),
+  }),
+);
 
 import {
   addConnection,

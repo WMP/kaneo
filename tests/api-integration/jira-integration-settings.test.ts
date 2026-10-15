@@ -7,7 +7,7 @@ import {
   expect,
   it,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAuthenticatedSession } from "./helpers/auth";
@@ -43,9 +43,8 @@ vi.mock(
   },
 );
 
-const { JiraApiError } = await import(
-  "../../apps/api/src/jira-integration/jira-client"
-);
+const { JiraApiError } =
+  await import("../../apps/api/src/jira-integration/jira-client");
 
 const BASE_URL = "https://jira.example.test";
 const TOKEN_A = "test-pat-user-a-0123456789";
@@ -91,7 +90,6 @@ afterAll(() => {
   restoreEnv(PRIVATE_DESTINATIONS_ENV, originalPrivate);
 });
 
-// biome-ignore lint/suspicious/noExplicitAny: response bodies are asserted field by field
 type Body = any;
 
 type User = Awaited<ReturnType<typeof createWorkspaceMember>>["user"];
@@ -184,7 +182,7 @@ async function setup() {
 const ws = (id: string) => `/workspace/${id}`;
 
 describe("Jira integration: workspace boundary", () => {
-  it("answers 403 to a member of another workspace on every settings route", async () => {
+  it("answers 404 to a member of another workspace on every settings route", async () => {
     const s = await setup();
     await s.connect();
     await s.call(s.manager, "PUT", `${ws(s.workspaceId)}/me/token`, {
@@ -220,7 +218,7 @@ describe("Jira integration: workspace boundary", () => {
 
     for (const [method, path, body] of routes) {
       const response = await s.call(s.outsider, method, path, body);
-      expect(response.status, `${method} ${path}`).toBe(403);
+      expect(response.status, `${method} ${path}`).toBe(404);
     }
 
     // Nothing was reached: no Jira client was even created.

@@ -1,5 +1,5 @@
 import { supportedLocales } from "@i18n/resources";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { resolveDateFnsLocale } from "./date-fns-locale";
 
 describe("resolveDateFnsLocale", () => {

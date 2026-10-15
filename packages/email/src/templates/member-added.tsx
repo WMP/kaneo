@@ -1,6 +1,11 @@
-import { Link, Section, Text } from "@react-email/components";
 import React from "react";
-import { EmailShell, styles } from "./shell";
+import { EmailButton } from "../components/email-button";
+import { EmailFooter } from "../components/email-footer";
+import { EmailIntro } from "../components/email-intro";
+import { EmailNote } from "../components/email-note";
+import { EmailShell } from "../components/email-shell";
+import { footerLinks } from "../components/footer-links";
+import { emailHtmlLang, resolveEmailLocale } from "./resolve-locale";
 
 void React;
 
@@ -9,6 +14,7 @@ export type MemberAddedEmailProps = {
   inviterName: string;
   role: string;
   workspaceLink: string;
+  locale?: string | null;
   copy?: MemberAddedEmailCopy;
 };
 
@@ -46,24 +52,25 @@ const MemberAddedEmail = ({
   inviterName,
   role,
   workspaceLink,
+  locale,
   copy = DEFAULT_MEMBER_ADDED_COPY,
 }: MemberAddedEmailProps) => {
   const values = { workspaceName, inviterName, role };
+  const emailLocale = resolveEmailLocale(locale);
 
   return (
     <EmailShell
       preview={interpolate(copy.preview, values)}
       title={interpolate(copy.title, values)}
-      subtitle={interpolate(copy.subtitle, values)}
+      lang={emailHtmlLang(emailLocale)}
     >
-      <Section>
-        <Link style={styles.button} href={workspaceLink}>
-          {copy.cta}
-        </Link>
-        <Text style={styles.muted}>{copy.ignore}</Text>
-        <Section style={styles.divider} />
-        <Text style={styles.footer}>{copy.footer}</Text>
-      </Section>
+      <EmailIntro
+        title={interpolate(copy.title, values)}
+        subtitle={interpolate(copy.subtitle, values)}
+      />
+      <EmailButton href={workspaceLink}>{copy.cta}</EmailButton>
+      <EmailNote>{copy.ignore}</EmailNote>
+      <EmailFooter title={copy.footer} links={footerLinks(emailLocale)} />
     </EmailShell>
   );
 };

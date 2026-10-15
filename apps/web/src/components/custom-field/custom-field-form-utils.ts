@@ -122,7 +122,7 @@ export function draftFromField(field: CustomFieldDefinition): EditDraft {
     required: field.required,
     optionsText: (field.options ?? []).join(", "),
     defaultValue: readStoredDefault(field.type, field.defaultValue),
-    optionColors: { ...(field.optionColors ?? {}) },
+    optionColors: { ...field.optionColors },
   };
 }
 

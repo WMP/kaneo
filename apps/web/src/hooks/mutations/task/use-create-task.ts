@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { invalidateMyWork } from "@/lib/invalidate-my-work";
 import createTask, {
   type CreateTaskRequest,
 } from "@/fetchers/task/create-task";
+import { trackFirstTask } from "@/lib/analytics/activation";
 
 function useCreateTask() {
   const queryClient = useQueryClient();
@@ -19,6 +21,7 @@ function useCreateTask() {
       customFields,
       estimateMinutes,
       estimateUnit,
+      draftAssetIds,
     }: CreateTaskRequest) =>
       createTask(
         title,
@@ -32,8 +35,12 @@ function useCreateTask() {
         customFields,
         estimateMinutes,
         estimateUnit,
+        draftAssetIds,
       ),
     onSuccess: (_data, variables) => {
+      invalidateMyWork(queryClient);
+      void queryClient.invalidateQueries({ queryKey: ["projects"] });
+      trackFirstTask();
       void queryClient.invalidateQueries({
         queryKey: ["tasks", variables.projectId],
       });

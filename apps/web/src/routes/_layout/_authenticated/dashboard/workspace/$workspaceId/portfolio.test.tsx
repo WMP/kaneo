@@ -1,7 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 // End-to-end proof (mocked data layer, real route component) that the
 // portfolio route renders every project's tasks on one shared timeline and
@@ -85,9 +92,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-await import(
-  "@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/portfolio"
-);
+await import("@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/portfolio");
 
 beforeEach(() => {
   vi.useFakeTimers();

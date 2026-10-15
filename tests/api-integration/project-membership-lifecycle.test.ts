@@ -1,11 +1,19 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { addConnection, removeConnection } from "../../apps/api/src/ws";
 import { resetTestDatabase } from "./helpers/database";
 import { createProjectFixture } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 // Project memberships must follow the lifecycle of what they hang on: the
 // workspace membership (remove, leave, account deletion) and the role catalog
@@ -151,7 +159,9 @@ describe("leaving the workspace ends project access", () => {
     await joinExisting(s.first.id, s.guest, "member");
     const response = await get(`/project/${s.p1.project.id}`, s.guest.cookie);
     expect(response.status).toBe(403);
-    expect(await response.text()).toBe("You don't have access to this project");
+    expect((await readErrorBody(response)).message).toBe(
+      "You don't have access to this project",
+    );
   });
 
   it("leaving deletes the leaver's project memberships in that workspace only", async () => {

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { asc, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { waitForPendingEventHandlers } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";

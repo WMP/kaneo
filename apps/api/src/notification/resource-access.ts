@@ -66,10 +66,11 @@ export async function canReceiveResourceNotification(
   userId: string,
   resourceId?: string | null,
   resourceType?: string | null,
+  database: Pick<typeof db, "select"> = db,
 ) {
   if (resourceType === "task") {
     if (!resourceId) return false;
-    const [task] = await db
+    const [task] = await database
       .select({ projectId: taskTable.projectId })
       .from(taskTable)
       .where(eq(taskTable.id, resourceId))
@@ -79,7 +80,7 @@ export async function canReceiveResourceNotification(
     }
   }
 
-  const [user] = await db
+  const [user] = await database
     .select({ id: userTable.id })
     .from(userTable)
     .where(

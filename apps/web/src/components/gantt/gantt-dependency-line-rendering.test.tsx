@@ -1,6 +1,13 @@
 import { cleanup, render } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 // End-to-end proof for the "no dependency line is drawn at all" bug report:
 // two same-project tasks, overlapping dates, a "blocks" relation between
@@ -126,6 +133,7 @@ vi.mock("@/store/user-preferences", () => ({
 }));
 vi.mock("@/lib/i18n/domain", () => ({
   getStatusLabel: (status: string) => status,
+  getPriorityLabel: (priority: string) => priority,
 }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -135,10 +143,31 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 vi.mock("@/lib/toast", () => ({ toast: { error: vi.fn() } }));
-
-await import(
-  "@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt"
+// The route filters tasks through the shared project view; these tests are not
+// about filtering, so its data sources are inert.
+vi.mock("@/hooks/queries/task/use-description-matches", () => ({
+  useDescriptionMatches: () => ({
+    ids: new Set<string>(),
+    isLoading: false,
+    isError: false,
+  }),
+}));
+vi.mock("@/components/project/task-filters/use-task-filter-options", () => ({
+  useTaskFilterOptions: () => ({
+    members: [],
+    labels: [],
+    customFields: [],
+    usedCustomFieldValues: {},
+  }),
+}));
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-all-custom-field-values-by-project",
+  () => ({
+    default: () => ({ getValuesForTask: () => [] }),
+  }),
 );
+
+await import("@/routes/_layout/_authenticated/dashboard/workspace/$workspaceId/project/$projectId/gantt");
 
 function makeRelatedTask(overrides: Record<string, unknown>) {
   return {

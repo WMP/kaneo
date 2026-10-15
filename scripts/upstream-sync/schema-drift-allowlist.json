@@ -1,0 +1,14 @@
+[
+	{
+		"kind": "column",
+		"key": "label.workspace_id",
+		"fields": ["is_nullable"],
+		"reason": "Nullability differs between the migrations and schema.ts already on main."
+	},
+	{
+		"kind": "column",
+		"key": "user.email_verified",
+		"fields": ["column_default"],
+		"reason": "The default differs between the migrations and schema.ts already on main."
+	}
+]

@@ -13,8 +13,8 @@
 //      screenshots through https://<host>.
 //
 // The API and the web app must already run, configured for the host. Put the
-// addresses in the two git-ignored files, because `pnpm dev` (turbo) hands only
-// some variables on to the apps, while the files work however they are started.
+// addresses in the two git-ignored files, because the files work however the
+// apps are started.
 // (apps/web/.env.local would not do: Vite ranks the tracked .env.development
 // above it, and only .env.development.local ranks higher.)
 //

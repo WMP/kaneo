@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { JiraRequestError } from "@/fetchers/jira-integration/jira-request-error";
 import type { JiraDraft } from "@/fetchers/jira-integration/types";
 import { SendToJiraDialog } from "./send-to-jira-dialog";

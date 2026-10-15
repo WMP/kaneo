@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Plus,
   Route as RouteIcon,
-  Search,
   TriangleAlert,
 } from "lucide-react";
 import {
@@ -111,6 +110,13 @@ import {
   scrollLeftForZoom,
 } from "@/components/gantt/zoom";
 import PageTitle from "@/components/page-title";
+import { DisplaySection } from "@/components/project/display/display-section";
+import { WeekStartControl } from "@/components/project/display/week-start-control";
+import { ActiveFiltersBar } from "@/components/project/task-filters/active-filters-bar";
+import { ProjectToolbar } from "@/components/project/toolbar/project-toolbar";
+import { TaskCount } from "@/components/project/toolbar/task-count";
+import { useProjectTaskView } from "@/components/project/toolbar/use-project-task-view";
+import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import {
   AssigneeAvatars,
@@ -118,7 +124,6 @@ import {
 } from "@/components/task/assignee-avatars";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -388,8 +393,25 @@ function RouteComponent() {
     }
     return map;
   }, [barColorSource, selectedCustomFieldDefinition, customFieldValueByTaskId]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const view = useProjectTaskView({
+    project,
+    projectId,
+    workspaceId,
+    scope: "schedule",
+  });
+  const filteredProject = view.filters.filteredProject;
+  // Every task of this project that passes the search and the filters.
+  const filteredTaskIds = useMemo(
+    () =>
+      new Set(
+        [
+          ...(filteredProject?.columns.flatMap((column) => column.tasks) ?? []),
+          ...(filteredProject?.plannedTasks ?? []),
+        ].map((task) => task.id),
+      ),
+    [filteredProject],
+  );
   const [windowStart, setWindowStart] = useState<{
     projectId: string;
     date: Date;
@@ -688,22 +710,12 @@ function RouteComponent() {
     ownScheduleByTaskId,
   ]);
 
-  const scheduledTasks = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedQuery) return parsedTasks;
+  const scheduledTasks = useMemo(
+    () => parsedTasks.filter((task) => filteredTaskIds.has(task.id)),
+    [parsedTasks, filteredTaskIds],
+  );
 
-    return parsedTasks.filter((task) => {
-      return (
-        task.title.toLowerCase().includes(normalizedQuery) ||
-        `${project?.slug ?? ""}-${task.number ?? ""}`
-          .toLowerCase()
-          .includes(normalizedQuery) ||
-        task.status.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [parsedTasks, project?.slug, searchQuery]);
-
-  // Every scheduled own task id currently passing the search filter — used
+  // Every scheduled own task id currently passing the search and filters — used
   // just below to tell a genuinely nested child from one whose parent the
   // search filtered out.
   const scheduledTaskIds = useMemo(
@@ -1218,7 +1230,8 @@ function RouteComponent() {
     [range],
   );
 
-  const isSearchActive = searchQuery.trim().length > 0;
+  const isSearchActive =
+    view.search.trim().length > 0 || view.filters.hasActiveFilters;
 
   // An external row exists only to give a cross-project dependency line
   // somewhere to land, so once a search is active it's only kept when it's
@@ -1240,20 +1253,15 @@ function RouteComponent() {
         connectedExternalIds.add(edge.sourceTaskId);
       }
     }
-    const normalizedQuery = searchQuery.trim().toLowerCase();
     return externalRelatedTasks.filter(
       (task) =>
         connectedExternalIds.has(task.id) ||
-        // This project's own derived rows are searchable like any own task.
-        (task.isOwnProject &&
-          (task.title.toLowerCase().includes(normalizedQuery) ||
-            `${task.projectSlug}-${task.number ?? ""}`
-              .toLowerCase()
-              .includes(normalizedQuery))),
+        // This project's own derived rows are filtered like any own task.
+        (task.isOwnProject && filteredTaskIds.has(task.id)),
     );
   }, [
     isSearchActive,
-    searchQuery,
+    filteredTaskIds,
     externalRelatedTasks,
     scheduledTasks,
     dependencyEdges,
@@ -1366,7 +1374,7 @@ function RouteComponent() {
     }
   }, [measureRow]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: virtualRows is listed to force a re-measure whenever the mounted row set changes; the body itself only reads rowElementsRef (a plain ref), not virtualRows directly.
+  // virtualRows is listed to force a re-measure whenever the mounted row set changes; the body itself only reads rowElementsRef (a plain ref), not virtualRows directly.
   useLayoutEffect(() => {
     measureMountedRows();
   }, [measureMountedRows, virtualRows]);
@@ -1672,8 +1680,11 @@ function RouteComponent() {
     : 0;
 
   const scrollToToday = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const reduceMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     todayCellRef.current?.scrollIntoView({
-      behavior,
+      behavior: reduceMotion ? "auto" : behavior,
       inline: "center",
       block: "nearest",
     });
@@ -1998,7 +2009,7 @@ function RouteComponent() {
   // itself is a scroll gesture too, not a zoom one (see isZoomWheelGesture)
   // — preventDefault-ing it here would otherwise block native horizontal
   // scrolling even though no zoom happens.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: chartIsMounted forces the listener to (re)attach once the chart mounts; the closure itself only reads refs, not this value.
+  // chartIsMounted forces the listener to (re)attach once the chart mounts; the closure itself only reads refs, not this value.
   useEffect(() => {
     const root = chartRootRef.current;
     const scrollEl = scrollContainerRef.current;
@@ -2049,7 +2060,7 @@ function RouteComponent() {
   // Applies the scrollLeft computed above, once (after this render commits
   // the new, zoomed day-column width to the DOM) rather than at wheel time —
   // otherwise it would be computed and clamped against the OLD width.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: zoom is listed to force this to run right after the zoomed grid commits; the body itself only reads the pending-scroll ref.
+  // zoom is listed to force this to run right after the zoomed grid commits; the body itself only reads the pending-scroll ref.
   useLayoutEffect(() => {
     const pending = pendingScrollLeftRef.current;
     if (pending == null) return;
@@ -2070,7 +2081,7 @@ function RouteComponent() {
   // observer it sets up here keeps reporting live `clientWidth` changes
   // (including the ones zoom itself causes) without needing to be
   // recreated.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: showTaskRail/isMobile force a re-measure on rail-position changes; see comment above.
+  // showTaskRail/isMobile force a re-measure on rail-position changes; see comment above.
   useLayoutEffect(() => {
     const element = timelineTrackRef.current;
     if (!element || !range) return;
@@ -2099,7 +2110,7 @@ function RouteComponent() {
   // re-running this effect since neither `todayInRange` nor `scrollToToday`
   // actually changed value, and the newly selected project would never get
   // its auto-center.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: projectId is intentionally listed to force a re-run on project switch; see comment above.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- projectId is intentionally listed to force a re-run on project switch; see comment above.
   useLayoutEffect(() => {
     if (
       hasCenteredOnTodayRef.current ||
@@ -2124,98 +2135,156 @@ function RouteComponent() {
       projectId={projectId}
       workspaceId={workspaceId}
       activeView="gantt"
+      toolbar={
+        <ProjectToolbar
+          view={view}
+          actions={
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t("tasks:kanban.addTask")}
+                    onClick={() => setIsCreateTaskOpen(true)}
+                  />
+                }
+              >
+                <Plus />
+              </TooltipTrigger>
+              <TooltipContent>{t("tasks:kanban.addTask")}</TooltipContent>
+            </Tooltip>
+          }
+          display={
+            <>
+              <DisplaySection>
+                <LayoutSwitch
+                  workspaceId={workspaceId}
+                  projectId={projectId}
+                  currentRoute="gantt"
+                  currentView="gantt"
+                />
+              </DisplaySection>
+              <DisplaySection>
+                <WeekStartControl />
+              </DisplaySection>
+            </>
+          }
+        />
+      }
+      summary={
+        <TaskCount shown={scheduledTasks.length} total={parsedTasks.length} />
+      }
+      filterBar={
+        <ActiveFiltersBar
+          subjects={view.subjects}
+          onClear={view.filters.clearFilters}
+        />
+      }
     >
       <PageTitle
         title={t("tasks:gantt.pageTitle", { name: project?.name })}
         hideAppName
       />
       <div className="flex h-full min-h-0 flex-col bg-background">
-        <div className="border-b border-border/80 px-3 py-3 sm:px-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-1">
-              <h1 className="text-sm font-semibold text-foreground">
-                {t("tasks:gantt.title")}
-              </h1>
-              {(() => {
-                const hasDependencyLines =
-                  dependencyEdgeGeometry.length > 0 &&
-                  dependencyDisplayMode !== "hidden";
-                const hasViolatedLines = dependencyEdgeGeometry.some((edge) =>
-                  violatedEdgeIds.has(edge.id),
-                );
-                // Critical bars are outlined amber whenever there are critical
-                // tasks, regardless of whether any of their edges are drawn as
-                // lines in the current window — so the amber legend must not be
-                // gated on visible lines, or an amber-outlined bar could sit on
-                // screen with nothing explaining the color.
-                const hasCriticalHighlight = Boolean(
-                  showCriticalPath &&
-                    criticalPath &&
-                    criticalPath.criticalTaskIds.size > 0,
-                );
-                if (!hasDependencyLines && !hasCriticalHighlight) return null;
-                return (
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                    {hasDependencyLines && (
-                      <>
-                        <span className="flex items-center gap-1">
-                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
-                          {t("tasks:gantt.legendBlocking")}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="w-4 border-muted-foreground border-t-2 border-dashed" />
-                          {t("tasks:gantt.legendRelated")}
-                        </span>
-                        {hasViolatedLines && (
-                          <span className="flex items-center gap-1">
-                            <span className="h-0.5 w-4 rounded-full bg-destructive" />
-                            {t("tasks:gantt.legendViolated")}
-                          </span>
-                        )}
-                        {/* Points at the small FS/SS/FF/SF label on a
-                            blocking line itself (see GanttDependencyOverlay)
-                            rather than spelling out all four types here —
-                            there isn't room, and the label is already a
-                            clickable control that opens the full editor. */}
-                        <span
-                          className="flex items-center gap-1"
-                          title={t("tasks:gantt.legendDependencyTypeHint")}
-                        >
-                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-foreground">
-                            {t("tasks:relations.dependency.typesShort.fs")}
-                          </span>
-                          {t("tasks:gantt.legendDependencyType")}
-                        </span>
-                      </>
-                    )}
-                    {hasCriticalHighlight && (
-                      <span className="flex items-center gap-1">
-                        <span className="h-0.5 w-4 rounded-full bg-warning" />
-                        {t("tasks:gantt.legendCriticalPath")}
-                      </span>
-                    )}
-                    {hasCriticalHighlight && isCriticalPathProjected && (
-                      <span
-                        className="italic"
-                        data-gantt-critical-projected-note=""
-                      >
-                        {t("tasks:gantt.criticalPathProjectedNote")}
-                      </span>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
+        <div className="border-b border-border/80 px-3 py-2 sm:px-4">
+          <h1 className="sr-only">{t("tasks:gantt.title")}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            {timeline && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={t("tasks:gantt.previousPeriod")}
+                  disabled={!timeline.hasPrevious}
+                  onClick={() =>
+                    showDate(addDays(timeline.rangeStart, -timeline.windowDays))
+                  }
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                {canMoveGanttWindowStart(timeline) ? (
+                  <input
+                    type="date"
+                    aria-label={t("tasks:gantt.periodStart")}
+                    className="h-9 min-w-0 rounded-md border border-border bg-background px-2 text-base sm:h-8 sm:text-sm"
+                    min={format(timeline.minimumStart, "yyyy-MM-dd")}
+                    max={format(timeline.maximumStart, "yyyy-MM-dd")}
+                    value={format(timeline.rangeStart, "yyyy-MM-dd")}
+                    onChange={(event) => {
+                      const date = parseTaskDate(event.target.value);
+                      if (date) showDate(date);
+                    }}
+                  />
+                ) : (
+                  // Every task fits in one period, so min equals max and the
+                  // field could not accept any change: show it disabled with
+                  // a hint instead of an editable-looking control.
+                  <span title={t("tasks:gantt.periodStartLocked")}>
+                    <input
+                      type="date"
+                      disabled
+                      aria-label={t("tasks:gantt.periodStart")}
+                      aria-describedby={periodStartHintId}
+                      className="h-9 min-w-0 rounded-md border border-border bg-background px-2 text-base disabled:cursor-not-allowed disabled:opacity-60 sm:h-8 sm:text-sm"
+                      value={format(timeline.rangeStart, "yyyy-MM-dd")}
+                    />
+                    <span id={periodStartHintId} className="sr-only">
+                      {t("tasks:gantt.periodStartLocked")}
+                    </span>
+                  </span>
+                )}
+                <span className="hidden text-xs text-muted-foreground sm:inline">
+                  – {formatDateMedium(timeline.rangeEnd)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={t("tasks:gantt.nextPeriod")}
+                  disabled={!timeline.hasNext}
+                  onClick={() =>
+                    showDate(addDays(timeline.rangeStart, timeline.windowDays))
+                  }
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </>
+            )}
 
-            <div className="relative w-full max-w-sm">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder={t("tasks:gantt.searchPlaceholder")}
-                className="h-9 min-h-11 touch-manipulation sm:h-8 sm:min-h-0 [&_[data-slot=input]]:pl-8 [&_[data-slot=input]]:text-xs"
-              />
-            </div>
+            <Button
+              variant="outline"
+              size="xs"
+              className="h-9 touch-manipulation sm:h-auto"
+              aria-label={t("tasks:gantt.jumpToToday")}
+              onClick={() => scrollToToday()}
+              disabled={
+                !todayInRange ||
+                (scheduledTasks.length === 0 &&
+                  visibleExternalRelatedTasks.length === 0)
+              }
+            >
+              <Calendar className="size-3.5" />
+              <span className="hidden sm:inline">
+                {t("tasks:gantt.jumpToToday")}
+              </span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="xs"
+              className="h-9 touch-manipulation sm:hidden"
+              aria-pressed={showTaskRail}
+              onClick={() => setIsTaskRailOpen((current) => !current)}
+            >
+              {showTaskRail ? (
+                <ChevronLeft className="size-3.5" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
+              {showTaskRail
+                ? t("tasks:gantt.hideTasks")
+                : t("tasks:gantt.showTasks")}
+            </Button>
 
             <Button
               variant="outline"
@@ -2263,24 +2332,6 @@ function RouteComponent() {
                 ))}
               </SelectContent>
             </Select>
-
-            <Button
-              size="xs"
-              className="min-h-11 touch-manipulation sm:min-h-0"
-              onClick={() => setIsCreateTaskOpen(true)}
-            >
-              <Plus className="size-3.5" />
-              {t("tasks:kanban.addTask")}
-            </Button>
-
-            {isCreateTaskOpen && (
-              <CreateTaskModal
-                open
-                projectId={projectId}
-                onClose={() => setIsCreateTaskOpen(false)}
-                status="planned"
-              />
-            )}
 
             {/* A dependency reaching a task that cannot be placed on the
                 timeline (no dates of its own and no placed predecessor to
@@ -2397,97 +2448,79 @@ function RouteComponent() {
               </SelectContent>
             </Select>
 
-            {timeline && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={t("tasks:gantt.previousPeriod")}
-                  disabled={!timeline.hasPrevious}
-                  onClick={() =>
-                    showDate(addDays(timeline.rangeStart, -timeline.windowDays))
-                  }
-                >
-                  <ChevronLeft className="size-4" />
-                </Button>
-                {canMoveGanttWindowStart(timeline) ? (
-                  <input
-                    type="date"
-                    aria-label={t("tasks:gantt.periodStart")}
-                    className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-                    min={format(timeline.minimumStart, "yyyy-MM-dd")}
-                    max={format(timeline.maximumStart, "yyyy-MM-dd")}
-                    value={format(timeline.rangeStart, "yyyy-MM-dd")}
-                    onChange={(event) => {
-                      const date = parseTaskDate(event.target.value);
-                      if (date) showDate(date);
-                    }}
-                  />
-                ) : (
-                  // Every task fits in one period, so min equals max and the
-                  // field could not accept any change: show it disabled with
-                  // a hint instead of an editable-looking control.
-                  <span title={t("tasks:gantt.periodStartLocked")}>
-                    <input
-                      type="date"
-                      disabled
-                      aria-label={t("tasks:gantt.periodStart")}
-                      aria-describedby={periodStartHintId}
-                      className="h-9 rounded-md border border-border bg-background px-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                      value={format(timeline.rangeStart, "yyyy-MM-dd")}
-                    />
-                    <span id={periodStartHintId} className="sr-only">
-                      {t("tasks:gantt.periodStartLocked")}
-                    </span>
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground">
-                  – {formatDateMedium(timeline.rangeEnd)}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={t("tasks:gantt.nextPeriod")}
-                  disabled={!timeline.hasNext}
-                  onClick={() =>
-                    showDate(addDays(timeline.rangeStart, timeline.windowDays))
-                  }
-                >
-                  <ChevronRight className="size-4" />
-                </Button>
-              </div>
-            )}
-
-            <Button
-              variant="outline"
-              size="xs"
-              className="min-h-11 touch-manipulation sm:min-h-0"
-              onClick={() => scrollToToday()}
-              disabled={
-                !todayInRange ||
-                (scheduledTasks.length === 0 &&
-                  visibleExternalRelatedTasks.length === 0)
-              }
-            >
-              <Calendar className="size-3.5" />
-              {t("tasks:gantt.jumpToToday")}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="xs"
-              className="min-h-11 touch-manipulation sm:hidden"
-              onClick={() => setIsTaskRailOpen((current) => !current)}
-            >
-              {showTaskRail ? (
-                <ChevronLeft className="size-3.5" />
-              ) : (
-                <ChevronRight className="size-3.5" />
-              )}
-              {showTaskRail
-                ? t("tasks:gantt.hideTasks")
-                : t("tasks:gantt.showTasks")}
-            </Button>
+            {/* Dependency and critical-path legend: its own line below the
+                controls, shown only while there is something to explain. */}
+            <div className="w-full empty:hidden">
+              {(() => {
+                const hasDependencyLines =
+                  dependencyEdgeGeometry.length > 0 &&
+                  dependencyDisplayMode !== "hidden";
+                const hasViolatedLines = dependencyEdgeGeometry.some((edge) =>
+                  violatedEdgeIds.has(edge.id),
+                );
+                // Critical bars are outlined amber whenever there are critical
+                // tasks, regardless of whether any of their edges are drawn as
+                // lines in the current window — so the amber legend must not be
+                // gated on visible lines, or an amber-outlined bar could sit on
+                // screen with nothing explaining the color.
+                const hasCriticalHighlight = Boolean(
+                  showCriticalPath &&
+                  criticalPath &&
+                  criticalPath.criticalTaskIds.size > 0,
+                );
+                if (!hasDependencyLines && !hasCriticalHighlight) return null;
+                return (
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                    {hasDependencyLines && (
+                      <>
+                        <span className="flex items-center gap-1">
+                          <span className="h-0.5 w-4 rounded-full bg-muted-foreground" />
+                          {t("tasks:gantt.legendBlocking")}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-4 border-muted-foreground border-t-2 border-dashed" />
+                          {t("tasks:gantt.legendRelated")}
+                        </span>
+                        {hasViolatedLines && (
+                          <span className="flex items-center gap-1">
+                            <span className="h-0.5 w-4 rounded-full bg-destructive" />
+                            {t("tasks:gantt.legendViolated")}
+                          </span>
+                        )}
+                        {/* Points at the small FS/SS/FF/SF label on a
+                            blocking line itself (see GanttDependencyOverlay)
+                            rather than spelling out all four types here —
+                            there isn't room, and the label is already a
+                            clickable control that opens the full editor. */}
+                        <span
+                          className="flex items-center gap-1"
+                          title={t("tasks:gantt.legendDependencyTypeHint")}
+                        >
+                          <span className="rounded border border-border/60 px-1 font-semibold text-[9px] text-foreground">
+                            {t("tasks:relations.dependency.typesShort.fs")}
+                          </span>
+                          {t("tasks:gantt.legendDependencyType")}
+                        </span>
+                      </>
+                    )}
+                    {hasCriticalHighlight && (
+                      <span className="flex items-center gap-1">
+                        <span className="h-0.5 w-4 rounded-full bg-warning" />
+                        {t("tasks:gantt.legendCriticalPath")}
+                      </span>
+                    )}
+                    {hasCriticalHighlight && isCriticalPathProjected && (
+                      <span
+                        className="italic"
+                        data-gantt-critical-projected-note=""
+                      >
+                        {t("tasks:gantt.criticalPathProjectedNote")}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
 
@@ -2520,7 +2553,7 @@ function RouteComponent() {
                 {t("tasks:gantt.noTasksFound")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {t("tasks:gantt.noTasksMatch", { query: searchQuery })}
+                {t("tasks:filterBar.noMatches")}
               </p>
             </div>
           </div>
@@ -3058,6 +3091,15 @@ function RouteComponent() {
               </div>
             </div>
           </div>
+        )}
+
+        {isCreateTaskOpen && (
+          <CreateTaskModal
+            open
+            projectId={projectId}
+            onClose={() => setIsCreateTaskOpen(false)}
+            status="planned"
+          />
         )}
 
         <TaskDetailsSheet

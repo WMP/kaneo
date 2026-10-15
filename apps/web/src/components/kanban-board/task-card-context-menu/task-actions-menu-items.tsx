@@ -1,14 +1,23 @@
-import { X } from "lucide-react";
+import {
+  Archive,
+  CircleDot,
+  Clock,
+  Copy,
+  LinkIcon,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 import type { ComponentType, MouseEvent, ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar } from "@/components/ui/calendar";
+import { PriorityGlyph } from "@/components/task-chips/priority-glyph";
+import type getProjects from "@/fetchers/project/get-projects";
 import { useDuplicateTask } from "@/hooks/mutations/task/use-duplicate-task";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useUpdateTaskAssignee } from "@/hooks/mutations/task/use-update-task-assignee";
 import { useUpdateTaskDescription } from "@/hooks/mutations/task/use-update-task-description";
-import { useUpdateTaskDueDate } from "@/hooks/mutations/task/use-update-task-due-date";
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
@@ -20,17 +29,21 @@ import { generateLink } from "@/lib/generate-link";
 import { getInitials } from "@/lib/get-initials";
 import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
+import { getTaskPath } from "@/lib/task-link";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
 import type Task from "@/types/task";
+import { DueDateSubmenu } from "./due-date-submenu";
 
 type TaskCardContext = {
   worskpaceId: string;
+  workspaceSlug?: string | null;
   projectId: string;
 };
 
 type MenuItemKitProps = {
   className?: string;
+  inset?: boolean;
   onClick?: (event: MouseEvent) => void;
   children?: ReactNode;
 };
@@ -49,6 +62,7 @@ type MenuSubKitProps = {
 
 type MenuSubTriggerKitProps = {
   className?: string;
+  inset?: boolean;
   children?: ReactNode;
 };
 
@@ -92,6 +106,7 @@ export default function TaskActionsMenuItems({
   const { Item, CheckboxItem, Separator, Sub, SubTrigger, SubContent } = kit;
   const { t } = useTranslation();
   const { project } = useProjectStore();
+  const queryClient = useQueryClient();
   const { data: columnsData = [] } = useGetColumns(task.projectId);
   // Prefer the active store project's columns only when it IS this task's own
   // project. This menu is now shared by list/backlog/subtask rows, not just
@@ -122,7 +137,6 @@ export default function TaskActionsMenuItems({
   const { mutateAsync: updateTaskAssignee } = useUpdateTaskAssignee();
   const { mutateAsync: updateTaskTitle } = useUpdateTaskTitle();
   const { mutateAsync: updateTaskDescription } = useUpdateTaskDescription();
-  const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
   const { mutate: duplicateTask } = useDuplicateTask();
   const { canCreateTasks, canUpdateTasks, canDeleteTasks, canAssignTasks } =
     useProjectPermission(task.projectId);
@@ -141,7 +155,20 @@ export default function TaskActionsMenuItems({
   }, [workspaceUsers]);
 
   const handleCopyTaskLink = async () => {
-    const path = `/dashboard/workspace/${taskCardContext.worskpaceId}/project/${taskCardContext.projectId}/task/${task.id}`;
+    const path = getTaskPath({
+      workspaceId: taskCardContext.worskpaceId,
+      workspace: {
+        id: taskCardContext.worskpaceId,
+        slug: taskCardContext.workspaceSlug,
+      },
+      projectId: taskCardContext.projectId,
+      workspaceProjects: queryClient.getQueryData<
+        Awaited<ReturnType<typeof getProjects>>
+      >(["projects", taskCardContext.worskpaceId]),
+      taskId: task.id,
+      taskNumber: task.number,
+      title: task.title,
+    });
     const taskLink = generateLink(path);
 
     // navigator.clipboard is undefined on a non-secure (plain HTTP) origin — a
@@ -206,7 +233,8 @@ export default function TaskActionsMenuItems({
 
   return (
     <>
-      <Item onClick={handleCopyTaskLink}>
+      <Item className="[&>svg]:mx-0" onClick={handleCopyTaskLink}>
+        <LinkIcon className="size-3.5 text-muted-foreground" />
         <span>{t("tasks:contextMenu.copyLink")}</span>
       </Item>
 
@@ -215,6 +243,7 @@ export default function TaskActionsMenuItems({
       {canEdit && (
         <Sub>
           <SubTrigger className="gap-2">
+            <PriorityGlyph priority="high" />
             <span>{t("tasks:priority.label")}</span>
           </SubTrigger>
           <SubContent className="w-48">
@@ -247,6 +276,7 @@ export default function TaskActionsMenuItems({
       {canEdit && (
         <Sub>
           <SubTrigger>
+            <CircleDot className="size-3.5 text-muted-foreground" />
             <span>{t("tasks:status.label")}</span>
           </SubTrigger>
           <SubContent className="w-48">
@@ -266,67 +296,12 @@ export default function TaskActionsMenuItems({
         </Sub>
       )}
 
-      {canEdit && (
-        <Sub>
-          <SubTrigger>
-            <span>{t("tasks:dueDate.label")}</span>
-          </SubTrigger>
-          <SubContent className="w-fit min-w-0 p-0">
-            <div className="p-2">
-              <Calendar
-                mode="single"
-                selected={task.dueDate ? new Date(task.dueDate) : undefined}
-                onSelect={async (date) => {
-                  try {
-                    await updateTaskDueDate({
-                      ...task,
-                      dueDate: date?.toISOString() || null,
-                    });
-                    toast.success(t("tasks:dueDate.updateSuccess"));
-                  } catch (error) {
-                    toast.error(
-                      error instanceof Error
-                        ? error.message
-                        : t("tasks:dueDate.updateError"),
-                    );
-                  }
-                }}
-                className="w-full bg-popover!"
-              />
-            </div>
-            {task.dueDate && (
-              <>
-                <Separator />
-                <Item
-                  className="gap-2 text-muted-foreground"
-                  onClick={async () => {
-                    try {
-                      await updateTaskDueDate({
-                        ...task,
-                        dueDate: null,
-                      });
-                      toast.success(t("tasks:dueDate.clearSuccess"));
-                    } catch (error) {
-                      toast.error(
-                        error instanceof Error
-                          ? error.message
-                          : t("tasks:dueDate.clearError"),
-                      );
-                    }
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                  <span>{t("tasks:dueDate.clear")}</span>
-                </Item>
-              </>
-            )}
-          </SubContent>
-        </Sub>
-      )}
+      {canEdit && <DueDateSubmenu task={task} kit={kit} />}
 
       {canAssign && usersOptions && (
         <Sub>
           <SubTrigger>
+            <UserRound className="size-3.5 text-muted-foreground" />
             <span>{t("tasks:assignee.label")}</span>
           </SubTrigger>
           <SubContent className="w-48">
@@ -373,18 +348,27 @@ export default function TaskActionsMenuItems({
               <Separator />
 
               {canCreate && (
-                <Item onClick={handleDuplicateTask}>
+                <Item className="[&>svg]:mx-0" onClick={handleDuplicateTask}>
+                  <Copy className="size-3.5 text-muted-foreground" />
                   <span>{t("tasks:actions.duplicate")}</span>
                 </Item>
               )}
 
               {canEdit && (
                 <>
-                  <Item onClick={() => handleChange("status", "archived")}>
+                  <Item
+                    className="[&>svg]:mx-0"
+                    onClick={() => handleChange("status", "archived")}
+                  >
+                    <Archive className="size-3.5 text-muted-foreground" />
                     <span>{t("tasks:actions.archive")}</span>
                   </Item>
                   {task.status !== "planned" && (
-                    <Item onClick={() => handleChange("status", "planned")}>
+                    <Item
+                      className="[&>svg]:mx-0"
+                      onClick={() => handleChange("status", "planned")}
+                    >
+                      <Clock className="size-3.5 text-muted-foreground" />
                       <span>{t("tasks:actions.markAsPlanned")}</span>
                     </Item>
                   )}
@@ -398,7 +382,7 @@ export default function TaskActionsMenuItems({
               <Separator />
 
               <Item
-                className="text-destructive"
+                className="text-destructive [&>svg]:mx-0"
                 onClick={(e) => {
                   e.preventDefault();
                   setTimeout(() => {
@@ -406,6 +390,7 @@ export default function TaskActionsMenuItems({
                   }, 0);
                 }}
               >
+                <Trash2 className="size-3.5" />
                 <span>{t("tasks:actions.delete")}</span>
               </Item>
             </>

@@ -1,7 +1,0 @@
----
-description: API routes, permissions and external consumers
-globs: apps/api/**/*
-alwaysApply: false
----
-
-Read `AGENTS.md` and `docs/agent-guide/api-and-boundaries.md`. For schedule/relations also read `docs/agent-guide/scheduling.md`; for schema changes read `docs/agent-guide/database.md`. Public routes use `@hono/zod-openapi`; check the existing implementation and tests before editing.

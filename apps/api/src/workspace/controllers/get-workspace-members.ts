@@ -1,4 +1,5 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   projectMemberTable,
@@ -8,6 +9,7 @@ import {
 } from "../../database/schema";
 import {
   createFullAccessChecker,
+  requireProjectAccessFor,
   singleWorkspaceRole,
   workspaceMemberStanding,
 } from "../../utils/project-access";
@@ -120,10 +122,33 @@ async function getWorkspaceMembers(
   // Only these users are looked at (and returned when visible): the caller
   // that needs a few people (the account a resource is linked to) does not
   // read the whole workspace. The visibility rules are the same.
-  options: { userIds?: string[]; withProjects?: boolean } = {},
+  // `projectId` keeps only the people who can open that project (its members
+  // and the full-access members), for example to fill an assignee picker. The
+  // caller needs access to the project themselves.
+  options: {
+    userIds?: string[];
+    withProjects?: boolean;
+    projectId?: string;
+  } = {},
 ) {
-  const { userIds, withProjects } = options;
+  const { userIds, withProjects, projectId } = options;
   if (userIds && userIds.length === 0) return [];
+  if (projectId) {
+    const [known] = await db
+      .select({ id: projectTable.id })
+      .from(projectTable)
+      .where(
+        and(
+          eq(projectTable.id, projectId),
+          eq(projectTable.workspaceId, workspaceId),
+        ),
+      )
+      .limit(1);
+    if (!known) {
+      throw new HTTPException(404, { message: "Project not found" });
+    }
+    await requireProjectAccessFor(viewerUserId, projectId);
+  }
   const memberRows = await db
     .select({
       id: userTable.id,
@@ -150,11 +175,39 @@ async function getWorkspaceMembers(
   // `resolveProjectAccess` (`singleWorkspaceRole`): equal rows are one
   // membership, rows that disagree on the role are ambiguous and count as no
   // membership, so that user is not listed.
-  const members: Array<(typeof memberRows)[number]> = [];
+  let members: Array<(typeof memberRows)[number]> = [];
   for (const group of groupRows(memberRows, (row) => row.id).values()) {
     const [first] = group;
     const role = singleWorkspaceRole(group.map((row) => row.role));
     if (first && role) members.push({ ...first, role });
+  }
+
+  if (projectId) {
+    const projectRows = await db
+      .select({
+        userId: projectMemberTable.userId,
+        role: projectMemberTable.role,
+      })
+      .from(projectMemberTable)
+      .where(eq(projectMemberTable.projectId, projectId));
+    const isUsable = createUsableProjectRoleChecker();
+    const projectMemberIds = new Set<string>();
+    for (const row of projectRows) {
+      if (await isUsable(workspaceId, row.role)) {
+        projectMemberIds.add(row.userId);
+      }
+    }
+    const isFullAccess = createFullAccessChecker(workspaceId);
+    const onProject: typeof members = [];
+    for (const member of members) {
+      if (
+        projectMemberIds.has(member.id) ||
+        (await isFullAccess(member.instanceRole, member.role))
+      ) {
+        onProject.push(member);
+      }
+    }
+    members = onProject;
   }
 
   const withoutInstanceRole = ({

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { Button } from "@/components/ui/button";
 import type Task from "@/types/task";
 import TaskDueDatePopover from "./task-due-date-popover";
@@ -23,6 +23,7 @@ vi.mock("@/hooks/use-project-permission", () => ({
 vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+  initReactI18next: { type: "3rdParty", init: () => {} },
 }));
 
 function makeTask(overrides: Partial<Task> = {}): Task {
@@ -56,7 +57,7 @@ async function openDue(task: Task) {
     </TaskDueDatePopover>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Due" }));
-  return screen.findByRole("grid");
+  return screen.findByRole("dialog");
 }
 
 async function openStart(task: Task) {
@@ -66,20 +67,18 @@ async function openStart(task: Task) {
     </TaskStartDatePopover>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Start" }));
-  return screen.findByRole("grid");
+  return screen.findByRole("dialog");
 }
 
-function enabledDays(grid: HTMLElement) {
-  return Array.from(grid.querySelectorAll("button")).filter(
-    (button) => !button.hasAttribute("disabled"),
-  );
-}
+// The picker menu offers "pick a date" (and the typed/quick dates) only while
+// a date can be chosen; the estimate rule replaces it with the hint.
+const PICK_DATE = "tasks:datePicker.pickDate";
 
 const HINT = "tasks:popover.estimate.exclusiveHint";
 
 describe("date popovers and the estimate/date-range rule", () => {
   it("blocks the due date with a hint when the task has an estimate and a start date", async () => {
-    const grid = await openDue(
+    await openDue(
       makeTask({
         estimateMinutes: 480,
         startDate: "2026-07-20T00:00:00.000Z",
@@ -87,11 +86,11 @@ describe("date popovers and the estimate/date-range rule", () => {
     );
 
     expect(screen.getByText(HINT)).toBeInTheDocument();
-    expect(enabledDays(grid)).toHaveLength(0);
+    expect(screen.queryByText(PICK_DATE)).toBeNull();
   });
 
   it("blocks the start date with a hint when the task has an estimate and a due date", async () => {
-    const grid = await openStart(
+    await openStart(
       makeTask({
         estimateMinutes: 480,
         dueDate: "2026-07-24T00:00:00.000Z",
@@ -99,11 +98,11 @@ describe("date popovers and the estimate/date-range rule", () => {
     );
 
     expect(screen.getByText(HINT)).toBeInTheDocument();
-    expect(enabledDays(grid)).toHaveLength(0);
+    expect(screen.queryByText(PICK_DATE)).toBeNull();
   });
 
   it("leaves a date that is already set editable", async () => {
-    const grid = await openDue(
+    await openDue(
       makeTask({
         estimateMinutes: 480,
         dueDate: "2026-07-24T00:00:00.000Z",
@@ -111,22 +110,20 @@ describe("date popovers and the estimate/date-range rule", () => {
     );
 
     expect(screen.queryByText(HINT)).toBeNull();
-    expect(enabledDays(grid).length).toBeGreaterThan(0);
+    expect(screen.getByText(PICK_DATE)).toBeInTheDocument();
   });
 
   it("leaves both pickers free without an estimate", async () => {
-    const grid = await openDue(
-      makeTask({ startDate: "2026-07-20T00:00:00.000Z" }),
-    );
+    await openDue(makeTask({ startDate: "2026-07-20T00:00:00.000Z" }));
 
     expect(screen.queryByText(HINT)).toBeNull();
-    expect(enabledDays(grid).length).toBeGreaterThan(0);
+    expect(screen.getByText(PICK_DATE)).toBeInTheDocument();
   });
 
   it("leaves the picker free for an estimated task with no dates", async () => {
-    const grid = await openStart(makeTask({ estimateMinutes: 480 }));
+    await openStart(makeTask({ estimateMinutes: 480 }));
 
     expect(screen.queryByText(HINT)).toBeNull();
-    expect(enabledDays(grid).length).toBeGreaterThan(0);
+    expect(screen.getByText(PICK_DATE)).toBeInTheDocument();
   });
 });

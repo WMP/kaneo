@@ -1,3 +1,4 @@
+import { publishEvent } from "../../events";
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
@@ -8,10 +9,12 @@ async function reorderColumns(
   projectId: string,
   columns: Array<{ id: string; position: number }>,
 ) {
-  return db.transaction(async (tx) => {
+  const updated = await db.transaction(async (tx) => {
     await assertProjectColumnsEditable(tx, projectId);
 
-    for (const col of columns) {
+    for (const col of [...columns].sort((left, right) =>
+      left.id.localeCompare(right.id),
+    )) {
       const [updated] = await tx
         .update(columnTable)
         .set({ position: col.position })
@@ -32,6 +35,10 @@ async function reorderColumns(
       orderBy: (columns, { asc }) => [asc(columns.position)],
     });
   });
+
+  await publishEvent("project.updated", { projectId });
+
+  return updated;
 }
 
 export default reorderColumns;

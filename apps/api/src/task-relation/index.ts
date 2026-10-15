@@ -64,7 +64,16 @@ async function scopeToSourceTask(c: Context, next: Next) {
     throw new HTTPException(404, { message: "Source task not found" });
   }
 
-  await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
+  // The same message as for an unknown task: a task of a workspace the caller
+  // is not in does not exist for them.
+  await validateWorkspaceAccess(
+    userId,
+    scope.workspaceId,
+    c.get("apiKey")?.id,
+    {
+      notFoundMessage: "Source task not found",
+    },
+  );
   await assertProjectAccess(c, userId, { projectId: scope.projectId });
   c.set("workspaceId", scope.workspaceId);
   return next();
@@ -102,7 +111,12 @@ async function scopeToRelation(c: Context, next: Next) {
   }
 
   try {
-    await validateWorkspaceAccess(userId, rel.workspaceId, c.get("apiKey")?.id);
+    await validateWorkspaceAccess(
+      userId,
+      rel.workspaceId,
+      c.get("apiKey")?.id,
+      { notFoundMessage: RELATION_NOT_FOUND },
+    );
   } catch (error) {
     if (error instanceof HTTPException && error.status === 403) {
       throw new HTTPException(404, { message: RELATION_NOT_FOUND });
@@ -144,10 +158,8 @@ const getTaskRelationsRoute = createRoute({
       "Task relations with the linked task summaries",
       taskRelationWithTasksListSchema,
     ),
-    400: errorResponse(
-      "Unknown task, or its workspace could not be determined",
-    ),
-    403: errorResponse("No access to the task's workspace"),
+    403: errorResponse("No access to the project"),
+    404: errorResponse("Task not found"),
   },
 });
 
@@ -169,10 +181,10 @@ const getTaskRelationsByProjectRoute = createRoute({
       "Task relations with the linked task summaries",
       taskRelationWithTasksListSchema,
     ),
-    400: errorResponse(
-      "Unknown project, or its workspace could not be determined",
+    403: errorResponse("No access to the project, or missing read permission"),
+    404: errorResponse(
+      "Unknown project, or the caller is not in its workspace",
     ),
-    403: errorResponse("No workspace access or missing read permission"),
   },
 });
 
@@ -198,7 +210,7 @@ const createTaskRelationRoute = createRoute({
     200: jsonResponse("The created relation", taskRelationSchema),
     400: errorResponse("Invalid body"),
     403: errorResponse(
-      "No workspace access, or missing task:update permission",
+      "No access to the project, or missing task:update permission",
     ),
     404: errorResponse("Source or target task not found"),
     409: errorResponse(
@@ -254,7 +266,7 @@ const deleteTaskRelationRoute = createRoute({
   responses: {
     200: jsonResponse("The deleted relation", taskRelationSchema),
     403: errorResponse(
-      "No workspace access, or missing task:update permission",
+      "No access to the project, or missing task:update permission",
     ),
     404: errorResponse(
       "Task relation not found, or a task of it is in a project the caller cannot access",

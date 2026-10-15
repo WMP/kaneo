@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAnonymousSession, mockAuthenticatedSession } from "./helpers/auth";
 import { resetTestDatabase } from "./helpers/database";
 import { createWorkspaceMember } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 describe("API integration: calendar", () => {
   beforeEach(async () => {
@@ -18,7 +19,7 @@ describe("API integration: calendar", () => {
     const response = await app.request("/api/calendar/workspace-missing");
 
     expect(response.status).toBe(401);
-    await expect(response.text()).resolves.toBe("Unauthorized");
+    expect((await readErrorBody(response)).message).toBe("Unauthorized");
   });
 
   it("defaults to Mon-Fri (62) with no holidays for a freshly created workspace", async () => {
@@ -51,7 +52,7 @@ describe("API integration: calendar", () => {
 
     const response = await app.request(`/api/calendar/${member.workspace.id}`);
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it("lets an admin update the working-days bitmask", async () => {
