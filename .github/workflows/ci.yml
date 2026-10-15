@@ -210,7 +210,9 @@ jobs:
         run: pnpm --filter @kaneo/site seo:check
 
   integration:
-    timeout-minutes: 15
+    # About 2,600 PostgreSQL tests on a 2-vCPU runner take 14-16 minutes since
+    # the upstream merge of 2026-10-15 (upstream runs them on 4 vCPUs).
+    timeout-minutes: 30
     runs-on: ubuntu-24.04
     services:
       postgres:
