@@ -1,3 +1,4 @@
+import { publishEvent } from "../../events";
 import { eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
@@ -5,7 +6,7 @@ import { columnTable, taskTable } from "../../database/schema";
 import { assertProjectColumnsEditable } from "../../workspace-column/enforcement-lock";
 
 async function deleteColumn(id: string) {
-  return db.transaction(async (tx) => {
+  const existing = await db.transaction(async (tx) => {
     const existing = await tx.query.columnTable.findFirst({
       where: eq(columnTable.id, id),
     });
@@ -32,6 +33,10 @@ async function deleteColumn(id: string) {
 
     return existing;
   });
+
+  await publishEvent("project.updated", { projectId: existing.projectId });
+
+  return existing;
 }
 
 export default deleteColumn;

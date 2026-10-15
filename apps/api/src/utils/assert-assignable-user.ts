@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
+import type { SelectExecutor } from "./role-statements";
 import { filterUsersWithProjectAccess } from "./project-scope-filters";
 
 // One message for a missing user, a user outside the workspace and a workspace
@@ -16,15 +17,27 @@ export const NOT_PROJECT_ASSIGNABLE =
 export async function filterProjectAssignableUsers(
   userIds: string[],
   projectId: string,
+  // The transaction of a caller that holds one: validating on a second pool
+  // connection from inside it can starve the pool.
+  executor?: SelectExecutor,
 ): Promise<Set<string>> {
-  return filterUsersWithProjectAccess([...new Set(userIds)], projectId);
+  return filterUsersWithProjectAccess(
+    [...new Set(userIds)],
+    projectId,
+    executor,
+  );
 }
 
 export async function assertProjectAssignableUser(
   userId: string,
   projectId: string,
+  executor?: SelectExecutor,
 ): Promise<void> {
-  const assignable = await filterProjectAssignableUsers([userId], projectId);
+  const assignable = await filterProjectAssignableUsers(
+    [userId],
+    projectId,
+    executor,
+  );
   if (!assignable.has(userId)) {
     throw new HTTPException(403, { message: NOT_PROJECT_ASSIGNABLE });
   }

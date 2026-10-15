@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import TaskDetailsSheet from "./task-details-sheet";
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
@@ -8,18 +8,18 @@ vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 vi.mock("@/lib/i18n", () => ({ i18n: { t: (key: string) => key } }));
-vi.mock("@/hooks/queries/task/use-get-task", () => ({
-  default: () => ({ data: { number: 7 } }),
+vi.mock("./header/task-sheet-header", () => ({
+  TaskSheetHeader: () => null,
 }));
-vi.mock("@/hooks/queries/project/use-get-project", () => ({
-  default: () => ({ data: { slug: "AFB" } }),
-}));
-vi.mock("@/components/jira/send-to-jira-button", () => ({
-  SendToJiraButton: () => null,
-}));
-vi.mock("./task-delete-button", () => ({ default: () => null }));
+vi.mock("./task-shortcuts", () => ({ TaskShortcuts: () => null }));
+vi.mock("./task-delete-dialog", () => ({ default: () => null }));
 vi.mock("./task-details-content", () => ({ default: () => null }));
-vi.mock("./task-properties-sidebar", () => ({ default: () => null }));
+vi.mock("./properties/properties-rail", () => ({
+  PropertiesRail: () => null,
+}));
+vi.mock("./properties/property-chips", () => ({
+  PropertyChips: () => null,
+}));
 
 afterEach(cleanup);
 

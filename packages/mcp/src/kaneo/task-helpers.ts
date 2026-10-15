@@ -26,6 +26,18 @@ export const APPROVAL_STATUSES = [
 
 export type TaskApprovalStatus = (typeof APPROVAL_STATUSES)[number];
 
+// Effort estimate vocabulary. Mirrors apps/api/src/task/estimate.ts (the stored
+// quantity is whole minutes; the unit is only a display hint).
+export const ESTIMATE_UNITS = ["hours", "days"] as const;
+
+export type TaskEstimateUnit = (typeof ESTIMATE_UNITS)[number];
+
+/** Minutes in one work day (8 hours). */
+export const WORK_DAY_MINUTES = 8 * 60;
+
+/** Upper bound for a stored estimate: 1,000,000 minutes. */
+export const MAX_ESTIMATE_MINUTES = 1_000_000;
+
 export type TaskUpdatePatch = {
   title?: string;
   description?: string | null;
@@ -38,6 +50,9 @@ export type TaskUpdatePatch = {
   userId?: string | null;
   progress?: number;
   isMilestone?: boolean;
+  /** `null` clears the estimate. */
+  estimateMinutes?: number | null;
+  estimateUnit?: TaskEstimateUnit;
   constraintType?: TaskConstraintType;
   constraintDate?: string | null;
 };
@@ -144,6 +159,13 @@ export function buildFullTaskUpdateBody(
   }
   if (patch.isMilestone !== undefined) {
     body.isMilestone = patch.isMilestone;
+  }
+  // null must reach the API as null: it clears the estimate.
+  if (patch.estimateMinutes !== undefined) {
+    body.estimateMinutes = patch.estimateMinutes;
+  }
+  if (patch.estimateUnit !== undefined) {
+    body.estimateUnit = patch.estimateUnit;
   }
   // constraintType is what opts the request into touching either
   // constraint field at all; passing constraintDate alone leaves both

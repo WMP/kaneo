@@ -1,6 +1,13 @@
 import enUS from "@i18n/en-US.json";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { Timeline } from "@/components/ui/timeline";
 import Activity from "./index";
 
@@ -61,9 +68,9 @@ vi.mock("@/lib/i18n/domain", () => ({
   getConstraintTypeLabel: (value: string) => value,
 }));
 
-const useGetWorkspaceMembers = vi.fn();
+const mockUseGetWorkspaceMembers = vi.fn();
 vi.mock("@/hooks/queries/workspace/use-get-workspace-members", () => ({
-  default: (params: unknown) => useGetWorkspaceMembers(params),
+  default: (params: unknown) => mockUseGetWorkspaceMembers(params),
 }));
 
 vi.mock("@/lib/format", () => ({
@@ -100,7 +107,7 @@ function renderActivity(activity: ReturnType<typeof baseActivity>) {
 describe("Activity", () => {
   beforeEach(() => {
     commentCardProps.mockClear();
-    useGetWorkspaceMembers.mockReturnValue({
+    mockUseGetWorkspaceMembers.mockReturnValue({
       data: [
         {
           user: {

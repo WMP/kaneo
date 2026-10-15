@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import {
@@ -12,6 +12,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 const m = vi.hoisted(() => ({ publish: vi.fn(async () => undefined) }));
 vi.mock("../../apps/api/src/events", async (original) => ({
@@ -335,7 +336,7 @@ describe("task effort estimate", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe(CONFLICT);
+      expect((await readErrorBody(response)).message).toBe(CONFLICT);
       expect(
         await db.query.taskTable.findFirst({
           where: eq(schema.taskTable.title, "Both"),
@@ -389,7 +390,7 @@ describe("task effort estimate", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe(CONFLICT);
+      expect((await readErrorBody(response)).message).toBe(CONFLICT);
       expect(await persisted(task.id)).toMatchObject({
         estimateMinutes: 480,
         dueDate: null,
@@ -407,7 +408,7 @@ describe("task effort estimate", () => {
         estimateMinutes: 60,
       });
       expect(addEstimate.status).toBe(400);
-      expect(await addEstimate.text()).toBe(CONFLICT);
+      expect((await readErrorBody(addEstimate)).message).toBe(CONFLICT);
 
       // An omitted estimate keeps the stored one, so dates are checked
       // against it as well.
@@ -459,7 +460,7 @@ describe("task effort estimate", () => {
         },
       );
       expect(rejected.status).toBe(400);
-      expect(await rejected.text()).toBe(CONFLICT);
+      expect((await readErrorBody(rejected)).message).toBe(CONFLICT);
       expect((await persisted(estimated.id))?.dueDate).toBeNull();
 
       const accepted = await createApp().app.request(
@@ -495,7 +496,7 @@ describe("task effort estimate", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe(CONFLICT);
+      expect((await readErrorBody(response)).message).toBe(CONFLICT);
       expect(await persisted(plain.id)).toMatchObject({
         startDate: new Date(START),
         dueDate: new Date(DUE),
@@ -549,7 +550,7 @@ describe("task effort estimate", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe(CONFLICT);
+      expect((await readErrorBody(response)).message).toBe(CONFLICT);
       expect((await persisted(estimated.id))?.dueDate).toBeNull();
     });
 

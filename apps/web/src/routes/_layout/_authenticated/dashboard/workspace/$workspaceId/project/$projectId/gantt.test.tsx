@@ -1,7 +1,14 @@
 import enUS from "@i18n/en-US.json";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type Task from "@/types/task";
 import { Route } from "./gantt";
 
@@ -78,23 +85,24 @@ vi.mock("@/hooks/mutations/task/use-bulk-update-task-schedule", () => ({
   useBulkUpdateTaskSchedule: () => ({ mutateAsync: vi.fn() }),
 }));
 
-const useGetCustomFieldsByProject = vi.fn((_projectId: string) => ({
+const mockUseGetCustomFieldsByProject = vi.fn((_projectId: string) => ({
   data: [] as CustomFieldDefinitionRow[],
 }));
 vi.mock(
   "@/hooks/queries/custom-field/use-get-custom-fields-by-project",
   () => ({
-    default: (projectId: string) => useGetCustomFieldsByProject(projectId),
+    default: (projectId: string) => mockUseGetCustomFieldsByProject(projectId),
   }),
 );
 
-const useGetCustomFieldValuesByProject = vi.fn((_projectId: string) => ({
+const mockUseGetCustomFieldValuesByProject = vi.fn((_projectId: string) => ({
   data: [] as CustomFieldValueRow[],
 }));
 vi.mock(
   "@/hooks/queries/custom-field/use-get-custom-field-values-by-project",
   () => ({
-    default: (projectId: string) => useGetCustomFieldValuesByProject(projectId),
+    default: (projectId: string) =>
+      mockUseGetCustomFieldValuesByProject(projectId),
   }),
 );
 
@@ -129,8 +137,44 @@ vi.mock("@/store/user-preferences", () => ({
 }));
 
 vi.mock("@/components/common/project-layout", () => ({
-  default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  default: ({
+    children,
+    toolbar,
+  }: {
+    children: ReactNode;
+    toolbar?: ReactNode;
+  }) => (
+    <div>
+      {toolbar}
+      {children}
+    </div>
+  ),
 }));
+
+vi.mock("@/hooks/queries/task/use-description-matches", () => ({
+  useDescriptionMatches: () => ({
+    ids: new Set<string>(),
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
+vi.mock("@/components/project/task-filters/use-task-filter-options", () => ({
+  useTaskFilterOptions: () => ({
+    members: [],
+    labels: [],
+    customFields: [],
+    usedCustomFieldValues: {},
+  }),
+}));
+
+const noCustomFieldValues = () => [];
+vi.mock(
+  "@/hooks/queries/custom-field/use-get-all-custom-field-values-by-project",
+  () => ({
+    default: () => ({ getValuesForTask: noCustomFieldValues }),
+  }),
+);
 
 vi.mock("@/components/task/task-details-sheet", () => ({
   default: () => null,
@@ -184,6 +228,16 @@ vi.mock("react-i18next", () => ({
 
 const GanttRoute = (Route as unknown as { component: ComponentType }).component;
 
+function searchFor(value: string) {
+  const existing = screen.queryByRole("searchbox", { name: "Search tasks" });
+  if (!existing) {
+    fireEvent.click(screen.getByRole("button", { name: "Search tasks" }));
+  }
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search tasks" }), {
+    target: { value },
+  });
+}
+
 function makeTask(overrides: Partial<Task>): Task {
   return {
     id: "task-1",
@@ -236,10 +290,10 @@ afterEach(() => {
   vi.useRealTimers();
   scrollIntoView.mockClear();
   useGetTasks.mockReset();
-  useGetCustomFieldsByProject.mockClear();
-  useGetCustomFieldsByProject.mockReturnValue({ data: [] });
-  useGetCustomFieldValuesByProject.mockClear();
-  useGetCustomFieldValuesByProject.mockReturnValue({ data: [] });
+  mockUseGetCustomFieldsByProject.mockClear();
+  mockUseGetCustomFieldsByProject.mockReturnValue({ data: [] });
+  mockUseGetCustomFieldValuesByProject.mockClear();
+  mockUseGetCustomFieldValuesByProject.mockReturnValue({ data: [] });
   setGanttCustomField.mockClear();
   preferencesState.ganttCustomFieldByProject = {};
   preferencesState.ganttBarColorSourceByProject = {};
@@ -259,8 +313,7 @@ describe("Gantt jump-to-today", () => {
       }),
     );
     const { rerender } = render(<GanttRoute />);
-    const search = screen.getByPlaceholderText("Search scheduled tickets...");
-    fireEvent.change(search, { target: { value: "no match" } });
+    searchFor("no match");
     routeParams.projectId = "project-2";
     mockProjectWithTask(
       makeTask({
@@ -272,7 +325,7 @@ describe("Gantt jump-to-today", () => {
     );
     rerender(<GanttRoute />);
 
-    fireEvent.change(search, { target: { value: "" } });
+    searchFor("");
 
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
     expect(scrollIntoView).toHaveBeenLastCalledWith(
@@ -386,15 +439,10 @@ describe("Gantt jump-to-today", () => {
     // The search narrows the *visible* timeline down to nothing, even though
     // today is still within the unfiltered project's date range — the button
     // has nothing left to scroll to and must reflect that.
-    fireEvent.change(
-      screen.getByPlaceholderText("Search scheduled tickets..."),
-      {
-        target: { value: "no such task" },
-      },
-    );
+    searchFor("no such task");
 
     expect(
-      screen.getByText('No scheduled tasks match "no such task"'),
+      screen.getByText("No tasks match your search or filters."),
     ).toBeInTheDocument();
     expect(button).toBeDisabled();
   });
@@ -510,7 +558,7 @@ describe("Gantt custom field column", () => {
   });
 
   it("shows the picker but no badge until a field is selected", () => {
-    useGetCustomFieldsByProject.mockReturnValue({
+    mockUseGetCustomFieldsByProject.mockReturnValue({
       data: [
         {
           id: "field-1",
@@ -524,7 +572,7 @@ describe("Gantt custom field column", () => {
         },
       ],
     });
-    useGetCustomFieldValuesByProject.mockReturnValue({
+    mockUseGetCustomFieldValuesByProject.mockReturnValue({
       data: [
         {
           id: "value-1",
@@ -554,7 +602,7 @@ describe("Gantt custom field column", () => {
   });
 
   it("renders the chosen field's value as a badge on the task rail, and skips tasks without a value", () => {
-    useGetCustomFieldsByProject.mockReturnValue({
+    mockUseGetCustomFieldsByProject.mockReturnValue({
       data: [
         {
           id: "field-1",
@@ -568,7 +616,7 @@ describe("Gantt custom field column", () => {
         },
       ],
     });
-    useGetCustomFieldValuesByProject.mockReturnValue({
+    mockUseGetCustomFieldValuesByProject.mockReturnValue({
       data: [
         {
           id: "value-1",

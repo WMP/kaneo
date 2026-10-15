@@ -10,17 +10,22 @@ import { codedErrorResponse } from "../utils/coded-error";
 import { accessibleProjectIds } from "../utils/project-access";
 import {
   hasWorkspacePermission,
+  requireApiKeyScope,
   requireWorkspacePermission,
+  workspacePermissionChecker,
 } from "../utils/require-workspace-permission";
 import { toCsv } from "../utils/to-csv";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import addWorkspaceMemberCtrl from "./controllers/add-workspace-member";
 import exportWorkspaceActivities from "./controllers/export-workspace-activities";
 import getAssignableRolesCtrl from "./controllers/get-assignable-roles";
+import getMyCapabilitiesCtrl from "./controllers/get-my-capabilities";
+import getWorkspaceCtrl from "./controllers/get-workspace";
 import getWorkspaceActivities from "./controllers/get-workspace-activities";
 import getWorkspaceActivityRetention from "./controllers/get-workspace-activity-retention";
 import getWorkspaceMembersCtrl from "./controllers/get-workspace-members";
 import listInvitationProjectsCtrl from "./controllers/list-invitation-projects";
+import listWorkspacesCtrl from "./controllers/list-workspaces";
 import searchUserDirectoryCtrl, {
   assertUserDirectoryEnabled,
 } from "./controllers/search-user-directory";
@@ -34,8 +39,11 @@ import {
   workspaceActivityExportSchema,
   workspaceActivityListSchema,
   workspaceActivityRetentionSchema,
+  workspaceCapabilitiesSchema,
   workspaceInvitationProjectsSchema,
+  workspaceListSchema,
   workspaceMemberListSchema,
+  workspaceSchema,
 } from "./response";
 import {
   addWorkspaceMemberBody,
@@ -67,6 +75,40 @@ const EXPORT_CSV_COLUMNS = [
   "externalUrl",
 ] as const;
 
+const listWorkspacesRoute = createRoute({
+  method: "get",
+  operationId: "listWorkspaces",
+  path: "/",
+  tags: ["Workspaces"],
+  summary: "List workspaces",
+  description:
+    "List the workspaces where one of the caller's roles grants workspace:read, with the caller's role, sorted by name. Instance admins get every workspace they are a member of, and only those.",
+  middleware: [requireApiKeyScope({ workspace: ["read"] })] as const,
+  responses: {
+    200: jsonResponse("The caller's workspaces", workspaceListSchema),
+    403: errorResponse("The API key lacks workspace:read"),
+  },
+});
+
+const getWorkspaceRoute = createRoute({
+  method: "get",
+  operationId: "getWorkspace",
+  path: "/{workspaceId}",
+  tags: ["Workspaces"],
+  summary: "Get workspace",
+  description:
+    "Get a workspace where one of the caller's roles grants workspace:read, with the caller's role. Instance admins can get any workspace, with a null role when they are not a member.",
+  middleware: [requireApiKeyScope({ workspace: ["read"] })] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse("The workspace", workspaceSchema),
+    403: errorResponse("The API key lacks workspace:read"),
+    404: errorResponse(
+      "Workspace not found, the caller is not a member of it, or none of their roles grants workspace:read",
+    ),
+  },
+});
+
 const getWorkspaceMembersRoute = createRoute({
   method: "get",
   operationId: "getWorkspaceMembers",
@@ -74,13 +116,15 @@ const getWorkspaceMembersRoute = createRoute({
   tags: ["Workspaces"],
   summary: "Get workspace members",
   description:
-    "Get the members of a workspace, with their role and join date. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member). With include=projects, a caller who manages members (or has full access) also gets, per member, the projects they belong to with their project role (only projects the caller can open) and whether they have full access.",
+    "Get the members of a workspace, with their role and join date. A caller with full access (instance administrator, workspace owner, or a role granting workspace:manage_settings) sees every member; any other caller sees only themselves, the full-access members and the members who share at least one project with them, unless their workspace role can create, update or delete members (then they see every member). With include=projects, a caller who manages members (or has full access) also gets, per member, the projects they belong to with their project role (only projects the caller can open) and whether they have full access. Pass projectId to keep only the people who can open that project (its members and the full-access members); the caller needs access to that project.",
   middleware: [workspaceAccess.fromParam("workspaceId")] as const,
   request: { params: workspaceIdParam, query: workspaceMembersQuery },
   responses: {
     200: jsonResponse("List of workspace members", workspaceMemberListSchema),
-    400: errorResponse("Workspace ID could not be determined"),
-    403: errorResponse("No access to the workspace"),
+    403: errorResponse("No access to the project"),
+    404: errorResponse(
+      "Workspace not found, or project not found in this workspace",
+    ),
   },
 });
 
@@ -93,7 +137,7 @@ const searchUserDirectoryRoute = createRoute({
   path: "/{workspaceId}/user-directory",
   tags: ["Workspaces"],
   summary: "Search the accounts of the instance",
-  description: `Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. A guest (anonymous) account is refused on every instance. Errors carry a \`code\`: ${userDirectoryErrorCodes}. The shared permission check answers plain text 403.`,
+  description: `Find an existing account of this instance by part of its name or email, to add it to the workspace (POST /members). Requires member:create in the caller's WORKSPACE role (owners and instance administrators included; an API key must allow it too). Returns at most 20 accounts (id, name, email, image) for a query of at least 2 characters; anonymous guest accounts, banned accounts and people who already are members of the workspace are left out. PRIVACY: this reveals that an account exists on the instance, also one that shares no workspace with the caller, so it can be switched off: DISABLE_USER_DIRECTORY=true turns it off, and on Kaneo Cloud it is off unless ENABLE_USER_DIRECTORY=true (see userDirectoryEnabled in GET /config). Searches are rate limited per user. A guest (anonymous) account is refused on every instance. Errors carry a \`code\`: ${userDirectoryErrorCodes}. The shared permission check answers 403 with code MISSING_PERMISSION.`,
   middleware: [
     workspaceAccess.fromParam("workspaceId"),
     requireWorkspacePermission({ member: ["create"] }),
@@ -312,14 +356,48 @@ const updateWorkspaceActivityRetentionRoute = createRoute({
   },
 });
 
+const getMyCapabilitiesRoute = createRoute({
+  method: "get",
+  operationId: "getMyWorkspaceCapabilities",
+  path: "/{workspaceId}/capabilities",
+  tags: ["Workspaces"],
+  summary: "Get my workspace capabilities",
+  description:
+    "Check every named workspace action for the caller in one request: which of them the caller's roles allow, narrowed by the API key's scope when one is used. Instance admins are allowed everything.",
+  middleware: [workspaceAccess.fromParam("workspaceId")] as const,
+  request: { params: workspaceIdParam },
+  responses: {
+    200: jsonResponse(
+      "The caller's capabilities in the workspace",
+      workspaceCapabilitiesSchema,
+    ),
+    404: errorResponse("Workspace not found"),
+  },
+});
+
 const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
+  .openapi(listWorkspacesRoute, async (c) =>
+    c.json(await listWorkspacesCtrl(c.get("userId")), 200),
+  )
+  .openapi(getWorkspaceRoute, async (c) =>
+    c.json(
+      await getWorkspaceCtrl(c.req.valid("param").workspaceId, c.get("userId")),
+      200,
+    ),
+  )
+  .openapi(getMyCapabilitiesRoute, async (c) =>
+    c.json(getMyCapabilitiesCtrl(await workspacePermissionChecker(c)), 200),
+  )
   .openapi(getWorkspaceMembersRoute, async (c) =>
     c.json(
       await getWorkspaceMembersCtrl(
         c.get("workspaceId"),
         c.get("userId"),
         await accessibleProjectIds(c.get("userId"), c.get("workspaceId")),
-        { withProjects: c.req.valid("query").include === "projects" },
+        {
+          withProjects: c.req.valid("query").include === "projects",
+          projectId: c.req.valid("query").projectId,
+        },
       ),
       200,
     ),

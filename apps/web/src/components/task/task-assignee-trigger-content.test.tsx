@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type Task from "@/types/task";
 import { TaskAssigneeTriggerContent } from "./task-assignee-trigger-content";
 
@@ -121,7 +121,7 @@ describe("TaskAssigneeTriggerContent", () => {
     const avatars = container.querySelectorAll('[data-slot="avatar"]');
     expect(avatars).toHaveLength(2);
     for (const avatar of avatars) {
-      expect(avatar).toHaveClass("size-5");
+      expect(avatar).toHaveClass("size-4.5");
       expect(avatar).not.toHaveClass("size-4");
     }
     expect(screen.getByText("CI")).toBeInTheDocument();

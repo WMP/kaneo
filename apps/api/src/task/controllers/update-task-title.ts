@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { currentActorSource } from "../../activity/actor-source";
 import db from "../../database";
-import { activityTable, taskTable } from "../../database/schema";
-import { publishEvent } from "../../events";
+import { taskTable } from "../../database/schema";
+import {
+  publishTaskMutation,
+  recordTaskMutation,
+} from "./task-mutation-effects";
 
 async function updateTaskTitle({
   id,
@@ -14,7 +16,7 @@ async function updateTaskTitle({
   title: string;
   currentUserId: string;
 }) {
-  const existingTask = await db.query.taskTable.findFirst({
+  let existingTask = await db.query.taskTable.findFirst({
     where: eq(taskTable.id, id),
   });
 
@@ -30,6 +32,14 @@ async function updateTaskTitle({
   // history row atomically; event subscribers remain notifications/integrations
   // only and cannot make the audit trail disappear.
   const updatedTask = await db.transaction(async (tx) => {
+    const [locked] = await tx
+      .select()
+      .from(taskTable)
+      .where(eq(taskTable.id, id))
+      .for("update");
+    if (!locked) throw new HTTPException(404, { message: "Task not found" });
+    existingTask = locked;
+
     const [task] = await tx
       .update(taskTable)
       .set({ title })
@@ -42,25 +52,13 @@ async function updateTaskTitle({
       });
     }
 
-    await tx.insert(activityTable).values({
-      taskId: task.id,
-      type: "title_changed",
-      userId: currentUserId,
-      content: null,
-      eventData: { oldTitle: existingTask.title, newTitle: title },
-      ...currentActorSource(),
-    });
+    await recordTaskMutation(tx, existingTask, { title }, currentUserId);
 
     return task;
   });
 
-  await publishEvent("task.title_changed", {
-    taskId: updatedTask.id,
-    projectId: updatedTask.projectId,
-    userId: currentUserId,
-    oldTitle: existingTask.title,
-    newTitle: title,
-    type: "title_changed",
+  await publishTaskMutation(existingTask, updatedTask, currentUserId, {
+    fields: ["title"],
   });
 
   return updatedTask;

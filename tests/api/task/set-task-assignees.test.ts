@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
   readTaskAssignees,
   setTaskAssignees,
@@ -56,18 +56,13 @@ describe("setTaskAssignees", () => {
   it("dedupes, preserves the first user id as primary, and mirrors it onto task.userId", async () => {
     const { executor, calls } = createMockExecutor();
 
-    const result = await setTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      "task-1",
-      [
-        { userId: "user-1" },
-        { userId: "user-2" },
-        { userId: "user-1" },
-        { userId: "  " },
-        { userId: "user-2" },
-      ],
-    );
+    const result = await setTaskAssignees(executor as any, "task-1", [
+      { userId: "user-1" },
+      { userId: "user-2" },
+      { userId: "user-1" },
+      { userId: "  " },
+      { userId: "user-2" },
+    ]);
 
     expect(result).toEqual([{ userId: "user-1" }, { userId: "user-2" }]);
 
@@ -87,12 +82,7 @@ describe("setTaskAssignees", () => {
   it("replaces the previous rows: a stale assignee not in the new list is deleted", async () => {
     const { executor, calls } = createMockExecutor();
 
-    await setTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      "task-1",
-      [{ userId: "user-2" }],
-    );
+    await setTaskAssignees(executor as any, "task-1", [{ userId: "user-2" }]);
 
     const deleteCall = calls.find((call) => call.op === "delete");
     expect(deleteCall).toBeDefined();
@@ -102,12 +92,7 @@ describe("setTaskAssignees", () => {
   it("clears every assignment and nulls the primary when given an empty list", async () => {
     const { executor, calls } = createMockExecutor();
 
-    const result = await setTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      "task-1",
-      [],
-    );
+    const result = await setTaskAssignees(executor as any, "task-1", []);
 
     expect(result).toEqual([]);
     expect(executor.insert).not.toHaveBeenCalled();
@@ -119,12 +104,9 @@ describe("setTaskAssignees", () => {
   it("assigns a resource-only target and leaves task.userId null", async () => {
     const { executor, calls } = createMockExecutor();
 
-    const result = await setTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      "task-1",
-      [{ resourceId: "resource-1" }],
-    );
+    const result = await setTaskAssignees(executor as any, "task-1", [
+      { resourceId: "resource-1" },
+    ]);
 
     expect(result).toEqual([{ resourceId: "resource-1" }]);
 
@@ -141,12 +123,10 @@ describe("setTaskAssignees", () => {
   it("mixes a user and a resource target: the user becomes primary, both are inserted", async () => {
     const { executor, calls } = createMockExecutor();
 
-    const result = await setTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      "task-1",
-      [{ resourceId: "resource-1" }, { userId: "user-1" }],
-    );
+    const result = await setTaskAssignees(executor as any, "task-1", [
+      { resourceId: "resource-1" },
+      { userId: "user-1" },
+    ]);
 
     expect(result).toEqual([
       { resourceId: "resource-1" },
@@ -184,7 +164,6 @@ describe("readTaskAssignees", () => {
     const selectFn = vi.fn();
     const executor = { select: selectFn };
 
-    // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
     const result = await readTaskAssignees(executor as any, []);
 
     expect(result.size).toBe(0);
@@ -228,11 +207,7 @@ describe("readTaskAssignees", () => {
     const selectFn = vi.fn(() => chain);
     const executor = { select: selectFn };
 
-    const result = await readTaskAssignees(
-      // biome-ignore lint/suspicious/noExplicitAny: minimal structural mock
-      executor as any,
-      ["task-1"],
-    );
+    const result = await readTaskAssignees(executor as any, ["task-1"]);
 
     expect(selectFn).toHaveBeenCalledTimes(1);
     expect(result.get("task-1")).toEqual([

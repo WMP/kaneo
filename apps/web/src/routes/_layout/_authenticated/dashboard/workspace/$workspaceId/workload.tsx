@@ -154,7 +154,8 @@ function WorkloadComponent() {
   };
 
   const buckets = data?.buckets ?? [];
-  const assignees = data?.assignees ?? [];
+  const dataAssignees = data?.assignees;
+  const assignees = useMemo(() => dataAssignees ?? [], [dataAssignees]);
   const hasData = assignees.length > 0;
   const showLoading = isLoading || (isFetching && !data);
 
@@ -446,8 +447,8 @@ function WorkloadComponent() {
                           const isOverloaded = count > overloadThreshold;
                           return (
                             <TableCell
-                              // biome-ignore lint/suspicious/noArrayIndexKey: buckets are a fixed, index-aligned sequence for this row
-                              key={index}
+                              // Buckets are a fixed, index-aligned sequence for this row.
+                              key={bucket?.start ?? `unaligned-${index}`}
                               className="p-0 text-center tabular-nums"
                             >
                               <button

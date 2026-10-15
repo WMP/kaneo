@@ -7,7 +7,7 @@ import {
   it,
   type Mock,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 import type { DependencyEdgeInput } from "./dependency-lines";
 import {

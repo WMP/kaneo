@@ -62,7 +62,7 @@ export function PickerSearchInput({
         aria-hidden="true"
       />
       <input
-        // biome-ignore lint/a11y/noAutofocus: the picker exists to be searched; focus moves here on open.
+        // the picker exists to be searched; focus moves here on open.
         autoFocus
         data-picker-search-input=""
         type="search"
@@ -103,8 +103,13 @@ export function PickerList({
   ...props
 }: React.ComponentProps<"div">) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: delegates arrow keys from the buttons inside it.
-    <div className={className} onKeyDown={handlePickerListKeyDown} {...props} />
+    // The key handler delegates arrow keys from the buttons inside it.
+    <div
+      role="group"
+      className={className}
+      onKeyDown={handlePickerListKeyDown}
+      {...props}
+    />
   );
 }
 

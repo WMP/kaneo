@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { invalidateProjectMembership } from "./invalidate-project-membership";
 
 describe("invalidateProjectMembership", () => {

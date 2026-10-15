@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type { ProjectMember } from "@/fetchers/project-member/get-project-members";
 import { ProjectMemberError } from "@/lib/project-member-error";
 import ProjectPeopleTable from "./project-people-table";

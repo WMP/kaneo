@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { ProjectMemberError } from "@/lib/project-member-error";
 import { WorkspaceMemberError } from "@/lib/workspace-role-error";
 import AddPeopleDialog from "./add-people-dialog";
@@ -47,11 +54,11 @@ let directory: {
   isPlaceholderData?: boolean;
   error?: unknown;
 };
-const useSearchUserDirectory = vi.fn(
+const mockUseSearchUserDirectory = vi.fn(
   (_workspaceId: string | undefined, _query: string, _options: unknown) =>
     directory,
 );
-const useGetMemberCandidates = vi.fn(
+const mockUseGetMemberCandidates = vi.fn(
   (_projectId: string | undefined, _options: unknown) => ({
     ...candidates,
     isLoading: false,
@@ -93,12 +100,12 @@ vi.mock(
 );
 vi.mock("@/hooks/queries/project-member/use-get-member-candidates", () => ({
   default: (projectId: string | undefined, options: unknown) =>
-    useGetMemberCandidates(projectId, options),
+    mockUseGetMemberCandidates(projectId, options),
 }));
 vi.mock("@/hooks/queries/workspace/use-search-user-directory", () => ({
   USER_DIRECTORY_MIN_QUERY_LENGTH: 2,
   default: (workspaceId: string | undefined, query: string, options: unknown) =>
-    useSearchUserDirectory(workspaceId, query, options),
+    mockUseSearchUserDirectory(workspaceId, query, options),
 }));
 
 vi.mock("@/hooks/mutations/workspace/use-add-workspace-member", () => ({
@@ -223,7 +230,7 @@ describe("AddPeopleDialog in a workspace", () => {
     renderWorkspace();
 
     await type("ad");
-    expect(useSearchUserDirectory).toHaveBeenLastCalledWith(
+    expect(mockUseSearchUserDirectory).toHaveBeenLastCalledWith(
       "workspace-1",
       "ad",
       { enabled: true },
@@ -389,7 +396,7 @@ describe("AddPeopleDialog in a workspace", () => {
 
     expect(await screen.findByText("people:add.hintInviteOnly")).toBeVisible();
     await type("ad");
-    expect(useSearchUserDirectory).toHaveBeenLastCalledWith(
+    expect(mockUseSearchUserDirectory).toHaveBeenLastCalledWith(
       "workspace-1",
       "ad",
       { enabled: false },
@@ -406,7 +413,7 @@ describe("AddPeopleDialog in a workspace", () => {
     renderWorkspace({ canAdd: false });
 
     await type("ad");
-    expect(useSearchUserDirectory).toHaveBeenLastCalledWith(
+    expect(mockUseSearchUserDirectory).toHaveBeenLastCalledWith(
       "workspace-1",
       "ad",
       { enabled: false },
@@ -582,15 +589,19 @@ describe("AddPeopleDialog in a workspace", () => {
     };
     const view = render(<AddPeopleDialog {...props} />);
     await type("ad");
-    expect(useSearchUserDirectory).toHaveBeenCalledWith("workspace-1", "ad", {
-      enabled: true,
-    });
+    expect(mockUseSearchUserDirectory).toHaveBeenCalledWith(
+      "workspace-1",
+      "ad",
+      {
+        enabled: true,
+      },
+    );
     fireEvent.click(await option(/Ada Lovelace/));
 
     view.rerender(<AddPeopleDialog {...props} open={false} />);
     // Closing resets nothing (the close animation would flip to an empty
     // form): the state is still the one of the last time.
-    useSearchUserDirectory.mockClear();
+    mockUseSearchUserDirectory.mockClear();
     view.rerender(<AddPeopleDialog {...props} open />);
 
     // The field is empty again and nothing was picked.
@@ -599,7 +610,7 @@ describe("AddPeopleDialog in a workspace", () => {
       screen.queryByRole("combobox", { name: "people:add.workspaceRoleLabel" }),
     ).toBeNull();
     // No directory request for the old text, before or after the reopen.
-    const asked = useSearchUserDirectory.mock.calls as [
+    const asked = mockUseSearchUserDirectory.mock.calls as [
       string,
       string,
       { enabled: boolean },
@@ -614,9 +625,13 @@ describe("AddPeopleDialog in a workspace", () => {
     renderWorkspace({ open: false });
 
     expect(screen.queryByText("people:add.title")).toBeNull();
-    expect(useSearchUserDirectory).toHaveBeenLastCalledWith("workspace-1", "", {
-      enabled: false,
-    });
+    expect(mockUseSearchUserDirectory).toHaveBeenLastCalledWith(
+      "workspace-1",
+      "",
+      {
+        enabled: false,
+      },
+    );
   });
 });
 
@@ -895,7 +910,7 @@ describe("AddPeopleDialog in a project", () => {
     renderProject({ canAddToWorkspace: false });
     await type("ad");
 
-    expect(useSearchUserDirectory).toHaveBeenLastCalledWith(
+    expect(mockUseSearchUserDirectory).toHaveBeenLastCalledWith(
       "workspace-1",
       "ad",
       { enabled: false },
@@ -1087,7 +1102,7 @@ describe("AddPeopleDialog in a project", () => {
   it("only reads the candidates for somebody who may add", () => {
     renderProject({ canAdd: false });
 
-    expect(useGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
+    expect(mockUseGetMemberCandidates).toHaveBeenLastCalledWith("project-1", {
       enabled: false,
     });
     expect(

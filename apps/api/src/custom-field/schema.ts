@@ -59,13 +59,24 @@ export const createWorkspaceCustomFieldBody = z.object({
 // sent. Omitted properties keep their stored value and the merged result is
 // validated with the same rules as creating a field.
 export const updateCustomFieldBody = z.object({
-  name: z.string().optional(),
-  required: z.boolean().optional(),
+  name: z.string().optional().openapi({
+    description: "New name for the field. Cannot be blank.",
+  }),
+  required: z.boolean().optional().openapi({
+    description:
+      "Whether every task must have a value. Turning it on needs a default; for a project field the default fills the tasks that have no value yet.",
+  }),
   // null clears the default; omitted leaves it unchanged.
-  defaultValue: z.string().nullable().optional(),
+  defaultValue: z.string().nullable().optional().openapi({
+    description:
+      "Value new tasks start with. Send `null` or an empty string to clear it. Multiselect defaults are a JSON array of options.",
+  }),
   // Full replacement list of options (dropdown and multiselect only);
   // omitted leaves the options unchanged.
-  options: z.array(z.string()).optional(),
+  options: z.array(z.string()).optional().openapi({
+    description:
+      "The full option list for dropdown and multiselect fields, in display order. Adding and reordering options is always allowed. Removing an option that a task still uses is rejected with 409, so task values are never changed silently.",
+  }),
   // null clears stored colors; omitted keeps the colors of the options that
   // remain.
   optionColors: z.record(z.string(), z.string()).nullable().optional(),

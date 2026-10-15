@@ -37,6 +37,25 @@ type WorkspaceIdSource =
       idKey: string;
     };
 
+const WORKSPACE_NOT_FOUND = "Workspace not found";
+const TASKS_NOT_FOUND = "No tasks found";
+
+// What a request answers (404) when the resource it names does not exist. The
+// same message is used when the caller is not a member of the resource's
+// workspace, so the answer does not tell a missing resource from a hidden one.
+const RESOURCE_NOT_FOUND: Record<LookupResource, string> = {
+  project: "Project not found",
+  task: "Task not found",
+  label: "Label not found",
+  timeEntry: "Time entry not found",
+  activity: "Activity not found",
+  comment: "Comment not found",
+  column: "Column not found",
+  workflowRule: "Workflow rule not found",
+  customField: "Custom field not found",
+  resource: "Resource not found",
+};
+
 // A resource's workspace and, when it belongs to a project, that project.
 // Resources without a project (workspace labels, workspace custom fields,
 // resources) leave `projectId` null and are gated by workspace membership.
@@ -94,6 +113,7 @@ export function workspaceAccessMiddleware(
     let workspaceId: string | null = null;
     let projectId: string | null = null;
     let bulkProjectIds: string[] | null = null;
+    let notFoundMessage = WORKSPACE_NOT_FOUND;
 
     for (const source of config.sources) {
       if (source.type === "query") {
@@ -117,9 +137,13 @@ export function workspaceAccessMiddleware(
         // handler acted on another (`{"taskId": "<someone else's>"}`).
         const id = c.req.param(source.idKey) || idFromBody;
         if (id) {
+          notFoundMessage = RESOURCE_NOT_FOUND[source.resource];
           const scope = await lookupScope(source.resource, id);
-          workspaceId = scope?.workspaceId ?? null;
-          projectId = scope?.projectId ?? null;
+          if (!scope) {
+            throw new HTTPException(404, { message: notFoundMessage });
+          }
+          workspaceId = scope.workspaceId;
+          projectId = scope.projectId;
         }
       } else if (source.type === "lookupMany") {
         const body = await readJsonObjectBody(c);
@@ -129,6 +153,7 @@ export function workspaceAccessMiddleware(
             (id): id is string => typeof id === "string",
           );
           if (taskIds.length > 0) {
+            notFoundMessage = TASKS_NOT_FOUND;
             const tasks = await db
               .select({
                 workspaceId: schema.projectTable.workspaceId,
@@ -144,7 +169,7 @@ export function workspaceAccessMiddleware(
               ...new Set(tasks.map((task) => task.workspaceId)),
             ];
             if (workspaceIds.length === 0) {
-              throw new HTTPException(404, { message: "No tasks found" });
+              throw new HTTPException(404, { message: notFoundMessage });
             }
             if (workspaceIds.length > 1) {
               throw new HTTPException(400, {
@@ -171,7 +196,9 @@ export function workspaceAccessMiddleware(
     const apiKey = c.get("apiKey");
     const apiKeyId = apiKey?.id;
 
-    await validateWorkspaceAccess(userId, workspaceId, apiKeyId);
+    await validateWorkspaceAccess(userId, workspaceId, apiKeyId, {
+      notFoundMessage,
+    });
 
     // Workspace membership alone does not open a project: the user needs a
     // project membership or full access (see `project-access.ts`). The query

@@ -5,8 +5,16 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { HttpError } from "@/lib/http-error";
+import { useRelationPickerStore } from "./task-relation-picker-store";
 import TaskRelations from "./task-relations";
 
 const mocks = vi.hoisted(() => ({
@@ -14,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   canUpdateTasks: vi.fn(),
   createRelation: vi.fn(),
   deleteRelation: vi.fn(),
+  deleteRelationAsync: vi.fn(),
   taskRelations: vi.fn(),
   projectTasks: vi.fn(),
   project: vi.fn(),
@@ -34,7 +43,10 @@ vi.mock("@/hooks/mutations/task-relation/use-create-task-relation", () => ({
   default: () => ({ mutateAsync: mocks.createRelation }),
 }));
 vi.mock("@/hooks/mutations/task-relation/use-delete-task-relation", () => ({
-  default: () => ({ mutate: mocks.deleteRelation }),
+  default: () => ({
+    mutate: mocks.deleteRelation,
+    mutateAsync: mocks.deleteRelationAsync,
+  }),
 }));
 vi.mock("@/hooks/queries/project/use-get-project", () => ({
   default: () => mocks.project(),
@@ -50,6 +62,9 @@ vi.mock("@/hooks/queries/task-relation/use-get-task-relations", () => ({
 }));
 vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
+}));
+vi.mock("@/hooks/queries/project/use-get-projects", () => ({
+  default: () => ({ data: [] }),
 }));
 vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
   useProjectMembers: () => ({ data: { members: [] } }),
@@ -331,7 +346,11 @@ describe("TaskRelations cross-project correctness", () => {
     mocks.taskRelations.mockReturnValue({ data: [] });
     renderRelations();
 
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:subtasks.addAction tasks:relations.title",
+      }),
+    );
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:relations.related" }),
     );
@@ -402,7 +421,11 @@ describe("TaskRelations link errors", () => {
 
   function openPickerAndLinkTask() {
     renderRelations();
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:subtasks.addAction tasks:relations.title",
+      }),
+    );
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:relations.related" }),
     );
@@ -461,7 +484,11 @@ describe("TaskRelations link creation direction", () => {
 
   function openPicker() {
     renderRelations();
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:subtasks.addAction tasks:relations.title",
+      }),
+    );
   }
 
   beforeEach(() => {
@@ -635,7 +662,11 @@ describe("TaskRelations picker flow", () => {
 
   const openPicker = () => {
     renderRelations();
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:subtasks.addAction tasks:relations.title",
+      }),
+    );
   };
   const searchInput = () =>
     screen.getByPlaceholderText("tasks:relations.searchPlaceholder");
@@ -720,9 +751,111 @@ describe("TaskRelations picker flow", () => {
       ).not.toBeInTheDocument(),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "tasks:subtasks.addAction tasks:relations.title",
+      }),
+    );
 
     expect(kindButton("blocks")).toHaveAttribute("aria-pressed", "false");
     expect(searchInput()).toBeDisabled();
+  });
+});
+
+describe("TaskRelations opened by a shortcut", () => {
+  const pickableTask = {
+    id: "task-b",
+    title: "Task B",
+    status: "done",
+    priority: null,
+    number: 2,
+    projectId: CURRENT_PROJECT_ID,
+    userId: null,
+    assigneeName: null,
+  };
+
+  beforeEach(() => {
+    mocks.taskRelations.mockReturnValue({ data: [] });
+    mocks.createRelation.mockResolvedValue(undefined);
+    mocks.deleteRelationAsync.mockResolvedValue(undefined);
+    mocks.projectTasks.mockReturnValue({
+      data: {
+        columns: [{ ...CURRENT_PROJECT_COLUMNS[0], tasks: [pickableTask] }],
+      },
+    });
+  });
+
+  afterEach(() => {
+    useRelationPickerStore.getState().clear();
+  });
+
+  it("opens with the requested kind already chosen and keeps the dependency settings", async () => {
+    useRelationPickerStore.getState().open("task-current", "blockedBy");
+    renderRelations();
+
+    expect(
+      await screen.findByRole("button", { name: "tasks:relations.blockedBy" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByLabelText("tasks:relations.dependency.lagLabel"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Task B"));
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-b",
+        targetTaskId: "task-current",
+        relationType: "blocks",
+        dependencyType: "fs",
+        lagDays: 0,
+      }),
+    );
+  });
+
+  it("sets the picked task as the parent and replaces the previous parent", async () => {
+    mocks.taskRelations.mockReturnValue({
+      data: [
+        {
+          id: "relation-parent",
+          relationType: "subtask",
+          sourceTaskId: "task-old-parent",
+          targetTaskId: "task-current",
+          sourceTask: null,
+          targetTask: null,
+        },
+      ],
+    });
+    useRelationPickerStore.getState().open("task-current", "parent");
+    renderRelations();
+
+    expect(
+      await screen.findByPlaceholderText("tasks:relations.parentPlaceholder"),
+    ).toBeInTheDocument();
+    // No relation kind to choose while a parent is being set.
+    expect(
+      screen.queryByRole("button", { name: "tasks:relations.related" }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByText("Task B"));
+    await waitFor(() =>
+      expect(mocks.createRelation).toHaveBeenCalledWith({
+        sourceTaskId: "task-b",
+        targetTaskId: "task-current",
+        relationType: "subtask",
+      }),
+    );
+    await waitFor(() =>
+      expect(mocks.deleteRelationAsync).toHaveBeenCalledWith("relation-parent"),
+    );
+  });
+
+  it("ignores a shortcut request when the viewer cannot edit tasks", () => {
+    mocks.canUpdateTasks.mockReturnValue(false);
+    useRelationPickerStore.getState().open("task-current", "related");
+    renderRelations();
+
+    expect(
+      screen.queryByPlaceholderText("tasks:relations.searchPlaceholder"),
+    ).toBeNull();
   });
 });

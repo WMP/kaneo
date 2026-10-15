@@ -1,11 +1,27 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { HttpError } from "@/lib/http-error";
 import { useProjectWebSocket } from "./use-project-websocket";
 
-const { client, auth, getProjectAccess } = vi.hoisted(() => ({
+const { client, auth, getProjectAccess, navigate } = vi.hoisted(() => ({
+  navigate: vi.fn(),
   client: {
+    getQueryCache: () => ({ subscribe: () => () => {}, findAll: () => [] }),
+    getQueryState: vi.fn(),
+    cancelQueries: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn(),
     invalidateQueries: vi.fn(),
+    setQueryData: vi.fn(),
+    setQueriesData: vi.fn(),
+    getQueriesData: vi.fn().mockReturnValue([]),
+    getQueryData: vi.fn(),
     // Runs the query function like TanStack's fetchQuery would.
     fetchQuery: vi.fn(({ queryFn }: { queryFn: () => Promise<unknown> }) =>
       queryFn(),
@@ -18,6 +34,7 @@ vi.mock("@/fetchers/project/get-project-access", () => ({
   default: getProjectAccess,
 }));
 vi.mock("@tanstack/react-query", () => ({ useQueryClient: () => client }));
+vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
 // These tests check which keys a message refreshes. The batcher that spaces
 // the refreshes out has its own tests (src/lib/coalesced-invalidation.test.tsx)
 // and a real-QueryClient test of this hook (use-project-websocket-abort.test.tsx).
@@ -83,7 +100,9 @@ describe("project WebSocket lifecycle", () => {
   it("ignores late old-project events without stopping the new project's keepalive", () => {
     const { rerender, unmount } = renderHook(
       ({ id }) => useProjectWebSocket(id),
-      { initialProps: { id: "project-a" } },
+      {
+        initialProps: { id: "project-a" },
+      },
     );
     const old = TestSocket.instances[0];
     act(() => old.open());
@@ -328,10 +347,27 @@ describe("project WebSocket lifecycle", () => {
     }
   });
 
+  it("refreshes task resources after a task move", () => {
+    renderHook(() => useProjectWebSocket("project-a"));
+    act(() =>
+      TestSocket.instances[0].onmessage?.({
+        data: JSON.stringify({
+          type: "TASK_MOVED",
+          projectId: "project-a",
+          taskId: "task-a",
+        }),
+      }),
+    );
+    expect(client.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["external-links", "task-a"],
+    });
+  });
+
   it("preserves bounded exponential reconnects and active message invalidation", () => {
     const { unmount } = renderHook(() => useProjectWebSocket("project-a"));
     for (let retry = 0; retry < 5; retry++) {
       act(() => {
+        TestSocket.instances.at(-1)?.open();
         TestSocket.instances.at(-1)?.onclose?.();
         vi.advanceTimersByTime(1000 * 2 ** retry);
       });
@@ -397,8 +433,11 @@ describe("project WebSocket lifecycle", () => {
       expect(client.invalidateQueries).toHaveBeenCalledWith({
         queryKey: ["task-relations", "project", "project-a"],
       });
+      // With no cached board to patch, the task's own detail cache is the
+      // one refreshed; a cached board is patched in place from a task read
+      // (see use-project-websocket-cache.test.tsx).
       expect(client.invalidateQueries).toHaveBeenCalledWith({
-        queryKey: ["tasks", "project-a"],
+        queryKey: ["task", "t1"],
       });
     },
   );

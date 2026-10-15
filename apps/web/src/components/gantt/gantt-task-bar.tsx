@@ -39,6 +39,11 @@ import {
 
 const CLICK_MOVE_THRESHOLD_PX = 4;
 const MOBILE_MOVE_THRESHOLD_PX = 14;
+const MIN_INLINE_LABEL_PX = 120;
+// Below this width a phone bar can't fit two 24px resize handles plus a
+// usable move/tap area, so it's left as one target; dates stay editable from
+// the task sheet.
+const MIN_TOUCH_RESIZABLE_PX = 120;
 
 // How far past the bar's own finish edge the "drag to link" dot sits (see the
 // handle below). Previously this handle was centered ON insetBox.right — the
@@ -643,7 +648,7 @@ export function GanttTaskBar({
           className="pointer-events-none absolute inset-0 z-[1] grid items-center"
           style={{ gridTemplateColumns: timeline.gridTemplateColumns }}
         >
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting; the actual interactive control is the button nested below */}
+          {/* hover/focus tracking drives dependency-line highlighting; the actual interactive control is the button nested below */}
           <div
             style={{
               gridColumn: `${milestoneGrid.lineStart} / ${milestoneGrid.lineEnd}`,
@@ -747,6 +752,14 @@ export function GanttTaskBar({
   // once the day-column width shrinks below it.
   const trackWidthPx = pixelsPerDay * (lineEnd - lineStart);
   const insetBox = computeInsetBarBox(0, trackWidthPx, getBarEdgeInsetPx());
+
+  // Short bars on phones leave no room for the title inside them, so it's
+  // drawn just after the bar instead (when the timeline has room for it).
+  const labelOutside =
+    isMobile && trackWidthPx < MIN_INLINE_LABEL_PX && lineEnd <= trackCount;
+  const showResizeHandles =
+    estimatedAnchor === null &&
+    (!isMobile || trackWidthPx >= MIN_TOUCH_RESIZABLE_PX);
 
   // True progress over the task's FULL span, clipped to what's currently on
   // screen (see computeProgressFillPercent) — not a percentage of the
@@ -863,7 +876,7 @@ export function GanttTaskBar({
                   </TooltipContent>
                 </Tooltip>
               )}
-              <span className="truncate">{task.title}</span>
+              {!labelOutside && <span className="truncate">{task.title}</span>}
             </span>
           </div>
           {/* Transparent hit layer: at least MIN_BAR_HOVER_HIT_PX wide, carries
@@ -872,7 +885,7 @@ export function GanttTaskBar({
               for a narrow one it extends past the bar's end so the target stays
               grabbable. Resize affordances are transparent until hovered so
               they never float visibly past a short bar. */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: hover/focus tracking drives dependency-line highlighting; the actual interactive controls are the buttons nested below */}
+          {/* hover/focus tracking drives dependency-line highlighting; the actual interactive controls are the buttons nested below */}
           <div
             style={{
               marginLeft: `${insetBox.left}px`,
@@ -884,7 +897,7 @@ export function GanttTaskBar({
             onBlur={handleBlur}
             className="pointer-events-auto absolute inset-y-0 left-0 z-10 flex items-stretch"
           >
-            {estimatedAnchor === null && (
+            {showResizeHandles && (
               <button
                 type="button"
                 aria-label={t("tasks:gantt.resizeStart")}
@@ -892,7 +905,7 @@ export function GanttTaskBar({
                 onPointerDown={handleResizeLeftPointerDown}
                 className={cn(
                   "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-l-md hover:bg-primary/18",
-                  "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
+                  "min-h-[44px] w-6 sm:min-h-0 sm:w-2",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 )}
               />
@@ -909,7 +922,7 @@ export function GanttTaskBar({
                 }
               }}
             />
-            {estimatedAnchor === null && (
+            {showResizeHandles && (
               <button
                 type="button"
                 aria-label={t("tasks:gantt.resizeDue")}
@@ -917,7 +930,7 @@ export function GanttTaskBar({
                 onPointerDown={handleResizeRightPointerDown}
                 className={cn(
                   "relative z-20 shrink-0 cursor-ew-resize touch-none rounded-r-md hover:bg-primary/18",
-                  "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:w-2",
+                  "min-h-[44px] w-6 sm:min-h-0 sm:w-2",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 )}
               />
@@ -1007,6 +1020,15 @@ export function GanttTaskBar({
             <Link2Icon className="size-2.5" aria-hidden="true" />
           </button>
         </div>
+        {labelOutside && (
+          <span
+            aria-hidden="true"
+            style={{ gridColumn: `${lineEnd} / ${trackCount + 1}` }}
+            className="min-w-0 truncate pl-1 text-xs font-medium text-foreground/80"
+          >
+            {task.title}
+          </span>
+        )}
       </div>
     </>
   );

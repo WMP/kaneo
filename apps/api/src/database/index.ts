@@ -42,6 +42,8 @@ import {
 } from "./relations";
 import { resolveDatabaseConnectionString } from "./resolve-database-url";
 import {
+  dataMigrationTable,
+  storageCleanupTable,
   accountTable,
   activityTable,
   apikeyTable,
@@ -57,6 +59,7 @@ import {
   externalLinkTable,
   githubImportTable,
   githubIntegrationTable,
+  importRunTable,
   integrationTable,
   invitationOriginTable,
   invitationProjectTable,
@@ -100,6 +103,8 @@ import {
 config();
 
 export const schema = {
+  dataMigrationTable,
+  storageCleanupTable,
   accountTable,
   assetTable,
   activityTable,
@@ -114,6 +119,7 @@ export const schema = {
   externalLinkTable,
   githubIntegrationTable,
   githubImportTable,
+  importRunTable,
   integrationTable,
   invitationOriginTable,
   invitationProjectTable,

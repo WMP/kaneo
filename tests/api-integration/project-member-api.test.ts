@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import * as delegation from "../../apps/api/src/project-member/delegation";
@@ -13,6 +13,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 vi.mock("../../apps/api/src/events", async (original) => ({
   ...(await original<object>()),
@@ -117,10 +118,10 @@ async function rowOf(w: World, userId: string) {
   return row;
 }
 
-// The shared access middleware answers plain text.
+// The shared access middleware answers a JSON error body.
 async function expectError(response: Response, status: number, text: string) {
   expect(response.status).toBe(status);
-  expect(await response.text()).toBe(text);
+  expect((await readErrorBody(response)).message).toBe(text);
 }
 
 // The project member routes answer JSON with a machine-readable code.
@@ -187,12 +188,9 @@ describe("GET /project/{id}/members", () => {
       403,
       "You don't have access to this project",
     );
+    // Not a workspace member: the project is reported as not found.
     as(w.outsider.user);
-    await expectError(
-      await call(members(w), "GET"),
-      403,
-      "You don't have access to this workspace",
-    );
+    await expectError(await call(members(w), "GET"), 404, "Project not found");
   });
 });
 

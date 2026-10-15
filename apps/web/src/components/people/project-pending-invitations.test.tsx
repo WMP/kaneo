@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type { ProjectInvitationListItem } from "@/fetchers/project-invitation/get-project-invitations";
 import { ProjectMemberError } from "@/lib/project-member-error";
 import ProjectPendingInvitations from "./project-pending-invitations";

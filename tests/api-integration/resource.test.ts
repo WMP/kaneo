@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
@@ -124,7 +124,7 @@ describe("resource API", () => {
       },
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it("assigns a resource-only target to a task and leaves task.userId null", async () => {

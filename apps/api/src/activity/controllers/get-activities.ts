@@ -2,19 +2,23 @@ import { and, desc, eq } from "drizzle-orm";
 import db from "../../database";
 import { activityTable } from "../../database/schema";
 import { relationActivityExclusionForIds } from "../../utils/project-scope-filters";
+import { redactInaccessibleMoves } from "../redact-inaccessible-moves";
 
 // `visibleProjectIds` is the viewer's project scope (`null`: full access).
 // Relation activity that names a task of a project they cannot open is left out.
 async function getActivitiesFromTaskId(
   taskId: string,
   visibleProjectIds: string[] | null,
+  viewerId: string,
+  limit?: number,
 ) {
   const activities = await db.query.activityTable.findMany({
     where: and(
       eq(activityTable.taskId, taskId),
       relationActivityExclusionForIds(visibleProjectIds),
     ),
-    orderBy: [desc(activityTable.createdAt)],
+    orderBy: [desc(activityTable.createdAt), desc(activityTable.id)],
+    limit,
   });
 
   activities.forEach((x) => {
@@ -27,9 +31,10 @@ async function getActivitiesFromTaskId(
     x.taskId = taskId;
   });
 
-  return activities as (Omit<(typeof activities)[number], "taskId"> & {
+  const typed = activities as (Omit<(typeof activities)[number], "taskId"> & {
     taskId: string;
   })[];
+  return redactInaccessibleMoves(viewerId, typed);
 }
 
 export default getActivitiesFromTaskId;

@@ -1,7 +1,14 @@
 import enUS from "@i18n/en-US.json";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { Route } from "./activity";
 
 const routeParams = { workspaceId: "workspace-1" };
@@ -70,25 +77,25 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-const useGetWorkspaceActivity = vi.fn();
+const mockUseGetWorkspaceActivity = vi.fn();
 vi.mock("@/hooks/queries/workspace/use-get-workspace-activity", () => ({
-  default: (params: unknown) => useGetWorkspaceActivity(params),
+  default: (params: unknown) => mockUseGetWorkspaceActivity(params),
 }));
 
-const useGetWorkspaceMembers = vi.fn();
+const mockUseGetWorkspaceMembers = vi.fn();
 vi.mock("@/hooks/queries/workspace/use-get-workspace-members", () => ({
-  default: (params: unknown) => useGetWorkspaceMembers(params),
+  default: (params: unknown) => mockUseGetWorkspaceMembers(params),
 }));
 
-const useGetProjects = vi.fn();
+const mockUseGetProjects = vi.fn();
 vi.mock("@/hooks/queries/project/use-get-projects", () => ({
-  default: (params: unknown) => useGetProjects(params),
+  default: (params: unknown) => mockUseGetProjects(params),
 }));
 
 const exportWorkspaceActivity = vi.fn();
-const useExportWorkspaceActivity = vi.fn();
+const mockUseExportWorkspaceActivity = vi.fn();
 vi.mock("@/hooks/mutations/workspace/use-export-workspace-activity", () => ({
-  default: () => useExportWorkspaceActivity(),
+  default: () => mockUseExportWorkspaceActivity(),
 }));
 
 const Component = (Route as unknown as { component: ComponentType }).component;
@@ -121,13 +128,13 @@ function activityRow(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  useGetWorkspaceMembers.mockReturnValue({
+  mockUseGetWorkspaceMembers.mockReturnValue({
     data: [{ user: { id: "user-1", name: "Ada", email: "ada@example.com" } }],
   });
-  useGetProjects.mockReturnValue({
+  mockUseGetProjects.mockReturnValue({
     data: [{ id: "project-1", name: "Demo project" }],
   });
-  useExportWorkspaceActivity.mockReturnValue({
+  mockUseExportWorkspaceActivity.mockReturnValue({
     mutateAsync: exportWorkspaceActivity,
     isPending: false,
   });
@@ -137,7 +144,7 @@ afterEach(cleanup);
 
 describe("workspace activity view", () => {
   it("shows a loading state while the first page is in flight", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: undefined,
       isLoading: true,
       isFetching: true,
@@ -151,7 +158,7 @@ describe("workspace activity view", () => {
   });
 
   it("shows an error state when the request fails", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: undefined,
       isLoading: false,
       isFetching: false,
@@ -166,7 +173,7 @@ describe("workspace activity view", () => {
   });
 
   it("shows the unfiltered empty state when there is no activity yet", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [],
         pagination: { total: 0, page: 1, pageSize: 25, totalPages: 1 },
@@ -187,7 +194,7 @@ describe("workspace activity view", () => {
   });
 
   it("shows a distinct empty state once a filter narrows the results to nothing", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [],
         pagination: { total: 0, page: 1, pageSize: 25, totalPages: 1 },
@@ -212,7 +219,7 @@ describe("workspace activity view", () => {
   });
 
   it("renders activity rows with a link to the source task and pagination controls", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [activityRow()],
         pagination: { total: 30, page: 1, pageSize: 25, totalPages: 2 },
@@ -240,14 +247,14 @@ describe("workspace activity view", () => {
     fireEvent.click(nextButton);
 
     const lastCall =
-      useGetWorkspaceActivity.mock.calls[
-        useGetWorkspaceActivity.mock.calls.length - 1
+      mockUseGetWorkspaceActivity.mock.calls[
+        mockUseGetWorkspaceActivity.mock.calls.length - 1
       ][0];
     expect(lastCall).toMatchObject({ page: 2 });
   });
 
   it("resets to page 1 and passes the chosen user through when the user filter changes", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [activityRow()],
         pagination: { total: 1, page: 1, pageSize: 25, totalPages: 1 },
@@ -264,14 +271,14 @@ describe("workspace activity view", () => {
     });
 
     const lastCall =
-      useGetWorkspaceActivity.mock.calls[
-        useGetWorkspaceActivity.mock.calls.length - 1
+      mockUseGetWorkspaceActivity.mock.calls[
+        mockUseGetWorkspaceActivity.mock.calls.length - 1
       ][0];
     expect(lastCall).toMatchObject({ userId: "user-1", page: 1 });
   });
 
   it("resets to page 1 and passes the chosen project through when the project filter changes", () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [activityRow()],
         pagination: { total: 1, page: 1, pageSize: 25, totalPages: 1 },
@@ -288,14 +295,14 @@ describe("workspace activity view", () => {
     });
 
     const lastCall =
-      useGetWorkspaceActivity.mock.calls[
-        useGetWorkspaceActivity.mock.calls.length - 1
+      mockUseGetWorkspaceActivity.mock.calls[
+        mockUseGetWorkspaceActivity.mock.calls.length - 1
       ][0];
     expect(lastCall).toMatchObject({ projectId: "project-1", page: 1 });
   });
 
   it("offers an Export control and exports the current filters as CSV", async () => {
-    useGetWorkspaceActivity.mockReturnValue({
+    mockUseGetWorkspaceActivity.mockReturnValue({
       data: {
         data: [activityRow()],
         pagination: { total: 1, page: 1, pageSize: 25, totalPages: 1 },

@@ -712,7 +712,7 @@ async function runScene(scene, env) {
             );
           } catch {}
           const state = {
-            ...(current.state || {}),
+            ...current.state,
             theme: "dark",
             sidebarDefaultOpen: true,
             ...overrides,

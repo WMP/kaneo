@@ -192,15 +192,12 @@ export function buildPortfolioRows(
   const derived =
     undatedByTaskId.size > 0 && derivationDependencies.length > 0
       ? deriveUndatedSuccessorSchedules({
-          edges: derivationDependencies.map(
-            (dependency): CascadeEdge => ({
-              sourceTaskId: dependency.sourceTaskId,
-              targetTaskId: dependency.targetTaskId,
-              dependencyType:
-                dependency.dependencyType as CascadeDependencyType,
-              lagDays: dependency.lagDays,
-            }),
-          ),
+          edges: derivationDependencies.map((dependency): CascadeEdge => ({
+            sourceTaskId: dependency.sourceTaskId,
+            targetTaskId: dependency.targetTaskId,
+            dependencyType: dependency.dependencyType as CascadeDependencyType,
+            lagDays: dependency.lagDays,
+          })),
           datedScheduleById: ownSpanByTaskId,
           undatedCandidateIds: undatedByTaskId.keys(),
           isWorkingDay,

@@ -1,7 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const addProjectMember = vi.fn();
 const removeProjectMember = vi.fn();
@@ -17,13 +24,11 @@ vi.mock("@/fetchers/project-invitation/create-project-invitation", () => ({
   default: (vars: unknown) => createProjectInvitation(vars),
 }));
 
-const { default: useAddProjectMember } = await import(
-  "./use-add-project-member"
-);
+const { default: useAddProjectMember } =
+  await import("./use-add-project-member");
 const { default: useLeaveProject } = await import("./use-leave-project");
-const { default: useCreateProjectInvitation } = await import(
-  "../project-invitation/use-create-project-invitation"
-);
+const { default: useCreateProjectInvitation } =
+  await import("../project-invitation/use-create-project-invitation");
 
 let queryClient: QueryClient;
 let invalidated: unknown[][];

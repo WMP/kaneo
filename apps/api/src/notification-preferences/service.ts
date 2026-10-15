@@ -169,7 +169,7 @@ export async function validateProjectSelection(
       ),
     );
 
-  if (projects.length !== selectedProjectIds.length) {
+  if (projects.length !== new Set(selectedProjectIds).size) {
     throw new HTTPException(400, {
       message: "One or more selected projects are invalid",
     });
@@ -201,7 +201,6 @@ export async function getNotificationPreferences(
     },
     orderBy: (table, { asc }) => [asc(table.createdAt)],
   });
-
   // A stored selection can name a project the user has since lost access to;
   // the response lists only the ones they can still open.
   const visibleByWorkspace = new Map<string, string[] | null>();

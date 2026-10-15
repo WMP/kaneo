@@ -20,7 +20,11 @@ import {
   publishRelationEvent,
   relationTaskIdsInProject,
 } from "../../task-relation/event-task-ids";
-import { filterUsersWithProjectAccess } from "../../utils/project-scope-filters";
+import { accessibleProjectIds } from "../../utils/project-access";
+import {
+  filterUsersWithProjectAccess,
+  projectScopeCondition,
+} from "../../utils/project-scope-filters";
 import { setTaskAssignees } from "../assignments";
 import {
   assertRequiredCustomFields,
@@ -124,10 +128,12 @@ async function duplicateDescriptionAssets({
 async function duplicateTask({
   taskId,
   currentUserId,
+  canUpdateTasks,
   title,
 }: {
   taskId: string;
   currentUserId: string;
+  canUpdateTasks: boolean;
   title?: string;
 }) {
   const sourceTask = await db.query.taskTable.findFirst({
@@ -230,6 +236,10 @@ async function duplicateTask({
 
   // A duplicated subtask stays a subtask of the same parents. The source's own
   // subtasks are not duplicated: a copy is one task, not a tree.
+  const visibleProjectIds = await accessibleProjectIds(
+    currentUserId,
+    project.workspaceId,
+  );
   const parentRelations = await db
     .select({
       parentTaskId: taskRelationTable.sourceTaskId,
@@ -244,8 +254,15 @@ async function duplicateTask({
         eq(taskRelationTable.targetTaskId, sourceTask.id),
         eq(projectTable.workspaceId, project.workspaceId),
         eq(taskRelationTable.relationType, "subtask"),
+        projectScopeCondition(taskTable.projectId, visibleProjectIds),
       ),
     );
+
+  if (parentRelations.length > 0 && !canUpdateTasks) {
+    throw new HTTPException(403, {
+      message: "Duplicating parent links requires task:update permission",
+    });
+  }
 
   // The destination object keys embed the new task id, so it is generated up front
   // instead of being left to the insert.

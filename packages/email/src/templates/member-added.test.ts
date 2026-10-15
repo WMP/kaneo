@@ -1,6 +1,6 @@
 import { render } from "@react-email/render";
 import { createElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import enUS from "../../../../i18n/en-US.json";
 import plPL from "../../../../i18n/pl-PL.json";
 import MemberAddedEmail from "./member-added";

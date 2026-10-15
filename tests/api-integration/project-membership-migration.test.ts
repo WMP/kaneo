@@ -19,7 +19,7 @@ import {
   expect,
   it,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
 // Proves migration 0056 on a populated database: a scratch database is

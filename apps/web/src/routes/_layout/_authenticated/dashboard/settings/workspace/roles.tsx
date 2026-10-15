@@ -11,6 +11,9 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
+import { SettingsCard } from "@/components/settings/settings-card";
+import { SettingsPage } from "@/components/settings/settings-page";
+import { SettingsSection } from "@/components/settings/settings-section";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -249,16 +252,10 @@ function RouteComponent() {
     return (
       <>
         <PageTitle title={t("settings:workspaceRoles.pageTitle")} />
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold">
-              {t("settings:workspaceRoles.title")}
-            </h1>
-            <p className="text-muted-foreground">
-              {t("settings:workspaceRoles.noAccess")}
-            </p>
-          </div>
-        </div>
+        <SettingsPage
+          title={t("settings:workspaceRoles.title")}
+          description={t("settings:workspaceRoles.noAccess")}
+        />
       </>
     );
   }
@@ -266,55 +263,47 @@ function RouteComponent() {
   return (
     <>
       <PageTitle title={t("settings:workspaceRoles.pageTitle")} />
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">
-            {t("settings:workspaceRoles.title")}
-          </h1>
-          <p className="text-muted-foreground">
-            {t("settings:workspaceRoles.subtitle", {
-              workspaceName:
-                workspace?.name ?? t("settings:workspaceRoles.thisWorkspace"),
-            })}
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <h2 className="text-md font-medium">
-                {t("settings:workspaceRoles.sectionTitle")}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {t("settings:workspaceRoles.sectionSubtitle")}
-              </p>
-            </div>
+      {/* Wider than the other settings pages: the role matrix has a column per role. */}
+      <SettingsPage
+        className="max-w-6xl"
+        title={t("settings:workspaceRoles.title")}
+        description={t("settings:workspaceRoles.subtitle", {
+          workspaceName:
+            workspace?.name ?? t("settings:workspaceRoles.thisWorkspace"),
+        })}
+      >
+        <SettingsSection
+          title={t("settings:workspaceRoles.sectionTitle")}
+          description={t("settings:workspaceRoles.sectionSubtitle")}
+          action={
             <Button
+              type="button"
+              variant="outline"
               size="sm"
-              className="gap-1.5"
               onClick={() => setDraftActive(true)}
               disabled={draftActive}
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus aria-hidden="true" />
               {t("settings:workspaceRoles.newRole")}
             </Button>
-          </div>
+          }
+        >
           {isLoading && !draftActive ? (
-            <div className="border border-border rounded-md bg-sidebar">
+            <SettingsCard>
               <p className="text-xs text-muted-foreground px-4 py-6">
                 {t("settings:workspaceRoles.loading")}
               </p>
-            </div>
+            </SettingsCard>
           ) : customRolesError ? (
-            <div className="border border-border rounded-md bg-sidebar">
+            <SettingsCard>
               <p className="text-xs text-destructive px-4 py-6">
                 {customRolesErrorValue instanceof Error
                   ? customRolesErrorValue.message
                   : t("settings:workspaceRoles.loadError")}
               </p>
-            </div>
+            </SettingsCard>
           ) : customRoles.length === 0 && !draftActive ? (
-            <div className="border border-border rounded-md bg-sidebar">
+            <SettingsCard>
               <Empty>
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -328,7 +317,7 @@ function RouteComponent() {
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
-            </div>
+            </SettingsCard>
           ) : (
             <RolePermissionMatrix
               roles={customRoles}
@@ -338,8 +327,8 @@ function RouteComponent() {
               onCloseCreate={() => setDraftActive(false)}
             />
           )}
-        </div>
-      </div>
+        </SettingsSection>
+      </SettingsPage>
 
       <AlertDialog
         open={!!roleToDelete}

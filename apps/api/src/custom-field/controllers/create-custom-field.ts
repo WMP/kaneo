@@ -3,11 +3,10 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
   customFieldDefinitionTable,
-  customFieldValueTable,
   projectTable,
-  taskTable,
 } from "../../database/schema";
 import { annotateCustomField } from "../effective-fields";
+import { insertMissingValues } from "../fill-default-values";
 import { validateCustomFieldCreateInput } from "../validate-definition-input";
 
 async function createCustomField(
@@ -66,24 +65,11 @@ async function createCustomField(
 
     const storedDefaultValue = normalized.storedDefaultValue;
     if (storedDefaultValue != null && storedDefaultValue.trim() !== "") {
-      const tasks = await tx
-        .select({ id: taskTable.id })
-        .from(taskTable)
-        .where(eq(taskTable.projectId, projectId));
-
-      const CHUNK_SIZE = 500;
-      for (let i = 0; i < tasks.length; i += CHUNK_SIZE) {
-        await tx
-          .insert(customFieldValueTable)
-          .values(
-            tasks.slice(i, i + CHUNK_SIZE).map((task) => ({
-              taskId: task.id,
-              fieldId: created.id,
-              value: storedDefaultValue,
-            })),
-          )
-          .onConflictDoNothing();
-      }
+      await insertMissingValues(tx, {
+        projectId,
+        fieldId: created.id,
+        value: storedDefaultValue,
+      });
     }
 
     return created;

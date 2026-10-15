@@ -1,17 +1,36 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
-// Delivery re-reads the project's workspace: answer it without a database.
+// Delivery re-reads the project's workspace and the recipients' membership:
+// answer both without a database.
 vi.mock("../../../apps/api/src/database", () => ({
   default: {
-    select: () => ({
+    select: (fields: Record<string, unknown>) => ({
       from: () => ({
-        where: () => ({
-          limit: async () => [{ workspaceId: "workspace" }],
-        }),
+        where: () =>
+          fields.userId
+            ? Promise.resolve([{ userId: "user-1" }])
+            : { limit: async () => [{ workspaceId: "workspace" }] },
       }),
     }),
   },
 }));
+vi.mock(
+  "../../../apps/api/src/utils/project-scope-filters",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../apps/api/src/utils/project-scope-filters")
+    >()),
+    filterUsersWithProjectAccess: async (userIds: Iterable<string>) =>
+      new Set(userIds),
+  }),
+);
 
 // Mock events to prevent side effects from ws/index.ts top-level subscriptions
 vi.mock("../../../apps/api/src/events", () => ({

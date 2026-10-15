@@ -1,4 +1,5 @@
 import { desc, eq } from "drizzle-orm";
+import { redactInaccessibleMoves } from "../../activity/redact-inaccessible-moves";
 import db from "../../database";
 import {
   activityTable,
@@ -66,7 +67,8 @@ async function exportWorkspaceActivities(
 
   normalizeActivityContent(data);
 
-  return { data, truncated };
+  // A move names both projects; hide the one the caller cannot open.
+  return { data: await redactInaccessibleMoves(userId, data), truncated };
 }
 
 export default exportWorkspaceActivities;

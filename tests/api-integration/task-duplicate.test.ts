@@ -1,6 +1,7 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { readErrorBody } from "./helpers/error-body";
 
 const { copyTaskAssetObject, deleteS3Object, publishEvent } = vi.hoisted(
   () => ({
@@ -76,11 +77,13 @@ function requestDuplicate(
   app: ReturnType<typeof createApp>["app"],
   taskId: string,
   body: { title?: string } = {},
+  headers: Record<string, string> = {},
 ) {
   return app.request(`/api/task/duplicate/${taskId}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      ...headers,
     },
     body: JSON.stringify(body),
   });
@@ -110,7 +113,10 @@ describe("API integration: task duplication", () => {
     const response = await requestDuplicate(app, task.id);
 
     expect(response.status).toBe(401);
-    await expect(response.text()).resolves.toBe("Unauthorized");
+    expect(await readErrorBody(response)).toMatchObject({
+      message: "Unauthorized",
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("blocks a viewer from duplicating a task (viewer role lacks task:create)", async () => {
@@ -129,7 +135,11 @@ describe("API integration: task duplication", () => {
     const response = await requestDuplicate(app, task.id);
 
     expect(response.status).toBe(403);
-    await expect(response.text()).resolves.toBe("Insufficient permissions");
+    expect(await readErrorBody(response)).toEqual({
+      message: "Insufficient permissions",
+      code: "MISSING_PERMISSION",
+      missingPermissions: ["task:create"],
+    });
 
     const tasks = await db.query.taskTable.findMany({
       where: eq(schema.taskTable.projectId, project.id),
@@ -164,10 +174,11 @@ describe("API integration: task duplication", () => {
 
     const response = await requestDuplicate(app, task.id);
 
-    expect(response.status).toBe(403);
-    await expect(response.text()).resolves.toBe(
-      "You don't have access to this workspace",
-    );
+    expect(response.status).toBe(404);
+    expect(await readErrorBody(response)).toMatchObject({
+      message: "Task not found",
+      code: "NOT_FOUND",
+    });
 
     const tasks = await db.query.taskTable.findMany({
       where: eq(schema.taskTable.projectId, project.id),
@@ -350,6 +361,66 @@ describe("API integration: task duplication", () => {
 
     expect(childrenOfCopy).toEqual([]);
   });
+
+  it.each(["custom-role", "api-key"] as const)(
+    "%s cannot copy parent links without task:update but can copy standalone tasks",
+    async (authentication) => {
+      const member = await createWorkspaceMember({
+        role: authentication === "custom-role" ? "creator" : "admin",
+      });
+      const { project, columns } = await createProjectFixture({
+        workspaceId: member.workspace.id,
+      });
+      const parent = await seedTask({
+        projectId: project.id,
+        columnId: columns.todo.id,
+      });
+      const child = await seedTask({
+        projectId: project.id,
+        columnId: columns.todo.id,
+        overrides: { number: 2 },
+      });
+      await db.insert(schema.taskRelationTable).values({
+        sourceTaskId: parent.id,
+        targetTaskId: child.id,
+        relationType: "subtask",
+      });
+      const permissions = { task: ["create", "read"] };
+      const headers: Record<string, string> = {};
+      if (authentication === "custom-role") {
+        await db.insert(schema.workspaceRoleTable).values({
+          workspaceId: member.workspace.id,
+          role: "creator",
+          permission: JSON.stringify(permissions),
+        });
+        mockAuthenticatedSession(member.user);
+      } else {
+        mockAnonymousSession();
+        const key = `kaneo_test_${randomUUID()}`;
+        await db.insert(schema.apikeyTable).values({
+          referenceId: member.user.id,
+          userId: member.user.id,
+          key: createHash("sha256").update(key).digest("base64url"),
+          name: "create-only",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          permissions: JSON.stringify(permissions),
+          enabled: true,
+        });
+        headers.Authorization = `Bearer ${key}`;
+      }
+      const { app } = createApp();
+      const rejected = await requestDuplicate(app, child.id, {}, headers);
+      expect(rejected.status).toBe(403);
+      expect(await db.query.taskTable.findMany()).toHaveLength(2);
+      expect(await db.query.taskRelationTable.findMany()).toHaveLength(1);
+      expect(copyTaskAssetObject).not.toHaveBeenCalled();
+      expect(publishEvent).not.toHaveBeenCalled();
+      expect((await requestDuplicate(app, parent.id, {}, headers)).status).toBe(
+        200,
+      );
+    },
+  );
 
   it("copies the description assets and repoints the copy at them", async () => {
     const member = await createWorkspaceMember();
@@ -578,13 +649,17 @@ describe("API integration: task duplication", () => {
     const own = await fixture();
     const other = await createWorkspaceMember();
     const { project: foreignProject, columns: foreignColumns } =
-      await createProjectFixture({ workspaceId: other.workspace.id });
+      await createProjectFixture({
+        workspaceId: other.workspace.id,
+      });
     const foreignParent = await seedTask({
       projectId: foreignProject.id,
       columnId: foreignColumns.todo.id,
     });
     const { project: siblingProject, columns: siblingColumns } =
-      await createProjectFixture({ workspaceId: own.workspace.id });
+      await createProjectFixture({
+        workspaceId: own.workspace.id,
+      });
     const parent = await seedTask({
       projectId: siblingProject.id,
       columnId: siblingColumns.todo.id,
@@ -708,7 +783,10 @@ describe("API integration: task duplication", () => {
       .mockRejectedValueOnce(new Error("private bucket details"));
     const response = await requestDuplicate(own.app, own.task.id);
     expect(response.status).toBe(503);
-    expect(await response.text()).toBe("Failed to copy the task attachments");
+    expect(await readErrorBody(response)).toMatchObject({
+      message: "Failed to copy the task attachments",
+      code: "SERVICE_UNAVAILABLE",
+    });
     expect(deleteS3Object).toHaveBeenCalledWith("copied-first");
     expect(await db.query.taskTable.findMany()).toHaveLength(1);
     expect(publishEvent).not.toHaveBeenCalled();

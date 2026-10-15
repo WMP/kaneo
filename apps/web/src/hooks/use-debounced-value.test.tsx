@@ -1,5 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { useDebouncedValue } from "./use-debounced-value";
 
 beforeEach(() => {
@@ -32,6 +39,24 @@ describe("useDebouncedValue", () => {
       vi.advanceTimersByTime(60);
     });
     expect(result.current).toBe("abc");
+  });
+
+  it("keeps the previous value until the delay passes", () => {
+    const { result, rerender } = renderHook(
+      ({ value }) => useDebouncedValue(value, 250),
+      { initialProps: { value: "a" } },
+    );
+
+    rerender({ value: "ab" });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(result.current).toBe("a");
+
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(result.current).toBe("ab");
   });
 
   it("applies the value at once when the reset key changes, so a stale value never outlives a reset", () => {

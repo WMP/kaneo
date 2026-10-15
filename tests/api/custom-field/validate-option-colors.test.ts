@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { validateOptionColors } from "../../../apps/api/src/custom-field/validate-option-colors";
 
 describe("validateOptionColors", () => {

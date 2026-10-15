@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { LEGACY_WATERMARK_LAST_TAG } from "../../../apps/api/src/database/run-migrations";
 
 // Guards the Drizzle migration folder (apps/api/drizzle). Migrations 0000-0059

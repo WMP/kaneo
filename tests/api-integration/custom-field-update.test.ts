@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 
 import db, { schema } from "../../apps/api/src/database";
 import { projectHiddenFieldTable } from "../../apps/api/src/database/schema";
@@ -260,6 +260,25 @@ describe("custom field edit: success", () => {
     expect((await stored(field.id)).options).toEqual(["mid", "high"]);
   });
 
+  it("fills tasks without a value when a project field becomes required", async () => {
+    const { patch, projectField, task } = await fixture();
+    const field = await projectField({ type: "text", options: null });
+
+    const { status } = await patch(field.id, {
+      required: true,
+      defaultValue: "Internal",
+    });
+
+    expect(status).toBe(200);
+    const values = await db.select().from(schema.customFieldValueTable);
+    expect(values).toHaveLength(1);
+    expect(values[0]).toMatchObject({
+      taskId: task.id,
+      fieldId: field.id,
+      value: "Internal",
+    });
+  });
+
   it("lets a field that a project hides stay optional", async () => {
     const { patch, workspaceField, project, stored } = await fixture();
     const field = await workspaceField();
@@ -436,7 +455,7 @@ describe("custom field edit: authorization", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: "Hijacked", options: ["x"] }),
       });
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(404);
       expect(await response.text()).not.toContain("Severity");
     }
 

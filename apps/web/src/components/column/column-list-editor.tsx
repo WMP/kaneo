@@ -299,7 +299,7 @@ export default function ColumnListEditor({
 
   return (
     <div className="space-y-3">
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: the drop target of the drag reorder; keyboard users reorder with the move buttons */}
+      {/* the drop target of the drag reorder; keyboard users reorder with the move buttons */}
       <div
         className="space-y-1"
         onDragOver={
@@ -308,7 +308,7 @@ export default function ColumnListEditor({
         onDrop={canEdit && draggedId ? handleDrop : undefined}
       >
         {orderedColumns.map((col, index) => (
-          // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
+          // false positive for role="listitem"
           <div
             key={col.id}
             role="listitem"

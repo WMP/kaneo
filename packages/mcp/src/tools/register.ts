@@ -1,13 +1,27 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import type { KaneoClient } from "../kaneo/client.js";
 import {
   APPROVAL_STATUSES,
   buildFullTaskUpdateBody,
   CONSTRAINT_TYPES,
+  ESTIMATE_UNITS,
+  MAX_ESTIMATE_MINUTES,
+  WORK_DAY_MINUTES,
 } from "../kaneo/task-helpers.js";
 import { errorResult, textResult } from "../utils/mcp-result.js";
+import { getCurrentUser } from "./get-current-user.js";
+
+export type ToolClient = {
+  readonly usingApiKey?: boolean;
+  json<T = unknown>(path: string, init?: RequestInit): Promise<T>;
+};
+export type ToolRegistrar = {
+  registerTool(
+    name: string,
+    config: { description: string; inputSchema: z.ZodObject },
+    callback: (args: unknown) => Promise<CallToolResult>,
+  ): unknown;
+};
 
 const prioritySchema = z.enum([
   "no-priority",
@@ -41,6 +55,17 @@ const lagDaysSchema = z.number().int().min(-3650).max(3650);
 const constraintTypeSchema = z.enum(CONSTRAINT_TYPES);
 // See approvalStatus in apps/api/src/task/schema.ts.
 const approvalStatusSchema = z.enum(APPROVAL_STATUSES);
+
+const estimateMinutesDescription = `Effort estimate in whole minutes (0-${MAX_ESTIMATE_MINUTES}); ${WORK_DAY_MINUTES} minutes = 1 work day of 8 hours. A task with an estimate cannot have both startDate and dueDate: the API answers 400 and the tool returns that message as an error.`;
+const estimateUnitDescription =
+  "Display hint only (hours or days): how the estimate is shown. The stored quantity is always estimateMinutes.";
+const estimateMinutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(MAX_ESTIMATE_MINUTES)
+  .nullable()
+  .optional();
 
 function run(fn: () => Promise<unknown>): Promise<CallToolResult> {
   return fn()
@@ -135,33 +160,31 @@ function attachCustomFieldsToBoard(
 }
 
 export function registerTools(
-  server: McpServer,
-  ctx: { client: KaneoClient },
+  server: ToolRegistrar,
+  ctx: { client: ToolClient },
 ): void {
   const { client } = ctx;
-
   // Reject unknown input fields on every tool. The MCP SDK strips unknown keys
   // from a non-strict object schema before the handler runs, which turns a
   // client's misspelled or unsupported field into a silent success (the field
-  // is quietly dropped). Registering through this thin wrapper makes each
-  // tool's input schema strict up front — so the SDK rejects the call and
-  // advertises additionalProperties:false — for every tool at once, without
-  // threading .strict() through each registration below. Schemas that aren't a
-  // plain object (no .strict) are passed through untouched.
-  const registerTool: typeof server.registerTool = (
-    name,
-    config,
-    // biome-ignore lint/suspicious/noExplicitAny: forwards the SDK's own overloaded callback type unchanged
-    cb: any,
+  // is quietly dropped). Making each tool's input schema strict up front, here
+  // for every tool at once, makes the SDK reject the call and advertise
+  // additionalProperties:false, and makes the parse below reject it too,
+  // without threading .strict() through each registration.
+  const registerTool = <S extends z.ZodObject>(
+    name: string,
+    config: { description: string; inputSchema: S },
+    callback: (args: z.output<S>) => Promise<CallToolResult>,
   ) => {
-    const schema = (config as { inputSchema?: { strict?: () => unknown } })
-      ?.inputSchema;
-    const inputSchema =
-      schema && typeof schema.strict === "function" ? schema.strict() : schema;
+    const inputSchema = config.inputSchema.strict() as unknown as S;
     return server.registerTool(
       name,
-      { ...(config as object), inputSchema } as typeof config,
-      cb,
+      { ...config, inputSchema },
+      async (args) => {
+        const parsed = inputSchema.safeParse(args);
+        if (!parsed.success) return errorResult(z.prettifyError(parsed.error));
+        return callback(parsed.data);
+      },
     );
   };
 
@@ -172,13 +195,7 @@ export function registerTools(
         "Return the current Kaneo user for the configured authentication method.",
       inputSchema: z.object({}),
     },
-    async () =>
-      run(() =>
-        client.json(
-          client.usingApiKey ? "/api/user/me" : "/api/auth/get-session",
-          { method: "GET" },
-        ),
-      ),
+    async () => run(() => getCurrentUser(client)),
   );
 
   registerTool(
@@ -400,9 +417,35 @@ export function registerTools(
   );
 
   registerTool(
+    "get_task_by_ticket_id",
+    {
+      description:
+        "Get one task by its ticket ID (project key and number, e.g. KAN-12). If multiple accessible tasks share the ID, provide workspaceId or projectId.",
+      inputSchema: z.object({
+        ticketId: nonEmptyString,
+        workspaceId: optionalNonEmptyString,
+        projectId: optionalNonEmptyString,
+      }),
+    },
+    async ({ ticketId, workspaceId, projectId }) => {
+      const query = new URLSearchParams();
+      if (workspaceId) query.set("workspaceId", workspaceId);
+      if (projectId) query.set("projectId", projectId);
+      const suffix = query.toString();
+      return run(() =>
+        client.json(
+          `/api/task/by-ticket-id/${encodeURIComponent(ticketId)}${suffix ? `?${suffix}` : ""}`,
+          { method: "GET" },
+        ),
+      );
+    },
+  );
+
+  registerTool(
     "create_task",
     {
-      description: "Create a task in a project.",
+      description:
+        "Create a task in a project. Optionally set an effort estimate with estimateMinutes (whole minutes, 480 = 1 work day) and estimateUnit (hours or days, display hint only). A task with an estimate cannot have both startDate and dueDate: the API answers 400 and the tool returns that message as an error.",
       inputSchema: z
         .object({
           projectId: nonEmptyString,
@@ -417,16 +460,24 @@ export function registerTools(
             .optional()
             .describe("Percent complete, 0-100. Defaults to 0."),
           isMilestone: z.boolean().optional().describe("Defaults to false."),
+          estimateMinutes: estimateMinutesSchema.describe(
+            `${estimateMinutesDescription} Omit or null for no estimate.`,
+          ),
+          estimateUnit: z
+            .enum(ESTIMATE_UNITS)
+            .optional()
+            .describe(estimateUnitDescription),
         })
         .strict(),
     },
     async (args) => {
-      const body: Record<string, string | number | boolean | undefined> = {
-        title: args.title,
-        description: args.description,
-        priority: args.priority,
-        status: args.status,
-      };
+      const body: Record<string, string | number | boolean | null | undefined> =
+        {
+          title: args.title,
+          description: args.description,
+          priority: args.priority,
+          status: args.status,
+        };
       if (args.startDate !== undefined) {
         body.startDate = args.startDate;
       }
@@ -441,6 +492,12 @@ export function registerTools(
       }
       if (args.isMilestone !== undefined) {
         body.isMilestone = args.isMilestone;
+      }
+      if (args.estimateMinutes !== undefined) {
+        body.estimateMinutes = args.estimateMinutes;
+      }
+      if (args.estimateUnit !== undefined) {
+        body.estimateUnit = args.estimateUnit;
       }
       return run(() =>
         client.json(`/api/task/${encodeURIComponent(args.projectId)}`, {
@@ -489,6 +546,13 @@ export function registerTools(
       userId: nullableOptionalNonEmptyString,
       progress: progressSchema.optional(),
       isMilestone: z.boolean().optional(),
+      estimateMinutes: estimateMinutesSchema.describe(
+        `${estimateMinutesDescription} Null clears the estimate; omit to leave it untouched.`,
+      ),
+      estimateUnit: z
+        .enum(ESTIMATE_UNITS)
+        .optional()
+        .describe(`${estimateUnitDescription} Omit to leave it untouched.`),
       constraintType: constraintTypeSchema
         .optional()
         .describe(
@@ -524,7 +588,7 @@ export function registerTools(
     "update_task",
     {
       description:
-        "Update a task (fetches current task, merges fields, then full update). Fields omitted here are left untouched, including progress, isMilestone, constraintType/constraintDate, and approvalStatus/approvalNote. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
+        "Update a task (fetches current task, merges fields, then full update). A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error. Fields omitted here are left untouched, including progress, isMilestone, estimateMinutes/estimateUnit, constraintType/constraintDate, and approvalStatus/approvalNote. Set the effort estimate with estimateMinutes (whole minutes, 480 = 1 work day) and estimateUnit (hours or days, display hint only); pass estimateMinutes null to clear the estimate. Passing constraintType is what opts the request into changing the constraint at all: pass constraintDate alone and it is ignored. userId sets only the primary assignee: omit it to leave the assignees alone, null unassigns the primary, and a different id replaces the previous primary; the task's other assignees (users and resources) are always kept, use update_task_assignees to set the whole list. The approval gate is advisory only — it is not enforced by the API and does not block scheduling, status changes, or any other task mutation.",
       inputSchema: updateTaskSchema,
     },
     async (args) => {
@@ -855,23 +919,34 @@ export function registerTools(
     "delete_label",
     {
       description:
-        "Delete a label by ID. Only task-associated labels can be deleted; workspace-level labels (taskId null) are rejected by the API.",
+        "Delete a task or workspace label by ID. Workspace-label cascades resume automatically; repeat the tool if pendingDeletion remains true.",
       inputSchema: z.object({ id: nonEmptyString }),
     },
     async (args) =>
       run(async () => {
-        const label = (await client.json(
-          `/api/label/${encodeURIComponent(args.id)}`,
-          { method: "GET" },
-        )) as { taskId?: string | null };
-        if (!label?.taskId) {
-          throw new Error(
-            "Label is not associated with a task and cannot be deleted (workspace-level labels are not deletable via this endpoint).",
-          );
+        let result: unknown;
+        const signal = AbortSignal.timeout(10_000);
+        // Bound work per tool call. The API persists the continuation boundary.
+        for (let page = 0; page < 100; page++) {
+          if (page > 0 && signal.aborted) break;
+          try {
+            result = await client.json(
+              `/api/label/${encodeURIComponent(args.id)}`,
+              { method: "DELETE", signal },
+            );
+          } catch (error) {
+            if (signal.aborted && result) break;
+            throw error;
+          }
+          if (
+            !result ||
+            typeof result !== "object" ||
+            !("pendingDeletion" in result) ||
+            !result.pendingDeletion
+          )
+            break;
         }
-        return client.json(`/api/label/${encodeURIComponent(args.id)}`, {
-          method: "DELETE",
-        });
+        return result;
       }),
   );
 
@@ -999,7 +1074,8 @@ export function registerTools(
   registerTool(
     "update_task_due_date",
     {
-      description: "Set a task's due date. Omit dueDate to clear it.",
+      description:
+        "Set a task's due date. Omit dueDate to clear it. A task that has an effort estimate cannot have both a start and a due date: the API answers 400 and the tool returns that message as an error.",
       inputSchema: z.object({
         taskId: nonEmptyString,
         dueDate: optionalIsoDateTimeSchema,

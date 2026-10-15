@@ -1,6 +1,6 @@
 import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { publishEvent } from "../../apps/api/src/events";
 import { createApp } from "../../apps/api/src/index";
@@ -346,11 +346,11 @@ describe("project list and reorder", () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
     expect((await call(`/project?workspaceId=${w.workspaceId}`)).status).toBe(
-      403,
+      404,
     );
     expect(
       (await call(`/project/portfolio?workspaceId=${w.workspaceId}`)).status,
-    ).toBe(403);
+    ).toBe(404);
   });
 
   it("reorder rejects an inaccessible id like an unknown one and lists only visible projects", async () => {
@@ -503,7 +503,7 @@ describe("search", () => {
   it("refuses a user of another workspace", async () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
-    expect((await search(w, "alpha")).status).toBe(403);
+    expect((await search(w, "alpha")).status).toBe(404);
   });
 });
 
@@ -575,7 +575,7 @@ describe("workload", () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
     expect((await call(`/workload/${w.workspaceId}?${range}`)).status).toBe(
-      403,
+      404,
     );
   });
 });
@@ -637,7 +637,7 @@ describe("workspace activity and export", () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
     expect((await call(`/workspace/${w.workspaceId}/activity`)).status).toBe(
-      403,
+      404,
     );
   });
 });
@@ -665,7 +665,7 @@ describe("workspace labels", () => {
   it("refuses a user of another workspace", async () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
-    expect((await call(`/label/workspace/${w.workspaceId}`)).status).toBe(403);
+    expect((await call(`/label/workspace/${w.workspaceId}`)).status).toBe(404);
   });
 });
 
@@ -739,10 +739,10 @@ describe("task relations", () => {
   it("refuses a user of another workspace", async () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
-    expect((await call(`/task-relation/${w.t1.id}`)).status).toBe(403);
+    expect((await call(`/task-relation/${w.t1.id}`)).status).toBe(404);
     expect(
       (await call(`/task-relation/project/${w.p1.project.id}`)).status,
-    ).toBe(403);
+    ).toBe(404);
   });
 });
 
@@ -836,7 +836,7 @@ describe("workspace member list", () => {
     const w = await buildWorld();
     actAs(w.outsider.user);
     expect((await call(`/workspace/${w.workspaceId}/members`)).status).toBe(
-      403,
+      404,
     );
   });
 });
@@ -1129,7 +1129,7 @@ describe("MCP tools call the filtered routes", () => {
   it("list_projects, search, list_workspace_members and list_workspace_labels use the routes covered above", async () => {
     const source = await import("node:fs").then((fs) =>
       fs.readFileSync(
-        new URL("../../apps/api/src/mcp/tools.ts", import.meta.url),
+        new URL("../../packages/mcp/src/tools/register.ts", import.meta.url),
         "utf8",
       ),
     );
@@ -1350,6 +1350,76 @@ describe("relation activity", () => {
       ),
     );
     expect(foundByAdmin.results.map((r) => r.id)).toContain(hiddenEnd.id);
+  });
+
+  it("the recent workspace activity feed drops relation events that name a hidden task", async () => {
+    const w = await buildWorld();
+    const { hiddenEnd, visibleEnd } = await seedRelationActivity(w);
+    actAs(w.u);
+    const recent = await json<Row[]>(
+      await call(`/activity/workspace/${w.workspaceId}`),
+    );
+    expect(recent.map((row) => row.id)).toContain(visibleEnd.id);
+    expect(recent.map((row) => row.id)).not.toContain(hiddenEnd.id);
+    expect(JSON.stringify(recent)).not.toContain(w.t2.id);
+
+    actAs(w.a);
+    const all = await json<Row[]>(
+      await call(`/activity/workspace/${w.workspaceId}`),
+    );
+    expect(all.map((row) => row.id)).toContain(hiddenEnd.id);
+  });
+
+  it("workspace activity and its export hide the name of a hidden project in a move", async () => {
+    const w = await buildWorld();
+    const [moved] = await db
+      .insert(schema.activityTable)
+      .values({
+        taskId: w.t1.id,
+        type: "moved",
+        userId: w.owner.user.id,
+        eventData: {
+          fromProjectId: w.p2.project.id,
+          fromProjectName: "Hidden project",
+          toProjectId: w.p1.project.id,
+          toProjectName: "Visible project",
+        },
+      })
+      .returning();
+    actAs(w.u);
+    const feed = await json<ActivityFeed>(
+      await call(`/workspace/${w.workspaceId}/activity?limit=100`),
+    );
+    expect(feed.data.map((row) => row.id)).toContain(moved.id);
+    expect(JSON.stringify(feed)).not.toContain("Hidden project");
+    expect(JSON.stringify(feed)).toContain("Visible project");
+    const exported = await json<ActivityFeed>(
+      await call(`/workspace/${w.workspaceId}/activity/export?format=json`),
+    );
+    expect(JSON.stringify(exported)).not.toContain("Hidden project");
+
+    actAs(w.a);
+    const all = await json<ActivityFeed>(
+      await call(`/workspace/${w.workspaceId}/activity?limit=100`),
+    );
+    expect(JSON.stringify(all)).toContain("Hidden project");
+  });
+});
+
+describe("project key conflicts", () => {
+  it("do not name a project the caller cannot open", async () => {
+    const w = await buildWorld();
+    actAs(w.u);
+    const response = await call("/project", "POST", {
+      workspaceId: w.workspaceId,
+      name: "Another",
+      icon: "Layout",
+      slug: "hid",
+    });
+    expect(response.status).toBe(409);
+    const body = await response.text();
+    expect(body).toContain("hid");
+    expect(body).not.toContain("Hidden project");
   });
 });
 

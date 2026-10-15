@@ -48,4 +48,6 @@ Migration `20261005135555_ganttpro_task_estimate` (the newest entry after `20261
 3. Link the snapshot chain again, so that no two snapshots share a `prevId`. The lexicographically last snapshot must describe the merged `schema.ts`; otherwise the next `db:generate` repeats upstream DDL.
 4. Run the journal test, `tests/api-integration/migration-runner.test.ts` and the relevant migration integration tests.
 
+`scripts/upstream-sync/merge-migrations.mjs` does steps 1 and 2 (skipping `scripts/upstream-sync/excluded-migrations.json`), `uncovered-ddl.mjs` finds what a generated adoption migration must still contain, and `schema-drift.mjs` compares a migrated database with `schema.ts`. Upstream SQL that refers to an object this fork renamed (`ganttpro_`) is adapted in place with a header comment, as in `0057_common_deadpool`. The procedure for the whole sync is `.claude/skills/upstream-sync/SKILL.md`; decisions are in `docs/upstream-sync/`.
+
 Known gaps: `reconcileMigrationJournal` creates the journal table outside the advisory lock, so two instances that start together on a fresh database can fail on the first start (not tested). Only review checks that an upstream migration works in an order that upstream did not test. An entry after the cutoff with a `when` that is not newer than the cutoff would follow the watermark rule; the journal test rejects it.

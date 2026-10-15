@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import globalSearch from "../../apps/api/src/search/controllers/global-search";
 import { resetTestDatabase } from "./helpers/database";

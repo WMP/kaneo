@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createFixedWindowRateLimiter } from "../../../apps/api/src/utils/fixed-window-rate-limit";
 
 describe("createFixedWindowRateLimiter", () => {

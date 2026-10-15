@@ -18,7 +18,7 @@ import {
   describe,
   expect,
   it,
-} from "vitest";
+} from "vite-plus/test";
 import db from "../../apps/api/src/database";
 import { runMigrations } from "../../apps/api/src/database/run-migrations";
 import { resetTestDatabase } from "./helpers/database";

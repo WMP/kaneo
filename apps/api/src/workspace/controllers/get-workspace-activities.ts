@@ -1,5 +1,6 @@
 import { and, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { redactInaccessibleMoves } from "../../activity/redact-inaccessible-moves";
 import db from "../../database";
 import {
   activityTable,
@@ -170,7 +171,8 @@ async function getWorkspaceActivities(
   normalizeActivityContent(rows);
 
   return {
-    data: rows,
+    // A move names both projects; hide the one the caller cannot open.
+    data: await redactInaccessibleMoves(userId, rows),
     pagination: {
       total,
       page,

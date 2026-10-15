@@ -180,6 +180,7 @@ jobs:
             echo "pnpm install"
             echo "pnpm --filter @kaneo/api build && pnpm openapi:check"
             echo "pnpm --filter @kaneo/api test"
+            echo "pnpm lint && pnpm typecheck"
             echo '```'
             echo ""
             echo "### Migrations"

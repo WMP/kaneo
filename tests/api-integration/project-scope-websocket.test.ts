@@ -1,5 +1,12 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { publishEvent } from "../../apps/api/src/events";
 import { resolveProjectAccess } from "../../apps/api/src/utils/project-access";
@@ -242,7 +249,7 @@ describe("what a project socket receives", () => {
 });
 
 describe("closing sockets when access ends", () => {
-  it("delivery closes a socket whose membership was removed once the revalidation window passed", async () => {
+  it("delivery closes a socket whose membership was removed, without waiting for the revalidation window", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     const w = await buildWorld();
     const removed = connect(w.p1.project.id, w.u.id, w.workspaceId);
@@ -258,24 +265,19 @@ describe("closing sockets when access ends", () => {
       .delete(schema.projectMemberTable)
       .where(eq(schema.projectMemberTable.userId, w.u.id));
 
-    // Inside the window the last confirmation still counts.
+    // Every delivery decides who may still receive it (the project access of
+    // all recipients, in one query), so the socket closes at once instead of
+    // after the last confirmation expired.
     await update();
     await vi.waitFor(() => expect(stays.send).toHaveBeenCalledTimes(1));
-    expect(removed.send).toHaveBeenCalledTimes(1);
-    expect(removed.close).not.toHaveBeenCalled();
-
-    // After it, delivery re-checks and closes the socket instead of sending.
-    vi.setSystemTime(Date.now() + ACCESS_REVALIDATE_MS + 1000);
-    await update();
-    await vi.waitFor(() => expect(stays.send).toHaveBeenCalledTimes(2));
-    expect(removed.send).toHaveBeenCalledTimes(1);
+    expect(removed.send).not.toHaveBeenCalled();
     expect(removed.close).toHaveBeenCalledWith(1008, "Project access revoked");
     expect(stays.close).not.toHaveBeenCalled();
 
     // The closed connection is gone: later events do not reach it either.
     await update();
-    await vi.waitFor(() => expect(stays.send).toHaveBeenCalledTimes(3));
-    expect(removed.send).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(stays.send).toHaveBeenCalledTimes(2));
+    expect(removed.send).not.toHaveBeenCalled();
   });
 
   it("a user who keeps access is confirmed again and stays connected", async () => {

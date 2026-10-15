@@ -61,7 +61,7 @@ export async function wouldCreateCycle({
   const queue: string[] = [targetTaskId];
   const visited = new Set<string>([targetTaskId]);
   while (queue.length > 0) {
-    // biome-ignore lint/style/noNonNullAssertion: bounded by the while condition
+    // bounded by the while condition
     const current = queue.shift()!;
     if (current === sourceTaskId) {
       return true;

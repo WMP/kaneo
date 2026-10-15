@@ -6,7 +6,14 @@ import {
   waitFor,
 } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type SubtaskRow from "./subtask-row";
 import { TaskProgressBadges } from "./task-progress-badges";
 import TaskSubtasks from "./task-subtasks";
@@ -53,6 +60,9 @@ vi.mock("@/hooks/queries/task-relation/use-get-task-relations", () => ({
 }));
 vi.mock("@/hooks/queries/workspace/use-active-workspace", () => ({
   default: () => ({ data: { id: "workspace-1" } }),
+}));
+vi.mock("@/hooks/queries/project/use-get-projects", () => ({
+  default: () => ({ data: [] }),
 }));
 vi.mock("@/hooks/queries/project-member/use-project-members", () => ({
   useProjectMembers: () => ({ data: { members: [] } }),
@@ -106,7 +116,9 @@ describe("TaskSubtasks", () => {
     );
     fireEvent.change(
       screen.getByPlaceholderText("tasks:subtasks.inputPlaceholder"),
-      { target: { value: "Design login form" } },
+      {
+        target: { value: "Design login form" },
+      },
     );
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:subtasks.addAction" }),
@@ -138,7 +150,9 @@ describe("TaskSubtasks", () => {
     );
     fireEvent.change(
       screen.getByPlaceholderText("tasks:subtasks.inputPlaceholder"),
-      { target: { value: "Implement login form" } },
+      {
+        target: { value: "Implement login form" },
+      },
     );
     fireEvent.click(
       screen.getByRole("button", { name: "tasks:subtasks.addAction" }),

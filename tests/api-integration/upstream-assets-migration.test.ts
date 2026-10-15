@@ -18,7 +18,7 @@ import {
   describe,
   expect,
   it,
-} from "vitest";
+} from "vite-plus/test";
 import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
 // Migration 20261001100317_ganttpro_adopt_upstream_assets copies project

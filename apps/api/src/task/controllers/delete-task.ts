@@ -2,12 +2,13 @@ import { and, eq, inArray, or } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
+  assetTable,
   projectTable,
   taskRelationTable,
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
-import { deleteS3Keys, getTaskAssetKeys } from "../../storage/cleanup-assets";
+import { queueStorageCleanup } from "../../storage/cleanup-queue";
 import {
   publishRelationEvent,
   relationTaskIdsInProject,
@@ -69,13 +70,31 @@ async function deleteTask(taskId: string, currentUserId: string) {
     }
   }
 
-  const assetKeys = await getTaskAssetKeys(taskId);
-
-  const [deletedTask] = await db
-    .delete(taskTable)
-    .where(eq(taskTable.id, taskId))
-    .returning()
-    .execute();
+  const deletedTask = await db.transaction(async (tx) => {
+    const [locked] = await tx
+      .select({ id: taskTable.id, projectId: taskTable.projectId })
+      .from(taskTable)
+      .where(eq(taskTable.id, taskId))
+      .for("update");
+    if (!locked) throw new HTTPException(404, { message: "Task not found" });
+    if (locked.projectId !== task.projectId)
+      throw new HTTPException(409, {
+        message: "Task changed projects; retry the operation",
+      });
+    const assets = await tx
+      .select({ objectKey: assetTable.objectKey })
+      .from(assetTable)
+      .where(eq(assetTable.taskId, taskId));
+    await queueStorageCleanup(
+      tx,
+      assets.map((asset) => asset.objectKey),
+    );
+    const [deleted] = await tx
+      .delete(taskTable)
+      .where(eq(taskTable.id, taskId))
+      .returning();
+    return deleted;
+  });
 
   if (!deletedTask) {
     throw new HTTPException(404, {
@@ -132,11 +151,6 @@ async function deleteTask(taskId: string, currentUserId: string) {
         targetTaskId: relation.targetTaskId,
       });
     }
-  }
-
-  // Fire-and-forget S3 cleanup after successful DB delete
-  if (assetKeys.length > 0) {
-    deleteS3Keys(assetKeys).catch(() => {});
   }
 
   return task;

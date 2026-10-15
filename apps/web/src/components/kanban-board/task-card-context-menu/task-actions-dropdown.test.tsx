@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { createContext, useContext, useState } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type Task from "@/types/task";
 import TaskActionsDropdown from "./task-actions-dropdown";
 
@@ -188,6 +188,12 @@ vi.mock("react-i18next", () => ({
     t: (key: string, options?: { title?: string }) =>
       options?.title ? `${key}|${options.title}` : key,
   }),
+  initReactI18next: { type: "3rdParty", init: vi.fn() },
+}));
+
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => ({ getQueryData: () => [] }),
 }));
 
 const task = {
@@ -295,8 +301,8 @@ describe("TaskActionsDropdown", () => {
   it("does not let opening the menu bubble a click up to an ancestor (card navigation/drag)", () => {
     const parentClick = vi.fn();
     render(
-      // biome-ignore lint/a11y/noStaticElementInteractions: standing in for the card/row's own click-to-open handler
-      // biome-ignore lint/a11y/useKeyWithClickEvents: same — only the click path is under test here
+      // Stands in for the card/row's own click-to-open handler; only the click path is under test here.
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- test stand-in for the card's click handler
       <div onClick={parentClick}>
         <TaskActionsDropdown
           task={task}

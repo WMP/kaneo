@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import * as applyModule from "../../apps/api/src/project-invitation/apply-invitation-projects";
@@ -197,8 +197,8 @@ describe("accepting a project invitation", () => {
     expect(await invitationProjectRows(invitationId)).toHaveLength(2);
 
     const invitee = await signUp(email);
-    // Before accepting there is nothing to see.
-    expect((await getProject(invitee, P.id)).status).toBe(403);
+    // Before accepting there is nothing to see (not a workspace member yet).
+    expect((await getProject(invitee, P.id)).status).toBe(404);
 
     const response = await accept(invitee, invitationId);
     expect(response.status).toBe(200);
@@ -269,7 +269,7 @@ describe("accepting a project invitation", () => {
       { projectId: R.id, userId: returning.id, role: "admin" },
     ]);
     // Stale rows grant nothing while the person is outside the workspace.
-    expect((await getProject(returning, R.id)).status).toBe(403);
+    expect((await getProject(returning, R.id)).status).toBe(404);
 
     expect((await accept(returning, invitationId)).status).toBe(200);
     // The invited role replaces the stale one and the other project stays

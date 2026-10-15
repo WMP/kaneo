@@ -220,7 +220,7 @@ export function GanttDependencyOverlay({
   };
 
   return (
-    // biome-ignore lint/a11y/noSvgWithoutTitle: not an icon/image svg — a plain positioning container mixing decorative <path> connectors with a real interactive foreignObject control per "blocks" edge (the type label, which carries its own accessible name via its button/title), so one <title> for the whole svg would misdescribe it either way
+    // not an icon/image svg — a plain positioning container mixing decorative <path> connectors with a real interactive foreignObject control per "blocks" edge (the type label, which carries its own accessible name via its button/title), so one <title> for the whole svg would misdescribe it either way
     <svg
       // NOT aria-hidden, unlike a purely decorative overlay: the type label
       // above is a real, focusable control, not just a picture of one.

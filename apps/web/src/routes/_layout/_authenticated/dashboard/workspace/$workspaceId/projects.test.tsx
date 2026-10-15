@@ -1,0 +1,125 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { cleanup, render as baseRender, screen } from "@testing-library/react";
+import type { ComponentType, ReactNode } from "react";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
+import { Route } from "./projects";
+
+vi.mock("react-i18next", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("react-i18next")>()),
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+  createFileRoute: () => (options: Record<string, unknown>) => ({
+    ...options,
+    useParams: () => ({ workspaceId: "workspace-1" }),
+  }),
+  useNavigate: () => vi.fn(),
+  Link: ({ children }: { children?: ReactNode }) => <a href="/">{children}</a>,
+}));
+vi.mock("@/hooks/use-can-import", () => ({
+  useCanImport: () => ({ canImport: false }),
+}));
+
+vi.mock("@/components/common/workspace-layout", () => ({
+  default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}));
+vi.mock("@/components/page-title", () => ({ default: () => null }));
+vi.mock("@/components/shared/modals/create-project-modal", () => ({
+  default: () => null,
+}));
+
+let projectsState: {
+  data: { id: string }[] | undefined;
+  isLoading: boolean;
+};
+vi.mock("@/hooks/queries/project/use-get-projects", () => ({
+  default: () => projectsState,
+}));
+vi.mock("@/hooks/mutations/project/use-reorder-projects", () => ({
+  default: () => vi.fn(),
+}));
+vi.mock("@/lib/shortcuts/use-shortcut", () => ({ useShortcut: vi.fn() }));
+
+let canCreate = false;
+vi.mock("@/hooks/use-workspace-permission", () => ({
+  useWorkspacePermission: () => ({
+    canCreateProjects: () => canCreate,
+    canUpdateProjects: () => false,
+  }),
+}));
+
+let restricted: boolean | undefined;
+vi.mock("@/hooks/use-restricted-project-access", () => ({
+  useRestrictedProjectAccess: () => restricted,
+}));
+
+function render(ui: ReactNode) {
+  return baseRender(
+    <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>,
+  );
+}
+
+const ProjectsPage = (Route as unknown as { component: ComponentType })
+  .component;
+
+beforeEach(() => {
+  projectsState = { data: [], isLoading: false };
+  canCreate = false;
+  restricted = true;
+});
+
+afterEach(cleanup);
+
+describe("workspace projects page without projects", () => {
+  it("tells a member without full access to ask for access to a project", () => {
+    render(<ProjectsPage />);
+
+    expect(screen.getByText("projectMembers:noProjects.title")).toBeVisible();
+    expect(
+      screen.getByText("projectMembers:noProjects.description"),
+    ).toBeVisible();
+    expect(screen.queryByText("workspace:projects.emptyTitle")).toBeNull();
+  });
+
+  it("offers both ways to a member who may create projects: ask an admin, or create one", () => {
+    canCreate = true;
+    render(<ProjectsPage />);
+
+    expect(
+      screen.getByText("projectMembers:noProjects.descriptionCanCreate"),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("projectMembers:noProjects.description"),
+    ).toBeNull();
+    expect(
+      screen.getAllByRole("button", {
+        name: "workspace:projects.createProject",
+      }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("keeps the plain empty state for somebody with full access", () => {
+    restricted = false;
+    render(<ProjectsPage />);
+
+    expect(screen.getByText("workspace:projects.emptyTitle")).toBeVisible();
+    expect(
+      screen.queryByText("projectMembers:noProjects.description"),
+    ).toBeNull();
+  });
+
+  it("keeps the plain empty state while access is still being checked", () => {
+    restricted = undefined;
+    render(<ProjectsPage />);
+
+    expect(screen.getByText("workspace:projects.emptyTitle")).toBeVisible();
+  });
+});

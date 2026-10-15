@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import MobileProjectNav from "./mobile-project-nav";
 import ProjectCrumbSelect from "./project-crumb-select";
 
@@ -69,11 +69,6 @@ describe("MobileProjectNav add-project item", () => {
       <MobileProjectNav
         workspaceId="workspace-1"
         projectId="project-1"
-        activeView="board"
-        onSelectBoard={vi.fn()}
-        onSelectBacklog={vi.fn()}
-        onSelectCalendar={vi.fn()}
-        onSelectGantt={vi.fn()}
         onSelectProject={vi.fn()}
         onAddProject={onAddProject}
       />,
@@ -98,7 +93,7 @@ describe("MobileProjectNav add-project item", () => {
 
     fireEvent.click(screen.getByRole("button"));
 
-    await screen.findByText("navigation:mobileProjectNav.projects");
+    await screen.findByText("navigation:sidebar.projects");
     expect(
       screen.queryByRole("button", {
         name: "navigation:projectList.addProject",

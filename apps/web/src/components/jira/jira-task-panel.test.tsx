@@ -6,7 +6,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type {
   JiraStatusProposal,
   JiraTaskInfo,
@@ -362,9 +369,8 @@ describe("JiraTaskPanel pending proposal", () => {
 
   it("explains a proposal someone else already resolved", async () => {
     m.info = makeInfo({ pendingProposal: proposal() });
-    const { JiraRequestError } = await import(
-      "@/fetchers/jira-integration/jira-request-error"
-    );
+    const { JiraRequestError } =
+      await import("@/fetchers/jira-integration/jira-request-error");
     m.accept.mockRejectedValue(
       new JiraRequestError(409, "x", { code: "PROPOSAL_NOT_PENDING" }),
     );

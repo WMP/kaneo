@@ -1,16 +1,22 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const addWorkspaceMember = vi.fn();
 vi.mock("@/fetchers/workspace/add-workspace-member", () => ({
   default: (vars: unknown) => addWorkspaceMember(vars),
 }));
 
-const { default: useAddWorkspaceMember } = await import(
-  "./use-add-workspace-member"
-);
+const { default: useAddWorkspaceMember } =
+  await import("./use-add-workspace-member");
 
 let queryClient: QueryClient;
 let invalidated: unknown[][];

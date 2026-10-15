@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
   removeLabelFromGitlab,
   syncLabelToGitlab,
@@ -77,3 +77,43 @@ describe("GitLab label sync", () => {
     expect(mocks.client.updateIssue).not.toHaveBeenCalled();
   });
 });
+
+it.each([
+  "priority:urgent",
+  "status:done",
+  "bug,priority:urgent",
+  "bug, status:done",
+])(
+  "does not add or remove task-field label %s with ordinary label permissions",
+  async (name) => {
+    mocks.externalLinkFindMany.mockResolvedValue([issueLink(true)]);
+    await syncLabelToGitlab("task-1", name, "red");
+    await removeLabelFromGitlab("task-1", name);
+    expect(mocks.createGitlabClient).not.toHaveBeenCalled();
+    expect(mocks.client.updateIssue).not.toHaveBeenCalled();
+  },
+);
+
+it("still removes ordinary labels", async () => {
+  mocks.externalLinkFindMany.mockResolvedValue([issueLink(true)]);
+  await removeLabelFromGitlab("task-1", "bug");
+  expect(mocks.client.updateIssue).toHaveBeenCalledWith("acme/web", 3, {
+    remove_labels: "bug",
+  });
+});
+
+// Policy enforcement is covered by the PostgreSQL sync-rules integration tests.
+vi.mock("../../../../../apps/api/src/plugins/sync/eligibility", () => ({
+  canSyncTask: async () => true,
+}));
+
+vi.mock(
+  "../../../../../apps/api/src/plugins/sync/dispatch-issue-write",
+  () => ({
+    dispatchIssueWrite: async (
+      _link: unknown,
+      _config: unknown,
+      send: () => Promise<unknown>,
+    ) => ({ value: await send() }),
+  }),
+);

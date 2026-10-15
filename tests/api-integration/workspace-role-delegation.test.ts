@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { defaultRolePayloads } from "../../packages/permissions/src";
@@ -573,6 +573,6 @@ describe("GET /api/workspace/{id}/assignable-roles", () => {
   it("denies a user from another workspace", async () => {
     const outsider = await signUp("outsider");
     const { status } = await assignable({ ...outsider, memberId: "" });
-    expect(status).toBe(403);
+    expect(status).toBe(404);
   });
 });

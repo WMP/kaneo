@@ -8,6 +8,7 @@ import {
 } from "../../database/schema";
 import { codedError } from "../../utils/coded-error";
 import { annotateCustomField } from "../effective-fields";
+import { fillEmptyValues } from "../fill-default-values";
 import {
   type CustomFieldUpdatePatch,
   planCustomFieldUpdate,
@@ -60,8 +61,9 @@ async function findOptionsInUse(
 // option colors, for a project-level or a workspace-level field. The type is
 // immutable. The edit is merged over the stored row and validated as a whole
 // with the create rules, then written in one transaction (all or nothing).
-// Existing task values are never rewritten or backfilled; instead an option
-// that tasks still use cannot be removed.
+// Existing task values are never rewritten: an option that tasks still use
+// cannot be removed. The one exception is a project field that becomes
+// required, whose default fills the tasks that have no value yet.
 async function updateCustomField(id: string, patch: CustomFieldUpdatePatch) {
   const updated = await db.transaction(async (tx) => {
     // Lock the definition so concurrent edits of one field serialize.
@@ -126,6 +128,19 @@ async function updateCustomField(id: string, patch: CustomFieldUpdatePatch) {
     if (!row) {
       throw new HTTPException(500, {
         message: "Failed to update custom field",
+      });
+    }
+
+    if (
+      plan.required &&
+      !existing.required &&
+      plan.defaultValue !== null &&
+      existing.projectId
+    ) {
+      await fillEmptyValues(tx, {
+        projectId: existing.projectId,
+        fieldId: id,
+        value: plan.defaultValue,
       });
     }
 

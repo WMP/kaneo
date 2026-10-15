@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { useConnectivityStore } from "@/store/connectivity";
 import { parseApiError } from "./error-handler";
 import { HttpError } from "./http-error";

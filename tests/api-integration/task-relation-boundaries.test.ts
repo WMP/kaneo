@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAuthenticatedSession } from "./helpers/auth";
@@ -8,6 +8,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 const m = vi.hoisted(() => ({ publish: vi.fn(async () => undefined) }));
 vi.mock("../../apps/api/src/events", async (original) => ({
@@ -60,7 +61,10 @@ describe("task relation tenant boundaries", () => {
         relationType: "blocks",
       });
       expect(response.status).toBe(404);
-      expect(await response.text()).toBe("Target task not found");
+      expect(await readErrorBody(response)).toMatchObject({
+        message: "Target task not found",
+        code: "NOT_FOUND",
+      });
     }
     expect(await db.query.taskRelationTable.findMany()).toHaveLength(0);
     expect(m.publish).not.toHaveBeenCalled();
@@ -91,7 +95,10 @@ describe("task relation tenant boundaries", () => {
     mockAuthenticatedSession(own.user);
     const response = await request(`/${relation.id}`, "DELETE");
     expect(response.status).toBe(404);
-    expect(await response.text()).toBe("Task relation not found");
+    expect(await readErrorBody(response)).toMatchObject({
+      message: "Task relation not found",
+      code: "NOT_FOUND",
+    });
     expect(
       await db.query.taskRelationTable.findFirst({
         where: eq(schema.taskRelationTable.id, relation.id),
@@ -107,7 +114,11 @@ describe("task relation tenant boundaries", () => {
     mockAuthenticatedSession(own.user);
     // 404 rather than 403: a relation the caller may not see does not exist
     // for them, so the route is not an oracle for relation ids.
-    expect((await request(`/${relation.id}`, "DELETE")).status).toBe(404);
+    const response = await request(`/${relation.id}`, "DELETE");
+    expect(response.status).toBe(404);
+    expect((await readErrorBody(response)).message).toContain(
+      "Task relation not found",
+    );
     expect(await db.query.taskRelationTable.findMany()).toHaveLength(1);
     expect(m.publish).not.toHaveBeenCalled();
   });
@@ -384,7 +395,8 @@ describe("GET /task-relation/project/:projectId", () => {
     const foreign = await context();
     mockAuthenticatedSession(foreign.user);
     const response = await request(`/project/${own.task.projectId}`, "GET");
-    expect(response.status).toBe(403);
+    // Not a workspace member: the project is reported as not found.
+    expect(response.status).toBe(404);
   });
 
   it("returns an empty list for a project with no tasks", async () => {

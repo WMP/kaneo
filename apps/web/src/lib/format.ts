@@ -28,6 +28,21 @@ function getDateFormatter(
   return formatter;
 }
 
+const collators = new Map<string, Intl.Collator>();
+
+export function localeCompareSort(a: string, b: string, locale?: string) {
+  const key = getLocale(locale);
+  let collator = collators.get(key);
+  if (!collator) {
+    collator = new Intl.Collator(key, {
+      sensitivity: "base",
+      numeric: true,
+    });
+    collators.set(key, collator);
+  }
+  return collator.compare(a, b);
+}
+
 export function formatDate(
   value: DateInput,
   options?: Intl.DateTimeFormatOptions,

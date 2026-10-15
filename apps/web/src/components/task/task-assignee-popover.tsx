@@ -13,7 +13,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskAssignees } from "@/hooks/mutations/task/use-update-task-assignees";
 import { useProjectMembers } from "@/hooks/queries/project-member/use-project-members";
 import useGetWorkspaceResources from "@/hooks/queries/resource/use-get-workspace-resources";
@@ -21,6 +20,7 @@ import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
 import { usePickerSearch } from "@/hooks/use-picker-search";
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/get-initials";
 import { toast } from "@/lib/toast";
 import type Resource from "@/types/resource";
@@ -29,6 +29,27 @@ import { resolveTaskAssignees } from "./assignee-avatars";
 import { AssigneeResourceSection } from "./assignee-resource-section";
 
 const INITIAL_VISIBLE_USERS = 40;
+
+// The digit that picks a row with the keyboard (see useNumberedShortcuts).
+function ShortcutNumber({
+  number,
+  className,
+}: {
+  number: number;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "ml-auto select-none text-muted-foreground text-xs tabular-nums",
+        className,
+      )}
+    >
+      {number}
+    </span>
+  );
+}
 
 const getUserSearchText = (user: { label: string; name: string }) =>
   `${user.label} ${user.name}`;

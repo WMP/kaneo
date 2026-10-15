@@ -1,5 +1,5 @@
 import { request } from "node:http";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 import {
   CreateBucketCommand,
   DeleteBucketCommand,
@@ -18,7 +18,7 @@ import {
 
 vi.mock("dotenv-mono", () => ({ config: () => {} }));
 
-// biome-ignore lint/suspicious/noUndeclaredEnvVars: This opt-in suite runs directly in Vitest, outside Turbo's task cache.
+// This opt-in suite runs directly in Vitest, outside Turbo's task cache.
 const endpoint = process.env.KANEO_STORAGE_TEST_ENDPOINT;
 if (
   !endpoint ||

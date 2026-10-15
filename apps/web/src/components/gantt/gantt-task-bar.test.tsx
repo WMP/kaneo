@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { ApprovalGate } from "@/hooks/queries/task-relation/use-gantt-gate-warnings";
 import type Task from "@/types/task";
 import { GanttTaskBar } from "./gantt-task-bar";

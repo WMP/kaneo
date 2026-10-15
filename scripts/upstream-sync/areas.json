@@ -1,0 +1,84 @@
+{
+	"comment": "Ordered rules: the first matching glob decides the area. `**` crosses directories, `*` does not; a pattern without a slash matches a base name at any depth. Paths that match nothing are reported as `other`.",
+	"areas": [
+		{
+			"area": "generated",
+			"patterns": [
+				"apps/docs/openapi.json",
+				"apps/web/src/routeTree.gen.ts",
+				"pnpm-lock.yaml",
+				"i18n/schema.json"
+			]
+		},
+		{ "area": "i18n", "patterns": ["i18n/*.json"] },
+		{ "area": "migrations", "patterns": ["apps/api/drizzle/**"] },
+		{ "area": "schema", "patterns": ["apps/api/src/database/schema.ts"] },
+		{
+			"area": "api-access",
+			"patterns": [
+				"apps/api/src/utils/**",
+				"apps/api/src/auth*.ts",
+				"apps/api/src/workspace/**",
+				"apps/api/src/project/**",
+				"apps/api/src/admin/**",
+				"apps/api/src/project-access/**"
+			]
+		},
+		{
+			"area": "api-tasks",
+			"patterns": [
+				"apps/api/src/task/**",
+				"apps/api/src/task-relation/**",
+				"apps/api/src/custom-field/**",
+				"apps/api/src/column/**"
+			]
+		},
+		{
+			"area": "api-other",
+			"patterns": ["apps/api/src/**", "packages/mcp/**", "packages/email/**"]
+		},
+		{
+			"area": "web-task",
+			"patterns": [
+				"apps/web/src/components/task/**",
+				"apps/web/src/components/activity/**",
+				"apps/web/src/components/ui/calendar*"
+			]
+		},
+		{
+			"area": "web-views",
+			"patterns": [
+				"apps/web/src/components/kanban-board/**",
+				"apps/web/src/components/list-view/**",
+				"apps/web/src/components/backlog-list-view/**",
+				"apps/web/src/components/bulk-selection/**",
+				"apps/web/src/components/gantt/**",
+				"apps/web/src/components/board/**",
+				"apps/web/src/components/shared/modals/**",
+				"apps/web/src/hooks/**",
+				"apps/web/src/fetchers/task/**",
+				"apps/web/src/query-client/**",
+				"apps/web/src/query-client.*",
+				"apps/web/src/store/**",
+				"apps/web/src/routes/**/project/**"
+			]
+		},
+		{
+			"area": "web-settings",
+			"patterns": [
+				"apps/web/src/routes/**/settings/**",
+				"apps/web/src/components/team/**",
+				"apps/web/src/components/nav-*",
+				"apps/web/src/components/command-palette/**",
+				"apps/web/src/components/project/**",
+				"apps/web/src/fetchers/column/**",
+				"apps/web/src/fetchers/custom-field/**"
+			]
+		},
+		{ "area": "tests", "patterns": ["tests/**"] },
+		{
+			"area": "docs-ci",
+			"patterns": [".github/**", "docs/**", "apps/docs/**", "*.md"]
+		}
+	]
+}

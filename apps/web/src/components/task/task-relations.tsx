@@ -1,14 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight, Plus, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -24,18 +17,52 @@ import useGetTaskRelations from "@/hooks/queries/task-relation/use-get-task-rela
 import { useProjectPermission } from "@/hooks/use-project-permission";
 import { getColumnIcon } from "@/lib/column";
 import { findAssignee } from "@/lib/find-assignee";
-import { getInitials } from "@/lib/get-initials";
 import { HttpError } from "@/lib/http-error";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
-import SubtaskAssigneePopover from "./subtask-assignee-popover";
+import { ReferenceAssigneeButton } from "./sections/reference-assignee-button";
+import { ReferenceStatusButton } from "./sections/reference-status-button";
+import { type RelationKind, RelationTag } from "./sections/relation-tag";
+import { SectionAddButton } from "./sections/section-add-button";
+import { SectionHeader } from "./sections/section-header";
+import { TaskReferenceRow } from "./sections/task-reference-row";
+import { useProjectSlugs } from "./sections/use-project-slugs";
 import SubtaskStatusPopover from "./subtask-status-popover";
+import {
+  buildRelationLink,
+  findParentRelation,
+  unpickableTaskIds,
+} from "./task-relation-link";
 import TaskRelationDependencyPopover from "./task-relation-dependency-popover";
 import TaskRelationPickerDialog, {
   isDependencyRelationType,
+  type PickerRelationType,
   type RelationPick,
 } from "./task-relation-picker";
-import { isOtherProjectItem } from "./task-relations-cross-project";
+import {
+  type RelationPickerMode,
+  useRelationPickerStore,
+} from "./task-relation-picker-store";
+import {
+  isOtherProjectItem,
+  type PickerTaskItem,
+} from "./task-relations-cross-project";
+
+const relationOrder: Record<RelationKind, number> = {
+  blocked_by: 0,
+  blocks: 1,
+  related: 2,
+};
+
+// The shortcut store speaks "blockedBy"; the picker's own kind is "blocked_by".
+const PICKER_KIND: Record<
+  Exclude<RelationPickerMode, "parent">,
+  PickerRelationType
+> = {
+  related: "related",
+  blocks: "blocks",
+  blockedBy: "blocked_by",
+};
 
 type TaskRelationsProps = {
   taskId: string;
@@ -50,73 +77,81 @@ export default function TaskRelations({
 }: TaskRelationsProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
+  // How the picker was opened: from the add button (null) or by a shortcut
+  // that already knows the kind (or that the task's parent is being set).
+  const [pickerMode, setPickerMode] = useState<RelationPickerMode | null>(null);
+  const relationRequest = useRelationPickerStore((state) => state.request);
+  const clearRelationRequest = useRelationPickerStore((state) => state.clear);
 
   const { data: relations = [] } = useGetTaskRelations(taskId);
-  const { data: projectData } = useGetTasks(projectId);
+  const { data: projectData } = useGetTasks(projectId, {
+    refetchOnMount: false,
+  });
   const { data: workspaceUsers } = useProjectMembers(projectId);
   const createRelation = useCreateTaskRelation();
   const deleteRelation = useDeleteTaskRelation(taskId);
   const { canUpdateTasks } = useProjectPermission(projectId);
   const canEdit = canUpdateTasks();
+  const displayIdOf = useProjectSlugs(workspaceId);
 
-  // Memoized so its reference only changes when `relations` actually does —
-  // otherwise every render would hand groupedRelations and
-  // existingRelatedTaskIds a fresh array and defeat their own memoization.
+  useEffect(() => {
+    if (!relationRequest || relationRequest.taskId !== taskId) return;
+    clearRelationRequest();
+    if (!canEdit) return;
+    setPickerMode(relationRequest.mode);
+    setCommandOpen(true);
+  }, [relationRequest, taskId, canEdit, clearRelationRequest]);
+
+  const handlePickerOpenChange = (open: boolean) => {
+    setCommandOpen(open);
+    if (!open) setPickerMode(null);
+  };
+
+  // Memoized so its reference only changes when `relations` actually does.
   const nonSubtaskRelations = useMemo(
     () => relations.filter((rel) => rel.relationType !== "subtask"),
     [relations],
   );
 
-  const groupedRelations = useMemo(() => {
-    const groups: Record<
-      string,
-      Array<{
-        id: string;
-        relationType: string;
-        dependencyType: string;
-        lagDays: number;
-        task: NonNullable<(typeof nonSubtaskRelations)[number]["sourceTask"]>;
-      }>
-    > = {};
+  const linkedRelations = useMemo(
+    () =>
+      nonSubtaskRelations
+        .flatMap((rel) => {
+          const isSource = rel.sourceTaskId === taskId;
+          const linkedTask = isSource ? rel.targetTask : rel.sourceTask;
+          if (!linkedTask) return [];
+          // "blocks" is directional: when the current task is the target it is
+          // the one being blocked.
+          const kind: RelationKind =
+            rel.relationType === "blocks"
+              ? isSource
+                ? "blocks"
+                : "blocked_by"
+              : "related";
+          return [
+            {
+              id: rel.id,
+              kind,
+              dependencyType: rel.dependencyType,
+              lagDays: rel.lagDays,
+              task: linkedTask,
+            },
+          ];
+        })
+        .sort((a, b) => relationOrder[a.kind] - relationOrder[b.kind]),
+    [nonSubtaskRelations, taskId],
+  );
 
-    for (const rel of nonSubtaskRelations) {
-      const isSource = rel.sourceTaskId === taskId;
-      const linkedTask = isSource ? rel.targetTask : rel.sourceTask;
-      if (!linkedTask) continue;
-
-      // "blocks" is directional: when the current task is the target it is the
-      // one being blocked, so group it under a distinct "blocked_by" key.
-      const type =
-        rel.relationType === "blocks" && !isSource
-          ? "blocked_by"
-          : rel.relationType;
-      if (!groups[type]) {
-        groups[type] = [];
-      }
-      groups[type].push({
-        id: rel.id,
-        relationType: rel.relationType,
-        dependencyType: rel.dependencyType,
-        lagDays: rel.lagDays,
-        task: linkedTask,
-      });
-    }
-
-    return groups;
-  }, [nonSubtaskRelations, taskId]);
-
-  const existingRelatedTaskIds = useMemo(() => {
-    const ids = new Set(
-      nonSubtaskRelations.flatMap((rel) => [
-        rel.sourceTaskId,
-        rel.targetTaskId,
-      ]),
-    );
-    ids.add(taskId);
-    return ids;
-  }, [nonSubtaskRelations, taskId]);
+  const excludedTaskIds = useMemo(
+    () =>
+      unpickableTaskIds(
+        pickerMode === "parent" ? "parent" : "related",
+        taskId,
+        relations,
+      ),
+    [pickerMode, relations, taskId],
+  );
 
   const finalStatusSlugs = useMemo(() => {
     if (!projectData) return new Set<string>();
@@ -144,6 +179,24 @@ export default function TaskRelations({
     return icons;
   }, [projectData]);
 
+  const reportLinkError = (error: unknown) => {
+    // The API returns a 409 both for an exact duplicate and for a "blocks"/
+    // "subtask" edge that would close a cycle; only the latter carries
+    // "circular" in its message, so callers see the specific reason rather
+    // than the generic fallback.
+    const isCircularDependency =
+      error instanceof HttpError &&
+      error.status === 409 &&
+      error.message.toLowerCase().includes("circular");
+    toast.error(
+      t(
+        isCircularDependency
+          ? "tasks:relations.circularDependencyError"
+          : "tasks:relations.linkError",
+      ),
+    );
+  };
+
   const handleLinkTask = async ({
     task: pickedTask,
     relationType,
@@ -162,21 +215,24 @@ export default function TaskRelations({
       });
       return true;
     } catch (error) {
-      // The API returns a 409 both for an exact duplicate and for a "blocks"/
-      // "subtask" edge that would close a cycle; only the latter carries
-      // "circular" in its message, so callers see the specific reason rather
-      // than the generic fallback.
-      const isCircularDependency =
-        error instanceof HttpError &&
-        error.status === 409 &&
-        error.message.toLowerCase().includes("circular");
-      toast.error(
-        t(
-          isCircularDependency
-            ? "tasks:relations.circularDependencyError"
-            : "tasks:relations.linkError",
-        ),
+      reportLinkError(error);
+      return false;
+    }
+  };
+
+  // A task has one parent: linking a new one replaces the previous link.
+  const handleSetParent = async (pickedTask: PickerTaskItem) => {
+    const previousParent = findParentRelation(taskId, relations);
+    try {
+      await createRelation.mutateAsync(
+        buildRelationLink("parent", taskId, pickedTask.id),
       );
+      if (previousParent) {
+        await deleteRelation.mutateAsync(previousParent.id);
+      }
+      return true;
+    } catch (error) {
+      reportLinkError(error);
       return false;
     }
   };
@@ -237,274 +293,218 @@ export default function TaskRelations({
 
   return (
     <>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isOpen ? (
-                  <ChevronDown className="size-4" />
-                ) : (
-                  <ChevronRight className="size-4" />
-                )}
-                <span>{t("tasks:relations.title")}</span>
-              </button>
-            </CollapsibleTrigger>
-            {totalCount > 0 && (
-              <span className="text-xs text-muted-foreground">
+      <section className="flex flex-col gap-1">
+        <SectionHeader
+          title={t("tasks:relations.title")}
+          meta={
+            totalCount > 0 && (
+              <span className="text-muted-foreground text-xs tabular-nums">
                 {totalCount}
               </span>
-            )}
-          </div>
-          {canEdit && (
-            <Button
-              variant="ghost"
-              size="xs"
-              className="text-muted-foreground"
-              onClick={() => setCommandOpen(true)}
-            >
-              <Plus className="size-3.5" />
-            </Button>
-          )}
-        </div>
+            )
+          }
+          action={
+            canEdit && (
+              <SectionAddButton
+                aria-label={`${t("tasks:subtasks.addAction")} ${t("tasks:relations.title")}`}
+                onClick={() => setCommandOpen(true)}
+              />
+            )
+          }
+        />
 
-        <CollapsibleContent>
-          {Object.entries(groupedRelations).map(([type, items]) => (
-            <div key={type} className="mt-1.5">
-              <span className="text-[11px] text-muted-foreground/70 px-2">
-                {t(`tasks:relations.types.${type}`, {
-                  defaultValue: type.replace(/_/g, " "),
-                })}
-              </span>
-              <div className="flex flex-col mt-0.5">
-                {items.map((item) => {
-                  const assignee = getAssignee(
-                    item.task.userId,
-                    item.task.assigneeName,
-                  );
-                  const taskObj = buildTaskObject(item);
-                  // Column ids/slugs and "final" status are specific to one
-                  // project's board, so a related task from another project
-                  // must not be rendered with the current project's column
-                  // metadata (its status id may not even exist there).
-                  const isOtherProject = isOtherProjectItem(
-                    item.task,
-                    projectId,
-                  );
-                  const statusIcon = getColumnIcon(
-                    item.task.status,
-                    !isOtherProject && finalStatusSlugs.has(item.task.status),
-                    isOtherProject
-                      ? undefined
-                      : columnIconBySlug.get(item.task.status),
-                  );
-                  const isFinalStatus =
-                    !isOtherProject && finalStatusSlugs.has(item.task.status);
+        <div className="flex flex-col">
+          {linkedRelations.map((item) => {
+            const assignee = getAssignee(
+              item.task.userId,
+              item.task.assigneeName,
+            );
+            const taskObj = buildTaskObject(item);
+            // Column ids/slugs and "final" status are specific to one
+            // project's board, so a related task from another project must
+            // not be rendered with the current project's column metadata (its
+            // status id may not even exist there).
+            const isOtherProject = isOtherProjectItem(item.task, projectId);
+            const isFinalStatus =
+              !isOtherProject && finalStatusSlugs.has(item.task.status);
+            const statusIcon = getColumnIcon(
+              item.task.status,
+              isFinalStatus,
+              isOtherProject
+                ? undefined
+                : columnIconBySlug.get(item.task.status),
+            );
+            const isDependency =
+              item.kind === "blocks" || item.kind === "blocked_by";
 
-                  return (
-                    <ContextMenu key={item.id}>
-                      <ContextMenuTrigger asChild>
-                        <div className="group flex items-center gap-2 py-1 px-2 rounded-md hover:bg-accent/50 transition-colors cursor-default">
-                          {isOtherProject ? (
-                            // The status columns belong to the other project's
-                            // board, which isn't loaded here; rather than apply
-                            // this project's columns to a task that lives
-                            // elsewhere (and risk writing an invalid status),
-                            // the control is read-only for cross-project items.
-                            // A non-interactive `span` (not a `button`, which
-                            // would be a keyboard focus-stop with no action)
-                            // — `aria-label` stands in for the visible text a
-                            // sighted user gets from the native `title`
-                            // tooltip.
-                            <span
-                              // `role="img"` so `aria-label` is a supported
-                              // attribute on this otherwise-generic span.
-                              role="img"
-                              title={t(
-                                "tasks:relations.crossProjectStatusReadOnly",
-                              )}
-                              aria-label={t(
-                                "tasks:relations.crossProjectStatusReadOnly",
-                              )}
-                              className="shrink-0 flex items-center justify-center rounded p-0.5 cursor-default [&_svg]:text-muted-foreground"
-                            >
-                              {statusIcon}
-                            </span>
-                          ) : (
-                            <SubtaskStatusPopover
-                              tasks={[taskObj]}
-                              projectId={projectId}
-                            >
-                              <button
-                                type="button"
-                                className="shrink-0 flex items-center justify-center rounded p-0.5 transition-colors outline-none [&_svg]:text-muted-foreground hover:[&_svg]:text-foreground"
-                              >
-                                {statusIcon}
-                              </button>
-                            </SubtaskStatusPopover>
+            return (
+              <ContextMenu key={item.id}>
+                <ContextMenuTrigger asChild>
+                  <TaskReferenceRow
+                    status={
+                      isOtherProject ? (
+                        // The status columns belong to the other project's
+                        // board, which isn't loaded here; rather than apply
+                        // this project's columns to a task that lives
+                        // elsewhere (and risk writing an invalid status), the
+                        // control is read-only for cross-project items. A
+                        // non-interactive `span` (not a `button`, which would
+                        // be a keyboard focus-stop with no action).
+                        <span
+                          // `role="img"` so `aria-label` is a supported
+                          // attribute on this otherwise-generic span.
+                          role="img"
+                          title={t(
+                            "tasks:relations.crossProjectStatusReadOnly",
                           )}
-
-                          <button
-                            type="button"
-                            className="flex flex-1 min-w-0 items-center gap-1.5 text-left outline-none"
-                            onClick={() =>
-                              handleNavigateToTask(
-                                item.task.id,
-                                item.task.projectId,
-                              )
-                            }
-                          >
-                            {/* Task key (SLUG-number), shown whenever the
-                                summary carries a slug and number, so a related
-                                task is identifiable at a glance — especially a
-                                cross-project one, whose slug differs from this
-                                board's, reads as belonging elsewhere rather
-                                than as a bare title. */}
-                            {item.task.projectSlug &&
-                              item.task.number !== null && (
-                                <span className="shrink-0 font-mono text-[11px] text-muted-foreground/80">
-                                  {item.task.projectSlug}-{item.task.number}
-                                </span>
-                              )}
-                            <span
-                              className={`text-sm truncate ${isFinalStatus ? "line-through text-muted-foreground" : "text-foreground/90"}`}
-                            >
-                              {item.task.title}
-                            </span>
-                          </button>
-
-                          {(type === "blocks" || type === "blocked_by") && (
-                            <TaskRelationDependencyPopover
-                              relationId={item.id}
-                              taskId={taskId}
-                              // The edge belongs to its source task: the related
-                              // task for a blocked_by row, this task for blocks.
-                              projectId={
-                                type === "blocked_by"
-                                  ? item.task.projectId
-                                  : projectId
-                              }
-                              dependencyType={item.dependencyType}
-                              lagDays={item.lagDays}
-                            >
-                              <button
-                                type="button"
-                                className="shrink-0 rounded px-1 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground/80 border border-border/60 hover:text-foreground hover:border-border transition-colors outline-none"
-                                title={t(
-                                  `tasks:relations.dependency.types.${item.dependencyType}`,
-                                )}
-                              >
-                                {t(
-                                  `tasks:relations.dependency.typesShort.${item.dependencyType}`,
-                                  {
-                                    defaultValue:
-                                      item.dependencyType.toUpperCase(),
-                                  },
-                                )}
-                                {item.lagDays !== 0 &&
-                                  t("tasks:relations.dependency.lagSuffix", {
-                                    days:
-                                      item.lagDays > 0
-                                        ? `+${item.lagDays}`
-                                        : item.lagDays,
-                                  })}
-                              </button>
-                            </TaskRelationDependencyPopover>
+                          aria-label={t(
+                            "tasks:relations.crossProjectStatusReadOnly",
                           )}
-
-                          <SubtaskAssigneePopover tasks={[taskObj]}>
-                            <button
-                              type="button"
-                              className="shrink-0 flex items-center justify-center rounded p-0.5 transition-colors outline-none"
-                            >
-                              {item.task.userId && assignee ? (
-                                <Avatar className="h-5 w-5">
-                                  <AvatarImage
-                                    src={assignee?.user?.image ?? ""}
-                                    alt={assignee?.user?.name || ""}
-                                  />
-                                  <AvatarFallback className="text-[9px] font-medium border border-border/30">
-                                    {getInitials(assignee?.user?.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ) : (
-                                <div
-                                  className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border/70"
-                                  title={t("tasks:popover.assignee.unassigned")}
-                                >
-                                  <span className="text-[9px] font-medium text-muted-foreground">
-                                    ?
-                                  </span>
-                                </div>
-                              )}
-                            </button>
-                          </SubtaskAssigneePopover>
-
-                          {canEdit && (
-                            <button
-                              type="button"
-                              className="shrink-0 flex items-center justify-center rounded p-0.5 text-muted-foreground opacity-0 outline-none transition-colors hover:bg-destructive/10 hover:text-destructive-foreground focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveRelation(item.id);
-                              }}
-                              aria-label={t("tasks:relations.removeRelation")}
-                              title={t("tasks:relations.removeRelation")}
-                            >
-                              <X className="size-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </ContextMenuTrigger>
-
-                      <ContextMenuContent className="w-40">
-                        <ContextMenuItem
-                          onClick={() =>
-                            handleNavigateToTask(
-                              item.task.id,
-                              item.task.projectId,
-                            )
-                          }
+                          className="flex size-3.5 shrink-0 cursor-default items-center justify-center text-muted-foreground [&_svg]:size-3.5"
                         >
-                          <span>{t("tasks:relations.openTask")}</span>
-                        </ContextMenuItem>
-                        {canEdit && (
-                          <>
-                            <ContextMenuSeparator />
-                            <ContextMenuItem
-                              className="text-destructive"
-                              onClick={() => handleRemoveRelation(item.id)}
+                          {statusIcon}
+                        </span>
+                      ) : (
+                        <SubtaskStatusPopover
+                          tasks={[taskObj]}
+                          projectId={projectId}
+                        >
+                          <ReferenceStatusButton
+                            aria-label={t("tasks:status.label")}
+                          >
+                            {statusIcon}
+                          </ReferenceStatusButton>
+                        </SubtaskStatusPopover>
+                      )
+                    }
+                    // The key (SLUG-number) comes from the relation summary
+                    // when it carries one, so a cross-project task reads as
+                    // belonging elsewhere rather than as a bare title.
+                    displayId={
+                      item.task.projectSlug && item.task.number != null
+                        ? `${item.task.projectSlug}-${item.task.number}`
+                        : displayIdOf(item.task.projectId, item.task.number)
+                    }
+                    title={item.task.title}
+                    done={isFinalStatus}
+                    onOpen={() =>
+                      handleNavigateToTask(item.task.id, item.task.projectId)
+                    }
+                    tag={
+                      <>
+                        <RelationTag kind={item.kind} />
+                        {isDependency && (
+                          <TaskRelationDependencyPopover
+                            relationId={item.id}
+                            taskId={taskId}
+                            // The edge belongs to its source task: the related
+                            // task for a blocked_by row, this task for blocks.
+                            projectId={
+                              item.kind === "blocked_by"
+                                ? item.task.projectId
+                                : projectId
+                            }
+                            dependencyType={item.dependencyType}
+                            lagDays={item.lagDays}
+                          >
+                            <button
+                              type="button"
+                              className="shrink-0 rounded border border-border/60 px-1 py-0.5 font-medium text-[10px] text-muted-foreground/80 tabular-nums outline-none transition-colors hover:border-border hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                              title={t(
+                                `tasks:relations.dependency.types.${item.dependencyType}`,
+                              )}
                             >
-                              <span>{t("tasks:relations.removeRelation")}</span>
-                            </ContextMenuItem>
-                          </>
+                              {t(
+                                `tasks:relations.dependency.typesShort.${item.dependencyType}`,
+                                {
+                                  defaultValue:
+                                    item.dependencyType.toUpperCase(),
+                                },
+                              )}
+                              {item.lagDays !== 0 &&
+                                t("tasks:relations.dependency.lagSuffix", {
+                                  days:
+                                    item.lagDays > 0
+                                      ? `+${item.lagDays}`
+                                      : item.lagDays,
+                                })}
+                            </button>
+                          </TaskRelationDependencyPopover>
                         )}
-                      </ContextMenuContent>
-                    </ContextMenu>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+                      </>
+                    }
+                    assignee={
+                      <ReferenceAssigneeButton
+                        tasks={[taskObj]}
+                        name={assignee?.user?.name ?? item.task.assigneeName}
+                        image={assignee?.user?.image}
+                      />
+                    }
+                    actions={
+                      canEdit && (
+                        <button
+                          type="button"
+                          className="flex shrink-0 items-center justify-center rounded p-0.5 text-muted-foreground opacity-0 outline-none transition-colors hover:bg-destructive/10 hover:text-destructive-foreground focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleRemoveRelation(item.id);
+                          }}
+                          aria-label={t("tasks:relations.removeRelation")}
+                          title={t("tasks:relations.removeRelation")}
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      )
+                    }
+                  />
+                </ContextMenuTrigger>
+
+                <ContextMenuContent className="w-40">
+                  <ContextMenuItem
+                    onClick={() =>
+                      handleNavigateToTask(item.task.id, item.task.projectId)
+                    }
+                  >
+                    <span>{t("tasks:relations.openTask")}</span>
+                  </ContextMenuItem>
+                  {canEdit && (
+                    <>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        className="text-destructive"
+                        onClick={() => handleRemoveRelation(item.id)}
+                      >
+                        <span>{t("tasks:relations.removeRelation")}</span>
+                      </ContextMenuItem>
+                    </>
+                  )}
+                </ContextMenuContent>
+              </ContextMenu>
+            );
+          })}
 
           {totalCount === 0 && (
-            <p className="text-xs text-muted-foreground px-2 py-1">
+            <p className="px-2 py-1 text-muted-foreground text-xs">
               {t("tasks:relations.empty")}
             </p>
           )}
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+      </section>
 
       <TaskRelationPickerDialog
         open={commandOpen}
-        onOpenChange={setCommandOpen}
+        onOpenChange={handlePickerOpenChange}
         projectId={projectId}
         workspaceId={workspaceId}
-        excludedTaskIds={existingRelatedTaskIds}
+        excludedTaskIds={excludedTaskIds}
         onPick={handleLinkTask}
+        initialRelationType={
+          pickerMode && pickerMode !== "parent"
+            ? PICKER_KIND[pickerMode]
+            : undefined
+        }
+        parentMode={pickerMode === "parent"}
+        onPickParent={handleSetParent}
       />
     </>
   );

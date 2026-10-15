@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { computeViolatedDependencyEdgeIds } from "./gantt-dependency-violations";
 
 const day = (n: number) => new Date(Date.UTC(2026, 7, n));

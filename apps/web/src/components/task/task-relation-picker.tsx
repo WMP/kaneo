@@ -83,6 +83,12 @@ type TaskRelationPickerDialogProps = {
   excludedTaskIds: ReadonlySet<string>;
   /** Resolves true to close the picker; false keeps it open (e.g. on error). */
   onPick: (pick: RelationPick) => boolean | Promise<boolean>;
+  /** Opens with this kind already chosen (for example from a shortcut). */
+  initialRelationType?: PickerRelationType;
+  /** Picks the task's parent instead of a relation kind: no kind choice, no
+   * dependency settings, and the chosen task goes to `onPickParent`. */
+  parentMode?: boolean;
+  onPickParent?: (task: TaskItem) => boolean | Promise<boolean>;
 };
 
 /**
@@ -116,16 +122,19 @@ function TaskRelationPickerContent({
   workspaceId,
   excludedTaskIds,
   onPick,
+  initialRelationType,
+  parentMode = false,
+  onPickParent,
   close,
 }: Omit<TaskRelationPickerDialogProps, "open" | "onOpenChange"> & {
   close: () => void;
 }) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  // No kind is preselected: the user picks one first, and only then does the
-  // task search become usable.
+  // No kind is preselected unless the caller asks for one: the user picks one
+  // first, and only then does the task search become usable.
   const [selectedRelationType, setSelectedRelationType] =
-    useState<PickerRelationType | null>(null);
+    useState<PickerRelationType | null>(initialRelationType ?? null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Only meaningful once selectedRelationType is "blocks" or "blocked_by".
   const [newDependencyType, setNewDependencyType] =
@@ -219,6 +228,10 @@ function TaskRelationPickerContent({
   };
 
   const handleLinkTask = async (item: TaskItem) => {
+    if (parentMode) {
+      if (await onPickParent?.(item)) close();
+      return;
+    }
     if (selectedRelationType === null) return;
     const parsedLagDays = Number.parseInt(newLagDaysInput, 10);
     const shouldClose = await onPick({
@@ -231,80 +244,91 @@ function TaskRelationPickerContent({
     if (shouldClose) close();
   };
 
-  const hasRelationType = selectedRelationType !== null;
+  const hasRelationType = parentMode || selectedRelationType !== null;
 
   return (
     <Command items={commandGroups} disabled={!hasRelationType}>
-      <div className="flex flex-col gap-2 border-b px-3 py-2.5">
-        <fieldset className="m-0 flex min-w-0 flex-col gap-1.5 border-0 p-0">
-          <legend className="sr-only">
-            {t("tasks:relations.typeGroupLabel")}
-          </legend>
-          <div className="flex items-center gap-1.5">
-            {RELATION_TYPE_OPTIONS.map(({ type, icon: Icon, labelKey }) => (
-              <button
-                key={type}
-                type="button"
-                aria-pressed={selectedRelationType === type}
-                className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRelationType === type ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                onClick={() => handleSelectRelationType(type)}
-              >
-                <Icon className="size-3" />
-                {t(labelKey)}
-              </button>
-            ))}
-          </div>
-          {!hasRelationType && (
-            <p className="text-xs text-muted-foreground/80">
-              {t("tasks:relations.chooseTypeFirst")}
-            </p>
-          )}
-        </fieldset>
+      {!parentMode && (
+        <div className="flex flex-col gap-2 border-b px-3 py-2.5">
+          <fieldset className="m-0 flex min-w-0 flex-col gap-1.5 border-0 p-0">
+            <legend className="sr-only">
+              {t("tasks:relations.typeGroupLabel")}
+            </legend>
+            <div className="flex items-center gap-1.5">
+              {RELATION_TYPE_OPTIONS.map(({ type, icon: Icon, labelKey }) => (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={selectedRelationType === type}
+                  className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedRelationType === type ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  onClick={() => handleSelectRelationType(type)}
+                >
+                  <Icon className="size-3" />
+                  {t(labelKey)}
+                </button>
+              ))}
+            </div>
+            {!hasRelationType && (
+              <p className="text-xs text-muted-foreground/80">
+                {t("tasks:relations.chooseTypeFirst")}
+              </p>
+            )}
+          </fieldset>
 
-        {/* Dependency type/lag only apply to a "blocks" relation (either
+          {/* Dependency type/lag only apply to a "blocks" relation (either
             direction) — the Gantt's scheduling dependency; a plain "related"
             link has no ordering to configure. */}
-        {selectedRelationType !== null &&
-          isDependencyRelationType(selectedRelationType) && (
-            <div className="flex items-center gap-2">
-              <Select
-                value={newDependencyType}
-                onValueChange={(value) =>
-                  setNewDependencyType(String(value) as GanttDependencyType)
-                }
-              >
-                <SelectTrigger className="h-7 min-w-0 flex-1 text-xs" size="sm">
-                  <SelectValue>
-                    {t(`tasks:relations.dependency.types.${newDependencyType}`)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {DEPENDENCY_TYPES.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {t(`tasks:relations.dependency.types.${option}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <input
-                type="number"
-                value={newLagDaysInput}
-                onChange={(e) => setNewLagDaysInput(e.target.value)}
-                placeholder="0"
-                aria-label={t("tasks:relations.dependency.lagLabel")}
-                className="h-7 w-16 shrink-0 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring"
-              />
-              <span className="shrink-0 text-[11px] text-muted-foreground/60">
-                {t("tasks:relations.dependency.lagLabel")}
-              </span>
-            </div>
-          )}
-      </div>
+          {selectedRelationType !== null &&
+            isDependencyRelationType(selectedRelationType) && (
+              <div className="flex items-center gap-2">
+                <Select
+                  value={newDependencyType}
+                  onValueChange={(value) =>
+                    setNewDependencyType(String(value) as GanttDependencyType)
+                  }
+                >
+                  <SelectTrigger
+                    className="h-7 min-w-0 flex-1 text-xs"
+                    size="sm"
+                  >
+                    <SelectValue>
+                      {t(
+                        `tasks:relations.dependency.types.${newDependencyType}`,
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEPENDENCY_TYPES.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {t(`tasks:relations.dependency.types.${option}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <input
+                  type="number"
+                  value={newLagDaysInput}
+                  onChange={(e) => setNewLagDaysInput(e.target.value)}
+                  placeholder="0"
+                  aria-label={t("tasks:relations.dependency.lagLabel")}
+                  className="h-7 w-16 shrink-0 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring"
+                />
+                <span className="shrink-0 text-[11px] text-muted-foreground/60">
+                  {t("tasks:relations.dependency.lagLabel")}
+                </span>
+              </div>
+            )}
+        </div>
+      )}
       <CommandInput
         ref={searchInputRef}
-        autoFocus={false}
+        autoFocus={hasRelationType}
         disabled={!hasRelationType}
-        placeholder={t("tasks:relations.searchPlaceholder")}
+        placeholder={
+          parentMode
+            ? t("tasks:relations.parentPlaceholder")
+            : t("tasks:relations.searchPlaceholder")
+        }
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />

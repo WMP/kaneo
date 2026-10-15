@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import createTaskRelation from "../../apps/api/src/task-relation/controllers/create-task-relation";
@@ -82,7 +82,8 @@ describe("API integration: moving a project between workspaces", () => {
       moveRequest(target.id),
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
+    expect(await response.text()).toContain("Destination workspace not found");
 
     const [unchanged] = await db
       .select()
@@ -109,6 +110,33 @@ describe("API integration: moving a project between workspaces", () => {
     );
 
     expect(response.status).toBe(403);
+  });
+
+  it("rejects a move when the caller can't manage target workspace settings", async () => {
+    const owner = await createWorkspaceMember({ role: "owner" });
+    const target = await createTargetWorkspace();
+    // Members can create projects, but cannot bring retained integrations into
+    // a workspace because they lack workspace:manage_settings.
+    await addMember(target.id, owner.user.id, "member");
+    const { project } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+
+    mockAuthenticatedSession(owner.user);
+    const { app } = createApp();
+
+    const response = await app.request(
+      `/api/project/${project.id}/move`,
+      moveRequest(target.id),
+    );
+
+    expect(response.status).toBe(403);
+
+    const [unchanged] = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.id, project.id));
+    expect(unchanged.workspaceId).toBe(owner.workspace.id);
   });
 
   it("rejects a move when the target workspace already uses the project's key", async () => {

@@ -1,7 +1,0 @@
----
-description: Database schema and migrations
-globs: apps/api/src/database/**/*,apps/api/drizzle/**/*
-alwaysApply: false
----
-
-Read `AGENTS.md` and `docs/agent-guide/database.md` before changing schema or migrations. Inspect migration SQL and existing-data behavior; do not edit applied migrations.

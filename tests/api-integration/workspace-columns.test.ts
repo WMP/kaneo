@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { asc, eq } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import {
   subscribeToEvent,
@@ -17,7 +17,6 @@ import {
 } from "./helpers/fixtures";
 
 type App = ReturnType<typeof createApp>["app"];
-// biome-ignore lint/suspicious/noExplicitAny: parsed JSON bodies are inspected loosely
 type Json = Record<string, any>;
 
 // Events the tests look at. Handlers cannot be removed from the bus, so they are
@@ -414,7 +413,7 @@ describe("API integration: workspace columns", () => {
         request(app, "PUT", `${base}/enforcement`, { enforced: true }),
       ]);
       expect(responses.map((r) => r.status)).toEqual([
-        403, 403, 403, 403, 403, 403, 403,
+        404, 404, 404, 404, 404, 404, 404,
       ]);
 
       const rows = await db

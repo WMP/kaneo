@@ -1,6 +1,0 @@
----
-description: Canonical Kaneo instructions and task-specific contracts
-alwaysApply: true
----
-
-Read `AGENTS.md` before changing code. Its task matrix links to the applicable files in `docs/agent-guide/`. Do not treat the Cursor rule files as a separate architecture or source of truth.

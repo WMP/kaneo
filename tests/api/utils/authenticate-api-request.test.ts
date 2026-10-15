@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { getSession, verifyApiKey } = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -34,7 +34,8 @@ function fakeContext(headers: Record<string, string>) {
 }
 
 const apiKeyResult = {
-  valid: true,
+  status: "valid",
+  rateLimit: null,
   key: {
     id: "key-1",
     userId: "user-1",

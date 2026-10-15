@@ -103,7 +103,7 @@ The README screenshots must not show `localhost`. The MCP page, for example, bui
 3. it seeds the demo data, calling the API directly with the public `Origin`;
 4. it starts Chromium with `--host-resolver-rules` mapping the host to the proxy (this also changes the port) and `--no-proxy-server`, then captures every scene through `https://kaneopro.example.com`.
 
-Point the app at the public address first. Use these two git-ignored files, because `pnpm dev` (turbo) hands only some variables on to the apps, while the files work however you start it:
+Point the app at the public address first. Use these two git-ignored files, because the files work however you start the apps:
 
 ```sh
 # .env   (API)

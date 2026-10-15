@@ -7,7 +7,14 @@ import {
   within,
 } from "@testing-library/react";
 import type { ComponentType } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import type Resource from "@/types/resource";
 import { Route } from "./resources";
 

@@ -11,7 +11,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Client, Pool } from "pg";
-import { afterAll, afterEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vite-plus/test";
 import { runMigrations } from "../../apps/api/src/database/run-migrations";
 
 // The Jira migration was first shipped as 0059_ganttpro_jira_integration (image

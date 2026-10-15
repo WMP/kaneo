@@ -2,7 +2,14 @@ import { randomUUID } from "node:crypto";
 import * as email from "@kaneo/email";
 import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import * as projectAccess from "../../apps/api/src/utils/project-access";

@@ -3,7 +3,14 @@ import type { IncomingMessage } from "node:http";
 import { createRequire } from "node:module";
 import type { Session, User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { serve } from "../../apps/api/node_modules/@hono/node-server";
 import type { NodeWebSocket } from "../../apps/api/node_modules/@hono/node-ws";
 import { auth } from "../../apps/api/src/auth";
@@ -17,6 +24,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 // Access to a project comes from a project membership, except for full-access
 // users (workspace owner, a role granting workspace:manage_settings, instance
@@ -34,7 +42,6 @@ vi.mock(
 const { app } = createApp();
 
 const DENIED_PROJECT = "You don't have access to this project";
-const DENIED_WORKSPACE = "You don't have access to this workspace";
 
 type World = Awaited<ReturnType<typeof buildWorld>>;
 
@@ -530,7 +537,8 @@ const ACTORS = [
   { key: "member", allowed: true },
   { key: "fullAdmin", allowed: true },
   { key: "workspaceOnly", allowed: false, message: DENIED_PROJECT },
-  { key: "outsider", allowed: false, message: DENIED_WORKSPACE },
+  // Not a workspace member: the resource is reported as not found.
+  { key: "outsider", allowed: false, message: "not found", status: 404 },
 ] as const;
 
 function actorUser(w: World, key: (typeof ACTORS)[number]["key"]): User {
@@ -563,7 +571,9 @@ describe("single-project routes are gated by project membership", () => {
 
       if (actor.key === "member" && route.memberStatus !== undefined) {
         expect(response.status).toBe(route.memberStatus);
-        expect(await response.text()).toBe("Insufficient permissions");
+        expect((await readErrorBody(response)).message).toBe(
+          "Insufficient permissions",
+        );
       } else if (actor.allowed) {
         const text = await response.clone().text();
         if (route.ok === "gate") {
@@ -574,10 +584,18 @@ describe("single-project routes are gated by project membership", () => {
         }
       } else if (route.deniedAsNotFound) {
         expect(response.status).toBe(404);
-        expect(await response.text()).toBe(route.deniedAsNotFound);
+        expect((await readErrorBody(response)).message).toBe(
+          route.deniedAsNotFound,
+        );
       } else {
-        expect(response.status).toBe(403);
-        expect(await response.text()).toBe(actor.message);
+        const { message } = await readErrorBody(response);
+        if (actor.key === "outsider") {
+          expect(response.status).toBe(404);
+          expect(message).toMatch(/not found$|^No tasks found$/);
+        } else {
+          expect(response.status).toBe(403);
+          expect(message).toBe(actor.message);
+        }
       }
     });
   });
@@ -607,7 +625,9 @@ describe("project roles decide what a member can do inside the project", () => {
       createTaskBody,
     );
     expect(denied.status).toBe(403);
-    expect(await denied.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(denied)).message).toBe(
+      "Insufficient permissions",
+    );
     // Reading still works with the viewer project role.
     expect((await call(`/task/${viewer.w.task.id}`, "GET")).status).toBe(200);
 
@@ -640,7 +660,7 @@ describe("project roles decide what a member can do inside the project", () => {
     const custom = await seeded("member", "vanished-role");
     const response = await call(`/task/${custom.w.task.id}`, "GET");
     expect(response.status).toBe(403);
-    expect(await response.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(response)).message).toBe(DENIED_PROJECT);
   });
 
   it("owner cannot be stored as a project role", async () => {
@@ -720,8 +740,8 @@ describe("stale and revoked access", () => {
     expect(rows.length).toBeGreaterThan(0);
 
     const response = await call(`/task/${w.task.id}`, "GET");
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe(DENIED_WORKSPACE);
+    expect(response.status).toBe(404);
+    expect((await readErrorBody(response)).message).toMatch(/not found$/);
   });
 
   it("deleting the project member row revokes access immediately", async () => {
@@ -733,7 +753,7 @@ describe("stale and revoked access", () => {
       .where(eq(schema.projectMemberTable.userId, w.member.id));
     const response = await call(`/task/${w.task.id}`, "GET");
     expect(response.status).toBe(403);
-    expect(await response.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(response)).message).toBe(DENIED_PROJECT);
   });
 });
 
@@ -797,7 +817,7 @@ describe("project creation", () => {
     mockAuthenticatedSession(bystander as User);
     const hidden = await call(`/project/${project.id}`, "GET");
     expect(hidden.status).toBe(403);
-    expect(await hidden.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(hidden)).message).toBe(DENIED_PROJECT);
   });
 });
 
@@ -826,7 +846,7 @@ describe("requests that touch several projects", () => {
       value: "high",
     });
     expect(both.status).toBe(403);
-    expect(await both.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(both)).message).toBe(DENIED_PROJECT);
     const [unchanged] = await db
       .select({ priority: schema.taskTable.priority })
       .from(schema.taskTable)
@@ -849,7 +869,9 @@ describe("requests that touch several projects", () => {
       value: "low",
     });
     expect(mixed.status).toBe(403);
-    expect(await mixed.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(mixed)).message).toBe(
+      "Insufficient permissions",
+    );
   });
 
   it("bulk update tolerates duplicate workspace membership rows", async () => {
@@ -893,14 +915,16 @@ describe("requests that touch several projects", () => {
       destinationProjectId: w.otherProject.id,
     });
     expect(noAccess.status).toBe(403);
-    expect(await noAccess.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(noAccess)).message).toBe(DENIED_PROJECT);
 
     await addProjectMember(w.otherProject.id, mover.id, "viewer");
     const readOnly = await call(`/task/move/${w.task.id}`, "PUT", {
       destinationProjectId: w.otherProject.id,
     });
     expect(readOnly.status).toBe(403);
-    expect(await readOnly.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(readOnly)).message).toBe(
+      "Insufficient permissions",
+    );
 
     await db
       .update(schema.projectMemberTable)
@@ -939,7 +963,7 @@ describe("requests that touch several projects", () => {
       relationType: "related",
     });
     expect(denied.status).toBe(403);
-    expect(await denied.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(denied)).message).toBe(DENIED_PROJECT);
 
     // Read-only in the target project is not enough: the relation is written
     // into a task there.
@@ -950,7 +974,9 @@ describe("requests that touch several projects", () => {
       relationType: "related",
     });
     expect(readOnly.status).toBe(403);
-    expect(await readOnly.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(readOnly)).message).toBe(
+      "Insufficient permissions",
+    );
 
     await db
       .update(schema.projectMemberTable)
@@ -993,14 +1019,15 @@ describe("requests that touch several projects", () => {
       workspaceId: target.workspace.id,
     });
     expect(denied.status).toBe(403);
-    expect(await denied.text()).toBe(
+    expect((await readErrorBody(denied)).message).toBe(
       "Insufficient permissions in the target workspace",
     );
 
-    // Promoted in the target workspace: project:create is now held there.
+    // Promoted in the target workspace: project:create and
+    // workspace:manage_settings (the move can carry integrations) are held there.
     await db
       .update(schema.workspaceUserTable)
-      .set({ role: "member" })
+      .set({ role: "admin" })
       .where(
         and(
           eq(schema.workspaceUserTable.workspaceId, target.workspace.id),
@@ -1212,7 +1239,9 @@ describe("workspace-level permissions come from the workspace role", () => {
       { webhookUrl: "https://hooks.example.com/kaneo" },
     );
     expect(response.status).toBe(403);
-    expect(await response.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(response)).message).toBe(
+      "Insufficient permissions",
+    );
   });
 });
 
@@ -1247,13 +1276,15 @@ describe("attaching a label names a task in the body", () => {
 
     const noAccess = await attach(foreignTask.id);
     expect(noAccess.status).toBe(403);
-    expect(await noAccess.text()).toBe(DENIED_PROJECT);
+    expect((await readErrorBody(noAccess)).message).toBe(DENIED_PROJECT);
 
     // A project viewer may read but not edit labels there.
     await addProjectMember(w.otherProject.id, user.id, "viewer");
     const readOnly = await attach(foreignTask.id);
     expect(readOnly.status).toBe(403);
-    expect(await readOnly.text()).toBe("Insufficient permissions");
+    expect((await readErrorBody(readOnly)).message).toBe(
+      "Insufficient permissions",
+    );
 
     await db
       .update(schema.projectMemberTable)
@@ -1358,6 +1389,6 @@ describe("project WebSocket upgrade", () => {
     expect(await connect(w.project.id, w.member as User)).toBe(101);
     expect(await connect(w.project.id, w.fullAdmin as User)).toBe(101);
     expect(await connect(w.project.id, w.workspaceOnly as User)).toBe(403);
-    expect(await connect(w.project.id, w.outsider.user as User)).toBe(403);
+    expect(await connect(w.project.id, w.outsider.user as User)).toBe(404);
   });
 });

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAuthenticatedSession } from "./helpers/auth";
@@ -141,7 +141,7 @@ describe("GET /task-relation/project/{projectId}", () => {
     expect(otherOwnTask).toBeDefined();
   });
 
-  it("enforces workspace access: a user with no membership in the project's workspace is refused", async () => {
+  it("enforces workspace access: a user with no membership in the project's workspace gets 404", async () => {
     const member = await createWorkspaceMember();
     const { project } = await createProjectFixture({
       workspaceId: member.workspace.id,
@@ -150,13 +150,14 @@ describe("GET /task-relation/project/{projectId}", () => {
 
     mockAuthenticatedSession(outsider.user);
     const response = await request(`/project/${project.id}`);
-    expect(response.status).toBe(403);
+    // Not a workspace member: the project is reported as not found.
+    expect(response.status).toBe(404);
   });
 
-  it("returns 400 for a project id that does not resolve to a workspace", async () => {
+  it("returns 404 for a project id that does not resolve to a workspace", async () => {
     const member = await createWorkspaceMember();
     mockAuthenticatedSession(member.user);
     const response = await request("/project/missing-project");
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
   });
 });

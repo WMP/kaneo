@@ -1,30 +1,17 @@
-import { Check } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import {
-  PickerList,
-  PickerNoResults,
-  PickerSearchInput,
-} from "@/components/ui/picker-search-input";
+import { OptionMenu } from "@/components/common/option-menu/option-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ShortcutNumber } from "@/components/ui/shortcut-number";
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
-import { useNumberedShortcuts } from "@/hooks/use-numbered-shortcuts";
-import { usePickerSearch } from "@/hooks/use-picker-search";
 import { useProjectPermission } from "@/hooks/use-project-permission";
-import { getColumnIcon } from "@/lib/column";
-import { getStatusDisplayLabel } from "@/lib/i18n/domain";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
-
-const getStatusSearchText = (status: { value: string; label: string }) =>
-  `${getStatusDisplayLabel(status.value, status.label)} ${status.label}`;
+import { statusMenuOptions } from "./menus/status-menu-options";
 
 type SubtaskStatusPopoverProps = {
   tasks: Task[];
@@ -40,105 +27,40 @@ export default function SubtaskStatusPopover({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { data: columns = [] } = useGetColumns(projectId);
-  const statusOptions = columns.map((col) => ({
-    value: col.slug,
-    label: col.name,
-    icon: col.icon,
-    isFinal: col.isFinal,
-  }));
-  const {
-    query: searchQuery,
-    setQuery: setSearchQuery,
-    isSearching,
-    filtered: filteredStatusOptions,
-  } = usePickerSearch(statusOptions, getStatusSearchText);
   const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
   const { canUpdateTasks } = useProjectPermission(projectId);
-  const canEdit = canUpdateTasks();
 
-  const allSameStatus =
-    tasks.length > 0 && tasks.every((t) => t.status === tasks[0].status);
-  const currentStatus = allSameStatus ? tasks[0].status : null;
+  if (!canUpdateTasks()) return <>{children}</>;
 
-  const handleStatusChange = useCallback(
-    async (newStatus: string) => {
-      try {
-        await Promise.all(
-          tasks.map((task) =>
-            updateTaskStatus({
-              ...task,
-              status: newStatus,
-            }),
-          ),
-        );
-        setOpen(false);
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : t("tasks:popover.status.updateError"),
-        );
-      }
-    },
-    [t, tasks, updateTaskStatus],
-  );
+  const current = tasks.every((task) => task.status === tasks[0]?.status)
+    ? tasks[0]?.status
+    : undefined;
 
-  const shortcutOptions = useMemo(
-    () =>
-      filteredStatusOptions.map((status) => ({
-        onSelect: () => handleStatusChange(status.value),
-      })),
-    [handleStatusChange, filteredStatusOptions],
-  );
-
-  useNumberedShortcuts(open, shortcutOptions);
-
-  if (!canEdit) return <>{children}</>;
+  const changeStatus = async (status: string) => {
+    setOpen(false);
+    try {
+      await Promise.all(
+        tasks.map((task) => updateTaskStatus({ ...task, status })),
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("tasks:popover.status.updateError"),
+      );
+    }
+  };
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(nextOpen) => {
-        setOpen(nextOpen);
-        setSearchQuery("");
-      }}
-      modal={false}
-    >
+    <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-48 p-0" align="start">
-        <PickerSearchInput
-          value={searchQuery}
-          onValueChange={setSearchQuery}
-          placeholder={t("tasks:picker.search")}
-          onEnter={() => {
-            const first = filteredStatusOptions[0];
-            if (first) void handleStatusChange(first.value);
-          }}
+      <PopoverContent className="w-60 p-0" align="start">
+        <OptionMenu
+          label={t("tasks:status.label")}
+          placeholder={t("tasks:bulk.statusPlaceholder")}
+          options={statusMenuOptions(columns, current)}
+          onSelect={changeStatus}
         />
-        <PickerList>
-          {isSearching && filteredStatusOptions.length === 0 && (
-            <PickerNoResults>{t("tasks:picker.noResults")}</PickerNoResults>
-          )}
-          {filteredStatusOptions.map((status, index) => (
-            <Button
-              key={status.value}
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 h-8 px-2 rounded-none first:rounded-t-md last:rounded-b-md"
-              onClick={() => handleStatusChange(status.value)}
-            >
-              {getColumnIcon(status.value, status.isFinal, status.icon)}
-              <span className="text-sm">
-                {getStatusDisplayLabel(status.value, status.label)}
-              </span>
-              {currentStatus === status.value ? (
-                <Check className="ml-auto h-4 w-4" />
-              ) : (
-                <ShortcutNumber number={index + 1} />
-              )}
-            </Button>
-          ))}
-        </PickerList>
       </PopoverContent>
     </Popover>
   );

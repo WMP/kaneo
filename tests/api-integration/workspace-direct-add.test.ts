@@ -2,7 +2,14 @@ import { randomUUID } from "node:crypto";
 import * as email from "@kaneo/email";
 import type { User } from "better-auth/types";
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { auth } from "../../apps/api/src/auth";
 
 const { updateSubscriptionSeats } = vi.hoisted(() => ({
@@ -323,7 +330,7 @@ describe("who may add, and which role", () => {
     expect(
       (await add(w.workspaceId, { userId: w.newcomer.id, role: "viewer" }))
         .status,
-    ).toBe(403);
+    ).toBe(404);
     expect(await membershipRows(w.workspaceId, w.newcomer.id)).toHaveLength(0);
   });
 
@@ -796,9 +803,8 @@ describe("the add limits are consumed together", () => {
       savedEnv[key] = process.env[key];
       process.env[key] = value;
     }
-    const { directAddRateLimiter } = await import(
-      "../../apps/api/src/workspace/rate-limit"
-    );
+    const { directAddRateLimiter } =
+      await import("../../apps/api/src/workspace/rate-limit");
     as(w.owner.user);
     // Five adds use the invitation limit of the minute (and 5 of the 30).
     for (let i = 0; i < 5; i += 1) {

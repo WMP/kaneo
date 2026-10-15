@@ -38,7 +38,14 @@ export async function proposalAccess(c: Context, next: Next) {
     throw new HTTPException(404, { message: "Status proposal not found" });
   }
 
-  await validateWorkspaceAccess(userId, scope.workspaceId, c.get("apiKey")?.id);
+  await validateWorkspaceAccess(
+    userId,
+    scope.workspaceId,
+    c.get("apiKey")?.id,
+    {
+      notFoundMessage: "Status proposal not found",
+    },
+  );
   await assertProjectAccess(c, userId, { projectId: scope.projectId });
   c.set("workspaceId", scope.workspaceId);
   return next();

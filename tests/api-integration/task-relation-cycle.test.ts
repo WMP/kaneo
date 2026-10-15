@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { mockAuthenticatedSession } from "./helpers/auth";
@@ -7,6 +7,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { readErrorBody } from "./helpers/error-body";
 
 const m = vi.hoisted(() => ({ publish: vi.fn(async () => undefined) }));
 vi.mock("../../apps/api/src/events", async (original) => ({
@@ -105,7 +106,7 @@ describe("circular dependency detection on POST /task-relation", () => {
     });
 
     expect(response.status).toBe(409);
-    expect(await response.text()).toBe(
+    expect((await readErrorBody(response)).message).toBe(
       "This dependency would create a circular dependency",
     );
     expect(await db.query.taskRelationTable.findMany()).toHaveLength(2);
@@ -191,7 +192,7 @@ describe("circular dependency detection on POST /task-relation", () => {
     });
 
     expect(response.status).toBe(409);
-    expect(await response.text()).toBe(
+    expect((await readErrorBody(response)).message).toBe(
       "This dependency would create a circular dependency",
     );
     expect(await db.query.taskRelationTable.findMany()).toHaveLength(2);

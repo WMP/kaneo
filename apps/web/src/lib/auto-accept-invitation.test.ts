@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import {
   AUTO_ACCEPT_MAX_AGE_MS,
   clearAutoAcceptMarker,

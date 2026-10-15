@@ -1,5 +1,6 @@
 import { and, eq, inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import db, { schema } from "../database";
+import { hasInstanceAdminRole } from "./instance-admin-role";
 import {
   accessibleProjectIds,
   createFullAccessChecker,
@@ -7,6 +8,7 @@ import {
   projectRoleStatements,
   singleWorkspaceRole,
 } from "./project-access";
+import { resolveRoleStatements, type SelectExecutor } from "./role-statements";
 
 // Filters for endpoints that return data of MANY projects (lists, search,
 // workload, activity, notifications ...). A user without full access must not
@@ -73,15 +75,19 @@ export async function visibleProjectIdsFor(
 // Memoised: does this project role resolve in the workspace's role catalog (it
 // is not `owner`, and it still exists)? A membership whose role cannot be
 // exercised grants nothing, exactly as in `resolveProjectAccess`.
-export function createUsableProjectRoleChecker() {
+export function createUsableProjectRoleChecker(executor?: SelectExecutor) {
   const cache = new Map<string, Promise<boolean>>();
   return (workspaceId: string, role: string): Promise<boolean> => {
     const key = `${workspaceId}\u0000${role}`;
     let result = cache.get(key);
     if (!result) {
-      result = projectRoleStatements(workspaceId, role).then(
-        (statements) => statements !== null,
-      );
+      result = projectRoleStatements(
+        workspaceId,
+        role,
+        executor
+          ? (id, name) => resolveRoleStatements(id, name, executor)
+          : undefined,
+      ).then((statements) => statements !== null);
       cache.set(key, result);
     }
     return result;
@@ -115,7 +121,7 @@ export async function resolveUserProjectScope(
   if (!user) {
     return { instanceAdmin: false, fullWorkspaceIds: [], memberRoles: [] };
   }
-  if (user.role === "admin") {
+  if (hasInstanceAdminRole(user.role)) {
     return { instanceAdmin: true, fullWorkspaceIds: [], memberRoles: [] };
   }
 
@@ -255,11 +261,14 @@ export function relationActivityExclusionForIds(
 export async function filterUsersWithProjectAccess(
   userIds: string[],
   projectId: string,
+  // The database, or a transaction of it: a caller that created the project
+  // (or a membership) inside its own transaction asks on that transaction.
+  executor: Pick<typeof db, "select"> = db,
 ): Promise<Set<string>> {
   const allowed = new Set<string>();
   if (userIds.length === 0) return allowed;
 
-  const [project] = await db
+  const [project] = await executor
     .select({ workspaceId: schema.projectTable.workspaceId })
     .from(schema.projectTable)
     .where(eq(schema.projectTable.id, projectId))
@@ -267,7 +276,7 @@ export async function filterUsersWithProjectAccess(
   if (!project) return allowed;
   const { workspaceId } = project;
 
-  const rows = await db
+  const rows = await executor
     .select({
       userId: schema.userTable.id,
       userRole: schema.userTable.role,
@@ -291,14 +300,14 @@ export async function filterUsersWithProjectAccess(
     )
     .where(inArray(schema.userTable.id, userIds));
 
-  const isFullAccess = createFullAccessChecker(workspaceId);
-  const isUsable = createUsableProjectRoleChecker();
+  const isFullAccess = createFullAccessChecker(workspaceId, executor);
+  const isUsable = createUsableProjectRoleChecker(executor);
   // The join repeats a user for each of their workspace membership rows; collapse
   // them with the same rule as `resolveProjectAccess` (ambiguous roles: none).
   for (const [userId, group] of groupRows(rows, (row) => row.userId)) {
     const [first] = group;
     if (!first) continue;
-    if (first.userRole === "admin") {
+    if (hasInstanceAdminRole(first.userRole)) {
       allowed.add(userId);
       continue;
     }
