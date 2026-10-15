@@ -348,3 +348,71 @@ describe("computeCriticalPath", () => {
     });
   });
 });
+
+describe("computeCriticalPath with LOCAL dates across daylight saving changes", () => {
+  type YMD = readonly [number, number, number];
+  const local = ([y, m, d]: YMD) => new Date(y, m - 1, d);
+
+  // Each case is a tight FS chain (B starts the day after A ends), so both
+  // tasks and the edge must be critical in every time zone. The Auckland case
+  // (UTC+13 until 5 Apr 2026, UTC+12 after) is the one a millisecond-based day
+  // index gets wrong: local midnight at +13 is 11:00 UTC of the previous day.
+  it.each<[string, YMD, YMD, YMD, YMD]>([
+    [
+      "Pacific/Auckland DST end",
+      [2026, 4, 1],
+      [2026, 4, 5],
+      [2026, 4, 6],
+      [2026, 4, 8],
+    ],
+    [
+      "Europe/Warsaw DST end",
+      [2026, 10, 22],
+      [2026, 10, 25],
+      [2026, 10, 26],
+      [2026, 10, 28],
+    ],
+    [
+      "America/New_York DST end",
+      [2026, 10, 29],
+      [2026, 11, 1],
+      [2026, 11, 2],
+      [2026, 11, 4],
+    ],
+    [
+      "Europe/Warsaw DST start",
+      [2026, 3, 26],
+      [2026, 3, 29],
+      [2026, 3, 30],
+      [2026, 4, 1],
+    ],
+    [
+      "America/New_York DST start",
+      [2026, 3, 5],
+      [2026, 3, 8],
+      [2026, 3, 9],
+      [2026, 3, 11],
+    ],
+  ])(
+    "%s: a tight chain stays critical",
+    (_label, aStart, aEnd, bStart, bEnd) => {
+      const tasks: CriticalPathTaskInput[] = [
+        {
+          id: "a",
+          scheduleStart: local(aStart),
+          scheduleEnd: local(aEnd),
+        },
+        {
+          id: "b",
+          scheduleStart: local(bStart),
+          scheduleEnd: local(bEnd),
+        },
+      ];
+
+      const result = computeCriticalPath(tasks, [blocks("e1", "a", "b")]);
+
+      expect([...result.criticalTaskIds].sort()).toEqual(["a", "b"]);
+      expect([...result.criticalEdgeIds]).toEqual(["e1"]);
+    },
+  );
+});

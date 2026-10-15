@@ -234,3 +234,34 @@ describe("ownDatePayload", () => {
     });
   });
 });
+
+describe("addWorkingDays across daylight saving changes (local days)", () => {
+  const local = (y: number, m: number, d: number) => new Date(y, m - 1, d);
+
+  it("counts calendar days and keeps local midnight over the Warsaw DST end", () => {
+    // Fri 23 Oct + 4 calendar days = Tue 27 Oct, over the 25-hour 25 Oct.
+    const result = addWorkingDays(local(2026, 10, 23), 4, 1);
+    expect([key(result), result.getHours()]).toEqual(["2026-10-27", 0]);
+    // And backwards: Tue 27 Oct - 4 = Fri 23 Oct.
+    const back = addWorkingDays(local(2026, 10, 27), 4, -1);
+    expect([key(back), back.getHours()]).toEqual(["2026-10-23", 0]);
+  });
+
+  it("walks working days over the Warsaw DST end and the New York DST end", () => {
+    // Warsaw: Fri 23 Oct + 2 working days = Tue 27 Oct (Sat, Sun skipped).
+    const warsaw = addWorkingDays(local(2026, 10, 23), 2, 1, MON_FRI);
+    expect([key(warsaw), warsaw.getHours()]).toEqual(["2026-10-27", 0]);
+    // New York: Fri 30 Oct + 2 working days = Tue 3 Nov.
+    const newYork = addWorkingDays(local(2026, 10, 30), 2, 1, MON_FRI);
+    expect([key(newYork), newYork.getHours()]).toEqual(["2026-11-03", 0]);
+  });
+
+  it("walks working days over the DST start", () => {
+    // Warsaw (29 Mar, 23-hour day): Fri 27 Mar + 1 working day = Mon 30 Mar.
+    const warsaw = addWorkingDays(local(2026, 3, 27), 1, 1, MON_FRI);
+    expect([key(warsaw), warsaw.getHours()]).toEqual(["2026-03-30", 0]);
+    // New York (8 Mar): Fri 6 Mar + 1 working day = Mon 9 Mar.
+    const newYork = addWorkingDays(local(2026, 3, 6), 1, 1, MON_FRI);
+    expect([key(newYork), newYork.getHours()]).toEqual(["2026-03-09", 0]);
+  });
+});

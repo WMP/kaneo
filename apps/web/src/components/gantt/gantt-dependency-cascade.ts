@@ -58,6 +58,7 @@
 //    result stays consistent with what the bar draws after a reload. The
 //    caller persists only the task's own date (see `estimatedTasks`).
 
+import { addDays, differenceInCalendarDays } from "date-fns";
 import { FS_HANDOFF_DAYS } from "./gantt-dependency-rules";
 import {
   type EstimatedSingleDate,
@@ -119,20 +120,19 @@ export type ComputeDependencyCascadeInput = {
   estimatedTasks?: ReadonlyMap<string, EstimatedSingleDate>;
 };
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-// Whole-day difference, matching the day-granular arithmetic the rest of the
-// Gantt's drag/resize code uses (see gantt-task-bar.tsx's addDays/
-// differenceInCalendarDays). The two instants are the same task-schedule
-// dates the caller already works in, and `Math.round` absorbs any intra-day
-// offset between them, so a plain millisecond division yields the exact
-// whole-day delta without needing date-fns' calendar-aware version.
+// Whole LOCAL calendar days between two dates, the same arithmetic the
+// Gantt's drag/resize code uses (see gantt-task-bar.tsx). Millisecond division
+// is not exact here: a local day is 23 or 25 hours long across a daylight
+// saving change, so it would be off by one day (or shift a date to 23:00 of
+// the previous local day) for a span that crosses one.
 function diffDays(a: Date, b: Date): number {
-  return Math.round((a.getTime() - b.getTime()) / MS_PER_DAY);
+  return differenceInCalendarDays(a, b);
 }
 
+// Adds whole local calendar days, keeping the local time of day (date-fns
+// `addDays` works on the local calendar, not on milliseconds).
 function addDaysExact(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * MS_PER_DAY);
+  return addDays(date, days);
 }
 
 // The minimum day-delta this ONE edge forces onto the target, expressed as

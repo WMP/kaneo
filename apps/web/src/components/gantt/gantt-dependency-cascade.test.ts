@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { describe, expect, it } from "vitest";
 import {
   type CascadeEdge,
@@ -708,5 +709,221 @@ describe("computeDependencyCascade with estimated single-date tasks", () => {
       estimatedTasks: new Map(),
     });
     expect(withEmpty).toEqual(without);
+  });
+});
+
+// DST-sensitive cases. They are built from LOCAL dates (what the Gantt works
+// in), and their expected days are literal local calendar days worked out by
+// hand. In a zone without a daylight saving change (CI runs in UTC) they pass
+// trivially; run them with `pnpm --filter @kaneo/web test:tz` to exercise the
+// Europe/Warsaw (DST ends 2026-10-25, starts 2026-03-29) and America/New_York
+// (DST ends 2026-11-01, starts 2026-03-08) transitions.
+describe("computeDependencyCascade across daylight saving changes (local days)", () => {
+  const local = (y: number, m: number, d: number) => new Date(y, m - 1, d);
+  const ymd = (d: Date) => format(d, "yyyy-MM-dd");
+  // Monday-Friday, by LOCAL weekday, like the production calendar predicate.
+  const monFri = (d: Date) => d.getDay() >= 1 && d.getDay() <= 5;
+
+  function edge(
+    dependencyType: CascadeEdge["dependencyType"],
+    sourceTaskId = "a",
+    targetTaskId = "b",
+    lagDays = 0,
+  ): CascadeEdge {
+    return { sourceTaskId, targetTaskId, dependencyType, lagDays };
+  }
+
+  // The result must be at LOCAL MIDNIGHT: the route saves startOfDay(d), so a
+  // 23:00 value of the previous day (or 01:00) is a different saved day.
+  function expectLocalSpan(
+    actual: CascadeSchedule | undefined,
+    start: string,
+    end: string,
+  ) {
+    expect(actual).toBeDefined();
+    if (!actual) return;
+    expect([ymd(actual.start), ymd(actual.end)]).toEqual([start, end]);
+    expect([actual.start.getHours(), actual.end.getHours()]).toEqual([0, 0]);
+  }
+
+  it("Europe/Warsaw, end of DST: FS shift lands on 28 Oct, not 23:00 on 27 Oct", () => {
+    // A ends Tue 27 Oct, so FS (handoff 1 day, lag 0) puts B on Wed 28 Oct.
+    // B keeps its 2-day span (20-21 Oct, a shift of 8 days): 28-29 Oct. The
+    // 25 Oct change makes a local day 25 hours long in between.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 27) }],
+        ["b", { start: local(2026, 10, 20), end: local(2026, 10, 21) }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-10-28", "2026-10-29");
+  });
+
+  it("America/New_York, end of DST: a one-day dependent lands on 4 Nov", () => {
+    // A ends Tue 3 Nov, so B (27 Oct, one day) moves to Wed 4 Nov; 1 Nov is
+    // the 25-hour day.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 26), end: local(2026, 11, 3) }],
+        ["b", { start: local(2026, 10, 27), end: local(2026, 10, 27) }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-11-04", "2026-11-04");
+  });
+
+  it("start of DST (Warsaw 29 Mar, New York 8 Mar): the shifted dependent stays at local midnight", () => {
+    // Warsaw window: A ends Tue 31 Mar -> B (24-25 Mar) moves 8 days to
+    // 1-2 Apr. The 23-hour day on 29 Mar must not leave it at 01:00.
+    const warsaw = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 3, 23), end: local(2026, 3, 31) }],
+        ["b", { start: local(2026, 3, 24), end: local(2026, 3, 25) }],
+      ]),
+    });
+    expectLocalSpan(warsaw.get("b"), "2026-04-01", "2026-04-02");
+
+    // New York window: A ends Tue 10 Mar -> B (3-4 Mar) moves 8 days to
+    // 11-12 Mar.
+    const newYork = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 3, 2), end: local(2026, 3, 10) }],
+        ["b", { start: local(2026, 3, 3), end: local(2026, 3, 4) }],
+      ]),
+    });
+    expectLocalSpan(newYork.get("b"), "2026-03-11", "2026-03-12");
+  });
+
+  it("measures the forced delta in calendar days when the gap spans the DST change (FF, SS)", () => {
+    // FF: A ends Tue 27 Oct; B (20-22 Oct) must end on/after it -> shift 5
+    // days: 25-27 Oct (Warsaw's 25 Oct is the 25-hour day).
+    const ff = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("ff")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 27) }],
+        ["b", { start: local(2026, 10, 20), end: local(2026, 10, 22) }],
+      ]),
+    });
+    expectLocalSpan(ff.get("b"), "2026-10-25", "2026-10-27");
+
+    // SS with 2 days lag: A starts Mon 26 Oct (moved), B (21-22 Oct) must
+    // start on 28 Oct -> shift 7 days: 28-29 Oct.
+    const ss = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("ss", "a", "b", 2)],
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 26), end: local(2026, 10, 30) }],
+        ["b", { start: local(2026, 10, 21), end: local(2026, 10, 22) }],
+      ]),
+    });
+    expectLocalSpan(ss.get("b"), "2026-10-28", "2026-10-29");
+  });
+
+  it("cascades transitively across the DST change", () => {
+    // A ends Tue 27 Oct -> B 28-29 Oct -> C (22-23 Oct) starts 30 Oct and
+    // keeps its 2-day span: 30-31 Oct.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs", "a", "b"), edge("fs", "b", "c")],
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 27) }],
+        ["b", { start: local(2026, 10, 20), end: local(2026, 10, 21) }],
+        ["c", { start: local(2026, 10, 22), end: local(2026, 10, 23) }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-10-28", "2026-10-29");
+    expectLocalSpan(shifts.get("c"), "2026-10-30", "2026-10-31");
+  });
+
+  it("working-day nudge across the Warsaw DST end: Saturday start moves to Monday 26 Oct", () => {
+    // A (Mon 19 - Fri 23 Oct) -> B (Tue 20 - Wed 21 Oct): FS start Sat 24 Oct
+    // (shift 4), nudged over Sunday 25 Oct (25 hours long) to Mon 26 Oct;
+    // the end follows: 21 + 4 + 2 = Tue 27 Oct.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      isWorkingDay: monFri,
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 23) }],
+        ["b", { start: local(2026, 10, 20), end: local(2026, 10, 21) }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-10-26", "2026-10-27");
+  });
+
+  it("working-day nudge across the New York DST end: Saturday start moves to Monday 2 Nov", () => {
+    // A (Mon 26 - Fri 30 Oct) -> B (Tue 27 - Wed 28 Oct): FS start Sat 31 Oct
+    // (shift 4), nudged over Sunday 1 Nov to Mon 2 Nov; end: 28 Oct + 4 + 2 =
+    // Tue 3 Nov.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      isWorkingDay: monFri,
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 26), end: local(2026, 10, 30) }],
+        ["b", { start: local(2026, 10, 27), end: local(2026, 10, 28) }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-11-02", "2026-11-03");
+  });
+
+  it("working-day nudge across the DST start (Warsaw 29 Mar, New York 8 Mar)", () => {
+    // Warsaw: A (Mon 23 - Fri 27 Mar) -> B (24-25 Mar): Sat 28 Mar nudged
+    // over Sunday 29 Mar (23 hours long) to Mon 30 Mar; end 25 + 4 + 2 = 31 Mar.
+    const warsaw = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      isWorkingDay: monFri,
+      tasksById: new Map([
+        ["a", { start: local(2026, 3, 23), end: local(2026, 3, 27) }],
+        ["b", { start: local(2026, 3, 24), end: local(2026, 3, 25) }],
+      ]),
+    });
+    expectLocalSpan(warsaw.get("b"), "2026-03-30", "2026-03-31");
+
+    // New York: A (Mon 2 - Fri 6 Mar) -> B (3-4 Mar): Sat 7 Mar nudged over
+    // Sunday 8 Mar to Mon 9 Mar; end 4 + 4 + 2 = 10 Mar.
+    const newYork = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      isWorkingDay: monFri,
+      tasksById: new Map([
+        ["a", { start: local(2026, 3, 2), end: local(2026, 3, 6) }],
+        ["b", { start: local(2026, 3, 3), end: local(2026, 3, 4) }],
+      ]),
+    });
+    expectLocalSpan(newYork.get("b"), "2026-03-09", "2026-03-10");
+  });
+
+  it("re-derives an estimated start-only dependent over the Warsaw DST end", () => {
+    // A ends Fri 23 Oct -> FS start Sat 24 Oct, nudged to Mon 26 Oct. A
+    // 2-working-day estimate (960 minutes) then ends Tue 27 Oct.
+    const shifts = computeDependencyCascade({
+      movedTaskId: "a",
+      edges: [edge("fs")],
+      isWorkingDay: monFri,
+      tasksById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 23) }],
+        ["b", { start: local(2026, 10, 20), end: local(2026, 10, 21) }],
+      ]),
+      estimatedTasks: new Map([
+        ["b", { anchor: "start", estimateMinutes: 960 }],
+      ]),
+    });
+
+    expectLocalSpan(shifts.get("b"), "2026-10-26", "2026-10-27");
   });
 });

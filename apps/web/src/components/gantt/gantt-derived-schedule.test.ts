@@ -474,3 +474,48 @@ describe("deriveUndatedSuccessorSchedules anchored on an estimated single-date t
     expect(derived.get("c")?.start.getDate()).toBe(13);
   });
 });
+
+describe("deriveUndatedSuccessorSchedules across daylight saving changes (local days)", () => {
+  const local = (y: number, m: number, d: number) => new Date(y, m - 1, d);
+  const ymdh = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${d.getHours()}h`;
+  const monFri = (d: Date) => d.getDay() >= 1 && d.getDay() <= 5;
+
+  it("places an FS successor with lag on the right local day over the Warsaw DST end", () => {
+    // A ends Fri 23 Oct; FS + 3 days lag = 23 + 1 + 3 = Tue 27 Oct, at local
+    // midnight (25 Oct is a 25-hour day).
+    const derived = deriveUndatedSuccessorSchedules({
+      edges: [edge("a", "b", "fs", 3)],
+      datedScheduleById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 23) }],
+      ]),
+      undatedCandidateIds: ["b"],
+    });
+
+    const b = derived.get("b");
+    expect(b && [ymdh(b.start), ymdh(b.end)]).toEqual([
+      "2026-10-27 0h",
+      "2026-10-27 0h",
+    ]);
+  });
+
+  it("nudges a weekend anchor to Monday over the Warsaw DST end and the New York DST end", () => {
+    // Warsaw: A ends Fri 23 Oct -> Sat 24 Oct nudged over Sunday 25 Oct to
+    // Mon 26 Oct. New York: A ends Fri 30 Oct -> Sat 31 Oct nudged over
+    // Sunday 1 Nov to Mon 2 Nov.
+    const derived = deriveUndatedSuccessorSchedules({
+      edges: [edge("a", "b"), edge("c", "d")],
+      datedScheduleById: new Map([
+        ["a", { start: local(2026, 10, 19), end: local(2026, 10, 23) }],
+        ["c", { start: local(2026, 10, 26), end: local(2026, 10, 30) }],
+      ]),
+      undatedCandidateIds: ["b", "d"],
+      isWorkingDay: monFri,
+    });
+
+    const b = derived.get("b");
+    const d = derived.get("d");
+    expect(b && ymdh(b.start)).toBe("2026-10-26 0h");
+    expect(d && ymdh(d.start)).toBe("2026-11-02 0h");
+  });
+});

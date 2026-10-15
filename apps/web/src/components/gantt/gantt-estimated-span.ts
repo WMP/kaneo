@@ -18,10 +18,9 @@
 // DISPLAY ONLY. The derived end/start is never persisted as the missing date:
 // anything that writes such a task sends only its own date field.
 
+import { addDays } from "date-fns";
 import { estimateToWorkingDays } from "@/lib/estimate";
 import { deriveTaskSchedule } from "./timeline";
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 // Defensive bound on any day-by-day walk (same as the cascade's forward
 // nudge): a real calendar has a working day within a week.
@@ -38,7 +37,9 @@ export type EstimatedSingleDate = {
 export type EstimatedSpan = { start: Date; end: Date };
 
 export function addCalendarDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * MS_PER_DAY);
+  // Local calendar days (not milliseconds): a local day is 23 or 25 hours
+  // long across a daylight saving change.
+  return addDays(date, days);
 }
 
 /**

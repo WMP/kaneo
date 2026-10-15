@@ -62,6 +62,7 @@
 //    computeDependencyCascade's own nudge so a derived bar and a cascaded one
 //    sit on the same day grid. Omitted: no nudging.
 
+import { addDays } from "date-fns";
 import { estimateToWorkingDays } from "@/lib/estimate";
 import type {
   CascadeDependencyType,
@@ -97,10 +98,10 @@ export type DeriveUndatedSuccessorSchedulesInput = {
   estimateMinutesById?: ReadonlyMap<string, number | null | undefined>;
 };
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
+// Whole LOCAL calendar days (not milliseconds): a local day is 23 or 25 hours
+// long across a daylight saving change.
 function addDaysExact(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * MS_PER_DAY);
+  return addDays(date, days);
 }
 
 // How a "blocks" edge constrains its successor, from a placed predecessor:

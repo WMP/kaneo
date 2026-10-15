@@ -126,8 +126,14 @@ export type CriticalPathOptions = {
   toDayIndex?: (date: Date) => number;
 };
 
+// Whole-day ordinal of the date's LOCAL calendar day. The local Y/M/D is
+// re-expressed as a UTC midnight, so every ordinal is an exact multiple of
+// MS_PER_DAY and the difference of two is the exact local day count even when
+// a daylight saving change (or a large UTC offset) sits between them.
 function toDay(date: Date): number {
-  return Math.round(date.getTime() / MS_PER_DAY);
+  return (
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY
+  );
 }
 
 // The earliest start this ONE edge forces onto its target, given the

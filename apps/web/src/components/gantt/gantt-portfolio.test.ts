@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { describe, expect, it } from "vitest";
 import { deriveUndatedSuccessorSchedules } from "./gantt-derived-schedule";
 import { deriveTaskScheduleWithEstimate } from "./gantt-estimated-span";
@@ -88,7 +89,8 @@ describe("buildPortfolioRows", () => {
     expect(rows[0].tasks[0].scheduleStart).toEqual(
       rows[0].tasks[0].scheduleEnd,
     );
-    expect(rows[0].tasks[0].scheduleStart.toISOString().slice(0, 10)).toBe(
+    // The Gantt works in local calendar days (parseISO gives local midnight).
+    expect(format(rows[0].tasks[0].scheduleStart, "yyyy-MM-dd")).toBe(
       "2026-02-01",
     );
   });
@@ -123,10 +125,13 @@ describe("buildPortfolioRows", () => {
     ]);
 
     const row = rows[0];
-    expect(row.summarySpan?.start.toISOString().slice(0, 10)).toBe(
+    // Local calendar days, like the rest of the Gantt.
+    expect(format(row.summarySpan?.start as Date, "yyyy-MM-dd")).toBe(
       "2026-01-01",
     );
-    expect(row.summarySpan?.end.toISOString().slice(0, 10)).toBe("2026-01-10");
+    expect(format(row.summarySpan?.end as Date, "yyyy-MM-dd")).toBe(
+      "2026-01-10",
+    );
     // weighted average: (1*100 + 9*0) / 10 = 10
     expect(row.summaryProgress).toBeCloseTo(10);
   });

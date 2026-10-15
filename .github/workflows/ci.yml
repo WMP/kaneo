@@ -166,6 +166,11 @@ jobs:
           NODE_OPTIONS: --no-experimental-webstorage
         run: pnpm test
 
+      # The Gantt works in local calendar days; UTC hides off-by-one-day
+      # errors across daylight saving changes (issues #37 and #38).
+      - name: Run Gantt date tests outside UTC
+        run: pnpm --filter @kaneo/web run test:tz
+
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

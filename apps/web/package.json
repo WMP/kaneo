@@ -10,6 +10,7 @@
 		"lint": "biome check --write .",
 		"typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
 		"test": "vitest run --config vitest.config.ts",
+		"test:tz": "for tz in Europe/Warsaw America/New_York Pacific/Auckland; do echo \"== TZ=$tz\"; NODE_OPTIONS=--no-experimental-webstorage TZ=$tz vitest run --config vitest.config.ts src/components/gantt || exit 1; done",
 		"test:watch": "vitest --config vitest.config.ts"
 	},
 	"dependencies": {
