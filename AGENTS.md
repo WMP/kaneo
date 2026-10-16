@@ -13,6 +13,7 @@ Read the relevant implementation and tests, then use the [agent guide](docs/agen
 | Schema, migrations or existing data | [Database](docs/agent-guide/database.md) | Inspect generated SQL, test on existing-schema data and run relevant PostgreSQL integration tests |
 | Gantt, relations, dates or calendar | [Scheduling](docs/agent-guide/scheduling.md) | Pure scheduling tests plus API integration tests for persistence, access and cross-project behavior |
 | Jira integration (tokens, mapping, status proposals) | [Jira integration](docs/agent-guide/jira-integration.md) | `tests/api/jira-integration/` unit tests; `tests/api-integration/jira-integration-*.test.ts` against disposable PostgreSQL; Jira component tests |
+| Infrastructure capacity (server models, hosts, VM items, datacenter) | [Infrastructure capacity](docs/agent-guide/infrastructure-capacity.md) | `tests/api-integration/infrastructure-*.test.ts` against disposable PostgreSQL; OpenAPI check |
 | Docker, Helm, release or CI | [Deployment and release](docs/agent-guide/deployment.md) | Validate the affected build, chart, workflow or startup path |
 
 For a change spanning rows, follow every affected contract. [Verification](docs/agent-guide/verification.md) maps checks to actual commands and explains which checks mutate files.

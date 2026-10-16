@@ -42,13 +42,23 @@ const ALL_KEYS = [
   "inviteToProject",
   "cancelProjectInvitations",
   "manageIntegrations",
+  "infrastructureRead",
+  "infrastructurePlan",
+  "infrastructureManage",
 ];
 
 // What a project role can grant. Label definitions of the workspace and
 // integrations follow the WORKSPACE role instead.
 const WORKSPACE_ROLE_KEYS = ["manageWorkspaceLabels", "manageIntegrations"];
+// The built-in roles other than owner hold no infrastructure statements.
+const INFRASTRUCTURE_KEYS = [
+  "infrastructureRead",
+  "infrastructurePlan",
+  "infrastructureManage",
+];
 const PROJECT_ROLE_KEYS = ALL_KEYS.filter(
-  (key) => !WORKSPACE_ROLE_KEYS.includes(key),
+  (key) =>
+    !WORKSPACE_ROLE_KEYS.includes(key) && !INFRASTRUCTURE_KEYS.includes(key),
 ).sort();
 
 function trueKeys(access: Access) {
@@ -140,6 +150,38 @@ beforeEach(async () => {
 });
 
 describe("GET /project/{projectId}/access", () => {
+  it("reports infrastructure capabilities from the effective project statements", async () => {
+    const w = await buildWorld();
+    await db.insert(schema.workspaceRoleTable).values({
+      workspaceId: w.workspaceId,
+      role: "infra-planner",
+      permission: JSON.stringify({ infrastructure: ["read", "plan"] }),
+    });
+    // The workspace role (viewer) holds nothing: only the project role counts.
+    const planner = await addWorkspaceMember(w.workspaceId, "viewer");
+    await addProjectMember(w.project.id, planner.id, "infra-planner");
+    const access = await accessFor(w, planner);
+    expect(access.capabilities).toMatchObject({
+      infrastructureRead: true,
+      infrastructurePlan: true,
+      infrastructureManage: false,
+    });
+    // The workspace owner has everything through the owner role.
+    expect((await accessFor(w, w.owner.user)).capabilities).toMatchObject({
+      infrastructureRead: true,
+      infrastructurePlan: true,
+      infrastructureManage: true,
+    });
+    // A project admin has none: the built-in admin role grants no statements.
+    expect(
+      (await accessFor(w, w.viewerButProjectAdmin)).capabilities,
+    ).toMatchObject({
+      infrastructureRead: false,
+      infrastructurePlan: false,
+      infrastructureManage: false,
+    });
+  });
+
   it("evaluates a project member with the PROJECT role, not the workspace role", async () => {
     const w = await buildWorld();
     const access = await accessFor(w, w.viewerButProjectAdmin);
@@ -188,7 +230,10 @@ describe("GET /project/{projectId}/access", () => {
     const w = await buildWorld();
     const admin = await accessFor(w, w.fullAdmin);
     expect(admin).toMatchObject({ mode: "full", role: "admin" });
-    expect(trueKeys(admin)).toEqual([...ALL_KEYS].sort());
+    // The built-in admin role holds no infrastructure statements.
+    expect(trueKeys(admin)).toEqual(
+      ALL_KEYS.filter((key) => !INFRASTRUCTURE_KEYS.includes(key)).sort(),
+    );
 
     const owner = await accessFor(w, w.owner.user);
     expect(owner).toMatchObject({ mode: "full", role: "owner" });

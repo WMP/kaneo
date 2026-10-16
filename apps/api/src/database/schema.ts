@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   foreignKey,
   index,
   integer,
@@ -1997,6 +1998,301 @@ export const jiraStatusProposalTable = pgTable(
     check(
       "ganttpro_jira_status_proposal_source_check",
       sql`${table.source} IN ('webhook', 'poll', 'manual')`,
+    ),
+  ],
+);
+
+// Region catalog of a workspace (see docs/plans/infrastructure-capacity.md).
+// Models, hosts and storage clusters name a region by its code; the API checks
+// that the code is in this catalog. A code never changes after creation.
+export const infraRegionTable = pgTable(
+  "ganttpro_infra_region",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+    // Availability zone codes of the region (for example PAR1, PAR2, PAR3);
+    // empty for a region without zones.
+    zones: jsonb("zones").$type<string[]>().notNull().default([]),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_region_workspace_id_idx").on(table.workspaceId),
+    unique("ganttpro_infra_region_workspace_id_code_unique").on(
+      table.workspaceId,
+      table.code,
+    ),
+    check(
+      "ganttpro_infra_region_code_check",
+      sql`${table.code} ~ '^[A-Z0-9-]{1,16}$'`,
+    ),
+  ],
+);
+
+// Infrastructure capacity (see docs/plans/infrastructure-capacity.md).
+// The server models a project may use for its migrations: one row per
+// model/size, for example "ADVANCE-2 256 GB". RAM and storage are whole GB and
+// vCPU whole threads. `regions` is a jsonb array of region codes (at least
+// one); the API checks that a host's region is one of them.
+export const infraModelTable = pgTable(
+  "ganttpro_infra_model",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    provider: text("provider").$type<"ovh" | "azure" | "other">().notNull(),
+    family: text("family"),
+    ramGb: integer("ram_gb").notNull(),
+    vcpu: integer("vcpu").notNull(),
+    storageGb: integer("storage_gb").notNull(),
+    regions: jsonb("regions").$type<string[]>().notNull(),
+    leadTimeDays: integer("lead_time_days").notNull().default(0),
+    // RAM kept for the hypervisor on each host, in GB (0 up to below ram_gb).
+    hypervisorReserveGb: integer("hypervisor_reserve_gb").notNull().default(8),
+    // Deprecated, no longer read or written; drop in a later migration. Kept
+    // (with its default) so that an older binary can still insert models.
+    hypervisorReservePercent: integer("hypervisor_reserve_percent")
+      .notNull()
+      .default(5),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_model_project_id_idx").on(table.projectId),
+    check(
+      "ganttpro_infra_model_provider_check",
+      sql`${table.provider} IN ('ovh', 'azure', 'other')`,
+    ),
+    check("ganttpro_infra_model_ram_gb_check", sql`${table.ramGb} > 0`),
+    check("ganttpro_infra_model_vcpu_check", sql`${table.vcpu} > 0`),
+    check(
+      "ganttpro_infra_model_storage_gb_check",
+      sql`${table.storageGb} >= 0`,
+    ),
+    check(
+      "ganttpro_infra_model_lead_time_days_check",
+      sql`${table.leadTimeDays} >= 0`,
+    ),
+    check(
+      "ganttpro_infra_model_hypervisor_reserve_check",
+      sql`${table.hypervisorReservePercent} BETWEEN 0 AND 90`,
+    ),
+    check(
+      "ganttpro_infra_model_hypervisor_reserve_gb_check",
+      sql`${table.hypervisorReserveGb} >= 0 AND ${table.hypervisorReserveGb} < ${table.ramGb}`,
+    ),
+  ],
+);
+
+// One physical server (one unit of a model in one region) owned by a project.
+// A project lead creates it as `planned`; the datacenter team moves it to
+// `ordered` (with the expected delivery date in `available_from`) and then
+// `installed`. The model is protected (RESTRICT) while a host uses it.
+export const infraHostTable = pgTable(
+  "ganttpro_infra_host",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    modelId: text("model_id")
+      .notNull()
+      .references(() => infraModelTable.id, { onDelete: "restrict" }),
+    region: text("region").notNull(),
+    // Availability zone inside the region; null for a region without zones
+    // and for hosts that existed before zones.
+    zone: text("zone"),
+    label: text("label").notNull(),
+    status: text("status")
+      .$type<"planned" | "ordered" | "installed">()
+      .notNull()
+      .default("planned"),
+    // Date-only (YYYY-MM-DD): expected delivery while ordered, installation
+    // date once installed.
+    availableFrom: date("available_from", { mode: "string" }),
+    hostname: text("hostname"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_host_project_id_idx").on(table.projectId),
+    index("ganttpro_infra_host_model_id_idx").on(table.modelId),
+    check(
+      "ganttpro_infra_host_status_check",
+      sql`${table.status} IN ('planned', 'ordered', 'installed')`,
+    ),
+  ],
+);
+
+// Ceph storage clusters (see docs/plans/infrastructure-capacity.md). A cluster
+// belongs to the workspace, is shared by its projects and owned by the
+// datacenter team. `self_managed` is Ceph on dedicated storage servers with
+// erasure coding k+m; `managed_service` is Ceph bought as a service (k and m
+// stay null). The fill threshold is the share of usable capacity that may be
+// used.
+export const infraStorageClusterTable = pgTable(
+  "ganttpro_infra_storage_cluster",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    region: text("region").notNull(),
+    kind: text("kind").$type<"self_managed" | "managed_service">().notNull(),
+    ecDataChunks: integer("ec_data_chunks"),
+    ecCodingChunks: integer("ec_coding_chunks"),
+    fillThresholdPercent: integer("fill_threshold_percent")
+      .notNull()
+      .default(80),
+    leadTimeDays: integer("lead_time_days").notNull().default(0),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_storage_cluster_workspace_id_idx").on(
+      table.workspaceId,
+    ),
+    unique("ganttpro_infra_storage_cluster_workspace_id_name_unique").on(
+      table.workspaceId,
+      table.name,
+    ),
+    check(
+      "ganttpro_infra_storage_cluster_kind_check",
+      sql`${table.kind} IN ('self_managed', 'managed_service')`,
+    ),
+    check(
+      "ganttpro_infra_storage_cluster_ec_check",
+      sql`(${table.kind} = 'self_managed' AND ${table.ecDataChunks} >= 1 AND ${table.ecCodingChunks} >= 1) OR (${table.kind} = 'managed_service' AND ${table.ecDataChunks} IS NULL AND ${table.ecCodingChunks} IS NULL)`,
+    ),
+    check(
+      "ganttpro_infra_storage_cluster_fill_threshold_check",
+      sql`${table.fillThresholdPercent} BETWEEN 1 AND 100`,
+    ),
+    check(
+      "ganttpro_infra_storage_cluster_lead_time_days_check",
+      sql`${table.leadTimeDays} >= 0`,
+    ),
+  ],
+);
+
+// Capacity of a cluster: a storage server with raw capacity (self managed) or
+// a purchased amount (managed service). Follows the host status rules. A
+// storage server never runs VMs.
+export const infraStorageCapacityTable = pgTable(
+  "ganttpro_infra_storage_capacity",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    clusterId: text("cluster_id")
+      .notNull()
+      .references(() => infraStorageClusterTable.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    modelName: text("model_name"),
+    capacityGb: integer("capacity_gb").notNull(),
+    status: text("status")
+      .$type<"planned" | "ordered" | "installed">()
+      .notNull()
+      .default("planned"),
+    availableFrom: date("available_from", { mode: "string" }),
+    hostname: text("hostname"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_storage_capacity_cluster_id_idx").on(table.clusterId),
+    check(
+      "ganttpro_infra_storage_capacity_capacity_gb_check",
+      sql`${table.capacityGb} > 0`,
+    ),
+    check(
+      "ganttpro_infra_storage_capacity_status_check",
+      sql`${table.status} IN ('planned', 'ordered', 'installed')`,
+    ),
+  ],
+);
+
+// A virtual machine listed in a migration task and the host it goes to (null
+// while not placed yet). Deleting a planned host leaves its VMs unplaced
+// (SET NULL). The API checks that the host belongs to the task's project.
+export const infraVmTable = pgTable(
+  "ganttpro_infra_vm",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    taskId: text("task_id")
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
+    hostId: text("host_id").references(() => infraHostTable.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    vcpu: integer("vcpu").notNull().default(0),
+    ramGb: integer("ram_gb").notNull().default(0),
+    // Local storage of the host (the column keeps its original name).
+    localStorageGb: integer("storage_gb").notNull().default(0),
+    // Ceph storage, counted against `storageClusterId`.
+    cephStorageGb: integer("ceph_storage_gb").notNull().default(0),
+    storageClusterId: text("storage_cluster_id").references(
+      () => infraStorageClusterTable.id,
+      { onDelete: "set null" },
+    ),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ganttpro_infra_vm_task_id_idx").on(table.taskId),
+    index("ganttpro_infra_vm_host_id_idx").on(table.hostId),
+    check("ganttpro_infra_vm_vcpu_check", sql`${table.vcpu} >= 0`),
+    check("ganttpro_infra_vm_ram_gb_check", sql`${table.ramGb} >= 0`),
+    index("ganttpro_infra_vm_storage_cluster_id_idx").on(
+      table.storageClusterId,
+    ),
+    check(
+      "ganttpro_infra_vm_storage_gb_check",
+      sql`${table.localStorageGb} >= 0`,
+    ),
+    check(
+      "ganttpro_infra_vm_ceph_storage_gb_check",
+      sql`${table.cephStorageGb} >= 0`,
     ),
   ],
 );

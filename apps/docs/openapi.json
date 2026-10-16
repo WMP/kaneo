@@ -1345,6 +1345,18 @@
               "manageIntegrations": {
                 "type": "boolean",
                 "description": "workspace:manage_settings in the caller's workspace role."
+              },
+              "infrastructureRead": {
+                "type": "boolean",
+                "description": "infrastructure:read in the effective project statements."
+              },
+              "infrastructurePlan": {
+                "type": "boolean",
+                "description": "infrastructure:plan in the effective project statements."
+              },
+              "infrastructureManage": {
+                "type": "boolean",
+                "description": "infrastructure:manage in the effective project statements."
               }
             },
             "required": [
@@ -1362,7 +1374,10 @@
               "addMembers",
               "inviteToProject",
               "cancelProjectInvitations",
-              "manageIntegrations"
+              "manageIntegrations",
+              "infrastructureRead",
+              "infrastructurePlan",
+              "infrastructureManage"
             ],
             "description": "What the caller may do in this project, evaluated like the routes do (task, label and project permissions from the effective access; member and invitation permissions from the effective project statements; workspace labels and integrations from the workspace role). The API key scope is intersected. Billing is not considered: an expired Kaneo Cloud plan still answers 402 on writes."
           }
@@ -7190,6 +7205,1608 @@
           "taskId",
           "fieldId",
           "value"
+        ]
+      },
+      "InfraModelList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraModel"
+        }
+      },
+      "InfraModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "ovh",
+              "azure",
+              "other"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ramGb": {
+            "type": "integer"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "storageGb": {
+            "type": "integer",
+            "description": "Local disk of the host, in GB."
+          },
+          "leadTimeDays": {
+            "type": "integer"
+          },
+          "hypervisorReserveGb": {
+            "type": "integer",
+            "description": "RAM kept for the hypervisor on each host, in GB."
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "family",
+          "ramGb",
+          "vcpu",
+          "storageGb",
+          "leadTimeDays",
+          "hypervisorReserveGb",
+          "projectId",
+          "regions",
+          "position",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DeletedInfraItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "InfraHostList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraHost"
+        }
+      },
+      "InfraHost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "model": {
+            "$ref": "#/components/schemas/InfraModelSummary"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InfraHostTotals"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "modelId",
+          "region",
+          "zone",
+          "label",
+          "status",
+          "availableFrom",
+          "hostname",
+          "createdAt",
+          "updatedAt",
+          "model",
+          "totals"
+        ]
+      },
+      "InfraModelSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "ovh",
+              "azure",
+              "other"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ramGb": {
+            "type": "integer"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "storageGb": {
+            "type": "integer",
+            "description": "Local disk of the host, in GB."
+          },
+          "leadTimeDays": {
+            "type": "integer"
+          },
+          "hypervisorReserveGb": {
+            "type": "integer",
+            "description": "RAM kept for the hypervisor on each host, in GB."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "family",
+          "ramGb",
+          "vcpu",
+          "storageGb",
+          "leadTimeDays",
+          "hypervisorReserveGb"
+        ]
+      },
+      "InfraHostTotals": {
+        "type": "object",
+        "properties": {
+          "vmCount": {
+            "type": "integer"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "ramGb": {
+            "type": "integer"
+          },
+          "localStorageGb": {
+            "type": "integer"
+          },
+          "cephStorageGb": {
+            "type": "integer",
+            "description": "Ceph storage of the VMs on the host. Informational: it counts against the Ceph clusters, not the host."
+          }
+        },
+        "required": [
+          "vmCount",
+          "vcpu",
+          "ramGb",
+          "localStorageGb",
+          "cephStorageGb"
+        ]
+      },
+      "InfraCreatedHosts": {
+        "type": "object",
+        "properties": {
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHost"
+            }
+          }
+        },
+        "required": [
+          "hosts"
+        ]
+      },
+      "InfraVmList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraVm"
+        }
+      },
+      "InfraVm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "ramGb": {
+            "type": "integer"
+          },
+          "localStorageGb": {
+            "type": "integer"
+          },
+          "cephStorageGb": {
+            "type": "integer"
+          },
+          "storageClusterId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "storageCluster": {
+            "$ref": "#/components/schemas/InfraVmStorageCluster"
+          },
+          "host": {
+            "$ref": "#/components/schemas/InfraVmHost"
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "hostId",
+          "name",
+          "vcpu",
+          "ramGb",
+          "localStorageGb",
+          "cephStorageGb",
+          "storageClusterId",
+          "position",
+          "createdAt",
+          "updatedAt",
+          "storageCluster",
+          "host"
+        ]
+      },
+      "InfraVmStorageCluster": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "kind"
+        ]
+      },
+      "InfraVmHost": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "region",
+          "zone",
+          "status",
+          "availableFrom"
+        ]
+      },
+      "InfraDatacenterHostList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraDatacenterHost"
+        }
+      },
+      "InfraDatacenterHost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "model": {
+            "$ref": "#/components/schemas/InfraModelSummary"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InfraHostTotals"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "modelId",
+          "region",
+          "zone",
+          "label",
+          "status",
+          "availableFrom",
+          "hostname",
+          "createdAt",
+          "updatedAt",
+          "projectName",
+          "model",
+          "totals"
+        ]
+      },
+      "InfraStorageClusterSummaryList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraStorageClusterSummary"
+        }
+      },
+      "InfraStorageClusterSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "kind"
+        ]
+      },
+      "InfraStorageClusterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraStorageCluster"
+        }
+      },
+      "InfraStorageCluster": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "self_managed",
+              "managed_service"
+            ]
+          },
+          "ecDataChunks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ecCodingChunks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "fillThresholdPercent": {
+            "type": "integer"
+          },
+          "leadTimeDays": {
+            "type": "integer"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "capacity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraStorageCapacity"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InfraStorageClusterTotals"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "region",
+          "kind",
+          "ecDataChunks",
+          "ecCodingChunks",
+          "fillThresholdPercent",
+          "leadTimeDays",
+          "position",
+          "createdAt",
+          "updatedAt",
+          "capacity",
+          "totals"
+        ]
+      },
+      "InfraStorageCapacity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "clusterId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "capacityGb": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "clusterId",
+          "label",
+          "modelName",
+          "capacityGb",
+          "status",
+          "availableFrom",
+          "hostname",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "InfraStorageClusterTotals": {
+        "type": "object",
+        "properties": {
+          "rawCapacityGb": {
+            "type": "integer",
+            "description": "Sum of the installed capacity entries."
+          },
+          "plannedOrOrderedCapacityGb": {
+            "type": "integer"
+          },
+          "usedCephGb": {
+            "type": "integer",
+            "description": "Ceph storage of the VMs that use the cluster, across all projects."
+          },
+          "vmCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rawCapacityGb",
+          "plannedOrOrderedCapacityGb",
+          "usedCephGb",
+          "vmCount"
+        ]
+      },
+      "InfraProjectCapacity": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHostCapacity"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityWarning"
+            }
+          },
+          "unplacedVms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityVm"
+            }
+          },
+          "unscheduledVms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityVm"
+            }
+          }
+        },
+        "required": [
+          "today",
+          "hosts",
+          "warnings",
+          "unplacedVms",
+          "unscheduledVms"
+        ]
+      },
+      "InfraHostCapacity": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "#/components/schemas/InfraCapacityHost"
+          },
+          "result": {
+            "$ref": "#/components/schemas/InfraHostCapacityResult"
+          }
+        },
+        "required": [
+          "host",
+          "result"
+        ]
+      },
+      "InfraCapacityHost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ordered",
+              "installed"
+            ]
+          },
+          "availableFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Date-only (YYYY-MM-DD): the expected delivery date while ordered, the installation date once installed.",
+            "example": "2026-11-30"
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "model": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ramGb": {
+                "type": "integer"
+              },
+              "vcpu": {
+                "type": "integer"
+              },
+              "storageGb": {
+                "type": "integer"
+              },
+              "leadTimeDays": {
+                "type": "integer"
+              },
+              "hypervisorReserveGb": {
+                "type": "integer",
+                "description": "RAM kept for the hypervisor on each host, in GB."
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "provider",
+              "family",
+              "ramGb",
+              "vcpu",
+              "storageGb",
+              "leadTimeDays",
+              "hypervisorReserveGb"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "region",
+          "zone",
+          "status",
+          "availableFrom",
+          "hostname",
+          "projectId",
+          "projectName",
+          "model"
+        ]
+      },
+      "InfraHostCapacityResult": {
+        "type": "object",
+        "properties": {
+          "hostId": {
+            "type": "string"
+          },
+          "usableRamGb": {
+            "type": "integer"
+          },
+          "vcpu": {
+            "type": "integer"
+          },
+          "localStorageGb": {
+            "type": "integer"
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Earliest start date of a task with a VM on the host."
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "needDate minus the model lead time."
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "ramGb": {
+                  "type": "integer"
+                },
+                "vcpu": {
+                  "type": "integer"
+                },
+                "localStorageGb": {
+                  "type": "integer"
+                },
+                "ramPercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "vcpuPercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "localStoragePercent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "ramGb",
+                "vcpu",
+                "localStorageGb",
+                "ramPercent",
+                "vcpuPercent",
+                "localStoragePercent"
+              ]
+            }
+          },
+          "peakRamPercent": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "firstOver80Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "firstOver100Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "hostId",
+          "usableRamGb",
+          "vcpu",
+          "localStorageGb",
+          "needDate",
+          "orderByDate",
+          "steps",
+          "peakRamPercent",
+          "firstOver80Date",
+          "firstOver100Date"
+        ]
+      },
+      "InfraCapacityWarning": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOST_NOT_READY",
+              "ORDER_LATE",
+              "OVER_100",
+              "OVER_80",
+              "VM_UNPLACED",
+              "VM_UNSCHEDULED",
+              "CLUSTER_NOT_READY",
+              "CLUSTER_SHORTFALL"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "hostId": {
+            "type": "string"
+          },
+          "clusterId": {
+            "type": "string"
+          },
+          "vmId": {
+            "type": "string"
+          },
+          "vmName": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "severity"
+        ],
+        "description": "Task ids and titles appear only on the project route. The datacenter route names the VM and its project."
+      },
+      "InfraCapacityVm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cephStorageGb": {
+            "type": "integer"
+          },
+          "storageCluster": {
+            "$ref": "#/components/schemas/InfraCapacityVmCluster"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "taskId",
+          "taskTitle",
+          "hostId",
+          "startDate",
+          "cephStorageGb",
+          "storageCluster"
+        ]
+      },
+      "InfraCapacityVmCluster": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "InfraWorkspaceCapacity": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraHostCapacity"
+            }
+          },
+          "clusters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraClusterCapacity"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraCapacityWarning"
+            }
+          },
+          "orderPlan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InfraOrderPlanRow"
+            }
+          }
+        },
+        "required": [
+          "today",
+          "hosts",
+          "clusters",
+          "warnings",
+          "orderPlan"
+        ]
+      },
+      "InfraClusterCapacity": {
+        "type": "object",
+        "properties": {
+          "cluster": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "self_managed",
+                  "managed_service"
+                ]
+              },
+              "ecDataChunks": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "ecCodingChunks": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "fillThresholdPercent": {
+                "type": "integer"
+              },
+              "leadTimeDays": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "region",
+              "kind",
+              "ecDataChunks",
+              "ecCodingChunks",
+              "fillThresholdPercent",
+              "leadTimeDays"
+            ]
+          },
+          "result": {
+            "$ref": "#/components/schemas/InfraClusterCapacityResult"
+          }
+        },
+        "required": [
+          "cluster",
+          "result"
+        ]
+      },
+      "InfraClusterCapacityResult": {
+        "type": "object",
+        "properties": {
+          "clusterId": {
+            "type": "string"
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "usedCephGb": {
+                  "type": "integer"
+                },
+                "usableGb": {
+                  "type": "integer"
+                },
+                "percent": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "usedCephGb",
+                "usableGb",
+                "percent"
+              ]
+            }
+          },
+          "firstOver80Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "firstOver100Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usableAllGb": {
+            "type": "integer"
+          },
+          "shortfallGb": {
+            "type": "integer"
+          },
+          "plannedNeedDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "suggestion": {
+            "$ref": "#/components/schemas/InfraClusterSuggestion"
+          }
+        },
+        "required": [
+          "clusterId",
+          "needDate",
+          "steps",
+          "firstOver80Date",
+          "firstOver100Date",
+          "usableAllGb",
+          "shortfallGb",
+          "plannedNeedDate",
+          "suggestion"
+        ]
+      },
+      "InfraClusterSuggestion": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "nodes",
+              "service"
+            ]
+          },
+          "shortfallGb": {
+            "type": "integer"
+          },
+          "nodes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "nodeCapacityGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "modelName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "buyGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "shortfallGb",
+          "nodes",
+          "nodeCapacityGb",
+          "modelName",
+          "buyGb",
+          "needDate",
+          "orderByDate"
+        ]
+      },
+      "InfraOrderPlanRow": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "host",
+              "storage_node",
+              "storage_service"
+            ]
+          },
+          "orderByDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "needDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": "string"
+          },
+          "zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ramGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "vcpu": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "storageGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "capacityGb": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clusterId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clusterName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "suggested"
+            ]
+          },
+          "late": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "orderByDate",
+          "needDate",
+          "provider",
+          "region",
+          "zone",
+          "model",
+          "family",
+          "ramGb",
+          "vcpu",
+          "storageGb",
+          "quantity",
+          "capacityGb",
+          "projectId",
+          "projectName",
+          "clusterId",
+          "clusterName",
+          "labels",
+          "status",
+          "late"
+        ]
+      },
+      "InfraRegionSummaryList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraRegionSummary"
+        }
+      },
+      "InfraRegionSummary": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "zones"
+        ]
+      },
+      "InfraRegionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InfraRegion"
+        }
+      },
+      "InfraRegion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "zoneUsage": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Hosts per zone code."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/InfraRegionUsage"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "zones",
+          "position",
+          "createdAt",
+          "updatedAt",
+          "zoneUsage",
+          "usage"
+        ]
+      },
+      "InfraRegionUsage": {
+        "type": "object",
+        "properties": {
+          "models": {
+            "type": "integer"
+          },
+          "hosts": {
+            "type": "integer"
+          },
+          "clusters": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "models",
+          "hosts",
+          "clusters"
         ]
       },
       "WorkspaceColumns": {
@@ -26680,6 +28297,2543 @@
           },
           "404": {
             "description": "Unknown project or custom field",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/models": {
+      "get": {
+        "operationId": "getInfraModels",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the server model pool of a project",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Models by position",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraModelList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraModel",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Create a server model in the pool of a project",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ovh",
+                      "azure",
+                      "other"
+                    ]
+                  },
+                  "family": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "ramGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "vcpu": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "storageGb": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "regions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "description": "Allowed region codes, 1 to 20 unique entries"
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650,
+                    "default": 0
+                  },
+                  "hypervisorReserveGb": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "default": 8
+                  }
+                },
+                "required": [
+                  "name",
+                  "provider",
+                  "ramGb",
+                  "vcpu",
+                  "storageGb",
+                  "regions"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Model created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/models/{modelId}": {
+      "put": {
+        "operationId": "updateInfraModel",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Update a server model",
+        "description": "Only the sent fields change. Removing a region that a host uses answers 409 with code `INFRA_REGION_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "modelId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ovh",
+                      "azure",
+                      "other"
+                    ]
+                  },
+                  "family": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "ramGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "vcpu": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "storageGb": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "regions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "description": "Allowed region codes, 1 to 20 unique entries"
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650
+                  },
+                  "hypervisorReserveGb": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Model updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid model or unknown region (INFRA_REGION_UNKNOWN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found in this project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A region is used by a host (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraModel",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a server model",
+        "description": "A model that a host uses answers 409 with code `INFRA_MODEL_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "modelId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Model deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found in this project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A host uses the model (INFRA_MODEL_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/hosts": {
+      "get": {
+        "operationId": "getInfraHosts",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the hosts of a project",
+        "description": "Hosts with their model and the totals of the VMs placed on them.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hosts of the project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraHostList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraHost",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Create a planned host from the model pool",
+        "description": "Creates `quantity` (1 to 50, default 1) hosts in one transaction, all `planned`. Without a label each is named `<model name> <ram> GB <region> #<n>`, n being the highest number used for the model and region in the project plus one, then consecutive. A custom `label` is allowed only with quantity 1. A region outside the model answers 400 with code `INFRA_REGION_NOT_ALLOWED`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "modelId": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 1
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "modelId",
+                  "region"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hosts created, in creation order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraCreatedHosts"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid host or region (INFRA_REGION_NOT_ALLOWED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found in this project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/hosts/{hostId}": {
+      "put": {
+        "operationId": "updateInfraHost",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Rename a host or change its region",
+        "description": "A region change is allowed only while the host is `planned` (else 409 `INFRA_HOST_LOCKED`) and must be a region of the model (else 400 `INFRA_REGION_NOT_ALLOWED`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "hostId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "zone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Host updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraHost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid host or region (INFRA_REGION_NOT_ALLOWED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Host not found in this project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The host is not planned (INFRA_HOST_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraHost",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a planned host",
+        "description": "Only a `planned` host can be deleted (else 409 `INFRA_HOST_LOCKED`). Its VMs stay in their tasks without a host.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "hostId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Host deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Host not found in this project",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The host is not planned (INFRA_HOST_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/task/{taskId}/vms": {
+      "get": {
+        "operationId": "getTaskInfraVms",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the VMs of a task",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VMs of the task with their host",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraVmList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceTaskInfraVms",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Replace the VMs of a task",
+        "description": "One transaction: items with an `id` of this task are updated, items without an id are created, existing VMs missing from the list are deleted. At most 200 items. A host of another project answers 400 `INFRA_HOST_NOT_IN_PROJECT`, an id that is not a VM of this task 400 `INFRA_VM_NOT_IN_TASK`; nothing is persisted then.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "taskId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vms": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "vcpu": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000
+                        },
+                        "ramGb": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000
+                        },
+                        "localStorageGb": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000000
+                        },
+                        "cephStorageGb": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000000,
+                          "default": 0
+                        },
+                        "storageClusterId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "default": null
+                        },
+                        "hostId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "vcpu",
+                        "ramGb",
+                        "localStorageGb",
+                        "hostId"
+                      ]
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "required": [
+                  "vms"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraVmList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid list (INFRA_HOST_NOT_IN_PROJECT, INFRA_VM_NOT_IN_TASK)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/hosts": {
+      "get": {
+        "operationId": "getWorkspaceInfraHosts",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the hosts of every project of a workspace (datacenter)",
+        "description": "Project name, model, status, dates and VM totals. Task titles are never included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hosts of the workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraDatacenterHostList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/storage-clusters": {
+      "get": {
+        "operationId": "getProjectInfraStorageClusters",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the Ceph storage clusters a VM of the project may use",
+        "description": "The clusters of the project's workspace with id, name, region and kind only. Capacity and use are never included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storage cluster summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageClusterSummaryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters": {
+      "get": {
+        "operationId": "getWorkspaceInfraStorageClusters",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the Ceph storage clusters of a workspace (datacenter)",
+        "description": "Every cluster with its capacity entries and totals: installed raw capacity, planned or ordered capacity, and the Ceph storage used by VMs of all projects.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storage clusters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageClusterList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Create a Ceph storage cluster (datacenter)",
+        "description": "`self_managed` needs ecDataChunks (k) and ecCodingChunks (m); `managed_service` has neither. The name is unique in the workspace (409 `INFRA_CLUSTER_NAME_TAKEN`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "self_managed",
+                      "managed_service"
+                    ]
+                  },
+                  "ecDataChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "ecCodingChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "fillThresholdPercent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 80
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650,
+                    "default": 0
+                  }
+                },
+                "required": [
+                  "name",
+                  "region",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cluster created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCluster"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}": {
+      "put": {
+        "operationId": "updateInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Update a Ceph storage cluster (datacenter)",
+        "description": "Only the sent fields change. Switching to `managed_service` clears k and m; switching to `self_managed` needs them.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "self_managed",
+                      "managed_service"
+                    ]
+                  },
+                  "ecDataChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "ecCodingChunks": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "fillThresholdPercent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cluster updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCluster"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraStorageCluster",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a Ceph storage cluster (datacenter)",
+        "description": "A cluster that a VM uses answers 409 with code `INFRA_CLUSTER_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cluster deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cluster (INFRA_CLUSTER_INVALID) or unknown region (INFRA_REGION_UNKNOWN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (INFRA_CLUSTER_NAME_TAKEN) or cluster in use (INFRA_CLUSTER_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity": {
+      "post": {
+        "operationId": "createInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Add a capacity entry to a cluster (datacenter)",
+        "description": "The entry starts `planned`. Without a label it is named `<cluster name> #<n>`, n being the highest number used in the cluster plus one.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "modelName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "capacityGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000
+                  }
+                },
+                "required": [
+                  "capacityGb"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCapacity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/storage-clusters/{clusterId}/capacity/{entryId}": {
+      "put": {
+        "operationId": "updateInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Update a capacity entry (datacenter)",
+        "description": "Status rules as for hosts: `ordered` needs `availableFrom` (400 `INFRA_AVAILABLE_FROM_REQUIRED`), `installed` without a date stores today, `planned` clears the date.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "entryId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "modelName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "capacityGb": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "planned",
+                      "ordered",
+                      "installed"
+                    ]
+                  },
+                  "availableFrom": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "hostname": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraStorageCapacity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraStorageCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a planned capacity entry (datacenter)",
+        "description": "Only a `planned` entry can be deleted (else 409 `INFRA_CAPACITY_LOCKED`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "clusterId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "entryId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid entry (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cluster or entry not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The entry is not planned (INFRA_CAPACITY_LOCKED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/capacity": {
+      "get": {
+        "operationId": "getProjectInfraCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Day-by-day capacity of the hosts of a project",
+        "description": "Per host: need date, order-by date, use steps, first day over 80 and over 100 percent. Warnings carry the ids and titles of this project's tasks. Ceph cluster capacity and use are not included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Capacity of the project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraProjectCapacity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/capacity": {
+      "get": {
+        "operationId": "getWorkspaceInfraCapacity",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Capacity of every host and Ceph cluster, and the order plan (datacenter)",
+        "description": "Hosts of every project, Ceph clusters, warnings and the order plan. Warnings name VMs and projects; task titles and task ids are never included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Capacity of the workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraWorkspaceCapacity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/order-plan.xlsx": {
+      "get": {
+        "operationId": "getInfraOrderPlanXlsx",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Export the order plan as an XLSX file (datacenter)",
+        "description": "One sheet, `Order plan`, with a row per planned host group, planned storage entry and storage suggestion, sorted by order-by date, region and model. Late rows are highlighted.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order plan workbook",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/project/{projectId}/regions": {
+      "get": {
+        "operationId": "getProjectInfraRegions",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the regions of the project's workspace",
+        "description": "Code and name only, for the pickers.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegionSummaryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No access to the project, or missing permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/regions": {
+      "get": {
+        "operationId": "getWorkspaceInfraRegions",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "List the region catalog of a workspace (datacenter)",
+        "description": "Regions with how many models, hosts and storage clusters use each.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Add a region to the workspace catalog (datacenter)",
+        "description": "The code is trimmed and upper-cased. A code already in the catalog answers 409 `INFRA_REGION_CODE_TAKEN`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "pattern": "^[A-Z0-9-]+$",
+                    "example": "GRA"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "code",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/regions/{regionId}": {
+      "put": {
+        "operationId": "updateInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Rename or reorder a region (datacenter)",
+        "description": "The code never changes.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "regionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "zones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16,
+                      "pattern": "^[A-Z0-9-]+$",
+                      "example": "GRA"
+                    },
+                    "maxItems": 20
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraRegion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInfraRegion",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Delete a region (datacenter)",
+        "description": "A region that a model lists, or a host or storage cluster uses, answers 409 `INFRA_REGION_IN_USE`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "regionId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedInfraItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid region",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Region not found in this workspace",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Code taken (INFRA_REGION_CODE_TAKEN) or region in use (INFRA_REGION_IN_USE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/infrastructure/workspace/{workspaceId}/hosts/{hostId}/status": {
+      "put": {
+        "operationId": "setInfraHostStatus",
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Set the status of a host (datacenter)",
+        "description": "`ordered` needs `availableFrom` (expected delivery, 400 `INFRA_AVAILABLE_FROM_REQUIRED`). `installed` without a date stores today. `planned` clears the date. A host of another workspace answers 404.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "hostId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "planned",
+                      "ordered",
+                      "installed"
+                    ]
+                  },
+                  "availableFrom": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "hostname": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Host updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfraDatacenterHost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status change (INFRA_AVAILABLE_FROM_REQUIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodedError"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "description": "No workspace access, or missing datacenter permission",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Host not found in this workspace",
             "content": {
               "text/plain": {
                 "schema": {

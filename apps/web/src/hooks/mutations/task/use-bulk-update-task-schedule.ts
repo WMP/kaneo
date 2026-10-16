@@ -3,6 +3,7 @@ import bulkOperation, {
   type BulkScheduleUpdate,
 } from "@/fetchers/task/bulk-operation";
 import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 
 /**
  * Persists a Gantt dependency cascade (see gantt-dependency-cascade.ts) in
@@ -47,6 +48,8 @@ export function useBulkUpdateTaskSchedule() {
       // useUpdateTask invalidates this same key for the same reason; the bulk
       // path must too, or the other project keeps showing pre-cascade dates.
       invalidateGanttRelations(queryClient);
+      // Dates decide whether a host is ready for the task's VMs.
+      invalidateInfrastructure(queryClient);
     },
   });
 }

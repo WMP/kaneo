@@ -31,6 +31,7 @@ The plan behind it is in [`docs/plans/demo-data.md`](../../docs/plans/demo-data.
 | `public-host.mjs` | Rehearses a public deployment on this machine: HTTPS proxy, seed and screenshots through `https://kaneopro.example.com`. |
 | `api.mjs` | Small HTTP client (cookie jar, Origin header, retry on rate limits). |
 | `upstream-contract.mjs` | The upstream Kaneo v2.29.3 routes and fields that the base layer may use. |
+| `infrastructure-seed.mjs` | Separate fictional scenario for infrastructure capacity (server models, hosts, Ceph, order plan); see below. |
 | `package.json`, `package-lock.json` | Standalone npm package (Playwright and sharp, exact versions). It does not touch the pnpm workspace or `pnpm-lock.yaml`. |
 | `../ci/demo-data.test.mjs` | Dataset checks that run in CI without network or dependencies. |
 
@@ -93,6 +94,16 @@ Scenes are `01 02 03 04 05 06 07 07b 08 08c 09 10 10b 11` (file names in `captur
 | `--chromium <path>` | Chromium executable, or `KANEO_DEMO_CHROMIUM`. |
 
 Every screenshot is taken in the dark theme (asserted before each shot), 1440 CSS px wide at 2x, cropped to its content, with toasts and devtools hidden and a palette PNG from sharp. The capture stops with an error instead of saving a wrong picture: light theme, a Vite error overlay or a Polish letter on the page.
+
+## Infrastructure capacity scenario
+
+`infrastructure-seed.mjs` seeds a separate workspace, "Cloud Migration Demo", for the infrastructure capacity feature ([plan](../../docs/plans/infrastructure-capacity.md)). It is not part of the Northwind dataset and has no layers. Run it once against a fresh local database, after `pnpm dev`:
+
+```sh
+node scripts/demo/infrastructure-seed.mjs
+```
+
+It creates three accounts (password `DemoPass123!`): `infra-admin@example.com` (owner), `infra-lead@example.com` (project lead role in "Billing") and `infra-dc@example.com` (datacenter role, no project membership). Dates are offsets from today, so the scenario always shows a late host order, a host that arrives after its task starts, a host over 80 percent RAM and a Ceph shortfall. It talks to localhost only.
 
 ## Public hostname rehearsal
 

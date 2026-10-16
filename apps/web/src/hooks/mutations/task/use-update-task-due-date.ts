@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTaskDueDate from "@/fetchers/task/update-task-due-date";
 import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import type Task from "@/types/task";
 
 export function useUpdateTaskDueDate() {
@@ -27,6 +28,8 @@ export function useUpdateTaskDueDate() {
       // A due date moves the task's bar on every Gantt that shows it, also as
       // a cross-project relation endpoint on another project's chart.
       invalidateGanttRelations(queryClient);
+      // Dates decide whether a host is ready for the task's VMs.
+      invalidateInfrastructure(queryClient);
     },
   });
 }

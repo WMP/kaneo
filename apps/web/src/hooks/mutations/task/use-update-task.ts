@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import updateTask from "@/fetchers/task/update-task";
 import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import type Task from "@/types/task";
 
 export function useUpdateTask() {
@@ -31,6 +32,8 @@ export function useUpdateTask() {
       // known here, so every project's task-relations cache is invalidated
       // — broad, but cheap, and only mounted Gantt views actually refetch.
       invalidateGanttRelations(queryClient);
+      // Dates decide whether a host is ready for the task's VMs.
+      invalidateInfrastructure(queryClient);
     },
   });
 }

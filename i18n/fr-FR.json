@@ -134,6 +134,9 @@
 				"dependencies": "Dépendances",
 				"removeDependency": "Supprimer la dépendance",
 				"dependencyLinkError": "Tâche créée, mais {{task}} n'a pas pu être lié : {{reason}}",
+				"infrastructureProjectChanged": "Changer de projet vide la liste des VM, car les hôtes appartiennent à un projet.",
+				"infrastructureInvalid": "Corrigez les champs de VM marqués en rouge avant de créer la tâche.",
+				"infrastructureSaveError": "La tâche a été créée, mais ses VM n'ont pas pu être enregistrées : {{reason}}. Ajoutez-les dans la tâche.",
 				"labels": "Labels",
 				"searchLabels": "Rechercher des labels...",
 				"noLabelsFound": "Aucun label trouvé",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "Vos permissions dans ce projet ont changé.",
 			"lost": "Vous n'avez plus accès à ce projet."
+		},
+		"infrastructureStatus": {
+			"planned": "Planifié",
+			"ordered": "Commandé",
+			"installed": "Installé",
+			"suggested": "Suggéré"
 		}
 	},
 	"auth": {
@@ -817,6 +826,123 @@
 				"descriptionNoAccess": "Cet espace de travail impose ses colonnes : chaque projet a exactement les colonnes de l'espace de travail et elles ne peuvent pas être modifiées ici. Demandez à un administrateur de l'espace de travail de les modifier.",
 				"manageLink": "Ouvrir les paramètres de flux de travail de l'espace de travail",
 				"title": "Les colonnes sont gérées par l'espace de travail"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "Infrastructure",
+			"description": "Modèles de serveurs, hôtes et alertes de capacité pour les migrations de ce projet.",
+			"loadError": "Impossible de charger les données d'infrastructure.",
+			"save": "Enregistrer",
+			"saving": "Enregistrement...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Autre"
+			},
+			"validation": {
+				"required": "Ce champ est obligatoire.",
+				"integer": "Saisissez un nombre entier de {{min}} à {{max}}.",
+				"regionsRequired": "Sélectionnez au moins une région.",
+				"reserveTooLarge": "La réserve de l'hyperviseur doit être inférieure à la RAM du modèle."
+			},
+			"models": {
+				"title": "Modèles de serveurs",
+				"description": "Les modèles de serveurs que ce projet peut utiliser. Un hôte est une unité d'un modèle dans l'une de ses régions.",
+				"add": "Ajouter un modèle",
+				"edit": "Modifier le modèle",
+				"empty": "Aucun modèle de serveur pour le moment.",
+				"editAction": "Modifier {{name}}",
+				"deleteAction": "Supprimer {{name}}",
+				"deleteTitle": "Supprimer le modèle {{name}} ?",
+				"deleteDescription": "Le modèle est retiré du pool de ce projet. Un modèle utilisé par des hôtes ne peut pas être supprimé.",
+				"columns": {
+					"name": "Nom",
+					"family": "Famille",
+					"provider": "Fournisseur",
+					"ram": "RAM (Go)",
+					"vcpu": "vCPU",
+					"localDisk": "Disque local (Go)",
+					"regions": "Régions",
+					"leadTime": "Délai de livraison (jours)",
+					"reserve": "Réserve hyperviseur (Go)"
+				},
+				"regionsEmpty": "Aucune région pour le moment. Demandez à l'équipe datacenter d'ajouter des régions.",
+				"regionNotInCatalog": "(absente du catalogue)",
+				"reserveHelp": "RAM conservée pour l'hyperviseur sur chaque hôte ; les VM peuvent utiliser le reste."
+			},
+			"hosts": {
+				"title": "Hôtes",
+				"description": "Serveurs physiques de ce projet. L'équipe datacenter les commande et les installe ; vous les planifiez ici.",
+				"add": "Ajouter un hôte",
+				"empty": "Aucun hôte pour le moment.",
+				"noModels": "Ajoutez un modèle de serveur avant d'ajouter un hôte.",
+				"newDescription": "Crée un hôte planifié à partir d'un modèle de serveur. L'équipe datacenter le commande.",
+				"newModel": "Modèle",
+				"newModelPlaceholder": "Sélectionner un modèle",
+				"newRegion": "Région",
+				"newRegionPlaceholder": "Sélectionner une région",
+				"label": "Libellé",
+				"rename": "Renommer l'hôte",
+				"renameAction": "Renommer {{label}}",
+				"deleteAction": "Supprimer {{label}}",
+				"deleteTitle": "Supprimer l'hôte {{label}} ?",
+				"deleteDescription": "Seul un hôte planifié peut être supprimé. Ses VM restent dans leurs tâches, sans hôte.",
+				"orderLate": "La date limite de commande est dépassée.",
+				"ramUsage": "Utilisation de la RAM de {{host}}",
+				"columns": {
+					"label": "Hôte",
+					"model": "Modèle",
+					"region": "Région",
+					"status": "Statut",
+					"needDate": "Date de besoin",
+					"orderBy": "Commander avant",
+					"ram": "Utilisation de la RAM (pic)",
+					"vms": "VM",
+					"localDisk": "Disque local (Go)",
+					"zone": "Zone"
+				},
+				"quantity": "Quantité",
+				"added_one": "{{count}} hôte ajouté",
+				"added_many": "{{count}} d'hôtes ajoutés",
+				"added_other": "{{count}} hôtes ajoutés",
+				"zone": "Zone",
+				"zones": "Zones",
+				"zonePlaceholder": "Sélectionner une zone",
+				"zonesHint": "Les hôtes sont répartis dans l'ordre sur les zones sélectionnées : 3 hôtes et PAR1, PAR2, PAR3 donnent un hôte par zone.",
+				"zonesRequired": "Sélectionnez au moins une zone."
+			},
+			"warnings": {
+				"title": "Alertes",
+				"empty": "Aucune alerte de capacité.",
+				"severity": {
+					"error": "Erreur",
+					"warning": "Avertissement",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}} : l'hôte {{host}} est disponible à partir du {{available}}, mais la tâche commence le {{date}}.",
+					"hostNotReadyPlanned": "{{vm}} : l'hôte {{host}} n'est pas encore commandé, mais la tâche commence le {{date}}.",
+					"orderLate": "L'hôte {{host}} aurait dû être commandé avant le {{date}}.",
+					"over100": "L'hôte {{host}} dépasse sa capacité à partir du {{date}}.",
+					"over80": "L'hôte {{host}} est rempli à plus de 80 % à partir du {{date}}.",
+					"vmUnplaced": "{{vm}} n'a pas encore d'hôte.",
+					"vmUnscheduled": "{{vm}} : la tâche n'a ni date de début ni échéance, son utilisation de l'hôte ne peut donc pas être planifiée.",
+					"unknown": "Alerte de capacité."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Ce modèle n'est pas disponible dans cette région.",
+				"modelInUse": "Un hôte utilise ce modèle, il ne peut donc pas être supprimé.",
+				"regionInUse": "Un hôte utilise une région que vous avez retirée de ce modèle.",
+				"hostLocked": "Seul un hôte planifié peut être modifié ou supprimé.",
+				"hostNotInProject": "L'hôte sélectionné n'appartient pas à ce projet.",
+				"clusterRegionMismatch": "Le cluster Ceph doit se trouver dans la même région que l'hôte.",
+				"clusterNotInWorkspace": "Le cluster Ceph ne fait pas partie de cet espace de travail.",
+				"vmNotInTask": "Une VM de la liste n'appartient pas à cette tâche. Rechargez la tâche et réessayez.",
+				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions.",
+				"zoneRequired": "Sélectionnez une zone pour l'hôte.",
+				"zoneUnknown": "Cette zone n'appartient pas à la région.",
+				"reserveTooLarge": "La réserve de l'hyperviseur doit être inférieure à la RAM du modèle."
 			}
 		},
 		"projectSwitcher": {
@@ -2344,7 +2470,8 @@
 			"backToBoard": "Retour au tableau",
 			"portfolio": "Portfolio",
 			"activity": "Activité",
-			"workload": "Charge de travail"
+			"workload": "Charge de travail",
+			"datacenter": "Datacenter"
 		},
 		"projectList": {
 			"viewProject": "Voir le projet",
@@ -3434,6 +3561,40 @@
 					"title": "À vérifier avant l'envoi"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "Infrastructure",
+			"empty": "Aucune VM n'est encore listée pour cette tâche.",
+			"columns": {
+				"name": "Nom de la VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (Go)",
+				"ceph": "Ceph (Go)",
+				"local": "Local (Go)",
+				"host": "Hôte",
+				"cluster": "Cluster Ceph"
+			},
+			"addVm": "Ajouter une VM",
+			"duplicateRow": "Dupliquer la VM {{number}}",
+			"removeRow": "Supprimer la VM {{number}}",
+			"noHost": "Pas encore d'hôte",
+			"newHost": "Nouvel hôte…",
+			"noCluster": "Aucun cluster Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Liste des VM enregistrée.",
+			"warningsTitle": "Alertes pour cette tâche",
+			"validation": {
+				"nameRequired": "Saisissez un nom de VM.",
+				"number": "Saisissez un nombre entier, 0 ou plus."
+			},
+			"hostRemoved": "Hôte supprimé",
+			"hostFree": "libres : {{ram}} Go de RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "pas assez de place",
+			"usageHelp": "Utilisation une fois toutes les VM placées sur l'hôte en cours d'exécution.",
+			"usageRamLabel": "Utilisation de la RAM de {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · disque local {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Ressources insuffisantes sur cet hôte"
 		}
 	},
 	"invitations": {
@@ -3616,6 +3777,206 @@
 				"empty": "Aucune tâche correspondante dans cette période.",
 				"error": "Échec du chargement des tâches.",
 				"dueOn": " · Échéance {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Plan de commande",
+				"hosts": "Hôtes",
+				"storage": "Stockage Ceph",
+				"regions": "Régions"
+			},
+			"loadFailed": "Impossible de charger les données du datacenter.",
+			"noAccess": {
+				"title": "Pas d'accès au datacenter",
+				"description": "Votre rôle n'inclut pas l'autorisation datacenter. Demandez l'accès à un administrateur de l'espace de travail."
+			},
+			"actions": {
+				"save": "Enregistrer",
+				"changeStatus": "Changer le statut"
+			},
+			"errors": {
+				"availableFromRequired": "Un élément commandé nécessite une date de livraison prévue.",
+				"clusterNameTaken": "Un cluster portant ce nom existe déjà dans l'espace de travail.",
+				"clusterInUse": "Une VM utilise encore ce cluster. Déplacez d'abord la VM vers un autre cluster.",
+				"capacityLocked": "Seule une entrée planifiée peut être modifiée de cette façon.",
+				"clusterInvalid": "Les paramètres du cluster ne sont pas valides. Vérifiez les valeurs d'erasure coding.",
+				"regionInUse": "Cette région est encore utilisée par un modèle, un hôte ou un cluster.",
+				"saveFailed": "Impossible d'enregistrer la modification.",
+				"deleteFailed": "Impossible de supprimer l'élément.",
+				"regionUnknown": "Cette région ne figure pas dans le catalogue des régions.",
+				"regionCodeTaken": "Une région avec ce code existe déjà.",
+				"zoneInUse": "Une zone utilisée par un hôte ne peut pas être supprimée.",
+				"zoneUnknown": "Cette zone n'appartient pas à la région."
+			},
+			"fields": {
+				"status": "Statut",
+				"availableFrom": "Date de livraison",
+				"hostname": "Nom d'hôte",
+				"needDate": "Date de besoin",
+				"provider": "Fournisseur",
+				"region": "Région du datacenter",
+				"model": "Modèle",
+				"ramGb": "Mémoire (Go)",
+				"vcpu": "Cœurs vCPU",
+				"storageGb": "Disque local (Go)",
+				"capacity": "Capacité",
+				"capacityGb": "Capacité (Go)",
+				"project": "Projet",
+				"cluster": "Cluster Ceph",
+				"name": "Nom",
+				"kind": "Type de cluster",
+				"dataChunks": "Fragments de données (k)",
+				"codingChunks": "Fragments de codage (m)",
+				"fillThreshold": "Seuil de remplissage (%)",
+				"leadTimeDays": "Délai de livraison (jours)",
+				"label": "Libellé",
+				"zone": "Zone"
+			},
+			"kind": {
+				"self_managed": "Auto-géré",
+				"managed_service": "Service managé"
+			},
+			"provider": {
+				"other": "Autre"
+			},
+			"statusDialog": {
+				"title": "Changer le statut",
+				"dateRequired": "Obligatoire pour un élément commandé : la date de livraison prévue.",
+				"dateOptional": "Facultative. Un élément installé sans date reçoit la date du jour ; un élément planifié n'en a pas."
+			},
+			"orderPlan": {
+				"rows": "Lignes : {{rows}}",
+				"late": "En retard : {{late}}",
+				"download": "Télécharger le XLSX",
+				"downloadFailed": "Impossible de télécharger le plan de commande.",
+				"empty": "Rien à commander pour le moment.",
+				"orderBy": "Commander avant le",
+				"type": "Type d'élément",
+				"quantity": "Quantité",
+				"lateBadge": "En retard",
+				"types": {
+					"host": "Hôte",
+					"storageNode": "Nœud de stockage",
+					"storageService": "Service de stockage"
+				}
+			},
+			"hosts": {
+				"allProjects": "Tous les projets",
+				"allRegions": "Toutes les régions",
+				"allStatuses": "Tous les statuts",
+				"empty": "Aucun hôte ne correspond aux filtres.",
+				"host": "Hôte",
+				"ramPeak": "Pic d'utilisation de la mémoire",
+				"ramUse": "Utilisation de la mémoire de {{host}}",
+				"vms": "VM",
+				"warnings": "Alertes des hôtes",
+				"allZones": "Toutes les zones"
+			},
+			"warnings": {
+				"title": "Alertes de capacité",
+				"none": "Aucune alerte de capacité.",
+				"showAll": "Tout afficher ({{total}})",
+				"showFewer": "Afficher moins",
+				"severity": {
+					"error": "Erreurs : {{total}}",
+					"warning": "Avertissements : {{total}}",
+					"info": "Informations : {{total}}"
+				},
+				"severityName": {
+					"error": "Erreur",
+					"warning": "Avertissement",
+					"info": "Information"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) démarre le {{date}}, mais {{host}} n'est pas encore livré à cette date.",
+				"ORDER_LATE": "{{target}} aurait dû être commandé avant le {{date}}.",
+				"OVER_100": "{{target}} dépasse sa capacité à partir du {{date}}.",
+				"OVER_80": "{{target}} atteint 80 % de sa capacité le {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) n'est placée sur aucun hôte.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) n'a pas de date de début.",
+				"CLUSTER_NOT_READY": "{{target}} : la capacité n'est pas encore livrée quand les VM en ont besoin, à partir du {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} n'a pas assez de capacité ; le déficit commence le {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} n'a pas assez de capacité."
+			},
+			"storage": {
+				"addCluster": "Ajouter un cluster",
+				"addEntry": "Ajouter de la capacité",
+				"editCluster": "Modifier",
+				"empty": "Aucun cluster Ceph pour le moment.",
+				"noEntries": "Ce cluster n'a pas encore d'entrée de capacité.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Installée (brute)",
+				"usable": "Utilisable",
+				"used": "Utilisée par les VM",
+				"firstOver80": "Premier dépassement de 80 %",
+				"firstOver100": "Premier dépassement de 100 %",
+				"usage": "Utilisation de {{cluster}}",
+				"shortfall": "Déficit : {{shortfall}}",
+				"suggestionService": "Acheter {{buy}} avant le {{date}}.",
+				"suggestionServiceNoDate": "Acheter {{buy}}.",
+				"suggestionNodes": "Ajouter {{nodes}} × nœud {{node}} avant le {{date}}.",
+				"suggestionNodesNoDate": "Ajouter {{nodes}} × nœud {{node}}.",
+				"suggestionNodesUnknown": "Ajouter des nœuds de stockage pour {{shortfall}} avant le {{date}}.",
+				"suggestionNodesUnknownNoDate": "Ajouter des nœuds de stockage pour {{shortfall}}.",
+				"deleteClusterTitle": "Supprimer {{name}} ?",
+				"deleteClusterDescription": "Le cluster et ses entrées de capacité sont supprimés. Un cluster utilisé par une VM ne peut pas être supprimé.",
+				"deleteEntryTitle": "Supprimer {{name}} ?",
+				"deleteEntryDescription": "Seule la capacité planifiée peut être supprimée.",
+				"chart": {
+					"title": "Prévision de la demande Ceph",
+					"demand": "Demande",
+					"usableDelivered": "Capacité utilisable (livrée)",
+					"usableAfterOrders": "Capacité utilisable après les commandes prévues",
+					"overCapacity": "Capacité dépassée",
+					"nearCapacity": "Capacité presque atteinte",
+					"today": "Aujourd’hui",
+					"showTable": "Afficher le tableau",
+					"hideTable": "Masquer le tableau",
+					"tableDate": "Date d’effet",
+					"tableChange": "Variation",
+					"percentOfUsable": "% de la capacité utilisable",
+					"empty": "Aucune VM n’utilise encore ce cluster.",
+					"ariaLabel": "Demande Ceph pour {{cluster}} : {{demand}} au {{lastDate}}, utilisable {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ajouter un cluster Ceph",
+				"editTitle": "Modifier le cluster Ceph",
+				"selfManagedHint": "La capacité utilisable est la capacité brute × k / (k + m), limitée par le seuil de remplissage.",
+				"managedHint": "Un service managé n'a pas d'erasure coding. La capacité utilisable est limitée par le seuil de remplissage.",
+				"regionPlaceholder": "Sélectionnez une région",
+				"noRegions": "Aucune région pour le moment. Ajoutez d'abord une région dans l'onglet Régions."
+			},
+			"entryDialog": {
+				"title": "Ajouter de la capacité",
+				"capacityHint": "Capacité brute du nœud ou du bloc de service, en Go.",
+				"labelHint": "Facultatif. Sans libellé, l'entrée porte le nom du cluster."
+			},
+			"regions": {
+				"add": "Ajouter une région",
+				"editTitle": "Modifier la région",
+				"code": "Code",
+				"codeHint": "Lettres A–Z, chiffres et tirets, 16 caractères maximum ; le code ne pourra plus être modifié",
+				"usedBy": "Utilisée par",
+				"usage": {
+					"models": "Modèles",
+					"hosts": "Hôtes",
+					"clusters": "Clusters"
+				},
+				"empty": "Aucune région pour le moment. Ajoutez la première région.",
+				"editAction": "Modifier {{code}}",
+				"deleteAction": "Supprimer {{code}}",
+				"deleteTitle": "Supprimer la région {{code}} ?",
+				"deleteDescription": "La région est retirée du catalogue. Une région utilisée par un modèle, un hôte ou un cluster ne peut pas être supprimée.",
+				"zones": "Zones",
+				"zonesLabel": "Zones de disponibilité",
+				"zonesHint": "Zones de disponibilité de cette région, par exemple PAR1, PAR2, PAR3. Laissez vide pour une région sans zones.",
+				"zoneInput": "Code de la zone",
+				"addZone": "Ajouter une zone",
+				"removeZone": "Supprimer la zone {{zone}}",
+				"zoneHosts_one": "{{zone}} · {{count}} hôte",
+				"zoneHosts_many": "{{zone}} · {{count}} hôtes",
+				"zoneHosts_other": "{{zone}} · {{count}} hôtes"
 			}
 		}
 	},

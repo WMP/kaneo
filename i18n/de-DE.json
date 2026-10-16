@@ -134,6 +134,9 @@
 				"dependencies": "Abhängigkeiten",
 				"removeDependency": "Abhängigkeit entfernen",
 				"dependencyLinkError": "Aufgabe erstellt, aber {{task}} konnte nicht verknüpft werden: {{reason}}",
+				"infrastructureProjectChanged": "Beim Wechsel des Projekts wird die VM-Liste geleert, da Hosts zu einem Projekt gehören.",
+				"infrastructureInvalid": "Korrigieren Sie die rot markierten VM-Felder, bevor Sie die Aufgabe erstellen.",
+				"infrastructureSaveError": "Die Aufgabe wurde erstellt, aber ihre VMs konnten nicht gespeichert werden: {{reason}}. Fügen Sie sie in der Aufgabe hinzu.",
 				"labels": "Labels",
 				"searchLabels": "Labels suchen...",
 				"noLabelsFound": "Keine Labels gefunden",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "Deine Berechtigungen in diesem Projekt haben sich geändert.",
 			"lost": "Du hast keinen Zugriff mehr auf dieses Projekt."
+		},
+		"infrastructureStatus": {
+			"planned": "Geplant",
+			"ordered": "Bestellt",
+			"installed": "Installiert",
+			"suggested": "Vorgeschlagen"
 		}
 	},
 	"auth": {
@@ -897,6 +906,122 @@
 				"descriptionNoAccess": "Dieser Workspace erzwingt seine Spalten, daher hat jedes Projekt genau die Workspace-Spalten und sie lassen sich hier nicht ändern. Bitte eine Workspace-Administratorin oder einen Workspace-Administrator, sie zu ändern.",
 				"manageLink": "Workflow-Einstellungen des Workspaces öffnen",
 				"title": "Spalten werden vom Workspace verwaltet"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "Infrastruktur",
+			"description": "Servermodelle, Hosts und Kapazitätswarnungen für die Migrationen dieses Projekts.",
+			"loadError": "Die Infrastrukturdaten konnten nicht geladen werden.",
+			"save": "Speichern",
+			"saving": "Wird gespeichert...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Andere"
+			},
+			"validation": {
+				"required": "Dieses Feld ist erforderlich.",
+				"integer": "Geben Sie eine ganze Zahl von {{min}} bis {{max}} ein.",
+				"regionsRequired": "Wählen Sie mindestens eine Region aus.",
+				"reserveTooLarge": "Die Hypervisor-Reserve muss kleiner als der RAM des Modells sein."
+			},
+			"models": {
+				"title": "Servermodelle",
+				"description": "Die Servermodelle, die dieses Projekt verwenden darf. Ein Host ist eine Einheit eines Modells in einer seiner Regionen.",
+				"add": "Modell hinzufügen",
+				"edit": "Modell bearbeiten",
+				"empty": "Noch keine Servermodelle.",
+				"editAction": "{{name}} bearbeiten",
+				"deleteAction": "{{name}} löschen",
+				"deleteTitle": "Modell {{name}} löschen?",
+				"deleteDescription": "Das Modell wird aus dem Pool dieses Projekts entfernt. Ein Modell, das von Hosts verwendet wird, kann nicht gelöscht werden.",
+				"columns": {
+					"name": "Name",
+					"family": "Familie",
+					"provider": "Anbieter",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Lokaler Speicher (GB)",
+					"regions": "Regionen",
+					"leadTime": "Lieferzeit (Tage)",
+					"reserve": "Hypervisor-Reserve (GB)"
+				},
+				"regionsEmpty": "Noch keine Regionen. Bitten Sie das Datacenter-Team, Regionen anzulegen.",
+				"regionNotInCatalog": "(nicht im Katalog)",
+				"reserveHelp": "RAM, der auf jedem Host für den Hypervisor reserviert bleibt; VMs können den Rest nutzen."
+			},
+			"hosts": {
+				"title": "Hosts",
+				"description": "Physische Server dieses Projekts. Das Datacenter-Team bestellt und installiert sie; Sie planen sie hier.",
+				"add": "Host hinzufügen",
+				"empty": "Noch keine Hosts.",
+				"noModels": "Fügen Sie ein Servermodell hinzu, bevor Sie einen Host hinzufügen.",
+				"newDescription": "Erstellt einen geplanten Host aus einem Servermodell. Das Datacenter-Team bestellt ihn.",
+				"newModel": "Modell",
+				"newModelPlaceholder": "Modell auswählen",
+				"newRegion": "Region",
+				"newRegionPlaceholder": "Region auswählen",
+				"label": "Bezeichnung",
+				"rename": "Host umbenennen",
+				"renameAction": "{{label}} umbenennen",
+				"deleteAction": "{{label}} löschen",
+				"deleteTitle": "Host {{label}} löschen?",
+				"deleteDescription": "Nur ein geplanter Host kann gelöscht werden. Seine VMs bleiben ohne Host in ihren Aufgaben.",
+				"orderLate": "Das Bestellen-bis-Datum ist überschritten.",
+				"ramUsage": "RAM-Auslastung von {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Modell",
+					"region": "Region",
+					"status": "Status",
+					"needDate": "Bedarfsdatum",
+					"orderBy": "Bestellen bis",
+					"ram": "RAM-Auslastung (Spitze)",
+					"vms": "VMs",
+					"localDisk": "Lokaler Speicher (GB)",
+					"zone": "Zone"
+				},
+				"quantity": "Anzahl",
+				"added_one": "{{count}} Host hinzugefügt",
+				"added_other": "{{count}} Hosts hinzugefügt",
+				"zone": "Zone",
+				"zones": "Zonen",
+				"zonePlaceholder": "Zone auswählen",
+				"zonesHint": "Die Hosts werden der Reihe nach auf die ausgewählten Zonen verteilt: 3 Hosts und PAR1, PAR2, PAR3 ergeben einen Host pro Zone.",
+				"zonesRequired": "Wählen Sie mindestens eine Zone aus."
+			},
+			"warnings": {
+				"title": "Warnungen",
+				"empty": "Keine Kapazitätswarnungen.",
+				"severity": {
+					"error": "Fehler",
+					"warning": "Warnung",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: Host {{host}} ist ab {{available}} verfügbar, die Aufgabe beginnt aber am {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: Host {{host}} ist noch nicht bestellt, die Aufgabe beginnt aber am {{date}}.",
+					"orderLate": "Host {{host}} hätte bis {{date}} bestellt werden müssen.",
+					"over100": "Host {{host}} ist ab {{date}} überlastet.",
+					"over80": "Host {{host}} ist ab {{date}} zu mehr als 80 % ausgelastet.",
+					"vmUnplaced": "{{vm}} hat noch keinen Host.",
+					"vmUnscheduled": "{{vm}}: Die Aufgabe hat weder Start- noch Fälligkeitsdatum, daher kann die Host-Nutzung nicht eingeplant werden.",
+					"unknown": "Kapazitätswarnung."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Dieses Modell ist in dieser Region nicht verfügbar.",
+				"modelInUse": "Ein Host verwendet dieses Modell, daher kann es nicht gelöscht werden.",
+				"regionInUse": "Ein Host verwendet eine Region, die Sie aus diesem Modell entfernt haben.",
+				"hostLocked": "Nur ein geplanter Host kann geändert oder gelöscht werden.",
+				"hostNotInProject": "Der gewählte Host gehört nicht zu diesem Projekt.",
+				"clusterRegionMismatch": "Der Ceph-Cluster muss in derselben Region wie der Host liegen.",
+				"clusterNotInWorkspace": "Der Ceph-Cluster gehört nicht zu diesem Arbeitsbereich.",
+				"vmNotInTask": "Eine VM in der Liste gehört nicht zu dieser Aufgabe. Laden Sie die Aufgabe neu und versuchen Sie es erneut.",
+				"regionUnknown": "Diese Region ist nicht im Regionskatalog.",
+				"zoneRequired": "Wählen Sie eine Zone für den Host aus.",
+				"zoneUnknown": "Diese Zone gehört nicht zur Region.",
+				"reserveTooLarge": "Die Hypervisor-Reserve muss kleiner als der RAM des Modells sein."
 			}
 		},
 		"projectSwitcher": {
@@ -2341,7 +2466,8 @@
 			"backToBoard": "Zurück zum Board",
 			"portfolio": "Portfolio",
 			"activity": "Aktivität",
-			"workload": "Auslastung"
+			"workload": "Auslastung",
+			"datacenter": "Rechenzentrum"
 		},
 		"projectList": {
 			"viewProject": "Projekt ansehen",
@@ -3422,6 +3548,40 @@
 					"title": "Vor dem Senden prüfen"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "Infrastruktur",
+			"empty": "Für diese Aufgabe sind noch keine VMs aufgeführt.",
+			"columns": {
+				"name": "VM-Name",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokal (GB)",
+				"host": "Host",
+				"cluster": "Ceph-Cluster"
+			},
+			"addVm": "VM hinzufügen",
+			"duplicateRow": "VM {{number}} duplizieren",
+			"removeRow": "VM {{number}} entfernen",
+			"noHost": "Noch kein Host",
+			"newHost": "Neuer Host…",
+			"noCluster": "Kein Ceph-Cluster",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM-Liste gespeichert.",
+			"warningsTitle": "Warnungen für diese Aufgabe",
+			"validation": {
+				"nameRequired": "Geben Sie einen VM-Namen ein.",
+				"number": "Geben Sie eine ganze Zahl ein, 0 oder größer."
+			},
+			"hostRemoved": "Host entfernt",
+			"hostFree": "frei {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "nicht genug Platz",
+			"usageHelp": "Auslastung, wenn alle auf dem Host platzierten VMs laufen.",
+			"usageRamLabel": "RAM-Auslastung von {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · lokaler Datenträger {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Nicht genug Ressourcen auf diesem Host"
 		}
 	},
 	"invitations": {
@@ -3603,6 +3763,205 @@
 				"empty": "Keine passenden Aufgaben in diesem Zeitraum.",
 				"error": "Aufgaben konnten nicht geladen werden.",
 				"dueOn": " · Fällig am {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Bestellplan",
+				"hosts": "Hosts",
+				"storage": "Ceph-Speicher",
+				"regions": "Regionen"
+			},
+			"loadFailed": "Die Rechenzentrumsdaten konnten nicht geladen werden.",
+			"noAccess": {
+				"title": "Kein Zugriff auf das Rechenzentrum",
+				"description": "Ihre Rolle enthält nicht die Rechenzentrumsberechtigung. Bitten Sie einen Workspace-Administrator um Zugriff."
+			},
+			"actions": {
+				"save": "Speichern",
+				"changeStatus": "Status ändern"
+			},
+			"errors": {
+				"availableFromRequired": "Ein bestellter Eintrag braucht ein erwartetes Lieferdatum.",
+				"clusterNameTaken": "Ein Cluster mit diesem Namen existiert im Workspace bereits.",
+				"clusterInUse": "Eine VM nutzt diesen Cluster noch. Verschieben Sie die VM zuerst in einen anderen Cluster.",
+				"capacityLocked": "Auf diese Weise kann nur ein geplanter Eintrag geändert werden.",
+				"clusterInvalid": "Die Cluster-Einstellungen sind ungültig. Prüfen Sie die Erasure-Coding-Werte.",
+				"regionInUse": "Diese Region wird noch von einem Modell, einem Host oder einem Cluster verwendet.",
+				"saveFailed": "Die Änderung konnte nicht gespeichert werden.",
+				"deleteFailed": "Der Eintrag konnte nicht gelöscht werden.",
+				"regionUnknown": "Diese Region ist nicht im Regionskatalog.",
+				"regionCodeTaken": "Eine Region mit diesem Code existiert bereits.",
+				"zoneInUse": "Eine Zone, die ein Host verwendet, kann nicht entfernt werden.",
+				"zoneUnknown": "Diese Zone gehört nicht zur Region."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Lieferdatum",
+				"hostname": "Hostname (Rechnername)",
+				"needDate": "Bedarfsdatum",
+				"provider": "Anbieter",
+				"region": "Rechenzentrumsregion",
+				"model": "Modell",
+				"ramGb": "Arbeitsspeicher (GB)",
+				"vcpu": "vCPU-Kerne",
+				"storageGb": "Lokaler Datenträger (GB)",
+				"capacity": "Kapazität",
+				"capacityGb": "Kapazität (GB)",
+				"project": "Projekt",
+				"cluster": "Ceph-Cluster",
+				"name": "Name",
+				"kind": "Clustertyp",
+				"dataChunks": "Datenchunks (k)",
+				"codingChunks": "Codierungschunks (m)",
+				"fillThreshold": "Füllgrenze (%)",
+				"leadTimeDays": "Lieferzeit (Tage)",
+				"label": "Bezeichnung",
+				"zone": "Zone"
+			},
+			"kind": {
+				"self_managed": "Selbstverwaltet",
+				"managed_service": "Managed Service"
+			},
+			"provider": {
+				"other": "Sonstiges"
+			},
+			"statusDialog": {
+				"title": "Status ändern",
+				"dateRequired": "Für einen bestellten Eintrag erforderlich: das erwartete Lieferdatum.",
+				"dateOptional": "Optional. Ein installierter Eintrag ohne Datum erhält das heutige Datum; ein geplanter hat keines."
+			},
+			"orderPlan": {
+				"rows": "Zeilen: {{rows}}",
+				"late": "Verspätet: {{late}}",
+				"download": "XLSX herunterladen",
+				"downloadFailed": "Der Bestellplan konnte nicht heruntergeladen werden.",
+				"empty": "Derzeit ist nichts zu bestellen.",
+				"orderBy": "Bestellen bis",
+				"type": "Eintragstyp",
+				"quantity": "Menge",
+				"lateBadge": "Verspätet",
+				"types": {
+					"host": "Host",
+					"storageNode": "Speicherknoten",
+					"storageService": "Speicherdienst"
+				}
+			},
+			"hosts": {
+				"allProjects": "Alle Projekte",
+				"allRegions": "Alle Regionen",
+				"allStatuses": "Alle Status",
+				"empty": "Keine Hosts entsprechen den Filtern.",
+				"host": "Host",
+				"ramPeak": "Spitzenauslastung des Speichers",
+				"ramUse": "Speicherauslastung von {{host}}",
+				"vms": "VMs",
+				"warnings": "Host-Warnungen",
+				"allZones": "Alle Zonen"
+			},
+			"warnings": {
+				"title": "Kapazitätswarnungen",
+				"none": "Keine Kapazitätswarnungen.",
+				"showAll": "Alle anzeigen ({{total}})",
+				"showFewer": "Weniger anzeigen",
+				"severity": {
+					"error": "Fehler: {{total}}",
+					"warning": "Warnungen: {{total}}",
+					"info": "Hinweise: {{total}}"
+				},
+				"severityName": {
+					"error": "Fehler",
+					"warning": "Warnung",
+					"info": "Hinweis"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) startet am {{date}}, aber {{host}} ist bis dahin nicht geliefert.",
+				"ORDER_LATE": "{{target}} hätte bis {{date}} bestellt werden müssen.",
+				"OVER_100": "{{target}} ist ab {{date}} überlastet.",
+				"OVER_80": "{{target}} erreicht am {{date}} 80 % seiner Kapazität.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) ist keinem Host zugeordnet.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) hat kein Startdatum.",
+				"CLUSTER_NOT_READY": "{{target}}: Die Kapazität ist ab {{date}}, wenn VMs sie brauchen, noch nicht geliefert.",
+				"CLUSTER_SHORTFALL": "{{target}} hat nicht genug Kapazität; der Fehlbetrag beginnt am {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} hat nicht genug Kapazität."
+			},
+			"storage": {
+				"addCluster": "Cluster hinzufügen",
+				"addEntry": "Kapazität hinzufügen",
+				"editCluster": "Bearbeiten",
+				"empty": "Es gibt noch keine Ceph-Cluster.",
+				"noEntries": "Dieser Cluster hat noch keine Kapazitätseinträge.",
+				"erasureCoding": "Erasure Coding",
+				"installed": "Installiert (roh)",
+				"usable": "Nutzbar",
+				"used": "Von VMs belegt",
+				"firstOver80": "Erstmals über 80 %",
+				"firstOver100": "Erstmals über 100 %",
+				"usage": "Auslastung von {{cluster}}",
+				"shortfall": "Fehlbetrag: {{shortfall}}",
+				"suggestionService": "{{buy}} bis {{date}} zukaufen.",
+				"suggestionServiceNoDate": "{{buy}} zukaufen.",
+				"suggestionNodes": "{{nodes}} × Knoten {{node}} bis {{date}} hinzufügen.",
+				"suggestionNodesNoDate": "{{nodes}} × Knoten {{node}} hinzufügen.",
+				"suggestionNodesUnknown": "Speicherknoten im Umfang von {{shortfall}} bis {{date}} hinzufügen.",
+				"suggestionNodesUnknownNoDate": "Speicherknoten im Umfang von {{shortfall}} hinzufügen.",
+				"deleteClusterTitle": "{{name}} löschen?",
+				"deleteClusterDescription": "Der Cluster und seine Kapazitätseinträge werden entfernt. Ein Cluster, den eine VM nutzt, kann nicht gelöscht werden.",
+				"deleteEntryTitle": "{{name}} löschen?",
+				"deleteEntryDescription": "Nur geplante Kapazität kann gelöscht werden.",
+				"chart": {
+					"title": "Prognose des Ceph-Bedarfs",
+					"demand": "Bedarf",
+					"usableDelivered": "Nutzbare Kapazität (geliefert)",
+					"usableAfterOrders": "Nutzbare Kapazität nach geplanten Bestellungen",
+					"overCapacity": "Kapazität überschritten",
+					"nearCapacity": "Kapazität fast erreicht",
+					"today": "Heute",
+					"showTable": "Tabelle anzeigen",
+					"hideTable": "Tabelle ausblenden",
+					"tableDate": "Datum",
+					"tableChange": "Änderung",
+					"percentOfUsable": "% der nutzbaren Kapazität",
+					"empty": "Noch keine VMs nutzen diesen Cluster.",
+					"ariaLabel": "Ceph-Bedarf für {{cluster}}: {{demand}} bis {{lastDate}}, nutzbar {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph-Cluster hinzufügen",
+				"editTitle": "Ceph-Cluster bearbeiten",
+				"selfManagedHint": "Die nutzbare Kapazität ist die Rohkapazität × k / (k + m), begrenzt durch die Füllgrenze.",
+				"managedHint": "Ein Managed Service hat kein Erasure Coding. Die nutzbare Kapazität wird durch die Füllgrenze begrenzt.",
+				"regionPlaceholder": "Region auswählen",
+				"noRegions": "Noch keine Regionen. Legen Sie zuerst auf dem Tab „Regionen“ eine Region an."
+			},
+			"entryDialog": {
+				"title": "Kapazität hinzufügen",
+				"capacityHint": "Rohkapazität des Knotens oder des Dienstblocks in GB.",
+				"labelHint": "Optional. Ohne Bezeichnung wird der Eintrag nach dem Cluster benannt."
+			},
+			"regions": {
+				"add": "Region hinzufügen",
+				"editTitle": "Region bearbeiten",
+				"code": "Code",
+				"codeHint": "Buchstaben A–Z, Ziffern und Bindestriche, bis zu 16 Zeichen; der Code lässt sich später nicht mehr ändern",
+				"usedBy": "Verwendet von",
+				"usage": {
+					"models": "Modelle",
+					"hosts": "Hosts",
+					"clusters": "Cluster"
+				},
+				"empty": "Noch keine Regionen. Legen Sie die erste Region an.",
+				"editAction": "{{code}} bearbeiten",
+				"deleteAction": "{{code}} löschen",
+				"deleteTitle": "Region {{code}} löschen?",
+				"deleteDescription": "Die Region wird aus dem Katalog entfernt. Eine Region, die ein Modell, ein Host oder ein Cluster verwendet, kann nicht gelöscht werden.",
+				"zones": "Zonen",
+				"zonesLabel": "Verfügbarkeitszonen",
+				"zonesHint": "Verfügbarkeitszonen dieser Region, zum Beispiel PAR1, PAR2, PAR3. Leer lassen für eine Region ohne Zonen.",
+				"zoneInput": "Zonencode",
+				"addZone": "Zone hinzufügen",
+				"removeZone": "Zone {{zone}} entfernen",
+				"zoneHosts_one": "{{zone}} · {{count}} Host",
+				"zoneHosts_other": "{{zone}} · {{count}} Hosts"
 			}
 		}
 	},

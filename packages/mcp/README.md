@@ -122,6 +122,7 @@ For headless or sandboxed environments where opening a browser is impractical, s
 - Time entries: `list_task_time_entries`, `get_time_entry`, `create_time_entry`, `update_time_entry`
 - Comments: `list_task_comments`, `create_task_comment`, `update_task_comment`, `delete_task_comment`
 - Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`, `delete_label`
+- Infrastructure: `list_infrastructure_regions`, `list_project_server_models`, `list_project_hosts`, `list_project_storage_clusters`, `get_project_capacity`, `get_task_vms`, `get_datacenter_order_plan`, `list_datacenter_hosts`, `list_storage_clusters`, `set_host_status` (status, delivery date `availableFrom`, hostname), `set_storage_capacity_status`, `create_project_server_model`, `update_project_server_model`, `delete_project_server_model`, `create_project_hosts`, `update_project_host`, `delete_project_host`, `set_task_vms` (replaces the whole VM list), `add_task_vms` (appends)
 - Task relations: `create_task_relation`, `get_task_relations`, `delete_task_relation`
 
 Call `list_project_columns` before setting a status: the column slugs it

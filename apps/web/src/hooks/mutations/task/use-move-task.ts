@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import moveTask from "@/fetchers/task/move-task";
 import { invalidateGanttRelations } from "@/lib/gantt-query-keys";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import { toast } from "@/lib/toast";
 
 export function useMoveTask() {
@@ -32,6 +33,8 @@ export function useMoveTask() {
       });
       // The task's relation endpoints now belong to another project.
       invalidateGanttRelations(queryClient);
+      // The task's VMs and warnings now belong to another project.
+      invalidateInfrastructure(queryClient);
     },
     onError: (error) => {
       toast.error(

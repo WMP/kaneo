@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import duplicateTask from "@/fetchers/task/duplicate-task";
+import { invalidateInfrastructure } from "@/lib/infrastructure-keys";
 import { toast } from "@/lib/toast";
 
 export function useDuplicateTask() {
@@ -19,6 +20,8 @@ export function useDuplicateTask() {
       queryClient.invalidateQueries({
         queryKey: ["task-relations"],
       });
+      // The copy carries the VMs of the original.
+      invalidateInfrastructure(queryClient);
     },
     onError: (error) => {
       toast.error(

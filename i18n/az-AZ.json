@@ -134,6 +134,9 @@
 				"dependencies": "Asılılıqlar",
 				"removeDependency": "Asılılığı sil",
 				"dependencyLinkError": "Tapşırıq yaradıldı, lakin {{task}} bağlana bilmədi: {{reason}}",
+				"infrastructureProjectChanged": "Layihənin dəyişdirilməsi VM siyahısını təmizləyir, çünki hostlar layihəyə aiddir.",
+				"infrastructureInvalid": "Tapşırığı yaratmazdan əvvəl qırmızı ilə işarələnmiş VM sahələrini düzəldin.",
+				"infrastructureSaveError": "Tapşırıq yaradıldı, lakin onun VM-ləri saxlanıla bilmədi: {{reason}}. Onları tapşırığa əlavə edin.",
 				"labels": "Etiketlər",
 				"searchLabels": "Etiketləri axtar...",
 				"noLabelsFound": "Etiket tapılmadı",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "Bu layihədəki icazələriniz dəyişdi.",
 			"lost": "Artıq bu layihəyə girişiniz yoxdur."
+		},
+		"infrastructureStatus": {
+			"planned": "Planlaşdırılıb",
+			"ordered": "Sifariş edilib",
+			"installed": "Quraşdırılıb",
+			"suggested": "Təklif edilib"
 		}
 	},
 	"auth": {
@@ -1054,6 +1063,122 @@
 				"descriptionNoAccess": "Bu iş sahəsi öz sütunlarını məcburi edir, buna görə hər layihədə məhz iş sahəsinin sütunları olur və onları burada dəyişmək olmur. İş sahəsinin administratorundan onları dəyişməsini xahiş edin.",
 				"manageLink": "İş sahəsinin iş axını parametrlərini aç",
 				"title": "Sütunları iş sahəsi idarə edir"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "İnfrastruktur",
+			"description": "Bu layihənin miqrasiyaları üçün server modelləri, hostlar və tutum xəbərdarlıqları.",
+			"loadError": "İnfrastruktur məlumatları yüklənə bilmədi.",
+			"save": "Yadda saxla",
+			"saving": "Yadda saxlanılır...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Digər"
+			},
+			"validation": {
+				"required": "Bu sahə məcburidir.",
+				"integer": "{{min}} ilə {{max}} arasında tam ədəd daxil edin.",
+				"regionsRequired": "Ən azı bir region seçin.",
+				"reserveTooLarge": "Hipervizor ehtiyatı modelin RAM-ından kiçik olmalıdır."
+			},
+			"models": {
+				"title": "Server modelləri",
+				"description": "Bu layihənin istifadə edə biləcəyi server modelləri. Host, modelin regionlarından birindəki bir vahiddir.",
+				"add": "Model əlavə et",
+				"edit": "Modeli redaktə et",
+				"empty": "Hələ server modeli yoxdur.",
+				"editAction": "{{name}} elementini redaktə et",
+				"deleteAction": "{{name}} elementini sil",
+				"deleteTitle": "{{name}} modeli silinsin?",
+				"deleteDescription": "Model bu layihənin hovuzundan çıxarılır. Hostların istifadə etdiyi model silinə bilməz.",
+				"columns": {
+					"name": "Ad",
+					"family": "Ailə",
+					"provider": "Provayder",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Lokal disk (GB)",
+					"regions": "Regionlar",
+					"leadTime": "Çatdırılma müddəti (gün)",
+					"reserve": "Hipervizor ehtiyatı (GB)"
+				},
+				"regionsEmpty": "Hələ region yoxdur. Datacenter komandasından region əlavə etməsini xahiş edin.",
+				"regionNotInCatalog": "(kataloqda yoxdur)",
+				"reserveHelp": "Hər hostda hipervizor üçün saxlanılan RAM; VM-lər qalanını istifadə edə bilər."
+			},
+			"hosts": {
+				"title": "Hostlar",
+				"description": "Bu layihənin fiziki serverləri. Data mərkəzi komandası onları sifariş edir və quraşdırır; siz burada planlaşdırırsınız.",
+				"add": "Host əlavə et",
+				"empty": "Hələ host yoxdur.",
+				"noModels": "Host əlavə etməzdən əvvəl server modeli əlavə edin.",
+				"newDescription": "Server modelindən planlaşdırılmış host yaradır. Onu data mərkəzi komandası sifariş edir.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Model seçin",
+				"newRegion": "Region",
+				"newRegionPlaceholder": "Region seçin",
+				"label": "Etiket",
+				"rename": "Hostun adını dəyiş",
+				"renameAction": "{{label}} elementinin adını dəyiş",
+				"deleteAction": "{{label}} elementini sil",
+				"deleteTitle": "{{label}} hostu silinsin?",
+				"deleteDescription": "Yalnız planlaşdırılmış host silinə bilər. Onun VM-ləri tapşırıqlarında hostsuz qalır.",
+				"orderLate": "Sifariş müddəti keçib.",
+				"ramUsage": "{{host}} hostunun RAM istifadəsi",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Region",
+					"status": "Status",
+					"needDate": "Ehtiyac tarixi",
+					"orderBy": "Bu tarixə qədər sifariş et",
+					"ram": "RAM istifadəsi (pik)",
+					"vms": "VM",
+					"localDisk": "Lokal disk (GB)",
+					"zone": "Zona"
+				},
+				"quantity": "Say",
+				"added_one": "{{count}} host əlavə edildi",
+				"added_other": "{{count}} host əlavə edildi",
+				"zone": "Zona",
+				"zones": "Zonalar",
+				"zonePlaceholder": "Zona seçin",
+				"zonesHint": "Hostlar seçilmiş zonalar üzrə ardıcıllıqla bölüşdürülür: 3 host və PAR1, PAR2, PAR3 hər zonada bir host verir.",
+				"zonesRequired": "Ən azı bir zona seçin."
+			},
+			"warnings": {
+				"title": "Xəbərdarlıqlar",
+				"empty": "Tutum xəbərdarlığı yoxdur.",
+				"severity": {
+					"error": "Xəta",
+					"warning": "Xəbərdarlıq",
+					"info": "Məlumat"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: {{host}} hostu {{available}} tarixindən əlçatandır, lakin tapşırıq {{date}} tarixində başlayır.",
+					"hostNotReadyPlanned": "{{vm}}: {{host}} hostu hələ sifariş edilməyib, lakin tapşırıq {{date}} tarixində başlayır.",
+					"orderLate": "{{host}} hostu {{date}} tarixinə qədər sifariş edilməli idi.",
+					"over100": "{{host}} hostu {{date}} tarixindən tutumunu aşır.",
+					"over80": "{{host}} hostu {{date}} tarixindən 80%-dən çox doludur.",
+					"vmUnplaced": "{{vm}} üçün hələ host yoxdur.",
+					"vmUnscheduled": "{{vm}}: tapşırığın başlama və ya bitmə tarixi olmadığından hostdan istifadəni planlaşdırmaq mümkün deyil.",
+					"unknown": "Tutum xəbərdarlığı."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Bu model həmin regionda əlçatan deyil.",
+				"modelInUse": "Bir host bu modeldən istifadə edir, ona görə silinə bilməz.",
+				"regionInUse": "Bir host bu modeldən çıxardığınız regionu istifadə edir.",
+				"hostLocked": "Yalnız planlaşdırılmış host dəyişdirilə və ya silinə bilər.",
+				"hostNotInProject": "Seçilmiş host bu layihəyə aid deyil.",
+				"clusterRegionMismatch": "Ceph klasteri host ilə eyni regionda olmalıdır.",
+				"clusterNotInWorkspace": "Ceph klasteri bu iş sahəsinə aid deyil.",
+				"vmNotInTask": "Siyahıdakı bir VM bu tapşırığa aid deyil. Tapşırığı yenidən yükləyin və təkrar cəhd edin.",
+				"regionUnknown": "Bu region region kataloqunda yoxdur.",
+				"zoneRequired": "Host üçün zona seçin.",
+				"zoneUnknown": "Bu zona regiona aid deyil.",
+				"reserveTooLarge": "Hipervizor ehtiyatı modelin RAM-ından kiçik olmalıdır."
 			}
 		},
 		"projectSwitcher": {
@@ -2341,7 +2466,8 @@
 			"backToBoard": "Lövhəyə qayıt",
 			"portfolio": "Portfel",
 			"activity": "Fəaliyyət",
-			"workload": "İş yükü"
+			"workload": "İş yükü",
+			"datacenter": "Data mərkəzi"
 		},
 		"projectList": {
 			"viewProject": "Layihəyə bax",
@@ -3422,6 +3548,40 @@
 					"title": "Göndərməzdən əvvəl yoxlayın"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "İnfrastruktur",
+			"empty": "Bu tapşırıq üçün hələ VM göstərilməyib.",
+			"columns": {
+				"name": "VM adı",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokal (GB)",
+				"host": "Host",
+				"cluster": "Ceph klasteri"
+			},
+			"addVm": "VM əlavə et",
+			"duplicateRow": "VM {{number}} nüsxəsini yarat",
+			"removeRow": "VM {{number}} elementini sil",
+			"noHost": "Hələ host yoxdur",
+			"newHost": "Yeni host…",
+			"noCluster": "Ceph klasteri yoxdur",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM siyahısı yadda saxlanıldı.",
+			"warningsTitle": "Bu tapşırıq üçün xəbərdarlıqlar",
+			"validation": {
+				"nameRequired": "VM adını daxil edin.",
+				"number": "0 və ya daha böyük tam ədəd daxil edin."
+			},
+			"hostRemoved": "Host silinib",
+			"hostFree": "boş {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "kifayət qədər yer yoxdur",
+			"usageHelp": "Hostda yerləşdirilmiş bütün VM-lər işə düşdükdən sonrakı istifadə.",
+			"usageRamLabel": "{{host}} hostunun RAM istifadəsi",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · lokal disk {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Bu hostda resurslar kifayət etmir"
 		}
 	},
 	"invitations": {
@@ -3603,6 +3763,205 @@
 				"empty": "Bu aralıqda uyğun tapşırıq yoxdur.",
 				"error": "Tapşırıqlar yüklənə bilmədi.",
 				"dueOn": " · Son tarix {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Sifariş planı",
+				"hosts": "Hostlar",
+				"storage": "Ceph saxlama",
+				"regions": "Regionlar"
+			},
+			"loadFailed": "Data mərkəzi məlumatları yüklənə bilmədi.",
+			"noAccess": {
+				"title": "Data mərkəzinə giriş yoxdur",
+				"description": "Rolunuza data mərkəzi icazəsi daxil deyil. İş sahəsi administratorundan giriş istəyin."
+			},
+			"actions": {
+				"save": "Yadda saxla",
+				"changeStatus": "Statusu dəyiş"
+			},
+			"errors": {
+				"availableFromRequired": "Sifariş edilmiş mövqe üçün gözlənilən çatdırılma tarixi lazımdır.",
+				"clusterNameTaken": "İş sahəsində bu adla klaster artıq var.",
+				"clusterInUse": "Bir virtual maşın hələ də bu klasterdən istifadə edir. Əvvəlcə maşını başqa klasterə köçürün.",
+				"capacityLocked": "Bu yolla yalnız planlaşdırılmış mövqeni dəyişmək olar.",
+				"clusterInvalid": "Klaster parametrləri yanlışdır. Erasure coding dəyərlərini yoxlayın.",
+				"regionInUse": "Bu regiondan hələ də model, host və ya klaster istifadə edir.",
+				"saveFailed": "Dəyişiklik yadda saxlanıla bilmədi.",
+				"deleteFailed": "Mövqe silinə bilmədi.",
+				"regionUnknown": "Bu region region kataloqunda yoxdur.",
+				"regionCodeTaken": "Bu kodlu region artıq mövcuddur.",
+				"zoneInUse": "Hostun istifadə etdiyi zona silinə bilməz.",
+				"zoneUnknown": "Bu zona regiona aid deyil."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Çatdırılma tarixi",
+				"hostname": "Host adı",
+				"needDate": "Ehtiyac tarixi",
+				"provider": "Provayder",
+				"region": "Data mərkəzi regionu",
+				"model": "Model",
+				"ramGb": "Yaddaş (GB)",
+				"vcpu": "vCPU nüvələri",
+				"storageGb": "Lokal disk (GB)",
+				"capacity": "Tutum",
+				"capacityGb": "Tutum (GB)",
+				"project": "Layihə",
+				"cluster": "Ceph klasteri",
+				"name": "Ad",
+				"kind": "Klaster növü",
+				"dataChunks": "Data hissələri (k)",
+				"codingChunks": "Kodlama hissələri (m)",
+				"fillThreshold": "Dolma həddi (%)",
+				"leadTimeDays": "Çatdırılma müddəti (gün)",
+				"label": "Etiket",
+				"zone": "Zona"
+			},
+			"kind": {
+				"self_managed": "Özü idarə olunan",
+				"managed_service": "İdarə olunan xidmət"
+			},
+			"provider": {
+				"other": "Digər"
+			},
+			"statusDialog": {
+				"title": "Statusu dəyiş",
+				"dateRequired": "Sifariş edilmiş mövqe üçün məcburidir: gözlənilən çatdırılma tarixi.",
+				"dateOptional": "İstəyə bağlı. Tarixsiz quraşdırılmış mövqe bugünkü tarixi alır; planlaşdırılmış mövqedə tarix olmur."
+			},
+			"orderPlan": {
+				"rows": "Sətir: {{rows}}",
+				"late": "Gecikən: {{late}}",
+				"download": "XLSX yüklə",
+				"downloadFailed": "Sifariş planı yüklənə bilmədi.",
+				"empty": "Hazırda sifariş ediləcək heç nə yoxdur.",
+				"orderBy": "Bu tarixədək sifariş et",
+				"type": "Mövqe növü",
+				"quantity": "Say",
+				"lateBadge": "Gecikib",
+				"types": {
+					"host": "Host",
+					"storageNode": "Saxlama qovşağı",
+					"storageService": "Saxlama xidməti"
+				}
+			},
+			"hosts": {
+				"allProjects": "Bütün layihələr",
+				"allRegions": "Bütün regionlar",
+				"allStatuses": "Bütün statuslar",
+				"empty": "Filtrlərə uyğun host yoxdur.",
+				"host": "Host",
+				"ramPeak": "Yaddaşın pik istifadəsi",
+				"ramUse": "{{host}} hostunun yaddaş istifadəsi",
+				"vms": "Virtual maşınlar",
+				"warnings": "Host xəbərdarlıqları",
+				"allZones": "Bütün zonalar"
+			},
+			"warnings": {
+				"title": "Tutum xəbərdarlıqları",
+				"none": "Tutum xəbərdarlığı yoxdur.",
+				"showAll": "Hamısını göstər ({{total}})",
+				"showFewer": "Daha az göstər",
+				"severity": {
+					"error": "Xətalar: {{total}}",
+					"warning": "Xəbərdarlıqlar: {{total}}",
+					"info": "Məlumatlar: {{total}}"
+				},
+				"severityName": {
+					"error": "Xəta",
+					"warning": "Xəbərdarlıq",
+					"info": "Məlumat"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) {{date}} tarixində başlayır, lakin {{host}} o vaxta qədər çatdırılmayıb.",
+				"ORDER_LATE": "{{target}} ən gec {{date}} tarixinədək sifariş edilməli idi.",
+				"OVER_100": "{{target}} {{date}} tarixindən tutumu aşır.",
+				"OVER_80": "{{target}} {{date}} tarixində tutumunun 80%-nə çatır.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) heç bir hosta yerləşdirilməyib.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) üçün başlanğıc tarixi yoxdur.",
+				"CLUSTER_NOT_READY": "{{target}}: virtual maşınlara lazım olan {{date}} tarixindən tutum hələ çatdırılmayıb.",
+				"CLUSTER_SHORTFALL": "{{target}} üçün tutum kifayət etmir; çatışmazlıq {{date}} tarixində başlayır.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} üçün tutum kifayət etmir."
+			},
+			"storage": {
+				"addCluster": "Klaster əlavə et",
+				"addEntry": "Tutum əlavə et",
+				"editCluster": "Redaktə et",
+				"empty": "Hələ Ceph klasteri yoxdur.",
+				"noEntries": "Bu klasterdə hələ tutum mövqeyi yoxdur.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Quraşdırılıb (xam)",
+				"usable": "İstifadə oluna bilən",
+				"used": "Virtual maşınlarla tutulan",
+				"firstOver80": "80%-in ilk aşılması",
+				"firstOver100": "100%-in ilk aşılması",
+				"usage": "{{cluster}} istifadəsi",
+				"shortfall": "Çatışmazlıq: {{shortfall}}",
+				"suggestionService": "{{date}} tarixinədək {{buy}} əlavə alın.",
+				"suggestionServiceNoDate": "{{buy}} əlavə alın.",
+				"suggestionNodes": "{{date}} tarixinədək {{nodes}} × {{node}} qovşağı əlavə edin.",
+				"suggestionNodesNoDate": "{{nodes}} × {{node}} qovşağı əlavə edin.",
+				"suggestionNodesUnknown": "{{date}} tarixinədək {{shortfall}} dəyərində saxlama qovşaqları əlavə edin.",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} dəyərində saxlama qovşaqları əlavə edin.",
+				"deleteClusterTitle": "{{name}} silinsin?",
+				"deleteClusterDescription": "Klaster və onun tutum mövqeləri silinir. Virtual maşının istifadə etdiyi klasteri silmək olmaz.",
+				"deleteEntryTitle": "{{name}} silinsin?",
+				"deleteEntryDescription": "Yalnız planlaşdırılmış tutumu silmək olar.",
+				"chart": {
+					"title": "Ceph tələbatının proqnozu",
+					"demand": "Tələbat",
+					"usableDelivered": "İstifadə oluna bilən tutum (çatdırılmış)",
+					"usableAfterOrders": "Planlaşdırılmış sifarişlərdən sonra istifadə oluna bilən tutum",
+					"overCapacity": "Tutum aşılıb",
+					"nearCapacity": "Tutum demək olar ki, dolub",
+					"today": "Bu gün",
+					"showTable": "Cədvəli göstər",
+					"hideTable": "Cədvəli gizlət",
+					"tableDate": "Tarix",
+					"tableChange": "Dəyişiklik",
+					"percentOfUsable": "İstifadə oluna bilən tutumun %-i",
+					"empty": "Hələ heç bir VM bu klasterdən istifadə etmir.",
+					"ariaLabel": "{{cluster}} üçün Ceph tələbatı: {{lastDate}} tarixinədək {{demand}}, istifadə oluna bilən {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph klasteri əlavə et",
+				"editTitle": "Ceph klasterini redaktə et",
+				"selfManagedHint": "İstifadə oluna bilən tutum xam tutum × k / (k + m) olub dolma həddi ilə məhdudlaşır.",
+				"managedHint": "İdarə olunan xidmətdə erasure coding yoxdur. İstifadə oluna bilən tutum dolma həddi ilə məhdudlaşır.",
+				"regionPlaceholder": "Region seçin",
+				"noRegions": "Hələ region yoxdur. Əvvəlcə Regionlar sekməsində region əlavə edin."
+			},
+			"entryDialog": {
+				"title": "Tutum əlavə et",
+				"capacityHint": "Qovşağın və ya xidmət blokunun xam tutumu, GB ilə.",
+				"labelHint": "İstəyə bağlı. Etiket olmasa, mövqe klasterin adını alır."
+			},
+			"regions": {
+				"add": "Region əlavə et",
+				"editTitle": "Regionu redaktə et",
+				"code": "Kod",
+				"codeHint": "A–Z hərfləri, rəqəmlər və defislər, 16 simvola qədər; kod sonradan dəyişdirilə bilməz",
+				"usedBy": "İstifadə edən",
+				"usage": {
+					"models": "Modellər",
+					"hosts": "Hostlar",
+					"clusters": "Klasterlər"
+				},
+				"empty": "Hələ region yoxdur. İlk regionu əlavə edin.",
+				"editAction": "{{code}} redaktə et",
+				"deleteAction": "{{code}} sil",
+				"deleteTitle": "{{code}} regionu silinsin?",
+				"deleteDescription": "Region kataloqdan silinəcək. Model, host və ya klaster tərəfindən istifadə olunan region silinə bilməz.",
+				"zones": "Zonalar",
+				"zonesLabel": "Əlçatanlıq zonaları",
+				"zonesHint": "Bu regionun əlçatanlıq zonaları, məsələn, PAR1, PAR2, PAR3. Zonası olmayan region üçün boş buraxın.",
+				"zoneInput": "Zona kodu",
+				"addZone": "Zona əlavə et",
+				"removeZone": "{{zone}} zonasını sil",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_other": "{{zone}} · {{count}} host"
 			}
 		}
 	},

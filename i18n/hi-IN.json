@@ -134,6 +134,9 @@
 				"dependencies": "निर्भरताएँ",
 				"removeDependency": "निर्भरता हटाएँ",
 				"dependencyLinkError": "कार्य बनाया गया, लेकिन {{task}} को जोड़ा नहीं जा सका: {{reason}}",
+				"infrastructureProjectChanged": "प्रोजेक्ट बदलने पर VM सूची साफ़ हो जाती है, क्योंकि होस्ट किसी प्रोजेक्ट से जुड़े होते हैं।",
+				"infrastructureInvalid": "कार्य बनाने से पहले लाल रंग से चिह्नित VM फ़ील्ड ठीक करें।",
+				"infrastructureSaveError": "कार्य बन गया, लेकिन उसके VM सहेजे नहीं जा सके: {{reason}}। उन्हें कार्य में जोड़ें।",
 				"labels": "लेबल",
 				"searchLabels": "लेबल खोजें...",
 				"noLabelsFound": "कोई लेबल नहीं मिला",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "इस प्रोजेक्ट में आपकी अनुमतियाँ बदल गईं।",
 			"lost": "अब आपके पास इस प्रोजेक्ट का एक्सेस नहीं है।"
+		},
+		"infrastructureStatus": {
+			"planned": "नियोजित",
+			"ordered": "ऑर्डर किया गया",
+			"installed": "स्थापित",
+			"suggested": "सुझाया गया"
 		}
 	},
 	"auth": {
@@ -1054,6 +1063,122 @@
 				"descriptionNoAccess": "यह वर्कस्पेस अपने कॉलम अनिवार्य करता है, इसलिए हर प्रोजेक्ट में ठीक वही कॉलम होते हैं जो वर्कस्पेस में हैं और उन्हें यहाँ बदला नहीं जा सकता। उन्हें बदलने के लिए वर्कस्पेस एडमिन से कहें।",
 				"manageLink": "वर्कस्पेस की वर्कफ़्लो सेटिंग खोलें",
 				"title": "कॉलम वर्कस्पेस द्वारा प्रबंधित हैं"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "इन्फ्रास्ट्रक्चर",
+			"description": "इस प्रोजेक्ट के माइग्रेशन के लिए सर्वर मॉडल, होस्ट और क्षमता चेतावनियाँ।",
+			"loadError": "इन्फ्रास्ट्रक्चर डेटा लोड नहीं हो सका।",
+			"save": "सहेजें",
+			"saving": "सहेजा जा रहा है...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "अन्य"
+			},
+			"validation": {
+				"required": "यह फ़ील्ड आवश्यक है।",
+				"integer": "{{min}} से {{max}} के बीच कोई पूर्ण संख्या दर्ज करें।",
+				"regionsRequired": "कम से कम एक क्षेत्र चुनें।",
+				"reserveTooLarge": "हाइपरवाइज़र रिज़र्व मॉडल की RAM से छोटा होना चाहिए।"
+			},
+			"models": {
+				"title": "सर्वर मॉडल",
+				"description": "वे सर्वर मॉडल जिनका उपयोग यह प्रोजेक्ट कर सकता है। होस्ट किसी मॉडल की उसके किसी एक क्षेत्र में एक इकाई होता है।",
+				"add": "मॉडल जोड़ें",
+				"edit": "मॉडल संपादित करें",
+				"empty": "अभी तक कोई सर्वर मॉडल नहीं है।",
+				"editAction": "{{name}} संपादित करें",
+				"deleteAction": "{{name}} हटाएँ",
+				"deleteTitle": "मॉडल {{name}} हटाएँ?",
+				"deleteDescription": "मॉडल को इस प्रोजेक्ट के पूल से हटा दिया जाएगा। जिस मॉडल का उपयोग होस्ट कर रहे हैं, उसे हटाया नहीं जा सकता।",
+				"columns": {
+					"name": "नाम",
+					"family": "श्रेणी",
+					"provider": "प्रदाता",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "लोकल डिस्क (GB)",
+					"regions": "क्षेत्र",
+					"leadTime": "डिलीवरी समय (दिन)",
+					"reserve": "हाइपरवाइज़र रिज़र्व (GB)"
+				},
+				"regionsEmpty": "अभी कोई क्षेत्र नहीं है। डेटासेंटर टीम से क्षेत्र जोड़ने के लिए कहें।",
+				"regionNotInCatalog": "(कैटलॉग में नहीं)",
+				"reserveHelp": "हर होस्ट पर हाइपरवाइज़र के लिए रखी गई RAM; VM बाकी का उपयोग कर सकते हैं।"
+			},
+			"hosts": {
+				"title": "होस्ट",
+				"description": "इस प्रोजेक्ट के भौतिक सर्वर। डेटासेंटर टीम इन्हें ऑर्डर और इंस्टॉल करती है; आप यहाँ इनकी योजना बनाते हैं।",
+				"add": "होस्ट जोड़ें",
+				"empty": "अभी तक कोई होस्ट नहीं है।",
+				"noModels": "होस्ट जोड़ने से पहले एक सर्वर मॉडल जोड़ें।",
+				"newDescription": "सर्वर मॉडल से एक नियोजित होस्ट बनाता है। इसे डेटासेंटर टीम ऑर्डर करती है।",
+				"newModel": "मॉडल",
+				"newModelPlaceholder": "मॉडल चुनें",
+				"newRegion": "क्षेत्र",
+				"newRegionPlaceholder": "क्षेत्र चुनें",
+				"label": "लेबल",
+				"rename": "होस्ट का नाम बदलें",
+				"renameAction": "{{label}} का नाम बदलें",
+				"deleteAction": "{{label}} हटाएँ",
+				"deleteTitle": "होस्ट {{label}} हटाएँ?",
+				"deleteDescription": "केवल नियोजित होस्ट को हटाया जा सकता है। उसके VM बिना होस्ट के अपने टास्क में बने रहते हैं।",
+				"orderLate": "ऑर्डर की अंतिम तिथि बीत चुकी है।",
+				"ramUsage": "{{host}} का RAM उपयोग",
+				"columns": {
+					"label": "होस्ट",
+					"model": "मॉडल",
+					"region": "क्षेत्र",
+					"status": "स्थिति",
+					"needDate": "आवश्यकता तिथि",
+					"orderBy": "इस तिथि तक ऑर्डर करें",
+					"ram": "RAM उपयोग (अधिकतम)",
+					"vms": "VM",
+					"localDisk": "लोकल डिस्क (GB)",
+					"zone": "ज़ोन"
+				},
+				"quantity": "मात्रा",
+				"added_one": "{{count}} होस्ट जोड़ा गया",
+				"added_other": "{{count}} होस्ट जोड़े गए",
+				"zone": "ज़ोन",
+				"zones": "ज़ोन",
+				"zonePlaceholder": "ज़ोन चुनें",
+				"zonesHint": "होस्ट चुने गए ज़ोन में क्रम से बाँटे जाते हैं: 3 होस्ट और PAR1, PAR2, PAR3 से हर ज़ोन में एक होस्ट बनता है।",
+				"zonesRequired": "कम से कम एक ज़ोन चुनें।"
+			},
+			"warnings": {
+				"title": "चेतावनियाँ",
+				"empty": "कोई क्षमता चेतावनी नहीं है।",
+				"severity": {
+					"error": "त्रुटि",
+					"warning": "चेतावनी",
+					"info": "जानकारी"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: होस्ट {{host}} {{available}} से उपलब्ध है, लेकिन टास्क {{date}} को शुरू होता है।",
+					"hostNotReadyPlanned": "{{vm}}: होस्ट {{host}} का अभी तक ऑर्डर नहीं हुआ है, लेकिन टास्क {{date}} को शुरू होता है।",
+					"orderLate": "होस्ट {{host}} का ऑर्डर {{date}} तक हो जाना चाहिए था।",
+					"over100": "होस्ट {{host}} {{date}} से अपनी क्षमता से अधिक है।",
+					"over80": "होस्ट {{host}} {{date}} से 80% से अधिक भरा हुआ है।",
+					"vmUnplaced": "{{vm}} के लिए अभी तक कोई होस्ट नहीं है।",
+					"vmUnscheduled": "{{vm}}: टास्क की कोई शुरू या नियत तिथि नहीं है, इसलिए होस्ट के उपयोग की योजना नहीं बनाई जा सकती।",
+					"unknown": "क्षमता चेतावनी।"
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "यह मॉडल उस क्षेत्र में उपलब्ध नहीं है।",
+				"modelInUse": "एक होस्ट इस मॉडल का उपयोग करता है, इसलिए इसे हटाया नहीं जा सकता।",
+				"regionInUse": "एक होस्ट ऐसे क्षेत्र का उपयोग करता है जिसे आपने इस मॉडल से हटा दिया है।",
+				"hostLocked": "केवल नियोजित होस्ट को बदला या हटाया जा सकता है।",
+				"hostNotInProject": "चुना गया होस्ट इस प्रोजेक्ट का नहीं है।",
+				"clusterRegionMismatch": "Ceph क्लस्टर होस्ट के उसी क्षेत्र में होना चाहिए।",
+				"clusterNotInWorkspace": "Ceph क्लस्टर इस वर्कस्पेस का हिस्सा नहीं है।",
+				"vmNotInTask": "सूची का एक VM इस टास्क का नहीं है। टास्क को फिर से लोड करें और दोबारा कोशिश करें।",
+				"regionUnknown": "यह क्षेत्र क्षेत्र कैटलॉग में नहीं है।",
+				"zoneRequired": "होस्ट के लिए ज़ोन चुनें।",
+				"zoneUnknown": "यह ज़ोन इस क्षेत्र का नहीं है।",
+				"reserveTooLarge": "हाइपरवाइज़र रिज़र्व मॉडल की RAM से छोटा होना चाहिए।"
 			}
 		},
 		"projectSwitcher": {
@@ -2341,7 +2466,8 @@
 			"backToBoard": "बोर्ड पर वापस जाएँ",
 			"portfolio": "पोर्टफोलियो",
 			"activity": "गतिविधि",
-			"workload": "कार्यभार"
+			"workload": "कार्यभार",
+			"datacenter": "डेटासेंटर"
 		},
 		"projectList": {
 			"viewProject": "प्रोजेक्ट देखें",
@@ -3422,6 +3548,40 @@
 					"title": "भेजने से पहले जाँचें"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "इन्फ्रास्ट्रक्चर",
+			"empty": "इस टास्क के लिए अभी तक कोई VM सूचीबद्ध नहीं है।",
+			"columns": {
+				"name": "VM का नाम",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "लोकल (GB)",
+				"host": "होस्ट",
+				"cluster": "Ceph क्लस्टर"
+			},
+			"addVm": "VM जोड़ें",
+			"duplicateRow": "VM {{number}} की प्रति बनाएँ",
+			"removeRow": "VM {{number}} हटाएँ",
+			"noHost": "अभी तक कोई होस्ट नहीं",
+			"newHost": "नया होस्ट…",
+			"noCluster": "कोई Ceph क्लस्टर नहीं",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM सूची सहेजी गई।",
+			"warningsTitle": "इस टास्क की चेतावनियाँ",
+			"validation": {
+				"nameRequired": "VM का नाम दर्ज करें।",
+				"number": "0 या उससे बड़ी कोई पूर्ण संख्या दर्ज करें।"
+			},
+			"hostRemoved": "होस्ट हटाया गया",
+			"hostFree": "खाली {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "पर्याप्त जगह नहीं है",
+			"usageHelp": "होस्ट पर रखे गए सभी VM चलने के बाद का उपयोग।",
+			"usageRamLabel": "{{host}} का RAM उपयोग",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · लोकल डिस्क {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "इस होस्ट पर पर्याप्त संसाधन नहीं हैं"
 		}
 	},
 	"invitations": {
@@ -3603,6 +3763,205 @@
 				"empty": "इस श्रेणी में कोई मेल खाता कार्य नहीं है।",
 				"error": "कार्य लोड करने में विफल रहा।",
 				"dueOn": " · नियत तिथि {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "ऑर्डर योजना",
+				"hosts": "होस्ट",
+				"storage": "Ceph स्टोरेज",
+				"regions": "क्षेत्र"
+			},
+			"loadFailed": "डेटासेंटर का डेटा लोड नहीं हो सका।",
+			"noAccess": {
+				"title": "डेटासेंटर तक पहुँच नहीं है",
+				"description": "आपकी भूमिका में डेटासेंटर की अनुमति शामिल नहीं है। वर्कस्पेस व्यवस्थापक से पहुँच माँगें।"
+			},
+			"actions": {
+				"save": "सहेजें",
+				"changeStatus": "स्थिति बदलें"
+			},
+			"errors": {
+				"availableFromRequired": "ऑर्डर की गई मद के लिए अपेक्षित डिलीवरी तिथि आवश्यक है।",
+				"clusterNameTaken": "इस नाम का क्लस्टर वर्कस्पेस में पहले से मौजूद है।",
+				"clusterInUse": "कोई VM अभी भी इस क्लस्टर का उपयोग कर रही है। पहले VM को किसी दूसरे क्लस्टर में ले जाएँ।",
+				"capacityLocked": "इस तरह केवल नियोजित मद बदली जा सकती है।",
+				"clusterInvalid": "क्लस्टर की सेटिंग मान्य नहीं हैं। erasure coding के मान जाँचें।",
+				"regionInUse": "यह क्षेत्र अभी भी किसी मॉडल, होस्ट या क्लस्टर द्वारा उपयोग में है।",
+				"saveFailed": "बदलाव सहेजा नहीं जा सका।",
+				"deleteFailed": "मद हटाई नहीं जा सकी।",
+				"regionUnknown": "यह क्षेत्र क्षेत्र कैटलॉग में नहीं है।",
+				"regionCodeTaken": "इस कोड वाला क्षेत्र पहले से मौजूद है।",
+				"zoneInUse": "जिस ज़ोन का कोई होस्ट उपयोग करता है उसे हटाया नहीं जा सकता।",
+				"zoneUnknown": "यह ज़ोन इस क्षेत्र का नहीं है।"
+			},
+			"fields": {
+				"status": "स्थिति",
+				"availableFrom": "डिलीवरी तिथि",
+				"hostname": "होस्ट का नाम",
+				"needDate": "आवश्यकता तिथि",
+				"provider": "प्रदाता",
+				"region": "डेटासेंटर क्षेत्र",
+				"model": "मॉडल",
+				"ramGb": "मेमोरी (GB)",
+				"vcpu": "vCPU कोर",
+				"storageGb": "स्थानीय डिस्क (GB)",
+				"capacity": "क्षमता",
+				"capacityGb": "क्षमता (GB)",
+				"project": "प्रोजेक्ट",
+				"cluster": "Ceph क्लस्टर",
+				"name": "नाम",
+				"kind": "क्लस्टर का प्रकार",
+				"dataChunks": "डेटा चंक (k)",
+				"codingChunks": "कोडिंग चंक (m)",
+				"fillThreshold": "भराव सीमा (%)",
+				"leadTimeDays": "डिलीवरी समय (दिन)",
+				"label": "लेबल",
+				"zone": "ज़ोन"
+			},
+			"kind": {
+				"self_managed": "स्वयं-प्रबंधित",
+				"managed_service": "प्रबंधित सेवा"
+			},
+			"provider": {
+				"other": "अन्य"
+			},
+			"statusDialog": {
+				"title": "स्थिति बदलें",
+				"dateRequired": "ऑर्डर की गई मद के लिए अनिवार्य: अपेक्षित डिलीवरी तिथि।",
+				"dateOptional": "वैकल्पिक। तिथि के बिना स्थापित मद को आज की तिथि मिलती है; नियोजित मद की कोई तिथि नहीं होती।"
+			},
+			"orderPlan": {
+				"rows": "पंक्तियाँ: {{rows}}",
+				"late": "विलंबित: {{late}}",
+				"download": "XLSX डाउनलोड करें",
+				"downloadFailed": "ऑर्डर योजना डाउनलोड नहीं हो सकी।",
+				"empty": "अभी ऑर्डर करने के लिए कुछ नहीं है।",
+				"orderBy": "इस तिथि तक ऑर्डर करें",
+				"type": "मद का प्रकार",
+				"quantity": "मात्रा",
+				"lateBadge": "विलंबित",
+				"types": {
+					"host": "होस्ट",
+					"storageNode": "स्टोरेज नोड",
+					"storageService": "स्टोरेज सेवा"
+				}
+			},
+			"hosts": {
+				"allProjects": "सभी प्रोजेक्ट",
+				"allRegions": "सभी क्षेत्र",
+				"allStatuses": "सभी स्थितियाँ",
+				"empty": "कोई होस्ट फ़िल्टर से मेल नहीं खाता।",
+				"host": "होस्ट",
+				"ramPeak": "मेमोरी का अधिकतम उपयोग",
+				"ramUse": "{{host}} का मेमोरी उपयोग",
+				"vms": "वर्चुअल मशीनें",
+				"warnings": "होस्ट चेतावनियाँ",
+				"allZones": "सभी ज़ोन"
+			},
+			"warnings": {
+				"title": "क्षमता चेतावनियाँ",
+				"none": "कोई क्षमता चेतावनी नहीं है।",
+				"showAll": "सभी दिखाएँ ({{total}})",
+				"showFewer": "कम दिखाएँ",
+				"severity": {
+					"error": "त्रुटियाँ: {{total}}",
+					"warning": "चेतावनियाँ: {{total}}",
+					"info": "सूचनाएँ: {{total}}"
+				},
+				"severityName": {
+					"error": "त्रुटि",
+					"warning": "चेतावनी",
+					"info": "सूचना"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) {{date}} को शुरू होती है, लेकिन तब तक {{host}} की डिलीवरी नहीं हुई होगी।",
+				"ORDER_LATE": "{{target}} का ऑर्डर {{date}} तक दे दिया जाना चाहिए था।",
+				"OVER_100": "{{target}} {{date}} से क्षमता से अधिक हो गया है।",
+				"OVER_80": "{{target}} {{date}} को अपनी क्षमता के 80% तक पहुँच जाता है।",
+				"VM_UNPLACED": "{{vm}} ({{project}}) किसी होस्ट पर नहीं रखी गई है।",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) की कोई आरंभ तिथि नहीं है।",
+				"CLUSTER_NOT_READY": "{{target}}: जब VM को क्षमता चाहिए, यानी {{date}} से, तब तक क्षमता की डिलीवरी नहीं हुई है।",
+				"CLUSTER_SHORTFALL": "{{target}} में पर्याप्त क्षमता नहीं है; कमी {{date}} से शुरू होती है।",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} में पर्याप्त क्षमता नहीं है।"
+			},
+			"storage": {
+				"addCluster": "क्लस्टर जोड़ें",
+				"addEntry": "क्षमता जोड़ें",
+				"editCluster": "संपादित करें",
+				"empty": "अभी कोई Ceph क्लस्टर नहीं है।",
+				"noEntries": "इस क्लस्टर में अभी कोई क्षमता मद नहीं है।",
+				"erasureCoding": "Erasure coding",
+				"installed": "स्थापित (कच्ची)",
+				"usable": "उपयोग योग्य",
+				"used": "VM द्वारा उपयोग की गई",
+				"firstOver80": "80% पार होने की पहली तिथि",
+				"firstOver100": "100% पार होने की पहली तिथि",
+				"usage": "{{cluster}} का उपयोग",
+				"shortfall": "कमी: {{shortfall}}",
+				"suggestionService": "{{date}} तक {{buy}} खरीदें।",
+				"suggestionServiceNoDate": "{{buy}} खरीदें।",
+				"suggestionNodes": "{{date}} तक {{nodes}} × {{node}} नोड जोड़ें।",
+				"suggestionNodesNoDate": "{{nodes}} × {{node}} नोड जोड़ें।",
+				"suggestionNodesUnknown": "{{date}} तक {{shortfall}} मूल्य के स्टोरेज नोड जोड़ें।",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} मूल्य के स्टोरेज नोड जोड़ें।",
+				"deleteClusterTitle": "{{name}} हटाएँ?",
+				"deleteClusterDescription": "क्लस्टर और उसकी क्षमता मदें हटा दी जाएँगी। जिस क्लस्टर का कोई VM उपयोग कर रही है, उसे हटाया नहीं जा सकता।",
+				"deleteEntryTitle": "{{name}} हटाएँ?",
+				"deleteEntryDescription": "केवल नियोजित क्षमता हटाई जा सकती है।",
+				"chart": {
+					"title": "Ceph मांग का पूर्वानुमान",
+					"demand": "मांग",
+					"usableDelivered": "उपयोग योग्य क्षमता (वितरित)",
+					"usableAfterOrders": "नियोजित ऑर्डर के बाद उपयोग योग्य क्षमता",
+					"overCapacity": "क्षमता से अधिक",
+					"nearCapacity": "क्षमता लगभग पूर्ण",
+					"today": "आज",
+					"showTable": "तालिका दिखाएं",
+					"hideTable": "तालिका छिपाएं",
+					"tableDate": "तारीख",
+					"tableChange": "बदलाव",
+					"percentOfUsable": "उपयोग योग्य क्षमता का %",
+					"empty": "अभी तक कोई VM इस क्लस्टर का उपयोग नहीं करती।",
+					"ariaLabel": "{{cluster}} के लिए Ceph मांग: {{lastDate}} तक {{demand}}, उपयोग योग्य {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph क्लस्टर जोड़ें",
+				"editTitle": "Ceph क्लस्टर संपादित करें",
+				"selfManagedHint": "उपयोग योग्य क्षमता कच्ची क्षमता × k / (k + m) होती है, जो भराव सीमा से सीमित है।",
+				"managedHint": "प्रबंधित सेवा में erasure coding नहीं होती। उपयोग योग्य क्षमता भराव सीमा से सीमित है।",
+				"regionPlaceholder": "क्षेत्र चुनें",
+				"noRegions": "अभी कोई क्षेत्र नहीं है। पहले क्षेत्र टैब में एक क्षेत्र जोड़ें।"
+			},
+			"entryDialog": {
+				"title": "क्षमता जोड़ें",
+				"capacityHint": "नोड या सेवा ब्लॉक की कच्ची क्षमता, GB में।",
+				"labelHint": "वैकल्पिक। लेबल के बिना मद को क्लस्टर का नाम मिलता है।"
+			},
+			"regions": {
+				"add": "क्षेत्र जोड़ें",
+				"editTitle": "क्षेत्र संपादित करें",
+				"code": "कोड",
+				"codeHint": "अक्षर A–Z, अंक और हाइफ़न, अधिकतम 16 वर्ण; कोड बाद में बदला नहीं जा सकता",
+				"usedBy": "इनके द्वारा उपयोग में",
+				"usage": {
+					"models": "मॉडल",
+					"hosts": "होस्ट",
+					"clusters": "क्लस्टर"
+				},
+				"empty": "अभी कोई क्षेत्र नहीं है। पहला क्षेत्र जोड़ें।",
+				"editAction": "{{code}} संपादित करें",
+				"deleteAction": "{{code}} हटाएँ",
+				"deleteTitle": "क्षेत्र {{code}} हटाएँ?",
+				"deleteDescription": "क्षेत्र कैटलॉग से हटा दिया जाएगा। जो क्षेत्र किसी मॉडल, होस्ट या क्लस्टर द्वारा उपयोग में है, उसे हटाया नहीं जा सकता।",
+				"zones": "ज़ोन",
+				"zonesLabel": "उपलब्धता ज़ोन",
+				"zonesHint": "इस क्षेत्र के उपलब्धता ज़ोन, जैसे PAR1, PAR2, PAR3। बिना ज़ोन वाले क्षेत्र के लिए खाली छोड़ें।",
+				"zoneInput": "ज़ोन कोड",
+				"addZone": "ज़ोन जोड़ें",
+				"removeZone": "ज़ोन {{zone}} हटाएँ",
+				"zoneHosts_one": "{{zone}} · {{count}} होस्ट",
+				"zoneHosts_other": "{{zone}} · {{count}} होस्ट"
 			}
 		}
 	},

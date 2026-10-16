@@ -93,6 +93,18 @@ export const projectAccessSchema = z
           description:
             "workspace:manage_settings in the caller's workspace role.",
         }),
+        infrastructureRead: z.boolean().openapi({
+          description:
+            "infrastructure:read in the effective project statements.",
+        }),
+        infrastructurePlan: z.boolean().openapi({
+          description:
+            "infrastructure:plan in the effective project statements.",
+        }),
+        infrastructureManage: z.boolean().openapi({
+          description:
+            "infrastructure:manage in the effective project statements.",
+        }),
       })
       .openapi({
         description:

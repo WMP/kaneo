@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CreateTaskInfrastructure } from "@/components/infrastructure/task/create-task-infrastructure";
+import {
+  toVmInputs,
+  type VmRow,
+  validateRow,
+} from "@/components/infrastructure/task/vm-rows";
 import ResourceInviteDialog from "@/components/resource/resource-invite-dialog";
 import {
   type AssigneeAvatarItem,
@@ -96,6 +102,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import useSetCustomFieldValue from "@/hooks/mutations/custom-field/use-set-custom-field-value";
+import useReplaceTaskVms from "@/hooks/mutations/infrastructure/use-replace-task-vms";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useCreateTask from "@/hooks/mutations/task/use-create-task";
 import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
@@ -120,6 +127,7 @@ import {
 } from "@/lib/estimate";
 import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
+import { getInfrastructureErrorMessage } from "@/lib/infrastructure-error";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { matchesSearch } from "@/lib/search-match";
@@ -333,6 +341,13 @@ function CreateTaskModalContent({
     [],
   );
   const [relationPickerOpen, setRelationPickerOpen] = useState(false);
+  // VMs of the new task, written after the task is saved. Hosts and clusters
+  // belong to a project, so the list is cleared when the project changes.
+  const [vmRows, setVmRows] = useState<VmRow[]>([]);
+  const [vmSectionOpen, setVmSectionOpen] = useState(false);
+  const [vmSubmitAttempted, setVmSubmitAttempted] = useState(false);
+  const [vmClearedByProject, setVmClearedByProject] = useState(false);
+  const vmProjectRef = useRef("");
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
@@ -377,6 +392,7 @@ function CreateTaskModalContent({
     canCreateLabels,
     canUpdateTasks,
     canInviteToProject,
+    canPlanInfrastructure,
     isCheckingPermissions: isCheckingProjectPermissions,
     isError: projectPermissionsFailed,
   } = useProjectPermission(resolvedProjectId);
@@ -407,6 +423,15 @@ function CreateTaskModalContent({
           : t("common:modals.createTask.noCreatePermission")
       : null;
 
+  // Planning infrastructure is a right in the chosen project; the API checks
+  // it again when the VMs are saved.
+  const showInfrastructure =
+    Boolean(resolvedProjectId) && canPlanInfrastructure();
+  const vmDraft = showInfrastructure ? vmRows : [];
+  const hasInvalidVmRow = vmDraft.some(
+    (row) => Object.keys(validateRow(row)).length > 0,
+  );
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const draftCreationPromiseRef = useRef<Promise<Task | null> | null>(null);
   const draftTaskRef = useRef<Task | null>(null);
@@ -422,6 +447,9 @@ function CreateTaskModalContent({
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: updateTaskAssignees } = useUpdateTaskAssignees();
   const { mutateAsync: createTaskRelation } = useCreateTaskRelation();
+  const { mutateAsync: replaceTaskVms } = useReplaceTaskVms({
+    notifyError: false,
+  });
 
   const { data: rawCustomFields } = useGetCustomFieldsByProject(
     resolvedProjectId,
@@ -516,6 +544,7 @@ function CreateTaskModalContent({
       selectedProjectId ||
       labels.length > 0 ||
       pendingRelations.length > 0 ||
+      vmDraft.length > 0 ||
       draftTask ||
       hasCustomFieldChanges,
   );
@@ -524,6 +553,17 @@ function CreateTaskModalContent({
   // biome-ignore lint/correctness/useExhaustiveDependencies: clears when the project changes.
   useEffect(() => {
     setPendingRelations([]);
+  }, [resolvedProjectId]);
+
+  // The previous project's hosts and Ceph clusters mean nothing in another one.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs only when the project changes.
+  useEffect(() => {
+    if (vmProjectRef.current === resolvedProjectId) return;
+    const hadProject = vmProjectRef.current !== "";
+    vmProjectRef.current = resolvedProjectId;
+    setVmSubmitAttempted(false);
+    if (hadProject && vmRows.length > 0) setVmClearedByProject(true);
+    setVmRows([]);
   }, [resolvedProjectId]);
 
   const discardDraft = useCallback(() => {
@@ -716,6 +756,13 @@ function CreateTaskModalContent({
     )
       return;
 
+    // A VM that cannot be saved blocks creating the task; show where.
+    if (hasInvalidVmRow) {
+      setVmSubmitAttempted(true);
+      setVmSectionOpen(true);
+      return;
+    }
+
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
@@ -842,6 +889,24 @@ function CreateTaskModalContent({
         }
       }
 
+      // The VMs are written only now, for the saved task, never for the early
+      // draft. A failure keeps the task: the VMs can be added in the task.
+      if (vmDraft.length > 0) {
+        try {
+          await replaceTaskVms({
+            projectId: savedTask.projectId,
+            taskId: savedTask.id,
+            vms: toVmInputs(vmDraft),
+          });
+        } catch (error) {
+          toast.error(
+            t("common:modals.createTask.infrastructureSaveError", {
+              reason: getInfrastructureErrorMessage(error, t),
+            }),
+          );
+        }
+      }
+
       if (currentDraft) {
         for (const [fieldId, value] of Object.entries(customFieldValues)) {
           if (value) {
@@ -876,6 +941,9 @@ function CreateTaskModalContent({
         setEstimateUnit("hours");
         setLabels([]);
         setPendingRelations([]);
+        setVmRows([]);
+        setVmSubmitAttempted(false);
+        setVmClearedByProject(false);
         setLabelsStep("select");
         setSearchValue("");
         setSelectedColor("gray");
@@ -1439,6 +1507,23 @@ function CreateTaskModalContent({
                   </AccordionItem>
                 </Accordion>
               </div>
+            )}
+
+            {showInfrastructure && (
+              <CreateTaskInfrastructure
+                key={resolvedProjectId}
+                projectId={resolvedProjectId}
+                rows={vmRows}
+                onChange={(update) => {
+                  setVmClearedByProject(false);
+                  setVmRows(update);
+                }}
+                open={vmSectionOpen}
+                onOpenChange={setVmSectionOpen}
+                showAllErrors={vmSubmitAttempted}
+                showProjectChangedHint={vmClearedByProject}
+                hasInvalidRow={hasInvalidVmRow}
+              />
             )}
 
             {labels.length > 0 && (

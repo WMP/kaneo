@@ -134,6 +134,9 @@
 				"dependencies": "종속성",
 				"removeDependency": "종속성 제거",
 				"dependencyLinkError": "작업은 생성되었지만 {{task}}을(를) 연결하지 못했습니다: {{reason}}",
+				"infrastructureProjectChanged": "호스트는 프로젝트에 속하므로 프로젝트를 변경하면 VM 목록이 지워집니다.",
+				"infrastructureInvalid": "작업을 만들기 전에 빨간색으로 표시된 VM 필드를 수정하세요.",
+				"infrastructureSaveError": "작업은 생성되었지만 VM을 저장하지 못했습니다: {{reason}}. 작업에서 추가하세요.",
 				"labels": "라벨",
 				"searchLabels": "라벨 검색...",
 				"noLabelsFound": "라벨을 찾을 수 없음",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "이 프로젝트에서의 권한이 변경되었습니다.",
 			"lost": "더 이상 이 프로젝트에 접근할 수 없습니다."
+		},
+		"infrastructureStatus": {
+			"planned": "계획됨",
+			"ordered": "주문됨",
+			"installed": "설치됨",
+			"suggested": "제안됨"
 		}
 	},
 	"auth": {
@@ -817,6 +826,121 @@
 				"descriptionNoAccess": "이 워크스페이스는 컬럼을 강제하므로 모든 프로젝트가 워크스페이스 컬럼과 정확히 같은 컬럼을 가지며, 여기서는 변경할 수 없습니다. 워크스페이스 관리자에게 변경을 요청하세요.",
 				"manageLink": "워크스페이스 워크플로 설정 열기",
 				"title": "컬럼은 워크스페이스에서 관리됩니다"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "인프라",
+			"description": "이 프로젝트의 마이그레이션을 위한 서버 모델, 호스트, 용량 경고입니다.",
+			"loadError": "인프라 데이터를 불러오지 못했습니다.",
+			"save": "저장",
+			"saving": "저장 중...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "기타"
+			},
+			"validation": {
+				"required": "이 필드는 필수입니다.",
+				"integer": "{{min}}에서 {{max}} 사이의 정수를 입력하세요.",
+				"regionsRequired": "리전을 하나 이상 선택하세요.",
+				"reserveTooLarge": "하이퍼바이저 예약은 모델의 RAM보다 작아야 합니다."
+			},
+			"models": {
+				"title": "서버 모델",
+				"description": "이 프로젝트에서 사용할 수 있는 서버 모델입니다. 호스트는 모델의 리전 중 한 곳에 있는 한 대입니다.",
+				"add": "모델 추가",
+				"edit": "모델 편집",
+				"empty": "아직 서버 모델이 없습니다.",
+				"editAction": "{{name}} 편집",
+				"deleteAction": "{{name}} 삭제",
+				"deleteTitle": "{{name}} 모델을 삭제할까요?",
+				"deleteDescription": "모델이 이 프로젝트의 풀에서 제거됩니다. 호스트가 사용 중인 모델은 삭제할 수 없습니다.",
+				"columns": {
+					"name": "이름",
+					"family": "제품군",
+					"provider": "제공업체",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "로컬 디스크 (GB)",
+					"regions": "리전",
+					"leadTime": "리드 타임 (일)",
+					"reserve": "하이퍼바이저 예약 (GB)"
+				},
+				"regionsEmpty": "아직 리전이 없습니다. 데이터센터 팀에 리전 추가를 요청하세요.",
+				"regionNotInCatalog": "(카탈로그에 없음)",
+				"reserveHelp": "각 호스트에서 하이퍼바이저를 위해 남겨 두는 RAM이며, VM은 나머지를 사용할 수 있습니다."
+			},
+			"hosts": {
+				"title": "호스트",
+				"description": "이 프로젝트의 물리 서버입니다. 데이터센터 팀이 주문하고 설치하며, 여기서는 계획을 세웁니다.",
+				"add": "호스트 추가",
+				"empty": "아직 호스트가 없습니다.",
+				"noModels": "호스트를 추가하기 전에 서버 모델을 먼저 추가하세요.",
+				"newDescription": "서버 모델로 계획된 호스트를 만듭니다. 주문은 데이터센터 팀이 합니다.",
+				"newModel": "모델",
+				"newModelPlaceholder": "모델 선택",
+				"newRegion": "리전",
+				"newRegionPlaceholder": "리전 선택",
+				"label": "레이블",
+				"rename": "호스트 이름 변경",
+				"renameAction": "{{label}} 이름 변경",
+				"deleteAction": "{{label}} 삭제",
+				"deleteTitle": "{{label}} 호스트를 삭제할까요?",
+				"deleteDescription": "계획된 호스트만 삭제할 수 있습니다. 해당 VM은 호스트 없이 작업에 남습니다.",
+				"orderLate": "주문 기한이 지났습니다.",
+				"ramUsage": "{{host}}의 RAM 사용량",
+				"columns": {
+					"label": "호스트",
+					"model": "모델",
+					"region": "리전",
+					"status": "상태",
+					"needDate": "필요일",
+					"orderBy": "주문 기한",
+					"ram": "RAM 사용량 (최대)",
+					"vms": "VM",
+					"localDisk": "로컬 디스크 (GB)",
+					"zone": "가용 영역"
+				},
+				"quantity": "수량",
+				"added_other": "호스트 {{count}}개를 추가했습니다",
+				"zone": "가용 영역",
+				"zones": "가용 영역",
+				"zonePlaceholder": "가용 영역 선택",
+				"zonesHint": "호스트는 선택한 가용 영역에 순서대로 분산됩니다. 호스트 3개와 PAR1, PAR2, PAR3을 선택하면 영역마다 호스트가 하나씩 배치됩니다.",
+				"zonesRequired": "가용 영역을 하나 이상 선택하세요."
+			},
+			"warnings": {
+				"title": "경고",
+				"empty": "용량 경고가 없습니다.",
+				"severity": {
+					"error": "오류",
+					"warning": "경고",
+					"info": "정보"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: 호스트 {{host}}은(는) {{available}}부터 사용할 수 있지만 작업은 {{date}}에 시작합니다.",
+					"hostNotReadyPlanned": "{{vm}}: 호스트 {{host}}은(는) 아직 주문되지 않았지만 작업은 {{date}}에 시작합니다.",
+					"orderLate": "호스트 {{host}}은(는) {{date}}까지 주문했어야 합니다.",
+					"over100": "호스트 {{host}}은(는) {{date}}부터 용량을 초과합니다.",
+					"over80": "호스트 {{host}}은(는) {{date}}부터 80% 넘게 사용됩니다.",
+					"vmUnplaced": "{{vm}}에는 아직 호스트가 없습니다.",
+					"vmUnscheduled": "{{vm}}: 작업에 시작일이나 마감일이 없어 호스트 사용을 일정에 반영할 수 없습니다.",
+					"unknown": "용량 경고입니다."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "이 모델은 해당 리전에서 사용할 수 없습니다.",
+				"modelInUse": "호스트가 이 모델을 사용하고 있어 삭제할 수 없습니다.",
+				"regionInUse": "호스트가 이 모델에서 제거한 리전을 사용하고 있습니다.",
+				"hostLocked": "계획된 호스트만 변경하거나 삭제할 수 있습니다.",
+				"hostNotInProject": "선택한 호스트가 이 프로젝트에 속하지 않습니다.",
+				"clusterRegionMismatch": "Ceph 클러스터는 호스트와 같은 리전에 있어야 합니다.",
+				"clusterNotInWorkspace": "Ceph 클러스터가 이 워크스페이스에 속하지 않습니다.",
+				"vmNotInTask": "목록의 VM 하나가 이 작업에 속하지 않습니다. 작업을 다시 불러온 후 다시 시도하세요.",
+				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
+				"zoneRequired": "호스트의 가용 영역을 선택하세요.",
+				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다.",
+				"reserveTooLarge": "하이퍼바이저 예약은 모델의 RAM보다 작아야 합니다."
 			}
 		},
 		"projectSwitcher": {
@@ -2338,7 +2462,8 @@
 			"backToBoard": "보드로 돌아가기",
 			"portfolio": "포트폴리오",
 			"activity": "활동",
-			"workload": "업무량"
+			"workload": "업무량",
+			"datacenter": "데이터센터"
 		},
 		"projectList": {
 			"viewProject": "프로젝트 보기",
@@ -3410,6 +3535,40 @@
 					"title": "전송 전 확인"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "인프라",
+			"empty": "이 작업에는 아직 등록된 VM이 없습니다.",
+			"columns": {
+				"name": "VM 이름",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "로컬 (GB)",
+				"host": "호스트",
+				"cluster": "Ceph 클러스터"
+			},
+			"addVm": "VM 추가",
+			"duplicateRow": "VM {{number}} 복제",
+			"removeRow": "VM {{number}} 제거",
+			"noHost": "아직 호스트 없음",
+			"newHost": "새 호스트…",
+			"noCluster": "Ceph 클러스터 없음",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM 목록을 저장했습니다.",
+			"warningsTitle": "이 작업의 경고",
+			"validation": {
+				"nameRequired": "VM 이름을 입력하세요.",
+				"number": "0 이상의 정수를 입력하세요."
+			},
+			"hostRemoved": "호스트 삭제됨",
+			"hostFree": "여유 RAM {{ram}} GB, vCPU {{vcpu}}",
+			"hostNoRoom": "공간 부족",
+			"usageHelp": "호스트에 배치된 모든 VM이 실행된 후의 사용량입니다.",
+			"usageRamLabel": "{{host}}의 RAM 사용량",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · 로컬 디스크 {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "이 호스트의 리소스가 부족합니다"
 		}
 	},
 	"invitations": {
@@ -3590,6 +3749,204 @@
 				"empty": "이 범위에 일치하는 작업이 없습니다.",
 				"error": "작업을 불러오지 못했습니다.",
 				"dueOn": " · 마감 {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "주문 계획",
+				"hosts": "호스트",
+				"storage": "Ceph 스토리지",
+				"regions": "리전"
+			},
+			"loadFailed": "데이터센터 데이터를 불러오지 못했습니다.",
+			"noAccess": {
+				"title": "데이터센터에 접근할 수 없습니다",
+				"description": "내 역할에 데이터센터 권한이 포함되어 있지 않습니다. 워크스페이스 관리자에게 접근 권한을 요청하세요."
+			},
+			"actions": {
+				"save": "저장",
+				"changeStatus": "상태 변경"
+			},
+			"errors": {
+				"availableFromRequired": "주문한 항목에는 예상 납품일이 필요합니다.",
+				"clusterNameTaken": "이 이름의 클러스터가 워크스페이스에 이미 있습니다.",
+				"clusterInUse": "아직 VM이 이 클러스터를 사용하고 있습니다. 먼저 VM을 다른 클러스터로 옮기세요.",
+				"capacityLocked": "이 방법으로는 계획 상태의 항목만 변경할 수 있습니다.",
+				"clusterInvalid": "클러스터 설정이 올바르지 않습니다. 이레이저 코딩 값을 확인하세요.",
+				"regionInUse": "이 리전은 아직 모델, 호스트 또는 클러스터에서 사용 중입니다.",
+				"saveFailed": "변경 사항을 저장하지 못했습니다.",
+				"deleteFailed": "항목을 삭제하지 못했습니다.",
+				"regionUnknown": "이 리전은 리전 카탈로그에 없습니다.",
+				"regionCodeTaken": "이 코드의 리전이 이미 있습니다.",
+				"zoneInUse": "호스트가 사용 중인 가용 영역은 제거할 수 없습니다.",
+				"zoneUnknown": "이 가용 영역은 리전에 속하지 않습니다."
+			},
+			"fields": {
+				"status": "상태",
+				"availableFrom": "납품일",
+				"hostname": "호스트 이름",
+				"needDate": "필요일",
+				"provider": "제공업체",
+				"region": "데이터센터 리전",
+				"model": "모델",
+				"ramGb": "메모리 (GB)",
+				"vcpu": "vCPU 코어",
+				"storageGb": "로컬 디스크 (GB)",
+				"capacity": "용량",
+				"capacityGb": "용량 (GB)",
+				"project": "프로젝트",
+				"cluster": "Ceph 클러스터",
+				"name": "이름",
+				"kind": "클러스터 유형",
+				"dataChunks": "데이터 청크 (k)",
+				"codingChunks": "코딩 청크 (m)",
+				"fillThreshold": "사용률 임계값 (%)",
+				"leadTimeDays": "리드 타임 (일)",
+				"label": "레이블",
+				"zone": "가용 영역"
+			},
+			"kind": {
+				"self_managed": "자체 관리",
+				"managed_service": "관리형 서비스"
+			},
+			"provider": {
+				"other": "기타"
+			},
+			"statusDialog": {
+				"title": "상태 변경",
+				"dateRequired": "주문한 항목에는 필수입니다: 예상 납품일.",
+				"dateOptional": "선택 사항입니다. 날짜가 없는 설치 완료 항목에는 오늘 날짜가 들어가며, 계획 상태 항목에는 날짜가 없습니다."
+			},
+			"orderPlan": {
+				"rows": "행: {{rows}}",
+				"late": "지연: {{late}}",
+				"download": "XLSX 다운로드",
+				"downloadFailed": "주문 계획을 다운로드하지 못했습니다.",
+				"empty": "지금은 주문할 항목이 없습니다.",
+				"orderBy": "주문 기한",
+				"type": "항목 유형",
+				"quantity": "수량",
+				"lateBadge": "지연",
+				"types": {
+					"host": "호스트",
+					"storageNode": "스토리지 노드",
+					"storageService": "스토리지 서비스"
+				}
+			},
+			"hosts": {
+				"allProjects": "모든 프로젝트",
+				"allRegions": "모든 리전",
+				"allStatuses": "모든 상태",
+				"empty": "필터와 일치하는 호스트가 없습니다.",
+				"host": "호스트",
+				"ramPeak": "메모리 최대 사용률",
+				"ramUse": "{{host}}의 메모리 사용률",
+				"vms": "VM",
+				"warnings": "호스트 경고",
+				"allZones": "모든 가용 영역"
+			},
+			"warnings": {
+				"title": "용량 경고",
+				"none": "용량 경고가 없습니다.",
+				"showAll": "모두 보기 ({{total}})",
+				"showFewer": "줄여서 보기",
+				"severity": {
+					"error": "오류: {{total}}",
+					"warning": "경고: {{total}}",
+					"info": "알림: {{total}}"
+				},
+				"severityName": {
+					"error": "오류",
+					"warning": "경고",
+					"info": "알림"
+				},
+				"HOST_NOT_READY": "{{vm}}({{project}})은(는) {{date}}에 시작하지만 그때까지 {{host}}이(가) 납품되지 않습니다.",
+				"ORDER_LATE": "{{target}}은(는) {{date}}까지 주문했어야 합니다.",
+				"OVER_100": "{{target}}은(는) {{date}}부터 용량을 초과합니다.",
+				"OVER_80": "{{target}}은(는) {{date}}에 용량의 80%에 도달합니다.",
+				"VM_UNPLACED": "{{vm}}({{project}})이(가) 어떤 호스트에도 배치되지 않았습니다.",
+				"VM_UNSCHEDULED": "{{vm}}({{project}})에 시작일이 없습니다.",
+				"CLUSTER_NOT_READY": "{{target}}: VM이 용량을 필요로 하는 {{date}}부터 용량이 아직 납품되지 않았습니다.",
+				"CLUSTER_SHORTFALL": "{{target}}의 용량이 부족합니다. 부족은 {{date}}부터 시작됩니다.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}}의 용량이 부족합니다."
+			},
+			"storage": {
+				"addCluster": "클러스터 추가",
+				"addEntry": "용량 추가",
+				"editCluster": "편집",
+				"empty": "아직 Ceph 클러스터가 없습니다.",
+				"noEntries": "이 클러스터에는 아직 용량 항목이 없습니다.",
+				"erasureCoding": "이레이저 코딩",
+				"installed": "설치됨 (원시)",
+				"usable": "사용 가능",
+				"used": "VM 사용량",
+				"firstOver80": "80%를 처음 넘는 날",
+				"firstOver100": "100%를 처음 넘는 날",
+				"usage": "{{cluster}} 사용률",
+				"shortfall": "부족분: {{shortfall}}",
+				"suggestionService": "{{date}}까지 {{buy}}을(를) 추가로 구매하세요.",
+				"suggestionServiceNoDate": "{{buy}}을(를) 추가로 구매하세요.",
+				"suggestionNodes": "{{date}}까지 {{node}} 노드 {{nodes}}대를 추가하세요.",
+				"suggestionNodesNoDate": "{{node}} 노드 {{nodes}}대를 추가하세요.",
+				"suggestionNodesUnknown": "{{date}}까지 {{shortfall}} 규모의 스토리지 노드를 추가하세요.",
+				"suggestionNodesUnknownNoDate": "{{shortfall}} 규모의 스토리지 노드를 추가하세요.",
+				"deleteClusterTitle": "{{name}}을(를) 삭제할까요?",
+				"deleteClusterDescription": "클러스터와 용량 항목이 삭제됩니다. VM이 사용 중인 클러스터는 삭제할 수 없습니다.",
+				"deleteEntryTitle": "{{name}}을(를) 삭제할까요?",
+				"deleteEntryDescription": "계획 상태의 용량만 삭제할 수 있습니다.",
+				"chart": {
+					"title": "Ceph 수요 예측",
+					"demand": "수요",
+					"usableDelivered": "사용 가능 용량(납품 완료)",
+					"usableAfterOrders": "계획된 주문 이후 사용 가능 용량",
+					"overCapacity": "용량 초과",
+					"nearCapacity": "용량 거의 소진",
+					"today": "오늘",
+					"showTable": "표 표시",
+					"hideTable": "표 숨기기",
+					"tableDate": "날짜",
+					"tableChange": "변화",
+					"percentOfUsable": "사용 가능 용량 대비 %",
+					"empty": "이 클러스터를 사용하는 VM이 아직 없습니다.",
+					"ariaLabel": "{{cluster}}의 Ceph 수요: {{lastDate}}까지 {{demand}}, 사용 가능 {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph 클러스터 추가",
+				"editTitle": "Ceph 클러스터 편집",
+				"selfManagedHint": "사용 가능 용량은 원시 용량 × k / (k + m)이며, 사용률 임계값으로 제한됩니다.",
+				"managedHint": "관리형 서비스에는 이레이저 코딩이 없습니다. 사용 가능 용량은 사용률 임계값으로 제한됩니다.",
+				"regionPlaceholder": "리전 선택",
+				"noRegions": "아직 리전이 없습니다. 먼저 리전 탭에서 리전을 추가하세요."
+			},
+			"entryDialog": {
+				"title": "용량 추가",
+				"capacityHint": "노드 또는 서비스 블록의 원시 용량(GB)입니다.",
+				"labelHint": "선택 사항입니다. 레이블이 없으면 항목에 클러스터 이름이 사용됩니다."
+			},
+			"regions": {
+				"add": "리전 추가",
+				"editTitle": "리전 편집",
+				"code": "코드",
+				"codeHint": "영문 A–Z, 숫자, 하이픈으로 최대 16자. 코드는 나중에 변경할 수 없습니다",
+				"usedBy": "사용처",
+				"usage": {
+					"models": "모델",
+					"hosts": "호스트",
+					"clusters": "클러스터"
+				},
+				"empty": "아직 리전이 없습니다. 첫 리전을 추가하세요.",
+				"editAction": "{{code}} 편집",
+				"deleteAction": "{{code}} 삭제",
+				"deleteTitle": "리전 {{code}}을(를) 삭제할까요?",
+				"deleteDescription": "리전이 카탈로그에서 제거됩니다. 모델, 호스트 또는 클러스터에서 사용 중인 리전은 삭제할 수 없습니다.",
+				"zones": "가용 영역",
+				"zonesLabel": "가용 영역",
+				"zonesHint": "이 리전의 가용 영역입니다(예: PAR1, PAR2, PAR3). 가용 영역이 없는 리전이면 비워 두세요.",
+				"zoneInput": "가용 영역 코드",
+				"addZone": "가용 영역 추가",
+				"removeZone": "가용 영역 {{zone}} 제거",
+				"zoneHosts_other": "{{zone}} · 호스트 {{count}}개"
 			}
 		}
 	},

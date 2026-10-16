@@ -151,6 +151,7 @@ const projectPermissions = vi.hoisted(() => ({
       canCreate?: boolean;
       canUpdate?: boolean;
       canInvite?: boolean;
+      canPlan?: boolean;
       checking?: boolean;
       failed?: boolean;
     }
@@ -165,10 +166,68 @@ vi.mock("@/hooks/use-project-permission", () => ({
       canCreateLabels: () => allowed,
       canUpdateTasks: () => state.canUpdate ?? true,
       canInviteToProject: () => state.canInvite ?? true,
+      canPlanInfrastructure: () => state.canPlan ?? true,
       isCheckingPermissions: state.checking ?? false,
       isError: state.failed ?? false,
     };
   },
+}));
+
+const replaceTaskVms = vi.fn(async (_input: Record<string, unknown>) => []);
+vi.mock("@/hooks/mutations/infrastructure/use-replace-task-vms", () => ({
+  default: () => ({ mutateAsync: replaceTaskVms }),
+}));
+vi.mock("@/hooks/queries/infrastructure/use-project-hosts", () => ({
+  default: () => ({
+    isSuccess: true,
+    data: [
+      {
+        id: "host-1",
+        label: "SCALE-1",
+        region: "PAR",
+        zone: null,
+        status: "ordered",
+        model: {
+          name: "SCALE",
+          ramGb: 256,
+          vcpu: 64,
+          storageGb: 1000,
+          hypervisorReserveGb: 0,
+        },
+        totals: { vcpu: 0, ramGb: 0, localStorageGb: 0, cephStorageGb: 0 },
+      },
+    ],
+  }),
+}));
+vi.mock("@/hooks/queries/infrastructure/use-project-storage-clusters", () => ({
+  default: () => ({ data: [] }),
+}));
+vi.mock("@/hooks/queries/infrastructure/use-project-models", () => ({
+  default: () => ({ data: [] }),
+}));
+vi.mock("@/components/infrastructure/new-host-dialog", () => ({
+  NewHostDialog: () => null,
+}));
+// The real Select is a popup; a native select keeps the tests about behavior.
+vi.mock("@/components/infrastructure/infra-select", () => ({
+  InfraSelect: (props: {
+    value: string | null;
+    onChange: (value: string) => void;
+    options: { value: string; label: string }[];
+    ariaLabel: string;
+  }) => (
+    <select
+      aria-label={props.ariaLabel}
+      value={props.value ?? ""}
+      onChange={(event) => props.onChange(event.target.value)}
+    >
+      {props.options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  ),
 }));
 
 vi.mock("@/hooks/queries/resource/use-get-workspace-resources", () => ({
@@ -1309,5 +1368,228 @@ describe("CreateTaskModal searchable pickers", () => {
     expect(screen.getByText("Beta")).toBeInTheDocument();
     fireEvent.change(projectSearch, { target: { value: "nope" } });
     expect(screen.getByText("tasks:picker.noResults")).toBeInTheDocument();
+  });
+});
+
+describe("CreateTaskModal infrastructure", () => {
+  const sectionToggle = () =>
+    screen.queryByRole("button", { name: /tasks:infrastructure\.title/ });
+
+  function renderInProject() {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/project-1/board",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+  }
+
+  const openSection = () => {
+    const toggle = sectionToggle();
+    if (toggle) fireEvent.click(toggle);
+  };
+
+  const field = (label: string, index = 0) =>
+    screen.getAllByLabelText(label)[index] as HTMLInputElement;
+
+  const addVm = (name: string, vcpu = "4") => {
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:infrastructure.addVm" }),
+    );
+    const index = screen.getAllByLabelText(
+      "tasks:infrastructure.columns.name",
+    ).length;
+    fireEvent.change(field("tasks:infrastructure.columns.name", index - 1), {
+      target: { value: name },
+    });
+    fireEvent.change(field("tasks:infrastructure.columns.vcpu", index - 1), {
+      target: { value: vcpu },
+    });
+  };
+
+  it("is hidden without the right to plan infrastructure", () => {
+    projectPermissions.byProject["project-1"] = { canPlan: false };
+    renderInProject();
+
+    expect(sectionToggle()).toBeNull();
+  });
+
+  it("is hidden until a project is chosen", () => {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(sectionToggle()).toBeNull();
+  });
+
+  it("saves the listed VMs for the new task after it is created", async () => {
+    renderInProject();
+    openSection();
+    addVm("billing-db-1", "8");
+    fireEvent.change(field("tasks:infrastructure.columns.host"), {
+      target: { value: "host-1" },
+    });
+    expect(replaceTaskVms).not.toHaveBeenCalled();
+
+    enterTitle("Migration");
+    submit();
+
+    await vi.waitFor(() => expect(replaceTaskVms).toHaveBeenCalledTimes(1));
+    expect(replaceTaskVms).toHaveBeenCalledWith({
+      projectId: "project-1",
+      taskId: "task-1",
+      vms: [
+        {
+          name: "billing-db-1",
+          vcpu: 8,
+          ramGb: 0,
+          cephStorageGb: 0,
+          localStorageGb: 0,
+          hostId: "host-1",
+          storageClusterId: null,
+        },
+      ],
+    });
+    // The task is saved first, the VMs follow.
+    expect(createTask.mock.invocationCallOrder[0]).toBeLessThan(
+      replaceTaskVms.mock.invocationCallOrder[0],
+    );
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("does not call the VM endpoint for a task without VMs", async () => {
+    renderInProject();
+    enterTitle("Plain");
+    submit();
+
+    await vi.waitFor(() => expect(createTask).toHaveBeenCalledTimes(1));
+    expect(replaceTaskVms).not.toHaveBeenCalled();
+  });
+
+  it("keeps the created task and says so when the VMs cannot be saved", async () => {
+    renderInProject();
+    replaceTaskVms.mockRejectedValueOnce(new Error("boom"));
+    openSection();
+    addVm("vm-a");
+
+    enterTitle("Migration");
+    submit();
+
+    await vi.waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "common:modals.createTask.infrastructureSaveError",
+      ),
+    );
+    expect(createTask).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        "common:modals.createTask.successCreated",
+      ),
+    );
+  });
+
+  it("blocks creating the task while a VM row is invalid", async () => {
+    renderInProject();
+    openSection();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:infrastructure.addVm" }),
+    );
+
+    enterTitle("Migration");
+    submit();
+
+    expect(
+      await screen.findByText("common:modals.createTask.infrastructureInvalid"),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("tasks:infrastructure.validation.nameRequired"),
+    ).toBeTruthy();
+    expect(createTask).not.toHaveBeenCalled();
+    expect(replaceTaskVms).not.toHaveBeenCalled();
+  });
+
+  it("opens the collapsed section when an invalid row blocks the task", async () => {
+    renderInProject();
+    openSection();
+    fireEvent.click(
+      screen.getByRole("button", { name: "tasks:infrastructure.addVm" }),
+    );
+    // Collapse the section again.
+    openSection();
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "tasks:infrastructure.addVm" }),
+      ).toBeNull(),
+    );
+
+    enterTitle("Migration");
+    submit();
+
+    expect(
+      await screen.findByText("common:modals.createTask.infrastructureInvalid"),
+    ).toBeTruthy();
+  });
+
+  it("clears the VM list when 'create more' resets the form", async () => {
+    renderInProject();
+    fireEvent.click(
+      screen.getByLabelText("common:modals.createTask.createMore"),
+    );
+    openSection();
+    addVm("first-vm");
+
+    enterTitle("First");
+    submit();
+    await vi.waitFor(() => expect(replaceTaskVms).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() =>
+      expect(
+        screen.queryAllByLabelText("tasks:infrastructure.columns.name"),
+      ).toHaveLength(0),
+    );
+
+    enterTitle("Second");
+    submit();
+    await vi.waitFor(() => expect(createTask).toHaveBeenCalledTimes(2));
+    expect(replaceTaskVms).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the VM list, with a hint, when another project is chosen", async () => {
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1",
+    });
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+    const pickProject = async (name: string) => {
+      fireEvent.click(
+        screen.getByText(/common:modals\.createTask\.selectProject|^Alpha$/),
+      );
+      fireEvent.click(await screen.findByText(name));
+    };
+    await pickProject("Alpha");
+    openSection();
+    addVm("vm-a");
+    expect(
+      screen.getAllByLabelText("tasks:infrastructure.columns.name"),
+    ).toHaveLength(1);
+
+    await pickProject("Beta");
+
+    await vi.waitFor(() =>
+      expect(
+        screen.queryAllByLabelText("tasks:infrastructure.columns.name"),
+      ).toHaveLength(0),
+    );
+    expect(
+      screen.getByText("common:modals.createTask.infrastructureProjectChanged"),
+    ).toBeTruthy();
+
+    enterTitle("Moved");
+    submit();
+    await vi.waitFor(() => expect(createTask).toHaveBeenCalledTimes(1));
+    expect(replaceTaskVms).not.toHaveBeenCalled();
   });
 });

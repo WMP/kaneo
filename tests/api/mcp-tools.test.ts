@@ -794,6 +794,234 @@ describe("MCP tool catalog", () => {
     expect(apiFetch).not.toHaveBeenCalled();
   });
 
+  it("creates a project server model with its regions", async () => {
+    await call("create_project_server_model", {
+      projectId: "p 1",
+      name: "Advance-1",
+      provider: "ovh",
+      ramGb: 512,
+      vcpu: 32,
+      storageGb: 4000,
+      regions: ["gra", "PAR"],
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/project/p%201/models",
+      method: "POST",
+      body: {
+        name: "Advance-1",
+        provider: "ovh",
+        ramGb: 512,
+        vcpu: 32,
+        storageGb: 4000,
+        regions: ["GRA", "PAR"],
+      },
+    });
+    expect(lastRequest().body).not.toHaveProperty("leadTimeDays");
+  });
+
+  it("rejects unknown fields and a negative ramGb on create_project_server_model", async () => {
+    const valid = {
+      projectId: "p1",
+      name: "M",
+      provider: "ovh",
+      ramGb: 64,
+      vcpu: 8,
+      storageGb: 100,
+      regions: ["GRA"],
+    };
+
+    expect(
+      (await call("create_project_server_model", { ...valid, extra: 1 }))
+        .isError,
+    ).toBe(true);
+    expect(
+      (await call("create_project_server_model", { ...valid, ramGb: -1 }))
+        .isError,
+    ).toBe(true);
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
+
+  it("creates hosts spread across zones", async () => {
+    await call("create_project_hosts", {
+      projectId: "p1",
+      modelId: "m1",
+      region: "gra",
+      quantity: 3,
+      zones: ["GRA-A", "GRA-B"],
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/project/p1/hosts",
+      method: "POST",
+      body: {
+        modelId: "m1",
+        region: "GRA",
+        quantity: 3,
+        zones: ["GRA-A", "GRA-B"],
+      },
+    });
+  });
+
+  it("sets a host's status and delivery date", async () => {
+    await call("set_host_status", {
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "ordered",
+      availableFrom: "2026-11-20",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/workspace/w1/hosts/h1/status",
+      method: "PUT",
+      body: { status: "ordered", availableFrom: "2026-11-20" },
+    });
+  });
+
+  it("sends only the given host status fields and clears a hostname with null", async () => {
+    await call("set_host_status", {
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "installed",
+      hostname: null,
+    });
+
+    expect(lastRequest()).toMatchObject({
+      body: { status: "installed", hostname: null },
+    });
+    expect(lastRequest().body).not.toHaveProperty("availableFrom");
+  });
+
+  it("sets a Ceph capacity entry's status", async () => {
+    await call("set_storage_capacity_status", {
+      workspaceId: "w1",
+      clusterId: "c1",
+      entryId: "e1",
+      status: "ordered",
+      availableFrom: "2026-12-01",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/workspace/w1/storage-clusters/c1/capacity/e1",
+      method: "PUT",
+      body: { status: "ordered", availableFrom: "2026-12-01" },
+    });
+  });
+
+  it("reads a project's capacity", async () => {
+    await call("get_project_capacity", { projectId: "p1" });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/project/p1/capacity",
+      method: "GET",
+    });
+  });
+
+  it("replaces a task's VMs with defaults applied", async () => {
+    await call("set_task_vms", {
+      taskId: "t1",
+      vms: [
+        { id: "vm1", name: "db", vcpu: 4, ramGb: 16, hostId: "h1" },
+        { name: "web", vcpu: 2, ramGb: 8, cephStorageGb: 100 },
+      ],
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/task/t1/vms",
+      method: "PUT",
+      body: {
+        vms: [
+          {
+            id: "vm1",
+            name: "db",
+            vcpu: 4,
+            ramGb: 16,
+            cephStorageGb: 0,
+            localStorageGb: 0,
+            hostId: "h1",
+            storageClusterId: null,
+          },
+          {
+            name: "web",
+            vcpu: 2,
+            ramGb: 8,
+            cephStorageGb: 100,
+            localStorageGb: 0,
+            hostId: null,
+            storageClusterId: null,
+          },
+        ],
+      },
+    });
+    expect(lastRequest().body.vms[1]).not.toHaveProperty("id");
+  });
+
+  it("adds task VMs after the existing ones, keeping their ids", async () => {
+    apiFetch.mockResolvedValueOnce(
+      Response.json([
+        {
+          id: "vm1",
+          taskId: "t1",
+          hostId: "h1",
+          name: "db",
+          vcpu: 4,
+          ramGb: 16,
+          localStorageGb: 50,
+          cephStorageGb: 10,
+          storageClusterId: "c1",
+          host: { id: "h1" },
+        },
+      ]),
+    );
+
+    await call("add_task_vms", {
+      taskId: "t1",
+      vms: [{ name: "web", vcpu: 2, ramGb: 8 }],
+    });
+
+    expect(requestAt(0)).toMatchObject({
+      url: "http://api.test/api/infrastructure/task/t1/vms",
+      method: "GET",
+    });
+    expect(requestAt(1)).toMatchObject({
+      url: "http://api.test/api/infrastructure/task/t1/vms",
+      method: "PUT",
+      body: {
+        vms: [
+          {
+            id: "vm1",
+            name: "db",
+            vcpu: 4,
+            ramGb: 16,
+            localStorageGb: 50,
+            cephStorageGb: 10,
+            hostId: "h1",
+            storageClusterId: "c1",
+          },
+          {
+            name: "web",
+            vcpu: 2,
+            ramGb: 8,
+            cephStorageGb: 0,
+            localStorageGb: 0,
+            hostId: null,
+            storageClusterId: null,
+          },
+        ],
+      },
+    });
+  });
+
+  it("rejects an id on add_task_vms items", async () => {
+    const result = await call("add_task_vms", {
+      taskId: "t1",
+      vms: [{ id: "vm1", name: "web", vcpu: 2, ramGb: 8 }],
+    });
+
+    expect(result.isError).toBe(true);
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
+
   it("get_task attaches the task's custom field values", async () => {
     apiFetch
       .mockResolvedValueOnce(

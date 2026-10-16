@@ -134,6 +134,9 @@
 				"dependencies": "Afhankelijkheden",
 				"removeDependency": "Afhankelijkheid verwijderen",
 				"dependencyLinkError": "Taak aangemaakt, maar {{task}} kon niet worden gekoppeld: {{reason}}",
+				"infrastructureProjectChanged": "Als je het project wijzigt, wordt de VM-lijst gewist, omdat hosts bij een project horen.",
+				"infrastructureInvalid": "Corrigeer de rood gemarkeerde VM-velden voordat je de taak aanmaakt.",
+				"infrastructureSaveError": "De taak is aangemaakt, maar de VM's konden niet worden opgeslagen: {{reason}}. Voeg ze toe in de taak.",
 				"labels": "Labels",
 				"searchLabels": "Labels zoeken...",
 				"noLabelsFound": "Geen labels gevonden",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "Je rechten in dit project zijn gewijzigd.",
 			"lost": "Je hebt geen toegang meer tot dit project."
+		},
+		"infrastructureStatus": {
+			"planned": "Gepland",
+			"ordered": "Besteld",
+			"installed": "Geïnstalleerd",
+			"suggested": "Voorgesteld"
 		}
 	},
 	"auth": {
@@ -714,6 +723,122 @@
 				"descriptionNoAccess": "Deze werkruimte dwingt haar kolommen af, dus elk project heeft precies de kolommen van de werkruimte en ze kunnen hier niet worden gewijzigd. Vraag een beheerder van de werkruimte om ze te wijzigen.",
 				"manageLink": "Workflow-instellingen van de werkruimte openen",
 				"title": "Kolommen worden beheerd door de werkruimte"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "Infrastructuur",
+			"description": "Servermodellen, hosts en capaciteitswaarschuwingen voor de migraties van dit project.",
+			"loadError": "De infrastructuurgegevens konden niet worden geladen.",
+			"save": "Opslaan",
+			"saving": "Opslaan...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Overig"
+			},
+			"validation": {
+				"required": "Dit veld is verplicht.",
+				"integer": "Voer een geheel getal in van {{min}} tot {{max}}.",
+				"regionsRequired": "Selecteer minstens één regio.",
+				"reserveTooLarge": "De hypervisorreserve moet kleiner zijn dan het RAM van het model."
+			},
+			"models": {
+				"title": "Servermodellen",
+				"description": "De servermodellen die dit project mag gebruiken. Een host is één exemplaar van een model in een van de regio's van dat model.",
+				"add": "Model toevoegen",
+				"edit": "Model bewerken",
+				"empty": "Nog geen servermodellen.",
+				"editAction": "{{name}} bewerken",
+				"deleteAction": "{{name}} verwijderen",
+				"deleteTitle": "Model {{name}} verwijderen?",
+				"deleteDescription": "Het model wordt uit de pool van dit project verwijderd. Een model dat door hosts wordt gebruikt, kan niet worden verwijderd.",
+				"columns": {
+					"name": "Naam",
+					"family": "Familie",
+					"provider": "Aanbieder",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Lokale schijf (GB)",
+					"regions": "Regio's",
+					"leadTime": "Levertijd (dagen)",
+					"reserve": "Hypervisorreserve (GB)"
+				},
+				"regionsEmpty": "Nog geen regio's. Vraag het datacenterteam om regio's toe te voegen.",
+				"regionNotInCatalog": "(niet in de catalogus)",
+				"reserveHelp": "RAM die op elke host voor de hypervisor gereserveerd blijft; VM's kunnen de rest gebruiken."
+			},
+			"hosts": {
+				"title": "Hosts",
+				"description": "Fysieke servers van dit project. Het datacenterteam bestelt en installeert ze; u plant ze hier.",
+				"add": "Host toevoegen",
+				"empty": "Nog geen hosts.",
+				"noModels": "Voeg een servermodel toe voordat u een host toevoegt.",
+				"newDescription": "Maakt een geplande host op basis van een servermodel. Het datacenterteam bestelt hem.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Kies een model",
+				"newRegion": "Regio",
+				"newRegionPlaceholder": "Kies een regio",
+				"label": "Label",
+				"rename": "Host hernoemen",
+				"renameAction": "{{label}} hernoemen",
+				"deleteAction": "{{label}} verwijderen",
+				"deleteTitle": "Host {{label}} verwijderen?",
+				"deleteDescription": "Alleen een geplande host kan worden verwijderd. De VM's blijven zonder host in hun taken staan.",
+				"orderLate": "De uiterste besteldatum is verstreken.",
+				"ramUsage": "RAM-gebruik van {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Regio",
+					"status": "Status",
+					"needDate": "Benodigd op",
+					"orderBy": "Bestellen vóór",
+					"ram": "RAM-gebruik (piek)",
+					"vms": "VM's",
+					"localDisk": "Lokale schijf (GB)",
+					"zone": "Zone"
+				},
+				"quantity": "Aantal",
+				"added_one": "{{count}} host toegevoegd",
+				"added_other": "{{count}} hosts toegevoegd",
+				"zone": "Zone",
+				"zones": "Zones",
+				"zonePlaceholder": "Selecteer een zone",
+				"zonesHint": "Hosts worden op volgorde over de geselecteerde zones verdeeld: 3 hosts en PAR1, PAR2, PAR3 geven één host per zone.",
+				"zonesRequired": "Selecteer ten minste één zone."
+			},
+			"warnings": {
+				"title": "Waarschuwingen",
+				"empty": "Geen capaciteitswaarschuwingen.",
+				"severity": {
+					"error": "Fout",
+					"warning": "Waarschuwing",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} is beschikbaar vanaf {{available}}, maar de taak begint op {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} is nog niet besteld, maar de taak begint op {{date}}.",
+					"orderLate": "Host {{host}} had vóór {{date}} besteld moeten worden.",
+					"over100": "Host {{host}} zit vanaf {{date}} boven zijn capaciteit.",
+					"over80": "Host {{host}} is vanaf {{date}} voor meer dan 80% vol.",
+					"vmUnplaced": "{{vm}} heeft nog geen host.",
+					"vmUnscheduled": "{{vm}}: de taak heeft geen start- of einddatum, dus het gebruik van de host kan niet worden ingepland.",
+					"unknown": "Capaciteitswaarschuwing."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Dit model is niet beschikbaar in die regio.",
+				"modelInUse": "Een host gebruikt dit model, dus het kan niet worden verwijderd.",
+				"regionInUse": "Een host gebruikt een regio die u uit dit model hebt verwijderd.",
+				"hostLocked": "Alleen een geplande host kan worden gewijzigd of verwijderd.",
+				"hostNotInProject": "De gekozen host hoort niet bij dit project.",
+				"clusterRegionMismatch": "Het Ceph-cluster moet in dezelfde regio staan als de host.",
+				"clusterNotInWorkspace": "Het Ceph-cluster hoort niet bij deze werkruimte.",
+				"vmNotInTask": "Een VM in de lijst hoort niet bij deze taak. Laad de taak opnieuw en probeer het nog eens.",
+				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
+				"zoneRequired": "Selecteer een zone voor de host.",
+				"zoneUnknown": "Deze zone hoort niet bij de regio.",
+				"reserveTooLarge": "De hypervisorreserve moet kleiner zijn dan het RAM van het model."
 			}
 		},
 		"projectSwitcher": {
@@ -2341,7 +2466,8 @@
 			"backToBoard": "Terug naar bord",
 			"portfolio": "Portfolio",
 			"activity": "Activiteit",
-			"workload": "Werklast"
+			"workload": "Werklast",
+			"datacenter": "Datacenter"
 		},
 		"projectList": {
 			"viewProject": "Project bekijken",
@@ -3422,6 +3548,40 @@
 					"title": "Controleren voor het versturen"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "Infrastructuur",
+			"empty": "Voor deze taak zijn nog geen VM's vermeld.",
+			"columns": {
+				"name": "VM-naam",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokaal (GB)",
+				"host": "Host",
+				"cluster": "Ceph-cluster"
+			},
+			"addVm": "VM toevoegen",
+			"duplicateRow": "VM {{number}} dupliceren",
+			"removeRow": "VM {{number}} verwijderen",
+			"noHost": "Nog geen host",
+			"newHost": "Nieuwe host…",
+			"noCluster": "Geen Ceph-cluster",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "VM-lijst opgeslagen.",
+			"warningsTitle": "Waarschuwingen voor deze taak",
+			"validation": {
+				"nameRequired": "Voer een VM-naam in.",
+				"number": "Voer een geheel getal in, 0 of hoger."
+			},
+			"hostRemoved": "Host verwijderd",
+			"hostFree": "vrij {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "niet genoeg ruimte",
+			"usageHelp": "Gebruik nadat alle op de host geplaatste VM's draaien.",
+			"usageRamLabel": "RAM-gebruik van {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · lokale schijf {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Onvoldoende resources op deze host"
 		}
 	},
 	"invitations": {
@@ -3603,6 +3763,205 @@
 				"empty": "Geen overeenkomende taken in deze periode.",
 				"error": "Taken laden is mislukt.",
 				"dueOn": " · Vervalt op {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Bestelplan",
+				"hosts": "Hosts",
+				"storage": "Ceph-opslag",
+				"regions": "Regio's"
+			},
+			"loadFailed": "De datacentergegevens konden niet worden geladen.",
+			"noAccess": {
+				"title": "Geen toegang tot het datacenter",
+				"description": "Je rol bevat de datacentermachtiging niet. Vraag een werkruimtebeheerder om toegang."
+			},
+			"actions": {
+				"save": "Opslaan",
+				"changeStatus": "Status wijzigen"
+			},
+			"errors": {
+				"availableFromRequired": "Een bestelde post heeft een verwachte leverdatum nodig.",
+				"clusterNameTaken": "Er bestaat al een cluster met deze naam in de werkruimte.",
+				"clusterInUse": "Een VM gebruikt dit cluster nog. Verplaats de VM eerst naar een ander cluster.",
+				"capacityLocked": "Alleen een geplande post kan op deze manier worden gewijzigd.",
+				"clusterInvalid": "De clusterinstellingen zijn ongeldig. Controleer de erasure-codingwaarden.",
+				"regionInUse": "Deze regio wordt nog gebruikt door een model, een host of een cluster.",
+				"saveFailed": "De wijziging kon niet worden opgeslagen.",
+				"deleteFailed": "De post kon niet worden verwijderd.",
+				"regionUnknown": "Deze regio staat niet in de regiocatalogus.",
+				"regionCodeTaken": "Er bestaat al een regio met deze code.",
+				"zoneInUse": "Een zone die een host gebruikt, kan niet worden verwijderd.",
+				"zoneUnknown": "Deze zone hoort niet bij de regio."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Leverdatum",
+				"hostname": "Hostnaam",
+				"needDate": "Benodigd op",
+				"provider": "Aanbieder",
+				"region": "Datacenterregio",
+				"model": "Model",
+				"ramGb": "Geheugen (GB)",
+				"vcpu": "vCPU-cores",
+				"storageGb": "Lokale schijf (GB)",
+				"capacity": "Capaciteit",
+				"capacityGb": "Capaciteit (GB)",
+				"project": "Project",
+				"cluster": "Ceph-cluster",
+				"name": "Naam",
+				"kind": "Clustertype",
+				"dataChunks": "Datachunks (k)",
+				"codingChunks": "Codeerchunks (m)",
+				"fillThreshold": "Vuldrempel (%)",
+				"leadTimeDays": "Levertijd (dagen)",
+				"label": "Label",
+				"zone": "Zone"
+			},
+			"kind": {
+				"self_managed": "Zelfbeheerd",
+				"managed_service": "Beheerde dienst"
+			},
+			"provider": {
+				"other": "Overig"
+			},
+			"statusDialog": {
+				"title": "Status wijzigen",
+				"dateRequired": "Verplicht voor een bestelde post: de verwachte leverdatum.",
+				"dateOptional": "Optioneel. Een geïnstalleerde post zonder datum krijgt de datum van vandaag; een geplande post heeft er geen."
+			},
+			"orderPlan": {
+				"rows": "Rijen: {{rows}}",
+				"late": "Te laat: {{late}}",
+				"download": "XLSX downloaden",
+				"downloadFailed": "Het bestelplan kon niet worden gedownload.",
+				"empty": "Er hoeft op dit moment niets besteld te worden.",
+				"orderBy": "Bestellen vóór",
+				"type": "Posttype",
+				"quantity": "Aantal",
+				"lateBadge": "Te laat",
+				"types": {
+					"host": "Host",
+					"storageNode": "Opslagnode",
+					"storageService": "Opslagdienst"
+				}
+			},
+			"hosts": {
+				"allProjects": "Alle projecten",
+				"allRegions": "Alle regio's",
+				"allStatuses": "Alle statussen",
+				"empty": "Geen hosts komen overeen met de filters.",
+				"host": "Host",
+				"ramPeak": "Piekgebruik geheugen",
+				"ramUse": "Geheugengebruik van {{host}}",
+				"vms": "VM's",
+				"warnings": "Hostwaarschuwingen",
+				"allZones": "Alle zones"
+			},
+			"warnings": {
+				"title": "Capaciteitswaarschuwingen",
+				"none": "Geen capaciteitswaarschuwingen.",
+				"showAll": "Alles tonen ({{total}})",
+				"showFewer": "Minder tonen",
+				"severity": {
+					"error": "Fouten: {{total}}",
+					"warning": "Waarschuwingen: {{total}}",
+					"info": "Meldingen: {{total}}"
+				},
+				"severityName": {
+					"error": "Fout",
+					"warning": "Waarschuwing",
+					"info": "Melding"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) start op {{date}}, maar {{host}} is dan nog niet geleverd.",
+				"ORDER_LATE": "{{target}} had uiterlijk {{date}} besteld moeten worden.",
+				"OVER_100": "{{target}} zit vanaf {{date}} boven de capaciteit.",
+				"OVER_80": "{{target}} bereikt op {{date}} 80% van de capaciteit.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) staat niet op een host.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) heeft geen startdatum.",
+				"CLUSTER_NOT_READY": "{{target}}: de capaciteit is nog niet geleverd wanneer VM's die nodig hebben, vanaf {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} heeft te weinig capaciteit; het tekort begint op {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} heeft te weinig capaciteit."
+			},
+			"storage": {
+				"addCluster": "Cluster toevoegen",
+				"addEntry": "Capaciteit toevoegen",
+				"editCluster": "Bewerken",
+				"empty": "Er zijn nog geen Ceph-clusters.",
+				"noEntries": "Dit cluster heeft nog geen capaciteitsposten.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Geïnstalleerd (ruw)",
+				"usable": "Bruikbaar",
+				"used": "Gebruikt door VM's",
+				"firstOver80": "Eerst boven 80%",
+				"firstOver100": "Eerst boven 100%",
+				"usage": "Gebruik van {{cluster}}",
+				"shortfall": "Tekort: {{shortfall}}",
+				"suggestionService": "Koop {{buy}} vóór {{date}}.",
+				"suggestionServiceNoDate": "Koop {{buy}}.",
+				"suggestionNodes": "Voeg {{nodes}} × {{node}}-node toe vóór {{date}}.",
+				"suggestionNodesNoDate": "Voeg {{nodes}} × {{node}}-node toe.",
+				"suggestionNodesUnknown": "Voeg opslagnodes ter waarde van {{shortfall}} toe vóór {{date}}.",
+				"suggestionNodesUnknownNoDate": "Voeg opslagnodes ter waarde van {{shortfall}} toe.",
+				"deleteClusterTitle": "{{name}} verwijderen?",
+				"deleteClusterDescription": "Het cluster en de capaciteitsposten worden verwijderd. Een cluster dat een VM gebruikt, kan niet worden verwijderd.",
+				"deleteEntryTitle": "{{name}} verwijderen?",
+				"deleteEntryDescription": "Alleen geplande capaciteit kan worden verwijderd.",
+				"chart": {
+					"title": "Prognose van de Ceph-vraag",
+					"demand": "Vraag",
+					"usableDelivered": "Bruikbare capaciteit (geleverd)",
+					"usableAfterOrders": "Bruikbare capaciteit na geplande bestellingen",
+					"overCapacity": "Capaciteit overschreden",
+					"nearCapacity": "Capaciteit bijna bereikt",
+					"today": "Vandaag",
+					"showTable": "Tabel tonen",
+					"hideTable": "Tabel verbergen",
+					"tableDate": "Datum",
+					"tableChange": "Wijziging",
+					"percentOfUsable": "% van bruikbare capaciteit",
+					"empty": "Nog geen VM’s gebruiken deze cluster.",
+					"ariaLabel": "Ceph-vraag voor {{cluster}}: {{demand}} op {{lastDate}}, bruikbaar {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Ceph-cluster toevoegen",
+				"editTitle": "Ceph-cluster bewerken",
+				"selfManagedHint": "De bruikbare capaciteit is de ruwe capaciteit × k / (k + m), begrensd door de vuldrempel.",
+				"managedHint": "Een beheerde dienst heeft geen erasure coding. De bruikbare capaciteit wordt begrensd door de vuldrempel.",
+				"regionPlaceholder": "Selecteer een regio",
+				"noRegions": "Nog geen regio's. Voeg eerst een regio toe op het tabblad Regio's."
+			},
+			"entryDialog": {
+				"title": "Capaciteit toevoegen",
+				"capacityHint": "Ruwe capaciteit van de node of het dienstblok, in GB.",
+				"labelHint": "Optioneel. Zonder label krijgt de post de naam van het cluster."
+			},
+			"regions": {
+				"add": "Regio toevoegen",
+				"editTitle": "Regio bewerken",
+				"code": "Code",
+				"codeHint": "Letters A–Z, cijfers en streepjes, maximaal 16 tekens; de code kan later niet meer worden gewijzigd",
+				"usedBy": "Gebruikt door",
+				"usage": {
+					"models": "Modellen",
+					"hosts": "Hosts",
+					"clusters": "Clusters"
+				},
+				"empty": "Nog geen regio's. Voeg de eerste regio toe.",
+				"editAction": "{{code}} bewerken",
+				"deleteAction": "{{code}} verwijderen",
+				"deleteTitle": "Regio {{code}} verwijderen?",
+				"deleteDescription": "De regio wordt uit de catalogus verwijderd. Een regio die door een model, een host of een cluster wordt gebruikt, kan niet worden verwijderd.",
+				"zones": "Zones",
+				"zonesLabel": "Beschikbaarheidszones",
+				"zonesHint": "Beschikbaarheidszones van deze regio, bijvoorbeeld PAR1, PAR2, PAR3. Laat leeg voor een regio zonder zones.",
+				"zoneInput": "Zonecode",
+				"addZone": "Zone toevoegen",
+				"removeZone": "Zone {{zone}} verwijderen",
+				"zoneHosts_one": "{{zone}} · {{count}} host",
+				"zoneHosts_other": "{{zone}} · {{count}} hosts"
 			}
 		}
 	},

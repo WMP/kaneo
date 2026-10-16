@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/sidebar";
 import { usePendingInvitations } from "@/hooks/queries/invitation/use-pending-invitations";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 
 export function NavMain() {
   const { t } = useTranslation();
   const { data: workspace } = useActiveWorkspace();
   const navigate = useNavigate();
   const { data: invitations = [] } = usePendingInvitations();
+  const { canReadDatacenter } = useWorkspacePermission();
 
   if (!workspace) return null;
 
@@ -67,6 +69,18 @@ export function NavMain() {
         `/dashboard/workspace/${workspace.id}/workload`,
       badge: null,
     },
+    ...(canReadDatacenter()
+      ? [
+          {
+            title: t("navigation:sidebar.datacenter"),
+            url: `/dashboard/workspace/${workspace.id}/datacenter`,
+            isActive:
+              window.location.pathname ===
+              `/dashboard/workspace/${workspace.id}/datacenter`,
+            badge: null,
+          },
+        ]
+      : []),
     {
       title: t("navigation:sidebar.invitations"),
       url: "/dashboard/invitations",

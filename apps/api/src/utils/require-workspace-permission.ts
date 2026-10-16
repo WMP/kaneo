@@ -36,6 +36,10 @@ const WORKSPACE_LEVEL_RESOURCES = new Set([
   "organization",
   "ac",
   "team",
+  // The datacenter team acts across projects (hosts of every project of the
+  // workspace), so it is always judged by the workspace role, never by a
+  // project role.
+  "datacenter",
 ]);
 
 function splitPermissions(permissions: PermissionMap) {

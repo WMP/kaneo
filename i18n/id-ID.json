@@ -134,6 +134,9 @@
 				"dependencies": "Dependensi",
 				"removeDependency": "Hapus dependensi",
 				"dependencyLinkError": "Tugas dibuat, tetapi {{task}} tidak dapat ditautkan: {{reason}}",
+				"infrastructureProjectChanged": "Mengganti proyek mengosongkan daftar VM, karena host dimiliki oleh sebuah proyek.",
+				"infrastructureInvalid": "Perbaiki kolom VM yang ditandai merah sebelum membuat tugas.",
+				"infrastructureSaveError": "Tugas dibuat, tetapi VM-nya tidak dapat disimpan: {{reason}}. Tambahkan di dalam tugas.",
 				"labels": "Label",
 				"searchLabels": "Cari label...",
 				"noLabelsFound": "Label tidak ditemukan",
@@ -181,6 +184,12 @@
 		"projectAccess": {
 			"changed": "Izin Anda di proyek ini berubah.",
 			"lost": "Anda tidak lagi memiliki akses ke proyek ini."
+		},
+		"infrastructureStatus": {
+			"planned": "Direncanakan",
+			"ordered": "Dipesan",
+			"installed": "Terpasang",
+			"suggested": "Disarankan"
 		}
 	},
 	"auth": {
@@ -817,6 +826,121 @@
 				"descriptionNoAccess": "Ruang kerja ini memberlakukan kolomnya, sehingga setiap proyek memiliki persis kolom ruang kerja dan kolom tidak dapat diubah di sini. Minta administrator ruang kerja untuk mengubahnya.",
 				"manageLink": "Buka pengaturan alur kerja ruang kerja",
 				"title": "Kolom dikelola oleh ruang kerja"
+			}
+		},
+		"projectInfrastructure": {
+			"title": "Infrastruktur",
+			"description": "Model server, host, dan peringatan kapasitas untuk migrasi proyek ini.",
+			"loadError": "Data infrastruktur tidak dapat dimuat.",
+			"save": "Simpan",
+			"saving": "Menyimpan...",
+			"providers": {
+				"ovh": "OVH",
+				"azure": "Azure",
+				"other": "Lainnya"
+			},
+			"validation": {
+				"required": "Kolom ini wajib diisi.",
+				"integer": "Masukkan bilangan bulat dari {{min}} sampai {{max}}.",
+				"regionsRequired": "Pilih setidaknya satu wilayah.",
+				"reserveTooLarge": "Cadangan hypervisor harus lebih kecil daripada RAM model."
+			},
+			"models": {
+				"title": "Model server",
+				"description": "Model server yang dapat digunakan proyek ini. Host adalah satu unit dari sebuah model di salah satu wilayahnya.",
+				"add": "Tambah model",
+				"edit": "Ubah model",
+				"empty": "Belum ada model server.",
+				"editAction": "Ubah {{name}}",
+				"deleteAction": "Hapus {{name}}",
+				"deleteTitle": "Hapus model {{name}}?",
+				"deleteDescription": "Model dihapus dari pool proyek ini. Model yang digunakan oleh host tidak dapat dihapus.",
+				"columns": {
+					"name": "Nama",
+					"family": "Keluarga",
+					"provider": "Penyedia",
+					"ram": "RAM (GB)",
+					"vcpu": "vCPU",
+					"localDisk": "Disk lokal (GB)",
+					"regions": "Wilayah",
+					"leadTime": "Lead time (hari)",
+					"reserve": "Cadangan hypervisor (GB)"
+				},
+				"regionsEmpty": "Belum ada wilayah. Minta tim datacenter untuk menambahkan wilayah.",
+				"regionNotInCatalog": "(tidak ada di katalog)",
+				"reserveHelp": "RAM yang disisihkan untuk hypervisor di setiap host; VM dapat memakai sisanya."
+			},
+			"hosts": {
+				"title": "Host",
+				"description": "Server fisik proyek ini. Tim datacenter memesan dan memasangnya; Anda merencanakannya di sini.",
+				"add": "Tambah host",
+				"empty": "Belum ada host.",
+				"noModels": "Tambahkan model server sebelum menambahkan host.",
+				"newDescription": "Membuat host terencana dari sebuah model server. Tim datacenter yang memesannya.",
+				"newModel": "Model",
+				"newModelPlaceholder": "Pilih model",
+				"newRegion": "Wilayah",
+				"newRegionPlaceholder": "Pilih wilayah",
+				"label": "Label",
+				"rename": "Ganti nama host",
+				"renameAction": "Ganti nama {{label}}",
+				"deleteAction": "Hapus {{label}}",
+				"deleteTitle": "Hapus host {{label}}?",
+				"deleteDescription": "Hanya host yang berstatus terencana yang dapat dihapus. VM-nya tetap berada di tugasnya tanpa host.",
+				"orderLate": "Batas waktu pemesanan sudah lewat.",
+				"ramUsage": "Penggunaan RAM {{host}}",
+				"columns": {
+					"label": "Host",
+					"model": "Model",
+					"region": "Wilayah",
+					"status": "Status",
+					"needDate": "Tanggal dibutuhkan",
+					"orderBy": "Pesan paling lambat",
+					"ram": "Penggunaan RAM (puncak)",
+					"vms": "VM",
+					"localDisk": "Disk lokal (GB)",
+					"zone": "Zona"
+				},
+				"quantity": "Jumlah",
+				"added_other": "{{count}} host ditambahkan",
+				"zone": "Zona",
+				"zones": "Zona",
+				"zonePlaceholder": "Pilih zona",
+				"zonesHint": "Host disebar ke zona yang dipilih secara berurutan: 3 host dan PAR1, PAR2, PAR3 menghasilkan satu host per zona.",
+				"zonesRequired": "Pilih setidaknya satu zona."
+			},
+			"warnings": {
+				"title": "Peringatan",
+				"empty": "Tidak ada peringatan kapasitas.",
+				"severity": {
+					"error": "Kesalahan",
+					"warning": "Peringatan",
+					"info": "Info"
+				},
+				"types": {
+					"hostNotReadyAvailable": "{{vm}}: host {{host}} tersedia mulai {{available}}, tetapi tugas dimulai pada {{date}}.",
+					"hostNotReadyPlanned": "{{vm}}: host {{host}} belum dipesan, tetapi tugas dimulai pada {{date}}.",
+					"orderLate": "Host {{host}} seharusnya dipesan paling lambat {{date}}.",
+					"over100": "Host {{host}} melebihi kapasitas mulai {{date}}.",
+					"over80": "Host {{host}} terisi lebih dari 80% mulai {{date}}.",
+					"vmUnplaced": "{{vm}} belum memiliki host.",
+					"vmUnscheduled": "{{vm}}: tugas tidak memiliki tanggal mulai atau tenggat, sehingga penggunaan host tidak dapat dijadwalkan.",
+					"unknown": "Peringatan kapasitas."
+				}
+			},
+			"errors": {
+				"regionNotAllowed": "Model ini tidak tersedia di wilayah tersebut.",
+				"modelInUse": "Sebuah host menggunakan model ini, sehingga tidak dapat dihapus.",
+				"regionInUse": "Sebuah host menggunakan wilayah yang Anda hapus dari model ini.",
+				"hostLocked": "Hanya host yang berstatus terencana yang dapat diubah atau dihapus.",
+				"hostNotInProject": "Host yang dipilih bukan bagian dari proyek ini.",
+				"clusterRegionMismatch": "Klaster Ceph harus berada di wilayah yang sama dengan host.",
+				"clusterNotInWorkspace": "Klaster Ceph bukan bagian dari ruang kerja ini.",
+				"vmNotInTask": "Salah satu VM dalam daftar bukan bagian dari tugas ini. Muat ulang tugas lalu coba lagi.",
+				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
+				"zoneRequired": "Pilih zona untuk host.",
+				"zoneUnknown": "Zona ini bukan bagian dari wilayah.",
+				"reserveTooLarge": "Cadangan hypervisor harus lebih kecil daripada RAM model."
 			}
 		},
 		"projectSwitcher": {
@@ -2338,7 +2462,8 @@
 			"backToBoard": "Kembali ke papan",
 			"portfolio": "Portofolio",
 			"activity": "Aktivitas",
-			"workload": "Beban kerja"
+			"workload": "Beban kerja",
+			"datacenter": "Pusat data"
 		},
 		"projectList": {
 			"viewProject": "Lihat Proyek",
@@ -3410,6 +3535,40 @@
 					"title": "Periksa sebelum mengirim"
 				}
 			}
+		},
+		"infrastructure": {
+			"title": "Infrastruktur",
+			"empty": "Belum ada VM yang terdaftar untuk tugas ini.",
+			"columns": {
+				"name": "Nama VM",
+				"vcpu": "vCPU",
+				"ram": "RAM (GB)",
+				"ceph": "Ceph (GB)",
+				"local": "Lokal (GB)",
+				"host": "Host",
+				"cluster": "Klaster Ceph"
+			},
+			"addVm": "Tambah VM",
+			"duplicateRow": "Duplikat VM {{number}}",
+			"removeRow": "Hapus VM {{number}}",
+			"noHost": "Belum ada host",
+			"newHost": "Host baru…",
+			"noCluster": "Tanpa klaster Ceph",
+			"hostOption": "{{label}} · {{region}} · {{status}}",
+			"clusterOption": "{{name}} ({{region}})",
+			"saved": "Daftar VM disimpan.",
+			"warningsTitle": "Peringatan untuk tugas ini",
+			"validation": {
+				"nameRequired": "Masukkan nama VM.",
+				"number": "Masukkan bilangan bulat, 0 atau lebih."
+			},
+			"hostRemoved": "Host dihapus",
+			"hostFree": "tersisa {{ram}} GB RAM, {{vcpu}} vCPU",
+			"hostNoRoom": "ruang tidak cukup",
+			"usageHelp": "Penggunaan setelah semua VM yang ditempatkan di host berjalan.",
+			"usageRamLabel": "Penggunaan RAM {{host}}",
+			"usageText": "RAM {{ramUsed}} / {{ramCapacity}} GB · vCPU {{vcpuUsed}} / {{vcpuCapacity}} · disk lokal {{localUsed}} / {{localCapacity}} GB",
+			"usageOver": "Sumber daya di host ini tidak cukup"
 		}
 	},
 	"invitations": {
@@ -3590,6 +3749,204 @@
 				"empty": "Tidak ada tugas yang cocok dalam rentang ini.",
 				"error": "Gagal memuat tugas.",
 				"dueOn": " · Jatuh tempo {{date}}"
+			}
+		},
+		"datacenter": {
+			"tabs": {
+				"orderPlan": "Rencana pemesanan",
+				"hosts": "Host",
+				"storage": "Penyimpanan Ceph",
+				"regions": "Wilayah"
+			},
+			"loadFailed": "Data pusat data tidak dapat dimuat.",
+			"noAccess": {
+				"title": "Tidak ada akses ke pusat data",
+				"description": "Peran Anda tidak mencakup izin pusat data. Minta akses kepada administrator ruang kerja."
+			},
+			"actions": {
+				"save": "Simpan",
+				"changeStatus": "Ubah status"
+			},
+			"errors": {
+				"availableFromRequired": "Item yang dipesan memerlukan tanggal pengiriman yang diharapkan.",
+				"clusterNameTaken": "Klaster dengan nama ini sudah ada di ruang kerja.",
+				"clusterInUse": "Sebuah VM masih menggunakan klaster ini. Pindahkan VM ke klaster lain terlebih dahulu.",
+				"capacityLocked": "Dengan cara ini hanya item yang direncanakan yang dapat diubah.",
+				"clusterInvalid": "Pengaturan klaster tidak valid. Periksa nilai erasure coding.",
+				"regionInUse": "Wilayah ini masih digunakan oleh sebuah model, host, atau klaster.",
+				"saveFailed": "Perubahan tidak dapat disimpan.",
+				"deleteFailed": "Item tidak dapat dihapus.",
+				"regionUnknown": "Wilayah ini tidak ada di katalog wilayah.",
+				"regionCodeTaken": "Wilayah dengan kode ini sudah ada.",
+				"zoneInUse": "Zona yang digunakan oleh host tidak dapat dihapus.",
+				"zoneUnknown": "Zona ini bukan bagian dari wilayah."
+			},
+			"fields": {
+				"status": "Status",
+				"availableFrom": "Tanggal pengiriman",
+				"hostname": "Nama host",
+				"needDate": "Tanggal kebutuhan",
+				"provider": "Penyedia",
+				"region": "Wilayah pusat data",
+				"model": "Model",
+				"ramGb": "Memori (GB)",
+				"vcpu": "Inti vCPU",
+				"storageGb": "Disk lokal (GB)",
+				"capacity": "Kapasitas",
+				"capacityGb": "Kapasitas (GB)",
+				"project": "Proyek",
+				"cluster": "Klaster Ceph",
+				"name": "Nama",
+				"kind": "Jenis klaster",
+				"dataChunks": "Chunk data (k)",
+				"codingChunks": "Chunk pengodean (m)",
+				"fillThreshold": "Batas pengisian (%)",
+				"leadTimeDays": "Waktu tunggu (hari)",
+				"label": "Label",
+				"zone": "Zona"
+			},
+			"kind": {
+				"self_managed": "Dikelola sendiri",
+				"managed_service": "Layanan terkelola"
+			},
+			"provider": {
+				"other": "Lainnya"
+			},
+			"statusDialog": {
+				"title": "Ubah status",
+				"dateRequired": "Wajib untuk item yang dipesan: tanggal pengiriman yang diharapkan.",
+				"dateOptional": "Opsional. Item terpasang tanpa tanggal mendapat tanggal hari ini; item yang direncanakan tidak memiliki tanggal."
+			},
+			"orderPlan": {
+				"rows": "Baris: {{rows}}",
+				"late": "Terlambat: {{late}}",
+				"download": "Unduh XLSX",
+				"downloadFailed": "Rencana pemesanan tidak dapat diunduh.",
+				"empty": "Saat ini tidak ada yang perlu dipesan.",
+				"orderBy": "Pesan sebelum",
+				"type": "Jenis item",
+				"quantity": "Jumlah",
+				"lateBadge": "Terlambat",
+				"types": {
+					"host": "Host",
+					"storageNode": "Node penyimpanan",
+					"storageService": "Layanan penyimpanan"
+				}
+			},
+			"hosts": {
+				"allProjects": "Semua proyek",
+				"allRegions": "Semua wilayah",
+				"allStatuses": "Semua status",
+				"empty": "Tidak ada host yang cocok dengan filter.",
+				"host": "Host",
+				"ramPeak": "Penggunaan memori puncak",
+				"ramUse": "Penggunaan memori {{host}}",
+				"vms": "VM",
+				"warnings": "Peringatan host",
+				"allZones": "Semua zona"
+			},
+			"warnings": {
+				"title": "Peringatan kapasitas",
+				"none": "Tidak ada peringatan kapasitas.",
+				"showAll": "Tampilkan semua ({{total}})",
+				"showFewer": "Tampilkan lebih sedikit",
+				"severity": {
+					"error": "Kesalahan: {{total}}",
+					"warning": "Peringatan: {{total}}",
+					"info": "Informasi: {{total}}"
+				},
+				"severityName": {
+					"error": "Kesalahan",
+					"warning": "Peringatan",
+					"info": "Informasi"
+				},
+				"HOST_NOT_READY": "{{vm}} ({{project}}) dimulai pada {{date}}, tetapi {{host}} belum dikirim pada saat itu.",
+				"ORDER_LATE": "{{target}} seharusnya sudah dipesan sebelum {{date}}.",
+				"OVER_100": "{{target}} melebihi kapasitas sejak {{date}}.",
+				"OVER_80": "{{target}} mencapai 80% kapasitasnya pada {{date}}.",
+				"VM_UNPLACED": "{{vm}} ({{project}}) belum ditempatkan di host mana pun.",
+				"VM_UNSCHEDULED": "{{vm}} ({{project}}) tidak memiliki tanggal mulai.",
+				"CLUSTER_NOT_READY": "{{target}}: kapasitas belum dikirim saat VM membutuhkannya, mulai {{date}}.",
+				"CLUSTER_SHORTFALL": "{{target}} tidak memiliki kapasitas yang cukup; kekurangan dimulai pada {{date}}.",
+				"CLUSTER_SHORTFALL_NO_DATE": "{{target}} tidak memiliki kapasitas yang cukup."
+			},
+			"storage": {
+				"addCluster": "Tambah klaster",
+				"addEntry": "Tambah kapasitas",
+				"editCluster": "Edit",
+				"empty": "Belum ada klaster Ceph.",
+				"noEntries": "Klaster ini belum memiliki entri kapasitas.",
+				"erasureCoding": "Erasure coding",
+				"installed": "Terpasang (mentah)",
+				"usable": "Dapat digunakan",
+				"used": "Dipakai VM",
+				"firstOver80": "Pertama melewati 80%",
+				"firstOver100": "Pertama melewati 100%",
+				"usage": "Penggunaan {{cluster}}",
+				"shortfall": "Kekurangan: {{shortfall}}",
+				"suggestionService": "Beli {{buy}} sebelum {{date}}.",
+				"suggestionServiceNoDate": "Beli {{buy}}.",
+				"suggestionNodes": "Tambahkan {{nodes}} × node {{node}} sebelum {{date}}.",
+				"suggestionNodesNoDate": "Tambahkan {{nodes}} × node {{node}}.",
+				"suggestionNodesUnknown": "Tambahkan node penyimpanan senilai {{shortfall}} sebelum {{date}}.",
+				"suggestionNodesUnknownNoDate": "Tambahkan node penyimpanan senilai {{shortfall}}.",
+				"deleteClusterTitle": "Hapus {{name}}?",
+				"deleteClusterDescription": "Klaster dan entri kapasitasnya akan dihapus. Klaster yang digunakan oleh VM tidak dapat dihapus.",
+				"deleteEntryTitle": "Hapus {{name}}?",
+				"deleteEntryDescription": "Hanya kapasitas yang direncanakan yang dapat dihapus.",
+				"chart": {
+					"title": "Prakiraan permintaan Ceph",
+					"demand": "Permintaan",
+					"usableDelivered": "Kapasitas yang dapat digunakan (sudah dikirim)",
+					"usableAfterOrders": "Kapasitas yang dapat digunakan setelah pesanan terencana",
+					"overCapacity": "Kapasitas terlampaui",
+					"nearCapacity": "Kapasitas hampir penuh",
+					"today": "Hari ini",
+					"showTable": "Tampilkan tabel",
+					"hideTable": "Sembunyikan tabel",
+					"tableDate": "Tanggal",
+					"tableChange": "Perubahan",
+					"percentOfUsable": "% kapasitas yang dapat digunakan",
+					"empty": "Belum ada VM yang memakai klaster ini.",
+					"ariaLabel": "Permintaan Ceph untuk {{cluster}}: {{demand}} pada {{lastDate}}, dapat digunakan {{usable}}"
+				}
+			},
+			"clusterDialog": {
+				"createTitle": "Tambah klaster Ceph",
+				"editTitle": "Edit klaster Ceph",
+				"selfManagedHint": "Kapasitas yang dapat digunakan adalah kapasitas mentah × k / (k + m), dibatasi oleh batas pengisian.",
+				"managedHint": "Layanan terkelola tidak memiliki erasure coding. Kapasitas yang dapat digunakan dibatasi oleh batas pengisian.",
+				"regionPlaceholder": "Pilih wilayah",
+				"noRegions": "Belum ada wilayah. Tambahkan wilayah terlebih dahulu di tab Wilayah."
+			},
+			"entryDialog": {
+				"title": "Tambah kapasitas",
+				"capacityHint": "Kapasitas mentah node atau blok layanan, dalam GB.",
+				"labelHint": "Opsional. Tanpa label, entri diberi nama sesuai klaster."
+			},
+			"regions": {
+				"add": "Tambah wilayah",
+				"editTitle": "Edit wilayah",
+				"code": "Kode",
+				"codeHint": "Huruf A–Z, angka, dan tanda hubung, hingga 16 karakter; kode tidak dapat diubah nanti",
+				"usedBy": "Digunakan oleh",
+				"usage": {
+					"models": "Model",
+					"hosts": "Host",
+					"clusters": "Klaster"
+				},
+				"empty": "Belum ada wilayah. Tambahkan wilayah pertama.",
+				"editAction": "Edit {{code}}",
+				"deleteAction": "Hapus {{code}}",
+				"deleteTitle": "Hapus wilayah {{code}}?",
+				"deleteDescription": "Wilayah dihapus dari katalog. Wilayah yang digunakan oleh model, host, atau klaster tidak dapat dihapus.",
+				"zones": "Zona",
+				"zonesLabel": "Zona ketersediaan",
+				"zonesHint": "Zona ketersediaan wilayah ini, misalnya PAR1, PAR2, PAR3. Kosongkan untuk wilayah tanpa zona.",
+				"zoneInput": "Kode zona",
+				"addZone": "Tambah zona",
+				"removeZone": "Hapus zona {{zone}}",
+				"zoneHosts_other": "{{zone}} · {{count}} host"
 			}
 		}
 	},

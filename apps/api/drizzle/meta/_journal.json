@@ -449,6 +449,41 @@
       "when": 1791208555645,
       "tag": "20261005135555_ganttpro_task_estimate",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1791801165648,
+      "tag": "20261012103245_ganttpro_infrastructure_capacity",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1791802458377,
+      "tag": "20261012105418_ganttpro_infrastructure_storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1791896562090,
+      "tag": "20261013130242_ganttpro_infrastructure_regions",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1791900000078,
+      "tag": "20261013140000_ganttpro_infrastructure_zones",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1791910981778,
+      "tag": "20261013170301_ganttpro_infrastructure_reserve_gb",
+      "breakpoints": true
     }
   ]
 }

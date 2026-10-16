@@ -29,6 +29,9 @@ const NO_CAPABILITIES: ProjectCapabilities = {
   inviteToProject: false,
   cancelProjectInvitations: false,
   manageIntegrations: false,
+  infrastructureRead: false,
+  infrastructurePlan: false,
+  infrastructureManage: false,
 };
 
 // What the signed-in user may do INSIDE one project: the project role for a
@@ -69,6 +72,9 @@ export function useProjectPermission(projectId: string | undefined) {
       canInviteToProject: () => can.inviteToProject,
       canCancelProjectInvitations: () => can.cancelProjectInvitations,
       canManageIntegrations: () => can.manageIntegrations,
+      canReadInfrastructure: () => can.infrastructureRead,
+      canPlanInfrastructure: () => can.infrastructurePlan,
+      canManageInfrastructure: () => can.infrastructureManage,
       mode: data?.mode ?? null,
       role: data?.role ?? null,
       // True until the first answer arrives, so action UI is not flashed on

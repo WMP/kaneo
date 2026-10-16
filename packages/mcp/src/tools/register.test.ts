@@ -933,3 +933,215 @@ describe("registerTools", () => {
     ).toThrow();
   });
 });
+
+describe("infrastructure tools", () => {
+  const modelInput = {
+    projectId: "project 1",
+    name: "Advance-1",
+    provider: "ovh",
+    ramGb: 512,
+    vcpu: 32,
+    storageGb: 4000,
+    regions: ["GRA"],
+  };
+
+  it("creates a project server model", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ id: "m1" }) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("create_project_server_model")?.handler(modelInput);
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/infrastructure/project/project%201/models",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Advance-1",
+          provider: "ovh",
+          ramGb: 512,
+          vcpu: 32,
+          storageGb: 4000,
+          regions: ["GRA"],
+        }),
+      },
+    );
+  });
+
+  it("rejects unknown fields and a negative ramGb on create_project_server_model", () => {
+    const { server, tools } = createServerMock();
+    registerTools(server as never, { client: { json: vi.fn() } as never });
+
+    const schema = tools.get("create_project_server_model")?.config.inputSchema;
+    expect(schema).toBeDefined();
+    expect(() => schema?.parse({ ...modelInput, extra: 1 })).toThrow();
+    expect(() => schema?.parse({ ...modelInput, ramGb: -1 })).toThrow();
+    expect(() => schema?.parse(modelInput)).not.toThrow();
+  });
+
+  it("creates hosts spread across zones", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({ hosts: [] }) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("create_project_hosts")?.handler({
+      projectId: "p1",
+      modelId: "m1",
+      region: "GRA",
+      quantity: 3,
+      zones: ["GRA-A", "GRA-B"],
+    });
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/infrastructure/project/p1/hosts",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          modelId: "m1",
+          region: "GRA",
+          quantity: 3,
+          zones: ["GRA-A", "GRA-B"],
+        }),
+      },
+    );
+  });
+
+  it("sets a host's status and delivery date", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({}) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("set_host_status")?.handler({
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "ordered",
+      availableFrom: "2026-11-20",
+    });
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/infrastructure/workspace/w1/hosts/h1/status",
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          status: "ordered",
+          availableFrom: "2026-11-20",
+        }),
+      },
+    );
+  });
+
+  it("reads a project's capacity", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({}) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("get_project_capacity")?.handler({ projectId: "p1" });
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/infrastructure/project/p1/capacity",
+      { method: "GET" },
+    );
+  });
+
+  it("replaces a task's VMs with defaults applied", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue([]) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("set_task_vms")?.handler({
+      taskId: "t1",
+      vms: [
+        { id: "vm1", name: "db", vcpu: 4, ramGb: 16, hostId: "h1" },
+        { name: "web", vcpu: 2, ramGb: 8, cephStorageGb: 100 },
+      ],
+    });
+
+    const [path, init] = client.json.mock.calls[0] as [string, RequestInit];
+    expect(path).toBe("/api/infrastructure/task/t1/vms");
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(String(init.body))).toEqual({
+      vms: [
+        {
+          id: "vm1",
+          name: "db",
+          vcpu: 4,
+          ramGb: 16,
+          cephStorageGb: 0,
+          localStorageGb: 0,
+          hostId: "h1",
+          storageClusterId: null,
+        },
+        {
+          name: "web",
+          vcpu: 2,
+          ramGb: 8,
+          cephStorageGb: 100,
+          localStorageGb: 0,
+          hostId: null,
+          storageClusterId: null,
+        },
+      ],
+    });
+  });
+
+  it("adds task VMs after the existing ones, keeping their ids", async () => {
+    const { server, tools } = createServerMock();
+    const client = {
+      json: vi
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            id: "vm1",
+            taskId: "t1",
+            hostId: "h1",
+            name: "db",
+            vcpu: 4,
+            ramGb: 16,
+            localStorageGb: 50,
+            cephStorageGb: 10,
+            storageClusterId: "c1",
+            host: { id: "h1" },
+          },
+        ])
+        .mockResolvedValueOnce([]),
+    };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("add_task_vms")?.handler({
+      taskId: "t1",
+      vms: [{ name: "web", vcpu: 2, ramGb: 8 }],
+    });
+
+    expect(client.json).toHaveBeenNthCalledWith(
+      1,
+      "/api/infrastructure/task/t1/vms",
+      { method: "GET" },
+    );
+    const [path, init] = client.json.mock.calls[1] as [string, RequestInit];
+    expect(path).toBe("/api/infrastructure/task/t1/vms");
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(String(init.body))).toEqual({
+      vms: [
+        {
+          id: "vm1",
+          name: "db",
+          vcpu: 4,
+          ramGb: 16,
+          localStorageGb: 50,
+          cephStorageGb: 10,
+          hostId: "h1",
+          storageClusterId: "c1",
+        },
+        {
+          name: "web",
+          vcpu: 2,
+          ramGb: 8,
+          cephStorageGb: 0,
+          localStorageGb: 0,
+          hostId: null,
+          storageClusterId: null,
+        },
+      ],
+    });
+  });
+});

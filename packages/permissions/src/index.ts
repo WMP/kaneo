@@ -12,6 +12,10 @@ export const statement = {
   task: ["create", "read", "update", "delete", "assign"],
   label: ["create", "read", "update", "delete"],
   workspace: ["read", "update", "delete", "manage_settings"],
+  // Infrastructure capacity: `infrastructure` is project-level, `datacenter`
+  // is workspace-level. Only the built-in owner role holds them in code.
+  infrastructure: ["read", "plan", "manage"],
+  datacenter: ["read", "manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -46,6 +50,8 @@ export const owner = ac.newRole({
   task: ["create", "read", "update", "delete", "assign"],
   label: ["create", "read", "update", "delete"],
   workspace: ["read", "update", "delete", "manage_settings"],
+  infrastructure: ["read", "plan", "manage"],
+  datacenter: ["read", "manage"],
 });
 
 export const builtInRoles = { viewer, member, admin, owner } as const;
