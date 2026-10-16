@@ -1006,6 +1006,30 @@ describe("infrastructure tools", () => {
     );
   });
 
+  it("sets a host's status and delivery date", async () => {
+    const { server, tools } = createServerMock();
+    const client = { json: vi.fn().mockResolvedValue({}) };
+    registerTools(server as never, { client: client as never });
+
+    await tools.get("set_host_status")?.handler({
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "ordered",
+      availableFrom: "2026-11-20",
+    });
+
+    expect(client.json).toHaveBeenCalledWith(
+      "/api/infrastructure/workspace/w1/hosts/h1/status",
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          status: "ordered",
+          availableFrom: "2026-11-20",
+        }),
+      },
+    );
+  });
+
   it("reads a project's capacity", async () => {
     const { server, tools } = createServerMock();
     const client = { json: vi.fn().mockResolvedValue({}) };

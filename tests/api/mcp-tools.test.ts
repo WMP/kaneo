@@ -863,6 +863,51 @@ describe("MCP tool catalog", () => {
     });
   });
 
+  it("sets a host's status and delivery date", async () => {
+    await call("set_host_status", {
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "ordered",
+      availableFrom: "2026-11-20",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/workspace/w1/hosts/h1/status",
+      method: "PUT",
+      body: { status: "ordered", availableFrom: "2026-11-20" },
+    });
+  });
+
+  it("sends only the given host status fields and clears a hostname with null", async () => {
+    await call("set_host_status", {
+      workspaceId: "w1",
+      hostId: "h1",
+      status: "installed",
+      hostname: null,
+    });
+
+    expect(lastRequest()).toMatchObject({
+      body: { status: "installed", hostname: null },
+    });
+    expect(lastRequest().body).not.toHaveProperty("availableFrom");
+  });
+
+  it("sets a Ceph capacity entry's status", async () => {
+    await call("set_storage_capacity_status", {
+      workspaceId: "w1",
+      clusterId: "c1",
+      entryId: "e1",
+      status: "ordered",
+      availableFrom: "2026-12-01",
+    });
+
+    expect(lastRequest()).toMatchObject({
+      url: "http://api.test/api/infrastructure/workspace/w1/storage-clusters/c1/capacity/e1",
+      method: "PUT",
+      body: { status: "ordered", availableFrom: "2026-12-01" },
+    });
+  });
+
   it("reads a project's capacity", async () => {
     await call("get_project_capacity", { projectId: "p1" });
 

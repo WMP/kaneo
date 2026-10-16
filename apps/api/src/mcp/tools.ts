@@ -323,6 +323,11 @@ const prioritySchema = z.enum([
   "urgent",
 ]);
 const nonEmptyString = z.string().trim().min(1);
+// Status and delivery date of a host or Ceph capacity entry (datacenter).
+const INFRA_ITEM_STATUSES = ["planned", "ordered", "installed"] as const;
+const infraDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date");
 const optionalNonEmptyString = nonEmptyString.optional();
 const nullableOptionalNonEmptyString = nonEmptyString.nullable().optional();
 const isoDateTimeSchema = z.string().datetime({ offset: true });
@@ -1707,6 +1712,105 @@ export function registerMcpTools(
         client.json(
           `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/capacity`,
           { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "list_datacenter_hosts",
+    {
+      description:
+        "List the hosts of every project in the workspace with their id, project, model, region, zone, status, availableFrom (expected or actual delivery date) and hostname. Requires the datacenter:read permission.",
+      inputSchema: z.strictObject({ workspaceId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/hosts`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "set_host_status",
+    {
+      description:
+        "Set a host's status and delivery date (datacenter team). planned clears availableFrom; ordered needs availableFrom, the expected delivery date; installed without availableFrom stores today. hostname is changed only when given (null clears it). Requires the datacenter:manage permission.",
+      inputSchema: z.strictObject({
+        workspaceId: nonEmptyString,
+        hostId: nonEmptyString,
+        status: z.enum(INFRA_ITEM_STATUSES),
+        availableFrom: infraDateSchema.nullable().optional(),
+        hostname: z.string().trim().max(255).nullable().optional(),
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/hosts/${encodeURIComponent(args.hostId)}/status`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              status: args.status,
+              ...(args.availableFrom !== undefined
+                ? { availableFrom: args.availableFrom }
+                : {}),
+              ...(args.hostname !== undefined
+                ? { hostname: args.hostname }
+                : {}),
+            }),
+          },
+        ),
+      ),
+  );
+
+  registerTool(
+    "list_storage_clusters",
+    {
+      description:
+        "List the workspace's Ceph storage clusters with their capacity entries (id, label, model, capacity, status, availableFrom, hostname) and totals. Requires the datacenter:read permission.",
+      inputSchema: z.strictObject({ workspaceId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/storage-clusters`,
+          { method: "GET" },
+        ),
+      ),
+  );
+
+  registerTool(
+    "set_storage_capacity_status",
+    {
+      description:
+        "Set the status and delivery date of a Ceph capacity entry (a storage node or a purchased service amount), with the same rules as set_host_status. Requires the datacenter:manage permission.",
+      inputSchema: z.strictObject({
+        workspaceId: nonEmptyString,
+        clusterId: nonEmptyString,
+        entryId: nonEmptyString,
+        status: z.enum(INFRA_ITEM_STATUSES),
+        availableFrom: infraDateSchema.nullable().optional(),
+        hostname: z.string().trim().max(255).nullable().optional(),
+      }),
+    },
+    async (args) =>
+      run(() =>
+        client.json(
+          `/api/infrastructure/workspace/${encodeURIComponent(args.workspaceId)}/storage-clusters/${encodeURIComponent(args.clusterId)}/capacity/${encodeURIComponent(args.entryId)}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              status: args.status,
+              ...(args.availableFrom !== undefined
+                ? { availableFrom: args.availableFrom }
+                : {}),
+              ...(args.hostname !== undefined
+                ? { hostname: args.hostname }
+                : {}),
+            }),
+          },
         ),
       ),
   );
