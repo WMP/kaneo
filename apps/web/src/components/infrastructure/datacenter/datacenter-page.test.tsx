@@ -199,11 +199,14 @@ describe("StorageTab", () => {
           results={[]}
           regions={[]}
           canManage={false}
+          today="2026-10-16"
         />,
       ),
     );
 
-    expect(screen.getByText("Ceph GRA")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Ceph GRA" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Ceph GRA #1")).toBeInTheDocument();
     for (const name of [
       "workspace:datacenter.storage.addCluster",
@@ -225,6 +228,7 @@ describe("StorageTab", () => {
           results={[]}
           regions={[]}
           canManage
+          today="2026-10-16"
         />,
       ),
     );

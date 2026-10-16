@@ -3935,7 +3935,23 @@
 				"deleteClusterTitle": "Видалити {{name}}?",
 				"deleteClusterDescription": "Кластер і його позиції місткості буде видалено. Кластер, який використовує віртуальна машина, видалити не можна.",
 				"deleteEntryTitle": "Видалити {{name}}?",
-				"deleteEntryDescription": "Видалити можна лише заплановану місткість."
+				"deleteEntryDescription": "Видалити можна лише заплановану місткість.",
+				"chart": {
+					"title": "Прогноз потреби в Ceph",
+					"demand": "Потреба",
+					"usableDelivered": "Корисна ємність (поставлена)",
+					"usableAfterOrders": "Корисна ємність після запланованих замовлень",
+					"overCapacity": "Перевищення ємності",
+					"nearCapacity": "Ємність майже вичерпана",
+					"today": "Сьогодні",
+					"showTable": "Показати таблицю",
+					"hideTable": "Сховати таблицю",
+					"tableDate": "Дата",
+					"tableChange": "Зміна",
+					"percentOfUsable": "% корисної ємності",
+					"empty": "Жодна ВМ ще не використовує цей кластер.",
+					"ariaLabel": "Потреба в Ceph для {{cluster}}: {{demand}} до {{lastDate}}, корисна ємність {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Додати кластер Ceph",

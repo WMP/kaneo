@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "{{name}} löschen?",
 				"deleteClusterDescription": "Der Cluster und seine Kapazitätseinträge werden entfernt. Ein Cluster, den eine VM nutzt, kann nicht gelöscht werden.",
 				"deleteEntryTitle": "{{name}} löschen?",
-				"deleteEntryDescription": "Nur geplante Kapazität kann gelöscht werden."
+				"deleteEntryDescription": "Nur geplante Kapazität kann gelöscht werden.",
+				"chart": {
+					"title": "Prognose des Ceph-Bedarfs",
+					"demand": "Bedarf",
+					"usableDelivered": "Nutzbare Kapazität (geliefert)",
+					"usableAfterOrders": "Nutzbare Kapazität nach geplanten Bestellungen",
+					"overCapacity": "Kapazität überschritten",
+					"nearCapacity": "Kapazität fast erreicht",
+					"today": "Heute",
+					"showTable": "Tabelle anzeigen",
+					"hideTable": "Tabelle ausblenden",
+					"tableDate": "Datum",
+					"tableChange": "Änderung",
+					"percentOfUsable": "% der nutzbaren Kapazität",
+					"empty": "Noch keine VMs nutzen diesen Cluster.",
+					"ariaLabel": "Ceph-Bedarf für {{cluster}}: {{demand}} bis {{lastDate}}, nutzbar {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph-Cluster hinzufügen",

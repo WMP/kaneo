@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "{{name}} हटाएँ?",
 				"deleteClusterDescription": "क्लस्टर और उसकी क्षमता मदें हटा दी जाएँगी। जिस क्लस्टर का कोई VM उपयोग कर रही है, उसे हटाया नहीं जा सकता।",
 				"deleteEntryTitle": "{{name}} हटाएँ?",
-				"deleteEntryDescription": "केवल नियोजित क्षमता हटाई जा सकती है।"
+				"deleteEntryDescription": "केवल नियोजित क्षमता हटाई जा सकती है।",
+				"chart": {
+					"title": "Ceph मांग का पूर्वानुमान",
+					"demand": "मांग",
+					"usableDelivered": "उपयोग योग्य क्षमता (वितरित)",
+					"usableAfterOrders": "नियोजित ऑर्डर के बाद उपयोग योग्य क्षमता",
+					"overCapacity": "क्षमता से अधिक",
+					"nearCapacity": "क्षमता लगभग पूर्ण",
+					"today": "आज",
+					"showTable": "तालिका दिखाएं",
+					"hideTable": "तालिका छिपाएं",
+					"tableDate": "तारीख",
+					"tableChange": "बदलाव",
+					"percentOfUsable": "उपयोग योग्य क्षमता का %",
+					"empty": "अभी तक कोई VM इस क्लस्टर का उपयोग नहीं करती।",
+					"ariaLabel": "{{cluster}} के लिए Ceph मांग: {{lastDate}} तक {{demand}}, उपयोग योग्य {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph क्लस्टर जोड़ें",

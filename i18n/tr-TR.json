@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "{{name}} silinsin mi?",
 				"deleteClusterDescription": "Küme ve kapasite kalemleri kaldırılır. Bir sanal makinenin kullandığı küme silinemez.",
 				"deleteEntryTitle": "{{name}} silinsin mi?",
-				"deleteEntryDescription": "Yalnızca planlanmış kapasite silinebilir."
+				"deleteEntryDescription": "Yalnızca planlanmış kapasite silinebilir.",
+				"chart": {
+					"title": "Ceph talep tahmini",
+					"demand": "Talep",
+					"usableDelivered": "Kullanılabilir kapasite (teslim edilen)",
+					"usableAfterOrders": "Planlanan siparişlerden sonra kullanılabilir kapasite",
+					"overCapacity": "Kapasite aşıldı",
+					"nearCapacity": "Kapasite dolmak üzere",
+					"today": "Bugün",
+					"showTable": "Tabloyu göster",
+					"hideTable": "Tabloyu gizle",
+					"tableDate": "Tarih",
+					"tableChange": "Değişim",
+					"percentOfUsable": "Kullanılabilir kapasite %",
+					"empty": "Henüz hiçbir VM bu kümeyi kullanmıyor.",
+					"ariaLabel": "{{cluster}} için Ceph talebi: {{lastDate}} itibarıyla {{demand}}, kullanılabilir {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph kümesi ekle",

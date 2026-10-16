@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "{{name}} verwijderen?",
 				"deleteClusterDescription": "Het cluster en de capaciteitsposten worden verwijderd. Een cluster dat een VM gebruikt, kan niet worden verwijderd.",
 				"deleteEntryTitle": "{{name}} verwijderen?",
-				"deleteEntryDescription": "Alleen geplande capaciteit kan worden verwijderd."
+				"deleteEntryDescription": "Alleen geplande capaciteit kan worden verwijderd.",
+				"chart": {
+					"title": "Prognose van de Ceph-vraag",
+					"demand": "Vraag",
+					"usableDelivered": "Bruikbare capaciteit (geleverd)",
+					"usableAfterOrders": "Bruikbare capaciteit na geplande bestellingen",
+					"overCapacity": "Capaciteit overschreden",
+					"nearCapacity": "Capaciteit bijna bereikt",
+					"today": "Vandaag",
+					"showTable": "Tabel tonen",
+					"hideTable": "Tabel verbergen",
+					"tableDate": "Datum",
+					"tableChange": "Wijziging",
+					"percentOfUsable": "% van bruikbare capaciteit",
+					"empty": "Nog geen VM’s gebruiken deze cluster.",
+					"ariaLabel": "Ceph-vraag voor {{cluster}}: {{demand}} op {{lastDate}}, bruikbaar {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph-cluster toevoegen",

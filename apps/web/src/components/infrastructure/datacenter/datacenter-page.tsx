@@ -118,6 +118,7 @@ export function DatacenterPage({ workspaceId }: { workspaceId: string }) {
             results={capacity.data.clusters}
             regions={regions.data}
             canManage={canManage}
+            today={capacity.data.today}
           />
         </TabsPanel>
         <TabsPanel value="regions" className="pt-2">

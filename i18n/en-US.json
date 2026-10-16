@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "Delete {{name}}?",
 				"deleteClusterDescription": "The cluster and its capacity entries are removed. A cluster that a VM uses cannot be deleted.",
 				"deleteEntryTitle": "Delete {{name}}?",
-				"deleteEntryDescription": "Only planned capacity can be deleted."
+				"deleteEntryDescription": "Only planned capacity can be deleted.",
+				"chart": {
+					"title": "Ceph demand forecast",
+					"demand": "Demand",
+					"usableDelivered": "Usable capacity (delivered)",
+					"usableAfterOrders": "Usable capacity after planned orders",
+					"overCapacity": "Over capacity",
+					"nearCapacity": "Near capacity",
+					"today": "Today",
+					"showTable": "Show table",
+					"hideTable": "Hide table",
+					"tableDate": "Date",
+					"tableChange": "Change",
+					"percentOfUsable": "% of usable",
+					"empty": "No VMs use this cluster yet.",
+					"ariaLabel": "Ceph demand for {{cluster}}: {{demand}} by {{lastDate}}, usable {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Add Ceph cluster",

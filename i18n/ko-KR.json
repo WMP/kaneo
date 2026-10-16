@@ -3893,7 +3893,23 @@
 				"deleteClusterTitle": "{{name}}을(를) 삭제할까요?",
 				"deleteClusterDescription": "클러스터와 용량 항목이 삭제됩니다. VM이 사용 중인 클러스터는 삭제할 수 없습니다.",
 				"deleteEntryTitle": "{{name}}을(를) 삭제할까요?",
-				"deleteEntryDescription": "계획 상태의 용량만 삭제할 수 있습니다."
+				"deleteEntryDescription": "계획 상태의 용량만 삭제할 수 있습니다.",
+				"chart": {
+					"title": "Ceph 수요 예측",
+					"demand": "수요",
+					"usableDelivered": "사용 가능 용량(납품 완료)",
+					"usableAfterOrders": "계획된 주문 이후 사용 가능 용량",
+					"overCapacity": "용량 초과",
+					"nearCapacity": "용량 거의 소진",
+					"today": "오늘",
+					"showTable": "표 표시",
+					"hideTable": "표 숨기기",
+					"tableDate": "날짜",
+					"tableChange": "변화",
+					"percentOfUsable": "사용 가능 용량 대비 %",
+					"empty": "이 클러스터를 사용하는 VM이 아직 없습니다.",
+					"ariaLabel": "{{cluster}}의 Ceph 수요: {{lastDate}}까지 {{demand}}, 사용 가능 {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph 클러스터 추가",

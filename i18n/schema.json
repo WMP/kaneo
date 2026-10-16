@@ -15983,6 +15983,70 @@
 								},
 								"deleteEntryDescription": {
 									"type": "string"
+								},
+								"chart": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"demand": {
+											"type": "string"
+										},
+										"usableDelivered": {
+											"type": "string"
+										},
+										"usableAfterOrders": {
+											"type": "string"
+										},
+										"overCapacity": {
+											"type": "string"
+										},
+										"nearCapacity": {
+											"type": "string"
+										},
+										"today": {
+											"type": "string"
+										},
+										"showTable": {
+											"type": "string"
+										},
+										"hideTable": {
+											"type": "string"
+										},
+										"tableDate": {
+											"type": "string"
+										},
+										"tableChange": {
+											"type": "string"
+										},
+										"percentOfUsable": {
+											"type": "string"
+										},
+										"empty": {
+											"type": "string"
+										},
+										"ariaLabel": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"title",
+										"demand",
+										"usableDelivered",
+										"usableAfterOrders",
+										"overCapacity",
+										"nearCapacity",
+										"today",
+										"showTable",
+										"hideTable",
+										"tableDate",
+										"tableChange",
+										"percentOfUsable",
+										"empty",
+										"ariaLabel"
+									]
 								}
 							},
 							"required": [
@@ -16008,7 +16072,8 @@
 								"deleteClusterTitle",
 								"deleteClusterDescription",
 								"deleteEntryTitle",
-								"deleteEntryDescription"
+								"deleteEntryDescription",
+								"chart"
 							]
 						},
 						"clusterDialog": {

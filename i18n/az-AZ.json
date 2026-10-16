@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "{{name}} silinsin?",
 				"deleteClusterDescription": "Klaster və onun tutum mövqeləri silinir. Virtual maşının istifadə etdiyi klasteri silmək olmaz.",
 				"deleteEntryTitle": "{{name}} silinsin?",
-				"deleteEntryDescription": "Yalnız planlaşdırılmış tutumu silmək olar."
+				"deleteEntryDescription": "Yalnız planlaşdırılmış tutumu silmək olar.",
+				"chart": {
+					"title": "Ceph tələbatının proqnozu",
+					"demand": "Tələbat",
+					"usableDelivered": "İstifadə oluna bilən tutum (çatdırılmış)",
+					"usableAfterOrders": "Planlaşdırılmış sifarişlərdən sonra istifadə oluna bilən tutum",
+					"overCapacity": "Tutum aşılıb",
+					"nearCapacity": "Tutum demək olar ki, dolub",
+					"today": "Bu gün",
+					"showTable": "Cədvəli göstər",
+					"hideTable": "Cədvəli gizlət",
+					"tableDate": "Tarix",
+					"tableChange": "Dəyişiklik",
+					"percentOfUsable": "İstifadə oluna bilən tutumun %-i",
+					"empty": "Hələ heç bir VM bu klasterdən istifadə etmir.",
+					"ariaLabel": "{{cluster}} üçün Ceph tələbatı: {{lastDate}} tarixinədək {{demand}}, istifadə oluna bilən {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph klasteri əlavə et",

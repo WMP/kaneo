@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "Διαγραφή του {{name}};",
 				"deleteClusterDescription": "Το cluster και τα στοιχεία χωρητικότητάς του θα αφαιρεθούν. Ένα cluster που χρησιμοποιεί εικονική μηχανή δεν μπορεί να διαγραφεί.",
 				"deleteEntryTitle": "Διαγραφή του {{name}};",
-				"deleteEntryDescription": "Μπορεί να διαγραφεί μόνο προγραμματισμένη χωρητικότητα."
+				"deleteEntryDescription": "Μπορεί να διαγραφεί μόνο προγραμματισμένη χωρητικότητα.",
+				"chart": {
+					"title": "Πρόβλεψη ζήτησης Ceph",
+					"demand": "Ζήτηση",
+					"usableDelivered": "Αξιοποιήσιμη χωρητικότητα (παραδομένη)",
+					"usableAfterOrders": "Αξιοποιήσιμη χωρητικότητα μετά τις προγραμματισμένες παραγγελίες",
+					"overCapacity": "Υπέρβαση χωρητικότητας",
+					"nearCapacity": "Σχεδόν πλήρης χωρητικότητα",
+					"today": "Σήμερα",
+					"showTable": "Εμφάνιση πίνακα",
+					"hideTable": "Απόκρυψη πίνακα",
+					"tableDate": "Ημερομηνία",
+					"tableChange": "Μεταβολή",
+					"percentOfUsable": "% της αξιοποιήσιμης χωρητικότητας",
+					"empty": "Καμία VM δεν χρησιμοποιεί ακόμη αυτό το σύμπλεγμα.",
+					"ariaLabel": "Ζήτηση Ceph για το {{cluster}}: {{demand}} έως {{lastDate}}, αξιοποιήσιμη {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Προσθήκη cluster Ceph",

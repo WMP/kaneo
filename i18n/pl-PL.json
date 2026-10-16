@@ -885,7 +885,23 @@
 				"deleteClusterTitle": "Usunąć {{name}}?",
 				"deleteClusterDescription": "Klaster i jego pozycje pojemności zostaną usunięte. Klastra używanego przez maszynę wirtualną nie można usunąć.",
 				"deleteEntryTitle": "Usunąć {{name}}?",
-				"deleteEntryDescription": "Można usunąć tylko pojemność w statusie planowanym."
+				"deleteEntryDescription": "Można usunąć tylko pojemność w statusie planowanym.",
+				"chart": {
+					"title": "Prognoza zapotrzebowania na Ceph",
+					"demand": "Zapotrzebowanie",
+					"usableDelivered": "Pojemność użyteczna (dostarczona)",
+					"usableAfterOrders": "Pojemność po realizacji zamówień",
+					"overCapacity": "Brak pojemności",
+					"nearCapacity": "Prawie pełna pojemność",
+					"today": "Dziś",
+					"showTable": "Pokaż tabelę",
+					"hideTable": "Ukryj tabelę",
+					"tableDate": "Data",
+					"tableChange": "Zmiana",
+					"percentOfUsable": "% pojemności",
+					"empty": "Żadna VM nie używa jeszcze tego klastra.",
+					"ariaLabel": "Zapotrzebowanie na Ceph dla {{cluster}}: {{demand}} do {{lastDate}}, pojemność użyteczna {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Dodaj klaster Ceph",

@@ -3907,7 +3907,23 @@
 				"deleteClusterTitle": "Да се избрише {{name}}?",
 				"deleteClusterDescription": "Кластерот и неговите ставки за капацитет се отстрануваат. Кластер што го користи виртуелна машина не може да се избрише.",
 				"deleteEntryTitle": "Да се избрише {{name}}?",
-				"deleteEntryDescription": "Може да се избрише само планиран капацитет."
+				"deleteEntryDescription": "Може да се избрише само планиран капацитет.",
+				"chart": {
+					"title": "Прогноза за побарувачката за Ceph",
+					"demand": "Побарувачка",
+					"usableDelivered": "Употреблив капацитет (испорачан)",
+					"usableAfterOrders": "Употреблив капацитет по планираните нарачки",
+					"overCapacity": "Надминат капацитет",
+					"nearCapacity": "Капацитетот е скоро исполнет",
+					"today": "Денес",
+					"showTable": "Прикажи табела",
+					"hideTable": "Скриј табела",
+					"tableDate": "Датум",
+					"tableChange": "Промена",
+					"percentOfUsable": "% од употребливиот капацитет",
+					"empty": "Ниту една ВМ сè уште не го користи овој кластер.",
+					"ariaLabel": "Побарувачка за Ceph за {{cluster}}: {{demand}} до {{lastDate}}, употребливо {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Додај кластер Ceph",

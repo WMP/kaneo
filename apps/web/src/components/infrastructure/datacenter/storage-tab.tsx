@@ -21,6 +21,7 @@ import {
   useUpdateStorageCapacity,
   useUpdateStorageCluster,
 } from "@/hooks/mutations/infrastructure/datacenter/use-datacenter-mutations";
+import { CephDemandChart } from "./ceph-demand-chart";
 import { ClusterDialog } from "./cluster-dialog";
 import { ConfirmDeleteDialog } from "./confirm-delete-dialog";
 import { EntryDialog } from "./entry-dialog";
@@ -314,12 +315,14 @@ export function StorageTab({
   results,
   regions,
   canManage,
+  today,
 }: {
   workspaceId: string;
   clusters: StorageCluster[];
   regions: { code: string; name: string }[];
   results: ClusterCapacity[];
   canManage: boolean;
+  today: string;
 }) {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState<DialogState | null>(null);
@@ -368,6 +371,29 @@ export function StorageTab({
             />
           ))}
         </div>
+      )}
+
+      {clusters.length > 0 && (
+        <section className="space-y-3 pt-2">
+          <h3 className="text-base font-medium">
+            {t("workspace:datacenter.storage.chart.title")}
+          </h3>
+          <div className="grid gap-4">
+            {clusters.map((cluster) => {
+              const result = resultByCluster.get(cluster.id);
+              return (
+                <CephDemandChart
+                  key={cluster.id}
+                  clusterName={cluster.name}
+                  region={cluster.region}
+                  steps={result?.steps ?? []}
+                  usableAllGb={result?.usableAllGb ?? 0}
+                  today={today}
+                />
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {dialog?.type === "cluster" && (

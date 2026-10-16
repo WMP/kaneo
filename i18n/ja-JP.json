@@ -3893,7 +3893,23 @@
 				"deleteClusterTitle": "{{name}} を削除しますか？",
 				"deleteClusterDescription": "クラスターとその容量の項目が削除されます。VM が使用しているクラスターは削除できません。",
 				"deleteEntryTitle": "{{name}} を削除しますか？",
-				"deleteEntryDescription": "削除できるのは計画中の容量だけです。"
+				"deleteEntryDescription": "削除できるのは計画中の容量だけです。",
+				"chart": {
+					"title": "Ceph 需要予測",
+					"demand": "需要",
+					"usableDelivered": "使用可能容量（納品済み）",
+					"usableAfterOrders": "計画済み発注後の使用可能容量",
+					"overCapacity": "容量超過",
+					"nearCapacity": "容量逼迫",
+					"today": "今日",
+					"showTable": "表を表示",
+					"hideTable": "表を非表示",
+					"tableDate": "日付",
+					"tableChange": "変化",
+					"percentOfUsable": "使用可能容量に対する割合",
+					"empty": "このクラスターを使用している VM はまだありません。",
+					"ariaLabel": "{{cluster}} の Ceph 需要：{{lastDate}} までに {{demand}}、使用可能 {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Ceph クラスターを追加",

@@ -3921,7 +3921,23 @@
 				"deleteClusterTitle": "Excluir {{name}}?",
 				"deleteClusterDescription": "O cluster e suas entradas de capacidade serão removidos. Um cluster usado por uma VM não pode ser excluído.",
 				"deleteEntryTitle": "Excluir {{name}}?",
-				"deleteEntryDescription": "Somente a capacidade planejada pode ser excluída."
+				"deleteEntryDescription": "Somente a capacidade planejada pode ser excluída.",
+				"chart": {
+					"title": "Previsão da demanda de Ceph",
+					"demand": "Demanda",
+					"usableDelivered": "Capacidade utilizável (entregue)",
+					"usableAfterOrders": "Capacidade utilizável após os pedidos planejados",
+					"overCapacity": "Capacidade excedida",
+					"nearCapacity": "Capacidade quase esgotada",
+					"today": "Hoje",
+					"showTable": "Mostrar tabela",
+					"hideTable": "Ocultar tabela",
+					"tableDate": "Data",
+					"tableChange": "Variação",
+					"percentOfUsable": "% da capacidade utilizável",
+					"empty": "Nenhuma VM usa este cluster ainda.",
+					"ariaLabel": "Demanda de Ceph para {{cluster}}: {{demand}} até {{lastDate}}, utilizável {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Adicionar cluster Ceph",

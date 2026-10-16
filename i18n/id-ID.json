@@ -3893,7 +3893,23 @@
 				"deleteClusterTitle": "Hapus {{name}}?",
 				"deleteClusterDescription": "Klaster dan entri kapasitasnya akan dihapus. Klaster yang digunakan oleh VM tidak dapat dihapus.",
 				"deleteEntryTitle": "Hapus {{name}}?",
-				"deleteEntryDescription": "Hanya kapasitas yang direncanakan yang dapat dihapus."
+				"deleteEntryDescription": "Hanya kapasitas yang direncanakan yang dapat dihapus.",
+				"chart": {
+					"title": "Prakiraan permintaan Ceph",
+					"demand": "Permintaan",
+					"usableDelivered": "Kapasitas yang dapat digunakan (sudah dikirim)",
+					"usableAfterOrders": "Kapasitas yang dapat digunakan setelah pesanan terencana",
+					"overCapacity": "Kapasitas terlampaui",
+					"nearCapacity": "Kapasitas hampir penuh",
+					"today": "Hari ini",
+					"showTable": "Tampilkan tabel",
+					"hideTable": "Sembunyikan tabel",
+					"tableDate": "Tanggal",
+					"tableChange": "Perubahan",
+					"percentOfUsable": "% kapasitas yang dapat digunakan",
+					"empty": "Belum ada VM yang memakai klaster ini.",
+					"ariaLabel": "Permintaan Ceph untuk {{cluster}}: {{demand}} pada {{lastDate}}, dapat digunakan {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Tambah klaster Ceph",

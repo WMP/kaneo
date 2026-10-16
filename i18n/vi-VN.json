@@ -3893,7 +3893,23 @@
 				"deleteClusterTitle": "Xóa {{name}}?",
 				"deleteClusterDescription": "Cụm và các mục dung lượng của nó sẽ bị xóa. Không thể xóa cụm đang được máy ảo sử dụng.",
 				"deleteEntryTitle": "Xóa {{name}}?",
-				"deleteEntryDescription": "Chỉ có thể xóa dung lượng đã lên kế hoạch."
+				"deleteEntryDescription": "Chỉ có thể xóa dung lượng đã lên kế hoạch.",
+				"chart": {
+					"title": "Dự báo nhu cầu Ceph",
+					"demand": "Nhu cầu",
+					"usableDelivered": "Dung lượng khả dụng (đã giao)",
+					"usableAfterOrders": "Dung lượng khả dụng sau các đơn hàng đã lên kế hoạch",
+					"overCapacity": "Vượt dung lượng",
+					"nearCapacity": "Gần hết dung lượng",
+					"today": "Hôm nay",
+					"showTable": "Hiện bảng",
+					"hideTable": "Ẩn bảng",
+					"tableDate": "Ngày",
+					"tableChange": "Thay đổi",
+					"percentOfUsable": "% dung lượng khả dụng",
+					"empty": "Chưa có VM nào dùng cụm này.",
+					"ariaLabel": "Nhu cầu Ceph của {{cluster}}: {{demand}} đến {{lastDate}}, khả dụng {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "Thêm cụm Ceph",

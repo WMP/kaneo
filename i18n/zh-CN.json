@@ -3893,7 +3893,23 @@
 				"deleteClusterTitle": "删除 {{name}}？",
 				"deleteClusterDescription": "集群及其容量条目将被删除。正在被虚拟机使用的集群无法删除。",
 				"deleteEntryTitle": "删除 {{name}}？",
-				"deleteEntryDescription": "只能删除处于计划状态的容量。"
+				"deleteEntryDescription": "只能删除处于计划状态的容量。",
+				"chart": {
+					"title": "Ceph 需求预测",
+					"demand": "需求",
+					"usableDelivered": "可用容量（已交付）",
+					"usableAfterOrders": "计划订单交付后的可用容量",
+					"overCapacity": "容量超限",
+					"nearCapacity": "容量接近上限",
+					"today": "今天",
+					"showTable": "显示表格",
+					"hideTable": "隐藏表格",
+					"tableDate": "日期",
+					"tableChange": "变化",
+					"percentOfUsable": "占可用容量的百分比",
+					"empty": "还没有虚拟机使用此集群。",
+					"ariaLabel": "{{cluster}} 的 Ceph 需求：截至 {{lastDate}} 为 {{demand}}，可用 {{usable}}"
+				}
 			},
 			"clusterDialog": {
 				"createTitle": "添加 Ceph 集群",
